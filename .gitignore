@@ -1,0 +1,12 @@
+*.bak
+*.class
+*.iml
+.idea
+*.ipr
+*.iws
+target
+.classpath
+.project
+.settings
+.DS_Store
+dependency-reduced-pom.xml
