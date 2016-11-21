@@ -1,0 +1,42 @@
+CHANGES
+1.0.10
+  - The SDK now sends rule labels back to the server
+
+1.0.9
+- Introduced new API: getTreatment(Key key, String feature, Map attributes);
+- Deprecated SplitClientBuilder. Clients are expected to use SplitFactoryBuilder instead.
+
+1.0.8
+  - Fixed NPE in SplitManager
+
+1.0.7
+- Implement Factory pattern and expose Split manager
+- Stop parsing a Split when there are more than 50 conditions to prevent DDOS.
+
+1.0.6
+- Replaced Jersey with HttpComponents
+- Dropped SplitClientConfig#eventsEndpoint
+- Modified SplitClientConfig#endpoint to take in both sdk and events api.
+- Move away from Guava cache for impressions and use an BlockingArrayList instead.
+
+1.0.5
+- shade jackson-databind to split.shade.xxxxx
+- remove hamcrest and mockito from fat jar
+- include only io.split, io.codigo and (shaded) guava in the fat jar
+- Clean up JAVA 1.8 dependencies making sure they all are major version 51. 
+
+1.0.4
+- blockUntilReady support
+- impressions and metrics to events.split.io
+
+1.0.3
+- add https support
+
+1.0.2
+- corrects pom file issues
+
+1.0.1
+- add support for attributes
+
+1.0.0
+- First release
