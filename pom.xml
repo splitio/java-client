@@ -5,8 +5,35 @@
   <artifactId>java-client</artifactId>
   <version>1.1</version>
   <packaging>jar</packaging>
-  <name>SDK Java Client</name>
-  <description>Java SDK for Split</description>
+  <name>Java Client</name>
+  <url>www.split.io</url>
+  <developers>
+    <developer>
+      <name>Adil Aijaz</name>
+      <email>adil@split.io</email>
+    </developer>
+    <developer>
+      <name>Patricio Echague</name>
+      <email>pato@split.io</email>
+    </developer>
+  </developers>
+  <licenses>
+    <license>
+      <name>Apache 2.0</name>
+      <url>http://www.apache.org/licenses/LICENSE-2.0</url>
+    </license>
+  </licenses>
+  <scm>
+    <connection>scm:git:git@github.com:splitio/java-client.git</connection>
+    <developerConnection>scm:git@github.com:splitio/java-client.git</developerConnection>
+    <url>git@github.com:splitio/java-client.git</url>
+  </scm>
+  <distributionManagement>
+    <snapshotRepository>
+      <id>ossrh</id>
+      <url>https://oss.sonatype.org/content/repositories/snapshots</url>
+    </snapshotRepository>
+  </distributionManagement>
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
