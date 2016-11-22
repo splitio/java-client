@@ -1,4 +1,7 @@
 CHANGES
+1.1
+- Move java-client into it's own repo.
+
 1.0.10
   - The SDK now sends rule labels back to the server
 
