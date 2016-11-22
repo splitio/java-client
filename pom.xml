@@ -6,6 +6,7 @@
   <version>1.1</version>
   <packaging>jar</packaging>
   <name>Java Client</name>
+  <description>Java SDK for Split</description>
   <url>www.split.io</url>
   <developers>
     <developer>
