@@ -53,7 +53,7 @@ public class LessThanOrEqualToMatcher implements Matcher {
     @Override
     public int hashCode() {
         int result = 17;
-        result = 31 * result + Long.hashCode(_compareTo);
+        result = 31 * result + (int)(_compareTo ^ (_compareTo >>> 32));
         return result;
     }
 
