@@ -39,6 +39,16 @@ public class SplitManagerImpl implements SplitManager {
         return parsedSplit == null ? null : toSplitView(parsedSplit);
     }
 
+    @Override
+    public List<String> splitNames() {
+        List<String> result = new ArrayList<>();
+        List<ParsedSplit> parsedSplits = _splitFetcher.fetchAll();
+        for (ParsedSplit split : parsedSplits) {
+            result.add(split.feature());
+        }
+        return result;
+    }
+
     private SplitView toSplitView(ParsedSplit parsedSplit) {
         SplitView splitView = new SplitView();
         splitView.name = parsedSplit.feature();
