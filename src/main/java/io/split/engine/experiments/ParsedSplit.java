@@ -63,8 +63,8 @@ public class ParsedSplit {
     public int hashCode() {
         int result = 17;
         result = 31 * result + _feature.hashCode();
-        result = 31 * result + Long.hashCode(_seed);
-        result = 31 * result + Boolean.hashCode(_killed);
+        result = 31 * result + (int)(_seed ^ (_seed >>> 32));
+        result = 31 * result + (_killed ? 1 : 0);
         result = 31 * result + _defaultTreatment.hashCode();
         result = 31 * result + _parsedCondition.hashCode();
         result = 31 * result + (_trafficTypeName == null ? 0 : _trafficTypeName.hashCode());

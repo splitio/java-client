@@ -115,7 +115,7 @@ public final class SplitClientImpl implements SplitClient {
             if (_log.isDebugEnabled()) {
                 _log.debug("Returning control because no split was found for: " + feature);
             }
-            return new TreatmentAndLabel(Treatments.CONTROL, "split not found");
+            return new TreatmentAndLabel(Treatments.CONTROL, "rules not found");
         }
 
         return getTreatment(matchingKey, bucketingKey, parsedSplit, attributes);
@@ -138,7 +138,7 @@ public final class SplitClientImpl implements SplitClient {
             }
         }
 
-        return new TreatmentAndLabel(parsedSplit.defaultTreatment(), "no condition matched");
+        return new TreatmentAndLabel(parsedSplit.defaultTreatment(), "no rule matched");
     }
 
     private static final class TreatmentAndLabel {

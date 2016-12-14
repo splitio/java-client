@@ -62,8 +62,8 @@ public class BetweenMatcher implements Matcher {
     @Override
     public int hashCode() {
         int result = 17;
-        result = 31 * result + Long.hashCode(_start);
-        result = 31 * result + Long.hashCode(_end);
+        result = 31 * result + (int)(_start ^ (_start >>> 32));
+        result = 31 * result + (int)(_end ^ (_end >>> 32));
         return result;
     }
 
