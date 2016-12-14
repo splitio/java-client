@@ -1,6 +1,11 @@
 CHANGES
-1.1.1
+
+1.1.2
 - Adding SplitManager.splitNames() support to retrieve feature names.
+- Improving Java 1.7 compatibility for Hashcodes
+
+1.1.1
+- Consistently labeling Rules in messages
 
 1.1
 - Move java-client into it's own repo.
