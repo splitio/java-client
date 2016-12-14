@@ -75,6 +75,28 @@ public class SplitManagerImplTest {
         assertThat(splits.get(0).treatments.get(0), is(equalTo("off")));
     }
 
+    @Test
+    public void splitNamesCallWithNoSplit() {
+        SplitFetcher splitFetcher = Mockito.mock(SplitFetcher.class);
+        Mockito.when(splitFetcher.fetchAll()).thenReturn(Lists.<ParsedSplit>newArrayList());
+        SplitManagerImpl splitManager = new SplitManagerImpl(splitFetcher);
+        assertThat(splitManager.splitNames(), is(empty()));
+    }
+
+    @Test
+    public void splitNamesCallWithSplit() {
+        SplitFetcher splitFetcher = Mockito.mock(SplitFetcher.class);
+        List<ParsedSplit> parsedSplits = Lists.newArrayList();
+        ParsedSplit response = new ParsedSplit("FeatureName", 123, true, "off", Lists.newArrayList(getTestCondition("off")), "traffic", 456L);
+        parsedSplits.add(response);
+
+        Mockito.when(splitFetcher.fetchAll()).thenReturn(parsedSplits);
+        SplitManagerImpl splitManager = new SplitManagerImpl(splitFetcher);
+        List<String> splitNames = splitManager.splitNames();
+        assertThat(splitNames.size(), is(equalTo(1)));
+        assertThat(splitNames.get(0), is(equalTo(response.feature())));
+    }
+
     private ParsedCondition getTestCondition(String treatment) {
         return new ParsedCondition(CombiningMatcher.of(new AllKeysMatcher()), Lists.newArrayList(ConditionsTestUtil.partition(treatment, 10)));
     }

@@ -12,7 +12,7 @@ public interface SplitManager {
      * Retrieves the features (or Splits) that are currently registered with the
      * SDK.
      *
-     * @return a List of SplitView or empty.
+     * @return a List of SplitView or empty
      */
     List<SplitView> splits();
 
@@ -22,4 +22,11 @@ public interface SplitManager {
      * @return SplitView or null
      */
     SplitView split(String featureName);
+
+    /**
+     * Returns the names of features (or Split) registered with the SDK.
+     *
+     * @return a List of String (Split Feature Names) or empty
+     */
+    List<String> splitNames();
 }

@@ -1,6 +1,7 @@
 package io.split.client;
 
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.Lists;
 import io.split.client.api.SplitView;
 
 import java.util.ArrayList;
@@ -35,6 +36,11 @@ public final class LocalhostSplitManager implements SplitManager {
         }
 
         return result;
+    }
+
+    @Override
+    public List<String> splitNames() {
+        return Lists.newArrayList(_featureToTreatmentMap.keySet());
     }
 
     public SplitView split(String featureName) {
