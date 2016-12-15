@@ -66,9 +66,9 @@ public class LocalhostSplitFile extends Thread {
                         continue;
                     } else if (kind == java.nio.file.StandardWatchEventKinds.ENTRY_MODIFY
                             && filename.toString().equals(_file.getName())) {
-                        _log.info("Detected change in Local Splits file - Reloading! file={}", _file.getPath());
                         Map<String, String> featureToSplitMap = readOnSplits();
                         _splitFactory.updateFeatureToTreatmentMap(featureToSplitMap);
+                        _log.info("Detected change in Local Splits file - Splits Reloaded! file={}", _file.getPath());
                     }
                     boolean valid = key.reset();
                     if (!valid) {
