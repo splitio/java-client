@@ -1,6 +1,7 @@
 package io.split.engine.splitter;
 
 import io.split.client.dtos.Partition;
+import io.split.client.utils.MurmurHash3;
 import io.split.grammar.Treatments;
 
 import java.util.List;
@@ -27,8 +28,12 @@ public class Splitter {
         return getTreatment(bucket(hash(key, seed)), partitions);
     }
 
-    /*package private*/
     static int hash(String key, int seed) {
+        return MurmurHash3.murmurhash3_x86_32(key, 0, key.length(), seed);
+    }
+
+    /*package private*/
+    static int legacy_hash(String key, int seed) {
         int h = 0;
         for (int i = 0; i < key.length(); i++) {
             h = 31 * h + key.charAt(i);
