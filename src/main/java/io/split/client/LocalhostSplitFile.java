@@ -66,6 +66,7 @@ public class LocalhostSplitFile extends Thread {
                         continue;
                     } else if (kind == java.nio.file.StandardWatchEventKinds.ENTRY_MODIFY
                             && filename.toString().equals(_file.getName())) {
+                        _log.info("Detected change in Local Splits file - Reloading! file={}", _file.getPath());
                         Map<String, String> featureToSplitMap = readOnSplits();
                         _splitFactory.updateFeatureToTreatmentMap(featureToSplitMap);
                     }
@@ -103,7 +104,6 @@ public class LocalhostSplitFile extends Thread {
 
                 onSplits.put(feature_treatment[0], feature_treatment[1]);
                 _log.info("100% of keys will see " + feature_treatment[1] + " for " + feature_treatment[0]);
-
             }
         } catch (FileNotFoundException e) {
             _log.warn("There was no file named " + _file.getPath() + " found. " +
