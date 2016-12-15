@@ -1,5 +1,9 @@
 CHANGES
 
+2.0
+- Transitioning to Murmur3 for key hashing
+- This is a breaking change, as identifying keys will now be mapped into Splits differently than in v1.X
+
 1.1.2
 - Adding SplitManager.splitNames() support to retrieve feature names.
 - Improving Java 1.7 compatibility for Hashcodes
