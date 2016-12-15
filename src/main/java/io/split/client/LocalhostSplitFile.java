@@ -1,6 +1,7 @@
 package io.split.client;
 
 import com.google.common.collect.Maps;
+import com.sun.nio.file.SensitivityWatchEventModifier;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -15,32 +16,35 @@ public class LocalhostSplitFile extends Thread {
 
     private final LocalhostSplitFactory _splitFactory;
     private final File _file;
+    private final WatchService _watcher;
     private AtomicBoolean _stop = new AtomicBoolean(false);
 
     public LocalhostSplitFile(LocalhostSplitFactory splitFactory, String directory, String fileName) throws IOException {
         _splitFactory = splitFactory;
         _file = new File(directory, fileName);
+        _watcher = FileSystems.getDefault().newWatchService();
     }
 
-    public boolean isStopped() {
+    private boolean isStopped() {
         return _stop.get();
     }
 
-    public void stopThread() {
+    private void stopThread() {
         _stop.set(true);
+    }
+
+    public void registerWatcher() throws IOException {
+        Path path = _file.toPath().toAbsolutePath().getParent();
+        path.register(_watcher, new WatchEvent.Kind[]{StandardWatchEventKinds.ENTRY_MODIFY}, SensitivityWatchEventModifier.HIGH);
     }
 
     @Override
     public void run() {
-        WatchService watcher;
         try {
-            watcher = FileSystems.getDefault().newWatchService();
-            Path path = _file.toPath().getParent();
-            path.register(watcher, StandardWatchEventKinds.ENTRY_MODIFY);
             while (!isStopped()) {
                 WatchKey key;
                 try {
-                    key = watcher.poll(2000, TimeUnit.MILLISECONDS);
+                    key = _watcher.poll(250, TimeUnit.MILLISECONDS);
                 } catch (InterruptedException e) {
                     stopThread();
                     return;
@@ -78,9 +82,8 @@ public class LocalhostSplitFile extends Thread {
         }
     }
 
-
     public Map<String, String> readOnSplits() throws IOException {
-        Map<String, String> featureToSplitMap = Maps.newHashMap();
+        Map<String, String> onSplits = Maps.newHashMap();
 
         BufferedReader reader = null;
         try {
@@ -98,7 +101,7 @@ public class LocalhostSplitFile extends Thread {
                     continue;
                 }
 
-                featureToSplitMap.put(feature_treatment[0], feature_treatment[1]);
+                onSplits.put(feature_treatment[0], feature_treatment[1]);
                 _log.info("100% of keys will see " + feature_treatment[1] + " for " + feature_treatment[0]);
 
             }
@@ -116,6 +119,6 @@ public class LocalhostSplitFile extends Thread {
             }
         }
 
-        return featureToSplitMap;
+        return onSplits;
     }
 }

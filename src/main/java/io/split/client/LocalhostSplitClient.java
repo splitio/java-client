@@ -1,5 +1,6 @@
 package io.split.client;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableMap;
 import io.split.client.api.Key;
 import io.split.grammar.Treatments;
@@ -50,12 +51,13 @@ public final class LocalhostSplitClient implements SplitClient {
         return getTreatment(key.matchingKey(), feature, attributes);
     }
 
-    public void updateFeatureToTreatmentMap(Map<String, String> featureToTreatmentMap) {
+    void updateFeatureToTreatmentMap(Map<String, String> featureToTreatmentMap) {
         checkNotNull(featureToTreatmentMap, "featureToTreatmentMap must not be null");
         _featureToTreatmentMap = ImmutableMap.copyOf(featureToTreatmentMap);
     }
 
-    public ImmutableMap<String, String> featureToTreatmentMap() {
+    @VisibleForTesting
+    ImmutableMap<String, String> featureToTreatmentMap() {
         return _featureToTreatmentMap;
     }
 }
