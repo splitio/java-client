@@ -25,19 +25,10 @@ public final class LocalhostSplitFactory implements SplitFactory {
     private final LocalhostSplitManager _manager;
     private final LocalhostSplitFile _splitFile;
 
-    public LocalhostSplitFactory() throws IOException {
+    public static LocalhostSplitFactory createLocalhostSplitFactory() throws IOException {
         String directory = System.getProperty("user.home");
         Preconditions.checkNotNull(directory, "Property user.home should be set when using environment: " + LOCALHOST);
-
-        _log.info("home = " + directory);
-
-        _splitFile = new LocalhostSplitFile(this, directory, FILENAME);
-
-        Map<String, String> _featureToTreatmentMap = _splitFile.readOnSplits();
-        _client = new LocalhostSplitClient(_featureToTreatmentMap);
-        _manager = new LocalhostSplitManager(_featureToTreatmentMap);
-
-        _splitFile.start();
+        return new LocalhostSplitFactory(directory);
     }
 
     public LocalhostSplitFactory(String directory) throws IOException {

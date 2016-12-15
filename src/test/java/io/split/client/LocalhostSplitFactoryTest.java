@@ -22,7 +22,7 @@ public class LocalhostSplitFactoryTest {
 
     @Test
     public void testNoFileYieldsEmptySet() throws IOException {
-        LocalhostSplitFactory splitFactory = new LocalhostSplitFactory();
+        LocalhostSplitFactory splitFactory = LocalhostSplitFactory.createLocalhostSplitFactory();
 
         // Check Split Client
         Assert.assertEquals(splitFactory.client().getClass(), LocalhostSplitClient.class);
