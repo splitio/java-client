@@ -12,7 +12,6 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -93,17 +92,5 @@ public class LocalhostSplitFactoryTest {
         // Confirm Update
         Assert.assertThat(splitClient.featureToTreatmentMap(), Matchers.is(Matchers.equalTo(expected)));
         Assert.assertThat(splitManager.featureToTreatmentMap(), Matchers.is(Matchers.equalTo(expected)));
-    }
-
-    private void updateSplitsFile(File splitsFile, String oldValue, String newValue) throws IOException {
-        List<String> newLines = new ArrayList<>();
-        for (String line : Files.readAllLines(splitsFile.toPath(), StandardCharsets.UTF_8)) {
-            if (line.contains(oldValue)) {
-                newLines.add(line.replace(oldValue, newValue));
-            } else {
-                newLines.add(line);
-            }
-        }
-        Files.write(splitsFile.toPath(), newLines, StandardCharsets.UTF_8);
     }
 }

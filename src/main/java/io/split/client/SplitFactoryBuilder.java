@@ -68,7 +68,7 @@ public class SplitFactoryBuilder {
      *                                               ready and the timeout specified via config#ready() passed.
      */
     public static synchronized SplitFactory build(String apiToken, SplitClientConfig config) throws IOException, InterruptedException, TimeoutException, URISyntaxException {
-        if (LocalhostSplitClientBuilder.LOCALHOST.equals(apiToken)) {
+        if (LocalhostSplitFactory.LOCALHOST.equals(apiToken)) {
             return new LocalhostSplitFactory();
         }
 

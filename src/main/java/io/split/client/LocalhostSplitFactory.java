@@ -19,7 +19,7 @@ public final class LocalhostSplitFactory implements SplitFactory {
     private static final Logger _log = LoggerFactory.getLogger(LocalhostSplitFactory.class);
 
     static final String FILENAME = ".split";
-    private static final String LOCALHOST = "localhost";
+    static final String LOCALHOST = "localhost";
 
     private final LocalhostSplitClient _client;
     private final LocalhostSplitManager _manager;
