@@ -20,7 +20,7 @@ import static com.google.common.base.Preconditions.checkNotNull;
  */
 public final class LocalhostSplitManager implements SplitManager {
 
-    private final ImmutableMap<String, String> _featureToTreatmentMap;
+    private ImmutableMap<String, String> _featureToTreatmentMap;
 
     public LocalhostSplitManager(Map<String, String> featureToTreatmentMap) {
         checkNotNull(featureToTreatmentMap, "featureToTreatmentMap must not be null");
@@ -43,12 +43,18 @@ public final class LocalhostSplitManager implements SplitManager {
         return Lists.newArrayList(_featureToTreatmentMap.keySet());
     }
 
+    @Override
     public SplitView split(String featureName) {
         if (!_featureToTreatmentMap.containsKey(featureName)) {
             return null;
         }
 
         return toSplitView(featureName, _featureToTreatmentMap.get(featureName));
+    }
+
+    public void updateFeatureToTreatmentMap(Map<String, String> featureToTreatmentMap) {
+        checkNotNull(featureToTreatmentMap, "featureToTreatmentMap must not be null");
+        _featureToTreatmentMap = ImmutableMap.copyOf(featureToTreatmentMap);
     }
 
     private SplitView toSplitView(String featureName, String treatment) {

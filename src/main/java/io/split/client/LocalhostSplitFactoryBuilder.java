@@ -9,6 +9,7 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
+import java.nio.file.*;
 import java.util.Map;
 
 import static com.google.common.base.Preconditions.checkNotNull;
@@ -33,7 +34,6 @@ public class LocalhostSplitFactoryBuilder {
     private static final Logger _log = LoggerFactory.getLogger(LocalhostSplitFactoryBuilder.class);
 
     public static final String LOCALHOST = "localhost";
-    public static final String FILENAME = ".split";
 
     public static LocalhostSplitFactory build() throws IOException {
         String home = System.getProperty("user.home");
@@ -43,42 +43,6 @@ public class LocalhostSplitFactoryBuilder {
     }
 
     static LocalhostSplitFactory build(String home) throws IOException {
-        _log.info("home = " + home);
-
-        String fileName = home + "/" + FILENAME;
-
-        Map<String, String> onSplits = Maps.newHashMap();
-
-        try (BufferedReader reader = new BufferedReader(new FileReader(new File(fileName)));) {
-
-            for (String line = reader.readLine(); line != null; line = reader.readLine()) {
-                line = line.trim();
-                if (line.isEmpty() || line.startsWith("#")) {
-                    continue;
-                }
-
-                String[] feature_treatment = line.split("\\s+");
-
-                if (feature_treatment.length != 2) {
-                    _log.info("Ignoring line since it does not have exactly two columns: " + line);
-                    continue;
-                }
-
-                onSplits.put(feature_treatment[0], feature_treatment[1]);
-                _log.info("100% of keys will see " + feature_treatment[1] + " for " + feature_treatment[0]);
-
-            }
-        } catch (FileNotFoundException e) {
-            _log.warn("There was no file named " + fileName + " found. " +
-                    "We created a split client that returns default treatments for all features for all of your users. " +
-                    "If you wish to return a specific treatment for a feature, enter the name of that feature name and " +
-                    "treatment name separated by whitespace in " + fileName +
-                    "; one pair per line. Empty lines or lines starting with '#' are considered comments", e);
-        } catch (IOException e) {
-            throw e;
-        }
-
-        return new LocalhostSplitFactory(onSplits);
+        return new LocalhostSplitFactory(home);
     }
-
 }

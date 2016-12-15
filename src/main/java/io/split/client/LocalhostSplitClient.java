@@ -18,7 +18,7 @@ import static com.google.common.base.Preconditions.checkNotNull;
  */
 public final class LocalhostSplitClient implements SplitClient {
 
-    private final ImmutableMap<String, String> _featureToTreatmentMap;
+    private ImmutableMap<String, String> _featureToTreatmentMap;
 
     public LocalhostSplitClient(Map<String, String> featureToTreatmentMap) {
         checkNotNull(featureToTreatmentMap, "featureToTreatmentMap must not be null");
@@ -48,6 +48,11 @@ public final class LocalhostSplitClient implements SplitClient {
     @Override
     public String getTreatment(Key key, String feature, Map<String, Object> attributes) {
         return getTreatment(key.matchingKey(), feature, attributes);
+    }
+
+    public void updateFeatureToTreatmentMap(Map<String, String> featureToTreatmentMap) {
+        checkNotNull(featureToTreatmentMap, "featureToTreatmentMap must not be null");
+        _featureToTreatmentMap = ImmutableMap.copyOf(featureToTreatmentMap);
     }
 
     public ImmutableMap<String, String> featureToTreatmentMap() {
