@@ -1,6 +1,7 @@
 package io.split.engine.splitter;
 
 import com.google.common.hash.Hashing;
+import io.split.client.utils.MurmurHash3;
 
 import java.nio.charset.Charset;
 
@@ -14,11 +15,25 @@ public interface MyHash {
     public static class Murmur32Hash implements MyHash {
         @Override
         public int hash(int seed, String key) {
-            return Hashing.murmur3_32(seed).hashString(key, Charset.forName("UTF-8")).asInt();
+            return MurmurHash3.murmurhash3_x86_32(key, 0, key.length(), seed);
         }
+
         @Override
         public String toString() {
             return "murmur 32";
+        }
+
+    }
+
+    public static class GuavaMurmur32Hash implements MyHash {
+        @Override
+        public int hash(int seed, String key) {
+            return Hashing.murmur3_32(seed).hashString(key, Charset.forName("UTF-8")).asInt();
+        }
+
+        @Override
+        public String toString() {
+            return "guava murmur 32";
         }
 
     }

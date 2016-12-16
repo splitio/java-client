@@ -28,6 +28,7 @@ public class Splitter {
         return getTreatment(bucket(hash(key, seed)), partitions);
     }
 
+    /*package private*/
     static int hash(String key, int seed) {
         return MurmurHash3.murmurhash3_x86_32(key, 0, key.length(), seed);
     }

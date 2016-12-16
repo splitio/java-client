@@ -41,6 +41,7 @@ public class HashingTest {
 
         List<String> sequentialKeys = sequentialIds(200000);
         collisionTest(seed, new MyHash.Murmur32Hash(), sequentialKeys);
+        collisionTest(seed, new MyHash.GuavaMurmur32Hash(), sequentialKeys);
         collisionTest(seed, new MyHash.SeededNaturalHash(), sequentialKeys);
         collisionTest(seed, new MyHash.XorNaturalHash(), sequentialKeys);
 
@@ -53,6 +54,7 @@ public class HashingTest {
 
         List<String> sequentialKeys = mshIds();
         bucketTest(seed, new MyHash.Murmur32Hash(), sequentialKeys);
+        bucketTest(seed, new MyHash.GuavaMurmur32Hash(), sequentialKeys);
         bucketTest(seed, new MyHash.SeededNaturalHash(), sequentialKeys);
         bucketTest(seed, new MyHash.XorNaturalHash(), sequentialKeys);
 
@@ -65,6 +67,7 @@ public class HashingTest {
 
         List<String> sequentialKeys = randomUUIDs(200000);
         collisionTest(seed, new MyHash.Murmur32Hash(), sequentialKeys);
+        collisionTest(seed, new MyHash.GuavaMurmur32Hash(), sequentialKeys);
         collisionTest(seed, new MyHash.SeededNaturalHash(), sequentialKeys);
         collisionTest(seed, new MyHash.XorNaturalHash(), sequentialKeys);
 
@@ -129,14 +132,14 @@ public class HashingTest {
     private void bucketTest(int seed, MyHash hash, List<String> keys) {
         List<Integer> buckets = Lists.newArrayList();
 
-        int[] ranges =  new int[10];
+        int[] ranges = new int[10];
 
         for (int i = 0; i < keys.size(); i++) {
             String key = keys.get(i);
             int keyHash = hash.hash(seed, key);
             int bucket = Splitter.bucket(keyHash);
             buckets.add(bucket);
-            ranges[(bucket-1)/10]++;
+            ranges[(bucket - 1) / 10]++;
         }
 
         System.out.println(buckets);
