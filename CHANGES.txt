@@ -1,16 +1,25 @@
 CHANGES
+
+1.1.2
+- Adding SplitManager.splitNames() support to retrieve feature names.
+- Improving Java 1.7 compatibility for Hashcodes
+
+1.1.1
+- Consistently labeling Rules in messages
+
+>>>>>>> development
 1.1
 - Move java-client into it's own repo.
 
 1.0.10
-  - The SDK now sends rule labels back to the server
+- The SDK now sends rule labels back to the server
 
 1.0.9
 - Introduced new API: getTreatment(Key key, String feature, Map attributes);
 - Deprecated SplitClientBuilder. Clients are expected to use SplitFactoryBuilder instead.
 
 1.0.8
-  - Fixed NPE in SplitManager
+- Fixed NPE in SplitManager
 
 1.0.7
 - Implement Factory pattern and expose Split manager
