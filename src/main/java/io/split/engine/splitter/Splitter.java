@@ -29,7 +29,7 @@ public class Splitter {
     }
 
     /*package private*/
-    static int hash(String key, int seed) {
+    static long hash(String key, int seed) {
         return MurmurHash3.murmurhash3_x86_32(key, 0, key.length(), seed);
     }
 
@@ -63,8 +63,8 @@ public class Splitter {
     }
 
     /*package private*/
-    static int bucket(int hash) {
-        return Math.abs(hash % 100) + 1;
+    static int bucket(long hash) {
+        return (int) (Math.abs(hash % 100) + 1);
     }
 
 

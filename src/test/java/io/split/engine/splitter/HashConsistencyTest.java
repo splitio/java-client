@@ -25,13 +25,13 @@ public class HashConsistencyTest {
 
     @Test
     public void testMurmur3HashAlphaNum() throws IOException {
-        File file = new File("src/test/resources", "murmur3-sample-data.csv");
+        File file = new File("src/test/resources", "murmur3-sample-data-v2.csv");
         validateFileMurmur3Hash(file);
     }
 
     @Test
     public void testMurmur3HashNonAlphaNum() throws IOException {
-        File file = new File("src/test/resources", "murmur3-sample-data-non-alpha-numeric.csv");
+        File file = new File("src/test/resources", "murmur3-sample-data-non-alpha-numeric-v2.csv");
         validateFileMurmur3Hash(file);
     }
 
@@ -77,10 +77,10 @@ public class HashConsistencyTest {
             String[] parts = line.split(",");
             Integer seed = Integer.parseInt(parts[0]);
             String key = parts[1];
-            int expected_hash = Integer.parseInt(parts[2]);
+            long expected_hash = Long.parseLong(parts[2]);
             int expected_bucket = Integer.parseInt(parts[3]);
 
-            int hash = Splitter.hash(key, seed);
+            long hash = Splitter.hash(key, seed);
             int bucket = Splitter.bucket(hash);
 
             Assert.assertEquals(expected_hash, hash);
@@ -98,7 +98,7 @@ public class HashConsistencyTest {
             String[] parts = line.split(",");
             Integer seed = Integer.parseInt(parts[0]);
             String key = parts[1];
-            int expected_hash = Integer.parseInt(parts[2]);
+            long expected_hash = Long.parseLong(parts[2]);
             int expected_bucket = Integer.parseInt(parts[3]);
 
             int hash = Hashing.murmur3_32(seed).hashString(key, Charset.forName("UTF-8")).asInt();

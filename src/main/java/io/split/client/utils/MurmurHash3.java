@@ -63,7 +63,7 @@ public final class MurmurHash3 {
     /**
      * Returns the MurmurHash3_x86_32 hash.
      */
-    public static int murmurhash3_x86_32(byte[] data, int offset, int len, int seed) {
+    public static long murmurhash3_x86_32(byte[] data, int offset, int len, int seed) {
 
         final int c1 = 0xcc9e2d51;
         final int c2 = 0x1b873593;
@@ -111,7 +111,7 @@ public final class MurmurHash3 {
         h1 *= 0xc2b2ae35;
         h1 ^= h1 >>> 16;
 
-        return h1;
+        return h1 & 0xFFFFFFFFL;
     }
 
 
@@ -120,7 +120,7 @@ public final class MurmurHash3 {
      * the string to a temporary buffer.  This is more than 2x faster than hashing the result
      * of String.getBytes().
      */
-    public static int murmurhash3_x86_32(CharSequence data, int offset, int len, int seed) {
+    public static long murmurhash3_x86_32(CharSequence data, int offset, int len, int seed) {
 
         final int c1 = 0xcc9e2d51;
         final int c2 = 0x1b873593;
@@ -236,7 +236,7 @@ public final class MurmurHash3 {
         h1 *= 0xc2b2ae35;
         h1 ^= h1 >>> 16;
 
-        return h1;
+        return h1 & 0xFFFFFFFFL;
     }
 
 
