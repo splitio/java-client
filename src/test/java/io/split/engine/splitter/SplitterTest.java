@@ -73,6 +73,7 @@ public class SplitterTest {
      *
      * @throws IOException
      */
+    @Ignore
     @Test
     public void generateDataFromExistingInput() throws IOException {
         File file = new File("src/test/resources", "murmur3-sample-data-non-alpha-numeric.csv");
