@@ -80,7 +80,7 @@ public class HashConsistencyTest {
             int expected_hash = Integer.parseInt(parts[2]);
             int expected_bucket = Integer.parseInt(parts[3]);
 
-            int hash = Splitter.hash(key, seed);
+            long hash = Splitter.hash(key, seed);
             int bucket = Splitter.bucket(hash);
 
             Assert.assertEquals(expected_hash, hash);

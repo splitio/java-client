@@ -112,12 +112,12 @@ public class HashingTest {
         int collisions = 0;
         long durationSum = 0;
 
-        Set<Integer> hashes = Sets.newHashSet();
+        Set<Long> hashes = Sets.newHashSet();
 
         for (int i = 0; i < keys.size(); i++) {
             String key = keys.get(i);
             long start = System.nanoTime();
-            int keyHash = hash.hash(seed, key);
+            long keyHash = hash.hash(seed, key);
             durationSum += (System.nanoTime() - start);
 
             if (!hashes.add(keyHash)) {
@@ -136,7 +136,7 @@ public class HashingTest {
 
         for (int i = 0; i < keys.size(); i++) {
             String key = keys.get(i);
-            int keyHash = hash.hash(seed, key);
+            long keyHash = hash.hash(seed, key);
             int bucket = Splitter.bucket(keyHash);
             buckets.add(bucket);
             ranges[(bucket - 1) / 10]++;
