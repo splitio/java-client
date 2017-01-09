@@ -299,7 +299,8 @@ public class SplitClientImplTest {
                 eq(test),
                 eq("on"),
                 anyLong(),
-                labelCaptor.capture()
+                labelCaptor.capture(),
+                eq(new Long(1L))
         );
 
         assertThat(labelCaptor.getValue(), is(equalTo("foolabel")));

@@ -8,6 +8,7 @@ public class KeyImpression {
     public String treatment;
     public String label;
     public long time;
+    public Long changeNumber; // can be null if there is no changeNumber
 
     @Override
     public boolean equals(Object o) {

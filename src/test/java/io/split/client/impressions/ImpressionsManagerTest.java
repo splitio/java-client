@@ -40,15 +40,15 @@ public class ImpressionsManagerTest {
 
         ImpressionsManager treatmentLog = ImpressionsManager.instanceForTest(null, config, senderMock);
 
-        KeyImpression ki1 = keyImpression("test1", "adil", "on", 1L);
-        KeyImpression ki2 = keyImpression("test1", "adil", "on", 2L);
-        KeyImpression ki3 = keyImpression("test1", "pato", "on", 3L);
-        KeyImpression ki4 = keyImpression("test2", "pato", "on", 4L);
+        KeyImpression ki1 = keyImpression("test1", "adil", "on", 1L, null);
+        KeyImpression ki2 = keyImpression("test1", "adil", "on", 2L, 1L);
+        KeyImpression ki3 = keyImpression("test1", "pato", "on", 3L, 2L);
+        KeyImpression ki4 = keyImpression("test2", "pato", "on", 4L, 3L);
 
-        treatmentLog.log(ki1.keyName, null, ki1.feature, ki1.treatment, ki1.time, null);
-        treatmentLog.log(ki2.keyName, null, ki2.feature, ki2.treatment, ki2.time, null);
-        treatmentLog.log(ki3.keyName, null, ki3.feature, ki3.treatment, ki3.time, null);
-        treatmentLog.log(ki4.keyName, null, ki4.feature, ki4.treatment, ki4.time, null);
+        treatmentLog.log(ki1.keyName, null, ki1.feature, ki1.treatment, ki1.time, null, ki1.changeNumber);
+        treatmentLog.log(ki2.keyName, null, ki2.feature, ki2.treatment, ki2.time, null, ki2.changeNumber);
+        treatmentLog.log(ki3.keyName, null, ki3.feature, ki3.treatment, ki3.time, null, ki3.changeNumber);
+        treatmentLog.log(ki4.keyName, null, ki4.feature, ki4.treatment, ki4.time, null, ki4.changeNumber);
 
         // Do what the scheduler would do.
         treatmentLog.run();
@@ -73,15 +73,15 @@ public class ImpressionsManagerTest {
         ImpressionsManager treatmentLog = ImpressionsManager.instanceForTest(null, config, senderMock);
 
         // These 4 unique test name will cause 4 entries but we are caping at the first 3.
-        KeyImpression ki1 = keyImpression("test1", "adil", "on", 1L);
-        KeyImpression ki2 = keyImpression("test2", "adil", "on", 2L);
-        KeyImpression ki3 = keyImpression("test3", "pato", "on", 3L);
-        KeyImpression ki4 = keyImpression("test4", "pato", "on", 4L);
+        KeyImpression ki1 = keyImpression("test1", "adil", "on", 1L, null);
+        KeyImpression ki2 = keyImpression("test2", "adil", "on", 2L, null);
+        KeyImpression ki3 = keyImpression("test3", "pato", "on", 3L, null);
+        KeyImpression ki4 = keyImpression("test4", "pato", "on", 4L, null);
 
-        treatmentLog.log(ki1.keyName, null, ki1.feature, ki1.treatment, ki1.time, null);
-        treatmentLog.log(ki2.keyName, null, ki2.feature, ki2.treatment, ki2.time, null);
-        treatmentLog.log(ki3.keyName, null, ki3.feature, ki3.treatment, ki3.time, null);
-        treatmentLog.log(ki4.keyName, null, ki4.feature, ki4.treatment, ki4.time, null);
+        treatmentLog.log(ki1.keyName, null, ki1.feature, ki1.treatment, ki1.time, null, null);
+        treatmentLog.log(ki2.keyName, null, ki2.feature, ki2.treatment, ki2.time, null, null);
+        treatmentLog.log(ki3.keyName, null, ki3.feature, ki3.treatment, ki3.time, null, null);
+        treatmentLog.log(ki4.keyName, null, ki4.feature, ki4.treatment, ki4.time, null, null);
 
         // Do what the scheduler would do.
         treatmentLog.run();
@@ -106,15 +106,15 @@ public class ImpressionsManagerTest {
         ImpressionsManager treatmentLog = ImpressionsManager.instanceForTest(null, config, senderMock);
 
         // These 4 unique test name will cause 4 entries but we are caping at the first 3.
-        KeyImpression ki1 = keyImpression("test1", "adil", "on", 1L);
-        KeyImpression ki2 = keyImpression("test1", "adil", "on", 2L);
-        KeyImpression ki3 = keyImpression("test1", "pato", "on", 3L);
-        KeyImpression ki4 = keyImpression("test1", "pato", "on", 4L);
+        KeyImpression ki1 = keyImpression("test1", "adil", "on", 1L, 1L);
+        KeyImpression ki2 = keyImpression("test1", "adil", "on", 2L, 1L);
+        KeyImpression ki3 = keyImpression("test1", "pato", "on", 3L, 1L);
+        KeyImpression ki4 = keyImpression("test1", "pato", "on", 4L, 1L);
 
-        treatmentLog.log(ki1.keyName, null, ki1.feature, ki1.treatment, ki1.time, null);
-        treatmentLog.log(ki2.keyName, null, ki2.feature, ki2.treatment, ki2.time, null);
-        treatmentLog.log(ki3.keyName, null, ki3.feature, ki3.treatment, ki3.time, null);
-        treatmentLog.log(ki4.keyName, null, ki4.feature, ki4.treatment, ki4.time, null);
+        treatmentLog.log(ki1.keyName, null, ki1.feature, ki1.treatment, ki1.time, null, 1L);
+        treatmentLog.log(ki2.keyName, null, ki2.feature, ki2.treatment, ki2.time, null, 1L);
+        treatmentLog.log(ki3.keyName, null, ki3.feature, ki3.treatment, ki3.time, null, 1L);
+        treatmentLog.log(ki4.keyName, null, ki4.feature, ki4.treatment, ki4.time, null, 1L);
 
         // Do what the scheduler would do.
         treatmentLog.run();
@@ -147,12 +147,13 @@ public class ImpressionsManagerTest {
         verify(senderMock, never()).post(impressionsCaptor.capture());
     }
 
-    private KeyImpression keyImpression(String feature, String key, String treatment, long time) {
+    private KeyImpression keyImpression(String feature, String key, String treatment, long time, Long changeNumber) {
         KeyImpression result = new KeyImpression();
         result.feature = feature;
         result.keyName = key;
         result.treatment = treatment;
         result.time = time;
+        result.changeNumber = changeNumber;
         return result;
     }
 

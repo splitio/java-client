@@ -69,8 +69,8 @@ public class ImpressionsManager implements TreatmentLog, Runnable, Closeable {
     }
 
     @Override
-    public void log(String key, String bucketingKey, String feature, String treatment, long time, String label) {
-        KeyImpression impression = keyImpression(feature, key, bucketingKey, treatment, time, label);
+    public void log(String key, String bucketingKey, String feature, String treatment, long time, String label, Long changeNumber) {
+        KeyImpression impression = keyImpression(feature, key, bucketingKey, treatment, time, label, changeNumber);
         _queue.offer(impression);
     }
 
@@ -80,7 +80,7 @@ public class ImpressionsManager implements TreatmentLog, Runnable, Closeable {
         sendImpressions();
     }
 
-    private KeyImpression keyImpression(String feature, String key, String bucketingKey, String treatment, long time, String label) {
+    private KeyImpression keyImpression(String feature, String key, String bucketingKey, String treatment, long time, String label, Long changeNumber) {
         KeyImpression result = new KeyImpression();
         result.feature = feature;
         result.keyName = key;
@@ -90,6 +90,7 @@ public class ImpressionsManager implements TreatmentLog, Runnable, Closeable {
         result.label = label;
         result.treatment = treatment;
         result.time = time;
+        result.changeNumber = changeNumber;
         return result;
     }
 

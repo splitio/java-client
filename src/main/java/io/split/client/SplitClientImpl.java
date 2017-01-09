@@ -77,14 +77,17 @@ public final class SplitClientImpl implements SplitClient {
 
             long start = System.currentTimeMillis();
 
-            TreatmentAndLabel result = null;
+            TreatmentLabelAndChangeNumber result = null;
             try {
                 result = getTreatmentWithoutExceptionHandling(matchingKey, bucketingKey, feature, attributes);
+            } catch (ChangeNumberExceptionWrapper e) {
+                result = new TreatmentLabelAndChangeNumber(Treatments.CONTROL, "exception", e.changeNumber());
+                _log.error("Exception", e.wrappedException());
             } catch (Exception e) {
-                result = new TreatmentAndLabel(Treatments.CONTROL, "exception");
+                result = new TreatmentLabelAndChangeNumber(Treatments.CONTROL, "exception");
                 _log.error("Exception", e);
             } finally {
-                recordStats(matchingKey, bucketingKey, feature, start, result._treatment, "sdk.getTreatment", result._label);
+                recordStats(matchingKey, bucketingKey, feature, start, result._treatment, "sdk.getTreatment", result._label, result._changeNumber);
             }
 
             return result._treatment;
@@ -99,23 +102,23 @@ public final class SplitClientImpl implements SplitClient {
         }
     }
 
-    private void recordStats(String matchingKey, String bucketingKey, String feature, long start, String result, String operation, String label) {
+    private void recordStats(String matchingKey, String bucketingKey, String feature, long start, String result, String operation, String label, Long changeNumber) {
         try {
-            _treatmentLog.log(matchingKey, bucketingKey, feature, result, System.currentTimeMillis(), label);
+            _treatmentLog.log(matchingKey, bucketingKey, feature, result, System.currentTimeMillis(), label, changeNumber);
             _metrics.time(operation, System.currentTimeMillis() - start);
         } catch (Throwable t) {
             _log.error("Exception", t);
         }
     }
 
-    private TreatmentAndLabel getTreatmentWithoutExceptionHandling(String matchingKey, String bucketingKey, String feature, Map<String, Object> attributes) {
+    private TreatmentLabelAndChangeNumber getTreatmentWithoutExceptionHandling(String matchingKey, String bucketingKey, String feature, Map<String, Object> attributes) throws ChangeNumberExceptionWrapper {
         ParsedSplit parsedSplit = _splitFetcher.fetch(feature);
 
         if (parsedSplit == null) {
             if (_log.isDebugEnabled()) {
                 _log.debug("Returning control because no split was found for: " + feature);
             }
-            return new TreatmentAndLabel(Treatments.CONTROL, "rules not found");
+            return new TreatmentLabelAndChangeNumber(Treatments.CONTROL, "rules not found");
         }
 
         return getTreatment(matchingKey, bucketingKey, parsedSplit, attributes);
@@ -126,28 +129,39 @@ public final class SplitClientImpl implements SplitClient {
      * @param parsedSplit MUST NOT be null
      * @return
      */
-    private TreatmentAndLabel getTreatment(String matchingKey, String bucketingKey, ParsedSplit parsedSplit, Map<String, Object> attributes) {
-        if (parsedSplit.killed()) {
-            return new TreatmentAndLabel(parsedSplit.defaultTreatment(), "killed");
-        }
-
-        for (ParsedCondition parsedCondition : parsedSplit.parsedConditions()) {
-            if (parsedCondition.matcher().match(matchingKey, attributes)) {
-                String treatment = Splitter.getTreatment(bucketingKey, parsedSplit.seed(), parsedCondition.partitions());
-                return new TreatmentAndLabel(treatment, parsedCondition.label());
+    private TreatmentLabelAndChangeNumber getTreatment(String matchingKey, String bucketingKey, ParsedSplit parsedSplit, Map<String, Object> attributes) throws ChangeNumberExceptionWrapper {
+        try {
+            if (parsedSplit.killed()) {
+                return new TreatmentLabelAndChangeNumber(parsedSplit.defaultTreatment(), "killed", parsedSplit.changeNumber());
             }
+
+            for (ParsedCondition parsedCondition : parsedSplit.parsedConditions()) {
+                if (parsedCondition.matcher().match(matchingKey, attributes)) {
+                    String treatment = Splitter.getTreatment(bucketingKey, parsedSplit.seed(), parsedCondition.partitions());
+                    return new TreatmentLabelAndChangeNumber(treatment, parsedCondition.label(), parsedSplit.changeNumber());
+                }
+            }
+
+            return new TreatmentLabelAndChangeNumber(parsedSplit.defaultTreatment(), "no rule matched", parsedSplit.changeNumber());
+        } catch (Exception e) {
+            throw new ChangeNumberExceptionWrapper(e, parsedSplit.changeNumber());
         }
 
-        return new TreatmentAndLabel(parsedSplit.defaultTreatment(), "no rule matched");
     }
 
-    private static final class TreatmentAndLabel {
+    private static final class TreatmentLabelAndChangeNumber {
         private final String _treatment;
         private final String _label;
+        private final Long _changeNumber;
 
-        public TreatmentAndLabel(String treatment, String label) {
+        public TreatmentLabelAndChangeNumber(String treatment, String label) {
+            this(treatment, label, null);
+        }
+
+        public TreatmentLabelAndChangeNumber(String treatment, String label, Long changeNumber) {
             _treatment = treatment;
             _label = label;
+            _changeNumber = changeNumber;
         }
     }
 
