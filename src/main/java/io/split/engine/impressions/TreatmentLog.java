@@ -15,7 +15,7 @@ public interface TreatmentLog {
      */
     void log(String key, String bucketingKey, String feature, String treatment, long time, String label, Long changeNumber);
 
-    public static final class NoopTreatmentLog implements TreatmentLog {
+    final class NoopTreatmentLog implements TreatmentLog {
 
         @Override
         public void log(String key, String bucketingKey, String feature, String treatment, long time, String label, Long changeNumber) {
