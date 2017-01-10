@@ -44,6 +44,8 @@ import static org.mockito.Mockito.when;
  */
 public class SplitClientImplTest {
 
+    private SplitClientConfig config = SplitClientConfig.builder().build();
+
     @Test
     public void null_key_results_in_control() {
         String test = "test1";
@@ -55,7 +57,7 @@ public class SplitClientImplTest {
         when(splitFetcher.fetch(test)).thenReturn(parsedSplit);
 
         SplitClientImpl client = new SplitClientImpl(splitFetcher, new TreatmentLog.NoopTreatmentLog(),
-                new Metrics.NoopMetrics());
+                new Metrics.NoopMetrics(), config);
 
         assertThat(client.getTreatment(null, "test1"), is(equalTo(Treatments.CONTROL)));
 
@@ -73,7 +75,7 @@ public class SplitClientImplTest {
         when(splitFetcher.fetch(test)).thenReturn(parsedSplit);
 
         SplitClientImpl client = new SplitClientImpl(splitFetcher, new TreatmentLog.NoopTreatmentLog(),
-                new Metrics.NoopMetrics());
+                new Metrics.NoopMetrics(), config);
 
         assertThat(client.getTreatment("adil@relateiq.com", null), is(equalTo(Treatments.CONTROL)));
 
@@ -86,7 +88,7 @@ public class SplitClientImplTest {
         when(splitFetcher.fetch(anyString())).thenThrow(RuntimeException.class);
 
         SplitClientImpl client = new SplitClientImpl(splitFetcher, new TreatmentLog.NoopTreatmentLog(),
-                new Metrics.NoopMetrics());
+                new Metrics.NoopMetrics(), config);
         assertThat(client.getTreatment("adil@relateiq.com", "test1"), is(equalTo(Treatments.CONTROL)));
 
         verify(splitFetcher).fetch("test1");
@@ -105,7 +107,7 @@ public class SplitClientImplTest {
 
         SplitClientImpl client = new SplitClientImpl(splitFetcher,
                 new TreatmentLog.NoopTreatmentLog(),
-                new Metrics.NoopMetrics());
+                new Metrics.NoopMetrics(), config);
 
         int numKeys = 5;
         for (int i = 0; i < numKeys; i++) {
@@ -130,7 +132,7 @@ public class SplitClientImplTest {
 
         SplitClientImpl client = new SplitClientImpl(splitFetcher,
                 new TreatmentLog.NoopTreatmentLog(),
-                new Metrics.NoopMetrics());
+                new Metrics.NoopMetrics(), config);
 
         assertThat(client.getTreatment("pato@codigo.com", test), is(equalTo(Treatments.OFF)));
 
@@ -153,7 +155,7 @@ public class SplitClientImplTest {
 
         SplitClientImpl client = new SplitClientImpl(splitFetcher,
                 new TreatmentLog.NoopTreatmentLog()
-                , new Metrics.NoopMetrics());
+                , new Metrics.NoopMetrics(), config);
 
         assertThat(client.getTreatment("adil@codigo.com", test), is(equalTo("on")));
         assertThat(client.getTreatment("pato@codigo.com", test), is(equalTo("off")));
@@ -176,7 +178,7 @@ public class SplitClientImplTest {
 
         SplitClientImpl client = new SplitClientImpl(splitFetcher,
                 new TreatmentLog.NoopTreatmentLog(),
-                new Metrics.NoopMetrics());
+                new Metrics.NoopMetrics(), config);
 
         assertThat(client.getTreatment("adil@codigo.com", test), is(equalTo(Treatments.OFF)));
 
@@ -198,7 +200,7 @@ public class SplitClientImplTest {
 
         SplitClientImpl client = new SplitClientImpl(splitFetcher,
                 new TreatmentLog.NoopTreatmentLog()
-                , new Metrics.NoopMetrics());
+                , new Metrics.NoopMetrics(), config);
 
         assertThat(client.getTreatment("adil@codigo.com", test), is(equalTo("on")));
         assertThat(client.getTreatment("adil@codigo.com", test, null), is(equalTo("on")));
@@ -224,7 +226,7 @@ public class SplitClientImplTest {
 
         SplitClientImpl client = new SplitClientImpl(splitFetcher,
                 new TreatmentLog.NoopTreatmentLog()
-                , new Metrics.NoopMetrics());
+                , new Metrics.NoopMetrics(), config);
 
         assertThat(client.getTreatment("adil@codigo.com", test), is(equalTo("off")));
         assertThat(client.getTreatment("adil@codigo.com", test, null), is(equalTo("off")));
@@ -250,7 +252,7 @@ public class SplitClientImplTest {
 
         SplitClientImpl client = new SplitClientImpl(splitFetcher,
                 new TreatmentLog.NoopTreatmentLog()
-                , new Metrics.NoopMetrics());
+                , new Metrics.NoopMetrics(), config);
 
         assertThat(client.getTreatment("adil@codigo.com", test), is(equalTo("off")));
         assertThat(client.getTreatment("adil@codigo.com", test, null), is(equalTo("off")));
@@ -287,8 +289,8 @@ public class SplitClientImplTest {
         SplitClientImpl client = new SplitClientImpl(
                 splitFetcher,
                 treatmentLog,
-                new Metrics.NoopMetrics()
-        );
+                new Metrics.NoopMetrics(),
+                config);
 
         assertThat(client.getTreatment("pato@codigo.com", test, ImmutableMap.<String, Object>of("age", -20)), is(equalTo("on")));
 
@@ -299,7 +301,8 @@ public class SplitClientImplTest {
                 eq(test),
                 eq("on"),
                 anyLong(),
-                labelCaptor.capture()
+                labelCaptor.capture(),
+                eq(new Long(1L))
         );
 
         assertThat(labelCaptor.getValue(), is(equalTo("foolabel")));
@@ -322,7 +325,7 @@ public class SplitClientImplTest {
 
         SplitClientImpl client = new SplitClientImpl(splitFetcher,
                 new TreatmentLog.NoopTreatmentLog()
-                , new Metrics.NoopMetrics());
+                , new Metrics.NoopMetrics(), config);
 
         Key bad_key = new Key("adil", "aijaz");
         Key good_key = new Key("aijaz", "adil");

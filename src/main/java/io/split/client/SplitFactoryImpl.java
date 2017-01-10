@@ -12,8 +12,8 @@ public class SplitFactoryImpl implements SplitFactory {
     private final SplitClient _client;
     private final SplitManager _manager;
 
-    public SplitFactoryImpl(SplitFetcher fetcher, TreatmentLog treatmentLog, Metrics metrics) {
-        _client = new SplitClientImpl(fetcher, treatmentLog, metrics);
+    public SplitFactoryImpl(SplitFetcher fetcher, TreatmentLog treatmentLog, Metrics metrics, SplitClientConfig config) {
+        _client = new SplitClientImpl(fetcher, treatmentLog, metrics, config);
         _manager = new SplitManagerImpl(fetcher);
 
     }

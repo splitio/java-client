@@ -13,12 +13,12 @@ public interface TreatmentLog {
      * @param treatment saw what
      * @param time      at what time
      */
-    void log(String key, String bucketingKey, String feature, String treatment, long time, String label);
+    void log(String key, String bucketingKey, String feature, String treatment, long time, String label, Long changeNumber);
 
-    public static final class NoopTreatmentLog implements TreatmentLog {
+    final class NoopTreatmentLog implements TreatmentLog {
 
         @Override
-        public void log(String key, String bucketingKey, String feature, String treatment, long time, String label) {
+        public void log(String key, String bucketingKey, String feature, String treatment, long time, String label, Long changeNumber) {
             // noop
         }
     }
