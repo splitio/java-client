@@ -28,11 +28,13 @@ public final class SplitClientImpl implements SplitClient {
     private final SplitFetcher _splitFetcher;
     private final TreatmentLog _treatmentLog;
     private final Metrics _metrics;
+    private final SplitClientConfig _config;
 
-    public SplitClientImpl(SplitFetcher splitFetcher, TreatmentLog treatmentLog, Metrics metrics) {
+    public SplitClientImpl(SplitFetcher splitFetcher, TreatmentLog treatmentLog, Metrics metrics, SplitClientConfig config) {
         _splitFetcher = splitFetcher;
         _treatmentLog = treatmentLog;
         _metrics = metrics;
+        _config = config;
 
         checkNotNull(_splitFetcher);
         checkNotNull(_treatmentLog);
@@ -87,7 +89,15 @@ public final class SplitClientImpl implements SplitClient {
                 result = new TreatmentLabelAndChangeNumber(Treatments.CONTROL, "exception");
                 _log.error("Exception", e);
             } finally {
-                recordStats(matchingKey, bucketingKey, feature, start, result._treatment, "sdk.getTreatment", result._label, result._changeNumber);
+                recordStats(
+                        matchingKey,
+                        bucketingKey,
+                        feature,
+                        start,
+                        result._treatment,
+                        "sdk.getTreatment",
+                        _config.labelsEnabled() ? result._label : null,
+                        result._changeNumber);
             }
 
             return result._treatment;

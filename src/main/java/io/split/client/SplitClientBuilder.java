@@ -173,7 +173,7 @@ public class SplitClientBuilder {
             });
 
             // Now create the client.
-            SplitClient splitClient = new SplitClientImpl(splitFetcherProvider.getFetcher(), treatmentLog, cachedFireAndForgetMetrics);
+            SplitClient splitClient = new SplitClientImpl(splitFetcherProvider.getFetcher(), treatmentLog, cachedFireAndForgetMetrics, config);
 
             registerJmxMonitor(splitClient, splitFetcherProvider.getFetcher(), segmentFetcher);
 

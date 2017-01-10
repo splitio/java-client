@@ -144,7 +144,7 @@ public class SplitFactoryBuilder {
         });
 
         // Now create the client.
-        SplitFactory splitFactory = new SplitFactoryImpl(splitFetcherProvider.getFetcher(), treatmentLog, cachedFireAndForgetMetrics);
+        SplitFactory splitFactory = new SplitFactoryImpl(splitFetcherProvider.getFetcher(), treatmentLog, cachedFireAndForgetMetrics, config);
 
 
         if (config.blockUntilReady() > 0) {
@@ -173,7 +173,6 @@ public class SplitFactoryBuilder {
 
         SplitClientConfig config = SplitClientConfig.builder()
                 .endpoint("http://localhost:8081", "http://localhost:8081")
-                .enableDebug()
                 .build();
 
         SplitClient client = SplitFactoryBuilder.build(args[0], config).client();

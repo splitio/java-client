@@ -23,6 +23,7 @@ public class SplitClientConfig {
     private final int _readTimeout;
     private final int _numThreadsForSegmentFetch;
     private final boolean _debugEnabled;
+    private final boolean _labelsEnabled;
     private final int _ready;
 
     // To be set during startup
@@ -44,7 +45,8 @@ public class SplitClientConfig {
                               int readTimeout,
                               int numThreadsForSegmentFetch,
                               int ready,
-                              boolean debugEnabled) {
+                              boolean debugEnabled,
+                              boolean labelsEnabled) {
         _endpoint = endpoint;
         _eventsEndpoint = eventsEndpoint;
         _featuresRefreshRate = pollForFeatureChangesEveryNSeconds;
@@ -57,6 +59,7 @@ public class SplitClientConfig {
         _numThreadsForSegmentFetch = numThreadsForSegmentFetch;
         _ready = ready;
         _debugEnabled = debugEnabled;
+        _labelsEnabled = labelsEnabled;
 
         Properties props = new Properties();
         try {
@@ -115,6 +118,8 @@ public class SplitClientConfig {
         return _debugEnabled;
     }
 
+    public boolean labelsEnabled() { return _labelsEnabled;}
+
     public int blockUntilReady() {
         return _ready;
     }
@@ -135,6 +140,7 @@ public class SplitClientConfig {
         private boolean _debugEnabled = false;
         private int _ready = -1; // -1 means no blocking
         private int _metricsRefreshRate = 60;
+        private boolean _labelsEnabled = true;
 
         public Builder() {
         }
@@ -262,6 +268,15 @@ public class SplitClientConfig {
             return this;
         }
 
+        /**
+         * Disable label capturing
+         * @return
+         */
+        public Builder disableLabels() {
+            _labelsEnabled = false;
+            return this;
+        }
+
 
         /**
          * The SDK kicks off background threads to download data necessary
@@ -345,7 +360,8 @@ public class SplitClientConfig {
                     _readTimeout,
                     _numThreadsForSegmentFetch,
                     _ready,
-                    _debugEnabled);
+                    _debugEnabled,
+                    _labelsEnabled);
         }
 
     }
