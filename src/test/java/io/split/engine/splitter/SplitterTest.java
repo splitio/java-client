@@ -2,7 +2,6 @@ package io.split.engine.splitter;
 
 import com.google.common.base.Joiner;
 import com.google.common.collect.Lists;
-import com.google.common.collect.Range;
 import io.split.client.dtos.Partition;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.junit.Ignore;
@@ -84,10 +83,8 @@ public class SplitterTest {
         int min = (int) (mean - 4 * stddev);
         int max = (int) (mean + 4 * stddev);
 
-        Range range = Range.closed(min, max);
-
         for (int i = 0; i < treatments.length; i++) {
-            assertThat("Value: " + treatments[i] + " is out of range " + range, range.contains(treatments[i]), is(true));
+            assertThat(String.format("Value: " + treatments[i] + " is out of range [%s, %s]", min, max), treatments[i] >= min && treatments[i] <= max, is(true));
         }
     }
 
