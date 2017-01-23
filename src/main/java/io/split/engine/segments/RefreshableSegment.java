@@ -1,6 +1,5 @@
 package io.split.engine.segments;
 
-import com.google.common.collect.Sets;
 import io.split.client.dtos.SegmentChange;
 import io.split.engine.SDKReadinessGates;
 import org.slf4j.Logger;
@@ -9,6 +8,7 @@ import org.slf4j.LoggerFactory;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicLong;
 
 import static com.google.common.base.Preconditions.checkNotNull;
@@ -26,7 +26,7 @@ public class RefreshableSegment implements Runnable, Segment {
     private final AtomicLong _changeNumber;
     private final SDKReadinessGates _gates;
 
-    private Set<String> _concurrentKeySet = Sets.newConcurrentHashSet();
+    private Set<String> _concurrentKeySet = Collections.newSetFromMap(new ConcurrentHashMap<String, Boolean>());
     private final Object _lock = new Object();
 
     @Override
