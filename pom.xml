@@ -4,7 +4,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>io.split.client</groupId>
     <artifactId>java-client-parent</artifactId>
-    <version>${project.version}</version>
+    <version>1.1.5</version>
     <packaging>pom</packaging>
     <name>Java Client</name>
     <description>Java SDK for Split</description>
@@ -41,7 +41,6 @@
         </snapshotRepository>
     </distributionManagement>
     <properties>
-        <project.version>1.1.4</project.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
