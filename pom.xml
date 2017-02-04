@@ -5,7 +5,7 @@
     <groupId>io.split.client</groupId>
     <artifactId>java-client-parent</artifactId>
     <version>${project.version}</version>
-    <packaging>jar</packaging>
+    <packaging>pom</packaging>
     <name>Java Client</name>
     <description>Java SDK for Split</description>
     <url>www.split.io</url>
