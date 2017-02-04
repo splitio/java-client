@@ -3,8 +3,8 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <groupId>io.split.client</groupId>
-    <artifactId>testing</artifactId>
-    <version>1.1.4</version>
+    <artifactId>java-client-parent</artifactId>
+    <version>${project.version}</version>
     <packaging>jar</packaging>
     <name>Java Client</name>
     <description>Java SDK for Split</description>
@@ -17,6 +17,10 @@
         <developer>
             <name>Patricio Echague</name>
             <email>pato@split.io</email>
+        </developer>
+        <developer>
+            <name>Henry Jewkes</name>
+            <email>henry@split.io</email>
         </developer>
     </developers>
     <licenses>
@@ -36,17 +40,18 @@
             <url>https://oss.sonatype.org/content/repositories/snapshots</url>
         </snapshotRepository>
     </distributionManagement>
-    <modules>
-        <module>testing</module>
-        <module>client</module>
-    </modules>
     <properties>
+        <project.version>1.1.4</project.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <maven.compiler.source>1.7</maven.compiler.source>
         <maven.compiler.target>1.7</maven.compiler.target>
     </properties>
+    <modules>
+        <module>testing</module>
+        <module>client</module>
+    </modules>
     <build>
         <plugins>
             <plugin>
