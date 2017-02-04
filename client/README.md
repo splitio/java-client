@@ -26,7 +26,7 @@ Split builds on feature flags to create the platform for controlled rollouts, so
 
 Split has built and maintains a SDKs for:
 
-* Java [Docs](http://docs.split.io/docs/java-sdk-guide)
+* Java [Github](https://github.com/splitio/java-client) [Docs](http://docs.split.io/docs/java-sdk-guide)
 * Javascript [Github](https://github.com/splitio/javascript-client) [Docs](http://docs.split.io/docs/javascript-sdk-overview)
 * Node [Github](https://github.com/splitio/javascript-client) [Docs](http://docs.split.io/docs/nodejs-sdk-overview)
 * .NET [Github](https://github.com/splitio/.net-client) [Docs](http://docs.split.io/docs/net-sdk-overview)
