@@ -1,12 +1,11 @@
 package io.split.client.testing.runner;
 
-import com.google.common.base.Preconditions;
-import com.google.common.collect.Sets;
 import io.split.client.testing.annotations.SplitScenario;
 import io.split.client.testing.annotations.SplitSuite;
 import io.split.client.testing.annotations.SplitTest;
 import io.split.client.testing.annotations.SplitTestClient;
 
+import java.util.HashSet;
 import java.util.Set;
 
 public class Suite {
@@ -14,12 +13,12 @@ public class Suite {
 
     public Suite() {
         // Default to the All Control Scenario
-        _scenarios = Sets.newHashSet();
+        _scenarios = new HashSet<>();
         _scenarios.add(new Scenario());
     }
 
     public Suite(Suite other) {
-        _scenarios = Sets.newHashSet(other._scenarios);
+        _scenarios = new HashSet<>(other._scenarios);
     }
 
     public Suite(SplitTest splitTest) {
@@ -32,14 +31,14 @@ public class Suite {
     }
 
     public Suite(SplitSuite splitSuite) {
-        _scenarios = Sets.newHashSet();
+        _scenarios = new HashSet<>();
         for (SplitScenario scenario : splitSuite.scenarios()) {
             _scenarios.addAll(permuteTests(scenario.tests()));
         }
     }
 
     public Suite(SplitTestClient splitTestClient) {
-        _scenarios = Sets.newHashSet();
+        _scenarios = new HashSet<>();
         for (SplitScenario scenario : splitTestClient.scenarios()) {
             _scenarios.addAll(permuteTests(scenario.tests()));
         }
@@ -54,11 +53,11 @@ public class Suite {
      * @return The List of permuted Scenarios
      */
     private static Set<Scenario> permuteTests(SplitTest[] splitTests) {
-        Set<Scenario> scenarios = Sets.newHashSet();
+        Set<Scenario> scenarios = new HashSet<>();
         scenarios.add(new Scenario());
 
         for (SplitTest test : splitTests) {
-            Set<Scenario> permutedScenarios = Sets.newHashSet();
+            Set<Scenario> permutedScenarios = new HashSet<>();
             for (String treatment : test.treatments()) {
                 for (Scenario scenario : scenarios) {
                     Scenario permutedScenario = new Scenario(scenario);
@@ -91,9 +90,7 @@ public class Suite {
      * @return Current Suite Object
      */
     public Suite merge(Set<Scenario> newScenarios) {
-        Preconditions.checkNotNull(newScenarios);
-
-        Set<Scenario> mergedScenarios = Sets.newHashSet();
+        Set<Scenario> mergedScenarios = new HashSet<>();
         for (Scenario existingScenario : _scenarios) {
             for (Scenario newScenario : newScenarios) {
                 Scenario scenario = new Scenario(existingScenario);

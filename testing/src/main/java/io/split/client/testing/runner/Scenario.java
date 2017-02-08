@@ -1,10 +1,8 @@
 package io.split.client.testing.runner;
 
-import com.google.common.base.Joiner;
-import com.google.common.base.Preconditions;
-import com.google.common.collect.Maps;
 import io.split.client.testing.SplitClientForTest;
 
+import java.util.Map;
 import java.util.Objects;
 import java.util.SortedMap;
 import java.util.TreeMap;
@@ -13,13 +11,11 @@ public class Scenario {
     private TreeMap<String, String> _tests;
 
     public Scenario() {
-        _tests = Maps.newTreeMap();
+        _tests = new TreeMap<>();
     }
 
     public Scenario(Scenario other) {
-        Preconditions.checkNotNull(other);
-
-        _tests = Maps.newTreeMap(other.tests());
+        _tests = new TreeMap<>(other.tests());
     }
 
     public SortedMap<String, String> tests() {
@@ -27,29 +23,28 @@ public class Scenario {
     }
 
     public void addTest(String feature, String treatment) {
-        Preconditions.checkNotNull(feature);
-        Preconditions.checkNotNull(treatment);
-
         _tests.put(feature, treatment);
     }
 
     public void merge(Scenario other) {
-        Preconditions.checkNotNull(other);
-
         _tests.putAll(other.tests());
     }
 
     public void apply(SplitClientForTest splitClient) {
-        Preconditions.checkNotNull(splitClient);
-
         splitClient.registerTreatments(_tests);
     }
 
     @Override
     public String toString() {
-        return Joiner.on(",")
-                .withKeyValueSeparator("=")
-                .join(_tests);
+        String output = null;
+        for (Map.Entry<String, String> entry : _tests.entrySet()) {
+            String test = entry.getKey() + "=" + entry.getValue();
+            if (output != null) {
+                output += ",";
+            }
+            output += test;
+        }
+        return output;
     }
 
     @Override

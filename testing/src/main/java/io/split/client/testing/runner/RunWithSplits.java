@@ -1,11 +1,11 @@
 package io.split.client.testing.runner;
 
-import com.google.common.collect.Maps;
 import io.split.client.testing.SplitClientForTest;
 import io.split.client.testing.annotations.SplitTestClient;
 import org.junit.runners.model.Statement;
 
 import java.lang.reflect.Field;
+import java.util.HashMap;
 import java.util.Map;
 
 public class RunWithSplits extends Statement {
@@ -24,7 +24,7 @@ public class RunWithSplits extends Statement {
         SplitClientForTest splitClient = findFirstSplitClient(target, target.getClass());
 
         // Preserve the Split state between Test runs
-        Map<String, String> priorTests = Maps.newHashMap(splitClient.tests());
+        Map<String, String> priorTests = new HashMap<>(splitClient.tests());
 
         // Apply the Active Scenario for this
         if (scenario != null) {
