@@ -61,6 +61,19 @@ public class HashingTest {
     }
 
     @Test
+    public void bucketTestForRandomKeys() {
+
+        int seed = (int) System.currentTimeMillis();
+
+        List<String> randomKeys = randomUUIDs(100);
+        bucketTest(seed, new MyHash.Murmur32Hash(), randomKeys);
+        bucketTest(seed, new MyHash.GuavaMurmur32Hash(), randomKeys);
+        bucketTest(seed, new MyHash.SeededNaturalHash(), randomKeys);
+        bucketTest(seed, new MyHash.XorNaturalHash(), randomKeys);
+
+    }
+
+    @Test
     public void collisionTestForRandom() {
 
         int seed = (int) System.currentTimeMillis();
@@ -92,7 +105,7 @@ public class HashingTest {
 
     private List<String> mshIds() {
         List<String> bldr = Lists.newArrayList();
-        for (int i = 28243; i <= 28267; i++) {
+        for (int i = 28243; i <= 28273; i++) {
             bldr.add("" + i);
         }
         return bldr;
