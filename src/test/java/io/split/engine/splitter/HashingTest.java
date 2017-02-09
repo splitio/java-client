@@ -7,11 +7,7 @@ import org.junit.Test;
 
 import java.util.*;
 
-/**
- * Created by adilaijaz on 1/18/16.
- */
 public class HashingTest {
-
     @Test
     public void numberOverflow() {
         int seed = (int) System.currentTimeMillis();
@@ -36,7 +32,6 @@ public class HashingTest {
 
     @Test
     public void collisionTestForSequential() {
-
         int seed = (int) System.currentTimeMillis();
 
         List<String> sequentialKeys = sequentialIds(200000);
@@ -44,12 +39,10 @@ public class HashingTest {
         collisionTest(seed, new MyHash.GuavaMurmur32Hash(), sequentialKeys);
         collisionTest(seed, new MyHash.SeededNaturalHash(), sequentialKeys);
         collisionTest(seed, new MyHash.XorNaturalHash(), sequentialKeys);
-
     }
 
     @Test
     public void bucketTestForSequential() {
-
         int seed = (int) System.currentTimeMillis();
 
         List<String> sequentialKeys = mshIds();
@@ -57,20 +50,28 @@ public class HashingTest {
         bucketTest(seed, new MyHash.GuavaMurmur32Hash(), sequentialKeys);
         bucketTest(seed, new MyHash.SeededNaturalHash(), sequentialKeys);
         bucketTest(seed, new MyHash.XorNaturalHash(), sequentialKeys);
-
     }
 
     @Test
     public void collisionTestForRandom() {
-
         int seed = (int) System.currentTimeMillis();
 
-        List<String> sequentialKeys = randomUUIDs(200000);
-        collisionTest(seed, new MyHash.Murmur32Hash(), sequentialKeys);
-        collisionTest(seed, new MyHash.GuavaMurmur32Hash(), sequentialKeys);
-        collisionTest(seed, new MyHash.SeededNaturalHash(), sequentialKeys);
-        collisionTest(seed, new MyHash.XorNaturalHash(), sequentialKeys);
+        List<String> randomKeys = randomUUIDs(200000);
+        collisionTest(seed, new MyHash.Murmur32Hash(), randomKeys);
+        collisionTest(seed, new MyHash.GuavaMurmur32Hash(), randomKeys);
+        collisionTest(seed, new MyHash.SeededNaturalHash(), randomKeys);
+        collisionTest(seed, new MyHash.XorNaturalHash(), randomKeys);
+    }
 
+    @Test
+    public void bucketTestForRandom() {
+        int seed = (int) System.currentTimeMillis();
+
+        List<String> randomKeys = randomUUIDs(200);
+        bucketTest(seed, new MyHash.Murmur32Hash(), randomKeys);
+        bucketTest(seed, new MyHash.GuavaMurmur32Hash(), randomKeys);
+        bucketTest(seed, new MyHash.SeededNaturalHash(), randomKeys);
+        bucketTest(seed, new MyHash.XorNaturalHash(), randomKeys);
     }
 
 
@@ -165,6 +166,4 @@ public class HashingTest {
         int collisions = bitset.cardinality();
         System.out.println(hash + " collisions " + collisions + " percentage: " + (100f * collisions / keys.size()));
     }
-
-
 }
