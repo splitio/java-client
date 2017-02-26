@@ -31,11 +31,13 @@ public class RunWithSplits extends Statement {
             scenario.apply(splitClient);
         }
 
-        next.evaluate();
-
-        // Clear any Scenario specific changes and re-apply existing splits
-        splitClient.clearTreatments();
-        splitClient.registerTreatments(priorTests);
+        try {
+            next.evaluate();
+        } finally {
+            // Clear any Scenario specific changes and re-apply existing splits
+            splitClient.clearTreatments();
+            splitClient.registerTreatments(priorTests);
+        }
     }
 
     private static SplitClientForTest findFirstSplitClient(Object target, Class<?> type) throws IllegalAccessException {

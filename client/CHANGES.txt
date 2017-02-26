@@ -1,5 +1,11 @@
 CHANGES
 
+1.1.6
+- Allowing users to set the Off-The-Grid directory
+
+1.1.5
+- Introducing SplitClientForTest and SplitTestRunner for JUnit. More information at split.io/blog/feature-flag-testing
+
 1.1.4
 - Use less guava.
 
@@ -14,7 +20,6 @@ CHANGES
 1.1.1
 - Consistently labeling Rules in messages
 
->>>>>>> development
 1.1
 - Move java-client into it's own repo.
 
