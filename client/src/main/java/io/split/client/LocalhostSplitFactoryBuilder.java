@@ -42,7 +42,7 @@ public class LocalhostSplitFactoryBuilder {
         return build(home);
     }
 
-    static LocalhostSplitFactory build(String home) throws IOException {
+    public static LocalhostSplitFactory build(String home) throws IOException {
         _log.info("home = " + home);
 
         String fileName = home + "/" + FILENAME;

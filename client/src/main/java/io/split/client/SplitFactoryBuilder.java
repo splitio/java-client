@@ -45,14 +45,12 @@ public class SplitFactoryBuilder {
      *
      * @param apiToken the API token. MUST NOT be null
      * @return a SplitFactory
-     *
      * @throws IOException                           if the SDK was being started in 'localhost' mode, but
      *                                               there were problems reading the override file from disk.
      * @throws java.lang.InterruptedException        if you asked to block until the sdk was
      *                                               ready and the block was interrupted.
      * @throws java.util.concurrent.TimeoutException if you asked to block until the sdk was
      *                                               ready and the timeout specified via config#ready() passed.
-     *
      */
     public static SplitFactory build(String apiToken) throws IOException, InterruptedException, TimeoutException, URISyntaxException {
         return build(apiToken, SplitClientConfig.builder().build());
@@ -62,14 +60,14 @@ public class SplitFactoryBuilder {
      * @param apiToken the API token. MUST NOT be null
      * @param config   parameters to control sdk construction. MUST NOT be null.
      * @return a SplitFactory
-     * @throws java.io.IOException                           if the SDK was being started in 'localhost' mode, but
+     * @throws java.io.IOException                   if the SDK was being started in 'localhost' mode, but
      *                                               there were problems reading the override file from disk.
-     * @throws InterruptedException        if you asked to block until the sdk was
+     * @throws InterruptedException                  if you asked to block until the sdk was
      *                                               ready and the block was interrupted.
      * @throws java.util.concurrent.TimeoutException if you asked to block until the sdk was
      *                                               ready and the timeout specified via config#ready() passed.
      */
-    public static synchronized  SplitFactory build(String apiToken, SplitClientConfig config) throws IOException, InterruptedException, TimeoutException, URISyntaxException {
+    public static synchronized SplitFactory build(String apiToken, SplitClientConfig config) throws IOException, InterruptedException, TimeoutException, URISyntaxException {
         if (LocalhostSplitClientBuilder.LOCALHOST.equals(apiToken)) {
             return LocalhostSplitFactoryBuilder.build();
         }
@@ -154,7 +152,28 @@ public class SplitFactoryBuilder {
         }
 
         return splitFactory;
+    }
 
+    /**
+     * Instantiates a local Off-The-Grid SplitFactory
+     *
+     * @return a SplitFactory
+     * @throws IOException if there were problems reading the override file from disk.
+     */
+    public static SplitFactory local() throws IOException {
+        return LocalhostSplitFactoryBuilder.build();
+    }
+
+    /**
+     * Instantiates a local Off-The-Grid SplitFactory
+     *
+     * @param home A directory containing the .split file from which to build treatments. MUST NOT be null
+     *
+     * @return a SplitFactory
+     * @throws IOException if there were problems reading the override file from disk.
+     */
+    public static SplitFactory local(String home) throws IOException {
+        return LocalhostSplitFactoryBuilder.build(home);
     }
 
     private static int findPollingPeriod(Random rand, int max) {
