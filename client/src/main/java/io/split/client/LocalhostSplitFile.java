@@ -1,5 +1,6 @@
 package io.split.client;
 
+import com.google.common.base.Preconditions;
 import com.google.common.collect.Maps;
 import com.sun.nio.file.SensitivityWatchEventModifier;
 import org.slf4j.Logger;
@@ -26,12 +27,16 @@ public class LocalhostSplitFile extends Thread {
     private final LocalhostSplitFactory _splitFactory;
     private final File _file;
     private final WatchService _watcher;
-    private AtomicBoolean _stop = new AtomicBoolean(false);
+    private final AtomicBoolean _stop;
 
     public LocalhostSplitFile(LocalhostSplitFactory splitFactory, String directory, String fileName) throws IOException {
-        _splitFactory = splitFactory;
+        Preconditions.checkNotNull(directory);
+        Preconditions.checkNotNull(fileName);
+
+        _splitFactory = Preconditions.checkNotNull(splitFactory);
         _file = new File(directory, fileName);
         _watcher = FileSystems.getDefault().newWatchService();
+        _stop = new AtomicBoolean(false);
     }
 
     private boolean isStopped() {
@@ -95,9 +100,7 @@ public class LocalhostSplitFile extends Thread {
     public Map<String, String> readOnSplits() throws IOException {
         Map<String, String> onSplits = Maps.newHashMap();
 
-        BufferedReader reader = null;
-        try {
-            reader = new BufferedReader(new FileReader(_file));
+        try (BufferedReader reader = new BufferedReader(new FileReader(_file))) {
             for (String line = reader.readLine(); line != null; line = reader.readLine()) {
                 line = line.trim();
                 if (line.isEmpty() || line.startsWith("#")) {
@@ -120,12 +123,6 @@ public class LocalhostSplitFile extends Thread {
                     "If you wish to return a specific treatment for a feature, enter the name of that feature name and " +
                     "treatment name separated by whitespace in " + _file.getPath() +
                     "; one pair per line. Empty lines or lines starting with '#' are considered comments", e);
-        } catch (IOException e) {
-            throw e;
-        } finally {
-            if (reader != null) {
-                reader.close();
-            }
         }
 
         return onSplits;
