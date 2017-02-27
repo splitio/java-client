@@ -11,6 +11,11 @@
             <artifactId>junit</artifactId>
             <version>4.12</version>
         </dependency>
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-api</artifactId>
+            <version>1.7.21</version>
+        </dependency>
     </dependencies>
     <packaging>pom</packaging>
     <name>Java Client</name>

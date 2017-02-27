@@ -1,10 +1,11 @@
 package io.split.client;
 
-import com.google.common.collect.ImmutableMap;
+import com.google.common.base.Preconditions;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
+import java.io.IOException;
 import java.util.Map;
-
-import static com.google.common.base.Preconditions.checkNotNull;
 
 /**
  * An implementation of SplitClient that considers all partitions
@@ -15,21 +16,48 @@ import static com.google.common.base.Preconditions.checkNotNull;
  * @author adil
  */
 public final class LocalhostSplitFactory implements SplitFactory {
+    private static final Logger _log = LoggerFactory.getLogger(LocalhostSplitFactory.class);
 
-    private final ImmutableMap<String, String> _featureToTreatmentMap;
+    static final String FILENAME = ".split";
+    static final String LOCALHOST = "localhost";
 
-    public LocalhostSplitFactory(Map<String, String> featureToTreatmentMap) {
-        checkNotNull(featureToTreatmentMap, "featureToTreatmentMap must not be null");
-        _featureToTreatmentMap = ImmutableMap.copyOf(featureToTreatmentMap);
+    private final LocalhostSplitClient _client;
+    private final LocalhostSplitManager _manager;
+    private final LocalhostSplitFile _splitFile;
+
+    public static LocalhostSplitFactory createLocalhostSplitFactory() throws IOException {
+        String directory = System.getProperty("user.home");
+        Preconditions.checkNotNull(directory, "Property user.home should be set when using environment: " + LOCALHOST);
+        return new LocalhostSplitFactory(directory);
+    }
+
+    public LocalhostSplitFactory(String directory) throws IOException {
+        Preconditions.checkNotNull(directory, "directory must not be null");
+
+        _log.info("home = " + directory);
+
+        _splitFile = new LocalhostSplitFile(this, directory, FILENAME);
+
+        Map<String, String> _featureToTreatmentMap = _splitFile.readOnSplits();
+        _client = new LocalhostSplitClient(_featureToTreatmentMap);
+        _manager = new LocalhostSplitManager(_featureToTreatmentMap);
+
+        _splitFile.registerWatcher();
+        _splitFile.start();
     }
 
     @Override
     public SplitClient client() {
-        return new LocalhostSplitClient(_featureToTreatmentMap);
+        return _client;
     }
 
     @Override
     public SplitManager manager() {
-        return new LocalhostSplitManager(_featureToTreatmentMap);
+        return _manager;
+    }
+
+    public void updateFeatureToTreatmentMap(Map<String, String> featureToTreatmentMap) {
+        _client.updateFeatureToTreatmentMap(featureToTreatmentMap);
+        _manager.updateFeatureToTreatmentMap(featureToTreatmentMap);
     }
 }

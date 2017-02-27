@@ -68,8 +68,8 @@ public class SplitFactoryBuilder {
      *                                               ready and the timeout specified via config#ready() passed.
      */
     public static synchronized SplitFactory build(String apiToken, SplitClientConfig config) throws IOException, InterruptedException, TimeoutException, URISyntaxException {
-        if (LocalhostSplitClientBuilder.LOCALHOST.equals(apiToken)) {
-            return LocalhostSplitFactoryBuilder.build();
+        if (LocalhostSplitFactory.LOCALHOST.equals(apiToken)) {
+            return LocalhostSplitFactory.createLocalhostSplitFactory();
         }
 
         RequestConfig requestConfig = RequestConfig.custom()
@@ -161,7 +161,7 @@ public class SplitFactoryBuilder {
      * @throws IOException if there were problems reading the override file from disk.
      */
     public static SplitFactory local() throws IOException {
-        return LocalhostSplitFactoryBuilder.build();
+        return LocalhostSplitFactory.createLocalhostSplitFactory();
     }
 
     /**
@@ -173,7 +173,7 @@ public class SplitFactoryBuilder {
      * @throws IOException if there were problems reading the override file from disk.
      */
     public static SplitFactory local(String home) throws IOException {
-        return LocalhostSplitFactoryBuilder.build(home);
+        return new LocalhostSplitFactory(home);
     }
 
     private static int findPollingPeriod(Random rand, int max) {
@@ -183,7 +183,6 @@ public class SplitFactoryBuilder {
 
 
     public static void main(String... args) throws IOException, InterruptedException, TimeoutException, URISyntaxException {
-
         if (args.length != 1) {
             System.out.println("Usage: <api_token>");
             System.exit(1);
