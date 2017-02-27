@@ -2,6 +2,7 @@ CHANGES
 
 1.1.6
 - Allowing users to set the Off-The-Grid directory
+- Adding Live Reload of Split File in Off-The-Grid mode
 
 1.1.5
 - Introducing SplitClientForTest and SplitTestRunner for JUnit. More information at split.io/blog/feature-flag-testing

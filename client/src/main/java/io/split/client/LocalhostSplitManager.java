@@ -1,5 +1,6 @@
 package io.split.client;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 import io.split.client.api.SplitView;
@@ -20,7 +21,7 @@ import static com.google.common.base.Preconditions.checkNotNull;
  */
 public final class LocalhostSplitManager implements SplitManager {
 
-    private final ImmutableMap<String, String> _featureToTreatmentMap;
+    private ImmutableMap<String, String> _featureToTreatmentMap;
 
     public LocalhostSplitManager(Map<String, String> featureToTreatmentMap) {
         checkNotNull(featureToTreatmentMap, "featureToTreatmentMap must not be null");
@@ -43,12 +44,23 @@ public final class LocalhostSplitManager implements SplitManager {
         return Lists.newArrayList(_featureToTreatmentMap.keySet());
     }
 
+    @Override
     public SplitView split(String featureName) {
         if (!_featureToTreatmentMap.containsKey(featureName)) {
             return null;
         }
 
         return toSplitView(featureName, _featureToTreatmentMap.get(featureName));
+    }
+
+    void updateFeatureToTreatmentMap(Map<String, String> featureToTreatmentMap) {
+        checkNotNull(featureToTreatmentMap, "featureToTreatmentMap must not be null");
+        _featureToTreatmentMap = ImmutableMap.copyOf(featureToTreatmentMap);
+    }
+
+    @VisibleForTesting
+    ImmutableMap<String, String> featureToTreatmentMap() {
+        return _featureToTreatmentMap;
     }
 
     private SplitView toSplitView(String featureName, String treatment) {
