@@ -1,5 +1,11 @@
 NEWS
 
+1.1.6
+- Removing deprecated SplitClientBuilder
+
+1.1.5
+- Introducing SplitClientForTest and SplitTestRunner for JUnit. More information at split.io/blog/feature-flag-testing
+
 1.0.10
 - No news for this update
 
