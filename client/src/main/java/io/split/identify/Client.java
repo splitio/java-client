@@ -37,11 +37,11 @@ public abstract class Client {
         // saveIdentities(typeId, environmentId, groupedIdentities);
     }
 
-    abstract void updateIdentity(Identity identity);
+    abstract void updateIdentity(Identity identity) throws NoSuchElementException;
 
-    abstract void deleteIdentity(String typeId, String environmentId, String key);
+    abstract void deleteIdentity(String typeId, String environmentId, String key) throws NoSuchElementException;
 
-    public void deleteIdentity(Identity identity) {
+    public void deleteIdentity(Identity identity) throws NoSuchElementException {
         deleteIdentity(identity.typeId(), identity.environmentId(), identity.key());
     }
 }
