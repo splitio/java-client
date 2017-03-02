@@ -36,10 +36,10 @@ public class Scenario {
 
     @Override
     public String toString() {
-        String output = null;
+        String output = "";
         for (Map.Entry<String, String> entry : _tests.entrySet()) {
             String test = entry.getKey() + "=" + entry.getValue();
-            if (output != null) {
+            if (!output.isEmpty()) {
                 output += ",";
             }
             output += test;
