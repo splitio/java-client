@@ -12,6 +12,8 @@ import java.util.List;
  * @author adil
  */
 public class Splitter {
+    private static final int ALGO_MURMUR = 1;
+    private static final int ALGO_LEGACY = 0;
 
     public static String getTreatment(String key, int seed, List<Partition> partitions, int algo) {
 
@@ -34,9 +36,9 @@ public class Splitter {
 
     static long hash(String key, int seed, int algo) {
         switch (algo) {
-            case 1: // Murmur3
+            case ALGO_MURMUR:
                 return murmur_hash(key, seed);
-            case 0: // Legacy
+            case ALGO_LEGACY:
             default:
                 return legacy_hash(key, seed);
         }
