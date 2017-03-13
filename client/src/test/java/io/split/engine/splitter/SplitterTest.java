@@ -113,7 +113,7 @@ public class SplitterTest {
 
         for (int i = 0; i < n; i++) {
             String key = RandomStringUtils.random(20);
-            String treatment = Splitter.getTreatment(key, 123, partitions);
+            String treatment = Splitter.getTreatment(key, 123, partitions, 1);
             treatments[Integer.parseInt(treatment) - 1]++;
         }
 
@@ -134,7 +134,7 @@ public class SplitterTest {
 
         List<Partition> partitions = Lists.newArrayList(partition);
 
-        assertThat(Splitter.getTreatment("13", 15, partitions), is(equalTo("on")));
+        assertThat(Splitter.getTreatment("13", 15, partitions, 1), is(equalTo("on")));
     }
 
     private Partition partition(String treatment, int size) {
