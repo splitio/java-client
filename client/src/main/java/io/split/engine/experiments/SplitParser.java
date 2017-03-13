@@ -59,7 +59,7 @@ public final class SplitParser {
             parsedConditionList.add(new ParsedCondition(matcher, partitions, condition.label));
         }
 
-        return new ParsedSplit(split.name, split.seed, split.killed, split.defaultTreatment, parsedConditionList, split.trafficTypeName, split.changeNumber);
+        return new ParsedSplit(split.name, split.seed, split.killed, split.defaultTreatment, parsedConditionList, split.trafficTypeName, split.changeNumber, split.algo);
     }
 
     private CombiningMatcher toMatcher(MatcherGroup matcherGroup) {

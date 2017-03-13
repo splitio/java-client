@@ -13,7 +13,7 @@ import java.util.List;
  */
 public class Splitter {
 
-    public static String getTreatment(String key, int seed, List<Partition> partitions) {
+    public static String getTreatment(String key, int seed, List<Partition> partitions, int algo) {
 
         // 1. when there are no partitions, we just return control
         if (partitions.isEmpty()) {
@@ -25,11 +25,25 @@ public class Splitter {
             return partitions.get(0).treatment;
         }
 
-        return getTreatment(bucket(hash(key, seed)), partitions);
+        return getTreatment(bucket(hash(key, seed, algo)), partitions);
+    }
+
+    static long hash(String key, int seed) {
+        return hash(key, seed, 1);
+    }
+
+    static long hash(String key, int seed, int algo) {
+        switch (algo) {
+            case 1: // Murmur3
+                return murmur_hash(key, seed);
+            case 0: // Legacy
+            default:
+                return legacy_hash(key, seed);
+        }
     }
 
     /*package private*/
-    static long hash(String key, int seed) {
+    static long murmur_hash(String key, int seed) {
         return MurmurHash3.murmurhash3_x86_32(key, 0, key.length(), seed);
     }
 

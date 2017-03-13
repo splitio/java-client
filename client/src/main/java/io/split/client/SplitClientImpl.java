@@ -147,7 +147,7 @@ public final class SplitClientImpl implements SplitClient {
 
             for (ParsedCondition parsedCondition : parsedSplit.parsedConditions()) {
                 if (parsedCondition.matcher().match(matchingKey, attributes)) {
-                    String treatment = Splitter.getTreatment(bucketingKey, parsedSplit.seed(), parsedCondition.partitions());
+                    String treatment = Splitter.getTreatment(bucketingKey, parsedSplit.seed(), parsedCondition.partitions(), parsedSplit.algo());
                     return new TreatmentLabelAndChangeNumber(treatment, parsedCondition.label(), parsedSplit.changeNumber());
                 }
             }
