@@ -12,8 +12,8 @@ import java.util.List;
  * @author adil
  */
 public class Splitter {
-    private static final int ALGO_MURMUR = 1;
-    private static final int ALGO_LEGACY = 0;
+    private static final int ALGO_LEGACY = 1;
+    private static final int ALGO_MURMUR = 2;
 
     public static String getTreatment(String key, int seed, List<Partition> partitions, int algo) {
 
