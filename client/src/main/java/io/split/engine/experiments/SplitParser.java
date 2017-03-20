@@ -56,10 +56,10 @@ public final class SplitParser {
         for (Condition condition : split.conditions) {
             List<Partition> partitions = condition.partitions;
             CombiningMatcher matcher = toMatcher(condition.matcherGroup);
-            parsedConditionList.add(new ParsedCondition(matcher, partitions, condition.label));
+            parsedConditionList.add(new ParsedCondition(condition.conditionType, matcher, partitions, condition.label));
         }
 
-        return new ParsedSplit(split.name, split.seed, split.killed, split.defaultTreatment, parsedConditionList, split.trafficTypeName, split.changeNumber);
+        return new ParsedSplit(split.name, split.seed, split.killed, split.defaultTreatment, parsedConditionList, split.trafficTypeName, split.changeNumber, split.trafficAllocation, split.trafficAllocationSeed);
     }
 
     private CombiningMatcher toMatcher(MatcherGroup matcherGroup) {

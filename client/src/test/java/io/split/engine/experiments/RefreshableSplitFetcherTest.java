@@ -89,9 +89,9 @@ public class RefreshableSplitFetcherTest {
             assertThat(fetcher.fetch("" + i).killed(), is(true));
         }
 
-        ParsedCondition expectedParsedCondition = new ParsedCondition(CombiningMatcher.of(new AllKeysMatcher()), Lists.newArrayList(ConditionsTestUtil.partition("on", 10)));
+        ParsedCondition expectedParsedCondition = ParsedCondition.createParsedConditionForTests(CombiningMatcher.of(new AllKeysMatcher()), Lists.newArrayList(ConditionsTestUtil.partition("on", 10)));
         List<ParsedCondition> expectedListOfMatcherAndSplits = Lists.newArrayList(expectedParsedCondition);
-        ParsedSplit expected = new ParsedSplit("" + fetcher.changeNumber(), (int) fetcher.changeNumber(), false, Treatments.OFF, expectedListOfMatcherAndSplits, null, fetcher.changeNumber());
+        ParsedSplit expected = ParsedSplit.createParsedSplitForTests("" + fetcher.changeNumber(), (int) fetcher.changeNumber(), false, Treatments.OFF, expectedListOfMatcherAndSplits, null, fetcher.changeNumber());
 
         ParsedSplit actual = fetcher.fetch("" + fetcher.changeNumber());
 

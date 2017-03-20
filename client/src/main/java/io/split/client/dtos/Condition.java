@@ -9,6 +9,7 @@ import java.util.List;
  * @author adil
  */
 public class Condition {
+    public ConditionType conditionType;
     public MatcherGroup matcherGroup;
     public List<Partition> partitions;
     public String label;

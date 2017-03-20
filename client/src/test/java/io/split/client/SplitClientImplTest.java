@@ -3,6 +3,7 @@ package io.split.client;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 import io.split.client.api.Key;
+import io.split.client.dtos.ConditionType;
 import io.split.client.dtos.DataType;
 import io.split.client.dtos.Partition;
 import io.split.engine.experiments.ParsedCondition;
@@ -49,9 +50,9 @@ public class SplitClientImplTest {
     @Test
     public void null_key_results_in_control() {
         String test = "test1";
-        ParsedCondition rollOutToEveryone = new ParsedCondition(CombiningMatcher.of(new AllKeysMatcher()), Lists.newArrayList(partition("on", 100)));
+        ParsedCondition rollOutToEveryone = ParsedCondition.createParsedConditionForTests(CombiningMatcher.of(new AllKeysMatcher()), Lists.newArrayList(partition("on", 100)));
         List<ParsedCondition> conditions = Lists.newArrayList(rollOutToEveryone);
-        ParsedSplit parsedSplit = new ParsedSplit(test, 123, false, Treatments.OFF, conditions, null, 1);
+        ParsedSplit parsedSplit = ParsedSplit.createParsedSplitForTests(test, 123, false, Treatments.OFF, conditions, null, 1);
 
         SplitFetcher splitFetcher = mock(SplitFetcher.class);
         when(splitFetcher.fetch(test)).thenReturn(parsedSplit);
@@ -67,9 +68,9 @@ public class SplitClientImplTest {
     @Test
     public void null_test_results_in_control() {
         String test = "test1";
-        ParsedCondition rollOutToEveryone = new ParsedCondition(CombiningMatcher.of(new AllKeysMatcher()), Lists.newArrayList(partition("on", 100)));
+        ParsedCondition rollOutToEveryone = ParsedCondition.createParsedConditionForTests(CombiningMatcher.of(new AllKeysMatcher()), Lists.newArrayList(partition("on", 100)));
         List<ParsedCondition> conditions = Lists.newArrayList(rollOutToEveryone);
-        ParsedSplit parsedSplit = new ParsedSplit(test, 123, false, Treatments.OFF, conditions, null, 1);
+        ParsedSplit parsedSplit = ParsedSplit.createParsedSplitForTests(test, 123, false, Treatments.OFF, conditions, null, 1);
 
         SplitFetcher splitFetcher = mock(SplitFetcher.class);
         when(splitFetcher.fetch(test)).thenReturn(parsedSplit);
@@ -98,9 +99,9 @@ public class SplitClientImplTest {
     public void works() {
         String test = "test1";
 
-        ParsedCondition rollOutToEveryone = new ParsedCondition(CombiningMatcher.of(new AllKeysMatcher()), Lists.newArrayList(partition("on", 100)));
+        ParsedCondition rollOutToEveryone = ParsedCondition.createParsedConditionForTests(CombiningMatcher.of(new AllKeysMatcher()), Lists.newArrayList(partition("on", 100)));
         List<ParsedCondition> conditions = Lists.newArrayList(rollOutToEveryone);
-        ParsedSplit parsedSplit = new ParsedSplit(test, 123, false, Treatments.OFF, conditions, null, 1);
+        ParsedSplit parsedSplit = ParsedSplit.createParsedSplitForTests(test, 123, false, Treatments.OFF, conditions, null, 1);
 
         SplitFetcher splitFetcher = mock(SplitFetcher.class);
         when(splitFetcher.fetch(test)).thenReturn(parsedSplit);
@@ -123,9 +124,9 @@ public class SplitClientImplTest {
     public void last_condition_is_always_default() {
         String test = "test1";
 
-        ParsedCondition rollOutToEveryone = new ParsedCondition(CombiningMatcher.of(new WhitelistMatcher(Lists.newArrayList("adil@codigo.com"))), Lists.newArrayList(partition("on", 100)));
+        ParsedCondition rollOutToEveryone = ParsedCondition.createParsedConditionForTests(CombiningMatcher.of(new WhitelistMatcher(Lists.newArrayList("adil@codigo.com"))), Lists.newArrayList(partition("on", 100)));
         List<ParsedCondition> conditions = Lists.newArrayList(rollOutToEveryone);
-        ParsedSplit parsedSplit = new ParsedSplit(test, 123, false, Treatments.OFF, conditions, "user", 1);
+        ParsedSplit parsedSplit = ParsedSplit.createParsedSplitForTests(test, 123, false, Treatments.OFF, conditions, "user", 1);
 
         SplitFetcher splitFetcher = mock(SplitFetcher.class);
         when(splitFetcher.fetch(test)).thenReturn(parsedSplit);
@@ -143,12 +144,12 @@ public class SplitClientImplTest {
     public void multiple_conditions_work() {
         String test = "test1";
 
-        ParsedCondition adil_is_always_on = new ParsedCondition(CombiningMatcher.of(new WhitelistMatcher(Lists.newArrayList("adil@codigo.com"))), Lists.newArrayList(partition("on", 100)));
-        ParsedCondition pato_is_never_shown = new ParsedCondition(CombiningMatcher.of(new WhitelistMatcher(Lists.newArrayList("pato@codigo.com"))), Lists.newArrayList(partition("off", 100)));
-        ParsedCondition trevor_is_always_shown = new ParsedCondition(CombiningMatcher.of(new WhitelistMatcher(Lists.newArrayList("trevor@codigo.com"))), Lists.newArrayList(partition("on", 100)));
+        ParsedCondition adil_is_always_on = ParsedCondition.createParsedConditionForTests(CombiningMatcher.of(new WhitelistMatcher(Lists.newArrayList("adil@codigo.com"))), Lists.newArrayList(partition("on", 100)));
+        ParsedCondition pato_is_never_shown = ParsedCondition.createParsedConditionForTests(CombiningMatcher.of(new WhitelistMatcher(Lists.newArrayList("pato@codigo.com"))), Lists.newArrayList(partition("off", 100)));
+        ParsedCondition trevor_is_always_shown = ParsedCondition.createParsedConditionForTests(CombiningMatcher.of(new WhitelistMatcher(Lists.newArrayList("trevor@codigo.com"))), Lists.newArrayList(partition("on", 100)));
 
         List<ParsedCondition> conditions = Lists.newArrayList(adil_is_always_on, pato_is_never_shown, trevor_is_always_shown);
-        ParsedSplit parsedSplit = new ParsedSplit(test, 123, false, Treatments.OFF, conditions, null, 1);
+        ParsedSplit parsedSplit = ParsedSplit.createParsedSplitForTests(test, 123, false, Treatments.OFF, conditions, null, 1);
 
         SplitFetcher splitFetcher = mock(SplitFetcher.class);
         when(splitFetcher.fetch(test)).thenReturn(parsedSplit);
@@ -169,9 +170,9 @@ public class SplitClientImplTest {
     public void killed_test_always_goes_to_default() {
         String test = "test1";
 
-        ParsedCondition rollOutToEveryone = new ParsedCondition(CombiningMatcher.of(new WhitelistMatcher(Lists.newArrayList("adil@codigo.com"))), Lists.newArrayList(partition("on", 100)));
+        ParsedCondition rollOutToEveryone = ParsedCondition.createParsedConditionForTests(CombiningMatcher.of(new WhitelistMatcher(Lists.newArrayList("adil@codigo.com"))), Lists.newArrayList(partition("on", 100)));
         List<ParsedCondition> conditions = Lists.newArrayList(rollOutToEveryone);
-        ParsedSplit parsedSplit = new ParsedSplit(test, 123, true, Treatments.OFF, conditions, "user", 1);
+        ParsedSplit parsedSplit = ParsedSplit.createParsedSplitForTests(test, 123, true, Treatments.OFF, conditions, "user", 1);
 
         SplitFetcher splitFetcher = mock(SplitFetcher.class);
         when(splitFetcher.fetch(test)).thenReturn(parsedSplit);
@@ -189,11 +190,11 @@ public class SplitClientImplTest {
     public void attributes_work() {
         String test = "test1";
 
-        ParsedCondition adil_is_always_on = new ParsedCondition(CombiningMatcher.of(new WhitelistMatcher(Lists.newArrayList("adil@codigo.com"))), Lists.newArrayList(partition("on", 100)));
-        ParsedCondition users_with_age_greater_than_10_are_on = new ParsedCondition(CombiningMatcher.of("age", new GreaterThanOrEqualToMatcher(10, DataType.NUMBER)), Lists.newArrayList(partition("on", 100)));
+        ParsedCondition adil_is_always_on = ParsedCondition.createParsedConditionForTests(CombiningMatcher.of(new WhitelistMatcher(Lists.newArrayList("adil@codigo.com"))), Lists.newArrayList(partition("on", 100)));
+        ParsedCondition users_with_age_greater_than_10_are_on = ParsedCondition.createParsedConditionForTests(CombiningMatcher.of("age", new GreaterThanOrEqualToMatcher(10, DataType.NUMBER)), Lists.newArrayList(partition("on", 100)));
 
         List<ParsedCondition> conditions = Lists.newArrayList(adil_is_always_on, users_with_age_greater_than_10_are_on);
-        ParsedSplit parsedSplit = new ParsedSplit(test, 123, false, Treatments.OFF, conditions, null, 1);
+        ParsedSplit parsedSplit = ParsedSplit.createParsedSplitForTests(test, 123, false, Treatments.OFF, conditions, null, 1);
 
         SplitFetcher splitFetcher = mock(SplitFetcher.class);
         when(splitFetcher.fetch(test)).thenReturn(parsedSplit);
@@ -216,10 +217,10 @@ public class SplitClientImplTest {
     public void attributes_work_2() {
         String test = "test1";
 
-        ParsedCondition age_equal_to_0_should_be_on = new ParsedCondition(CombiningMatcher.of("age", new EqualToMatcher(0, DataType.NUMBER)), Lists.newArrayList(partition("on", 100)));
+        ParsedCondition age_equal_to_0_should_be_on = ParsedCondition.createParsedConditionForTests(CombiningMatcher.of("age", new EqualToMatcher(0, DataType.NUMBER)), Lists.newArrayList(partition("on", 100)));
 
         List<ParsedCondition> conditions = Lists.newArrayList(age_equal_to_0_should_be_on);
-        ParsedSplit parsedSplit = new ParsedSplit(test, 123, false, Treatments.OFF, conditions, "user", 1);
+        ParsedSplit parsedSplit = ParsedSplit.createParsedSplitForTests(test, 123, false, Treatments.OFF, conditions, "user", 1);
 
         SplitFetcher splitFetcher = mock(SplitFetcher.class);
         when(splitFetcher.fetch(test)).thenReturn(parsedSplit);
@@ -242,10 +243,10 @@ public class SplitClientImplTest {
     public void attributes_greater_than_negative_number() {
         String test = "test1";
 
-        ParsedCondition age_equal_to_0_should_be_on = new ParsedCondition(CombiningMatcher.of("age", new EqualToMatcher(-20, DataType.NUMBER)), Lists.newArrayList(partition("on", 100)));
+        ParsedCondition age_equal_to_0_should_be_on = ParsedCondition.createParsedConditionForTests(CombiningMatcher.of("age", new EqualToMatcher(-20, DataType.NUMBER)), Lists.newArrayList(partition("on", 100)));
 
         List<ParsedCondition> conditions = Lists.newArrayList(age_equal_to_0_should_be_on);
-        ParsedSplit parsedSplit = new ParsedSplit(test, 123, false, Treatments.OFF, conditions, null, 1);
+        ParsedSplit parsedSplit = ParsedSplit.createParsedSplitForTests(test, 123, false, Treatments.OFF, conditions, null, 1);
 
         SplitFetcher splitFetcher = mock(SplitFetcher.class);
         when(splitFetcher.fetch(test)).thenReturn(parsedSplit);
@@ -271,14 +272,14 @@ public class SplitClientImplTest {
     public void labels_are_populated() {
         String test = "test1";
 
-        ParsedCondition age_equal_to_0_should_be_on = new ParsedCondition(
+        ParsedCondition age_equal_to_0_should_be_on = new ParsedCondition(ConditionType.ROLLOUT,
                 CombiningMatcher.of("age", new EqualToMatcher(-20, DataType.NUMBER)),
                 Lists.newArrayList(partition("on", 100)),
                 "foolabel"
         );
 
         List<ParsedCondition> conditions = Lists.newArrayList(age_equal_to_0_should_be_on);
-        ParsedSplit parsedSplit = new ParsedSplit(test, 123, false, Treatments.OFF, conditions, null, 1);
+        ParsedSplit parsedSplit = ParsedSplit.createParsedSplitForTests(test, 123, false, Treatments.OFF, conditions, null, 1);
 
         SplitFetcher splitFetcher = mock(SplitFetcher.class);
         when(splitFetcher.fetch(test)).thenReturn(parsedSplit);
@@ -315,10 +316,10 @@ public class SplitClientImplTest {
 
         Set<String> whitelist = new HashSet<>();
         whitelist.add("aijaz");
-        ParsedCondition aijaz_should_match = new ParsedCondition(CombiningMatcher.of(new WhitelistMatcher(whitelist)), Lists.newArrayList(partition("on", 100)));
+        ParsedCondition aijaz_should_match = ParsedCondition.createParsedConditionForTests(CombiningMatcher.of(new WhitelistMatcher(whitelist)), Lists.newArrayList(partition("on", 100)));
 
         List<ParsedCondition> conditions = Lists.newArrayList(aijaz_should_match);
-        ParsedSplit parsedSplit = new ParsedSplit(test, 123, false, Treatments.OFF, conditions, "user", 1);
+        ParsedSplit parsedSplit = ParsedSplit.createParsedSplitForTests(test, 123, false, Treatments.OFF, conditions, "user", 1);
 
         SplitFetcher splitFetcher = mock(SplitFetcher.class);
         when(splitFetcher.fetch(test)).thenReturn(parsedSplit);

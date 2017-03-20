@@ -36,11 +36,11 @@ public class ConditionsTestUtil {
         return c;
     }
 
-    public static Condition makeWhitelistCondition(List<String> whitelist, List<Partition> partitions) {
-        return makeWhitelistCondition(whitelist, partitions, false);
+    public static Condition makeWhitelistCondition(ConditionType conditionType, List<String> whitelist, List<Partition> partitions) {
+        return makeWhitelistCondition(conditionType, whitelist, partitions, false);
     }
 
-    public static Condition makeWhitelistCondition(List<String> whitelist, List<Partition> partitions, boolean negate) {
+    public static Condition makeWhitelistCondition(ConditionType conditionType, List<String> whitelist, List<Partition> partitions, boolean negate) {
         Matcher matcher = whitelistMatcher(whitelist, negate);
 
         MatcherGroup matcherGroup = new MatcherGroup();
@@ -48,6 +48,7 @@ public class ConditionsTestUtil {
         matcherGroup.matchers = Lists.newArrayList(matcher);
 
         Condition c = new Condition();
+        c.conditionType = conditionType;
         c.matcherGroup = matcherGroup;
         c.partitions = partitions;
 
@@ -77,11 +78,11 @@ public class ConditionsTestUtil {
         return matcher;
     }
 
-    public static Condition makeUserDefinedSegmentCondition(String segment, List<Partition> partitions) {
-        return makeUserDefinedSegmentCondition(segment, partitions, false);
+    public static Condition makeUserDefinedSegmentCondition(ConditionType conditionType, String segment, List<Partition> partitions) {
+        return makeUserDefinedSegmentCondition(conditionType, segment, partitions, false);
     }
 
-    public static Condition makeUserDefinedSegmentCondition(String segment, List<Partition> partitions, boolean negate) {
+    public static Condition makeUserDefinedSegmentCondition(ConditionType conditionType, String segment, List<Partition> partitions, boolean negate) {
         Matcher matcher = userDefinedSegmentMatcher(segment, negate);
 
         MatcherGroup matcherGroup = new MatcherGroup();
@@ -89,6 +90,7 @@ public class ConditionsTestUtil {
         matcherGroup.matchers = Lists.newArrayList(matcher);
 
         Condition c = new Condition();
+        c.conditionType = conditionType;
         c.matcherGroup = matcherGroup;
         c.partitions = partitions;
 
@@ -130,6 +132,7 @@ public class ConditionsTestUtil {
         matcherGroup.matchers = Lists.newArrayList(matcher);
 
         Condition c = new Condition();
+        c.conditionType = ConditionType.ROLLOUT;
         c.matcherGroup = matcherGroup;
         c.partitions = partitions;
 
