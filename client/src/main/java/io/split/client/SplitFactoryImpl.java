@@ -1,7 +1,7 @@
 package io.split.client;
 
 import io.split.engine.experiments.SplitFetcher;
-import io.split.engine.impressions.TreatmentLog;
+import io.split.client.impressions.ImpressionListener;
 import io.split.engine.metrics.Metrics;
 
 /**
@@ -12,8 +12,8 @@ public class SplitFactoryImpl implements SplitFactory {
     private final SplitClient _client;
     private final SplitManager _manager;
 
-    public SplitFactoryImpl(SplitFetcher fetcher, TreatmentLog treatmentLog, Metrics metrics, SplitClientConfig config) {
-        _client = new SplitClientImpl(fetcher, treatmentLog, metrics, config);
+    public SplitFactoryImpl(SplitFetcher fetcher, ImpressionListener impressionListener, Metrics metrics, SplitClientConfig config) {
+        _client = new SplitClientImpl(fetcher, impressionListener, metrics, config);
         _manager = new SplitManagerImpl(fetcher);
 
     }

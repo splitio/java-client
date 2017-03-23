@@ -5,7 +5,8 @@ import io.split.client.dtos.ConditionType;
 import io.split.engine.experiments.ParsedCondition;
 import io.split.engine.experiments.ParsedSplit;
 import io.split.engine.experiments.SplitFetcher;
-import io.split.engine.impressions.TreatmentLog;
+import io.split.client.impressions.Impression;
+import io.split.client.impressions.ImpressionListener;
 import io.split.engine.metrics.Metrics;
 import io.split.engine.splitter.Splitter;
 import io.split.grammar.Treatments;
@@ -27,18 +28,18 @@ public final class SplitClientImpl implements SplitClient {
     private static final Logger _log = LoggerFactory.getLogger(SplitClientImpl.class);
 
     private final SplitFetcher _splitFetcher;
-    private final TreatmentLog _treatmentLog;
+    private final ImpressionListener _impressionListener;
     private final Metrics _metrics;
     private final SplitClientConfig _config;
 
-    public SplitClientImpl(SplitFetcher splitFetcher, TreatmentLog treatmentLog, Metrics metrics, SplitClientConfig config) {
+    public SplitClientImpl(SplitFetcher splitFetcher, ImpressionListener impressionListener, Metrics metrics, SplitClientConfig config) {
         _splitFetcher = splitFetcher;
-        _treatmentLog = treatmentLog;
+        _impressionListener = impressionListener;
         _metrics = metrics;
         _config = config;
 
         checkNotNull(_splitFetcher);
-        checkNotNull(_treatmentLog);
+        checkNotNull(_impressionListener);
     }
 
     @Override
@@ -115,7 +116,7 @@ public final class SplitClientImpl implements SplitClient {
 
     private void recordStats(String matchingKey, String bucketingKey, String feature, long start, String result, String operation, String label, Long changeNumber) {
         try {
-            _treatmentLog.log(matchingKey, bucketingKey, feature, result, System.currentTimeMillis(), label, changeNumber);
+            _impressionListener.log(new Impression(matchingKey, bucketingKey, feature, result, System.currentTimeMillis(), label, changeNumber));
             _metrics.time(operation, System.currentTimeMillis() - start);
         } catch (Throwable t) {
             _log.error("Exception", t);
