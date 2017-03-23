@@ -354,16 +354,20 @@ public class SplitClientConfig {
 
 
         public SplitClientConfig build() {
-            if (_featuresRefreshRate <= 0) {
-                throw new IllegalArgumentException("featuresRefreshRate must be > 0: " + _featuresRefreshRate);
+            if (_featuresRefreshRate < 30 ) {
+                throw new IllegalArgumentException("featuresRefreshRate must be >= 30: " + _featuresRefreshRate);
             }
 
-            if (_segmentsRefreshRate <= 0) {
-                throw new IllegalArgumentException("segmentsRefreshRate must be > 0: " + _segmentsRefreshRate);
+            if (_segmentsRefreshRate < 30) {
+                throw new IllegalArgumentException("segmentsRefreshRate must be >= 30: " + _segmentsRefreshRate);
             }
 
-            if (_impressionsRefreshRate <= 0) {
-                throw new IllegalArgumentException("impressionsRefreshRate must be > 0: " + _impressionsRefreshRate);
+            if (_impressionsRefreshRate < 30) {
+                throw new IllegalArgumentException("impressionsRefreshRate must be >= 30: " + _impressionsRefreshRate);
+            }
+
+            if (_metricsRefreshRate < 30) {
+                throw new IllegalArgumentException("metricsRefreshRate must be >= 30: " + _metricsRefreshRate);
             }
 
             if (_impressionsQueueSize <=0 ) {
@@ -397,7 +401,7 @@ public class SplitClientConfig {
 
             if (_impressionListener != null) {
                 if (_impressionListenerCapacity <= 0) {
-                    throw new IllegalArgumentException("An ImpressionListener was provided, but its capacity was zero or less");
+                    throw new IllegalArgumentException("An ImpressionListener was provided, but its capacity was non-positive: " + _impressionListenerCapacity);
                 }
             }
 
