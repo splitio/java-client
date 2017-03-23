@@ -310,6 +310,86 @@ public class SplitClientImplTest {
     }
 
     @Test
+    public void not_in_split_if_no_allocation() {
+        traffic_allocation("pato@split.io", 0, 123, "off", "not in split");
+    }
+
+    /**
+     * This test depends on the underlying hashing algorithm. I have
+     * figured out that pato@split.io will be in bucket 10 for seed 123.
+     * That is why the test has been set up this way.
+     *
+     * If the underlying hashing algorithm changes, say to murmur, then we will
+     * have to update this test.
+     *
+     * @author adil
+     */
+    @Test
+    public void not_in_split_if_10_percent_allocation() {
+
+        String key = "pato@split.io";
+        int i = 0;
+        for (; i <= 10; i++) {
+            traffic_allocation(key, i, 123, "off", "not in split");
+        }
+
+        for (; i <= 100; i++) {
+            traffic_allocation(key, i, 123, "on", "in segment all");
+        }
+    }
+
+    @Test
+    public void in_split_if_100_percent_allocation() {
+        traffic_allocation("pato@split.io", 100, 123, "on", "in segment all");
+    }
+
+    @Test
+    public void whitelist_overrides_traffic_allocation() {
+        traffic_allocation("adil@split.io", 0, 123, "on", "whitelisted user");
+    }
+
+
+    private void traffic_allocation(String key, int trafficAllocation, int trafficAllocationSeed, String expected_treatment_on_or_off, String label) {
+
+        String test = "test1";
+
+        ParsedCondition whitelistCondition = new ParsedCondition(ConditionType.WHITELIST, CombiningMatcher.of(new WhitelistMatcher(Lists.newArrayList("adil@split.io"))), Lists.newArrayList(partition("on", 100), partition("off", 0)), "whitelisted user");
+        ParsedCondition rollOutToEveryone = new ParsedCondition(ConditionType.ROLLOUT, CombiningMatcher.of(new AllKeysMatcher()), Lists.newArrayList(partition("on", 100), partition("off", 0)), "in segment all");
+
+        List<ParsedCondition> conditions = Lists.newArrayList(whitelistCondition, rollOutToEveryone);
+
+        ParsedSplit parsedSplit = new ParsedSplit(test, 123, false, Treatments.OFF, conditions, null, 1, trafficAllocation, trafficAllocationSeed);
+
+        SplitFetcher splitFetcher = mock(SplitFetcher.class);
+        when(splitFetcher.fetch(test)).thenReturn(parsedSplit);
+
+        TreatmentLog treatmentLog = mock(TreatmentLog.class);
+
+
+        SplitClientImpl client = new SplitClientImpl(
+                splitFetcher,
+                treatmentLog,
+                new Metrics.NoopMetrics(),
+                config);
+
+        assertThat(client.getTreatment(key, test), is(equalTo(expected_treatment_on_or_off)));
+
+        ArgumentCaptor<String> labelCaptor = ArgumentCaptor.forClass(String.class);
+
+        verify(treatmentLog).log(eq(key),
+                eq(key),
+                eq(test),
+                eq(expected_treatment_on_or_off),
+                anyLong(),
+                labelCaptor.capture(),
+                eq(new Long(1L))
+        );
+
+        assertThat(labelCaptor.getValue(), is(equalTo(label)));
+    }
+
+
+    @Test
     public void matching_bucketing_keys_work() {
         String test = "test1";
 

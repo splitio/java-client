@@ -1,6 +1,7 @@
 package io.split.client;
 
 import io.split.client.api.Key;
+import io.split.client.dtos.ConditionType;
 import io.split.engine.experiments.ParsedCondition;
 import io.split.engine.experiments.ParsedSplit;
 import io.split.engine.experiments.SplitFetcher;
@@ -145,7 +146,31 @@ public final class SplitClientImpl implements SplitClient {
                 return new TreatmentLabelAndChangeNumber(parsedSplit.defaultTreatment(), "killed", parsedSplit.changeNumber());
             }
 
+            /*
+             * There are three parts to a single Split: 1) Whitelists 2) Traffic Allocation
+             * 3) Rollout. The flag inRollout is there to understand when we move into the Rollout
+             * section. This is because we need to make sure that the Traffic Allocation
+             * computation happens after the whitelist but before the rollout.
+             */
+            boolean inRollout = false;
+
             for (ParsedCondition parsedCondition : parsedSplit.parsedConditions()) {
+
+                if (!inRollout && parsedCondition.conditionType() == ConditionType.ROLLOUT) {
+
+                    if (parsedSplit.trafficAllocation() < 100) {
+                        // if the traffic allocation is 100%, no need to do anything special.
+                        int bucket = Splitter.getBucket(bucketingKey, parsedSplit.trafficAllocationSeed());
+
+                        if (bucket >= parsedSplit.trafficAllocation()) {
+                            // out of split
+                            return new TreatmentLabelAndChangeNumber(parsedSplit.defaultTreatment(), "not in split", parsedSplit.changeNumber());
+                        }
+
+                    }
+                    inRollout = true;
+                }
+
                 if (parsedCondition.matcher().match(matchingKey, attributes)) {
                     String treatment = Splitter.getTreatment(bucketingKey, parsedSplit.seed(), parsedCondition.partitions());
                     return new TreatmentLabelAndChangeNumber(treatment, parsedCondition.label(), parsedSplit.changeNumber());

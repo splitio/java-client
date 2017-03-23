@@ -27,6 +27,16 @@ public class Splitter {
         return getTreatment(bucket(hash(key, seed)), partitions);
     }
 
+    /**
+     * Returns a bucket between 1 and 100, inclusive.
+     * @param key
+     * @param seed
+     * @return bucket >= 1 && bucket <= 100
+     */
+    public static int getBucket(String key, int seed) {
+        return bucket(hash(key, seed));
+    }
+
     /*package private*/
     static int hash(String key, int seed) {
         int h = 0;
