@@ -97,11 +97,6 @@ public class SplitterTest {
         assertThat(Splitter.getTreatment("13", 15, partitions), is(equalTo("on")));
     }
 
-    @Test
-    public void getBucket() {
-        System.out.println(Splitter.getBucket("pato@split.io", 123));
-    }
-
     private Partition partition(String treatment, int size) {
         Partition p = new Partition();
         p.treatment = treatment;

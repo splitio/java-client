@@ -264,12 +264,13 @@ public class SplitClientConfig {
          * This is an ADVANCED function.
          *
          * @param impressionListener
-         * @param capacity
+         * @param queueSize maximum number of impressions that will be queued in memory. If the impressionListener is
+         *                 slow, the queue will fill up and any subsequent impressions will be dropped.
          * @return
          */
-        public Builder impressionListener(ImpressionListener impressionListener, int capacity) {
+        public Builder impressionListener(ImpressionListener impressionListener, int queueSize) {
             _impressionListener = impressionListener;
-            _impressionListenerCapacity = capacity;
+            _impressionListenerCapacity = queueSize;
             return this;
         }
 
