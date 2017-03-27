@@ -27,12 +27,12 @@ public final class LocalhostSplitClient implements SplitClient {
     }
 
     @Override
-    public String getTreatment(String key, String feature) {
-        if (key == null || feature == null) {
+    public String getTreatment(String key, String split) {
+        if (key == null || split == null) {
             return Treatments.CONTROL;
         }
 
-        String treatment = _featureToTreatmentMap.get(feature);
+        String treatment = _featureToTreatmentMap.get(split);
 
         if (treatment == null) {
             return Treatments.CONTROL;
@@ -42,13 +42,13 @@ public final class LocalhostSplitClient implements SplitClient {
     }
 
     @Override
-    public String getTreatment(String key, String feature, Map<String, Object> attributes) {
-        return getTreatment(key, feature);
+    public String getTreatment(String key, String split, Map<String, Object> attributes) {
+        return getTreatment(key, split);
     }
 
     @Override
-    public String getTreatment(Key key, String feature, Map<String, Object> attributes) {
-        return getTreatment(key.matchingKey(), feature, attributes);
+    public String getTreatment(Key key, String split, Map<String, Object> attributes) {
+        return getTreatment(key.matchingKey(), split, attributes);
     }
 
     void updateFeatureToTreatmentMap(Map<String, String> featureToTreatmentMap) {

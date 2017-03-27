@@ -47,9 +47,10 @@ public class SplitClientConfigTest {
     }
 
     @Test(expected = IllegalArgumentException.class)
-    public void cannot_set_zero_capacity_on_impression_listener() {
+    public void cannot_set_zero_capacity_on_impression_listener() throws InterruptedException {
         SplitClientConfig.builder()
                 .impressionListener(new ImpressionListener.NoopImpressionListener(), 0)
                 .build();
+
     }
 }

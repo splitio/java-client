@@ -36,10 +36,10 @@ public interface SplitClient {
      * This method does not throw any exceptions. It also never returns null.
      *
      * @param key      a unique key of your customer (e.g. user_id, user_email, account_id, etc.) MUST not be null.
-     * @param feature the feature we want to evaluate. MUST NOT be null.
+     * @param split the feature we want to evaluate. MUST NOT be null.
      * @return the evaluated treatment, the default treatment of this feature, or 'control'.
      */
-    String getTreatment(String key, String feature);
+    String getTreatment(String key, String split);
 
     /**
      * This method is useful when you want to determine the treatment to show
@@ -52,11 +52,11 @@ public interface SplitClient {
      * to users created after a certain date.
      *
      * @param key         a unique key of your customer (e.g. user_id, user_email, account_id, etc.) MUST not be null.
-     * @param feature    the feature we want to evaluate. MUST NOT be null.
+     * @param split    the feature we want to evaluate. MUST NOT be null.
      * @param attributes of the customer (user, account etc.) to use in evaluation. Can be null or empty.
      * @return the evaluated treatment, the default treatment of this feature, or 'control'.
      */
-    String getTreatment(String key, String feature, Map<String, Object> attributes);
+    String getTreatment(String key, String split, Map<String, Object> attributes);
 
     /**
      * To understand why this method is useful, consider the following simple Split as an example:
@@ -84,10 +84,10 @@ public interface SplitClient {
      *
      *
      * @param key the matching and bucketing keys. MUST NOT be null.
-     * @param feature the feature we want to evaluate. MUST NOT be null.
+     * @param split the feature we want to evaluate. MUST NOT be null.
      * @param attributes of the entity (user, account etc.) to use in evaluation. Can be null or empty.
      *
      * @return the evaluated treatment, the default treatment of this feature, or 'control'.
      */
-    String getTreatment(Key key, String feature, Map<String, Object> attributes);
+    String getTreatment(Key key, String split, Map<String, Object> attributes);
 }
