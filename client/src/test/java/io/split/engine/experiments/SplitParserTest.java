@@ -72,10 +72,10 @@ public class SplitParserTest {
         AttributeMatcher employeesMatcherLogic = AttributeMatcher.vanilla(new UserDefinedSegmentMatcher(employees));
         AttributeMatcher notSalesPeopleMatcherLogic = new AttributeMatcher(null, new UserDefinedSegmentMatcher(salespeople), true);
         CombiningMatcher combiningMatcher = new CombiningMatcher(MatcherCombiner.AND, Lists.newArrayList(employeesMatcherLogic, notSalesPeopleMatcherLogic));
-        ParsedCondition parsedCondition = new ParsedCondition(combiningMatcher, partitions);
+        ParsedCondition parsedCondition = ParsedCondition.createParsedConditionForTests(combiningMatcher, partitions);
         List<ParsedCondition> listOfMatcherAndSplits = Lists.newArrayList(parsedCondition);
 
-        ParsedSplit expected = new ParsedSplit("first.name", 123, false, Treatments.OFF, listOfMatcherAndSplits, "user", 1);
+        ParsedSplit expected = ParsedSplit.createParsedSplitForTests("first.name", 123, false, Treatments.OFF, listOfMatcherAndSplits, "user", 1);
 
         assertThat(actual, is(equalTo(expected)));
     }
@@ -110,11 +110,11 @@ public class SplitParserTest {
 
         ParsedSplit actual = parser.parse(split);
 
-        ParsedCondition parsedCondition1 = new ParsedCondition(CombiningMatcher.of(new UserDefinedSegmentMatcher(employees)), fullyRollout);
-        ParsedCondition parsedCondition2 = new ParsedCondition(CombiningMatcher.of(new UserDefinedSegmentMatcher(salespeople)), turnOff);
+        ParsedCondition parsedCondition1 = ParsedCondition.createParsedConditionForTests(CombiningMatcher.of(new UserDefinedSegmentMatcher(employees)), fullyRollout);
+        ParsedCondition parsedCondition2 = ParsedCondition.createParsedConditionForTests(CombiningMatcher.of(new UserDefinedSegmentMatcher(salespeople)), turnOff);
         List<ParsedCondition> listOfParsedConditions = Lists.newArrayList(parsedCondition1, parsedCondition2);
 
-        ParsedSplit expected = new ParsedSplit("first.name", 123, false, Treatments.OFF, listOfParsedConditions, "user", 1);
+        ParsedSplit expected = ParsedSplit.createParsedSplitForTests("first.name", 123, false, Treatments.OFF, listOfParsedConditions, "user", 1);
 
         assertThat(actual, is(equalTo(expected)));
     }
@@ -177,10 +177,10 @@ public class SplitParserTest {
         AttributeMatcher employeesMatcherLogic = new AttributeMatcher("name", new UserDefinedSegmentMatcher(employees), false);
         AttributeMatcher creationDateNotOlderThanAPointLogic = new AttributeMatcher("creation_date", new GreaterThanOrEqualToMatcher(1457386741L, DataType.DATETIME), true);
         CombiningMatcher combiningMatcher = new CombiningMatcher(MatcherCombiner.AND, Lists.newArrayList(employeesMatcherLogic, creationDateNotOlderThanAPointLogic));
-        ParsedCondition parsedCondition = new ParsedCondition(combiningMatcher, partitions);
+        ParsedCondition parsedCondition = ParsedCondition.createParsedConditionForTests(combiningMatcher, partitions);
         List<ParsedCondition> listOfMatcherAndSplits = Lists.newArrayList(parsedCondition);
 
-        ParsedSplit expected = new ParsedSplit("first.name", 123, false, Treatments.OFF, listOfMatcherAndSplits, "user", 1);
+        ParsedSplit expected = ParsedSplit.createParsedSplitForTests("first.name", 123, false, Treatments.OFF, listOfMatcherAndSplits, "user", 1);
 
         assertThat(actual, is(equalTo(expected)));
     }
@@ -210,10 +210,10 @@ public class SplitParserTest {
 
         AttributeMatcher ageLessThan10Logic = new AttributeMatcher("age", new LessThanOrEqualToMatcher(10, DataType.NUMBER), false);
         CombiningMatcher combiningMatcher = new CombiningMatcher(MatcherCombiner.AND, Lists.newArrayList(ageLessThan10Logic));
-        ParsedCondition parsedCondition = new ParsedCondition(combiningMatcher, partitions);
+        ParsedCondition parsedCondition = ParsedCondition.createParsedConditionForTests(combiningMatcher, partitions);
         List<ParsedCondition> listOfMatcherAndSplits = Lists.newArrayList(parsedCondition);
 
-        ParsedSplit expected = new ParsedSplit("first.name", 123, false, Treatments.OFF, listOfMatcherAndSplits, "user", 1);
+        ParsedSplit expected = ParsedSplit.createParsedSplitForTests("first.name", 123, false, Treatments.OFF, listOfMatcherAndSplits, "user", 1);
 
         assertThat(actual, is(equalTo(expected)));
     }
@@ -241,10 +241,10 @@ public class SplitParserTest {
 
         AttributeMatcher equalToMatcher = new AttributeMatcher("age", new EqualToMatcher(10, DataType.NUMBER), true);
         CombiningMatcher combiningMatcher = new CombiningMatcher(MatcherCombiner.AND, Lists.newArrayList(equalToMatcher));
-        ParsedCondition parsedCondition = new ParsedCondition(combiningMatcher, partitions);
+        ParsedCondition parsedCondition = ParsedCondition.createParsedConditionForTests(combiningMatcher, partitions);
         List<ParsedCondition> listOfMatcherAndSplits = Lists.newArrayList(parsedCondition);
 
-        ParsedSplit expected = new ParsedSplit("first.name", 123, false, Treatments.OFF, listOfMatcherAndSplits, "user", 1);
+        ParsedSplit expected = ParsedSplit.createParsedSplitForTests("first.name", 123, false, Treatments.OFF, listOfMatcherAndSplits, "user", 1);
 
         assertThat(actual, is(equalTo(expected)));
     }
@@ -272,10 +272,10 @@ public class SplitParserTest {
 
         AttributeMatcher ageEqualTo10Logic = new AttributeMatcher("age", new EqualToMatcher(-10, DataType.NUMBER), false);
         CombiningMatcher combiningMatcher = new CombiningMatcher(MatcherCombiner.AND, Lists.newArrayList(ageEqualTo10Logic));
-        ParsedCondition parsedCondition = new ParsedCondition(combiningMatcher, partitions);
+        ParsedCondition parsedCondition = ParsedCondition.createParsedConditionForTests(combiningMatcher, partitions);
         List<ParsedCondition> listOfMatcherAndSplits = Lists.newArrayList(parsedCondition);
 
-        ParsedSplit expected = new ParsedSplit("first.name", 123, false, Treatments.OFF, listOfMatcherAndSplits, "user", 1);
+        ParsedSplit expected = ParsedSplit.createParsedSplitForTests("first.name", 123, false, Treatments.OFF, listOfMatcherAndSplits, "user", 1);
 
         assertThat(actual, is(equalTo(expected)));
     }
@@ -305,10 +305,10 @@ public class SplitParserTest {
 
         AttributeMatcher ageBetween10And11Logic = new AttributeMatcher("age", new BetweenMatcher(10, 12, DataType.NUMBER), false);
         CombiningMatcher combiningMatcher = new CombiningMatcher(MatcherCombiner.AND, Lists.newArrayList(ageBetween10And11Logic));
-        ParsedCondition parsedCondition = new ParsedCondition(combiningMatcher, partitions);
+        ParsedCondition parsedCondition = ParsedCondition.createParsedConditionForTests(combiningMatcher, partitions);
         List<ParsedCondition> listOfMatcherAndSplits = Lists.newArrayList(parsedCondition);
 
-        ParsedSplit expected = new ParsedSplit("first.name", 123, false, Treatments.OFF, listOfMatcherAndSplits, "user", 1);
+        ParsedSplit expected = ParsedSplit.createParsedSplitForTests("first.name", 123, false, Treatments.OFF, listOfMatcherAndSplits, "user", 1);
 
         assertThat(actual, is(equalTo(expected)));
     }
@@ -317,6 +317,8 @@ public class SplitParserTest {
         Split split = new Split();
         split.name = name;
         split.seed = seed;
+        split.trafficAllocation = 100;
+        split.trafficAllocationSeed = seed;
         split.status = Status.ACTIVE;
         split.conditions = conditions;
         split.defaultTreatment = Treatments.OFF;

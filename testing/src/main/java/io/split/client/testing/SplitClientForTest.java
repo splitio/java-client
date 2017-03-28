@@ -30,19 +30,19 @@ public class SplitClientForTest implements SplitClient {
         _tests.put(feature, treatment);
     }
 
-    public String getTreatment(String key, String feature) {
-        return _tests.containsKey(feature)
-                ? _tests.get(feature)
+    public String getTreatment(String key, String split) {
+        return _tests.containsKey(split)
+                ? _tests.get(split)
                 : "control";
     }
 
-    public String getTreatment(String key, String feature, Map<String, Object> attributes) {
-        return this.getTreatment(key, feature);
+    public String getTreatment(String key, String split, Map<String, Object> attributes) {
+        return this.getTreatment(key, split);
     }
 
-    public String getTreatment(Key key, String feature, Map<String, Object> attributes) {
-        return _tests.containsKey(feature)
-                ? _tests.get(feature)
+    public String getTreatment(Key key, String split, Map<String, Object> attributes) {
+        return _tests.containsKey(split)
+                ? _tests.get(split)
                 : Treatments.CONTROL;
     }
 }

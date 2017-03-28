@@ -2,6 +2,7 @@ package io.split.engine.experiments;
 
 import com.google.common.collect.Lists;
 import io.split.client.dtos.Condition;
+import io.split.client.dtos.ConditionType;
 import io.split.client.dtos.Split;
 import io.split.client.dtos.SplitChange;
 import io.split.client.dtos.Status;
@@ -35,7 +36,7 @@ public class AChangePerCallSplitChangeFetcher implements SplitChangeFetcher {
         Condition condition = null;
 
         if (_segmentName != null) {
-            condition = ConditionsTestUtil.makeUserDefinedSegmentCondition(_segmentName, Lists.newArrayList(ConditionsTestUtil.partition("on", 10)));
+            condition = ConditionsTestUtil.makeUserDefinedSegmentCondition(ConditionType.ROLLOUT, _segmentName, Lists.newArrayList(ConditionsTestUtil.partition("on", 10)));
         } else {
             condition = ConditionsTestUtil.makeAllKeysCondition(Lists.newArrayList(ConditionsTestUtil.partition("on", 10)));
         }
@@ -43,6 +44,8 @@ public class AChangePerCallSplitChangeFetcher implements SplitChangeFetcher {
 
         Split add = new Split();
         add.status = Status.ACTIVE;
+        add.trafficAllocation = 100;
+        add.trafficAllocationSeed = (int) latestChangeNumber;
         add.seed = (int) latestChangeNumber;
         add.conditions = Lists.newArrayList(condition);
         add.name = "" + latestChangeNumber;
@@ -51,6 +54,8 @@ public class AChangePerCallSplitChangeFetcher implements SplitChangeFetcher {
 
         Split remove = new Split();
         remove.status = Status.ACTIVE;
+        remove.trafficAllocation = 100;
+        remove.trafficAllocationSeed = (int) since;
         remove.seed = (int) since;
         remove.conditions = Lists.newArrayList(condition);
         remove.defaultTreatment = Treatments.OFF;

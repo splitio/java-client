@@ -11,4 +11,6 @@ public class Split {
     public List<Condition> conditions;
     public String trafficTypeName;
     public long changeNumber;
+    public Integer trafficAllocation;
+    public Integer trafficAllocationSeed;
 }
