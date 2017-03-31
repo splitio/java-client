@@ -71,7 +71,7 @@ public class ImpressionsManager implements ImpressionListener, Runnable {
             KeyImpression keyImpression = keyImpression(impression);
             _queue.offer(keyImpression);
         } catch (Exception e) {
-            _log.error("Unable to send impression to ImpressionsManager", e);
+            _log.warn("Unable to send impression to ImpressionsManager", e);
         }
 
     }
@@ -82,7 +82,7 @@ public class ImpressionsManager implements ImpressionListener, Runnable {
             _scheduler.shutdown();
             sendImpressions();
         } catch (Exception e) {
-            _log.error("Unable to close ImpressionsManager", e);
+            _log.warn("Unable to close ImpressionsManager", e);
         }
 
     }

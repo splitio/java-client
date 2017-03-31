@@ -52,7 +52,7 @@ public class AsynchronousImpressionListener implements ImpressionListener {
             });
         }
         catch (Exception e) {
-            _log.error("Unable to send impression to impression listener", e);
+            _log.warn("Unable to send impression to impression listener", e);
         }
     }
 
@@ -62,7 +62,7 @@ public class AsynchronousImpressionListener implements ImpressionListener {
             _executor.shutdown();
             _delegate.close();
         } catch (Exception e) {
-            _log.error("Unable to close AsynchronousImpressionListener", e);
+            _log.warn("Unable to close AsynchronousImpressionListener", e);
         }
     }
 }
