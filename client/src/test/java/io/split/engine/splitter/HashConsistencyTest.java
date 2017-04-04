@@ -89,7 +89,7 @@ public class HashConsistencyTest {
             long expected_hash = Long.parseLong(parts[2]);
             int expected_bucket = Integer.parseInt(parts[3]);
 
-            long hash = Splitter.hash(key, seed);
+            long hash = Splitter.murmur_hash(key, seed);
             int bucket = Splitter.bucket(hash);
 
             Assert.assertEquals(expected_hash, hash);

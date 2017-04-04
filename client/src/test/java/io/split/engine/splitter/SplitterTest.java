@@ -38,7 +38,7 @@ public class SplitterTest {
             for (int i = 0; i < 1000; i++) {
                 int keyLength = minKeyLength + r.nextInt(13);
                 String key = RandomStringUtils.randomAlphanumeric(keyLength);
-                long hash = Splitter.hash(key, seed);
+                long hash = Splitter.hash(key, seed, 1);
                 int bucket = Splitter.bucket(hash);
                 System.out.println(Joiner.on(',').join(Lists.newArrayList(seed, key, hash, bucket)));
             }
@@ -57,7 +57,7 @@ public class SplitterTest {
             for (int i = 0; i < 1000; i++) {
                 int keyLength = minKeyLength + r.nextInt(13);
                 String key = RandomStringUtils.random(keyLength);
-                long hash = Splitter.hash(key, seed);
+                long hash = Splitter.hash(key, seed, 1);
                 int bucket = Splitter.bucket(hash);
                 System.out.println(Joiner.on(',').join(Lists.newArrayList(seed, key, hash, bucket)));
             }
@@ -91,7 +91,7 @@ public class SplitterTest {
             String[] parts = line.split(",");
             Integer seed = Integer.parseInt(parts[0]);
             String key = parts[1];
-            long hash = Splitter.hash(key, seed);
+            long hash = Splitter.hash(key, seed, 1);
             int bucket = Splitter.bucket(hash);
             writer.append(Joiner.on(',').join(Lists.newArrayList(seed, key, hash, bucket)));
             writer.newLine();

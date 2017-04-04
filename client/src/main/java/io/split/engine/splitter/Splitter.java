@@ -30,10 +30,6 @@ public class Splitter {
         return getTreatment(bucket(hash(key, seed, algo)), partitions);
     }
 
-    static long hash(String key, int seed) {
-        return hash(key, seed, 1);
-    }
-
     static long hash(String key, int seed, int algo) {
         switch (algo) {
             case ALGO_MURMUR:
@@ -55,8 +51,8 @@ public class Splitter {
      * @param seed
      * @return bucket >= 1 && bucket <= 100
      */
-    public static int getBucket(String key, int seed) {
-        return bucket(hash(key, seed));
+    public static int getBucket(String key, int seed, int algo) {
+        return bucket(hash(key, seed, algo));
     }
 
     /*package private*/
