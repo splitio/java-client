@@ -49,6 +49,16 @@ public class Splitter {
         return MurmurHash3.murmurhash3_x86_32(key, 0, key.length(), seed);
     }
 
+    /**
+     * Returns a bucket between 1 and 100, inclusive.
+     * @param key
+     * @param seed
+     * @return bucket >= 1 && bucket <= 100
+     */
+    public static int getBucket(String key, int seed) {
+        return bucket(hash(key, seed));
+    }
+
     /*package private*/
     static int legacy_hash(String key, int seed) {
         int h = 0;

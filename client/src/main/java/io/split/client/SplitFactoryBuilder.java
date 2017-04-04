@@ -1,5 +1,6 @@
 package io.split.client;
 
+import io.split.client.impressions.AsynchronousImpressionListener;
 import io.split.client.impressions.ImpressionsManager;
 import io.split.client.interceptors.AddSplitHeadersFilter;
 import io.split.client.interceptors.GzipDecoderResponseInterceptor;
@@ -11,7 +12,7 @@ import io.split.engine.SDKReadinessGates;
 import io.split.engine.experiments.RefreshableSplitFetcherProvider;
 import io.split.engine.experiments.SplitChangeFetcher;
 import io.split.engine.experiments.SplitParser;
-import io.split.engine.impressions.TreatmentLog;
+import io.split.client.impressions.ImpressionListener;
 import io.split.engine.segments.RefreshableSegmentFetcher;
 import io.split.engine.segments.SegmentChangeFetcher;
 import io.split.grammar.Treatments;
@@ -27,6 +28,8 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Random;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
@@ -113,7 +116,18 @@ public class SplitFactoryBuilder {
         final RefreshableSplitFetcherProvider splitFetcherProvider = new RefreshableSplitFetcherProvider(splitChangeFetcher, splitParser, findPollingPeriod(RANDOM, config.featuresRefreshRate()), gates);
 
         // Impressions
-        final TreatmentLog treatmentLog = ImpressionsManager.instance(httpclient, config);
+        final ImpressionsManager splitImpressionListener = ImpressionsManager.instance(httpclient, config);
+        final ImpressionListener impressionListener;
+
+        if (config.impressionListener() != null) {
+            AsynchronousImpressionListener wrapper = AsynchronousImpressionListener.build(config.impressionListener(), config.impressionListenerCapactity());
+            List<ImpressionListener> impressionListeners = new ArrayList<ImpressionListener>();
+            impressionListeners.add(splitImpressionListener);
+            impressionListeners.add(wrapper);
+            impressionListener = new ImpressionListener.FederatedImpressionListener(impressionListeners);
+        } else {
+            impressionListener = splitImpressionListener;
+        }
 
         CachedMetrics cachedMetrics = new CachedMetrics(httpMetrics, TimeUnit.SECONDS.toMillis(config.metricsRefreshRate()));
         final FireAndForgetMetrics cachedFireAndForgetMetrics = FireAndForgetMetrics.instance(cachedMetrics, 2, 1000);
@@ -130,8 +144,8 @@ public class SplitFactoryBuilder {
                     _log.warn("Successful shutdown of metrics 1");
                     cachedFireAndForgetMetrics.close();
                     _log.warn("Successful shutdown of metrics 2");
-                    ((ImpressionsManager) treatmentLog).close();
-                    _log.warn("Successful shutdown of ImpressionManager");
+                    impressionListener.close();
+                    _log.warn("Successful shutdown of ImpressionListener");
                     httpclient.close();
                     _log.warn("Successful shutdown of httpclient");
                 } catch (IOException e) {
@@ -142,7 +156,7 @@ public class SplitFactoryBuilder {
         });
 
         // Now create the client.
-        SplitFactory splitFactory = new SplitFactoryImpl(splitFetcherProvider.getFetcher(), treatmentLog, cachedFireAndForgetMetrics, config);
+        SplitFactory splitFactory = new SplitFactoryImpl(splitFetcherProvider.getFetcher(), impressionListener, cachedFireAndForgetMetrics, config);
 
 
         if (config.blockUntilReady() > 0) {

@@ -14,16 +14,18 @@ import java.util.List;
  */
 public class ParsedSplit {
 
-    private final String _feature;
+    private final String _split;
     private final int _seed;
     private final boolean _killed;
     private final String _defaultTreatment;
     private final ImmutableList<ParsedCondition> _parsedCondition;
     private final String _trafficTypeName;
     private final long _changeNumber;
+    private final int _trafficAllocation;
+    private final int _trafficAllocationSeed;
     private final int _algo;
 
-    public ParsedSplit(
+    public static ParsedSplit createParsedSplitForTests(
             String feature,
             int seed,
             boolean killed,
@@ -33,7 +35,33 @@ public class ParsedSplit {
             long changeNumber,
             int algo
     ) {
-        _feature = feature;
+        return new ParsedSplit(
+                feature,
+                seed,
+                killed,
+                defaultTreatment,
+                matcherAndSplits,
+                trafficTypeName,
+                changeNumber,
+                100,
+                seed,
+                algo
+        );
+    }
+
+    public ParsedSplit(
+            String feature,
+            int seed,
+            boolean killed,
+            String defaultTreatment,
+            List<ParsedCondition> matcherAndSplits,
+            String trafficTypeName,
+            long changeNumber,
+            int trafficAllocation,
+            int trafficAllocationSeed,
+            int algo
+    ) {
+        _split = feature;
         _seed = seed;
         _killed = killed;
         _defaultTreatment = defaultTreatment;
@@ -44,10 +72,22 @@ public class ParsedSplit {
         if (_defaultTreatment == null) {
             throw new IllegalArgumentException("DefaultTreatment is null");
         }
+        this._trafficAllocation = trafficAllocation;
+        this._trafficAllocationSeed = trafficAllocationSeed;
     }
 
+
+
     public String feature() {
-        return _feature;
+        return _split;
+    }
+
+    public int trafficAllocation() {
+        return _trafficAllocation;
+    }
+
+    public int trafficAllocationSeed() {
+        return _trafficAllocationSeed;
     }
 
     public int seed() {
@@ -75,7 +115,7 @@ public class ParsedSplit {
     @Override
     public int hashCode() {
         int result = 17;
-        result = 31 * result + _feature.hashCode();
+        result = 31 * result + _split.hashCode();
         result = 31 * result + (int)(_seed ^ (_seed >>> 32));
         result = 31 * result + (_killed ? 1 : 0);
         result = 31 * result + _defaultTreatment.hashCode();
@@ -94,7 +134,7 @@ public class ParsedSplit {
 
         ParsedSplit other = (ParsedSplit) obj;
 
-        return _feature.equals(other._feature)
+        return _split.equals(other._split)
                 && _seed == other._seed
                 && _killed == other._killed
                 && _defaultTreatment.equals(other._defaultTreatment)
@@ -108,7 +148,7 @@ public class ParsedSplit {
     public String toString() {
         StringBuilder bldr = new StringBuilder();
         bldr.append("name:");
-        bldr.append(_feature);
+        bldr.append(_split);
         bldr.append(", seed:");
         bldr.append(_seed);
         bldr.append(", killed:");

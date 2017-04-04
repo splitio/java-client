@@ -5,13 +5,10 @@ import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import io.split.client.SplitClientConfig;
 import io.split.client.dtos.KeyImpression;
 import io.split.client.dtos.TestImpressions;
-import io.split.engine.impressions.TreatmentLog;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.Closeable;
-import java.io.IOException;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -27,9 +24,9 @@ import java.util.concurrent.TimeUnit;
 /**
  * Created by patricioe on 6/17/16.
  */
-public class ImpressionsManager implements TreatmentLog, Runnable, Closeable {
+public class ImpressionsManager implements ImpressionListener, Runnable {
 
-    private static final Logger _logger = LoggerFactory.getLogger(ImpressionsManager.class);
+    private static final Logger _log = LoggerFactory.getLogger(ImpressionsManager.class);
 
     private final SplitClientConfig _config;
     private final CloseableHttpClient _client;
@@ -69,28 +66,38 @@ public class ImpressionsManager implements TreatmentLog, Runnable, Closeable {
     }
 
     @Override
-    public void log(String key, String bucketingKey, String feature, String treatment, long time, String label, Long changeNumber) {
-        KeyImpression impression = keyImpression(feature, key, bucketingKey, treatment, time, label, changeNumber);
-        _queue.offer(impression);
+    public void log(Impression impression) {
+        try {
+            KeyImpression keyImpression = keyImpression(impression);
+            _queue.offer(keyImpression);
+        } catch (Exception e) {
+            _log.warn("Unable to send impression to ImpressionsManager", e);
+        }
+
     }
 
     @Override
-    public void close() throws IOException {
-        _scheduler.shutdown();
-        sendImpressions();
+    public void close() {
+        try {
+            _scheduler.shutdown();
+            sendImpressions();
+        } catch (Exception e) {
+            _log.warn("Unable to close ImpressionsManager", e);
+        }
+
     }
 
-    private KeyImpression keyImpression(String feature, String key, String bucketingKey, String treatment, long time, String label, Long changeNumber) {
+    private KeyImpression keyImpression(Impression impression) {
         KeyImpression result = new KeyImpression();
-        result.feature = feature;
-        result.keyName = key;
-        if (bucketingKey != null && !bucketingKey.equals(key)) {
-            result.bucketingKey = bucketingKey;
+        result.feature = impression.split();
+        result.keyName = impression.key();
+        if (impression.bucketingKey() != null && !impression.bucketingKey().equals(impression.key())) {
+            result.bucketingKey = impression.bucketingKey();
         }
-        result.label = label;
-        result.treatment = treatment;
-        result.time = time;
-        result.changeNumber = changeNumber;
+        result.label = impression.appliedRule();
+        result.treatment = impression.treatment();
+        result.time = impression.time();
+        result.changeNumber = impression.changeNumber();
         return result;
     }
 
@@ -102,7 +109,7 @@ public class ImpressionsManager implements TreatmentLog, Runnable, Closeable {
     private void sendImpressions() {
 
         if (_queue.remainingCapacity() == 0) {
-            _logger.warn("Split SDK impressions queue is full. Impressions may have been dropped. Consider increasing capacity.");
+            _log.warn("Split SDK impressions queue is full. Impressions may have been dropped. Consider increasing capacity.");
         }
 
         long start = System.currentTimeMillis();
@@ -141,7 +148,7 @@ public class ImpressionsManager implements TreatmentLog, Runnable, Closeable {
         _impressionsSender.post(toShip);
 
         if(_config.debugEnabled()) {
-            _logger.info(String.format("Posting %d Split impressions took %d millis",
+            _log.info(String.format("Posting %d Split impressions took %d millis",
                     impressions.size(), (System.currentTimeMillis() - start)));
         }
     }

@@ -1,8 +1,8 @@
 package io.split.engine.experiments;
 
+import io.split.client.dtos.ConditionType;
 import io.split.client.dtos.Partition;
 import io.split.engine.matchers.CombiningMatcher;
-import io.split.engine.matchers.Matcher;
 
 import java.util.List;
 
@@ -13,18 +13,26 @@ import java.util.List;
  */
 public final class ParsedCondition {
 
+    private final ConditionType _conditionType;
     private final CombiningMatcher _matcher;
     private final List<Partition> _partitions;
     private final String _label;
 
-    public ParsedCondition(CombiningMatcher matcher, List<Partition> partitions) {
-        this(matcher, partitions, null);
+    public static ParsedCondition createParsedConditionForTests(CombiningMatcher matcher, List<Partition> partitions) {
+        return new ParsedCondition(ConditionType.ROLLOUT, matcher, partitions, null);
     }
 
-    public ParsedCondition(CombiningMatcher matcher, List<Partition> partitions, String label) {
+
+    public ParsedCondition(ConditionType conditionType, CombiningMatcher matcher, List<Partition> partitions, String label) {
+        _conditionType = conditionType;
         _matcher = matcher;
         _partitions = partitions;
         _label = label;
+    }
+
+
+    public ConditionType conditionType() {
+        return _conditionType;
     }
 
     public CombiningMatcher matcher() {
