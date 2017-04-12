@@ -203,11 +203,13 @@ public class SplitFactoryBuilder {
             return;
         }
 
+        ImpressionListener twilioImpressionListener = null;
+
         SplitClientConfig config = SplitClientConfig.builder()
-                .endpoint("http://localhost:8081", "http://localhost:8081")
+                .impressionListener(twilioImpressionListener, 10)
                 .build();
 
-        SplitClient client = SplitFactoryBuilder.build(args[0], config).client();
+        SplitClient client = SplitFactoryBuilder.build("API_KEY", config).client();
 
         try {
             BufferedReader reader = new BufferedReader(new InputStreamReader(System.in));

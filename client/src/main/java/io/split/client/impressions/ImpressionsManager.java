@@ -91,9 +91,7 @@ public class ImpressionsManager implements ImpressionListener, Runnable {
         KeyImpression result = new KeyImpression();
         result.feature = impression.split();
         result.keyName = impression.key();
-        if (impression.bucketingKey() != null && !impression.bucketingKey().equals(impression.key())) {
-            result.bucketingKey = impression.bucketingKey();
-        }
+        result.bucketingKey = impression.bucketingKey();
         result.label = impression.appliedRule();
         result.treatment = impression.treatment();
         result.time = impression.time();
