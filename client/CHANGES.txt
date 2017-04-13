@@ -1,5 +1,9 @@
 CHANGES
 
+2.0
+- Transitioning to Murmur3 for key hashing
+- Hashing Algorithm dependent on Split algo field
+
 1.1.7
 - We can now specify a percentage of traffic that can be in the Split - i.e. traffic allocation.
 - You can now register your own ImpressionListener. SplitClientConfig#impressionListener.

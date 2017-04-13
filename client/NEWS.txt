@@ -1,5 +1,8 @@
 NEWS
 
+2.0.0
+- The internal hashing algorith is now murmur2 and still honors legacy algo for exsiting splits.
+
 1.1.7
 - This release gives the ability to specify a percentage of traffic that will not be in a Split.
 - In addition, we now provide the ability to provide your own ImpressionListener.

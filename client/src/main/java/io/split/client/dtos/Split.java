@@ -13,4 +13,5 @@ public class Split {
     public long changeNumber;
     public Integer trafficAllocation;
     public Integer trafficAllocationSeed;
+    public int algo;
 }

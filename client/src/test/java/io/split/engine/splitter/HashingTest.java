@@ -5,13 +5,14 @@ import com.google.common.collect.Sets;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.junit.Test;
 
-import java.util.*;
+import java.util.Arrays;
+import java.util.BitSet;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Set;
+import java.util.UUID;
 
-/**
- * Created by adilaijaz on 1/18/16.
- */
 public class HashingTest {
-
     @Test
     public void numberOverflow() {
         int seed = (int) System.currentTimeMillis();
@@ -36,38 +37,59 @@ public class HashingTest {
 
     @Test
     public void collisionTestForSequential() {
-
         int seed = (int) System.currentTimeMillis();
 
         List<String> sequentialKeys = sequentialIds(200000);
         collisionTest(seed, new MyHash.Murmur32Hash(), sequentialKeys);
+        collisionTest(seed, new MyHash.GuavaMurmur32Hash(), sequentialKeys);
         collisionTest(seed, new MyHash.SeededNaturalHash(), sequentialKeys);
         collisionTest(seed, new MyHash.XorNaturalHash(), sequentialKeys);
-
     }
 
     @Test
     public void bucketTestForSequential() {
-
         int seed = (int) System.currentTimeMillis();
 
         List<String> sequentialKeys = mshIds();
         bucketTest(seed, new MyHash.Murmur32Hash(), sequentialKeys);
+        bucketTest(seed, new MyHash.GuavaMurmur32Hash(), sequentialKeys);
         bucketTest(seed, new MyHash.SeededNaturalHash(), sequentialKeys);
         bucketTest(seed, new MyHash.XorNaturalHash(), sequentialKeys);
+    }
+
+    @Test
+    public void bucketTestForRandomKeys() {
+
+        int seed = (int) System.currentTimeMillis();
+
+        List<String> randomKeys = randomUUIDs(100);
+        bucketTest(seed, new MyHash.Murmur32Hash(), randomKeys);
+        bucketTest(seed, new MyHash.GuavaMurmur32Hash(), randomKeys);
+        bucketTest(seed, new MyHash.SeededNaturalHash(), randomKeys);
+        bucketTest(seed, new MyHash.XorNaturalHash(), randomKeys);
 
     }
 
     @Test
     public void collisionTestForRandom() {
-
         int seed = (int) System.currentTimeMillis();
 
-        List<String> sequentialKeys = randomUUIDs(200000);
-        collisionTest(seed, new MyHash.Murmur32Hash(), sequentialKeys);
-        collisionTest(seed, new MyHash.SeededNaturalHash(), sequentialKeys);
-        collisionTest(seed, new MyHash.XorNaturalHash(), sequentialKeys);
+        List<String> randomKeys = randomUUIDs(200000);
+        collisionTest(seed, new MyHash.Murmur32Hash(), randomKeys);
+        collisionTest(seed, new MyHash.GuavaMurmur32Hash(), randomKeys);
+        collisionTest(seed, new MyHash.SeededNaturalHash(), randomKeys);
+        collisionTest(seed, new MyHash.XorNaturalHash(), randomKeys);
+    }
 
+    @Test
+    public void bucketTestForRandom() {
+        int seed = (int) System.currentTimeMillis();
+
+        List<String> randomKeys = randomUUIDs(200);
+        bucketTest(seed, new MyHash.Murmur32Hash(), randomKeys);
+        bucketTest(seed, new MyHash.GuavaMurmur32Hash(), randomKeys);
+        bucketTest(seed, new MyHash.SeededNaturalHash(), randomKeys);
+        bucketTest(seed, new MyHash.XorNaturalHash(), randomKeys);
     }
 
 
@@ -89,7 +111,7 @@ public class HashingTest {
 
     private List<String> mshIds() {
         List<String> bldr = Lists.newArrayList();
-        for (int i = 28243; i <= 28267; i++) {
+        for (int i = 28243; i <= 28273; i++) {
             bldr.add("" + i);
         }
         return bldr;
@@ -109,12 +131,12 @@ public class HashingTest {
         int collisions = 0;
         long durationSum = 0;
 
-        Set<Integer> hashes = Sets.newHashSet();
+        Set<Long> hashes = Sets.newHashSet();
 
         for (int i = 0; i < keys.size(); i++) {
             String key = keys.get(i);
             long start = System.nanoTime();
-            int keyHash = hash.hash(seed, key);
+            long keyHash = hash.hash(seed, key);
             durationSum += (System.nanoTime() - start);
 
             if (!hashes.add(keyHash)) {
@@ -129,14 +151,14 @@ public class HashingTest {
     private void bucketTest(int seed, MyHash hash, List<String> keys) {
         List<Integer> buckets = Lists.newArrayList();
 
-        int[] ranges =  new int[10];
+        int[] ranges = new int[10];
 
         for (int i = 0; i < keys.size(); i++) {
             String key = keys.get(i);
-            int keyHash = hash.hash(seed, key);
+            long keyHash = hash.hash(seed, key);
             int bucket = Splitter.bucket(keyHash);
             buckets.add(bucket);
-            ranges[(bucket-1)/10]++;
+            ranges[(bucket - 1) / 10]++;
         }
 
         System.out.println(buckets);
@@ -162,6 +184,4 @@ public class HashingTest {
         int collisions = bitset.cardinality();
         System.out.println(hash + " collisions " + collisions + " percentage: " + (100f * collisions / keys.size()));
     }
-
-
 }
