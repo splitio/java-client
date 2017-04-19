@@ -4,6 +4,7 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import io.split.client.dtos.DataType;
+import io.split.engine.matchers.strings.WhitelistMatcher;
 import org.junit.Test;
 
 import java.util.Calendar;

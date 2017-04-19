@@ -1,7 +1,9 @@
 package io.split.engine.matchers;
 
-import java.text.SimpleDateFormat;
 import java.util.Calendar;
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.TimeZone;
 
 /**
@@ -68,6 +70,15 @@ public class Transformers {
         c.setTimeInMillis(millisecondsSinceEpoch.longValue());
 
         return c;
+    }
+
+
+    public static Set<String> toSetOfStrings(Collection key) {
+        Set<String> result = new HashSet<String>(key.size());
+        for (Object o : key) {
+            result.add(o.toString());
+        }
+        return result;
     }
 
 }

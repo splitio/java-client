@@ -1,21 +1,22 @@
-package io.split.engine.matchers;
+package io.split.engine.matchers.strings;
 
-import com.google.common.collect.Sets;
+import io.split.engine.matchers.Matcher;
 
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.Set;
-
-import static com.google.common.base.Preconditions.checkNotNull;
 
 /**
  * Created by adilaijaz on 5/4/15.
  */
 public class WhitelistMatcher implements Matcher {
 
-    private final Set<String> _whitelist = Sets.newHashSet();
+    private final Set<String> _whitelist = new HashSet<>();
 
     public WhitelistMatcher(Collection<String> whitelist) {
-        checkNotNull(whitelist);
+        if (whitelist == null) {
+            throw new IllegalArgumentException("Null whitelist parameter");
+        }
         _whitelist.addAll(whitelist);
     }
 

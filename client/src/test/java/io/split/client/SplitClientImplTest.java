@@ -15,7 +15,7 @@ import io.split.engine.matchers.AllKeysMatcher;
 import io.split.engine.matchers.CombiningMatcher;
 import io.split.engine.matchers.EqualToMatcher;
 import io.split.engine.matchers.GreaterThanOrEqualToMatcher;
-import io.split.engine.matchers.WhitelistMatcher;
+import io.split.engine.matchers.strings.WhitelistMatcher;
 import io.split.engine.metrics.Metrics;
 import io.split.grammar.Treatments;
 import org.apache.commons.lang3.RandomStringUtils;
