@@ -13,14 +13,14 @@ import static org.junit.Assert.assertThat;
 /**
  * Created by adilaijaz on 4/18/17.
  */
-public class EndsWithAnyOfMatcherTest {
+public class ContainsAnyOfMatcherTest {
     @Test
     public void works_for_sets() {
         Set<String> set = new HashSet<>();
         set.add("first");
         set.add("second");
-
-        EndsWithAnyOfMatcher matcher = new EndsWithAnyOfMatcher(set);
+        
+        ContainsAnyOfMatcher matcher = new ContainsAnyOfMatcher(set);
 
         works(matcher);
     }
@@ -31,16 +31,18 @@ public class EndsWithAnyOfMatcherTest {
         list.add("first");
         list.add("second");
 
-        EndsWithAnyOfMatcher matcher = new EndsWithAnyOfMatcher(list);
+        ContainsAnyOfMatcher matcher = new ContainsAnyOfMatcher(list);
 
         works(matcher);
     }
 
-    private void works(EndsWithAnyOfMatcher matcher) {
+    private void works(ContainsAnyOfMatcher matcher) {
         assertThat(matcher.match(null), is(false));
         assertThat(matcher.match(""), is(false));
         assertThat(matcher.match("foo"), is(false));
+        assertThat(matcher.match("firstsecond"), is(true));
         assertThat(matcher.match("secondfirst"), is(true));
+        assertThat(matcher.match("firstthird"), is(true));
         assertThat(matcher.match("first"), is(true));
         assertThat(matcher.match("second"), is(true));
     }
@@ -50,7 +52,7 @@ public class EndsWithAnyOfMatcherTest {
     public void works_for_empty_paramter() {
         List<String> list = new ArrayList<>();
 
-        EndsWithAnyOfMatcher matcher = new EndsWithAnyOfMatcher(list);
+        ContainsAnyOfMatcher matcher = new ContainsAnyOfMatcher(list);
 
         assertThat(matcher.match(null), is(false));
         assertThat(matcher.match(""), is(false));

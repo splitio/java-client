@@ -56,10 +56,10 @@ public class ConditionsTestUtil {
     }
 
     public static Matcher whitelistMatcher(List<String> whitelist, boolean negate) {
-        return whitelistMatcher(null, null, whitelist, negate);
+        return whitelistMatcher(null, null, whitelist, negate, MatcherType.WHITELIST);
     }
 
-    public static Matcher whitelistMatcher(String trafficType, String attribute, List<String> whitelist, boolean negate) {
+    public static Matcher whitelistMatcher(String trafficType, String attribute, List<String> whitelist, boolean negate, MatcherType matcherType) {
         WhitelistMatcherData whitelistMatcherData = new WhitelistMatcherData();
         whitelistMatcherData.whitelist = whitelist;
 
@@ -71,7 +71,7 @@ public class ConditionsTestUtil {
         }
         Matcher matcher = new Matcher();
         matcher.keySelector = keySelector;
-        matcher.matcherType = MatcherType.WHITELIST;
+        matcher.matcherType = matcherType;
         matcher.negate = negate;
         matcher.whitelistMatcherData = whitelistMatcherData;
         matcher.negate = negate;
@@ -190,6 +190,139 @@ public class ConditionsTestUtil {
         matcher.betweenMatcherData = betweenMatcherData;
 
         return matcher;
+    }
+
+    public static Condition containsAnyOfSet(String trafficType,
+                                         String attribute,
+                                         List<String> whitelist,
+                                         boolean negate,
+                                         List<Partition> partitions) {
+
+        Matcher matcher = whitelistMatcher(trafficType, attribute, whitelist, negate, MatcherType.CONTAINS_ANY_OF_SET);
+        MatcherGroup matcherGroup = new MatcherGroup();
+        matcherGroup.combiner = MatcherCombiner.AND;
+        matcherGroup.matchers = Lists.newArrayList(matcher);
+
+        Condition c = new Condition();
+        c.conditionType = ConditionType.ROLLOUT;
+        c.matcherGroup = matcherGroup;
+        c.partitions = partitions;
+
+        return c;
+    }
+
+    public static Condition containsAllOfSet(String trafficType,
+                                           String attribute,
+                                           List<String> whitelist,
+                                           boolean negate,
+                                           List<Partition> partitions) {
+
+        Matcher matcher = whitelistMatcher(trafficType, attribute, whitelist, negate, MatcherType.CONTAINS_ALL_OF_SET);
+        MatcherGroup matcherGroup = new MatcherGroup();
+        matcherGroup.combiner = MatcherCombiner.AND;
+        matcherGroup.matchers = Lists.newArrayList(matcher);
+
+        Condition c = new Condition();
+        c.conditionType = ConditionType.ROLLOUT;
+        c.matcherGroup = matcherGroup;
+        c.partitions = partitions;
+
+        return c;
+    }
+
+    public static Condition isPartOfSet(String trafficType,
+                                           String attribute,
+                                           List<String> whitelist,
+                                           boolean negate,
+                                           List<Partition> partitions) {
+
+        Matcher matcher = whitelistMatcher(trafficType, attribute, whitelist, negate, MatcherType.PART_OF_SET);
+        MatcherGroup matcherGroup = new MatcherGroup();
+        matcherGroup.combiner = MatcherCombiner.AND;
+        matcherGroup.matchers = Lists.newArrayList(matcher);
+
+        Condition c = new Condition();
+        c.conditionType = ConditionType.ROLLOUT;
+        c.matcherGroup = matcherGroup;
+        c.partitions = partitions;
+
+        return c;
+    }
+
+    public static Condition startsWithString(String trafficType,
+                                        String attribute,
+                                        List<String> whitelist,
+                                        boolean negate,
+                                        List<Partition> partitions) {
+
+        Matcher matcher = whitelistMatcher(trafficType, attribute, whitelist, negate, MatcherType.STARTS_WITH);
+        MatcherGroup matcherGroup = new MatcherGroup();
+        matcherGroup.combiner = MatcherCombiner.AND;
+        matcherGroup.matchers = Lists.newArrayList(matcher);
+
+        Condition c = new Condition();
+        c.conditionType = ConditionType.ROLLOUT;
+        c.matcherGroup = matcherGroup;
+        c.partitions = partitions;
+
+        return c;
+    }
+
+    public static Condition endsWithString(String trafficType,
+                                             String attribute,
+                                             List<String> whitelist,
+                                             boolean negate,
+                                             List<Partition> partitions) {
+
+        Matcher matcher = whitelistMatcher(trafficType, attribute, whitelist, negate, MatcherType.ENDS_WITH);
+        MatcherGroup matcherGroup = new MatcherGroup();
+        matcherGroup.combiner = MatcherCombiner.AND;
+        matcherGroup.matchers = Lists.newArrayList(matcher);
+
+        Condition c = new Condition();
+        c.conditionType = ConditionType.ROLLOUT;
+        c.matcherGroup = matcherGroup;
+        c.partitions = partitions;
+
+        return c;
+    }
+
+    public static Condition containsString(String trafficType,
+                                             String attribute,
+                                             List<String> whitelist,
+                                             boolean negate,
+                                             List<Partition> partitions) {
+
+        Matcher matcher = whitelistMatcher(trafficType, attribute, whitelist, negate, MatcherType.CONTAINS_STRING);
+        MatcherGroup matcherGroup = new MatcherGroup();
+        matcherGroup.combiner = MatcherCombiner.AND;
+        matcherGroup.matchers = Lists.newArrayList(matcher);
+
+        Condition c = new Condition();
+        c.conditionType = ConditionType.ROLLOUT;
+        c.matcherGroup = matcherGroup;
+        c.partitions = partitions;
+
+        return c;
+    }
+
+    public static Condition equalToSet(String trafficType,
+                                           String attribute,
+                                           List<String> whitelist,
+                                           boolean negate,
+                                           List<Partition> partitions) {
+
+        Matcher matcher = whitelistMatcher(trafficType, attribute, whitelist, negate, MatcherType.EQUAL_TO_SET);
+        MatcherGroup matcherGroup = new MatcherGroup();
+        matcherGroup.combiner = MatcherCombiner.AND;
+        matcherGroup.matchers = Lists.newArrayList(matcher);
+
+        Condition c = new Condition();
+        c.conditionType = ConditionType.ROLLOUT;
+        c.matcherGroup = matcherGroup;
+        c.partitions = partitions;
+
+        return c;
     }
 
     public static Partition partition(String treatment, int size) {

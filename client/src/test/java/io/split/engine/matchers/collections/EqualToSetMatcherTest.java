@@ -69,7 +69,7 @@ public class EqualToSetMatcherTest {
         assertThat(matcher.match(null), is(false));
 
         List<String> argument = new ArrayList<>();
-        assertThat(matcher.match(argument), is(false));
+        assertThat(matcher.match(argument), is(true));
 
         argument.add("second");
         assertThat(matcher.match(argument), is(false));
