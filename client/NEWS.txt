@@ -1,5 +1,8 @@
 NEWS
 
+1.1.8 (April 21st 2017)
+- No news for this update
+
 1.1.7
 - This release gives the ability to specify a percentage of traffic that will not be in a Split.
 - In addition, we now provide the ability to provide your own ImpressionListener.

@@ -15,6 +15,7 @@ import io.split.engine.matchers.AllKeysMatcher;
 import io.split.engine.matchers.CombiningMatcher;
 import io.split.engine.matchers.EqualToMatcher;
 import io.split.engine.matchers.GreaterThanOrEqualToMatcher;
+import io.split.engine.matchers.collections.ContainsAnyOfSetMatcher;
 import io.split.engine.matchers.strings.WhitelistMatcher;
 import io.split.engine.metrics.Metrics;
 import io.split.grammar.Treatments;
@@ -266,6 +267,36 @@ public class SplitClientImplTest {
         verify(splitFetcher, times(7)).fetch(test);
     }
 
+
+    @Test
+    public void attributes_for_sets() {
+        String test = "test1";
+
+        ParsedCondition any_of_set = ParsedCondition.createParsedConditionForTests(CombiningMatcher.of("products", new ContainsAnyOfSetMatcher(Lists.<String>newArrayList("sms", "video"))), Lists.newArrayList(partition("on", 100)));
+
+        List<ParsedCondition> conditions = Lists.newArrayList(any_of_set);
+        ParsedSplit parsedSplit = ParsedSplit.createParsedSplitForTests(test, 123, false, Treatments.OFF, conditions, null, 1);
+
+        SplitFetcher splitFetcher = mock(SplitFetcher.class);
+        when(splitFetcher.fetch(test)).thenReturn(parsedSplit);
+
+        SplitClientImpl client = new SplitClientImpl(splitFetcher,
+                new ImpressionListener.NoopImpressionListener()
+                , new Metrics.NoopMetrics(), config);
+
+        assertThat(client.getTreatment("adil@codigo.com", test), is(equalTo("off")));
+        assertThat(client.getTreatment("adil@codigo.com", test, null), is(equalTo("off")));
+        assertThat(client.getTreatment("adil@codigo.com", test, ImmutableMap.<String, Object>of()), is(equalTo("off")));
+
+        assertThat(client.getTreatment("pato@codigo.com", test, ImmutableMap.<String, Object>of("products", Lists.newArrayList())), is(equalTo("off")));
+        assertThat(client.getTreatment("pato@codigo.com", test, ImmutableMap.<String, Object>of("products", Lists.newArrayList(""))), is(equalTo("off")));
+        assertThat(client.getTreatment("pato@codigo.com", test, ImmutableMap.<String, Object>of("products", Lists.newArrayList("talk"))), is(equalTo("off")));
+        assertThat(client.getTreatment("pato@codigo.com", test, ImmutableMap.<String, Object>of("products", Lists.newArrayList("sms"))), is(equalTo("on")));
+        assertThat(client.getTreatment("pato@codigo.com", test, ImmutableMap.<String, Object>of("products", Lists.newArrayList("sms", "video"))), is(equalTo("on")));
+        assertThat(client.getTreatment("pato@codigo.com", test, ImmutableMap.<String, Object>of("products", Lists.newArrayList("video"))), is(equalTo("on")));
+
+        verify(splitFetcher, times(9)).fetch(test);
+    }
 
     @Test
     public void labels_are_populated() {
