@@ -1,6 +1,6 @@
-package io.split.identify.dto;
+package io.split.api.dtos;
 
-public class Environment {
+public class TrafficType {
     private String id;
     private String name;
 
@@ -16,11 +16,11 @@ public class Environment {
         return new Builder();
     }
 
-    public Builder builder(Environment other) {
+    public Builder builder(TrafficType other) {
         return new Builder(other);
     }
 
-    private Environment(Builder builder) {
+    private TrafficType(Builder builder) {
         this.id = builder.id;
         this.name = builder.name;
     }
@@ -42,13 +42,13 @@ public class Environment {
         Builder() {
         }
 
-        Builder(Environment prototype) {
+        Builder(TrafficType prototype) {
             id = prototype.id;
             name = prototype.name;
         }
 
-        public Environment build() {
-            return new Environment(this);
+        public TrafficType build() {
+            return new TrafficType(this);
         }
     }
 }

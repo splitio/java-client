@@ -123,7 +123,7 @@ public class SplitFactoryBuilder {
                 _log.warn("Shutdown called for split");
                 try {
                     segmentFetcher.close();
-                    _log.warn("Successful shutdown of segment fetchers");
+                    _log.warn("Successful shutdown of segment api");
                     splitFetcherProvider.close();
                     _log.warn("Successful shutdown of splits");
                     uncachedFireAndForget.close();

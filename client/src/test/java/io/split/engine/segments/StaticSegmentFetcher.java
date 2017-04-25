@@ -6,7 +6,7 @@ import java.util.Collections;
 import java.util.Map;
 
 /**
- * Provides fetchers of type StaticSegmentFetcher.
+ * Provides api of type StaticSegmentFetcher.
  *
  * @author adil
  */

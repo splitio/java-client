@@ -1,19 +1,17 @@
-package io.split.identify.dto;
-
-import com.google.common.base.Preconditions;
+package io.split.api.dtos;
 
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
 public class Identity {
-    private String typeId;
+    private String trafficTypeId;
     private String environmentId;
     private String key;
-    private Map<String, Value> values;
+    private Map<String, String> values;
 
-    public String typeId() {
-        return typeId;
+    public String trafficTypeId() {
+        return trafficTypeId;
     }
 
     public String environmentId() {
@@ -24,7 +22,7 @@ public class Identity {
         return key;
     }
 
-    public Map<String, Value> values() {
+    public Map<String, String> values() {
         return values;
     }
 
@@ -37,25 +35,25 @@ public class Identity {
     }
 
     private Identity(Builder builder) {
-        this.typeId = Preconditions.checkNotNull(builder.typeId);
-        this.environmentId = Preconditions.checkNotNull(builder.environmentId);
-        this.key = Preconditions.checkNotNull(builder.key);
-        this.values = Preconditions.checkNotNull(builder.values);
+        this.trafficTypeId = builder.trafficTypeId;
+        this.environmentId = builder.environmentId;
+        this.key = builder.key;
+        this.values = builder.values;
     }
 
     public static class Builder {
-        private String typeId;
+        private String trafficTypeId;
         private String environmentId;
         private String key;
-        private Map<String, Value> values;
+        private Map<String, String> values;
 
-        public Builder typeId(String typeId) {
-            this.typeId = typeId;
+        public Builder trafficTypeId(String trafficTypeId) {
+            this.trafficTypeId = trafficTypeId;
             return this;
         }
 
-        public Builder type(Type type) {
-            this.typeId = type.id();
+        public Builder trafficType(TrafficType trafficType) {
+            this.trafficTypeId = trafficType.id();
             return this;
         }
 
@@ -74,43 +72,43 @@ public class Identity {
             return this;
         }
 
-        public Builder values(Map<String, Value> values) {
+        public Builder values(Map<String, String> values) {
             this.values = values;
             return this;
         }
 
         public Builder addValue(String name, boolean value) {
-            this.values.put(name, new Value(value));
+            this.values.put(name, Boolean.toString(value));
             return this;
         }
 
         public Builder addValue(String name, int value) {
-            this.values.put(name, new Value(value));
+            this.values.put(name, Integer.toString(value));
             return this;
         }
 
         public Builder addValue(String name, long value) {
-            this.values.put(name, new Value(value));
+            this.values.put(name, Long.toString(value));
             return this;
         }
 
         public Builder addValue(String name, float value) {
-            this.values.put(name, new Value(value));
+            this.values.put(name, Float.toString(value));
             return this;
         }
 
         public Builder addValue(String name, double value) {
-            this.values.put(name, new Value(value));
+            this.values.put(name, Double.toString(value));
             return this;
         }
 
         public Builder addValue(String name, Date value) {
-            this.values.put(name, new Value(value));
+            this.values.put(name, Long.toString(value.getTime()));
             return this;
         }
 
         public Builder addValue(String name, String value) {
-            this.values.put(name, new Value(value));
+            this.values.put(name, value);
             return this;
         }
 
@@ -119,7 +117,7 @@ public class Identity {
         }
 
         Builder(Identity prototype) {
-            typeId = prototype.typeId;
+            trafficTypeId = prototype.trafficTypeId;
             environmentId = prototype.environmentId;
             key = prototype.key;
             values = prototype.values;

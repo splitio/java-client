@@ -1,10 +1,8 @@
-package io.split.identify.dto;
+package io.split.api.dtos;
 
-import com.google.common.base.Preconditions;
-
-public class Property {
+public class Attribute {
     private String id;
-    private String typeId;
+    private String trafficTypeId;
     private String name;
     private String dataType;
     private String description;
@@ -25,45 +23,45 @@ public class Property {
         return description;
     }
 
-    public String typeId() {
-        return typeId;
+    public String trafficTypeId() {
+        return trafficTypeId;
     }
 
     public Builder builder() {
         return new Builder();
     }
 
-    public Builder builder(Property other) {
+    public Builder builder(Attribute other) {
         return new Builder(other);
     }
 
-    private Property(Builder builder) {
-        this.typeId = Preconditions.checkNotNull(builder.typeId);
-        this.id = Preconditions.checkNotNull(builder.id);
-        this.name = Preconditions.checkNotNull(builder.name);
-        this.dataType = Preconditions.checkNotNull(builder.dataType);
-        this.description = Preconditions.checkNotNull(builder.description);
+    private Attribute(Builder builder) {
+        this.id = builder.id;
+        this.name = builder.name;
+        this.dataType = builder.dataType;
+        this.description = builder.description;
+        this.trafficTypeId = builder.trafficTypeId;
     }
 
     public static class Builder {
-        private String typeId;
         private String id;
         private String name;
         private String dataType;
         private String description;
+        private String trafficTypeId;
 
         public Builder id(String id) {
             this.id = id;
             return this;
         }
 
-        public Builder type(Type type) {
-            this.typeId = type.id();
+        public Builder trafficType(TrafficType trafficType) {
+            this.trafficTypeId = trafficType.id();
             return this;
         }
 
-        public Builder typeId(String typeId) {
-            this.typeId = typeId;
+        public Builder trafficTypeId(String trafficTypeId) {
+            this.trafficTypeId = trafficTypeId;
             return this;
         }
 
@@ -86,16 +84,16 @@ public class Property {
 
         }
 
-        Builder(Property prototype) {
-            typeId = prototype.typeId;
+        Builder(Attribute prototype) {
+            trafficTypeId = prototype.trafficTypeId;
             id = prototype.id;
             name = prototype.name;
             dataType = prototype.dataType;
             description = prototype.description;
         }
 
-        public Property build() {
-            return new Property(this);
+        public Attribute build() {
+            return new Attribute(this);
         }
     }
 }

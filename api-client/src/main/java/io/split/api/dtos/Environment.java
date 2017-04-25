@@ -1,8 +1,6 @@
-package io.split.identify.dto;
+package io.split.api.dtos;
 
-import com.google.common.base.Preconditions;
-
-public class Type {
+public class Environment {
     private String id;
     private String name;
 
@@ -18,13 +16,13 @@ public class Type {
         return new Builder();
     }
 
-    public Builder builder(Type other) {
+    public Builder builder(Environment other) {
         return new Builder(other);
     }
 
-    private Type(Builder builder) {
-        this.id = Preconditions.checkNotNull(builder.id);
-        this.name = Preconditions.checkNotNull(builder.name);
+    private Environment(Builder builder) {
+        this.id = builder.id;
+        this.name = builder.name;
     }
 
     public static class Builder {
@@ -44,13 +42,13 @@ public class Type {
         Builder() {
         }
 
-        Builder(Type prototype) {
+        Builder(Environment prototype) {
             id = prototype.id;
             name = prototype.name;
         }
 
-        public Type build() {
-            return new Type(this);
+        public Environment build() {
+            return new Environment(this);
         }
     }
 }
