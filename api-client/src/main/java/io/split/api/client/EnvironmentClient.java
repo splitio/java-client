@@ -6,4 +6,6 @@ import java.util.List;
 
 public interface EnvironmentClient {
     List<Environment> list();
+
+    Environment get(String name);
 }

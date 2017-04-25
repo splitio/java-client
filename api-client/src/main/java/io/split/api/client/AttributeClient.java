@@ -7,9 +7,9 @@ import java.util.List;
 import java.util.NoSuchElementException;
 
 public interface AttributeClient {
-    List<Attribute> get(String trafficTypeId);
+    List<Attribute> list(String trafficTypeId);
 
-    List<Attribute> get(TrafficType trafficType);
+    List<Attribute> list(TrafficType trafficType);
 
     AttributeClient create(Attribute attribute) throws IllegalArgumentException;
 

@@ -11,4 +11,9 @@ public class LocalEnvironmentClient implements EnvironmentClient {
     public List<Environment> list() {
         return new ArrayList<>();
     }
+
+    @Override
+    public Environment get(String name) {
+        return null;
+    }
 }

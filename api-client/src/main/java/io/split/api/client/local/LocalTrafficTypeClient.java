@@ -11,4 +11,9 @@ public class LocalTrafficTypeClient implements TrafficTypeClient {
     public List<TrafficType> list() {
         return new ArrayList<>();
     }
+
+    @Override
+    public TrafficType get(String name) {
+        return null;
+    }
 }

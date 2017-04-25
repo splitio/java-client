@@ -6,4 +6,6 @@ import java.util.List;
 
 public interface TrafficTypeClient {
     List<TrafficType> list();
+
+    TrafficType get(String name);
 }

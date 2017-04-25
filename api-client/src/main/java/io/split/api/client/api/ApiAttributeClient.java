@@ -9,12 +9,12 @@ import java.util.List;
 import java.util.NoSuchElementException;
 
 public class ApiAttributeClient implements AttributeClient {
-    public List<Attribute> get(String trafficTypeId) {
+    public List<Attribute> list(String trafficTypeId) {
         return new ArrayList<>();
     }
 
-    public List<Attribute> get(TrafficType trafficType) {
-        return get(trafficType.id());
+    public List<Attribute> list(TrafficType trafficType) {
+        return list(trafficType.id());
     }
 
     public ApiAttributeClient create(Attribute attribute) throws IllegalArgumentException {

@@ -10,12 +10,12 @@ import java.util.NoSuchElementException;
 
 public class LocalAttributeClient implements AttributeClient {
     @Override
-    public List<Attribute> get(String trafficTypeId) {
+    public List<Attribute> list(String trafficTypeId) {
         return new ArrayList<>();
     }
 
     @Override
-    public List<Attribute> get(TrafficType trafficType) {
+    public List<Attribute> list(TrafficType trafficType) {
         return new ArrayList<>();
     }
 

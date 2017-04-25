@@ -10,14 +10,14 @@ import java.io.IOException;
 import java.net.URISyntaxException;
 import java.util.concurrent.TimeoutException;
 
-public class SplitApiFactory {
-    private static final Logger _log = LoggerFactory.getLogger(SplitApiFactory.class);
+public class SplitApiClientBuilder {
+    private static final Logger _log = LoggerFactory.getLogger(SplitApiClientBuilder.class);
 
-    public static SplitApiFactory build(String apiToken) throws IOException, InterruptedException, TimeoutException, URISyntaxException {
-        return build(apiToken, SplitClientConfig.builder().build());
+    public static SplitApiClientBuilder client(String apiToken) throws IOException, InterruptedException, TimeoutException, URISyntaxException {
+        return client(apiToken, SplitClientConfig.builder().build());
     }
 
-    public static synchronized SplitApiClient build(String apiToken, SplitClientConfig config) throws IOException, InterruptedException, TimeoutException, URISyntaxException {
+    public static synchronized SplitApiClient client(String apiToken, SplitClientConfig config) throws IOException, InterruptedException, TimeoutException, URISyntaxException {
 //        if (LocalhostSplitFactory.LOCALHOST.equals(apiToken)) {
 //            return LocalhostSplitFactory.createLocalhostSplitFactory();
 //        }
