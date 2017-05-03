@@ -1,6 +1,7 @@
 package io.split.client;
 
 import io.split.client.impressions.AsynchronousImpressionListener;
+import io.split.client.impressions.ImpressionListener;
 import io.split.client.impressions.ImpressionsManager;
 import io.split.client.interceptors.AddSplitHeadersFilter;
 import io.split.client.interceptors.GzipDecoderResponseInterceptor;
@@ -12,22 +13,30 @@ import io.split.engine.SDKReadinessGates;
 import io.split.engine.experiments.RefreshableSplitFetcherProvider;
 import io.split.engine.experiments.SplitChangeFetcher;
 import io.split.engine.experiments.SplitParser;
-import io.split.client.impressions.ImpressionListener;
 import io.split.engine.segments.RefreshableSegmentFetcher;
 import io.split.engine.segments.SegmentChangeFetcher;
 import io.split.grammar.Treatments;
 import org.apache.http.client.config.RequestConfig;
+import org.apache.http.config.Registry;
+import org.apache.http.config.RegistryBuilder;
+import org.apache.http.conn.socket.ConnectionSocketFactory;
+import org.apache.http.conn.socket.PlainConnectionSocketFactory;
+import org.apache.http.conn.ssl.SSLConnectionSocketFactory;
+import org.apache.http.conn.ssl.SSLContexts;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.impl.conn.PoolingHttpClientConnectionManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.net.ssl.SSLContext;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.security.KeyManagementException;
+import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
@@ -75,17 +84,39 @@ public class SplitFactoryBuilder {
             return LocalhostSplitFactory.createLocalhostSplitFactory();
         }
 
+        SSLContext sslContext = null;
+        try {
+            sslContext = SSLContexts.custom()
+                    .useTLS()
+                    .build();
+        } catch (NoSuchAlgorithmException | KeyManagementException e) {
+            throw new RuntimeException("Unable to create support for secure connection.");
+        }
+
+        SSLConnectionSocketFactory sslsf = new SSLConnectionSocketFactory(
+                sslContext,
+                new String[]{"TLSv1.1","TLSv1.2"},
+                null,
+                SSLConnectionSocketFactory.getDefaultHostnameVerifier());
+
+        Registry<ConnectionSocketFactory> registry = RegistryBuilder.<ConnectionSocketFactory>create()
+                .register("http", PlainConnectionSocketFactory.getSocketFactory())
+                .register("https", sslsf)
+                .build();
+
         RequestConfig requestConfig = RequestConfig.custom()
                 .setConnectTimeout(config.connectionTimeout())
                 .setSocketTimeout(config.readTimeout())
                 .build();
 
-        PoolingHttpClientConnectionManager cm = new PoolingHttpClientConnectionManager();
+        PoolingHttpClientConnectionManager cm = new PoolingHttpClientConnectionManager(registry);
         cm.setMaxTotal(20);
         cm.setDefaultMaxPerRoute(20);
+
         final CloseableHttpClient httpclient = HttpClients.custom()
                 .setConnectionManager(cm)
                 .setDefaultRequestConfig(requestConfig)
+                .setSSLSocketFactory(sslsf)
                 .addInterceptorLast(AddSplitHeadersFilter.instance(apiToken))
                 .addInterceptorLast(new GzipEncoderRequestInterceptor())
                 .addInterceptorLast(new GzipDecoderResponseInterceptor())
