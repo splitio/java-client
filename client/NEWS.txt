@@ -1,5 +1,12 @@
 NEWS
 
+2.0.2
+- Added API method: getTreatment(String key, String split, Map<String, Object> attributes, Map<String, Object> impressionMetadata);
+- Added API method: getTreatment(Key key, String split, Map<String, Object> attributes, Map<String, Object> impressionMetadata);
+
+2.0.1
+- Added the ability to support TLS2
+
 2.0.0
 - The internal hashing algorithm is now murmur3 and still honors legacy algorithm for existing splits.
 

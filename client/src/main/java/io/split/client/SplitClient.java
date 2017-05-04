@@ -90,4 +90,36 @@ public interface SplitClient {
      * @return the evaluated treatment, the default treatment of this feature, or 'control'.
      */
     String getTreatment(Key key, String split, Map<String, Object> attributes);
+
+    /**
+     * This method is useful when you want to determine the treatment to show
+     * to a customer (user, account etc.) and attach metadata to the resulting
+     * Impression reported back to Split servers.
+     * <p/>
+     *
+     * <b>Use Case</b>Say you are rolling out features account by account. So the
+     * key is an account id. But for tracking purposes, you want to capture
+     * the user id of the logged in user. This information can be provided
+     * in the impressionMetadata which will then be reported back to Split's servers
+     * as well as to any ImpressionListener that you may have registered.
+     * <p>
+     *
+     * <b>Why not send this information via attributes?</b> The contract with attributes
+     * is that any information provided via attributes is only used in targeting and never
+     * reported to Split's servers. This way you can use confidential data like e.g. revenue
+     * to target while being comfortable that Split's servers will never find out about
+     * revenue of any given customer. If you don't care about this level of privacy and you
+     * want data to be reported to an impression, yo ucan
+     *
+     *
+     * @param key         a unique key of your customer (e.g. user_id, user_email, account_id, etc.) MUST not be null.
+     * @param split    the feature we want to evaluate. MUST NOT be null.
+     * @param attributes of the customer (user, account etc.) to use in evaluation. Can be null or empty.
+     * @param impressionMetadata any data that you want to attach to the resulting Impression. Can be null
+     *
+     * @return the evaluated treatment, the default treatment of this feature, or 'control'.
+     */
+    String getTreatment(String key, String split, Map<String, Object> attributes, Map<String, Object> impressionMetadata);
+
+    String getTreatment(Key key, String split, Map<String, Object> attributes, Map<String, Object> impressionMetadata);
 }

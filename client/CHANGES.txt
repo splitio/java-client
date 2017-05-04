@@ -1,5 +1,8 @@
 CHANGES
 
+2.0.2 (May 5th, 2017)
+- Added ability to attach metadata to impressions for getTreatment calls
+
 2.0.1 (May 3rd, 2017)
 - Fix issue for Java 7 and compatibility with TLS1.2
 

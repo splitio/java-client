@@ -55,11 +55,21 @@ public final class SplitClientImpl implements SplitClient {
 
     @Override
     public String getTreatment(String key, String split, Map<String, Object> attributes) {
-        return getTreatment(key, null, split, attributes);
+        return getTreatment(key, split, attributes, null);
+    }
+
+    @Override
+    public String getTreatment(String key, String split, Map<String, Object> attributes, Map<String, Object> impressionMetadata) {
+        return getTreatment(key, null, split, attributes, impressionMetadata);
     }
 
     @Override
     public String getTreatment(Key key, String split, Map<String, Object> attributes) {
+        return getTreatment(key, split, attributes, null);
+    }
+
+    @Override
+    public String getTreatment(Key key, String split, Map<String, Object> attributes, Map<String, Object> impressionMetadata) {
         if (key == null) {
             _log.warn("key object was null for feature: " + split);
             return Treatments.CONTROL;
@@ -70,10 +80,10 @@ public final class SplitClientImpl implements SplitClient {
             return Treatments.CONTROL;
         }
 
-        return getTreatment(key.matchingKey(), key.bucketingKey(), split, attributes);
+        return getTreatment(key.matchingKey(), key.bucketingKey(), split, attributes, impressionMetadata);
     }
 
-    private String getTreatment(String matchingKey, String bucketingKey, String split, Map<String, Object> attributes) {
+    private String getTreatment(String matchingKey, String bucketingKey, String split, Map<String, Object> attributes, Map<String, Object> impressionMetadata) {
         try {
             if (matchingKey == null) {
                 _log.warn("matchingKey was null for split: " + split);
@@ -105,7 +115,8 @@ public final class SplitClientImpl implements SplitClient {
                         result._treatment,
                         "sdk.getTreatment",
                         _config.labelsEnabled() ? result._label : null,
-                        result._changeNumber);
+                        result._changeNumber,
+                        impressionMetadata);
             }
 
             return result._treatment;
@@ -120,9 +131,10 @@ public final class SplitClientImpl implements SplitClient {
         }
     }
 
-    private void recordStats(String matchingKey, String bucketingKey, String split, long start, String result, String operation, String label, Long changeNumber) {
+    private void recordStats(String matchingKey, String bucketingKey, String split, long start, String result,
+                             String operation, String label, Long changeNumber, Map<String, Object> impressionMetadata) {
         try {
-            _impressionListener.log(new Impression(matchingKey, bucketingKey, split, result, System.currentTimeMillis(), label, changeNumber));
+            _impressionListener.log(new Impression(matchingKey, bucketingKey, split, result, System.currentTimeMillis(), label, changeNumber, impressionMetadata));
             _metrics.time(operation, System.currentTimeMillis() - start);
         } catch (Throwable t) {
             _log.error("Exception", t);
