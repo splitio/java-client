@@ -55,13 +55,18 @@ public final class SplitClientImpl implements SplitClient {
 
     @Override
     public String getTreatment(String key, String split, Map<String, Object> attributes) {
-        return getTreatment(key, key, split, attributes);
+        return getTreatment(key, null, split, attributes);
     }
 
     @Override
     public String getTreatment(Key key, String split, Map<String, Object> attributes) {
         if (key == null) {
             _log.warn("key object was null for feature: " + split);
+            return Treatments.CONTROL;
+        }
+
+        if (key.matchingKey() == null || key.bucketingKey() == null) {
+            _log.warn("key object had null matching or bucketing key: " + split);
             return Treatments.CONTROL;
         }
 
@@ -72,11 +77,6 @@ public final class SplitClientImpl implements SplitClient {
         try {
             if (matchingKey == null) {
                 _log.warn("matchingKey was null for split: " + split);
-                return Treatments.CONTROL;
-            }
-
-            if (bucketingKey == null) {
-                _log.warn("bucketingKey was null for split: " + split);
                 return Treatments.CONTROL;
             }
 
@@ -143,9 +143,13 @@ public final class SplitClientImpl implements SplitClient {
     }
 
     /**
-     * @param matchingKey     MUST NOT be null
+     *
+     * @param matchingKey MUST NOT be null
+     * @param bucketingKey
      * @param parsedSplit MUST NOT be null
+     * @param attributes MUST NOT be null
      * @return
+     * @throws ChangeNumberExceptionWrapper
      */
     private TreatmentLabelAndChangeNumber getTreatment(String matchingKey, String bucketingKey, ParsedSplit parsedSplit, Map<String, Object> attributes) throws ChangeNumberExceptionWrapper {
         try {
@@ -161,13 +165,15 @@ public final class SplitClientImpl implements SplitClient {
              */
             boolean inRollout = false;
 
+            String bk = (bucketingKey == null) ? matchingKey : bucketingKey;
+
             for (ParsedCondition parsedCondition : parsedSplit.parsedConditions()) {
 
                 if (!inRollout && parsedCondition.conditionType() == ConditionType.ROLLOUT) {
 
                     if (parsedSplit.trafficAllocation() < 100) {
                         // if the traffic allocation is 100%, no need to do anything special.
-                        int bucket = Splitter.getBucket(bucketingKey, parsedSplit.trafficAllocationSeed());
+                        int bucket = Splitter.getBucket(bk, parsedSplit.trafficAllocationSeed(), parsedSplit.algo());
 
                         if (bucket >= parsedSplit.trafficAllocation()) {
                             // out of split
@@ -179,7 +185,7 @@ public final class SplitClientImpl implements SplitClient {
                 }
 
                 if (parsedCondition.matcher().match(matchingKey, attributes)) {
-                    String treatment = Splitter.getTreatment(bucketingKey, parsedSplit.seed(), parsedCondition.partitions());
+                    String treatment = Splitter.getTreatment(bk, parsedSplit.seed(), parsedCondition.partitions(), parsedSplit.algo());
                     return new TreatmentLabelAndChangeNumber(treatment, parsedCondition.label(), parsedSplit.changeNumber());
                 }
             }

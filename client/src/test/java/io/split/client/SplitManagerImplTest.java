@@ -35,7 +35,7 @@ public class SplitManagerImplTest {
         String existent = "existent";
         SplitFetcher splitFetcher = Mockito.mock(SplitFetcher.class);
 
-        ParsedSplit response = ParsedSplit.createParsedSplitForTests("FeatureName", 123, true, "off", Lists.newArrayList(getTestCondition("off")), "traffic", 456L);
+        ParsedSplit response = ParsedSplit.createParsedSplitForTests("FeatureName", 123, true, "off", Lists.newArrayList(getTestCondition("off")), "traffic", 456L, 1);
         Mockito.when(splitFetcher.fetch(existent)).thenReturn(response);
 
         SplitManagerImpl splitManager = new SplitManagerImpl(splitFetcher);
@@ -60,7 +60,7 @@ public class SplitManagerImplTest {
     public void splitsCallWithSplit() {
         SplitFetcher splitFetcher = Mockito.mock(SplitFetcher.class);
         List<ParsedSplit> parsedSplits = Lists.newArrayList();
-        ParsedSplit response = ParsedSplit.createParsedSplitForTests("FeatureName", 123, true, "off", Lists.newArrayList(getTestCondition("off")), "traffic", 456L);
+        ParsedSplit response = ParsedSplit.createParsedSplitForTests("FeatureName", 123, true, "off", Lists.newArrayList(getTestCondition("off")), "traffic", 456L, 1);
         parsedSplits.add(response);
 
         Mockito.when(splitFetcher.fetchAll()).thenReturn(parsedSplits);
@@ -87,7 +87,7 @@ public class SplitManagerImplTest {
     public void splitNamesCallWithSplit() {
         SplitFetcher splitFetcher = Mockito.mock(SplitFetcher.class);
         List<ParsedSplit> parsedSplits = Lists.newArrayList();
-        ParsedSplit response = ParsedSplit.createParsedSplitForTests("FeatureName", 123, true, "off", Lists.newArrayList(getTestCondition("off")), "traffic", 456L);
+        ParsedSplit response = ParsedSplit.createParsedSplitForTests("FeatureName", 123, true, "off", Lists.newArrayList(getTestCondition("off")), "traffic", 456L, 1);
         parsedSplits.add(response);
 
         Mockito.when(splitFetcher.fetchAll()).thenReturn(parsedSplits);

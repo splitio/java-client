@@ -1,8 +1,15 @@
 CHANGES
 
-1.1.8 (April 21st 2017)
+2.0.2
 - Support for Set based matchers: 'has any of', 'has all of', 'is equal to', and 'is part of'
 - Support for string matchers: 'starts with', 'ends with', and 'contains'
+
+2.0.1 (May 3rd, 2017)
+- Fix issue for Java 7 and compatibility with TLS1.2
+
+2.0
+- Transitioning to Murmur3 for key hashing
+- Hashing Algorithm dependent on Split algo field
 
 1.1.7
 - We can now specify a percentage of traffic that can be in the Split - i.e. traffic allocation.

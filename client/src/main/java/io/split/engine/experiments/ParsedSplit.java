@@ -23,22 +23,44 @@ public class ParsedSplit {
     private final long _changeNumber;
     private final int _trafficAllocation;
     private final int _trafficAllocationSeed;
+    private final int _algo;
 
-    public static ParsedSplit createParsedSplitForTests(String feature, int seed, boolean killed, String defaultTreatment, List<ParsedCondition> matcherAndSplits, String trafficTypeName, long changeNumber) {
-        return new ParsedSplit(feature, seed, killed,
-                defaultTreatment, matcherAndSplits, trafficTypeName, changeNumber,
-                100, seed);
+    public static ParsedSplit createParsedSplitForTests(
+            String feature,
+            int seed,
+            boolean killed,
+            String defaultTreatment,
+            List<ParsedCondition> matcherAndSplits,
+            String trafficTypeName,
+            long changeNumber,
+            int algo
+    ) {
+        return new ParsedSplit(
+                feature,
+                seed,
+                killed,
+                defaultTreatment,
+                matcherAndSplits,
+                trafficTypeName,
+                changeNumber,
+                100,
+                seed,
+                algo
+        );
     }
 
-    public ParsedSplit(String feature,
-                       int seed,
-                       boolean killed,
-                       String defaultTreatment,
-                       List<ParsedCondition> matcherAndSplits,
-                       String trafficTypeName,
-                       long changeNumber,
-                       int trafficAllocation,
-                       int trafficAllocationSeed) {
+    public ParsedSplit(
+            String feature,
+            int seed,
+            boolean killed,
+            String defaultTreatment,
+            List<ParsedCondition> matcherAndSplits,
+            String trafficTypeName,
+            long changeNumber,
+            int trafficAllocation,
+            int trafficAllocationSeed,
+            int algo
+    ) {
         _split = feature;
         _seed = seed;
         _killed = killed;
@@ -46,6 +68,7 @@ public class ParsedSplit {
         _parsedCondition = ImmutableList.copyOf(matcherAndSplits);
         _trafficTypeName = trafficTypeName;
         _changeNumber = changeNumber;
+        _algo = algo;
         if (_defaultTreatment == null) {
             throw new IllegalArgumentException("DefaultTreatment is null");
         }
@@ -87,6 +110,8 @@ public class ParsedSplit {
 
     public long changeNumber() {return _changeNumber;}
 
+    public int algo() {return _algo;}
+
     @Override
     public int hashCode() {
         int result = 17;
@@ -97,6 +122,7 @@ public class ParsedSplit {
         result = 31 * result + _parsedCondition.hashCode();
         result = 31 * result + (_trafficTypeName == null ? 0 : _trafficTypeName.hashCode());
         result = 31 * result + (int)(_changeNumber ^ (_changeNumber >>> 32));
+        result = 31 * result + (_algo ^ (_algo >>> 32));
         return result;
     }
 
@@ -114,7 +140,8 @@ public class ParsedSplit {
                 && _defaultTreatment.equals(other._defaultTreatment)
                 && _parsedCondition.equals(other._parsedCondition)
                 && _trafficTypeName == null ? other._trafficTypeName == null : _trafficTypeName.equals(other._trafficTypeName)
-                && _changeNumber == other._changeNumber;
+                && _changeNumber == other._changeNumber
+                && _algo == other._algo;
     }
 
     @Override
@@ -134,6 +161,8 @@ public class ParsedSplit {
         bldr.append(_trafficTypeName);
         bldr.append(", changeNumber:");
         bldr.append(_changeNumber);
+        bldr.append(", algo:");
+        bldr.append(_algo);
         return bldr.toString();
 
     }
