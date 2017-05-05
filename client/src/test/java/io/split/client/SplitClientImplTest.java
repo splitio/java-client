@@ -23,7 +23,6 @@ import org.junit.Test;
 import org.mockito.ArgumentCaptor;
 
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -31,7 +30,6 @@ import java.util.Set;
 
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.is;
-import static org.hamcrest.Matchers.nullValue;
 import static org.junit.Assert.assertThat;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Mockito.mock;
@@ -295,7 +293,8 @@ public class SplitClientImplTest {
                 new Metrics.NoopMetrics(),
                 config);
 
-        assertThat(client.getTreatment("pato@codigo.com", test, ImmutableMap.<String, Object>of("age", -20)), is(equalTo("on")));
+        Map<String, Object> attributes = ImmutableMap.<String, Object>of("age", -20, "acv", "1000000");
+        assertThat(client.getTreatment("pato@codigo.com", test, attributes), is(equalTo("on")));
 
         ArgumentCaptor<Impression> impressionCaptor = ArgumentCaptor.forClass(Impression.class);
 
@@ -303,7 +302,7 @@ public class SplitClientImplTest {
 
         assertThat(impressionCaptor.getValue().appliedRule(), is(equalTo("foolabel")));
 
-        assertThat(impressionCaptor.getValue().impressionMetadata(), is(nullValue()));
+        assertThat(impressionCaptor.getValue().impressionMetadata(), is(attributes));
     }
 
     @Test
@@ -432,18 +431,16 @@ public class SplitClientImplTest {
                 new Metrics.NoopMetrics(),
                 config);
 
-        Map<String, Object> impressionMetadata = new HashMap<>();
-        impressionMetadata.put("foo", "bar");
+        Map<String, Object> attributes = ImmutableMap.<String, Object>of("age", -20, "acv", "1000000");
 
-        assertThat(client.getTreatment("pato@codigo.com", test, ImmutableMap.<String, Object>of("age", -20), impressionMetadata), is(equalTo("on")));
+        assertThat(client.getTreatment("pato@codigo.com", test, attributes), is(equalTo("on")));
 
         ArgumentCaptor<Impression> impressionCaptor = ArgumentCaptor.forClass(Impression.class);
 
         verify(impressionListener).log(impressionCaptor.capture());
 
         assertThat(impressionCaptor.getValue().appliedRule(), is(equalTo("foolabel")));
-
-        assertThat(impressionCaptor.getValue().impressionMetadata(), is(equalTo(impressionMetadata)));
+        assertThat(impressionCaptor.getValue().impressionMetadata(), is(equalTo(attributes)));
     }
 
     private Partition partition(String treatment, int size) {

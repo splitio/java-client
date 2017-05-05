@@ -55,21 +55,11 @@ public final class SplitClientImpl implements SplitClient {
 
     @Override
     public String getTreatment(String key, String split, Map<String, Object> attributes) {
-        return getTreatment(key, split, attributes, null);
-    }
-
-    @Override
-    public String getTreatment(String key, String split, Map<String, Object> attributes, Map<String, Object> impressionMetadata) {
-        return getTreatment(key, null, split, attributes, impressionMetadata);
+        return getTreatment(key, null, split, attributes);
     }
 
     @Override
     public String getTreatment(Key key, String split, Map<String, Object> attributes) {
-        return getTreatment(key, split, attributes, null);
-    }
-
-    @Override
-    public String getTreatment(Key key, String split, Map<String, Object> attributes, Map<String, Object> impressionMetadata) {
         if (key == null) {
             _log.warn("key object was null for feature: " + split);
             return Treatments.CONTROL;
@@ -80,10 +70,10 @@ public final class SplitClientImpl implements SplitClient {
             return Treatments.CONTROL;
         }
 
-        return getTreatment(key.matchingKey(), key.bucketingKey(), split, attributes, impressionMetadata);
+        return getTreatment(key.matchingKey(), key.bucketingKey(), split, attributes);
     }
 
-    private String getTreatment(String matchingKey, String bucketingKey, String split, Map<String, Object> attributes, Map<String, Object> impressionMetadata) {
+    private String getTreatment(String matchingKey, String bucketingKey, String split, Map<String, Object> attributes) {
         try {
             if (matchingKey == null) {
                 _log.warn("matchingKey was null for split: " + split);
@@ -116,7 +106,7 @@ public final class SplitClientImpl implements SplitClient {
                         "sdk.getTreatment",
                         _config.labelsEnabled() ? result._label : null,
                         result._changeNumber,
-                        impressionMetadata);
+                        attributes);
             }
 
             return result._treatment;

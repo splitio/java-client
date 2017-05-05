@@ -28,13 +28,4 @@ public class AlwaysReturnControlSplitClient implements SplitClient {
         return Treatments.CONTROL;
     }
 
-    @Override
-    public String getTreatment(String key, String split, Map<String, Object> attributes, Map<String, Object> impressionMetadata) {
-        return Treatments.CONTROL;
-    }
-
-    @Override
-    public String getTreatment(Key key, String split, Map<String, Object> attributes, Map<String, Object> impressionMetadata) {
-        return Treatments.CONTROL;
-    }
 }

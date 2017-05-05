@@ -46,13 +46,4 @@ public class SplitClientForTest implements SplitClient {
                 : Treatments.CONTROL;
     }
 
-    @Override
-    public String getTreatment(String key, String split, Map<String, Object> attributes, Map<String, Object> impressionMetadata) {
-        return getTreatment(key, split, attributes);
-    }
-
-    @Override
-    public String getTreatment(Key key, String split, Map<String, Object> attributes, Map<String, Object> impressionMetadata) {
-        return getTreatment(key, split, attributes);
-    }
 }

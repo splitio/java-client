@@ -51,16 +51,6 @@ public final class LocalhostSplitClient implements SplitClient {
         return getTreatment(key.matchingKey(), split, attributes);
     }
 
-    @Override
-    public String getTreatment(String key, String split, Map<String, Object> attributes, Map<String, Object> impressionMetadata) {
-        return getTreatment(key, split, attributes);
-    }
-
-    @Override
-    public String getTreatment(Key key, String split, Map<String, Object> attributes, Map<String, Object> impressionMetadata) {
-        return getTreatment(key.matchingKey(), split, attributes);
-    }
-
     void updateFeatureToTreatmentMap(Map<String, String> featureToTreatmentMap) {
         checkNotNull(featureToTreatmentMap, "featureToTreatmentMap must not be null");
         _featureToTreatmentMap = ImmutableMap.copyOf(featureToTreatmentMap);
