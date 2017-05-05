@@ -6,8 +6,6 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
 
-import static io.split.engine.matchers.Transformers.toSetOfStrings;
-
 /**
  * Created by adilaijaz on 3/7/16.
  */
@@ -33,10 +31,8 @@ public class ContainsAnyOfSetMatcher implements Matcher {
             return false;
         }
 
-        Set<String> keyAsSet = toSetOfStrings((Collection) key);
-
         for (String s : _compareTo) {
-            if ((keyAsSet.contains(s))) {
+            if ((((Collection) key).contains(s))) {
                 return true;
             }
         }
