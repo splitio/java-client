@@ -6,6 +6,8 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
 
+import static io.split.engine.matchers.Transformers.toSetOfStrings;
+
 /**
  * Created by adilaijaz on 3/7/16.
  */
@@ -35,7 +37,8 @@ public class ContainsAllOfSetMatcher implements Matcher {
             return false;
         }
 
-        return ((Collection) key).containsAll(_compareTo);
+        Set<String> keyAsSet = toSetOfStrings((Collection) key);
+        return keyAsSet.containsAll(_compareTo);
     }
 
 
