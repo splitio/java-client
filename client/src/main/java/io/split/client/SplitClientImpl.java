@@ -122,9 +122,9 @@ public final class SplitClientImpl implements SplitClient {
     }
 
     private void recordStats(String matchingKey, String bucketingKey, String split, long start, String result,
-                             String operation, String label, Long changeNumber, Map<String, Object> impressionMetadata) {
+                             String operation, String label, Long changeNumber, Map<String, Object> attributes) {
         try {
-            _impressionListener.log(new Impression(matchingKey, bucketingKey, split, result, System.currentTimeMillis(), label, changeNumber, impressionMetadata));
+            _impressionListener.log(new Impression(matchingKey, bucketingKey, split, result, System.currentTimeMillis(), label, changeNumber, attributes));
             _metrics.time(operation, System.currentTimeMillis() - start);
         } catch (Throwable t) {
             _log.error("Exception", t);

@@ -302,7 +302,7 @@ public class SplitClientImplTest {
 
         assertThat(impressionCaptor.getValue().appliedRule(), is(equalTo("foolabel")));
 
-        assertThat(impressionCaptor.getValue().impressionMetadata(), is(attributes));
+        assertThat(impressionCaptor.getValue().attributes(), is(attributes));
     }
 
     @Test
@@ -440,7 +440,7 @@ public class SplitClientImplTest {
         verify(impressionListener).log(impressionCaptor.capture());
 
         assertThat(impressionCaptor.getValue().appliedRule(), is(equalTo("foolabel")));
-        assertThat(impressionCaptor.getValue().impressionMetadata(), is(equalTo(attributes)));
+        assertThat(impressionCaptor.getValue().attributes(), is(equalTo(attributes)));
     }
 
     private Partition partition(String treatment, int size) {

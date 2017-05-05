@@ -14,10 +14,10 @@ public class Impression {
     private final long _time;
     private final String _appliedRule;
     private final Long _changeNumber;
-    private final Map<String, Object> _impressionMetadata;
+    private final Map<String, Object> _atributes;
 
 
-    public Impression(String key, String bucketingKey, String split, String treatment, long time, String appliedRule, Long changeNumber, Map<String, Object> impressionMetadata) {
+    public Impression(String key, String bucketingKey, String split, String treatment, long time, String appliedRule, Long changeNumber, Map<String, Object> atributes) {
         _key = key;
         _bucketingKey = bucketingKey;
         _split = split;
@@ -25,7 +25,7 @@ public class Impression {
         _time = time;
         _appliedRule = appliedRule;
         _changeNumber = changeNumber;
-        _impressionMetadata = impressionMetadata;
+        _atributes = atributes;
     }
 
     public String key() {
@@ -56,7 +56,7 @@ public class Impression {
         return _changeNumber;
     }
 
-    public Map<String, Object> impressionMetadata() {
-        return _impressionMetadata;
+    public Map<String, Object> attributes() {
+        return _atributes;
     }
 }
