@@ -1,8 +1,7 @@
 NEWS
 
 2.0.2
-- Added API method: getTreatment(String key, String split, Map<String, Object> attributes, Map<String, Object> impressionMetadata);
-- Added API method: getTreatment(Key key, String split, Map<String, Object> attributes, Map<String, Object> impressionMetadata);
+- Attributes are send to local impression listeners
 
 2.0.1
 - Added the ability to support TLS2
