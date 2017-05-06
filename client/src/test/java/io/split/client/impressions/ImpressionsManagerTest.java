@@ -45,10 +45,10 @@ public class ImpressionsManagerTest {
         KeyImpression ki3 = keyImpression("test1", "pato", "on", 3L, 2L);
         KeyImpression ki4 = keyImpression("test2", "pato", "on", 4L, 3L);
 
-        treatmentLog.log(new Impression(ki1.keyName, null, ki1.feature, ki1.treatment, ki1.time, null, ki1.changeNumber));
-        treatmentLog.log(new Impression(ki2.keyName, null, ki2.feature, ki2.treatment, ki2.time, null, ki2.changeNumber));
-        treatmentLog.log(new Impression(ki3.keyName, null, ki3.feature, ki3.treatment, ki3.time, null, ki3.changeNumber));
-        treatmentLog.log(new Impression(ki4.keyName, null, ki4.feature, ki4.treatment, ki4.time, null, ki4.changeNumber));
+        treatmentLog.log(new Impression(ki1.keyName, null, ki1.feature, ki1.treatment, ki1.time, null, ki1.changeNumber, null));
+        treatmentLog.log(new Impression(ki2.keyName, null, ki2.feature, ki2.treatment, ki2.time, null, ki2.changeNumber, null));
+        treatmentLog.log(new Impression(ki3.keyName, null, ki3.feature, ki3.treatment, ki3.time, null, ki3.changeNumber, null));
+        treatmentLog.log(new Impression(ki4.keyName, null, ki4.feature, ki4.treatment, ki4.time, null, ki4.changeNumber, null));
 
         // Do what the scheduler would do.
         treatmentLog.run();
@@ -78,10 +78,10 @@ public class ImpressionsManagerTest {
         KeyImpression ki3 = keyImpression("test3", "pato", "on", 3L, null);
         KeyImpression ki4 = keyImpression("test4", "pato", "on", 4L, null);
 
-        treatmentLog.log(new Impression(ki1.keyName, null, ki1.feature, ki1.treatment, ki1.time, null, null));
-        treatmentLog.log(new Impression(ki2.keyName, null, ki2.feature, ki2.treatment, ki2.time, null, null));
-        treatmentLog.log(new Impression(ki3.keyName, null, ki3.feature, ki3.treatment, ki3.time, null, null));
-        treatmentLog.log(new Impression(ki4.keyName, null, ki4.feature, ki4.treatment, ki4.time, null, null));
+        treatmentLog.log(new Impression(ki1.keyName, null, ki1.feature, ki1.treatment, ki1.time, null, null, null));
+        treatmentLog.log(new Impression(ki2.keyName, null, ki2.feature, ki2.treatment, ki2.time, null, null, null));
+        treatmentLog.log(new Impression(ki3.keyName, null, ki3.feature, ki3.treatment, ki3.time, null, null, null));
+        treatmentLog.log(new Impression(ki4.keyName, null, ki4.feature, ki4.treatment, ki4.time, null, null, null));
 
         // Do what the scheduler would do.
         treatmentLog.run();
@@ -111,10 +111,10 @@ public class ImpressionsManagerTest {
         KeyImpression ki3 = keyImpression("test1", "pato", "on", 3L, 1L);
         KeyImpression ki4 = keyImpression("test1", "pato", "on", 4L, 1L);
 
-        treatmentLog.log(new Impression(ki1.keyName, null, ki1.feature, ki1.treatment, ki1.time, null, 1L));
-        treatmentLog.log(new Impression(ki2.keyName, null, ki2.feature, ki2.treatment, ki2.time, null, 1L));
-        treatmentLog.log(new Impression(ki3.keyName, null, ki3.feature, ki3.treatment, ki3.time, null, 1L));
-        treatmentLog.log(new Impression(ki4.keyName, null, ki4.feature, ki4.treatment, ki4.time, null, 1L));
+        treatmentLog.log(new Impression(ki1.keyName, null, ki1.feature, ki1.treatment, ki1.time, null, 1L, null));
+        treatmentLog.log(new Impression(ki2.keyName, null, ki2.feature, ki2.treatment, ki2.time, null, 1L, null));
+        treatmentLog.log(new Impression(ki3.keyName, null, ki3.feature, ki3.treatment, ki3.time, null, 1L, null));
+        treatmentLog.log(new Impression(ki4.keyName, null, ki4.feature, ki4.treatment, ki4.time, null, 1L, null));
 
         // Do what the scheduler would do.
         treatmentLog.run();

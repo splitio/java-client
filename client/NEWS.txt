@@ -1,5 +1,11 @@
 NEWS
 
+2.0.2
+- Attributes are sent to local impression listeners
+
+2.0.1
+- Added the ability to support TLS2
+
 2.0.0
 - The internal hashing algorithm is now murmur3 and still honors legacy algorithm for existing splits.
 

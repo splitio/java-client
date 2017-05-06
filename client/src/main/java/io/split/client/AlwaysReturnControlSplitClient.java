@@ -20,11 +20,12 @@ public class AlwaysReturnControlSplitClient implements SplitClient {
 
     @Override
     public String getTreatment(String key, String split, Map<String, Object> attributes) {
-        return getTreatment(key, split);
+        return Treatments.CONTROL;
     }
 
     @Override
     public String getTreatment(Key key, String split, Map<String, Object> attributes) {
         return Treatments.CONTROL;
     }
+
 }

@@ -105,7 +105,8 @@ public final class SplitClientImpl implements SplitClient {
                         result._treatment,
                         "sdk.getTreatment",
                         _config.labelsEnabled() ? result._label : null,
-                        result._changeNumber);
+                        result._changeNumber,
+                        attributes);
             }
 
             return result._treatment;
@@ -120,9 +121,10 @@ public final class SplitClientImpl implements SplitClient {
         }
     }
 
-    private void recordStats(String matchingKey, String bucketingKey, String split, long start, String result, String operation, String label, Long changeNumber) {
+    private void recordStats(String matchingKey, String bucketingKey, String split, long start, String result,
+                             String operation, String label, Long changeNumber, Map<String, Object> attributes) {
         try {
-            _impressionListener.log(new Impression(matchingKey, bucketingKey, split, result, System.currentTimeMillis(), label, changeNumber));
+            _impressionListener.log(new Impression(matchingKey, bucketingKey, split, result, System.currentTimeMillis(), label, changeNumber, attributes));
             _metrics.time(operation, System.currentTimeMillis() - start);
         } catch (Throwable t) {
             _log.error("Exception", t);
