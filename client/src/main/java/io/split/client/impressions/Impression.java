@@ -14,7 +14,7 @@ public class Impression {
     private final long _time;
     private final String _appliedRule;
     private final Long _changeNumber;
-    private final Map<String, Object> _atributes;
+    private final Map<String, Object> _attributes;
 
 
     public Impression(String key, String bucketingKey, String split, String treatment, long time, String appliedRule, Long changeNumber, Map<String, Object> atributes) {
@@ -25,7 +25,7 @@ public class Impression {
         _time = time;
         _appliedRule = appliedRule;
         _changeNumber = changeNumber;
-        _atributes = atributes;
+        _attributes = atributes;
     }
 
     public String key() {
@@ -57,6 +57,6 @@ public class Impression {
     }
 
     public Map<String, Object> attributes() {
-        return _atributes;
+        return _attributes;
     }
 }

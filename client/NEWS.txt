@@ -1,7 +1,7 @@
 NEWS
 
 2.0.2
-- Attributes are send to local impression listeners
+- Attributes are sent to local impression listeners
 
 2.0.1
 - Added the ability to support TLS2
