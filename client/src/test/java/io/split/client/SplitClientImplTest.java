@@ -26,6 +26,7 @@ import org.mockito.ArgumentCaptor;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import static org.hamcrest.Matchers.equalTo;
@@ -323,13 +324,16 @@ public class SplitClientImplTest {
                 new Metrics.NoopMetrics(),
                 config);
 
-        assertThat(client.getTreatment("pato@codigo.com", test, ImmutableMap.<String, Object>of("age", -20)), is(equalTo("on")));
+        Map<String, Object> attributes = ImmutableMap.<String, Object>of("age", -20, "acv", "1000000");
+        assertThat(client.getTreatment("pato@codigo.com", test, attributes), is(equalTo("on")));
 
         ArgumentCaptor<Impression> impressionCaptor = ArgumentCaptor.forClass(Impression.class);
 
         verify(impressionListener).log(impressionCaptor.capture());
 
         assertThat(impressionCaptor.getValue().appliedRule(), is(equalTo("foolabel")));
+
+        assertThat(impressionCaptor.getValue().attributes(), is(attributes));
     }
 
     @Test
@@ -431,6 +435,43 @@ public class SplitClientImplTest {
         assertThat(client.getTreatment(good_key, test, Collections.<String, Object>emptyMap()), is(equalTo("on")));
 
         verify(splitFetcher, times(2)).fetch(test);
+    }
+
+    @Test
+    public void impression_metadata_is_propagated() {
+        String test = "test1";
+
+        ParsedCondition age_equal_to_0_should_be_on = new ParsedCondition(ConditionType.ROLLOUT,
+                CombiningMatcher.of("age", new EqualToMatcher(-20, DataType.NUMBER)),
+                Lists.newArrayList(partition("on", 100)),
+                "foolabel"
+        );
+
+        List<ParsedCondition> conditions = Lists.newArrayList(age_equal_to_0_should_be_on);
+        ParsedSplit parsedSplit = ParsedSplit.createParsedSplitForTests(test, 123, false, Treatments.OFF, conditions, null, 1, 1);
+
+        SplitFetcher splitFetcher = mock(SplitFetcher.class);
+        when(splitFetcher.fetch(test)).thenReturn(parsedSplit);
+
+        ImpressionListener impressionListener = mock(ImpressionListener.class);
+
+
+        SplitClientImpl client = new SplitClientImpl(
+                splitFetcher,
+                impressionListener,
+                new Metrics.NoopMetrics(),
+                config);
+
+        Map<String, Object> attributes = ImmutableMap.<String, Object>of("age", -20, "acv", "1000000");
+
+        assertThat(client.getTreatment("pato@codigo.com", test, attributes), is(equalTo("on")));
+
+        ArgumentCaptor<Impression> impressionCaptor = ArgumentCaptor.forClass(Impression.class);
+
+        verify(impressionListener).log(impressionCaptor.capture());
+
+        assertThat(impressionCaptor.getValue().appliedRule(), is(equalTo("foolabel")));
+        assertThat(impressionCaptor.getValue().attributes(), is(equalTo(attributes)));
     }
 
     private Partition partition(String treatment, int size) {

@@ -1,7 +1,11 @@
 NEWS
 
+2.0.2
+- Attributes are sent to local impression listeners
+- Add support for new set of String and set matchers
+
 2.0.1
-- No news for this update
+- Added the ability to support TLS2
 
 2.0.0
 - The internal hashing algorithm is now murmur3 and still honors legacy algorithm for existing splits.
