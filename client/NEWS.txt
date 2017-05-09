@@ -2,6 +2,7 @@ NEWS
 
 2.0.2
 - Attributes are sent to local impression listeners
+- Add support for new set of String and set matchers
 
 2.0.1
 - Added the ability to support TLS2

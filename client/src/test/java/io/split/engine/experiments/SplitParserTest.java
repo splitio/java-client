@@ -19,12 +19,20 @@ import io.split.engine.matchers.EqualToMatcher;
 import io.split.engine.matchers.GreaterThanOrEqualToMatcher;
 import io.split.engine.matchers.LessThanOrEqualToMatcher;
 import io.split.engine.matchers.UserDefinedSegmentMatcher;
+import io.split.engine.matchers.collections.ContainsAllOfSetMatcher;
+import io.split.engine.matchers.collections.ContainsAnyOfSetMatcher;
+import io.split.engine.matchers.collections.EqualToSetMatcher;
+import io.split.engine.matchers.collections.PartOfSetMatcher;
+import io.split.engine.matchers.strings.ContainsAnyOfMatcher;
+import io.split.engine.matchers.strings.EndsWithAnyOfMatcher;
+import io.split.engine.matchers.strings.StartsWithAnyOfMatcher;
 import io.split.engine.segments.SegmentFetcher;
 import io.split.engine.segments.StaticSegment;
 import io.split.engine.segments.StaticSegmentFetcher;
 import io.split.grammar.Treatments;
 import org.junit.Test;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -309,6 +317,166 @@ public class SplitParserTest {
         List<ParsedCondition> listOfMatcherAndSplits = Lists.newArrayList(parsedCondition);
 
         ParsedSplit expected = ParsedSplit.createParsedSplitForTests("first.name", 123, false, Treatments.OFF, listOfMatcherAndSplits, "user", 1, 1);
+
+        assertThat(actual, is(equalTo(expected)));
+    }
+
+    @Test
+    public void contains_any_of_set() {
+
+        ArrayList<String> set = Lists.<String>newArrayList("sms", "voice");
+
+        List<Partition> partitions = Lists.newArrayList(ConditionsTestUtil.partition("on", 100));
+
+        Condition c = ConditionsTestUtil.containsAnyOfSet("user",
+                "products",
+                set,
+                false,
+                partitions
+                );
+
+        ContainsAnyOfSetMatcher m = new ContainsAnyOfSetMatcher(set);
+
+        set_matcher_test(c, m);
+    }
+
+    @Test
+    public void contains_all_of_set() {
+
+        ArrayList<String> set = Lists.<String>newArrayList("sms", "voice");
+
+        List<Partition> partitions = Lists.newArrayList(ConditionsTestUtil.partition("on", 100));
+
+        Condition c = ConditionsTestUtil.containsAllOfSet("user",
+                "products",
+                set,
+                false,
+                partitions
+        );
+
+        ContainsAllOfSetMatcher m = new ContainsAllOfSetMatcher(set);
+
+        set_matcher_test(c, m);
+    }
+
+    @Test
+    public void equal_to_set() {
+
+        ArrayList<String> set = Lists.<String>newArrayList("sms", "voice");
+
+        List<Partition> partitions = Lists.newArrayList(ConditionsTestUtil.partition("on", 100));
+
+        Condition c = ConditionsTestUtil.equalToSet("user",
+                "products",
+                set,
+                false,
+                partitions
+        );
+
+        EqualToSetMatcher m = new EqualToSetMatcher(set);
+
+        set_matcher_test(c, m);
+    }
+
+    @Test
+    public void is_part_of_set() {
+
+        ArrayList<String> set = Lists.<String>newArrayList("sms", "voice");
+
+        List<Partition> partitions = Lists.newArrayList(ConditionsTestUtil.partition("on", 100));
+
+        Condition c = ConditionsTestUtil.isPartOfSet("user",
+                "products",
+                set,
+                false,
+                partitions
+        );
+
+        PartOfSetMatcher m = new PartOfSetMatcher(set);
+
+        set_matcher_test(c, m);
+    }
+
+    @Test
+    public void starts_with_string() {
+
+        ArrayList<String> set = Lists.<String>newArrayList("sms", "voice");
+
+        List<Partition> partitions = Lists.newArrayList(ConditionsTestUtil.partition("on", 100));
+
+        Condition c = ConditionsTestUtil.startsWithString("user",
+                "products",
+                set,
+                false,
+                partitions
+        );
+
+        StartsWithAnyOfMatcher m = new StartsWithAnyOfMatcher(set);
+
+        set_matcher_test(c, m);
+    }
+
+    @Test
+    public void ends_with_string() {
+
+        ArrayList<String> set = Lists.<String>newArrayList("sms", "voice");
+
+        List<Partition> partitions = Lists.newArrayList(ConditionsTestUtil.partition("on", 100));
+
+        Condition c = ConditionsTestUtil.endsWithString("user",
+                "products",
+                set,
+                false,
+                partitions
+        );
+
+        EndsWithAnyOfMatcher m = new EndsWithAnyOfMatcher(set);
+
+        set_matcher_test(c, m);
+    }
+
+
+    @Test
+    public void contains_string() {
+
+        ArrayList<String> set = Lists.<String>newArrayList("sms", "voice");
+
+        List<Partition> partitions = Lists.newArrayList(ConditionsTestUtil.partition("on", 100));
+
+        Condition c = ConditionsTestUtil.containsString("user",
+                "products",
+                set,
+                false,
+                partitions
+        );
+
+        ContainsAnyOfMatcher m = new ContainsAnyOfMatcher(set);
+
+        set_matcher_test(c, m);
+    }
+
+    public void set_matcher_test(Condition c, io.split.engine.matchers.Matcher m) {
+
+        SegmentFetcher segmentFetcher = new StaticSegmentFetcher(Collections.<String, StaticSegment>emptyMap());
+        SplitParser parser = new SplitParser(segmentFetcher);
+
+        ArrayList<String> set = Lists.<String>newArrayList("sms", "voice");
+
+        List<Partition> partitions = Lists.newArrayList(ConditionsTestUtil.partition("on", 100));
+
+
+        List<Condition> conditions = Lists.newArrayList(c);
+
+        Split split = makeSplit("splitName", 123, conditions, 1);
+
+        ParsedSplit actual = parser.parse(split);
+
+        AttributeMatcher attrMatcher = new AttributeMatcher("products", m, false);
+        CombiningMatcher combiningMatcher = new CombiningMatcher(MatcherCombiner.AND, Lists.newArrayList(attrMatcher));
+        ParsedCondition parsedCondition = ParsedCondition.createParsedConditionForTests(combiningMatcher, partitions);
+        List<ParsedCondition> listOfMatcherAndSplits = Lists.newArrayList(parsedCondition);
+
+        ParsedSplit expected = ParsedSplit.createParsedSplitForTests("splitName", 123, false, Treatments.OFF, listOfMatcherAndSplits, "user", 1, 1);
 
         assertThat(actual, is(equalTo(expected)));
     }

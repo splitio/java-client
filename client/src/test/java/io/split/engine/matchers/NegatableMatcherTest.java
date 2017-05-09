@@ -2,6 +2,7 @@ package io.split.engine.matchers;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
+import io.split.engine.matchers.strings.WhitelistMatcher;
 import io.split.engine.segments.StaticSegment;
 import org.junit.Test;
 

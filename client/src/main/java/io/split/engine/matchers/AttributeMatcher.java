@@ -3,8 +3,6 @@ package io.split.engine.matchers;
 import java.util.Map;
 import java.util.Objects;
 
-import static com.google.common.base.Preconditions.checkNotNull;
-
 /**
  * Created by adilaijaz on 3/4/16.
  */
@@ -21,7 +19,9 @@ public final class AttributeMatcher {
 
     public AttributeMatcher(String attribute, Matcher matcher, boolean negate) {
         _attribute = attribute;
-        checkNotNull(matcher);
+        if (matcher == null) {
+            throw new IllegalArgumentException("Null matcher");
+        }
         _matcher = new NegatableMatcher(matcher, negate);
     }
 

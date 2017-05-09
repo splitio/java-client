@@ -2,6 +2,7 @@ package io.split.engine.matchers;
 
 import com.google.common.collect.Lists;
 import io.split.client.dtos.MatcherCombiner;
+import io.split.engine.matchers.strings.WhitelistMatcher;
 import org.junit.Test;
 
 import java.util.Collections;

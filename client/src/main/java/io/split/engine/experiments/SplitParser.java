@@ -1,9 +1,28 @@
 package io.split.engine.experiments;
 
 import com.google.common.collect.Lists;
-import io.split.client.dtos.*;
+import io.split.client.dtos.Condition;
 import io.split.client.dtos.Matcher;
-import io.split.engine.matchers.*;
+import io.split.client.dtos.MatcherGroup;
+import io.split.client.dtos.Partition;
+import io.split.client.dtos.Split;
+import io.split.client.dtos.Status;
+import io.split.engine.matchers.AllKeysMatcher;
+import io.split.engine.matchers.AttributeMatcher;
+import io.split.engine.matchers.BetweenMatcher;
+import io.split.engine.matchers.CombiningMatcher;
+import io.split.engine.matchers.EqualToMatcher;
+import io.split.engine.matchers.GreaterThanOrEqualToMatcher;
+import io.split.engine.matchers.LessThanOrEqualToMatcher;
+import io.split.engine.matchers.UserDefinedSegmentMatcher;
+import io.split.engine.matchers.collections.ContainsAllOfSetMatcher;
+import io.split.engine.matchers.collections.ContainsAnyOfSetMatcher;
+import io.split.engine.matchers.collections.EqualToSetMatcher;
+import io.split.engine.matchers.collections.PartOfSetMatcher;
+import io.split.engine.matchers.strings.ContainsAnyOfMatcher;
+import io.split.engine.matchers.strings.EndsWithAnyOfMatcher;
+import io.split.engine.matchers.strings.StartsWithAnyOfMatcher;
+import io.split.engine.matchers.strings.WhitelistMatcher;
 import io.split.engine.segments.Segment;
 import io.split.engine.segments.SegmentFetcher;
 import org.slf4j.Logger;
@@ -106,6 +125,34 @@ public final class SplitParser {
             case BETWEEN:
                 checkNotNull(matcher.betweenMatcherData);
                 delegate = new BetweenMatcher(matcher.betweenMatcherData.start, matcher.betweenMatcherData.end, matcher.betweenMatcherData.dataType);
+                break;
+            case EQUAL_TO_SET:
+                checkNotNull(matcher.whitelistMatcherData);
+                delegate = new EqualToSetMatcher(matcher.whitelistMatcherData.whitelist);
+                break;
+            case PART_OF_SET:
+                checkNotNull(matcher.whitelistMatcherData);
+                delegate = new PartOfSetMatcher(matcher.whitelistMatcherData.whitelist);
+                break;
+            case CONTAINS_ALL_OF_SET:
+                checkNotNull(matcher.whitelistMatcherData);
+                delegate = new ContainsAllOfSetMatcher(matcher.whitelistMatcherData.whitelist);
+                break;
+            case CONTAINS_ANY_OF_SET:
+                checkNotNull(matcher.whitelistMatcherData);
+                delegate = new ContainsAnyOfSetMatcher(matcher.whitelistMatcherData.whitelist);
+                break;
+            case STARTS_WITH:
+                checkNotNull(matcher.whitelistMatcherData);
+                delegate = new StartsWithAnyOfMatcher(matcher.whitelistMatcherData.whitelist);
+                break;
+            case ENDS_WITH:
+                checkNotNull(matcher.whitelistMatcherData);
+                delegate = new EndsWithAnyOfMatcher(matcher.whitelistMatcherData.whitelist);
+                break;
+            case CONTAINS_STRING:
+                checkNotNull(matcher.whitelistMatcherData);
+                delegate = new ContainsAnyOfMatcher(matcher.whitelistMatcherData.whitelist);
                 break;
             default:
                 throw new IllegalArgumentException("Unknown matcher type: " + matcher.matcherType);

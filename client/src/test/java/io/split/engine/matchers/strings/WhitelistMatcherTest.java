@@ -1,7 +1,7 @@
-package io.split.engine.matchers;
+package io.split.engine.matchers.strings;
 
 import com.google.common.collect.Lists;
-import io.split.engine.matchers.WhitelistMatcher;
+import io.split.engine.matchers.strings.WhitelistMatcher;
 import org.junit.Test;
 
 import java.util.Collections;
