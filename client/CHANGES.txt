@@ -1,6 +1,6 @@
 CHANGES
 
-2.0.2 (May 5th, 2017)
+2.0.2 (May 16th, 2017)
 - Support for Set based matchers: 'has any of', 'has all of', 'is equal to', and 'is part of'
 - Support for string matchers: 'starts with', 'ends with', and 'contains'
 - Added ability to attach metadata to impressions for getTreatment calls
