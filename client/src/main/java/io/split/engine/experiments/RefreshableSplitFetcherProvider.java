@@ -96,7 +96,7 @@ public class RefreshableSplitFetcherProvider implements Closeable {
             }
         } catch (InterruptedException e) {
             // reset the interrupt.
-            _log.warn("Shutdown hook for split fetchers has been interrupted");
+            _log.warn("Shutdown hook for split api has been interrupted");
             Thread.currentThread().interrupt();
         }
     }
