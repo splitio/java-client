@@ -47,10 +47,10 @@ import java.util.concurrent.TimeoutException;
  * Builds an instance of SplitClient.
  */
 public class SplitFactoryBuilder {
-
     private static final Logger _log = LoggerFactory.getLogger(SplitFactoryBuilder.class);
 
     private static Random RANDOM = new Random();
+    private static List<Runnable> DESTROY_FUNCTIONS = new ArrayList<>();
 
     /**
      * Instantiates a SplitFactory with default configurations
@@ -95,7 +95,7 @@ public class SplitFactoryBuilder {
 
         SSLConnectionSocketFactory sslsf = new SSLConnectionSocketFactory(
                 sslContext,
-                new String[]{"TLSv1.1","TLSv1.2"},
+                new String[]{"TLSv1.1", "TLSv1.2"},
                 null,
                 SSLConnectionSocketFactory.getDefaultHostnameVerifier());
 
@@ -163,7 +163,7 @@ public class SplitFactoryBuilder {
         CachedMetrics cachedMetrics = new CachedMetrics(httpMetrics, TimeUnit.SECONDS.toMillis(config.metricsRefreshRate()));
         final FireAndForgetMetrics cachedFireAndForgetMetrics = FireAndForgetMetrics.instance(cachedMetrics, 2, 1000);
 
-        Runtime.getRuntime().addShutdownHook(new Thread() {
+        DESTROY_FUNCTIONS.add(new Runnable() {
             public void run() {
                 _log.warn("Shutdown called for split");
                 try {
@@ -183,12 +183,17 @@ public class SplitFactoryBuilder {
                     _log.error("We could not shutdown split", e);
                 }
             }
+        });
 
+        Runtime.getRuntime().addShutdownHook(new Thread() {
+            @Override
+            public void run() {
+                SplitFactoryBuilder.destroy();
+            }
         });
 
         // Now create the client.
         SplitFactory splitFactory = new SplitFactoryImpl(splitFetcherProvider.getFetcher(), impressionListener, cachedFireAndForgetMetrics, config);
-
 
         if (config.blockUntilReady() > 0) {
             if (!gates.isSDKReady(config.blockUntilReady())) {
@@ -213,7 +218,6 @@ public class SplitFactoryBuilder {
      * Instantiates a local Off-The-Grid SplitFactory
      *
      * @param home A directory containing the .split file from which to build treatments. MUST NOT be null
-     *
      * @return a SplitFactory
      * @throws IOException if there were problems reading the override file from disk.
      */
@@ -263,6 +267,13 @@ public class SplitFactoryBuilder {
 
         } catch (IOException io) {
             _log.error(io.getMessage(), io);
+        }
+    }
+
+    public static void destroy() {
+        for (int i = 0; i < DESTROY_FUNCTIONS.size(); i++) {
+            DESTROY_FUNCTIONS.get(i).run();
+            DESTROY_FUNCTIONS.remove(i);
         }
     }
 }
