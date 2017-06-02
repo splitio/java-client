@@ -238,12 +238,7 @@ public class SplitFactoryBuilder {
             return;
         }
 
-        ImpressionListener twilioImpressionListener = null;
-
-        SplitClientConfig config = SplitClientConfig.builder()
-                .impressionListener(twilioImpressionListener, 10)
-                .build();
-
+        SplitClientConfig config = SplitClientConfig.builder().build();
         SplitClient client = SplitFactoryBuilder.build("API_KEY", config).client();
 
         try {
@@ -264,16 +259,15 @@ public class SplitFactoryBuilder {
 
                 System.out.println(isOn ? Treatments.ON : Treatments.OFF);
             }
-
         } catch (IOException io) {
             _log.error(io.getMessage(), io);
         }
     }
 
     public static void destroy() {
-        for (int i = 0; i < DESTROY_FUNCTIONS.size(); i++) {
-            DESTROY_FUNCTIONS.get(i).run();
-            DESTROY_FUNCTIONS.remove(i);
+        while(!DESTROY_FUNCTIONS.isEmpty()) {
+            Runnable destroyFunction = DESTROY_FUNCTIONS.remove(0);
+            destroyFunction.run();
         }
     }
 }
