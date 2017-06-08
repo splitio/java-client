@@ -48,6 +48,6 @@ public class SplitClientForTest implements SplitClient {
 
     @Override
     public void destroy() {
-        
+
     }
 }
