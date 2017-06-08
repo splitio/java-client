@@ -28,4 +28,9 @@ public class AlwaysReturnControlSplitClient implements SplitClient {
         return Treatments.CONTROL;
     }
 
+    @Override
+    public void destroy() {
+
+    }
+
 }
