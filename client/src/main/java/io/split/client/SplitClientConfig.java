@@ -361,6 +361,13 @@ public class SplitClientConfig {
             return this;
         }
 
+        /**
+         * How long to wait for impressions background thread before shutting down
+         * the underlying connections.
+         *
+         * @param waitTime tine in milliseconds
+         * @return
+         */
         public Builder waitBeforeShutdown(int waitTime) {
             _waitBeforeShutdown = waitTime;
             return this;
