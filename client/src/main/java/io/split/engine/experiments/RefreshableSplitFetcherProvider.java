@@ -82,6 +82,10 @@ public class RefreshableSplitFetcherProvider implements Closeable {
             return;
         }
 
+        if (_splitFetcher.get() != null) {
+            _splitFetcher.get().clear();
+        }
+
         ScheduledExecutorService scheduledExecutorService = _executorService.get();
         if (scheduledExecutorService.isShutdown()) {
             return;

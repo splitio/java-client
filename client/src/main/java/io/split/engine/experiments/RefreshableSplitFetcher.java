@@ -89,6 +89,10 @@ public class RefreshableSplitFetcher implements SplitFetcher, Runnable {
         return _concurrentMap.values();
     }
 
+    public void clear() {
+        _concurrentMap.clear();
+    }
+
     @Override
     public void run() {
         long start = _changeNumber.get();

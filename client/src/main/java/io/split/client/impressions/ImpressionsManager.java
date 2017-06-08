@@ -81,6 +81,7 @@ public class ImpressionsManager implements ImpressionListener, Runnable {
         try {
             _scheduler.shutdown();
             sendImpressions();
+            _scheduler.awaitTermination(_config.waitBeforeShutdown(), TimeUnit.MILLISECONDS);
         } catch (Exception e) {
             _log.warn("Unable to close ImpressionsManager", e);
         }

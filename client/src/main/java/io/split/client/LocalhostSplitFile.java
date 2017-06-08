@@ -43,7 +43,7 @@ public class LocalhostSplitFile extends Thread {
         return _stop.get();
     }
 
-    private void stopThread() {
+    public void stopThread() {
         _stop.set(true);
     }
 

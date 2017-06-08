@@ -33,12 +33,14 @@ public final class SplitClientImpl implements SplitClient {
     private static final String EXCEPTION = "exception";
     private static final String KILLED = "killed";
 
+    private final SplitFactory _container;
     private final SplitFetcher _splitFetcher;
     private final ImpressionListener _impressionListener;
     private final Metrics _metrics;
     private final SplitClientConfig _config;
 
-    public SplitClientImpl(SplitFetcher splitFetcher, ImpressionListener impressionListener, Metrics metrics, SplitClientConfig config) {
+    public SplitClientImpl(SplitFactory container,SplitFetcher splitFetcher, ImpressionListener impressionListener, Metrics metrics, SplitClientConfig config) {
+        _container = container;
         _splitFetcher = splitFetcher;
         _impressionListener = impressionListener;
         _metrics = metrics;
@@ -46,6 +48,11 @@ public final class SplitClientImpl implements SplitClient {
 
         checkNotNull(_splitFetcher);
         checkNotNull(_impressionListener);
+    }
+
+    @Override
+    public void destroy() {
+        _container.destroy();
     }
 
     @Override

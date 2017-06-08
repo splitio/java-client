@@ -29,6 +29,7 @@ public class SplitClientConfig {
     private final int _ready;
     private final ImpressionListener _impressionListener;
     private final int _impressionListenerCapacity;
+    private final int _waitBeforeShutdown;
 
     // To be set during startup
     public static String splitSdkVersion;
@@ -52,7 +53,8 @@ public class SplitClientConfig {
                               boolean debugEnabled,
                               boolean labelsEnabled,
                               ImpressionListener impressionListener,
-                              int impressionListenerCapacity) {
+                              int impressionListenerCapacity,
+                              int waitBeforeShutdown) {
         _endpoint = endpoint;
         _eventsEndpoint = eventsEndpoint;
         _featuresRefreshRate = pollForFeatureChangesEveryNSeconds;
@@ -68,6 +70,7 @@ public class SplitClientConfig {
         _labelsEnabled = labelsEnabled;
         _impressionListener = impressionListener;
         _impressionListenerCapacity = impressionListenerCapacity;
+        _waitBeforeShutdown = waitBeforeShutdown;
 
         Properties props = new Properties();
         try {
@@ -140,6 +143,10 @@ public class SplitClientConfig {
         return _impressionListenerCapacity;
     }
 
+    public int waitBeforeShutdown() {
+        return _waitBeforeShutdown;
+    }
+
     public static final class Builder {
 
         private String _endpoint = "https://sdk.split.io";
@@ -159,6 +166,7 @@ public class SplitClientConfig {
         private boolean _labelsEnabled = true;
         private ImpressionListener _impressionListener;
         private int _impressionListenerCapacity;
+        private int _waitBeforeShutdown = 5000;
 
         public Builder() {
         }
@@ -353,6 +361,18 @@ public class SplitClientConfig {
             return this;
         }
 
+        /**
+         * How long to wait for impressions background thread before shutting down
+         * the underlying connections.
+         *
+         * @param waitTime tine in milliseconds
+         * @return
+         */
+        public Builder waitBeforeShutdown(int waitTime) {
+            _waitBeforeShutdown = waitTime;
+            return this;
+        }
+
 
         public SplitClientConfig build() {
             if (_featuresRefreshRate < 30 ) {
@@ -421,7 +441,8 @@ public class SplitClientConfig {
                     _debugEnabled,
                     _labelsEnabled,
                     _impressionListener,
-                    _impressionListenerCapacity);
+                    _impressionListenerCapacity,
+                    _waitBeforeShutdown);
         }
 
     }
