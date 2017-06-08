@@ -1,6 +1,5 @@
 package io.split.client.impressions;
 
-import io.split.client.dtos.KeyImpression;
 import io.split.client.dtos.TestImpressions;
 import io.split.client.utils.Utils;
 import org.apache.http.client.methods.CloseableHttpResponse;

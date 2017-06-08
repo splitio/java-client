@@ -48,6 +48,7 @@ public class SplitFactoryImpl implements SplitFactory {
     private final SplitClient _client;
     private final SplitManager _manager;
     private final Runnable destroyer;
+    private boolean isTerminated = false;
 
     public SplitFactoryImpl(String apiToken, SplitClientConfig config) throws IOException, InterruptedException, TimeoutException, URISyntaxException {
         SSLContext sslContext = null;
@@ -154,6 +155,7 @@ public class SplitFactoryImpl implements SplitFactory {
         Runtime.getRuntime().addShutdownHook(new Thread() {
             @Override
             public void run() {
+                // Using the full path to avoid conflicting with Thread.destroy()
                 SplitFactoryImpl.this.destroy();
             }
         });
@@ -183,6 +185,11 @@ public class SplitFactoryImpl implements SplitFactory {
     }
 
     public void destroy() {
-        destroyer.run();
+        synchronized (SplitFactoryImpl.class) {
+            if (!isTerminated) {
+                destroyer.run();
+                isTerminated = true;
+            }
+        }
     }
 }
