@@ -45,4 +45,9 @@ public class SplitClientForTest implements SplitClient {
                 ? _tests.get(split)
                 : Treatments.CONTROL;
     }
+
+    @Override
+    public void destroy() {
+        
+    }
 }
