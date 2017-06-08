@@ -6,4 +6,5 @@ package io.split.client;
 public interface SplitFactory {
     SplitClient client();
     SplitManager manager();
+    void destroy();
 }

@@ -1,6 +1,7 @@
 package io.split.client;
 
 import com.google.common.base.Preconditions;
+import com.google.common.collect.ImmutableMap;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -39,7 +40,7 @@ public final class LocalhostSplitFactory implements SplitFactory {
         _splitFile = new LocalhostSplitFile(this, directory, FILENAME);
 
         Map<String, String> _featureToTreatmentMap = _splitFile.readOnSplits();
-        _client = new LocalhostSplitClient(_featureToTreatmentMap);
+        _client = new LocalhostSplitClient(this, _featureToTreatmentMap);
         _manager = new LocalhostSplitManager(_featureToTreatmentMap);
 
         _splitFile.registerWatcher();
@@ -54,6 +55,12 @@ public final class LocalhostSplitFactory implements SplitFactory {
     @Override
     public SplitManager manager() {
         return _manager;
+    }
+
+    @Override
+    public void destroy() {
+        _client.updateFeatureToTreatmentMap(ImmutableMap.<String, String>of());
+        _splitFile.stopThread();
     }
 
     public void updateFeatureToTreatmentMap(Map<String, String> featureToTreatmentMap) {
