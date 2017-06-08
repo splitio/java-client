@@ -368,7 +368,7 @@ public class SplitClientImplTest {
         SplitClientImpl client = new SplitClientImpl(
                 mock(SplitFactory.class),
                 splitFetcher,
-                new ImpressionListener.NoopImpressionListener(),
+                impressionListener,
                 new Metrics.NoopMetrics(),
                 config
         );
@@ -513,7 +513,7 @@ public class SplitClientImplTest {
         SplitClientImpl client = new SplitClientImpl(
                 mock(SplitFactory.class),
                 splitFetcher,
-                new ImpressionListener.NoopImpressionListener(),
+                impressionListener,
                 new Metrics.NoopMetrics(),
                 config
         );
