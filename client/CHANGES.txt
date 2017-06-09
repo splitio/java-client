@@ -2,6 +2,7 @@ CHANGES
 
 2.0.3 (June 2nd, 2017)
 - Support to destroy all clients and background processes before shutdown via splitFactory.destroy() or splitClient.destroy()
+- Define SLF4j in the root pom instead of twice.
 
 2.0.2 (May 16th, 2017)
 - Support for Set based matchers: 'has any of', 'has all of', 'is equal to', and 'is part of'
