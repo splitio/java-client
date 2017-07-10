@@ -45,8 +45,8 @@ public class NegatableMatcherTest {
     }
 
     private void test(AttributeMatcher.NegatableMatcher negationMatcher, String key, boolean expected) {
-        assertThat(negationMatcher.match(key), is(expected));
-        assertThat(negationMatcher.delegate().match(key), is(!expected));
+        assertThat(negationMatcher.match(key, null, null, null), is(expected));
+        assertThat(negationMatcher.delegate().match(key, null, null, null), is(!expected));
 
     }
 

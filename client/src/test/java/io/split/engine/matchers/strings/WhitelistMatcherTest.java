@@ -1,7 +1,6 @@
 package io.split.engine.matchers.strings;
 
 import com.google.common.collect.Lists;
-import io.split.engine.matchers.strings.WhitelistMatcher;
 import org.junit.Test;
 
 import java.util.Collections;
@@ -24,11 +23,11 @@ public class WhitelistMatcherTest {
         WhitelistMatcher matcher = new WhitelistMatcher(whitelist);
 
         for (String item : whitelist) {
-            assertThat(matcher.match(item), is(true));
+            assertThat(matcher.match(item, null, null, null), is(true));
         }
 
-        assertThat(matcher.match("hello"), is(false));
-        assertThat(matcher.match(null), is(false));
+        assertThat(matcher.match("hello", null, null, null), is(false));
+        assertThat(matcher.match(null, null, null, null), is(false));
     }
 
     @Test
@@ -38,7 +37,7 @@ public class WhitelistMatcherTest {
         WhitelistMatcher matcher = new WhitelistMatcher(Collections.<String>emptyList());
 
         for (String item : whitelist) {
-            assertThat(matcher.match(item), is(false));
+            assertThat(matcher.match(item, null, null, null), is(false));
         }
 
     }
