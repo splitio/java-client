@@ -2,6 +2,7 @@ package io.split.client;
 
 import io.split.client.api.Key;
 import io.split.client.dtos.ConditionType;
+import io.split.client.exceptions.ChangeNumberExceptionWrapper;
 import io.split.client.impressions.Impression;
 import io.split.client.impressions.ImpressionListener;
 import io.split.engine.experiments.ParsedCondition;

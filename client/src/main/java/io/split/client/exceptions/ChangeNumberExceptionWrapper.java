@@ -1,4 +1,4 @@
-package io.split.client;
+package io.split.client.exceptions;
 
 /**
  * Created by adilaijaz on 1/5/17.
