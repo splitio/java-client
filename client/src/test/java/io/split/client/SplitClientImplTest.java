@@ -220,17 +220,15 @@ public class SplitClientImplTest {
     }
 
     @Test
-    public void dependency_matcher() {
+    public void dependency_matcher_on() {
         String parent = "parent";
         String dependent = "dependent";
 
-        String on_treatment = "on";
-
-        ParsedCondition parent_is_on = ParsedCondition.createParsedConditionForTests(CombiningMatcher.of(new AllKeysMatcher()), Lists.newArrayList(partition(on_treatment, 100)));
+        ParsedCondition parent_is_on = ParsedCondition.createParsedConditionForTests(CombiningMatcher.of(new AllKeysMatcher()), Lists.newArrayList(partition(Treatments.ON, 100)));
         List<ParsedCondition> parent_conditions = Lists.newArrayList(parent_is_on);
         ParsedSplit parentSplit = ParsedSplit.createParsedSplitForTests(parent, 123, false, Treatments.OFF, parent_conditions, null, 1, 1);
 
-        ParsedCondition dependent_needs_parent = ParsedCondition.createParsedConditionForTests(CombiningMatcher.of(new DependencyMatcher(parent, Lists.newArrayList(on_treatment))), Lists.newArrayList(partition("on", 100)));
+        ParsedCondition dependent_needs_parent = ParsedCondition.createParsedConditionForTests(CombiningMatcher.of(new DependencyMatcher(parent, Lists.newArrayList(Treatments.ON))), Lists.newArrayList(partition(Treatments.ON, 100)));
         List<ParsedCondition> dependent_conditions = Lists.newArrayList(dependent_needs_parent);
         ParsedSplit dependentSplit = ParsedSplit.createParsedSplitForTests(dependent, 123, false, Treatments.OFF, dependent_conditions, null, 1, 1);
 
@@ -246,15 +244,67 @@ public class SplitClientImplTest {
                 config
         );
 
-        assertThat(client.getTreatment("key", parent), is(equalTo("on")));
-        assertThat(client.getTreatment("key", dependent), is(equalTo("on")));
+        assertThat(client.getTreatment("key", parent), is(equalTo(Treatments.ON)));
+        assertThat(client.getTreatment("key", dependent), is(equalTo(Treatments.ON)));
+    }
+
+    @Test
+    public void dependency_matcher_off() {
+        String parent = "parent";
+        String dependent = "dependent";
+
+        ParsedCondition parent_is_on = ParsedCondition.createParsedConditionForTests(CombiningMatcher.of(new AllKeysMatcher()), Lists.newArrayList(partition(Treatments.ON, 100)));
+        List<ParsedCondition> parent_conditions = Lists.newArrayList(parent_is_on);
+        ParsedSplit parentSplit = ParsedSplit.createParsedSplitForTests(parent, 123, false, Treatments.OFF, parent_conditions, null, 1, 1);
+
+        ParsedCondition dependent_needs_parent = ParsedCondition.createParsedConditionForTests(CombiningMatcher.of(new DependencyMatcher(parent, Lists.newArrayList(Treatments.OFF))), Lists.newArrayList(partition(Treatments.ON, 100)));
+        List<ParsedCondition> dependent_conditions = Lists.newArrayList(dependent_needs_parent);
+        ParsedSplit dependentSplit = ParsedSplit.createParsedSplitForTests(dependent, 123, false, Treatments.OFF, dependent_conditions, null, 1, 1);
+
+        SplitFetcher splitFetcher = mock(SplitFetcher.class);
+        when(splitFetcher.fetch(parent)).thenReturn(parentSplit);
+        when(splitFetcher.fetch(dependent)).thenReturn(dependentSplit);
+
+        SplitClientImpl client = new SplitClientImpl(
+                mock(SplitFactory.class),
+                splitFetcher,
+                new ImpressionListener.NoopImpressionListener(),
+                new Metrics.NoopMetrics(),
+                config
+        );
+
+        assertThat(client.getTreatment("key", parent), is(equalTo(Treatments.ON)));
+        assertThat(client.getTreatment("key", dependent), is(equalTo(Treatments.OFF)));
+    }
+
+    @Test
+    public void dependency_matcher_control() {
+        String dependent = "dependent";
+
+        String on_treatment = Treatments.ON;
+        ParsedCondition dependent_needs_parent = ParsedCondition.createParsedConditionForTests(CombiningMatcher.of(new DependencyMatcher("not-exists", Lists.newArrayList(on_treatment))), Lists.newArrayList(partition(Treatments.ON, 100)));
+        List<ParsedCondition> dependent_conditions = Lists.newArrayList(dependent_needs_parent);
+        ParsedSplit dependentSplit = ParsedSplit.createParsedSplitForTests(dependent, 123, false, Treatments.OFF, dependent_conditions, null, 1, 1);
+
+        SplitFetcher splitFetcher = mock(SplitFetcher.class);
+        when(splitFetcher.fetch(dependent)).thenReturn(dependentSplit);
+
+        SplitClientImpl client = new SplitClientImpl(
+                mock(SplitFactory.class),
+                splitFetcher,
+                new ImpressionListener.NoopImpressionListener(),
+                new Metrics.NoopMetrics(),
+                config
+        );
+
+        assertThat(client.getTreatment("key", dependent), is(equalTo(Treatments.CONTROL)));
     }
 
     @Test
     public void attributes_work() {
         String test = "test1";
 
-        ParsedCondition adil_is_always_on = ParsedCondition.createParsedConditionForTests(CombiningMatcher.of(new WhitelistMatcher(Lists.newArrayList("adil@codigo.com"))), Lists.newArrayList(partition("on", 100)));
+        ParsedCondition adil_is_always_on = ParsedCondition.createParsedConditionForTests(CombiningMatcher.of(new WhitelistMatcher(Lists.newArrayList("adil@codigo.com"))), Lists.newArrayList(partition(Treatments.ON, 100)));
         ParsedCondition users_with_age_greater_than_10_are_on = ParsedCondition.createParsedConditionForTests(CombiningMatcher.of("age", new GreaterThanOrEqualToMatcher(10, DataType.NUMBER)), Lists.newArrayList(partition("on", 100)));
 
         List<ParsedCondition> conditions = Lists.newArrayList(adil_is_always_on, users_with_age_greater_than_10_are_on);
