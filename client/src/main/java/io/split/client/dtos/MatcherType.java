@@ -25,6 +25,9 @@ public enum MatcherType {
     ENDS_WITH,
     CONTAINS_STRING,
 
+    /* Boolean Matcher */
+    EQUAL_TO_BOOLEAN,
+
     /* Dependency Matcher */
     IN_SPLIT_TREATMENT
 }
