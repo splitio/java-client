@@ -13,6 +13,7 @@ import io.split.engine.experiments.ParsedSplit;
 import io.split.engine.experiments.SplitFetcher;
 import io.split.engine.matchers.AllKeysMatcher;
 import io.split.engine.matchers.CombiningMatcher;
+import io.split.engine.matchers.DependencyMatcher;
 import io.split.engine.matchers.EqualToMatcher;
 import io.split.engine.matchers.GreaterThanOrEqualToMatcher;
 import io.split.engine.matchers.collections.ContainsAnyOfSetMatcher;
@@ -216,6 +217,37 @@ public class SplitClientImplTest {
         assertThat(client.getTreatment("adil@codigo.com", test), is(equalTo(Treatments.OFF)));
 
         verify(splitFetcher).fetch(test);
+    }
+
+    @Test
+    public void dependency_matcher() {
+        String parent = "parent";
+        String dependent = "dependent";
+
+        String on_treatment = "on";
+
+        ParsedCondition parent_is_on = ParsedCondition.createParsedConditionForTests(CombiningMatcher.of(new AllKeysMatcher()), Lists.newArrayList(partition(on_treatment, 100)));
+        List<ParsedCondition> parent_conditions = Lists.newArrayList(parent_is_on);
+        ParsedSplit parentSplit = ParsedSplit.createParsedSplitForTests(parent, 123, false, Treatments.OFF, parent_conditions, null, 1, 1);
+
+        ParsedCondition dependent_needs_parent = ParsedCondition.createParsedConditionForTests(CombiningMatcher.of(new DependencyMatcher(parent, Lists.newArrayList(on_treatment))), Lists.newArrayList(partition("on", 100)));
+        List<ParsedCondition> dependent_conditions = Lists.newArrayList(dependent_needs_parent);
+        ParsedSplit dependentSplit = ParsedSplit.createParsedSplitForTests(dependent, 123, false, Treatments.OFF, dependent_conditions, null, 1, 1);
+
+        SplitFetcher splitFetcher = mock(SplitFetcher.class);
+        when(splitFetcher.fetch(parent)).thenReturn(parentSplit);
+        when(splitFetcher.fetch(dependent)).thenReturn(dependentSplit);
+
+        SplitClientImpl client = new SplitClientImpl(
+                mock(SplitFactory.class),
+                splitFetcher,
+                new ImpressionListener.NoopImpressionListener(),
+                new Metrics.NoopMetrics(),
+                config
+        );
+
+        assertThat(client.getTreatment("key", parent), is(equalTo("on")));
+        assertThat(client.getTreatment("key", dependent), is(equalTo("on")));
     }
 
     @Test

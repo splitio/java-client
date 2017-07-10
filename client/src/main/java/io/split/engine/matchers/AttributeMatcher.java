@@ -96,7 +96,7 @@ public final class AttributeMatcher {
 
         @Override
         public boolean match(Object matchValue, String bucketingKey, Map<String, Object> attributes, SplitClientImpl splitClient) {
-            boolean result = _delegate.match(matchValue, null, null, null);
+            boolean result = _delegate.match(matchValue, bucketingKey, attributes, splitClient);
             return (_negate) ? !result : result;
         }
 
