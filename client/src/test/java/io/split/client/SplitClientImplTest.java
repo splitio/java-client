@@ -281,10 +281,9 @@ public class SplitClientImplTest {
     public void dependency_matcher_control() {
         String dependent = "dependent";
 
-        String on_treatment = Treatments.ON;
-        ParsedCondition dependent_needs_parent = ParsedCondition.createParsedConditionForTests(CombiningMatcher.of(new DependencyMatcher("not-exists", Lists.newArrayList(on_treatment))), Lists.newArrayList(partition(Treatments.ON, 100)));
+        ParsedCondition dependent_needs_parent = ParsedCondition.createParsedConditionForTests(CombiningMatcher.of(new DependencyMatcher("not-exists", Lists.newArrayList(Treatments.OFF))), Lists.newArrayList(partition(Treatments.OFF, 100)));
         List<ParsedCondition> dependent_conditions = Lists.newArrayList(dependent_needs_parent);
-        ParsedSplit dependentSplit = ParsedSplit.createParsedSplitForTests(dependent, 123, false, Treatments.OFF, dependent_conditions, null, 1, 1);
+        ParsedSplit dependentSplit = ParsedSplit.createParsedSplitForTests(dependent, 123, false, Treatments.ON, dependent_conditions, null, 1, 1);
 
         SplitFetcher splitFetcher = mock(SplitFetcher.class);
         when(splitFetcher.fetch(dependent)).thenReturn(dependentSplit);
@@ -297,7 +296,9 @@ public class SplitClientImplTest {
                 config
         );
 
-        assertThat(client.getTreatment("key", dependent), is(equalTo(Treatments.CONTROL)));
+//        assertThat(client.getTreatment("key", dependent), is(equalTo(Treatments.CONTROL)));
+        assertThat(client.getTreatment("key", dependent), is(equalTo(Treatments.ON)));
+
     }
 
     @Test
