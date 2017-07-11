@@ -12,7 +12,7 @@ import java.util.TimeZone;
  * Created by adilaijaz on 3/7/16.
  */
 public class Transformers {
-
+    private static Set<String> VALID_BOOLEAN_STRINGS = Sets.newHashSet("true", "false");
     private static TimeZone UTC = TimeZone.getTimeZone("UTC");
 
     public static Long asLong(Object obj) {
@@ -70,7 +70,7 @@ public class Transformers {
         }
 
         if (obj instanceof String) {
-            if (Sets.newHashSet("true", "false").contains(((String) obj).toLowerCase())) {
+            if (VALID_BOOLEAN_STRINGS.contains(((String) obj).toLowerCase())) {
                 return Boolean.parseBoolean((String) obj);
             }
         }
