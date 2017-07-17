@@ -24,11 +24,11 @@ public class UserDefinedSegmentMatcherTest {
         UserDefinedSegmentMatcher matcher = new UserDefinedSegmentMatcher(fetcher);
 
         for (String key : keys) {
-            assertThat(matcher.match(key), is(true));
+            assertThat(matcher.match(key, null, null, null), is(true));
         }
 
-        assertThat(matcher.match("foo"), is(false));
-        assertThat(matcher.match(null), is(false));
+        assertThat(matcher.match("foo", null, null, null), is(false));
+        assertThat(matcher.match(null, null, null, null), is(false));
 
     }
 

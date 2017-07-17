@@ -1,6 +1,9 @@
 package io.split.engine.matchers;
 
+import io.split.client.SplitClientImpl;
 import io.split.client.dtos.DataType;
+
+import java.util.Map;
 
 import static io.split.engine.matchers.Transformers.asDate;
 import static io.split.engine.matchers.Transformers.asLong;
@@ -26,20 +29,16 @@ public class EqualToMatcher implements Matcher {
     }
 
     @Override
-    public boolean match(Object key) {
+    public boolean match(Object matchValue, String bucketingKey, Map<String, Object> attributes, SplitClientImpl splitClient) {
         Long keyAsLong;
 
         if (_dataType == DataType.DATETIME) {
-            keyAsLong = asDate(key);
+            keyAsLong = asDate(matchValue);
         } else {
-            keyAsLong = asLong(key);
+            keyAsLong = asLong(matchValue);
         }
 
-        if (keyAsLong == null) {
-            return false;
-        }
-
-        return keyAsLong.longValue() == _normalizedCompareTo;
+        return keyAsLong != null && keyAsLong == _normalizedCompareTo;
     }
 
 

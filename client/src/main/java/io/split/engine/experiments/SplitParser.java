@@ -11,6 +11,7 @@ import io.split.engine.matchers.AllKeysMatcher;
 import io.split.engine.matchers.AttributeMatcher;
 import io.split.engine.matchers.BetweenMatcher;
 import io.split.engine.matchers.CombiningMatcher;
+import io.split.engine.matchers.DependencyMatcher;
 import io.split.engine.matchers.EqualToMatcher;
 import io.split.engine.matchers.GreaterThanOrEqualToMatcher;
 import io.split.engine.matchers.LessThanOrEqualToMatcher;
@@ -153,6 +154,12 @@ public final class SplitParser {
             case CONTAINS_STRING:
                 checkNotNull(matcher.whitelistMatcherData);
                 delegate = new ContainsAnyOfMatcher(matcher.whitelistMatcherData.whitelist);
+                break;
+            case IN_SPLIT_TREATMENT:
+                checkNotNull(matcher.dependencyMatcherData,
+                        "MatcherType is " + matcher.matcherType
+                                + ". matcher.dependencyMatcherData() MUST NOT BE null");
+                delegate = new DependencyMatcher(matcher.dependencyMatcherData.split, matcher.dependencyMatcherData.treatments);
                 break;
             default:
                 throw new IllegalArgumentException("Unknown matcher type: " + matcher.matcherType);

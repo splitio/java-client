@@ -1,16 +1,17 @@
 package io.split.engine.matchers.strings;
 
+import io.split.client.SplitClientImpl;
 import io.split.engine.matchers.Matcher;
 
 import java.util.Collection;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
 
 /**
  * Created by adilaijaz on 5/4/15.
  */
 public class WhitelistMatcher implements Matcher {
-
     private final Set<String> _whitelist = new HashSet<>();
 
     public WhitelistMatcher(Collection<String> whitelist) {
@@ -20,10 +21,9 @@ public class WhitelistMatcher implements Matcher {
         _whitelist.addAll(whitelist);
     }
 
-
     @Override
-    public boolean match(Object key) {
-        return _whitelist.contains(key);
+    public boolean match(Object matchValue, String bucketingKey, Map<String, Object> attributes, SplitClientImpl splitClient) {
+        return _whitelist.contains(matchValue);
     }
 
     @Override

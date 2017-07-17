@@ -1,6 +1,9 @@
 package io.split.engine.matchers;
 
+import io.split.client.SplitClientImpl;
 import io.split.engine.segments.Segment;
+
+import java.util.Map;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
@@ -24,11 +27,11 @@ public class UserDefinedSegmentMatcher implements Matcher {
 
 
     @Override
-    public boolean match(Object key) {
-        if (!(key instanceof String)) {
+    public boolean match(Object matchValue, String bucketingKey, Map<String, Object> attributes, SplitClientImpl splitClient) {
+        if (!(matchValue instanceof String)) {
             return false;
         }
-        return _segment.contains((String) key);
+        return _segment.contains((String) matchValue);
     }
 
     @Override

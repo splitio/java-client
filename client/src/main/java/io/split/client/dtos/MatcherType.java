@@ -8,20 +8,23 @@ public enum MatcherType {
     IN_SEGMENT,
     WHITELIST,
 
-    /**Numeric Matchers **/
+    /* Numeric Matcher */
     EQUAL_TO,
     GREATER_THAN_OR_EQUAL_TO,
     LESS_THAN_OR_EQUAL_TO,
     BETWEEN,
 
-    /** Set related matchers **/
+    /* Set Matcher */
     EQUAL_TO_SET,
     CONTAINS_ANY_OF_SET,
     CONTAINS_ALL_OF_SET,
     PART_OF_SET,
 
-    /**String Matchers **/
+    /* String Matcher */
     STARTS_WITH,
     ENDS_WITH,
-    CONTAINS_STRING
+    CONTAINS_STRING,
+
+    /* Dependency Matcher */
+    IN_SPLIT_TREATMENT
 }

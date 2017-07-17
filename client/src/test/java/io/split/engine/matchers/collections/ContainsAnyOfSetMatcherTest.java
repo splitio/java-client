@@ -22,19 +22,19 @@ public class ContainsAnyOfSetMatcherTest {
 
         ContainsAnyOfSetMatcher matcher = new ContainsAnyOfSetMatcher(set);
 
-        assertThat(matcher.match(null), is(false));
+        assertThat(matcher.match(null, null, null, null), is(false));
 
         Set<String> argument = new HashSet<>();
-        assertThat(matcher.match(argument), is(false));
+        assertThat(matcher.match(argument, null, null, null), is(false));
 
         argument.add("second");
-        assertThat(matcher.match(argument), is(true));
+        assertThat(matcher.match(argument, null, null, null), is(true));
 
         argument.add("first");
-        assertThat(matcher.match(argument), is(true));
+        assertThat(matcher.match(argument, null, null, null), is(true));
 
         argument.add("third");
-        assertThat(matcher.match(argument), is(true));
+        assertThat(matcher.match(argument, null, null, null), is(true));
     }
 
     @Test
@@ -45,19 +45,19 @@ public class ContainsAnyOfSetMatcherTest {
 
         ContainsAnyOfSetMatcher matcher = new ContainsAnyOfSetMatcher(list);
 
-        assertThat(matcher.match(null), is(false));
+        assertThat(matcher.match(null, null, null, null), is(false));
 
         List<String> argument = new ArrayList<>();
-        assertThat(matcher.match(argument), is(false));
+        assertThat(matcher.match(argument, null, null, null), is(false));
 
         argument.add("second");
-        assertThat(matcher.match(argument), is(true));
+        assertThat(matcher.match(argument, null, null, null), is(true));
 
         argument.add("first");
-        assertThat(matcher.match(argument), is(true));
+        assertThat(matcher.match(argument, null, null, null), is(true));
 
         argument.add("third");
-        assertThat(matcher.match(argument), is(true));
+        assertThat(matcher.match(argument, null, null, null), is(true));
     }
 
     @Test
@@ -66,18 +66,18 @@ public class ContainsAnyOfSetMatcherTest {
 
         ContainsAnyOfSetMatcher matcher = new ContainsAnyOfSetMatcher(list);
 
-        assertThat(matcher.match(null), is(false));
+        assertThat(matcher.match(null, null, null, null), is(false));
 
         List<String> argument = new ArrayList<>();
-        assertThat(matcher.match(argument), is(false));
+        assertThat(matcher.match(argument, null, null, null), is(false));
 
         argument.add("second");
-        assertThat(matcher.match(argument), is(false));
+        assertThat(matcher.match(argument, null, null, null), is(false));
 
         argument.add("first");
-        assertThat(matcher.match(argument), is(false));
+        assertThat(matcher.match(argument, null, null, null), is(false));
 
         argument.add("third");
-        assertThat(matcher.match(argument), is(false));
+        assertThat(matcher.match(argument, null, null, null), is(false));
     }
 }

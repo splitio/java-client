@@ -1,5 +1,7 @@
 package io.split.engine.matchers;
 
+import io.split.client.SplitClientImpl;
+
 import java.util.Map;
 import java.util.Objects;
 
@@ -25,9 +27,9 @@ public final class AttributeMatcher {
         _matcher = new NegatableMatcher(matcher, negate);
     }
 
-    public boolean match(String key, Map<String, Object> attributes) {
+    public boolean match(String key, String bucketingKey, Map<String, Object> attributes, SplitClientImpl splitClient) {
         if (_attribute == null) {
-            return _matcher.match(key);
+            return _matcher.match(key, bucketingKey, attributes, splitClient);
         }
 
         if (attributes == null) {
@@ -40,7 +42,7 @@ public final class AttributeMatcher {
         }
 
 
-        return _matcher.match(value);
+        return _matcher.match(value, bucketingKey, null, null);
     }
 
     @Override
@@ -55,7 +57,6 @@ public final class AttributeMatcher {
     public Matcher matcher() {
         return _matcher;
     }
-
 
     @Override
     public boolean equals(Object obj) {
@@ -94,8 +95,8 @@ public final class AttributeMatcher {
 
 
         @Override
-        public boolean match(Object key) {
-            boolean result = _delegate.match(key);
+        public boolean match(Object matchValue, String bucketingKey, Map<String, Object> attributes, SplitClientImpl splitClient) {
+            boolean result = _delegate.match(matchValue, bucketingKey, attributes, splitClient);
             return (_negate) ? !result : result;
         }
 

@@ -1,9 +1,11 @@
 package io.split.engine.matchers.collections;
 
+import io.split.client.SplitClientImpl;
 import io.split.engine.matchers.Matcher;
 
 import java.util.Collection;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
 
 import static io.split.engine.matchers.Transformers.toSetOfStrings;
@@ -23,22 +25,19 @@ public class EqualToSetMatcher implements Matcher {
     }
 
     @Override
-    public boolean match(Object key) {
-
-        if (key == null) {
+    public boolean match(Object matchValue, String bucketingKey, Map<String, Object> attributes, SplitClientImpl splitClient) {
+        if (matchValue == null) {
             return false;
         }
 
-        if (!(key instanceof Collection)) {
+        if (!(matchValue instanceof Collection)) {
             return false;
         }
 
-        Set<String> keyAsSet = toSetOfStrings((Collection) key);
+        Set<String> keyAsSet = toSetOfStrings((Collection) matchValue);
 
         return keyAsSet.equals(_compareTo);
     }
-
-
 
     @Override
     public String toString() {
