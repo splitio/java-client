@@ -23,6 +23,7 @@ import io.split.engine.matchers.collections.EqualToSetMatcher;
 import io.split.engine.matchers.collections.PartOfSetMatcher;
 import io.split.engine.matchers.strings.ContainsAnyOfMatcher;
 import io.split.engine.matchers.strings.EndsWithAnyOfMatcher;
+import io.split.engine.matchers.strings.RegularExpressionMatcher;
 import io.split.engine.matchers.strings.StartsWithAnyOfMatcher;
 import io.split.engine.matchers.strings.WhitelistMatcher;
 import io.split.engine.segments.Segment;
@@ -155,6 +156,10 @@ public final class SplitParser {
             case CONTAINS_STRING:
                 checkNotNull(matcher.whitelistMatcherData);
                 delegate = new ContainsAnyOfMatcher(matcher.whitelistMatcherData.whitelist);
+                break;
+            case MATCHES_STRING:
+                checkNotNull(matcher.stringMatcherData);
+                delegate = new RegularExpressionMatcher(matcher.stringMatcherData);
                 break;
             case IN_SPLIT_TREATMENT:
                 checkNotNull(matcher.dependencyMatcherData,
