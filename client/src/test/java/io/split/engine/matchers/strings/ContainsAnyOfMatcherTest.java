@@ -37,14 +37,14 @@ public class ContainsAnyOfMatcherTest {
     }
 
     private void works(ContainsAnyOfMatcher matcher) {
-        assertThat(matcher.match(null), is(false));
-        assertThat(matcher.match(""), is(false));
-        assertThat(matcher.match("foo"), is(false));
-        assertThat(matcher.match("firstsecond"), is(true));
-        assertThat(matcher.match("secondfirst"), is(true));
-        assertThat(matcher.match("firstthird"), is(true));
-        assertThat(matcher.match("first"), is(true));
-        assertThat(matcher.match("second"), is(true));
+        assertThat(matcher.match(null, null, null, null), is(false));
+        assertThat(matcher.match("", null, null, null), is(false));
+        assertThat(matcher.match("foo", null, null, null), is(false));
+        assertThat(matcher.match("firstsecond", null, null, null), is(true));
+        assertThat(matcher.match("secondfirst", null, null, null), is(true));
+        assertThat(matcher.match("firstthird", null, null, null), is(true));
+        assertThat(matcher.match("first", null, null, null), is(true));
+        assertThat(matcher.match("second", null, null, null), is(true));
     }
 
 
@@ -54,11 +54,11 @@ public class ContainsAnyOfMatcherTest {
 
         ContainsAnyOfMatcher matcher = new ContainsAnyOfMatcher(list);
 
-        assertThat(matcher.match(null), is(false));
-        assertThat(matcher.match(""), is(false));
-        assertThat(matcher.match("foo"), is(false));
-        assertThat(matcher.match("firstsecond"), is(false));
-        assertThat(matcher.match("firt"), is(false));
-        assertThat(matcher.match("secondfirst"), is(false));
+        assertThat(matcher.match(null, null, null, null), is(false));
+        assertThat(matcher.match("", null, null, null), is(false));
+        assertThat(matcher.match("foo", null, null, null), is(false));
+        assertThat(matcher.match("firstsecond", null, null, null), is(false));
+        assertThat(matcher.match("firt", null, null, null), is(false));
+        assertThat(matcher.match("secondfirst", null, null, null), is(false));
     }
 }

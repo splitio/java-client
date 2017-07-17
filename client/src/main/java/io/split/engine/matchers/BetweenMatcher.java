@@ -1,6 +1,9 @@
 package io.split.engine.matchers;
 
+import io.split.client.SplitClientImpl;
 import io.split.client.dtos.DataType;
+
+import java.util.Map;
 
 import static io.split.engine.matchers.Transformers.asDateHourMinute;
 import static io.split.engine.matchers.Transformers.asLong;
@@ -33,20 +36,20 @@ public class BetweenMatcher implements Matcher {
     }
 
     @Override
-    public boolean match(Object key) {
+    public boolean match(Object matchValue, String bucketingKey, Map<String, Object> attributes, SplitClientImpl splitClient) {
         Long keyAsLong;
 
         if (_dataType == DataType.DATETIME) {
-            keyAsLong = asDateHourMinute(key);
+            keyAsLong = asDateHourMinute(matchValue);
         } else {
-            keyAsLong = asLong(key);
+            keyAsLong = asLong(matchValue);
         }
 
         if (keyAsLong == null) {
             return false;
         }
 
-        return keyAsLong.longValue() >= _normalizedStart && keyAsLong.longValue() <= _normalizedEnd;
+        return keyAsLong >= _normalizedStart && keyAsLong <= _normalizedEnd;
     }
 
     @Override

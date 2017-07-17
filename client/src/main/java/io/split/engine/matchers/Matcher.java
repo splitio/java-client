@@ -1,10 +1,9 @@
 package io.split.engine.matchers;
 
+import io.split.client.SplitClientImpl;
+
 import java.util.Map;
 
-/**
- * Created by adilaijaz on 5/4/15.
- */
 public interface Matcher {
-    boolean match(Object key);
+    boolean match(Object matchValue, String bucketingKey, Map<String, Object> attributes, SplitClientImpl splitClient);
 }

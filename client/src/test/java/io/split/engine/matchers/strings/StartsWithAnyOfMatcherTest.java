@@ -1,6 +1,5 @@
 package io.split.engine.matchers.strings;
 
-import io.split.engine.matchers.strings.StartsWithAnyOfMatcher;
 import org.junit.Test;
 
 import java.util.ArrayList;
@@ -38,12 +37,12 @@ public class StartsWithAnyOfMatcherTest {
     }
 
     private void works(StartsWithAnyOfMatcher matcher) {
-        assertThat(matcher.match(null), is(false));
-        assertThat(matcher.match(""), is(false));
-        assertThat(matcher.match("foo"), is(false));
-        assertThat(matcher.match("firstsecond"), is(true));
-        assertThat(matcher.match("firt"), is(false));
-        assertThat(matcher.match("secondfirst"), is(true));
+        assertThat(matcher.match(null, null, null, null), is(false));
+        assertThat(matcher.match("", null, null, null), is(false));
+        assertThat(matcher.match("foo", null, null, null), is(false));
+        assertThat(matcher.match("firstsecond", null, null, null), is(true));
+        assertThat(matcher.match("firt", null, null, null), is(false));
+        assertThat(matcher.match("secondfirst", null, null, null), is(true));
     }
 
 
@@ -53,11 +52,11 @@ public class StartsWithAnyOfMatcherTest {
 
         StartsWithAnyOfMatcher matcher = new StartsWithAnyOfMatcher(list);
 
-        assertThat(matcher.match(null), is(false));
-        assertThat(matcher.match(""), is(false));
-        assertThat(matcher.match("foo"), is(false));
-        assertThat(matcher.match("firstsecond"), is(false));
-        assertThat(matcher.match("firt"), is(false));
-        assertThat(matcher.match("secondfirst"), is(false));
+        assertThat(matcher.match(null, null, null, null), is(false));
+        assertThat(matcher.match("", null, null, null), is(false));
+        assertThat(matcher.match("foo", null, null, null), is(false));
+        assertThat(matcher.match("firstsecond", null, null, null), is(false));
+        assertThat(matcher.match("firt", null, null, null), is(false));
+        assertThat(matcher.match("secondfirst", null, null, null), is(false));
     }
 }

@@ -13,4 +13,5 @@ public class Matcher {
     public WhitelistMatcherData whitelistMatcherData;
     public UnaryNumericMatcherData unaryNumericMatcherData;
     public BetweenMatcherData betweenMatcherData;
+    public DependencyMatcherData dependencyMatcherData;
 }

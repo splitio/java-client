@@ -1,6 +1,5 @@
 package io.split.engine.matchers;
 
-import io.split.engine.matchers.AllKeysMatcher;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.junit.Test;
 
@@ -15,10 +14,10 @@ public class AllKeysMatcherTest {
     @Test
     public void works() {
         AllKeysMatcher matcher = new AllKeysMatcher();
-        assertThat(matcher.match(null), is(false));
+        assertThat(matcher.match(null, null, null, null), is(false));
         for (int i = 0; i < 100; i++) {
             String randomKey = RandomStringUtils.random(10);
-            assertThat(matcher.match(randomKey), is(true));
+            assertThat(matcher.match(randomKey, null, null, null), is(true));
         }
 
     }

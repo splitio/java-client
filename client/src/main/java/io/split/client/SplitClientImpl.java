@@ -2,11 +2,12 @@ package io.split.client;
 
 import io.split.client.api.Key;
 import io.split.client.dtos.ConditionType;
+import io.split.client.exceptions.ChangeNumberExceptionWrapper;
+import io.split.client.impressions.Impression;
+import io.split.client.impressions.ImpressionListener;
 import io.split.engine.experiments.ParsedCondition;
 import io.split.engine.experiments.ParsedSplit;
 import io.split.engine.experiments.SplitFetcher;
-import io.split.client.impressions.Impression;
-import io.split.client.impressions.ImpressionListener;
 import io.split.engine.metrics.Metrics;
 import io.split.engine.splitter.Splitter;
 import io.split.grammar.Treatments;
@@ -39,7 +40,7 @@ public final class SplitClientImpl implements SplitClient {
     private final Metrics _metrics;
     private final SplitClientConfig _config;
 
-    public SplitClientImpl(SplitFactory container,SplitFetcher splitFetcher, ImpressionListener impressionListener, Metrics metrics, SplitClientConfig config) {
+    public SplitClientImpl(SplitFactory container, SplitFetcher splitFetcher, ImpressionListener impressionListener, Metrics metrics, SplitClientConfig config) {
         _container = container;
         _splitFetcher = splitFetcher;
         _impressionListener = impressionListener;
@@ -94,30 +95,21 @@ public final class SplitClientImpl implements SplitClient {
 
             long start = System.currentTimeMillis();
 
-            TreatmentLabelAndChangeNumber result = null;
-            try {
-                result = getTreatmentWithoutExceptionHandling(matchingKey, bucketingKey, split, attributes);
-            } catch (ChangeNumberExceptionWrapper e) {
-                result = new TreatmentLabelAndChangeNumber(Treatments.CONTROL, EXCEPTION, e.changeNumber());
-                _log.error("Exception", e.wrappedException());
-            } catch (Exception e) {
-                result = new TreatmentLabelAndChangeNumber(Treatments.CONTROL, EXCEPTION);
-                _log.error("Exception", e);
-            } finally {
-                recordStats(
-                        matchingKey,
-                        bucketingKey,
-                        split,
-                        start,
-                        result._treatment,
-                        "sdk.getTreatment",
-                        _config.labelsEnabled() ? result._label : null,
-                        result._changeNumber,
-                        attributes);
-            }
+            TreatmentLabelAndChangeNumber result = getTreatmentResultWithoutImpressions(matchingKey, bucketingKey, split, attributes);
+
+            recordStats(
+                    matchingKey,
+                    bucketingKey,
+                    split,
+                    start,
+                    result._treatment,
+                    "sdk.getTreatment",
+                    _config.labelsEnabled() ? result._label : null,
+                    result._changeNumber,
+                    attributes
+            );
 
             return result._treatment;
-
         } catch (Exception e) {
             try {
                 _log.error("CatchAll Exception", e);
@@ -138,6 +130,25 @@ public final class SplitClientImpl implements SplitClient {
         }
     }
 
+    public String getTreatmentWithoutImpressions(String matchingKey, String bucketingKey, String split, Map<String, Object> attributes) {
+        return getTreatmentResultWithoutImpressions(matchingKey, bucketingKey, split, attributes)._treatment;
+    }
+
+    private TreatmentLabelAndChangeNumber getTreatmentResultWithoutImpressions(String matchingKey, String bucketingKey, String split, Map<String, Object> attributes) {
+        TreatmentLabelAndChangeNumber result;
+        try {
+            result = getTreatmentWithoutExceptionHandling(matchingKey, bucketingKey, split, attributes);
+        } catch (ChangeNumberExceptionWrapper e) {
+            result = new TreatmentLabelAndChangeNumber(Treatments.CONTROL, EXCEPTION, e.changeNumber());
+            _log.error("Exception", e.wrappedException());
+        } catch (Exception e) {
+            result = new TreatmentLabelAndChangeNumber(Treatments.CONTROL, EXCEPTION);
+            _log.error("Exception", e);
+        }
+
+        return result;
+    }
+
     private TreatmentLabelAndChangeNumber getTreatmentWithoutExceptionHandling(String matchingKey, String bucketingKey, String split, Map<String, Object> attributes) throws ChangeNumberExceptionWrapper {
         ParsedSplit parsedSplit = _splitFetcher.fetch(split);
 
@@ -152,11 +163,10 @@ public final class SplitClientImpl implements SplitClient {
     }
 
     /**
-     *
-     * @param matchingKey MUST NOT be null
+     * @param matchingKey  MUST NOT be null
      * @param bucketingKey
-     * @param parsedSplit MUST NOT be null
-     * @param attributes MUST NOT be null
+     * @param parsedSplit  MUST NOT be null
+     * @param attributes   MUST NOT be null
      * @return
      * @throws ChangeNumberExceptionWrapper
      */
@@ -193,7 +203,7 @@ public final class SplitClientImpl implements SplitClient {
                     inRollout = true;
                 }
 
-                if (parsedCondition.matcher().match(matchingKey, attributes)) {
+                if (parsedCondition.matcher().match(matchingKey, bucketingKey, attributes, this)) {
                     String treatment = Splitter.getTreatment(bk, parsedSplit.seed(), parsedCondition.partitions(), parsedSplit.algo());
                     return new TreatmentLabelAndChangeNumber(treatment, parsedCondition.label(), parsedSplit.changeNumber());
                 }

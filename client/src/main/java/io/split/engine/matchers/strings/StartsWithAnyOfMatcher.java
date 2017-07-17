@@ -1,9 +1,11 @@
 package io.split.engine.matchers.strings;
 
+import io.split.client.SplitClientImpl;
 import io.split.engine.matchers.Matcher;
 
 import java.util.Collection;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
 
 /**
@@ -21,13 +23,12 @@ public class StartsWithAnyOfMatcher implements Matcher {
     }
 
     @Override
-    public boolean match(Object key) {
-
-        if (key == null) {
+    public boolean match(Object matchValue, String bucketingKey, Map<String, Object> attributes, SplitClientImpl splitClient) {
+        if (matchValue == null) {
             return false;
         }
 
-        if (!(key instanceof String) ) {
+        if (!(matchValue instanceof String) ) {
             return false;
         }
 
@@ -35,7 +36,7 @@ public class StartsWithAnyOfMatcher implements Matcher {
             return false;
         }
 
-        String keyAsString = (String) key;
+        String keyAsString = (String) matchValue;
 
         for (String s : _compareTo) {
             if (s.isEmpty()) {
