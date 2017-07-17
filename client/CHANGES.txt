@@ -1,6 +1,6 @@
 CHANGES
 
-2.0.6 (July 10th, 2017)
+2.0.6-RC1 (July 10th, 2017)
 - Add support for new boolean and regular expression matchers
 
 2.0.5 (July 10th, 2017)

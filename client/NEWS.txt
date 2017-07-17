@@ -1,6 +1,6 @@
 NEWS
 
-2.0.6
+2.0.6-RC1
 - Add support for new boolean and regular expression matchers
 
 2.0.5

@@ -1,8 +1,6 @@
 package io.split.engine.matchers;
 
 import io.split.client.SplitClientImpl;
-import io.split.client.exceptions.ParentIsControlException;
-import io.split.grammar.Treatments;
 
 import java.util.List;
 import java.util.Map;
@@ -36,9 +34,9 @@ public class DependencyMatcher implements Matcher {
                 attributes
         );
 
-        if(Treatments.isControl(result)) {
-            throw new ParentIsControlException();
-        }
+//        if(Treatments.isControl(result)) {
+//            throw new ParentIsControlException();
+//        }
 
         return _treatments.contains(result);
     }

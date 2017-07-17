@@ -58,7 +58,14 @@ public class AttributeMatcherTest {
         AttributeMatcher matcher = new AttributeMatcher("value", new BooleanMatcher(true), false);
         assertThat(matcher.match("ignore", null, ImmutableMap.<String, Object>of("value", true), null), is(true));
         assertThat(matcher.match("ignore", null, ImmutableMap.<String, Object>of("value", "true"), null), is(true));
+        assertThat(matcher.match("ignore", null, ImmutableMap.<String, Object>of("value", "True"), null), is(true));
+        assertThat(matcher.match("ignore", null, ImmutableMap.<String, Object>of("value", "TrUe"), null), is(true));
+        assertThat(matcher.match("ignore", null, ImmutableMap.<String, Object>of("value", "TRUE"), null), is(true));
         assertThat(matcher.match("ignore", null, ImmutableMap.<String, Object>of("value", false), null), is(false));
+        assertThat(matcher.match("ignore", null, ImmutableMap.<String, Object>of("value", "false"), null), is(false));
+        assertThat(matcher.match("ignore", null, ImmutableMap.<String, Object>of("value", "False"), null), is(false));
+        assertThat(matcher.match("ignore", null, ImmutableMap.<String, Object>of("value", "FALSE"), null), is(false));
+        assertThat(matcher.match("ignore", null, ImmutableMap.<String, Object>of("value", "faLSE"), null), is(false));
         assertThat(matcher.match("ignore", null, ImmutableMap.<String, Object>of("value", ""), null), is(false));
         assertThat(matcher.match("ignore", null, ImmutableMap.<String, Object>of("value", 0), null), is(false));
         assertThat(matcher.match("ignore", null, ImmutableMap.<String, Object>of("value", 1), null), is(false));
