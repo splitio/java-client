@@ -1,5 +1,7 @@
 package io.split.engine.matchers;
 
+import com.google.common.collect.Sets;
+
 import java.util.Calendar;
 import java.util.Collection;
 import java.util.HashSet;
@@ -10,7 +12,7 @@ import java.util.TimeZone;
  * Created by adilaijaz on 3/7/16.
  */
 public class Transformers {
-
+    private static Set<String> VALID_BOOLEAN_STRINGS = Sets.newHashSet("true", "false");
     private static TimeZone UTC = TimeZone.getTimeZone("UTC");
 
     public static Long asLong(Object obj) {
@@ -56,6 +58,24 @@ public class Transformers {
         c.set(Calendar.MILLISECOND, 0);
 
         return c.getTimeInMillis();
+    }
+
+    public static Boolean asBoolean(Object obj) {
+        if (obj == null) {
+            return null;
+        }
+
+        if (obj instanceof Boolean) {
+            return (Boolean) obj;
+        }
+
+        if (obj instanceof String) {
+            if (VALID_BOOLEAN_STRINGS.contains(((String) obj).toLowerCase())) {
+                return Boolean.parseBoolean((String) obj);
+            }
+        }
+
+        return null;
     }
 
     private static Calendar toCalendar(Object obj) {

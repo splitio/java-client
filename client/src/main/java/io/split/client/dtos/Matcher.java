@@ -14,4 +14,6 @@ public class Matcher {
     public UnaryNumericMatcherData unaryNumericMatcherData;
     public BetweenMatcherData betweenMatcherData;
     public DependencyMatcherData dependencyMatcherData;
+    public Boolean booleanMatcherData;
+    public String stringMatcherData;
 }

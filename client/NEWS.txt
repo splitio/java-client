@@ -1,7 +1,10 @@
 NEWS
 
-2.0.5-RC1
-- Add support for new Dependency matchers
+2.0.6-RC1
+- Add support for new boolean and regular expression matchers
+
+2.0.5
+- Add support for new Dependency matcher
 
 2.0.2
 - Attributes are sent to local impression listeners

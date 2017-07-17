@@ -24,6 +24,10 @@ public enum MatcherType {
     STARTS_WITH,
     ENDS_WITH,
     CONTAINS_STRING,
+    MATCHES_STRING,
+
+    /* Boolean Matcher */
+    EQUAL_TO_BOOLEAN,
 
     /* Dependency Matcher */
     IN_SPLIT_TREATMENT

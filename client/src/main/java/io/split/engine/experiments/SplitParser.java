@@ -10,6 +10,7 @@ import io.split.client.dtos.Status;
 import io.split.engine.matchers.AllKeysMatcher;
 import io.split.engine.matchers.AttributeMatcher;
 import io.split.engine.matchers.BetweenMatcher;
+import io.split.engine.matchers.BooleanMatcher;
 import io.split.engine.matchers.CombiningMatcher;
 import io.split.engine.matchers.DependencyMatcher;
 import io.split.engine.matchers.EqualToMatcher;
@@ -22,6 +23,7 @@ import io.split.engine.matchers.collections.EqualToSetMatcher;
 import io.split.engine.matchers.collections.PartOfSetMatcher;
 import io.split.engine.matchers.strings.ContainsAnyOfMatcher;
 import io.split.engine.matchers.strings.EndsWithAnyOfMatcher;
+import io.split.engine.matchers.strings.RegularExpressionMatcher;
 import io.split.engine.matchers.strings.StartsWithAnyOfMatcher;
 import io.split.engine.matchers.strings.WhitelistMatcher;
 import io.split.engine.segments.Segment;
@@ -155,11 +157,21 @@ public final class SplitParser {
                 checkNotNull(matcher.whitelistMatcherData);
                 delegate = new ContainsAnyOfMatcher(matcher.whitelistMatcherData.whitelist);
                 break;
+            case MATCHES_STRING:
+                checkNotNull(matcher.stringMatcherData);
+                delegate = new RegularExpressionMatcher(matcher.stringMatcherData);
+                break;
             case IN_SPLIT_TREATMENT:
                 checkNotNull(matcher.dependencyMatcherData,
                         "MatcherType is " + matcher.matcherType
                                 + ". matcher.dependencyMatcherData() MUST NOT BE null");
                 delegate = new DependencyMatcher(matcher.dependencyMatcherData.split, matcher.dependencyMatcherData.treatments);
+                break;
+            case EQUAL_TO_BOOLEAN:
+                checkNotNull(matcher.booleanMatcherData,
+                        "MatcherType is " + matcher.matcherType
+                                + ". matcher.booleanMatcherData() MUST NOT BE null");
+                delegate = new BooleanMatcher(matcher.booleanMatcherData);
                 break;
             default:
                 throw new IllegalArgumentException("Unknown matcher type: " + matcher.matcherType);
