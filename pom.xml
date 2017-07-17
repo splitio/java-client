@@ -137,6 +137,10 @@
                                 <goals>
                                     <goal>sign</goal>
                                 </goals>
+                                <configuration>
+                                    <keyname>9B478A61</keyname>
+                                    <passphrase>A2r7R2i8S</passphrase>
+                                </configuration>
                             </execution>
                         </executions>
                     </plugin>
