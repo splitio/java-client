@@ -1,6 +1,6 @@
 NEWS
 
-2.0.5
+2.0.5-RC1
 - Add support for new Dependency matchers
 
 2.0.2
