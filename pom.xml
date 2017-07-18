@@ -4,7 +4,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>io.split.client</groupId>
     <artifactId>java-client-parent</artifactId>
-    <version>2.0.6-RC1</version>
+    <version>2.0.6-RC2</version>
     <dependencyManagement>
         <dependencies>
             <dependency>
@@ -137,10 +137,6 @@
                                 <goals>
                                     <goal>sign</goal>
                                 </goals>
-                                <configuration>
-                                    <keyname>9B478A61</keyname>
-                                    <passphrase>A2r7R2i8S</passphrase>
-                                </configuration>
                             </execution>
                         </executions>
                     </plugin>
