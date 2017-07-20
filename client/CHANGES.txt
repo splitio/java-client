@@ -1,9 +1,7 @@
 CHANGES
 
-2.0.6-RC1 (July 10th, 2017)
+2.1.0 (July 19th, 2017)
 - Add support for new boolean and regular expression matchers
-
-2.0.5 (July 10th, 2017)
 - Support for Dependency matcher: 'in split "xxx" treatments ["xxx","yyy"]'
 
 2.0.4 (June 2nd, 2017)
