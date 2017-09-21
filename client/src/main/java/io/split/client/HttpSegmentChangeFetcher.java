@@ -74,9 +74,8 @@ public final class HttpSegmentChangeFetcher implements SegmentChangeFetcher {
 
             return Json.fromJson(json, SegmentChange.class);
         } catch (Throwable t) {
-            _log.error("Problem fetching segmentChanges", t);
             _metrics.count(PREFIX + ".exception", 1);
-            throw new IllegalStateException(t);
+            throw new IllegalStateException("Problem fetching segmentChanges: " + t.getMessage(), t);
         } finally {
             Utils.forceClose(response);
             _metrics.time(PREFIX + ".time", System.currentTimeMillis() - start);

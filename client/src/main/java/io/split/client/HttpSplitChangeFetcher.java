@@ -62,7 +62,6 @@ public final class HttpSplitChangeFetcher implements SplitChangeFetcher {
             int statusCode = response.getStatusLine().getStatusCode();
 
             if (statusCode < 200 || statusCode >= 300) {
-                _log.error("Response status was: " + statusCode);
                 _metrics.count(PREFIX + ".status." + statusCode, 1);
                 throw new IllegalStateException("Could not retrieve splitChanges; http return code " + statusCode);
             }
@@ -75,9 +74,8 @@ public final class HttpSplitChangeFetcher implements SplitChangeFetcher {
 
             return Json.fromJson(json, SplitChange.class);
         } catch (Throwable t) {
-            _log.error("Problem fetching splitChanges", t);
             _metrics.count(PREFIX + ".exception", 1);
-            throw new IllegalStateException(t);
+            throw new IllegalStateException("Problem fetching splitChanges: " + t.getMessage(), t);
         } finally {
             Utils.forceClose(response);
             _metrics.time(PREFIX + ".time", System.currentTimeMillis() - start);

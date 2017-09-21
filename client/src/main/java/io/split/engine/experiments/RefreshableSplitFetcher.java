@@ -103,9 +103,14 @@ public class RefreshableSplitFetcher implements SplitFetcher, Runnable {
             _log.warn("Interrupting split fetcher task");
             Thread.currentThread().interrupt();
         } catch (Throwable t) {
-            _log.error("RefreshableSplitFetcher failed", t);
+            _log.error("RefreshableSplitFetcher failed: " + t.getMessage());
+            if (_log.isDebugEnabled()) {
+                _log.debug("Reason:", t);
+            }
         } finally {
-            _log.info("split fetch before: " + start + ", after: " + _changeNumber.get());
+            if (_log.isDebugEnabled()) {
+                _log.debug("split fetch before: " + start + ", after: " + _changeNumber.get());
+            }
         }
     }
 
@@ -175,11 +180,11 @@ public class RefreshableSplitFetcher implements SplitFetcher, Runnable {
             }
 
             if (!toAdd.isEmpty()) {
-                _log.info("Updated features: " + toAdd.keySet());
+                _log.debug("Updated features: " + toAdd.keySet());
             }
 
             if (!toRemove.isEmpty()) {
-                _log.info("Deleted features: " + toRemove);
+                _log.debug("Deleted features: " + toRemove);
             }
 
             _changeNumber.set(change.till);
