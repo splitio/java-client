@@ -87,7 +87,10 @@ public class HttpMetrics implements Metrics, DTOMetrics {
             }
 
         } catch (Throwable t) {
-            _log.warn("Exception when posting metric" + dto, t);
+            _log.warn("Exception when posting metrics:" + t.getMessage());
+            if (_log.isDebugEnabled()) {
+                _log.debug("Reason:", t);
+            }
         } finally {
             Utils.forceClose(response);
         }

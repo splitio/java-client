@@ -1,11 +1,10 @@
 CHANGES
 
-2.2.0
-- Patch DependencyMatcherData to not error out when dependencies are used
-- Default logging is less verbose now
-- Add support for Proxy
-
+<<<<<<< HEAD
+2.0.6-RC2 (July 10th, 2017)
+=======
 2.1.0 (July 19th, 2017)
+>>>>>>> development
 - Add support for new boolean and regular expression matchers
 - Support for Dependency matcher: 'in split "xxx" treatments ["xxx","yyy"]'
 

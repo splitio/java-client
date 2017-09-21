@@ -15,6 +15,10 @@ import io.split.engine.experiments.SplitChangeFetcher;
 import io.split.engine.experiments.SplitParser;
 import io.split.engine.segments.RefreshableSegmentFetcher;
 import io.split.engine.segments.SegmentChangeFetcher;
+import org.apache.http.auth.AuthScope;
+import org.apache.http.auth.Credentials;
+import org.apache.http.auth.UsernamePasswordCredentials;
+import org.apache.http.client.CredentialsProvider;
 import org.apache.http.client.config.RequestConfig;
 import org.apache.http.config.Registry;
 import org.apache.http.config.RegistryBuilder;
@@ -22,8 +26,11 @@ import org.apache.http.conn.socket.ConnectionSocketFactory;
 import org.apache.http.conn.socket.PlainConnectionSocketFactory;
 import org.apache.http.conn.ssl.SSLConnectionSocketFactory;
 import org.apache.http.conn.ssl.SSLContexts;
+import org.apache.http.impl.client.BasicCredentialsProvider;
 import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.impl.client.HttpClients;
+import org.apache.http.impl.conn.DefaultProxyRoutePlanner;
 import org.apache.http.impl.conn.PoolingHttpClientConnectionManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -80,14 +87,31 @@ public class SplitFactoryImpl implements SplitFactory {
         cm.setMaxTotal(20);
         cm.setDefaultMaxPerRoute(20);
 
-        final CloseableHttpClient httpclient = HttpClients.custom()
+        HttpClientBuilder httpClientbuilder = HttpClients.custom()
                 .setConnectionManager(cm)
                 .setDefaultRequestConfig(requestConfig)
                 .setSSLSocketFactory(sslsf)
                 .addInterceptorLast(AddSplitHeadersFilter.instance(apiToken))
                 .addInterceptorLast(new GzipEncoderRequestInterceptor())
-                .addInterceptorLast(new GzipDecoderResponseInterceptor())
-                .build();
+                .addInterceptorLast(new GzipDecoderResponseInterceptor());
+
+        // Set up proxy is it exists
+        if (config.proxy() != null) {
+            _log.info("Initializing Split SDK with proxy settings");
+            DefaultProxyRoutePlanner routePlanner = new DefaultProxyRoutePlanner(config.proxy());
+            httpClientbuilder.setRoutePlanner(routePlanner);
+
+            if (config.proxyUsername() != null && config.proxyPassword() != null){
+                CredentialsProvider credsProvider = new BasicCredentialsProvider();
+                AuthScope siteScope = new AuthScope(config.proxy().getHostName(), config.proxy().getPort());
+                Credentials siteCreds = new UsernamePasswordCredentials(config.proxyUsername(), config.proxyPassword());
+                credsProvider.setCredentials(siteScope, siteCreds);
+
+                httpClientbuilder.setDefaultCredentialsProvider(credsProvider);
+            }
+        }
+
+        final CloseableHttpClient httpclient = httpClientbuilder.build();
 
         URI rootTarget = URI.create(config.endpoint());
         URI eventsRootTarget = URI.create(config.eventsEndpoint());
