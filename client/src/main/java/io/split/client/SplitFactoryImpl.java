@@ -102,6 +102,7 @@ public class SplitFactoryImpl implements SplitFactory {
             httpClientbuilder.setRoutePlanner(routePlanner);
 
             if (config.proxyUsername() != null && config.proxyPassword() != null){
+                _log.debug("Proxy setup using credentials");
                 CredentialsProvider credsProvider = new BasicCredentialsProvider();
                 AuthScope siteScope = new AuthScope(config.proxy().getHostName(), config.proxy().getPort());
                 Credentials siteCreds = new UsernamePasswordCredentials(config.proxyUsername(), config.proxyPassword());
