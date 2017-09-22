@@ -75,7 +75,9 @@ public class RefreshableSegment implements Runnable, Segment {
                 long start = _changeNumber.get();
                 runWithoutExceptionHandling();
                 long end = _changeNumber.get();
-                _log.info(_segmentName + " segment fetch before: " + start + ", after: " + _changeNumber.get() + " size: " + _concurrentKeySet.size());
+                if (_log.isDebugEnabled()) {
+                    _log.debug(_segmentName + " segment fetch before: " + start + ", after: " + _changeNumber.get() + " size: " + _concurrentKeySet.size());
+                }
                 if (start >= end) {
                     break;
                 }
@@ -84,7 +86,10 @@ public class RefreshableSegment implements Runnable, Segment {
             _gates.segmentIsReady(_segmentName);
 
         } catch (Throwable t) {
-            _log.error("RefreshableSegmentFetcher failed", t);
+            _log.error("RefreshableSegmentFetcher failed: " + t.getMessage());
+            if (_log.isDebugEnabled()) {
+                _log.debug("Reason:", t);
+            }
         }
     }
 

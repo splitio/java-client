@@ -2,6 +2,7 @@ package io.split.client;
 
 
 import io.split.client.impressions.ImpressionListener;
+import org.apache.http.HttpHost;
 
 import java.io.IOException;
 import java.util.Properties;
@@ -31,6 +32,11 @@ public class SplitClientConfig {
     private final int _impressionListenerCapacity;
     private final int _waitBeforeShutdown;
 
+    // Proxy configs
+    private final HttpHost _proxy;
+    private final String _proxyUsername;
+    private final String _proxyPassword;
+
     // To be set during startup
     public static String splitSdkVersion;
 
@@ -54,7 +60,10 @@ public class SplitClientConfig {
                               boolean labelsEnabled,
                               ImpressionListener impressionListener,
                               int impressionListenerCapacity,
-                              int waitBeforeShutdown) {
+                              int waitBeforeShutdown,
+                              HttpHost proxy,
+                              String proxyUsername,
+                              String proxyPassword) {
         _endpoint = endpoint;
         _eventsEndpoint = eventsEndpoint;
         _featuresRefreshRate = pollForFeatureChangesEveryNSeconds;
@@ -71,6 +80,9 @@ public class SplitClientConfig {
         _impressionListener = impressionListener;
         _impressionListenerCapacity = impressionListenerCapacity;
         _waitBeforeShutdown = waitBeforeShutdown;
+        _proxy = proxy;
+        _proxyUsername = proxyUsername;
+        _proxyPassword = proxyPassword;
 
         Properties props = new Properties();
         try {
@@ -147,6 +159,18 @@ public class SplitClientConfig {
         return _waitBeforeShutdown;
     }
 
+    public HttpHost proxy() {
+        return _proxy;
+    }
+
+    public String proxyUsername() {
+        return _proxyUsername;
+    }
+
+    public String proxyPassword() {
+        return _proxyPassword;
+    }
+
     public static final class Builder {
 
         private String _endpoint = "https://sdk.split.io";
@@ -167,6 +191,10 @@ public class SplitClientConfig {
         private ImpressionListener _impressionListener;
         private int _impressionListenerCapacity;
         private int _waitBeforeShutdown = 5000;
+        private String _proxyHost = "localhost";
+        private int _proxyPort = -1;
+        private String _proxyUsername;
+        private String _proxyPassword;
 
         public Builder() {
         }
@@ -175,7 +203,7 @@ public class SplitClientConfig {
          * The rest endpoint that sdk will hit for latest features and segments.
          *
          * @param endpoint MUST NOT be null
-         * @return
+         * @return this builder
          */
         public Builder endpoint(String endpoint, String eventsEndpoint) {
             _endpoint = endpoint;
@@ -193,7 +221,7 @@ public class SplitClientConfig {
          * </p>
          *
          * @param seconds MUST be greater than 0. Default value is 60.
-         * @return
+         * @return this builder
          */
         public Builder featuresRefreshRate(int seconds) {
             _featuresRefreshRate = seconds;
@@ -210,7 +238,7 @@ public class SplitClientConfig {
          * </p>
          *
          * @param seconds MUST be greater than 0. Default value is 60.
-         * @return
+         * @return this builder
          */
         public Builder segmentsRefreshRate(int seconds) {
             _segmentsRefreshRate = seconds;
@@ -225,7 +253,7 @@ public class SplitClientConfig {
          * This is an ADVANCED parameter
          *
          * @param seconds MUST be > 0.
-         * @return
+         * @return this builder
          */
         public Builder impressionsRefreshRate(int seconds) {
             _impressionsRefreshRate = seconds;
@@ -245,7 +273,7 @@ public class SplitClientConfig {
          * This is an ADVANCED parameter.
          *
          * @param impressionsQueueSize MUST be > 0. Default is 5000.
-         * @return
+         * @return this builder
          */
         public Builder impressionsQueueSize(int impressionsQueueSize) {
             _impressionsQueueSize = impressionsQueueSize;
@@ -274,7 +302,7 @@ public class SplitClientConfig {
          * @param impressionListener
          * @param queueSize maximum number of impressions that will be queued in memory. If the impressionListener is
          *                 slow, the queue will fill up and any subsequent impressions will be dropped.
-         * @return
+         * @return this builder
          */
         public Builder impressionListener(ImpressionListener impressionListener, int queueSize) {
             _impressionListener = impressionListener;
@@ -289,7 +317,7 @@ public class SplitClientConfig {
          * This is an ADVANCED parameter
          *
          * @param seconds MUST be > 0.
-         * @return
+         * @return this builder
          */
         public Builder metricsRefreshRate(int seconds) {
             _metricsRefreshRate = seconds;
@@ -300,7 +328,7 @@ public class SplitClientConfig {
          * Http client connection timeout. Default value is 15000ms.
          *
          * @param ms MUST be greater than 0.
-         * @return Builder
+         * @return this builder
          */
 
         public Builder connectionTimeout(int ms) {
@@ -312,7 +340,7 @@ public class SplitClientConfig {
          * Http client read timeout. Default value is 15000ms.
          *
          * @param ms MUST be greater than 0.
-         * @return this Builder instance
+         * @return this builder
          */
         public Builder readTimeout(int ms) {
             _readTimeout = ms;
@@ -326,7 +354,7 @@ public class SplitClientConfig {
 
         /**
          * Disable label capturing
-         * @return
+         * @return this builder
          */
         public Builder disableLabels() {
             _labelsEnabled = false;
@@ -354,7 +382,7 @@ public class SplitClientConfig {
          * desired data has been downloaded.
          *
          * @param milliseconds MUST BE greater than or equal to 0;
-         * @return
+         * @return this builder
          */
         public Builder ready(int milliseconds) {
             _ready = milliseconds;
@@ -366,11 +394,63 @@ public class SplitClientConfig {
          * the underlying connections.
          *
          * @param waitTime tine in milliseconds
-         * @return
+         * @return this builder
          */
         public Builder waitBeforeShutdown(int waitTime) {
             _waitBeforeShutdown = waitTime;
             return this;
+        }
+
+        /**
+         * The host location of the proxy. Default is localhost.
+         *
+         * @param proxyHost location of the proxy
+         * @return this builder
+         */
+        public Builder proxyHost(String proxyHost) {
+            _proxyHost = proxyHost;
+            return this;
+        }
+
+        /**
+         * The port of the proxy. Default is -1.
+         *
+         * @param proxyPort port for the proxy
+         * @return this builder
+         */
+        public Builder proxyPort(int proxyPort) {
+            _proxyPort = proxyPort;
+            return this;
+        }
+
+        /**
+         * Set the username for authentication against the proxy (if proxy settings are enabled). (Optional).
+         *
+         * @param proxyUsername
+         * @return this builder
+         */
+        public Builder proxyUsername(String proxyUsername) {
+            _proxyUsername = proxyUsername;
+            return this;
+        }
+
+        /**
+         * Set the password for authentication against the proxy (if proxy settings are enabled). (Optional).
+         *
+         * @param proxyPassword
+         * @return this builder
+         */
+        public Builder proxyPassword(String proxyPassword) {
+            _proxyPassword = proxyPassword;
+            return this;
+        }
+
+        HttpHost proxy() {
+            if (_proxyPort != -1) {
+                return new HttpHost(_proxyHost, _proxyPort);
+            }
+            // Default is no proxy.
+            return null;
         }
 
 
@@ -442,7 +522,10 @@ public class SplitClientConfig {
                     _labelsEnabled,
                     _impressionListener,
                     _impressionListenerCapacity,
-                    _waitBeforeShutdown);
+                    _waitBeforeShutdown,
+                    proxy(),
+                    _proxyUsername,
+                    _proxyPassword);
         }
 
     }
