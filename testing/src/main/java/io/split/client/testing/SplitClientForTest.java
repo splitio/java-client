@@ -50,4 +50,14 @@ public class SplitClientForTest implements SplitClient {
     public void destroy() {
 
     }
+
+    @Override
+    public void track(String trafficType, String key, String eventType) {
+        // NO-OP for now
+    }
+
+    @Override
+    public void track(String trafficType, String key, String eventType, double value) {
+        // NO-OP for now
+    }
 }

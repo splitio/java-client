@@ -1,5 +1,8 @@
 CHANGES
 
+2.3.0
+- Add support for .track()
+
 2.2.0
 - Patch DependencyMatcherData to not error out when dependencies are used
 - Default logging is less verbose now

@@ -33,4 +33,12 @@ public class AlwaysReturnControlSplitClient implements SplitClient {
 
     }
 
+    @Override
+    public void track(String trafficType, String key, String eventType) {
+    }
+
+    @Override
+    public void track(String trafficType, String key, String eventType, double value) {
+    }
+
 }
