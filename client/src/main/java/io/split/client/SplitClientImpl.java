@@ -29,8 +29,8 @@ public final class SplitClientImpl implements SplitClient {
     private static final Logger _log = LoggerFactory.getLogger(SplitClientImpl.class);
 
     private static final String NOT_IN_SPLIT = "not in split";
-    private static final String NO_RULE_MATCHED = "no rule matched";
-    private static final String RULES_NOT_FOUND = "rules not found";
+    private static final String NO_RULE_MATCHED = "default rule";
+    private static final String RULES_NOT_FOUND = "definition not found";
     private static final String EXCEPTION = "exception";
     private static final String KILLED = "killed";
 
