@@ -1,5 +1,8 @@
 CHANGES
 
+2.2.1
+- Transitioning from "no rule matched" to "default rule" and from "rules not found" to "definition not found"
+
 2.2.0
 - Patch DependencyMatcherData to not error out when dependencies are used
 - Default logging is less verbose now

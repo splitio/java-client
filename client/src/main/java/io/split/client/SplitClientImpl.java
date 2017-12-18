@@ -29,8 +29,8 @@ public final class SplitClientImpl implements SplitClient {
     private static final Logger _log = LoggerFactory.getLogger(SplitClientImpl.class);
 
     private static final String NOT_IN_SPLIT = "not in split";
-    private static final String NO_RULE_MATCHED = "no rule matched";
-    private static final String RULES_NOT_FOUND = "rules not found";
+    private static final String DEFAULT_RULE = "default rule";
+    private static final String DEFINITION_NOT_FOUND = "definition not found";
     private static final String EXCEPTION = "exception";
     private static final String KILLED = "killed";
 
@@ -156,7 +156,7 @@ public final class SplitClientImpl implements SplitClient {
             if (_log.isDebugEnabled()) {
                 _log.debug("Returning control because no split was found for: " + split);
             }
-            return new TreatmentLabelAndChangeNumber(Treatments.CONTROL, RULES_NOT_FOUND);
+            return new TreatmentLabelAndChangeNumber(Treatments.CONTROL, DEFINITION_NOT_FOUND);
         }
 
         return getTreatment(matchingKey, bucketingKey, parsedSplit, attributes);
@@ -209,7 +209,7 @@ public final class SplitClientImpl implements SplitClient {
                 }
             }
 
-            return new TreatmentLabelAndChangeNumber(parsedSplit.defaultTreatment(), NO_RULE_MATCHED, parsedSplit.changeNumber());
+            return new TreatmentLabelAndChangeNumber(parsedSplit.defaultTreatment(), DEFAULT_RULE, parsedSplit.changeNumber());
         } catch (Exception e) {
             throw new ChangeNumberExceptionWrapper(e, parsedSplit.changeNumber());
         }
