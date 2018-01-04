@@ -44,6 +44,7 @@ public final class LocalhostSplitFactory implements SplitFactory {
         _manager = new LocalhostSplitManager(_featureToTreatmentMap);
 
         _splitFile.registerWatcher();
+        _splitFile.setDaemon(true);
         _splitFile.start();
     }
 
