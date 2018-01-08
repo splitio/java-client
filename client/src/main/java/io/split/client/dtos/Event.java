@@ -5,7 +5,7 @@ import com.google.common.base.Objects;
 public class Event {
 
     public String eventTypeId;
-    public String trafficTypeId;
+    public String trafficTypeName;
     public String key;
     public double value;
     public long timestamp;
@@ -18,12 +18,12 @@ public class Event {
         return Double.compare(event.value, value) == 0 &&
                 timestamp == event.timestamp &&
                 Objects.equal(eventTypeId, event.eventTypeId) &&
-                Objects.equal(trafficTypeId, event.trafficTypeId) &&
+                Objects.equal(trafficTypeName, event.trafficTypeName) &&
                 Objects.equal(key, event.key);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hashCode(eventTypeId, trafficTypeId, key, value, timestamp);
+        return Objects.hashCode(eventTypeId, trafficTypeName, key, value, timestamp);
     }
 }

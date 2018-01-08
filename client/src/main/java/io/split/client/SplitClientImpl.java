@@ -1,5 +1,6 @@
 package io.split.client;
 
+import com.google.common.base.Strings;
 import io.split.client.api.Key;
 import io.split.client.dtos.ConditionType;
 import io.split.client.dtos.Event;
@@ -220,8 +221,46 @@ public final class SplitClientImpl implements SplitClient {
     }
 
     @Override
-    public void track(Event event) {
-        _eventClient.track(event);
+    public boolean track(String trafficType, String key, String eventType) {
+
+        Event event = new Event();
+        event.eventTypeId = eventType;
+        event.trafficTypeName = trafficType;
+        event.key = key;
+
+        return track(event);
+    }
+
+    @Override
+    public boolean track(String trafficType, String key, String eventType, double value) {
+        Event event = new Event();
+        event.eventTypeId = eventType;
+        event.trafficTypeName = trafficType;
+        event.key = key;
+        event.value = value;
+
+        return track(event);
+    }
+
+
+    private boolean track(Event event) {
+        if (Strings.isNullOrEmpty(event.trafficTypeName)) {
+            _log.warn("Traffic Type was null or empty");
+            return false;
+        }
+
+        if (Strings.isNullOrEmpty(event.eventTypeId)) {
+            _log.warn("Event Type was null or empty");
+            return false;
+        }
+
+        if (Strings.isNullOrEmpty(event.key)) {
+            _log.warn("Cannot track event for null key");
+            return false;
+        }
+
+        return _eventClient.track(event);
+
     }
 
     private static final class TreatmentLabelAndChangeNumber {

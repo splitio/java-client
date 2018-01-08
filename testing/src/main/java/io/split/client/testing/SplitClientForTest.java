@@ -52,12 +52,12 @@ public class SplitClientForTest implements SplitClient {
     }
 
     @Override
-    public void track(String trafficType, String key, String eventType) {
-        // NO-OP for now
+    public boolean track(String trafficType, String key, String eventType) {
+        return false;
     }
 
     @Override
-    public void track(String trafficType, String key, String eventType, double value) {
-        // NO-OP for now
+    public boolean track(String trafficType, String key, String eventType, double value) {
+        return false;
     }
 }

@@ -58,13 +58,13 @@ public final class LocalhostSplitClient implements SplitClient {
     }
 
     @Override
-    public void track(String trafficType, String key, String eventType) {
-        // NO-OP
+    public boolean track(String trafficType, String key, String eventType) {
+        return false;
     }
 
     @Override
-    public void track(String trafficType, String key, String eventType, double value) {
-        // NO-OP
+    public boolean track(String trafficType, String key, String eventType, double value) {
+        return false;
     }
 
     void updateFeatureToTreatmentMap(Map<String, String> featureToTreatmentMap) {

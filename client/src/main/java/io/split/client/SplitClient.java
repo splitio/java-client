@@ -107,8 +107,10 @@ public interface SplitClient {
      * @param trafficType the type of the event
      * @param key the identifier of the entity
      * @param eventType the type of the event
+     *
+     * @return true if the track was successful, false otherwise
      */
-    void track(String trafficType, String key, String eventType);
+    boolean track(String trafficType, String key, String eventType);
 
     /**
      * Enqueue a new event to be sent to split data collection services
@@ -120,6 +122,8 @@ public interface SplitClient {
      * @param key the identifier of the entity
      * @param eventType the type of the event
      * @param value the value of the event
+     *
+     * @return true if the track was successful, false otherwise
      */
-    void track(String trafficType, String key, String eventType, double value);
+    boolean track(String trafficType, String key, String eventType, double value);
 }
