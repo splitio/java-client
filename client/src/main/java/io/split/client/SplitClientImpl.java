@@ -221,27 +221,27 @@ public final class SplitClientImpl implements SplitClient {
     }
 
     @Override
-    public boolean track(String trafficType, String key, String eventType) {
-
-        Event event = new Event();
-        event.eventTypeId = eventType;
-        event.trafficTypeName = trafficType;
-        event.key = key;
-
+    public boolean track(String key, String trafficType, String eventType) {
+        Event event = createEvent(key, trafficType, eventType);
         return track(event);
     }
 
     @Override
-    public boolean track(String trafficType, String key, String eventType, double value) {
-        Event event = new Event();
-        event.eventTypeId = eventType;
-        event.trafficTypeName = trafficType;
-        event.key = key;
+    public boolean track(String key, String trafficType, String eventType, double value) {
+        Event event = createEvent(key, trafficType, eventType);
         event.value = value;
 
         return track(event);
     }
 
+    private Event createEvent(String key, String trafficType, String eventType) {
+        Event event = new Event();
+        event.eventTypeId = eventType;
+        event.trafficTypeName = trafficType;
+        event.key = key;
+        event.timestamp = System.currentTimeMillis();
+        return event;
+    }
 
     private boolean track(Event event) {
         if (Strings.isNullOrEmpty(event.trafficTypeName)) {
@@ -278,6 +278,4 @@ public final class SplitClientImpl implements SplitClient {
             _changeNumber = changeNumber;
         }
     }
-
-
 }
