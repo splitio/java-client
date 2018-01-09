@@ -1,7 +1,9 @@
 package io.split.client;
 
+import com.google.common.base.Strings;
 import io.split.client.api.Key;
 import io.split.client.dtos.ConditionType;
+import io.split.client.dtos.Event;
 import io.split.client.exceptions.ChangeNumberExceptionWrapper;
 import io.split.client.impressions.Impression;
 import io.split.client.impressions.ImpressionListener;
@@ -39,12 +41,14 @@ public final class SplitClientImpl implements SplitClient {
     private final ImpressionListener _impressionListener;
     private final Metrics _metrics;
     private final SplitClientConfig _config;
+    private final EventClient _eventClient;
 
-    public SplitClientImpl(SplitFactory container, SplitFetcher splitFetcher, ImpressionListener impressionListener, Metrics metrics, SplitClientConfig config) {
+    public SplitClientImpl(SplitFactory container, SplitFetcher splitFetcher, ImpressionListener impressionListener, Metrics metrics, EventClient eventClient, SplitClientConfig config) {
         _container = container;
         _splitFetcher = splitFetcher;
         _impressionListener = impressionListener;
         _metrics = metrics;
+        _eventClient = eventClient;
         _config = config;
 
         checkNotNull(_splitFetcher);
@@ -216,6 +220,49 @@ public final class SplitClientImpl implements SplitClient {
 
     }
 
+    @Override
+    public boolean track(String key, String trafficType, String eventType) {
+        Event event = createEvent(key, trafficType, eventType);
+        return track(event);
+    }
+
+    @Override
+    public boolean track(String key, String trafficType, String eventType, double value) {
+        Event event = createEvent(key, trafficType, eventType);
+        event.value = value;
+
+        return track(event);
+    }
+
+    private Event createEvent(String key, String trafficType, String eventType) {
+        Event event = new Event();
+        event.eventTypeId = eventType;
+        event.trafficTypeName = trafficType;
+        event.key = key;
+        event.timestamp = System.currentTimeMillis();
+        return event;
+    }
+
+    private boolean track(Event event) {
+        if (Strings.isNullOrEmpty(event.trafficTypeName)) {
+            _log.warn("Traffic Type was null or empty");
+            return false;
+        }
+
+        if (Strings.isNullOrEmpty(event.eventTypeId)) {
+            _log.warn("Event Type was null or empty");
+            return false;
+        }
+
+        if (Strings.isNullOrEmpty(event.key)) {
+            _log.warn("Cannot track event for null key");
+            return false;
+        }
+
+        return _eventClient.track(event);
+
+    }
+
     private static final class TreatmentLabelAndChangeNumber {
         private final String _treatment;
         private final String _label;
@@ -231,6 +278,4 @@ public final class SplitClientImpl implements SplitClient {
             _changeNumber = changeNumber;
         }
     }
-
-
 }

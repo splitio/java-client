@@ -1,5 +1,8 @@
 NEWS
 
+2.3.0
+- Add support for .track() to provide the ability to start tracking events  for example: exception counts, checkout values, etc
+
 2.1.0
 - Add support for new boolean and regular expression matchers
 - Add support for new Dependency matcher

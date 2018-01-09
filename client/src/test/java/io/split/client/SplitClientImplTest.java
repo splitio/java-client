@@ -64,6 +64,7 @@ public class SplitClientImplTest {
                 splitFetcher,
                 new ImpressionListener.NoopImpressionListener(),
                 new Metrics.NoopMetrics(),
+                NoopEventClient.create(),
                 config
         );
 
@@ -87,6 +88,7 @@ public class SplitClientImplTest {
                 splitFetcher,
                 new ImpressionListener.NoopImpressionListener(),
                 new Metrics.NoopMetrics(),
+                NoopEventClient.create(),
                 config
         );
 
@@ -105,6 +107,7 @@ public class SplitClientImplTest {
                 splitFetcher,
                 new ImpressionListener.NoopImpressionListener(),
                 new Metrics.NoopMetrics(),
+                NoopEventClient.create(),
                 config
         );
         assertThat(client.getTreatment("adil@relateiq.com", "test1"), is(equalTo(Treatments.CONTROL)));
@@ -128,6 +131,7 @@ public class SplitClientImplTest {
                 splitFetcher,
                 new ImpressionListener.NoopImpressionListener(),
                 new Metrics.NoopMetrics(),
+                NoopEventClient.create(),
                 config
         );
 
@@ -157,6 +161,7 @@ public class SplitClientImplTest {
                 splitFetcher,
                 new ImpressionListener.NoopImpressionListener(),
                 new Metrics.NoopMetrics(),
+                NoopEventClient.create(),
                 config
         );
 
@@ -184,6 +189,7 @@ public class SplitClientImplTest {
                 splitFetcher,
                 new ImpressionListener.NoopImpressionListener(),
                 new Metrics.NoopMetrics(),
+                NoopEventClient.create(),
                 config
         );
 
@@ -211,6 +217,7 @@ public class SplitClientImplTest {
                 splitFetcher,
                 new ImpressionListener.NoopImpressionListener(),
                 new Metrics.NoopMetrics(),
+                NoopEventClient.create(),
                 config
         );
 
@@ -241,6 +248,7 @@ public class SplitClientImplTest {
                 splitFetcher,
                 new ImpressionListener.NoopImpressionListener(),
                 new Metrics.NoopMetrics(),
+                NoopEventClient.create(),
                 config
         );
 
@@ -270,6 +278,7 @@ public class SplitClientImplTest {
                 splitFetcher,
                 new ImpressionListener.NoopImpressionListener(),
                 new Metrics.NoopMetrics(),
+                NoopEventClient.create(),
                 config
         );
 
@@ -293,6 +302,7 @@ public class SplitClientImplTest {
                 splitFetcher,
                 new ImpressionListener.NoopImpressionListener(),
                 new Metrics.NoopMetrics(),
+                NoopEventClient.create(),
                 config
         );
 
@@ -319,6 +329,7 @@ public class SplitClientImplTest {
                 splitFetcher,
                 new ImpressionListener.NoopImpressionListener(),
                 new Metrics.NoopMetrics(),
+                NoopEventClient.create(),
                 config
         );
 
@@ -349,6 +360,7 @@ public class SplitClientImplTest {
                 splitFetcher,
                 new ImpressionListener.NoopImpressionListener(),
                 new Metrics.NoopMetrics(),
+                NoopEventClient.create(),
                 config
         );
 
@@ -379,6 +391,7 @@ public class SplitClientImplTest {
                 splitFetcher,
                 new ImpressionListener.NoopImpressionListener(),
                 new Metrics.NoopMetrics(),
+                NoopEventClient.create(),
                 config
         );
 
@@ -412,6 +425,7 @@ public class SplitClientImplTest {
                 splitFetcher,
                 new ImpressionListener.NoopImpressionListener(),
                 new Metrics.NoopMetrics(),
+                NoopEventClient.create(),
                 config
         );
 
@@ -453,6 +467,7 @@ public class SplitClientImplTest {
                 splitFetcher,
                 impressionListener,
                 new Metrics.NoopMetrics(),
+                NoopEventClient.create(),
                 config
         );
 
@@ -530,6 +545,7 @@ public class SplitClientImplTest {
                 splitFetcher,
                 impressionListener,
                 new Metrics.NoopMetrics(),
+                NoopEventClient.create(),
                 config
         );
 
@@ -562,7 +578,9 @@ public class SplitClientImplTest {
                 mock(SplitFactory.class),
                 splitFetcher,
                 new ImpressionListener.NoopImpressionListener(),
-                new Metrics.NoopMetrics(), config
+                new Metrics.NoopMetrics(),
+                NoopEventClient.create(),
+                config
         );
 
         Key bad_key = new Key("adil", "aijaz");
@@ -598,6 +616,7 @@ public class SplitClientImplTest {
                 splitFetcher,
                 impressionListener,
                 new Metrics.NoopMetrics(),
+                NoopEventClient.create(),
                 config
         );
 

@@ -1,5 +1,8 @@
 CHANGES
 
+2.3.0
+- Add support for .track()
+
 2.2.2
 - Patch for localhost mode to daemonize the thread which currently prevents the JVM from exiting.
 
