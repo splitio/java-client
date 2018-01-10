@@ -155,22 +155,26 @@ public class SplitFactoryImpl implements SplitFactory {
         CachedMetrics cachedMetrics = new CachedMetrics(httpMetrics, TimeUnit.SECONDS.toMillis(config.metricsRefreshRate()));
         final FireAndForgetMetrics cachedFireAndForgetMetrics = FireAndForgetMetrics.instance(cachedMetrics, 2, 1000);
 
+        final EventClient eventClient = EventClientImpl.create(httpclient, eventsRootTarget, config.eventsQueueSize(), config.eventFlushIntervalInMillis(), config.waitBeforeShutdown());
+
         destroyer = new Runnable() {
             public void run() {
-                _log.warn("Shutdown called for split");
+                _log.info("Shutdown called for split");
                 try {
                     segmentFetcher.close();
-                    _log.warn("Successful shutdown of segment fetchers");
+                    _log.info("Successful shutdown of segment fetchers");
                     splitFetcherProvider.close();
-                    _log.warn("Successful shutdown of splits");
+                    _log.info("Successful shutdown of splits");
                     uncachedFireAndForget.close();
-                    _log.warn("Successful shutdown of metrics 1");
+                    _log.info("Successful shutdown of metrics 1");
                     cachedFireAndForgetMetrics.close();
-                    _log.warn("Successful shutdown of metrics 2");
+                    _log.info("Successful shutdown of metrics 2");
                     impressionListener.close();
-                    _log.warn("Successful shutdown of ImpressionListener");
+                    _log.info("Successful shutdown of ImpressionListener");
                     httpclient.close();
-                    _log.warn("Successful shutdown of httpclient");
+                    _log.info("Successful shutdown of httpclient");
+                    eventClient.close();
+                    _log.info("Successful shutdown of httpclient");
                 } catch (IOException e) {
                     _log.error("We could not shutdown split", e);
                 }
@@ -185,7 +189,7 @@ public class SplitFactoryImpl implements SplitFactory {
             }
         });
 
-        _client = new SplitClientImpl(this, splitFetcherProvider.getFetcher(), impressionListener, cachedFireAndForgetMetrics, config);
+        _client = new SplitClientImpl(this, splitFetcherProvider.getFetcher(), impressionListener, cachedFireAndForgetMetrics, eventClient, config);
         _manager = new SplitManagerImpl(splitFetcherProvider.getFetcher());
 
         if (config.blockUntilReady() > 0) {

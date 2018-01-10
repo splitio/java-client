@@ -57,6 +57,16 @@ public final class LocalhostSplitClient implements SplitClient {
         _container.destroy();
     }
 
+    @Override
+    public boolean track(String key, String trafficType, String eventType) {
+        return false;
+    }
+
+    @Override
+    public boolean track(String key, String trafficType, String eventType, double value) {
+        return false;
+    }
+
     void updateFeatureToTreatmentMap(Map<String, String> featureToTreatmentMap) {
         checkNotNull(featureToTreatmentMap, "featureToTreatmentMap must not be null");
         _featureToTreatmentMap = ImmutableMap.copyOf(featureToTreatmentMap);

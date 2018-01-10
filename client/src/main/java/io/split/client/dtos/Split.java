@@ -14,4 +14,15 @@ public class Split {
     public Integer trafficAllocation;
     public Integer trafficAllocationSeed;
     public int algo;
+
+
+    @Override
+    public String toString() {
+        return "Split{" +
+                "name='" + name + '\'' +
+                ", status=" + status +
+                ", trafficTypeName='" + trafficTypeName + '\'' +
+                ", changeNumber=" + changeNumber +
+                '}';
+    }
 }
