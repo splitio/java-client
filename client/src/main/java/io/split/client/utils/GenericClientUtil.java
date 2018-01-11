@@ -28,11 +28,13 @@ public class GenericClientUtil {
             int status = response.getStatusLine().getStatusCode();
 
             if (status < 200 || status >= 300) {
-                _log.warn("Posting records returned with status: " + status);
+                _log.info(String.format("Posting %d records returned with status: %d", data.size(), status));
             }
 
         } catch (Throwable t) {
-            _log.warn("Posting records returned with error");
+            if (_log.isDebugEnabled()) {
+                _log.debug(String.format("Posting %d records returned with error", data.size()), t);
+            }
         } finally {
             Utils.forceClose(response);
         }
