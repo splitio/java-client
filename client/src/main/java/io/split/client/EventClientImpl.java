@@ -15,8 +15,10 @@ import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.RejectedExecutionHandler;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ThreadFactory;
+import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
 import static java.lang.Thread.MIN_PRIORITY;
@@ -74,7 +76,19 @@ public class EventClientImpl implements EventClient {
         _maxQueueSize = maxQueueSize;
         _flushIntervalMillis = flushIntervalMillis;
 
-        _senderExecutor = Executors.newSingleThreadExecutor(eventClientThreadFactory("eventclient-sender"));
+        _senderExecutor = new ThreadPoolExecutor(
+                1,
+                1,
+                0L,
+                TimeUnit.MILLISECONDS,
+                new LinkedBlockingQueue<Runnable>(50),
+                eventClientThreadFactory("eventclient-sender"),
+                new RejectedExecutionHandler() {
+                    @Override
+                    public void rejectedExecution(Runnable r, ThreadPoolExecutor executor) {
+                        _log.warn("Executor queue full. Dropping events.");
+                    }
+                });
 
         _consumerExecutor = Executors.newSingleThreadExecutor(eventClientThreadFactory("eventclient-consumer"));
         _consumerExecutor.submit(new Consumer());
@@ -185,6 +199,4 @@ public class EventClientImpl implements EventClient {
             GenericClientUtil.process(_data, _endpoint, _client);
         }
     }
-
 }
-
