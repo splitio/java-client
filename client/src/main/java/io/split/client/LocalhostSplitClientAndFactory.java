@@ -1,8 +1,6 @@
 package io.split.client;
 
-import com.google.common.collect.ImmutableMap;
 import io.split.client.api.Key;
-import io.split.grammar.Treatments;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -18,46 +16,30 @@ import static com.google.common.base.Preconditions.checkNotNull;
  *
  * @author adil
  */
-public final class LocalhostSplitClient implements SplitClient {
-    private static final Logger _log = LoggerFactory.getLogger(LocalhostSplitClient.class);
+public final class LocalhostSplitClientAndFactory implements SplitClient {
+    private static final Logger _log = LoggerFactory.getLogger(LocalhostSplitClientAndFactory.class);
 
-    private Map<SplitAndKey, String> _map;
+    private LocalhostSplitFactory _factory;
+    private LocalhostSplitClient _splitClient;
 
-    public LocalhostSplitClient(Map<SplitAndKey, String> map) {
-        checkNotNull(map, "map must not be null");
-        _map = map;
+    public LocalhostSplitClientAndFactory(LocalhostSplitFactory container, LocalhostSplitClient client) {
+        _factory = container;
+        _splitClient = client;
     }
 
     @Override
     public String getTreatment(String key, String split) {
-        if (key == null || split == null) {
-            return Treatments.CONTROL;
-        }
-
-        SplitAndKey override = SplitAndKey.of(split, key);
-        if (_map.containsKey(override)) {
-            return _map.get(override);
-        }
-
-        SplitAndKey splitDefaultTreatment = SplitAndKey.of(split);
-
-        String treatment = _map.get(splitDefaultTreatment);
-
-        if (treatment == null) {
-            return Treatments.CONTROL;
-        }
-
-        return treatment;
+        return _splitClient.getTreatment(key, split);
     }
 
     @Override
     public String getTreatment(String key, String split, Map<String, Object> attributes) {
-        return getTreatment(key, split);
+        return _splitClient.getTreatment(key, split, attributes);
     }
 
     @Override
     public String getTreatment(Key key, String split, Map<String, Object> attributes) {
-        return getTreatment(key.matchingKey(), split, attributes);
+        return _splitClient.getTreatment(key.matchingKey(), split, attributes);
     }
 
     public void updateFeatureToTreatmentMap(Map<SplitAndKey, String> map) {
@@ -65,22 +47,23 @@ public final class LocalhostSplitClient implements SplitClient {
             _log.warn("A null map was passed as an update. Ignoring this update.");
             return;
         }
-        _map = map;
+        _splitClient.updateFeatureToTreatmentMap(map);
     }
 
     @Override
     public void destroy() {
-        _map.clear();
+        _factory.destroy();
+        _splitClient.destroy();
     }
 
     @Override
     public boolean track(String key, String trafficType, String eventType) {
-        return false;
+        return _splitClient.track(key, trafficType, eventType);
     }
 
     @Override
     public boolean track(String key, String trafficType, String eventType, double value) {
-        return false;
+        return _splitClient.track(key, trafficType, eventType, value);
     }
 
 }

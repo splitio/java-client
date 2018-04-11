@@ -22,7 +22,7 @@ public final class LocalhostSplitFactory implements SplitFactory {
     static final String FILENAME = ".split";
     static final String LOCALHOST = "localhost";
 
-    private final LocalhostSplitClient _client;
+    private final LocalhostSplitClientAndFactory _client;
     private final LocalhostSplitManager _manager;
     private final LocalhostSplitFile _splitFile;
 
@@ -40,7 +40,7 @@ public final class LocalhostSplitFactory implements SplitFactory {
         _splitFile = new LocalhostSplitFile(this, directory, FILENAME);
 
         Map<SplitAndKey, String> splitAndKeyToTreatment = _splitFile.readOnSplits();
-        _client = new LocalhostSplitClient(this, splitAndKeyToTreatment);
+        _client = new LocalhostSplitClientAndFactory(this, new LocalhostSplitClient(splitAndKeyToTreatment));
         _manager = LocalhostSplitManager.build(splitAndKeyToTreatment);
 
         _splitFile.registerWatcher();
