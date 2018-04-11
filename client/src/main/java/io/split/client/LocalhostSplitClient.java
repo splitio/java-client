@@ -1,9 +1,10 @@
 package io.split.client;
 
-import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableMap;
 import io.split.client.api.Key;
 import io.split.grammar.Treatments;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.Map;
 
@@ -18,12 +19,14 @@ import static com.google.common.base.Preconditions.checkNotNull;
  * @author adil
  */
 public final class LocalhostSplitClient implements SplitClient {
-    private LocalhostSplitFactory _container;
-    private ImmutableMap<String, String> _featureToTreatmentMap;
+    private static final Logger _log = LoggerFactory.getLogger(LocalhostSplitClient.class);
 
-    public LocalhostSplitClient(LocalhostSplitFactory container, Map<String, String> featureToTreatmentMap) {
-        checkNotNull(featureToTreatmentMap, "featureToTreatmentMap must not be null");
-        _featureToTreatmentMap = ImmutableMap.copyOf(featureToTreatmentMap);
+    private LocalhostSplitFactory _container;
+    private Map<SplitAndKey, String> _map;
+
+    public LocalhostSplitClient(LocalhostSplitFactory container, Map<SplitAndKey, String> map) {
+        checkNotNull(map, "map must not be null");
+        _map = map;
         _container = container;
     }
 
@@ -33,7 +36,14 @@ public final class LocalhostSplitClient implements SplitClient {
             return Treatments.CONTROL;
         }
 
-        String treatment = _featureToTreatmentMap.get(split);
+        SplitAndKey override = SplitAndKey.of(split, key);
+        if (_map.containsKey(override)) {
+            return _map.get(override);
+        }
+
+        SplitAndKey splitDefaultTreatment = SplitAndKey.of(split);
+
+        String treatment = _map.get(splitDefaultTreatment);
 
         if (treatment == null) {
             return Treatments.CONTROL;
@@ -52,6 +62,14 @@ public final class LocalhostSplitClient implements SplitClient {
         return getTreatment(key.matchingKey(), split, attributes);
     }
 
+    public void updateFeatureToTreatmentMap(Map<SplitAndKey, String> map) {
+        if (map  == null) {
+            _log.warn("A null map was passed as an update. Ignoring this update.");
+            return;
+        }
+        _map = map;
+    }
+
     @Override
     public void destroy() {
         _container.destroy();
@@ -67,13 +85,4 @@ public final class LocalhostSplitClient implements SplitClient {
         return false;
     }
 
-    void updateFeatureToTreatmentMap(Map<String, String> featureToTreatmentMap) {
-        checkNotNull(featureToTreatmentMap, "featureToTreatmentMap must not be null");
-        _featureToTreatmentMap = ImmutableMap.copyOf(featureToTreatmentMap);
-    }
-
-    @VisibleForTesting
-    ImmutableMap<String, String> featureToTreatmentMap() {
-        return _featureToTreatmentMap;
-    }
 }

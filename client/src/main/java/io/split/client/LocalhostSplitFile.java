@@ -80,7 +80,7 @@ public class LocalhostSplitFile extends Thread {
                         continue;
                     } else if (kind == java.nio.file.StandardWatchEventKinds.ENTRY_MODIFY
                             && filename.toString().equals(_file.getName())) {
-                        Map<String, String> featureToSplitMap = readOnSplits();
+                        Map<SplitAndKey, String> featureToSplitMap = readOnSplits();
                         _splitFactory.updateFeatureToTreatmentMap(featureToSplitMap);
                         _log.info("Detected change in Local Splits file - Splits Reloaded! file={}", _file.getPath());
                     }
@@ -97,8 +97,8 @@ public class LocalhostSplitFile extends Thread {
         }
     }
 
-    public Map<String, String> readOnSplits() throws IOException {
-        Map<String, String> onSplits = Maps.newHashMap();
+    public Map<SplitAndKey, String> readOnSplits() throws IOException {
+        Map<SplitAndKey, String> onSplits = Maps.newHashMap();
 
         try (BufferedReader reader = new BufferedReader(new FileReader(_file))) {
             for (String line = reader.readLine(); line != null; line = reader.readLine()) {
@@ -109,13 +109,19 @@ public class LocalhostSplitFile extends Thread {
 
                 String[] feature_treatment = line.split("\\s+");
 
-                if (feature_treatment.length != 2) {
-                    _log.info("Ignoring line since it does not have exactly two columns: " + line);
+                if (feature_treatment.length < 2 || feature_treatment.length > 3) {
+                    _log.info("Ignoring line since it does not have 2 or 3 columns: " + line);
                     continue;
                 }
 
-                onSplits.put(feature_treatment[0], feature_treatment[1]);
-                _log.info("100% of keys will see " + feature_treatment[1] + " for " + feature_treatment[0]);
+                SplitAndKey splitAndKey = null;
+                if (feature_treatment.length == 2) {
+                    splitAndKey = SplitAndKey.of(feature_treatment[0]);
+                } else {
+                    splitAndKey = SplitAndKey.of(feature_treatment[0], feature_treatment[2]);
+                }
+
+                onSplits.put(splitAndKey, feature_treatment[1]);
             }
         } catch (FileNotFoundException e) {
             _log.warn("There was no file named " + _file.getPath() + " found. " +

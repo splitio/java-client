@@ -39,9 +39,9 @@ public final class LocalhostSplitFactory implements SplitFactory {
 
         _splitFile = new LocalhostSplitFile(this, directory, FILENAME);
 
-        Map<String, String> _featureToTreatmentMap = _splitFile.readOnSplits();
-        _client = new LocalhostSplitClient(this, _featureToTreatmentMap);
-        _manager = new LocalhostSplitManager(_featureToTreatmentMap);
+        Map<SplitAndKey, String> splitAndKeyToTreatment = _splitFile.readOnSplits();
+        _client = new LocalhostSplitClient(this, splitAndKeyToTreatment);
+        _manager = LocalhostSplitManager.build(splitAndKeyToTreatment);
 
         _splitFile.registerWatcher();
         _splitFile.setDaemon(true);
@@ -60,11 +60,10 @@ public final class LocalhostSplitFactory implements SplitFactory {
 
     @Override
     public void destroy() {
-        _client.updateFeatureToTreatmentMap(ImmutableMap.<String, String>of());
         _splitFile.stopThread();
     }
 
-    public void updateFeatureToTreatmentMap(Map<String, String> featureToTreatmentMap) {
+    public void updateFeatureToTreatmentMap(Map<SplitAndKey, String> featureToTreatmentMap) {
         _client.updateFeatureToTreatmentMap(featureToTreatmentMap);
         _manager.updateFeatureToTreatmentMap(featureToTreatmentMap);
     }

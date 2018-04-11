@@ -1,13 +1,14 @@
 package io.split.client;
 
-import com.google.common.annotations.VisibleForTesting;
-import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
+import com.google.common.collect.Sets;
 import io.split.client.api.SplitView;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
@@ -21,18 +22,38 @@ import static com.google.common.base.Preconditions.checkNotNull;
  */
 public final class LocalhostSplitManager implements SplitManager {
 
-    private ImmutableMap<String, String> _featureToTreatmentMap;
+    private Map<SplitAndKey, String> _splitAndKeyToTreatmentMap;
+    private Map<String, Set<String>> _splitToTreatmentsMap;
 
-    public LocalhostSplitManager(Map<String, String> featureToTreatmentMap) {
+    public static LocalhostSplitManager build(Map<SplitAndKey, String> featureToTreatmentMap) {
         checkNotNull(featureToTreatmentMap, "featureToTreatmentMap must not be null");
-        _featureToTreatmentMap = ImmutableMap.copyOf(featureToTreatmentMap);
+        return new LocalhostSplitManager(featureToTreatmentMap, splitsToTreatments(featureToTreatmentMap));
+    }
+
+    private static Map<String, Set<String>> splitsToTreatments(Map<SplitAndKey, String> splitAndKeyStringMap) {
+        Map<String, Set<String>> splitsToTreatments = Maps.newHashMap();
+        for (Map.Entry<SplitAndKey, String> entry : splitAndKeyStringMap.entrySet()) {
+            String split = entry.getKey().split();
+            if (!splitsToTreatments.containsKey(split)) {
+                splitsToTreatments.put(split, Sets.<String>newHashSet());
+            }
+            Set<String> treatments = splitsToTreatments.get(split);
+            treatments.add(entry.getValue());
+        }
+        return splitsToTreatments;
+    }
+
+    private LocalhostSplitManager(Map<SplitAndKey, String> featureToTreatmentMap,  Map<String, Set<String>> splitToTreatmentsMap) {
+        checkNotNull(featureToTreatmentMap, "featureToTreatmentMap must not be null");
+        _splitAndKeyToTreatmentMap = featureToTreatmentMap;
+        _splitToTreatmentsMap = splitToTreatmentsMap;
     }
 
     @Override
     public List<SplitView> splits() {
         List<SplitView> result = new ArrayList<SplitView>();
 
-        for (Map.Entry<String, String> entry : _featureToTreatmentMap.entrySet()) {
+        for (Map.Entry<String, Set<String>> entry : _splitToTreatmentsMap.entrySet()) {
             result.add(toSplitView(entry.getKey(), entry.getValue()));
         }
 
@@ -41,37 +62,38 @@ public final class LocalhostSplitManager implements SplitManager {
 
     @Override
     public List<String> splitNames() {
-        return Lists.newArrayList(_featureToTreatmentMap.keySet());
+        Set<String> splits = Sets.newHashSet();
+        for (Map.Entry<SplitAndKey, String> entry : _splitAndKeyToTreatmentMap.entrySet()) {
+            splits.add(entry.getKey().split());
+        }
+        return Lists.newArrayList(splits);
     }
 
     @Override
     public SplitView split(String featureName) {
-        if (!_featureToTreatmentMap.containsKey(featureName)) {
+        if (!_splitAndKeyToTreatmentMap.containsKey(featureName)) {
             return null;
         }
 
-        return toSplitView(featureName, _featureToTreatmentMap.get(featureName));
+        return toSplitView(featureName, _splitToTreatmentsMap.get(featureName));
     }
 
-    void updateFeatureToTreatmentMap(Map<String, String> featureToTreatmentMap) {
+    void updateFeatureToTreatmentMap(Map<SplitAndKey, String> featureToTreatmentMap) {
         checkNotNull(featureToTreatmentMap, "featureToTreatmentMap must not be null");
-        _featureToTreatmentMap = ImmutableMap.copyOf(featureToTreatmentMap);
+        _splitAndKeyToTreatmentMap = featureToTreatmentMap;
+        _splitToTreatmentsMap = splitsToTreatments(_splitAndKeyToTreatmentMap);
     }
 
-    @VisibleForTesting
-    ImmutableMap<String, String> featureToTreatmentMap() {
-        return _featureToTreatmentMap;
-    }
 
-    private SplitView toSplitView(String featureName, String treatment) {
+    private SplitView toSplitView(String featureName, Set<String> treatments) {
         SplitView view = new SplitView();
         view.name = featureName;
         view.killed = false;
         view.trafficType = null;
         view.changeNumber = 0;
         view.treatments = new ArrayList<String>();
-        if (treatment != null) {
-            view.treatments.add(treatment);
+        if (treatments != null) {
+            view.treatments.addAll(treatments);
         }
 
         return view;
