@@ -121,7 +121,7 @@
                                     <goal>jar</goal>
                                 </goals>
                                 <configuration>
-                                    <additionalparam>-Xdoclint:none</additionalparam>
+                                    <additionalJOptions>-Xdoclint:none</additionalJOptions>
                                 </configuration>
                             </execution>
                         </executions>
