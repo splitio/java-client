@@ -1,5 +1,13 @@
 package io.split.client;
 
+/**
+ * A split and a key. Key can be null.
+ *
+ * Primary use case is reading the localhost file and populating a map where the key
+ * is SplitAndKey and the value is a treatment.
+ *
+ * @author adil
+ */
 public final class SplitAndKey {
 
     private final String _split;
