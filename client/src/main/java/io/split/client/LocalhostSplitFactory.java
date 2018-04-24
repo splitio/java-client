@@ -12,7 +12,7 @@ import java.util.Map;
  * An implementation of SplitClient that considers all partitions
  * passed in the constructor to be 100% on for all users, and
  * any other split to be 100% off for all users. This implementation
- * is useful for using Codigo in localhost environment.
+ * is useful for using Split in localhost environment.
  *
  * @author adil
  */
@@ -22,7 +22,7 @@ public final class LocalhostSplitFactory implements SplitFactory {
     static final String FILENAME = ".split";
     static final String LOCALHOST = "localhost";
 
-    private final LocalhostSplitClient _client;
+    private final LocalhostSplitClientAndFactory _client;
     private final LocalhostSplitManager _manager;
     private final LocalhostSplitFile _splitFile;
 
@@ -39,9 +39,9 @@ public final class LocalhostSplitFactory implements SplitFactory {
 
         _splitFile = new LocalhostSplitFile(this, directory, FILENAME);
 
-        Map<String, String> _featureToTreatmentMap = _splitFile.readOnSplits();
-        _client = new LocalhostSplitClient(this, _featureToTreatmentMap);
-        _manager = new LocalhostSplitManager(_featureToTreatmentMap);
+        Map<SplitAndKey, String> splitAndKeyToTreatment = _splitFile.readOnSplits();
+        _client = new LocalhostSplitClientAndFactory(this, new LocalhostSplitClient(splitAndKeyToTreatment));
+        _manager = LocalhostSplitManager.of(splitAndKeyToTreatment);
 
         _splitFile.registerWatcher();
         _splitFile.setDaemon(true);
@@ -60,11 +60,10 @@ public final class LocalhostSplitFactory implements SplitFactory {
 
     @Override
     public void destroy() {
-        _client.updateFeatureToTreatmentMap(ImmutableMap.<String, String>of());
         _splitFile.stopThread();
     }
 
-    public void updateFeatureToTreatmentMap(Map<String, String> featureToTreatmentMap) {
+    public void updateFeatureToTreatmentMap(Map<SplitAndKey, String> featureToTreatmentMap) {
         _client.updateFeatureToTreatmentMap(featureToTreatmentMap);
         _manager.updateFeatureToTreatmentMap(featureToTreatmentMap);
     }
