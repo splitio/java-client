@@ -12,7 +12,7 @@ import static com.google.common.base.Preconditions.checkNotNull;
  * An implementation of SplitClient that considers all partitions
  * passed in the constructor to be 100% on for all users, and
  * any other split to be 100% off for all users. This implementation
- * is useful for using Codigo in localhost environment.
+ * is useful for using Split in localhost environment.
  *
  * @author adil
  */
@@ -25,6 +25,9 @@ public final class LocalhostSplitClientAndFactory implements SplitClient {
     public LocalhostSplitClientAndFactory(LocalhostSplitFactory container, LocalhostSplitClient client) {
         _factory = container;
         _splitClient = client;
+
+        checkNotNull(_factory);
+        checkNotNull(_splitClient);
     }
 
     @Override

@@ -30,7 +30,7 @@ public final class SplitAndKey {
     }
 
     @Override
-    public boolean equals (Object o) {
+    public boolean equals(Object o) {
         if (o == null) {
             return false;
         }

@@ -1,7 +1,7 @@
 NEWS
 
 2.3.1
-- Added support for overrides in localhost mode
+- Added support for key overrides in localhost mode
 
 2.3.0
 - Add support for .track() to provide the ability to start tracking events  for example: exception counts, checkout values, etc

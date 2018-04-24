@@ -1,7 +1,7 @@
 CHANGES
 
 2.3.1
-- Added support for overrides in localhost mode
+- Added support for key overrides in localhost mode
 
 2.3.0
 - Add support for .track()

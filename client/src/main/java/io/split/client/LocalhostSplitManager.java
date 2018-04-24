@@ -25,7 +25,7 @@ public final class LocalhostSplitManager implements SplitManager {
     private Map<SplitAndKey, String> _splitAndKeyToTreatmentMap;
     private Map<String, Set<String>> _splitToTreatmentsMap;
 
-    public static LocalhostSplitManager build(Map<SplitAndKey, String> featureToTreatmentMap) {
+    public static LocalhostSplitManager of(Map<SplitAndKey, String> featureToTreatmentMap) {
         checkNotNull(featureToTreatmentMap, "featureToTreatmentMap must not be null");
         return new LocalhostSplitManager(featureToTreatmentMap, splitsToTreatments(featureToTreatmentMap));
     }
