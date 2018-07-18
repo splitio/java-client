@@ -40,11 +40,4 @@ public class Utils {
         String path = String.format("%s%s%s", root.getPath(), root.getPath().endsWith("/") ? "" : "/", pathToAppend);
         return new URIBuilder(root).setPath(path).build();
     }
-
-    public static void wah() throws URISyntaxException {
-        java.net.URI uri = new java.net.URI ("http://www.baseaddress.com/path/index1.html");
-        System.out.println (uri.resolve ("index2.html"));
-        System.out.println (uri.resolve ("/path2/"));
-    }
-
 }
