@@ -1,4 +1,6 @@
 NEWS
+2.3.2
+- Add support for handling different relative path in the endpoints of the Split Synchronizer
 
 2.3.1
 - Adds the ability to include keys to the localhost file to use for matching responses to getTreatment
