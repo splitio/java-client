@@ -1,5 +1,6 @@
 package io.split.client;
 
+import com.google.common.annotations.VisibleForTesting;
 import io.split.client.dtos.SegmentChange;
 import io.split.client.utils.Json;
 import io.split.client.utils.Utils;
@@ -36,7 +37,7 @@ public final class HttpSegmentChangeFetcher implements SegmentChangeFetcher {
     }
 
     public static HttpSegmentChangeFetcher create(CloseableHttpClient client, URI root, Metrics metrics) throws URISyntaxException {
-        return new HttpSegmentChangeFetcher(client, new URIBuilder(root).setPath("/api/segmentChanges").build(), metrics);
+        return new HttpSegmentChangeFetcher(client, Utils.appendPath(root, "api/segmentChanges"), metrics);
     }
 
     private HttpSegmentChangeFetcher(CloseableHttpClient client, URI uri, Metrics metrics) {
@@ -82,5 +83,10 @@ public final class HttpSegmentChangeFetcher implements SegmentChangeFetcher {
         }
 
 
+    }
+
+    @VisibleForTesting
+    URI getTarget() {
+        return _target;
     }
 }

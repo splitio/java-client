@@ -1,5 +1,6 @@
 package io.split.client;
 
+import com.google.common.annotations.VisibleForTesting;
 import io.split.client.dtos.SplitChange;
 import io.split.client.utils.Json;
 import io.split.client.utils.Utils;
@@ -36,7 +37,7 @@ public final class HttpSplitChangeFetcher implements SplitChangeFetcher {
     }
 
     public static HttpSplitChangeFetcher create(CloseableHttpClient client, URI root, Metrics metrics) throws URISyntaxException {
-        return new HttpSplitChangeFetcher(client, new URIBuilder(root).setPath("/api/splitChanges").build(), metrics);
+        return new HttpSplitChangeFetcher(client, Utils.appendPath(root, "api/splitChanges"), metrics);
     }
 
     private HttpSplitChangeFetcher(CloseableHttpClient client, URI uri, Metrics metrics) {
@@ -82,4 +83,8 @@ public final class HttpSplitChangeFetcher implements SplitChangeFetcher {
         }
     }
 
+    @VisibleForTesting
+    URI getTarget() {
+        return _target;
+    }
 }
