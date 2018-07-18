@@ -1,4 +1,6 @@
 CHANGES
+2.3.2
+- Add support for handling different relative path in the endpoints of the Split Synchronizer
 
 2.3.1
 - Added support for key overrides in localhost mode

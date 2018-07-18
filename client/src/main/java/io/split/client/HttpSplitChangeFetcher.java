@@ -37,9 +37,7 @@ public final class HttpSplitChangeFetcher implements SplitChangeFetcher {
     }
 
     public static HttpSplitChangeFetcher create(CloseableHttpClient client, URI root, Metrics metrics) throws URISyntaxException {
-        checkNotNull(root);
-        String path = String.format("%s%sapi/splitChanges", root.getPath(), root.getPath().endsWith("/") ? "" : "/");
-        return new HttpSplitChangeFetcher(client, new URIBuilder(root).setPath(path).build(), metrics);
+        return new HttpSplitChangeFetcher(client, Utils.appendPath(root, "api/splitChanges"), metrics);
     }
 
     private HttpSplitChangeFetcher(CloseableHttpClient client, URI uri, Metrics metrics) {

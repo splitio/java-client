@@ -37,9 +37,7 @@ public final class HttpSegmentChangeFetcher implements SegmentChangeFetcher {
     }
 
     public static HttpSegmentChangeFetcher create(CloseableHttpClient client, URI root, Metrics metrics) throws URISyntaxException {
-        checkNotNull(root);
-        String path = String.format("%s%sapi/segmentChanges", root.getPath(), root.getPath().endsWith("/") ? "" : "/");
-        return new HttpSegmentChangeFetcher(client, new URIBuilder(root).setPath(path).build(), metrics);
+        return new HttpSegmentChangeFetcher(client, Utils.appendPath(root, "api/segmentChanges"), metrics);
     }
 
     private HttpSegmentChangeFetcher(CloseableHttpClient client, URI uri, Metrics metrics) {
