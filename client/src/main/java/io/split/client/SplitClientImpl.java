@@ -7,6 +7,7 @@ import io.split.client.dtos.Event;
 import io.split.client.exceptions.ChangeNumberExceptionWrapper;
 import io.split.client.impressions.Impression;
 import io.split.client.impressions.ImpressionListener;
+import io.split.engine.SDKReadinessGates;
 import io.split.engine.experiments.ParsedCondition;
 import io.split.engine.experiments.ParsedSplit;
 import io.split.engine.experiments.SplitFetcher;
@@ -18,6 +19,7 @@ import org.slf4j.LoggerFactory;
 
 import java.util.Collections;
 import java.util.Map;
+import java.util.concurrent.TimeoutException;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
@@ -68,6 +70,15 @@ public final class SplitClientImpl implements SplitClient {
     @Override
     public String getTreatment(String key, String split, Map<String, Object> attributes) {
         return getTreatment(key, null, split, attributes);
+    }
+
+    public void blockUntilReady(int waitInMilliseconds) throws TimeoutException, InterruptedException {
+        if (waitInMilliseconds > 0) {
+            SDKReadinessGates gates = new SDKReadinessGates();
+            if (!gates.isSDKReady(waitInMilliseconds)) {
+                throw new TimeoutException("SDK was not ready in " + waitInMilliseconds + " milliseconds");
+            }
+        }
     }
 
     @Override
