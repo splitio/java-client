@@ -1,12 +1,12 @@
 package io.split.client;
 
-import com.google.common.collect.ImmutableMap;
 import io.split.client.api.Key;
 import io.split.grammar.Treatments;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.Map;
+import java.util.concurrent.TimeoutException;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
@@ -81,6 +81,11 @@ public final class LocalhostSplitClient implements SplitClient {
     @Override
     public boolean track(String key, String trafficType, String eventType, double value) {
         return false;
+    }
+
+    @Override
+    public void blockUntilReady(int waitInMilliseconds) throws TimeoutException, InterruptedException {
+        // LocalhostSplitClient is always ready
     }
 
 }

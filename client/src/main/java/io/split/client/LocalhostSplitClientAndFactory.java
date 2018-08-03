@@ -5,6 +5,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.Map;
+import java.util.concurrent.TimeoutException;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
@@ -67,6 +68,11 @@ public final class LocalhostSplitClientAndFactory implements SplitClient {
     @Override
     public boolean track(String key, String trafficType, String eventType, double value) {
         return _splitClient.track(key, trafficType, eventType, value);
+    }
+
+    @Override
+    public void blockUntilReady(int waitInMilliseconds) throws TimeoutException, InterruptedException {
+        _splitClient.blockUntilReady(waitInMilliseconds);
     }
 
 }

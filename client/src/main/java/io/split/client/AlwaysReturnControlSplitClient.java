@@ -4,6 +4,7 @@ import io.split.client.api.Key;
 import io.split.grammar.Treatments;
 
 import java.util.Map;
+import java.util.concurrent.TimeoutException;
 
 /**
  * A SplitClient that ensures that all features are turned off for all users.
@@ -41,6 +42,11 @@ public class AlwaysReturnControlSplitClient implements SplitClient {
     @Override
     public boolean track(String key, String trafficType, String eventType, double value) {
         return false;
+    }
+
+    @Override
+    public void blockUntilReady(int waitInMilliseconds) throws TimeoutException, InterruptedException {
+        //AlwaysReturnControl is always ready
     }
 
 }

@@ -44,15 +44,19 @@ public final class SplitClientImpl implements SplitClient {
     private final Metrics _metrics;
     private final SplitClientConfig _config;
     private final EventClient _eventClient;
+    private final SDKReadinessGates _gates;
 
-    public SplitClientImpl(SplitFactory container, SplitFetcher splitFetcher, ImpressionListener impressionListener, Metrics metrics, EventClient eventClient, SplitClientConfig config) {
+    public SplitClientImpl(SplitFactory container, SplitFetcher splitFetcher, ImpressionListener impressionListener,
+                           Metrics metrics, EventClient eventClient, SplitClientConfig config, SDKReadinessGates gates) {
         _container = container;
         _splitFetcher = splitFetcher;
         _impressionListener = impressionListener;
         _metrics = metrics;
         _eventClient = eventClient;
         _config = config;
+        _gates = gates;
 
+        checkNotNull(gates);
         checkNotNull(_splitFetcher);
         checkNotNull(_impressionListener);
     }
@@ -70,15 +74,6 @@ public final class SplitClientImpl implements SplitClient {
     @Override
     public String getTreatment(String key, String split, Map<String, Object> attributes) {
         return getTreatment(key, null, split, attributes);
-    }
-
-    public void blockUntilReady(int waitInMilliseconds) throws TimeoutException, InterruptedException {
-        if (waitInMilliseconds > 0) {
-            SDKReadinessGates gates = new SDKReadinessGates();
-            if (!gates.isSDKReady(waitInMilliseconds)) {
-                throw new TimeoutException("SDK was not ready in " + waitInMilliseconds + " milliseconds");
-            }
-        }
     }
 
     @Override
@@ -243,6 +238,17 @@ public final class SplitClientImpl implements SplitClient {
         event.value = value;
 
         return track(event);
+    }
+
+    @Override
+    public void blockUntilReady(int waitInMilliseconds) throws TimeoutException, InterruptedException {
+        if (waitInMilliseconds > 0) {
+            if (!_gates.isSDKReady(waitInMilliseconds)) {
+                throw new TimeoutException("SDK was not ready in " + waitInMilliseconds + " milliseconds");
+            }
+        } else {
+            throw new IllegalArgumentException("waitInMilliseconds must be positive, received: " + waitInMilliseconds);
+        }
     }
 
     private Event createEvent(String key, String trafficType, String eventType) {
