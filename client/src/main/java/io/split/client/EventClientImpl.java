@@ -60,8 +60,8 @@ public class EventClientImpl implements EventClient {
     }
 
 
-    public static EventClient create(CloseableHttpClient httpclient, URI eventsRootTarget, int maxQueueSize, long flushIntervalMillis, int waitBeforeShutdown) throws URISyntaxException {
-        return new EventClientImpl(new LinkedBlockingQueue<Event>(), httpclient,  Utils.appendPath(eventsRootTarget, "/api/events/bulk"), maxQueueSize, flushIntervalMillis, waitBeforeShutdown);
+    public static EventClientImpl create(CloseableHttpClient httpclient, URI eventsRootTarget, int maxQueueSize, long flushIntervalMillis, int waitBeforeShutdown) throws URISyntaxException {
+        return new EventClientImpl(new LinkedBlockingQueue<Event>(), httpclient,  Utils.appendPath(eventsRootTarget, "api/events/bulk"), maxQueueSize, flushIntervalMillis, waitBeforeShutdown);
     }
 
     EventClientImpl(BlockingQueue<Event> eventQueue, CloseableHttpClient httpclient, URI target, int maxQueueSize,

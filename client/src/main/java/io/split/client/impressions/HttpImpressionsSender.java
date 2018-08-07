@@ -26,7 +26,7 @@ public class HttpImpressionsSender implements ImpressionsSender {
 
 
     public static HttpImpressionsSender create(CloseableHttpClient client, URI eventsRootEndpoint) throws URISyntaxException {
-        return new HttpImpressionsSender(client, Utils.appendPath(eventsRootEndpoint, "/api/testImpressions/bulk"));
+        return new HttpImpressionsSender(client, Utils.appendPath(eventsRootEndpoint, "api/testImpressions/bulk"));
     }
 
     private HttpImpressionsSender(CloseableHttpClient client, URI target) throws URISyntaxException {

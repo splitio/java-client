@@ -30,7 +30,7 @@ public class HttpMetrics implements Metrics, DTOMetrics {
 
 
     public static HttpMetrics create(CloseableHttpClient client, URI root) throws URISyntaxException {
-        return new HttpMetrics(client, Utils.appendPath(root, "/api/metrics/time"));
+        return new HttpMetrics(client, Utils.appendPath(root, "api/metrics/time"));
     }
 
 
