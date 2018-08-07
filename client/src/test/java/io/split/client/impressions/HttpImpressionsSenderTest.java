@@ -21,10 +21,10 @@ public class HttpImpressionsSenderTest {
 
     @Test
     public void testCustomURLNoPathNoBackslash() throws URISyntaxException {
-        URI rootTarget = URI.create("https://kubernetesturl.com/split");
+        URI rootTarget = URI.create("https://kubernetesturl.com/");
         CloseableHttpClient httpClient = HttpClients.custom().build();
         HttpImpressionsSender fetcher = HttpImpressionsSender.create(httpClient, rootTarget);
-        Assert.assertThat(fetcher.getTarget().toString(), Matchers.is(Matchers.equalTo("https://kubernetesturl.com/split/api/testImpressions/bulk")));
+        Assert.assertThat(fetcher.getTarget().toString(), Matchers.is(Matchers.equalTo("https://kubernetesturl.com/api/testImpressions/bulk")));
     }
 
     @Test
