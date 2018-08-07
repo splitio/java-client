@@ -1,5 +1,6 @@
 package io.split.client.impressions;
 
+import com.google.common.annotations.VisibleForTesting;
 import io.split.client.dtos.TestImpressions;
 import io.split.client.utils.Utils;
 import org.apache.http.client.methods.CloseableHttpResponse;
@@ -21,16 +22,16 @@ public class HttpImpressionsSender implements ImpressionsSender {
     private static final Logger _logger = LoggerFactory.getLogger(HttpImpressionsSender.class);
 
     private CloseableHttpClient _client;
-    private URI _eventsEndpoint;
+    private URI _target;
 
 
-    public static HttpImpressionsSender create(CloseableHttpClient clinent, URI eventsRootEndpoint) throws URISyntaxException {
-        return new HttpImpressionsSender(clinent, Utils.appendPath(eventsRootEndpoint, "/api/testImpressions/bulk"));
+    public static HttpImpressionsSender create(CloseableHttpClient client, URI eventsRootEndpoint) throws URISyntaxException {
+        return new HttpImpressionsSender(client, Utils.appendPath(eventsRootEndpoint, "/api/testImpressions/bulk"));
     }
 
-    private HttpImpressionsSender(CloseableHttpClient client, URI eventsEndpoint) throws URISyntaxException {
+    private HttpImpressionsSender(CloseableHttpClient client, URI target) throws URISyntaxException {
         _client = client;
-        _eventsEndpoint = eventsEndpoint;
+        _target = target;
     }
 
     @Override
@@ -41,7 +42,7 @@ public class HttpImpressionsSender implements ImpressionsSender {
         try {
             StringEntity entity = Utils.toJsonEntity(impressions);
 
-            HttpPost request = new HttpPost(_eventsEndpoint);
+            HttpPost request = new HttpPost(_target);
             request.setEntity(entity);
 
             response = _client.execute(request);
@@ -60,4 +61,8 @@ public class HttpImpressionsSender implements ImpressionsSender {
 
     }
 
+    @VisibleForTesting
+    URI getTarget() {
+        return _target;
+    }
 }

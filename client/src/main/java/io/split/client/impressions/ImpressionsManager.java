@@ -152,5 +152,4 @@ public class ImpressionsManager implements ImpressionListener, Runnable {
                     impressions.size(), (System.currentTimeMillis() - start)));
         }
     }
-
 }

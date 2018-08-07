@@ -1,5 +1,6 @@
 package io.split.client.metrics;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.Lists;
 import io.split.client.dtos.Counter;
 import io.split.client.dtos.Latency;
@@ -124,4 +125,8 @@ public class HttpMetrics implements Metrics, DTOMetrics {
         }
     }
 
+    @VisibleForTesting
+    URI getTarget() {
+        return _target;
+    }
 }
