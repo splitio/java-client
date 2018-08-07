@@ -2,7 +2,7 @@ package io.split.client;
 
 import io.split.client.dtos.Event;
 import io.split.client.utils.GenericClientUtil;
-import org.apache.http.client.utils.URIBuilder;
+import io.split.client.utils.Utils;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -60,15 +60,15 @@ public class EventClientImpl implements EventClient {
 
 
     public static EventClient create(CloseableHttpClient httpclient, URI eventsRootTarget, int maxQueueSize, long flushIntervalMillis, int waitBeforeShutdown) throws URISyntaxException {
-        return new EventClientImpl(new LinkedBlockingQueue<Event>(), httpclient, eventsRootTarget, maxQueueSize, flushIntervalMillis, waitBeforeShutdown);
+        return new EventClientImpl(new LinkedBlockingQueue<Event>(), httpclient,  Utils.appendPath(eventsRootTarget, "/api/events/bulk"), maxQueueSize, flushIntervalMillis, waitBeforeShutdown);
     }
 
-    EventClientImpl(BlockingQueue<Event> eventQueue, CloseableHttpClient httpclient, URI eventsRootTarget, int maxQueueSize,
+    EventClientImpl(BlockingQueue<Event> eventQueue, CloseableHttpClient httpclient, URI eventsTarget, int maxQueueSize,
                     long flushIntervalMillis, int waitBeforeShutdown) throws URISyntaxException {
 
         _httpclient = httpclient;
 
-        _eventsTarget = new URIBuilder(eventsRootTarget).setPath("/api/events/bulk").build();
+        _eventsTarget = eventsTarget;
 
         _eventQueue = eventQueue;
         _waitBeforeShutdown = waitBeforeShutdown;
