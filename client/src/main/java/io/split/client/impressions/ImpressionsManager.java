@@ -9,6 +9,7 @@ import org.apache.http.impl.client.CloseableHttpClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -61,7 +62,7 @@ public class ImpressionsManager implements ImpressionListener, Runnable {
         if (impressionsSender != null) {
             _impressionsSender = impressionsSender;
         } else {
-            _impressionsSender = new HttpImpressionsSender(_client, config.eventsEndpoint());
+            _impressionsSender = HttpImpressionsSender.create(_client, URI.create(config.eventsEndpoint()));
         }
     }
 
