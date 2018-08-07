@@ -20,7 +20,7 @@ public class HttpMetricsTest {
 
     @Test
     public void testCustomURLNoPathNoBackslash() throws URISyntaxException {
-        URI rootTarget = URI.create("https://kubernetesturl.com/");
+        URI rootTarget = URI.create("https://kubernetesturl.com");
         CloseableHttpClient httpClient = HttpClients.custom().build();
         HttpMetrics fetcher = HttpMetrics.create(httpClient, rootTarget);
         Assert.assertThat(fetcher.getTarget().toString(), Matchers.is(Matchers.equalTo("https://kubernetesturl.com/api/metrics/time")));

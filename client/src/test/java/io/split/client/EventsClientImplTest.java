@@ -20,7 +20,7 @@ public class EventsClientImplTest {
 
     @Test
     public void testCustomURLNoPathNoBackslash() throws URISyntaxException {
-        URI rootTarget = URI.create("https://kubernetesturl.com/");
+        URI rootTarget = URI.create("https://kubernetesturl.com");
         CloseableHttpClient httpClient = HttpClients.custom().build();
         EventClientImpl fetcher = EventClientImpl.create(httpClient, rootTarget, 5, 5, 5);
         Assert.assertThat(fetcher.getTarget().toString(), Matchers.is(Matchers.equalTo("https://kubernetesturl.com/api/events/bulk")));
