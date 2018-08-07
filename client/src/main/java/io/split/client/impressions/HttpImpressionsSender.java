@@ -4,7 +4,6 @@ import io.split.client.dtos.TestImpressions;
 import io.split.client.utils.Utils;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpPost;
-import org.apache.http.client.utils.URIBuilder;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.slf4j.Logger;
@@ -24,9 +23,14 @@ public class HttpImpressionsSender implements ImpressionsSender {
     private CloseableHttpClient _client;
     private URI _eventsEndpoint;
 
-    public HttpImpressionsSender(CloseableHttpClient client, String eventsEndpoint) throws URISyntaxException {
+
+    public static HttpImpressionsSender create(CloseableHttpClient clinent, URI eventsRootEndpoint) throws URISyntaxException {
+        return new HttpImpressionsSender(clinent, Utils.appendPath(eventsRootEndpoint, "/api/testImpressions/bulk"));
+    }
+
+    private HttpImpressionsSender(CloseableHttpClient client, URI eventsEndpoint) throws URISyntaxException {
         _client = client;
-        _eventsEndpoint = new URIBuilder(eventsEndpoint).setPath("/api/testImpressions/bulk").build();
+        _eventsEndpoint = eventsEndpoint;
     }
 
     @Override
