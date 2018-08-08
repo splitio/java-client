@@ -1,8 +1,9 @@
 package io.split.client;
 
+import com.google.common.annotations.VisibleForTesting;
 import io.split.client.dtos.Event;
 import io.split.client.utils.GenericClientUtil;
-import org.apache.http.client.utils.URIBuilder;
+import io.split.client.utils.Utils;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -40,7 +41,7 @@ public class EventClientImpl implements EventClient {
     static final Event CENTINEL = new Event();
     private static final Logger _log = LoggerFactory.getLogger(EventClientImpl.class);
     private final CloseableHttpClient _httpclient;
-    private final URI _eventsTarget;
+    private final URI _target;
     private final int _waitBeforeShutdown;
 
     ThreadFactory eventClientThreadFactory(final String name) {
@@ -59,16 +60,16 @@ public class EventClientImpl implements EventClient {
     }
 
 
-    public static EventClient create(CloseableHttpClient httpclient, URI eventsRootTarget, int maxQueueSize, long flushIntervalMillis, int waitBeforeShutdown) throws URISyntaxException {
-        return new EventClientImpl(new LinkedBlockingQueue<Event>(), httpclient, eventsRootTarget, maxQueueSize, flushIntervalMillis, waitBeforeShutdown);
+    public static EventClientImpl create(CloseableHttpClient httpclient, URI eventsRootTarget, int maxQueueSize, long flushIntervalMillis, int waitBeforeShutdown) throws URISyntaxException {
+        return new EventClientImpl(new LinkedBlockingQueue<Event>(), httpclient,  Utils.appendPath(eventsRootTarget, "api/events/bulk"), maxQueueSize, flushIntervalMillis, waitBeforeShutdown);
     }
 
-    EventClientImpl(BlockingQueue<Event> eventQueue, CloseableHttpClient httpclient, URI eventsRootTarget, int maxQueueSize,
+    EventClientImpl(BlockingQueue<Event> eventQueue, CloseableHttpClient httpclient, URI target, int maxQueueSize,
                     long flushIntervalMillis, int waitBeforeShutdown) throws URISyntaxException {
 
         _httpclient = httpclient;
 
-        _eventsTarget = new URIBuilder(eventsRootTarget).setPath("/api/events/bulk").build();
+        _target = target;
 
         _eventQueue = eventQueue;
         _waitBeforeShutdown = waitBeforeShutdown;
@@ -166,7 +167,7 @@ public class EventClientImpl implements EventClient {
                         }
 
                         // Dispatch
-                        _senderExecutor.submit(EventSenderTask.create(_httpclient, _eventsTarget, events));
+                        _senderExecutor.submit(EventSenderTask.create(_httpclient, _target, events));
 
                         // Clear the queue of events for the next batch.
                         events = new ArrayList<>();
@@ -198,5 +199,10 @@ public class EventClientImpl implements EventClient {
         public void run() {
             GenericClientUtil.process(_data, _endpoint, _client);
         }
+    }
+
+    @VisibleForTesting
+    URI getTarget() {
+        return _target  ;
     }
 }
