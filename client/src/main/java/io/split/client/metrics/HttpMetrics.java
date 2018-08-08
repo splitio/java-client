@@ -1,5 +1,6 @@
 package io.split.client.metrics;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.Lists;
 import io.split.client.dtos.Counter;
 import io.split.client.dtos.Latency;
@@ -29,7 +30,7 @@ public class HttpMetrics implements Metrics, DTOMetrics {
 
 
     public static HttpMetrics create(CloseableHttpClient client, URI root) throws URISyntaxException {
-        return new HttpMetrics(client, new URIBuilder(root).build());
+        return new HttpMetrics(client, Utils.appendPath(root, "api/metrics/time"));
     }
 
 
@@ -49,7 +50,7 @@ public class HttpMetrics implements Metrics, DTOMetrics {
         }
 
         try {
-            post(new URIBuilder(_target).setPath("/api/metrics/time").build(), dto);
+            post(_target, dto);
         } catch (Throwable t) {
             _log.warn("Exception when posting metric" + dto, t);
         }
@@ -124,4 +125,8 @@ public class HttpMetrics implements Metrics, DTOMetrics {
         }
     }
 
+    @VisibleForTesting
+    URI getTarget() {
+        return _target;
+    }
 }
