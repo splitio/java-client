@@ -247,7 +247,7 @@ public final class SplitClientImpl implements SplitClient {
                 throw new TimeoutException("SDK was not ready in " + _config.blockUntilReady()+ " milliseconds");
             }
         } else {
-            throw new IllegalArgumentException("waitInMilliseconds must be positive, received: " + _config.blockUntilReady());
+            throw new IllegalArgumentException("waitInMilliseconds must be positive in config was set: " + _config.blockUntilReady());
         }
     }
 

@@ -1,7 +1,9 @@
 package io.split.client;
 
+import com.google.common.base.Preconditions;
 import io.split.client.api.SplitView;
 import io.split.client.dtos.Partition;
+import io.split.engine.SDKReadinessGates;
 import io.split.engine.experiments.ParsedCondition;
 import io.split.engine.experiments.ParsedSplit;
 import io.split.engine.experiments.SplitFetcher;
@@ -10,6 +12,7 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.TimeoutException;
 
 /**
  * Created by adilaijaz on 7/15/16.
@@ -17,10 +20,16 @@ import java.util.Set;
 public class SplitManagerImpl implements SplitManager {
 
     private final SplitFetcher _splitFetcher;
+    private final SplitClientConfig _config;
+    private final SDKReadinessGates _gates;
 
 
-    public SplitManagerImpl(SplitFetcher splitFetcher) {
-        _splitFetcher  = splitFetcher;
+    public SplitManagerImpl(SplitFetcher splitFetcher,
+                            SplitClientConfig config,
+                            SDKReadinessGates gates) {
+        _config = Preconditions.checkNotNull(config);
+        _splitFetcher  = Preconditions.checkNotNull(splitFetcher);
+        _gates = Preconditions.checkNotNull(gates);
     }
 
     @Override
@@ -47,6 +56,17 @@ public class SplitManagerImpl implements SplitManager {
             result.add(split.feature());
         }
         return result;
+    }
+
+    @Override
+    public void blockUntilReady() throws TimeoutException, InterruptedException {
+        if (_config.blockUntilReady() > 0) {
+            if (!_gates.isSDKReady(_config.blockUntilReady())) {
+                throw new TimeoutException("SDK was not ready in " + _config.blockUntilReady()+ " milliseconds");
+            }
+        } else {
+            throw new IllegalArgumentException("waitInMilliseconds must be positive in config was set: " + _config.blockUntilReady());
+        }
     }
 
     private SplitView toSplitView(ParsedSplit parsedSplit) {
