@@ -45,7 +45,7 @@ public class AlwaysReturnControlSplitClient implements SplitClient {
     }
 
     @Override
-    public void blockUntilReady(int waitInMilliseconds) throws TimeoutException, InterruptedException {
+    public void blockUntilReady() throws TimeoutException, InterruptedException {
         //AlwaysReturnControl is always ready
     }
 

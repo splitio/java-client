@@ -241,13 +241,13 @@ public final class SplitClientImpl implements SplitClient {
     }
 
     @Override
-    public void blockUntilReady(int waitInMilliseconds) throws TimeoutException, InterruptedException {
-        if (waitInMilliseconds > 0) {
-            if (!_gates.isSDKReady(waitInMilliseconds)) {
-                throw new TimeoutException("SDK was not ready in " + waitInMilliseconds + " milliseconds");
+    public void blockUntilReady() throws TimeoutException, InterruptedException {
+        if (_config.blockUntilReady() > 0) {
+            if (!_gates.isSDKReady(_config.blockUntilReady())) {
+                throw new TimeoutException("SDK was not ready in " + _config.blockUntilReady()+ " milliseconds");
             }
         } else {
-            throw new IllegalArgumentException("waitInMilliseconds must be positive, received: " + waitInMilliseconds);
+            throw new IllegalArgumentException("waitInMilliseconds must be positive, received: " + _config.blockUntilReady());
         }
     }
 

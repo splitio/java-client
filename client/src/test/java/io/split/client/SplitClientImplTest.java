@@ -49,7 +49,7 @@ import static org.mockito.Mockito.when;
  */
 public class SplitClientImplTest {
 
-    private SplitClientConfig config = SplitClientConfig.builder().build();
+    private SplitClientConfig config = SplitClientConfig.builder().setBlockUntilReadyTimeout(100).build();
 
     @Test
     public void null_key_results_in_control() {
@@ -673,7 +673,7 @@ public class SplitClientImplTest {
                 ready
         );
 
-        client.blockUntilReady(100);
+        client.blockUntilReady();
     }
 
     @Test(expected = TimeoutException.class)
@@ -690,6 +690,6 @@ public class SplitClientImplTest {
                 ready
         );
 
-        client.blockUntilReady(100);
+        client.blockUntilReady();
     }
 }

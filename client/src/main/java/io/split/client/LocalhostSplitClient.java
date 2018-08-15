@@ -84,7 +84,7 @@ public final class LocalhostSplitClient implements SplitClient {
     }
 
     @Override
-    public void blockUntilReady(int waitInMilliseconds) throws TimeoutException, InterruptedException {
+    public void blockUntilReady() throws TimeoutException, InterruptedException {
         // LocalhostSplitClient is always ready
     }
 

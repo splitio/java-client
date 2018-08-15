@@ -71,8 +71,8 @@ public final class LocalhostSplitClientAndFactory implements SplitClient {
     }
 
     @Override
-    public void blockUntilReady(int waitInMilliseconds) throws TimeoutException, InterruptedException {
-        _splitClient.blockUntilReady(waitInMilliseconds);
+    public void blockUntilReady() throws TimeoutException, InterruptedException {
+        _splitClient.blockUntilReady();
     }
 
 }
