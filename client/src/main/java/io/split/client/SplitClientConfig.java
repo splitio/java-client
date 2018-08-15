@@ -422,7 +422,7 @@ public class SplitClientConfig {
          * @param milliseconds MUST BE greater than or equal to 0;
          * @return this builder
          */
-        public Builder ready(int milliseconds) {
+        public Builder setBlockUntilReadyTimeout(int milliseconds) {
             _ready = milliseconds;
             return this;
         }
