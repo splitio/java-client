@@ -36,11 +36,11 @@ public interface SplitManager {
      * for using the SDK. You can choose to block until the SDK has
      * downloaded split definitions so that you will not get
      * the 'control' treatment.
+     * <p>
      *
-     * <p/>
      * If the download is not successful in this time period set on
      * {@link SplitClientConfig.Builder#setBlockUntilReadyTimeout}, a TimeOutException will be thrown.
-     * <p/>
+     * <p>
      */
     void blockUntilReady() throws TimeoutException, InterruptedException;
 }

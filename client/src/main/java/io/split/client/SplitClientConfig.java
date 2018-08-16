@@ -306,7 +306,7 @@ public class SplitClientConfig {
          *
          * If the value chosen is too small and more than the default size(5000) of impressions
          * are generated, the old ones will be dropped and the sdk will show a warning.
-         * <p/>
+         * <p>
          *
          * This is an ADVANCED parameter.
          *
@@ -405,8 +405,8 @@ public class SplitClientConfig {
          * for using the SDK. You can choose to block until the SDK has
          * downloaded split definitions so that you will not get
          * the 'control' treatment.
-         * <p/>
-         * <p/>
+         * <p>
+         * <p>
          * If this parameter is set to a non-negative value, the SDK
          * will block for that number of milliseconds for the data to be downloaded when
          * {@link SplitClient#blockUntilReady()} or {@link SplitManager#blockUntilReady()}
