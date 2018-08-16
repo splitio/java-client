@@ -408,16 +408,10 @@ public class SplitClientConfig {
          * <p/>
          * <p/>
          * If this parameter is set to a non-negative value, the SDK
-         * will block for that number of milliseconds for the data to be downloaded.
+         * will block for that number of milliseconds for the data to be downloaded when
+         * {@link SplitClient#blockUntilReady()} or {@link SplitManager#blockUntilReady()}
+         * is called
          * <p/>
-         * <p/>
-         * If the download is not successful in this time period, a TimeOutException
-         * will be thrown.
-         * <p/>
-         * <p/>
-         * A negative value implies that the SDK building MUST NOT block. In this
-         * scenario, the SDK might return the 'control' treatment until the
-         * desired data has been downloaded.
          *
          * @param milliseconds MUST BE greater than or equal to 0;
          * @return this builder
