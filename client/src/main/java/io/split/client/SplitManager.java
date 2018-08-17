@@ -38,7 +38,7 @@ public interface SplitManager {
      * the 'control' treatment.
      * <p>
      *
-     * If the download is not successful in this time period set on
+     * If the download is not successful in the time period set on
      * {@link SplitClientConfig.Builder#setBlockUntilReadyTimeout}, a TimeOutException will be thrown.
      * <p>
      */
