@@ -242,12 +242,11 @@ public final class SplitClientImpl implements SplitClient {
 
     @Override
     public void blockUntilReady() throws TimeoutException, InterruptedException {
-        if (_config.blockUntilReady() > 0) {
-            if (!_gates.isSDKReady(_config.blockUntilReady())) {
-                throw new TimeoutException("SDK was not ready in " + _config.blockUntilReady()+ " milliseconds");
-            }
-        } else {
+        if (_config.blockUntilReady() <= 0) {
             throw new IllegalArgumentException("setBlockUntilReadyTimeout must be positive but in config was: " + _config.blockUntilReady());
+        }
+        if (!_gates.isSDKReady(_config.blockUntilReady())) {
+            throw new TimeoutException("SDK was not ready in " + _config.blockUntilReady()+ " milliseconds");
         }
     }
 
