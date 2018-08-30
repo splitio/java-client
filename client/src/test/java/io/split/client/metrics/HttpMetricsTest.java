@@ -15,7 +15,8 @@ public class HttpMetricsTest {
         URI rootTarget = URI.create("https://api.split.io");
         CloseableHttpClient httpClient = HttpClients.custom().build();
         HttpMetrics fetcher = HttpMetrics.create(httpClient, rootTarget);
-        Assert.assertThat(fetcher.getTarget().toString(), Matchers.is(Matchers.equalTo("https://api.split.io/api/metrics/time")));
+        Assert.assertThat(fetcher.getTimeTarget().toString(), Matchers.is(Matchers.equalTo("https://api.split.io/api/metrics/time")));
+        Assert.assertThat(fetcher.getCounterTarget().toString(), Matchers.is(Matchers.equalTo("https://api.split.io/api/metrics/counter")));
     }
 
     @Test
@@ -23,7 +24,8 @@ public class HttpMetricsTest {
         URI rootTarget = URI.create("https://kubernetesturl.com");
         CloseableHttpClient httpClient = HttpClients.custom().build();
         HttpMetrics fetcher = HttpMetrics.create(httpClient, rootTarget);
-        Assert.assertThat(fetcher.getTarget().toString(), Matchers.is(Matchers.equalTo("https://kubernetesturl.com/api/metrics/time")));
+        Assert.assertThat(fetcher.getTimeTarget().toString(), Matchers.is(Matchers.equalTo("https://kubernetesturl.com/api/metrics/time")));
+        Assert.assertThat(fetcher.getCounterTarget().toString(), Matchers.is(Matchers.equalTo("https://kubernetesturl.com/api/metrics/counter")));
     }
 
     @Test
@@ -31,7 +33,8 @@ public class HttpMetricsTest {
         URI rootTarget = URI.create("https://kubernetesturl.com/split/");
         CloseableHttpClient httpClient = HttpClients.custom().build();
         HttpMetrics fetcher = HttpMetrics.create(httpClient, rootTarget);
-        Assert.assertThat(fetcher.getTarget().toString(), Matchers.is(Matchers.equalTo("https://kubernetesturl.com/split/api/metrics/time")));
+        Assert.assertThat(fetcher.getTimeTarget().toString(), Matchers.is(Matchers.equalTo("https://kubernetesturl.com/split/api/metrics/time")));
+        Assert.assertThat(fetcher.getCounterTarget().toString(), Matchers.is(Matchers.equalTo("https://kubernetesturl.com/split/api/metrics/counter")));
     }
 
     @Test
@@ -39,6 +42,7 @@ public class HttpMetricsTest {
         URI rootTarget = URI.create("https://kubernetesturl.com/split");
         CloseableHttpClient httpClient = HttpClients.custom().build();
         HttpMetrics fetcher = HttpMetrics.create(httpClient, rootTarget);
-        Assert.assertThat(fetcher.getTarget().toString(), Matchers.is(Matchers.equalTo("https://kubernetesturl.com/split/api/metrics/time")));
+        Assert.assertThat(fetcher.getTimeTarget().toString(), Matchers.is(Matchers.equalTo("https://kubernetesturl.com/split/api/metrics/time")));
+        Assert.assertThat(fetcher.getCounterTarget().toString(), Matchers.is(Matchers.equalTo("https://kubernetesturl.com/split/api/metrics/counter")));
     }
 }
