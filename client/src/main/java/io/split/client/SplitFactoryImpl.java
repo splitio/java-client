@@ -189,15 +189,9 @@ public class SplitFactoryImpl implements SplitFactory {
             }
         });
 
-        _client = new SplitClientImpl(this, splitFetcherProvider.getFetcher(), impressionListener, cachedFireAndForgetMetrics, eventClient, config);
-        _manager = new SplitManagerImpl(splitFetcherProvider.getFetcher());
-
-        if (config.blockUntilReady() > 0) {
-            if (!gates.isSDKReady(config.blockUntilReady())) {
-                throw new TimeoutException("SDK was not ready in " + config.blockUntilReady() + " milliseconds");
-            }
-        }
-
+        _client = new SplitClientImpl(this, splitFetcherProvider.getFetcher(), impressionListener,
+                cachedFireAndForgetMetrics, eventClient, config, gates);
+        _manager = new SplitManagerImpl(splitFetcherProvider.getFetcher(), config, gates);
     }
 
     private static int findPollingPeriod(Random rand, int max) {

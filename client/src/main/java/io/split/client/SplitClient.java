@@ -3,6 +3,7 @@ package io.split.client;
 import io.split.client.api.Key;
 
 import java.util.Map;
+import java.util.concurrent.TimeoutException;
 
 /**
  * Created by adilaijaz on 5/8/15.
@@ -126,4 +127,17 @@ public interface SplitClient {
      * @return true if the track was successful, false otherwise
      */
     boolean track(String key, String trafficType, String eventType, double value);
+
+    /**
+     * The SDK kicks off background threads to download data necessary
+     * for using the SDK. You can choose to block until the SDK has
+     * downloaded split definitions so that you will not get
+     * the 'control' treatment.
+     * <p>
+     *
+     * If the download is not successful in the time period set on
+     * {@link SplitClientConfig.Builder#setBlockUntilReadyTimeout}, a TimeoutException will be thrown.
+     * <p>
+     */
+    void blockUntilReady() throws TimeoutException, InterruptedException;
 }

@@ -6,6 +6,7 @@ import io.split.grammar.Treatments;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.TimeoutException;
 
 public class SplitClientForTest implements SplitClient {
     private Map<String, String> _tests;
@@ -59,5 +60,10 @@ public class SplitClientForTest implements SplitClient {
     @Override
     public boolean track(String key, String trafficType, String eventType, double value) {
         return false;
+    }
+
+    @Override
+    public void blockUntilReady() throws TimeoutException, InterruptedException {
+
     }
 }

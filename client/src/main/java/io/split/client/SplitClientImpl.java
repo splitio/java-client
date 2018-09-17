@@ -7,6 +7,7 @@ import io.split.client.dtos.Event;
 import io.split.client.exceptions.ChangeNumberExceptionWrapper;
 import io.split.client.impressions.Impression;
 import io.split.client.impressions.ImpressionListener;
+import io.split.engine.SDKReadinessGates;
 import io.split.engine.experiments.ParsedCondition;
 import io.split.engine.experiments.ParsedSplit;
 import io.split.engine.experiments.SplitFetcher;
@@ -18,6 +19,7 @@ import org.slf4j.LoggerFactory;
 
 import java.util.Collections;
 import java.util.Map;
+import java.util.concurrent.TimeoutException;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
@@ -42,15 +44,19 @@ public final class SplitClientImpl implements SplitClient {
     private final Metrics _metrics;
     private final SplitClientConfig _config;
     private final EventClient _eventClient;
+    private final SDKReadinessGates _gates;
 
-    public SplitClientImpl(SplitFactory container, SplitFetcher splitFetcher, ImpressionListener impressionListener, Metrics metrics, EventClient eventClient, SplitClientConfig config) {
+    public SplitClientImpl(SplitFactory container, SplitFetcher splitFetcher, ImpressionListener impressionListener,
+                           Metrics metrics, EventClient eventClient, SplitClientConfig config, SDKReadinessGates gates) {
         _container = container;
         _splitFetcher = splitFetcher;
         _impressionListener = impressionListener;
         _metrics = metrics;
         _eventClient = eventClient;
         _config = config;
+        _gates = gates;
 
+        checkNotNull(gates);
         checkNotNull(_splitFetcher);
         checkNotNull(_impressionListener);
     }
@@ -232,6 +238,16 @@ public final class SplitClientImpl implements SplitClient {
         event.value = value;
 
         return track(event);
+    }
+
+    @Override
+    public void blockUntilReady() throws TimeoutException, InterruptedException {
+        if (_config.blockUntilReady() <= 0) {
+            throw new IllegalArgumentException("setBlockUntilReadyTimeout must be positive but in config was: " + _config.blockUntilReady());
+        }
+        if (!_gates.isSDKReady(_config.blockUntilReady())) {
+            throw new TimeoutException("SDK was not ready in " + _config.blockUntilReady()+ " milliseconds");
+        }
     }
 
     private Event createEvent(String key, String trafficType, String eventType) {
