@@ -136,7 +136,7 @@ public interface SplitClient {
      * <p>
      *
      * If the download is not successful in the time period set on
-     * {@link SplitClientConfig.Builder#setBlockUntilReadyTimeout}, a TimeOutException will be thrown.
+     * {@link SplitClientConfig.Builder#setBlockUntilReadyTimeout}, a TimeoutException will be thrown.
      * <p>
      */
     void blockUntilReady() throws TimeoutException, InterruptedException;
