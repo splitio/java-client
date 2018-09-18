@@ -1,6 +1,7 @@
 package io.split.client.metrics;
 
 import com.google.common.annotations.VisibleForTesting;
+import com.google.common.base.Preconditions;
 import com.google.common.collect.Lists;
 import io.split.client.dtos.Counter;
 import io.split.client.dtos.Latency;
@@ -8,7 +9,6 @@ import io.split.client.utils.Utils;
 import io.split.engine.metrics.Metrics;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpPost;
-import org.apache.http.client.utils.URIBuilder;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.slf4j.Logger;
@@ -17,8 +17,6 @@ import org.slf4j.LoggerFactory;
 import java.net.URI;
 import java.net.URISyntaxException;
 
-import static com.google.common.base.Preconditions.checkNotNull;
-
 /**
  * Created by adilaijaz on 9/4/15.
  */
@@ -26,31 +24,31 @@ public class HttpMetrics implements Metrics, DTOMetrics {
     private static final Logger _log = LoggerFactory.getLogger(HttpMetrics.class);
 
     private final CloseableHttpClient _client;
-    private final URI _target;
+    private final URI _timeTarget;
+    private final URI _counterTarget;
 
 
     public static HttpMetrics create(CloseableHttpClient client, URI root) throws URISyntaxException {
-        return new HttpMetrics(client, Utils.appendPath(root, "api/metrics/time"));
+        return new HttpMetrics(client, root);
     }
 
 
-    public HttpMetrics(CloseableHttpClient client, URI uri) {
-        _client = client;
-        _target = uri;
-        checkNotNull(_client);
-        checkNotNull(_target);
+    public HttpMetrics(CloseableHttpClient client, URI root) throws URISyntaxException {
+        Preconditions.checkNotNull(root);
+        _client = Preconditions.checkNotNull(client);
+        _timeTarget = Utils.appendPath(root, "api/metrics/time");
+        _counterTarget = Utils.appendPath(root, "api/metrics/counter");
     }
 
 
     @Override
     public void time(Latency dto) {
-
         if (dto.latencies.isEmpty()) {
             return;
         }
 
         try {
-            post(_target, dto);
+            post(_timeTarget, dto);
         } catch (Throwable t) {
             _log.warn("Exception when posting metric" + dto, t);
         }
@@ -60,9 +58,8 @@ public class HttpMetrics implements Metrics, DTOMetrics {
 
     @Override
     public void count(Counter dto) {
-
         try {
-            post(new URIBuilder(_target).setPath("/api/metrics/counter").build(), dto);
+            post(_counterTarget, dto);
         } catch (Throwable t) {
             _log.warn("Exception when posting metric" + dto, t);
         }
@@ -126,7 +123,13 @@ public class HttpMetrics implements Metrics, DTOMetrics {
     }
 
     @VisibleForTesting
-    URI getTarget() {
-        return _target;
+    URI getTimeTarget() {
+        return _timeTarget;
     }
+
+    @VisibleForTesting
+    URI getCounterTarget() {
+        return _counterTarget;
+    }
+
 }

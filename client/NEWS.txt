@@ -1,4 +1,7 @@
 NEWS
+3.0.1
+- Fix Metric Counters when using Split Proxy.
+
 3.0.0
 - Moving block until ready out of the factory into the split client and manager client
 - Starting this version, SplitClientConfig#ready(int) is deprecated and migrated to a two part
