@@ -9,6 +9,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.TimeoutException;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
@@ -67,6 +68,11 @@ public final class LocalhostSplitManager implements SplitManager {
             splits.add(entry.getKey().split());
         }
         return Lists.newArrayList(splits);
+    }
+
+    @Override
+    public void blockUntilReady() throws TimeoutException, InterruptedException {
+        // It is always ready
     }
 
     @Override
