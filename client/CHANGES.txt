@@ -1,4 +1,7 @@
 CHANGES
+3.0.1
+- Fix Metric Counters when using Split Proxy.
+
 3.0.0
 - Moving block until ready out of the factory into the split client and manager client
 
