@@ -8,6 +8,7 @@ import io.split.client.dtos.DataType;
 import io.split.client.dtos.Partition;
 import io.split.client.impressions.Impression;
 import io.split.client.impressions.ImpressionListener;
+import io.split.engine.SDKReadinessGates;
 import io.split.engine.experiments.ParsedCondition;
 import io.split.engine.experiments.ParsedSplit;
 import io.split.engine.experiments.SplitFetcher;
@@ -29,6 +30,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.TimeoutException;
 
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.is;
@@ -47,7 +49,7 @@ import static org.mockito.Mockito.when;
  */
 public class SplitClientImplTest {
 
-    private SplitClientConfig config = SplitClientConfig.builder().build();
+    private SplitClientConfig config = SplitClientConfig.builder().setBlockUntilReadyTimeout(100).build();
 
     @Test
     public void null_key_results_in_control() {
@@ -65,7 +67,8 @@ public class SplitClientImplTest {
                 new ImpressionListener.NoopImpressionListener(),
                 new Metrics.NoopMetrics(),
                 NoopEventClient.create(),
-                config
+                config,
+                mock(SDKReadinessGates.class)
         );
 
         assertThat(client.getTreatment(null, "test1"), is(equalTo(Treatments.CONTROL)));
@@ -89,7 +92,8 @@ public class SplitClientImplTest {
                 new ImpressionListener.NoopImpressionListener(),
                 new Metrics.NoopMetrics(),
                 NoopEventClient.create(),
-                config
+                config,
+                mock(SDKReadinessGates.class)
         );
 
         assertThat(client.getTreatment("adil@relateiq.com", null), is(equalTo(Treatments.CONTROL)));
@@ -108,7 +112,8 @@ public class SplitClientImplTest {
                 new ImpressionListener.NoopImpressionListener(),
                 new Metrics.NoopMetrics(),
                 NoopEventClient.create(),
-                config
+                config,
+                mock(SDKReadinessGates.class)
         );
         assertThat(client.getTreatment("adil@relateiq.com", "test1"), is(equalTo(Treatments.CONTROL)));
 
@@ -132,7 +137,8 @@ public class SplitClientImplTest {
                 new ImpressionListener.NoopImpressionListener(),
                 new Metrics.NoopMetrics(),
                 NoopEventClient.create(),
-                config
+                config,
+                mock(SDKReadinessGates.class)
         );
 
         int numKeys = 5;
@@ -162,7 +168,8 @@ public class SplitClientImplTest {
                 new ImpressionListener.NoopImpressionListener(),
                 new Metrics.NoopMetrics(),
                 NoopEventClient.create(),
-                config
+                config,
+                mock(SDKReadinessGates.class)
         );
 
         assertThat(client.getTreatment("pato@codigo.com", test), is(equalTo(Treatments.OFF)));
@@ -190,7 +197,8 @@ public class SplitClientImplTest {
                 new ImpressionListener.NoopImpressionListener(),
                 new Metrics.NoopMetrics(),
                 NoopEventClient.create(),
-                config
+                config,
+                mock(SDKReadinessGates.class)
         );
 
         assertThat(client.getTreatment("adil@codigo.com", test), is(equalTo("on")));
@@ -218,7 +226,8 @@ public class SplitClientImplTest {
                 new ImpressionListener.NoopImpressionListener(),
                 new Metrics.NoopMetrics(),
                 NoopEventClient.create(),
-                config
+                config,
+                mock(SDKReadinessGates.class)
         );
 
         assertThat(client.getTreatment("adil@codigo.com", test), is(equalTo(Treatments.OFF)));
@@ -249,7 +258,8 @@ public class SplitClientImplTest {
                 new ImpressionListener.NoopImpressionListener(),
                 new Metrics.NoopMetrics(),
                 NoopEventClient.create(),
-                config
+                config,
+                mock(SDKReadinessGates.class)
         );
 
         assertThat(client.getTreatment("key", parent), is(equalTo(Treatments.ON)));
@@ -279,7 +289,8 @@ public class SplitClientImplTest {
                 new ImpressionListener.NoopImpressionListener(),
                 new Metrics.NoopMetrics(),
                 NoopEventClient.create(),
-                config
+                config,
+                mock(SDKReadinessGates.class)
         );
 
         assertThat(client.getTreatment("key", parent), is(equalTo(Treatments.ON)));
@@ -303,7 +314,8 @@ public class SplitClientImplTest {
                 new ImpressionListener.NoopImpressionListener(),
                 new Metrics.NoopMetrics(),
                 NoopEventClient.create(),
-                config
+                config,
+                mock(SDKReadinessGates.class)
         );
 
 //        assertThat(client.getTreatment("key", dependent), is(equalTo(Treatments.CONTROL)));
@@ -330,7 +342,8 @@ public class SplitClientImplTest {
                 new ImpressionListener.NoopImpressionListener(),
                 new Metrics.NoopMetrics(),
                 NoopEventClient.create(),
-                config
+                config,
+                mock(SDKReadinessGates.class)
         );
 
         assertThat(client.getTreatment("adil@codigo.com", test), is(equalTo("on")));
@@ -361,7 +374,8 @@ public class SplitClientImplTest {
                 new ImpressionListener.NoopImpressionListener(),
                 new Metrics.NoopMetrics(),
                 NoopEventClient.create(),
-                config
+                config,
+                mock(SDKReadinessGates.class)
         );
 
         assertThat(client.getTreatment("adil@codigo.com", test), is(equalTo("off")));
@@ -392,7 +406,8 @@ public class SplitClientImplTest {
                 new ImpressionListener.NoopImpressionListener(),
                 new Metrics.NoopMetrics(),
                 NoopEventClient.create(),
-                config
+                config,
+                mock(SDKReadinessGates.class)
         );
 
         assertThat(client.getTreatment("adil@codigo.com", test), is(equalTo("off")));
@@ -426,7 +441,8 @@ public class SplitClientImplTest {
                 new ImpressionListener.NoopImpressionListener(),
                 new Metrics.NoopMetrics(),
                 NoopEventClient.create(),
-                config
+                config,
+                mock(SDKReadinessGates.class)
         );
 
         assertThat(client.getTreatment("adil@codigo.com", test), is(equalTo("off")));
@@ -468,7 +484,8 @@ public class SplitClientImplTest {
                 impressionListener,
                 new Metrics.NoopMetrics(),
                 NoopEventClient.create(),
-                config
+                config,
+                mock(SDKReadinessGates.class)
         );
 
         Map<String, Object> attributes = ImmutableMap.<String, Object>of("age", -20, "acv", "1000000");
@@ -546,7 +563,8 @@ public class SplitClientImplTest {
                 impressionListener,
                 new Metrics.NoopMetrics(),
                 NoopEventClient.create(),
-                config
+                config,
+                mock(SDKReadinessGates.class)
         );
 
         assertThat(client.getTreatment(key, test), is(equalTo(expected_treatment_on_or_off)));
@@ -580,7 +598,8 @@ public class SplitClientImplTest {
                 new ImpressionListener.NoopImpressionListener(),
                 new Metrics.NoopMetrics(),
                 NoopEventClient.create(),
-                config
+                config,
+                mock(SDKReadinessGates.class)
         );
 
         Key bad_key = new Key("adil", "aijaz");
@@ -617,7 +636,8 @@ public class SplitClientImplTest {
                 impressionListener,
                 new Metrics.NoopMetrics(),
                 NoopEventClient.create(),
-                config
+                config,
+                mock(SDKReadinessGates.class)
         );
 
         Map<String, Object> attributes = ImmutableMap.<String, Object>of("age", -20, "acv", "1000000");
@@ -639,5 +659,37 @@ public class SplitClientImplTest {
         return p;
     }
 
+    @Test
+    public void block_until_ready_does_not_time_when_sdk_is_ready() throws TimeoutException, InterruptedException {
+        SDKReadinessGates ready = mock(SDKReadinessGates.class);
+        when(ready.isSDKReady(100)).thenReturn(true);
+        SplitClientImpl client = new SplitClientImpl(
+                mock(SplitFactory.class),
+                mock(SplitFetcher.class),
+                mock(ImpressionListener.class),
+                new Metrics.NoopMetrics(),
+                NoopEventClient.create(),
+                config,
+                ready
+        );
 
+        client.blockUntilReady();
+    }
+
+    @Test(expected = TimeoutException.class)
+    public void block_until_ready_times_when_sdk_is_not_ready() throws TimeoutException, InterruptedException {
+        SDKReadinessGates ready = mock(SDKReadinessGates.class);
+        when(ready.isSDKReady(100)).thenReturn(false);
+        SplitClientImpl client = new SplitClientImpl(
+                mock(SplitFactory.class),
+                mock(SplitFetcher.class),
+                mock(ImpressionListener.class),
+                new Metrics.NoopMetrics(),
+                NoopEventClient.create(),
+                config,
+                ready
+        );
+
+        client.blockUntilReady();
+    }
 }
