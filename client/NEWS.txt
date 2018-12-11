@@ -1,6 +1,6 @@
 NEWS
 3.0.2
-- Fix Traffic Allocation running for 1%
+- Fixed traffic allocation issue on 1%.
 
 3.0.1
 - Fix Metric Counters when using Split Proxy.
