@@ -521,6 +521,7 @@ public class SplitClientImplTest {
         String key = "pato@split.io";
         int i = 0;
         for (; i <= 10; i++) {
+            traffic_allocation(key, i, 123, "off", "not in split");
         }
 
         for (; i <= 100; i++) {
