@@ -507,7 +507,7 @@ public class SplitClientImplTest {
 
     /**
      * This test depends on the underlying hashing algorithm. I have
-     * figured out that pato@split.io will be in bucket 10 for seed 123.
+     * figured out that pato@split.io will be in bucket 9 for seed 123.
      * That is why the test has been set up this way.
      *
      * If the underlying hashing algorithm changes, say to murmur, then we will
@@ -520,7 +520,7 @@ public class SplitClientImplTest {
 
         String key = "pato@split.io";
         int i = 0;
-        for (; i <= 10; i++) {
+        for (; i <= 9; i++) {
             traffic_allocation(key, i, 123, "off", "not in split");
         }
 
@@ -580,7 +580,6 @@ public class SplitClientImplTest {
                 mock(SDKReadinessGates.class)
         );
 
-        System.out.println(key);
         assertThat(client.getTreatment(key, test), is(equalTo(expected_treatment_on_or_off)));
 
         ArgumentCaptor<Impression> impressionCaptor = ArgumentCaptor.forClass(Impression.class);
