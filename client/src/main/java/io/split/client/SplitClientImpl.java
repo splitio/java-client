@@ -204,7 +204,7 @@ public final class SplitClientImpl implements SplitClient {
                         // if the traffic allocation is 100%, no need to do anything special.
                         int bucket = Splitter.getBucket(bk, parsedSplit.trafficAllocationSeed(), parsedSplit.algo());
 
-                        if (bucket >= parsedSplit.trafficAllocation()) {
+                        if (bucket > parsedSplit.trafficAllocation()) {
                             // out of split
                             return new TreatmentLabelAndChangeNumber(parsedSplit.defaultTreatment(), NOT_IN_SPLIT, parsedSplit.changeNumber());
                         }
