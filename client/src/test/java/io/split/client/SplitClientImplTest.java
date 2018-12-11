@@ -521,12 +521,24 @@ public class SplitClientImplTest {
         String key = "pato@split.io";
         int i = 0;
         for (; i <= 10; i++) {
-            traffic_allocation(key, i, 123, "off", "not in split");
         }
 
         for (; i <= 100; i++) {
             traffic_allocation(key, i, 123, "on", "in segment all");
         }
+    }
+
+    @Test
+    public void traffic_allocation_one_percent() {
+        //This key, with this seed it should fall in the 1%
+        String fallsInOnePercent = "pato193";
+        traffic_allocation(fallsInOnePercent, 1, 123, "on", "in segment all");
+
+        //All these others should not be in split
+        for (int offset = 0; offset <= 100; offset++) {
+            traffic_allocation("pato" + String.valueOf(offset), 1, 123, "off", "not in split");
+        }
+
     }
 
     @Test
@@ -567,6 +579,7 @@ public class SplitClientImplTest {
                 mock(SDKReadinessGates.class)
         );
 
+        System.out.println(key);
         assertThat(client.getTreatment(key, test), is(equalTo(expected_treatment_on_or_off)));
 
         ArgumentCaptor<Impression> impressionCaptor = ArgumentCaptor.forClass(Impression.class);
