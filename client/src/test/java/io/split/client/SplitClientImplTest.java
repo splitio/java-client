@@ -507,7 +507,7 @@ public class SplitClientImplTest {
 
     /**
      * This test depends on the underlying hashing algorithm. I have
-     * figured out that pato@split.io will be in bucket 10 for seed 123.
+     * figured out that pato@split.io will be in bucket 9 for seed 123.
      * That is why the test has been set up this way.
      *
      * If the underlying hashing algorithm changes, say to murmur, then we will
@@ -520,13 +520,26 @@ public class SplitClientImplTest {
 
         String key = "pato@split.io";
         int i = 0;
-        for (; i <= 10; i++) {
+        for (; i <= 9; i++) {
             traffic_allocation(key, i, 123, "off", "not in split");
         }
 
         for (; i <= 100; i++) {
             traffic_allocation(key, i, 123, "on", "in segment all");
         }
+    }
+
+    @Test
+    public void traffic_allocation_one_percent() {
+        //This key, with this seed it should fall in the 1%
+        String fallsInOnePercent = "pato193";
+        traffic_allocation(fallsInOnePercent, 1, 123, "on", "in segment all");
+
+        //All these others should not be in split
+        for (int offset = 0; offset <= 100; offset++) {
+            traffic_allocation("pato" + String.valueOf(offset), 1, 123, "off", "not in split");
+        }
+
     }
 
     @Test
