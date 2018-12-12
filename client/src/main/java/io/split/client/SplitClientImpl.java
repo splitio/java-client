@@ -249,7 +249,7 @@ public final class SplitClientImpl implements SplitClient {
         if (!_gates.isSDKReady(_config.blockUntilReady())) {
             throw new TimeoutException("SDK was not ready in " + _config.blockUntilReady()+ " milliseconds");
         }
-        _log.debu(String.format("Split SDK ready in %d ms", (System.currentTimeMillis() - startTime)));
+        _log.debug(String.format("Split SDK ready in %d ms", (System.currentTimeMillis() - startTime)));
     }
 
     private Event createEvent(String key, String trafficType, String eventType) {
