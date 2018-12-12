@@ -216,6 +216,23 @@ public class SplitClientConfig {
         }
 
         /**
+         * The amount of threads used for the thread pool that fetches segments.
+         * Usually and for most cases 2 is more than enough. But for organization
+         * that have a lot of segments, increasing this value can help expedite the
+         * time to ready.
+         * <p/>
+         *
+         * This is an ADVANCED parameter.
+         *
+         * @param numThreadsForSegmentFetch MUST be > 0. Default is 2.
+         * @return this builder
+         */
+        public Builder numThreadsForSegmentFetch(int numThreadsForSegmentFetch) {
+            _numThreadsForSegmentFetch = numThreadsForSegmentFetch;
+            return this;
+        }
+
+        /**
          * Max size of the queue to trigger a flush
          *
          * @param eventsQueueSize

@@ -1,4 +1,7 @@
 CHANGES
+3.0.3
+- Expose param to increase thread pool size for segments
+
 3.0.2
 - Fixed traffic allocation issue on 1%
 
