@@ -190,7 +190,6 @@ public class RefreshableSplitFetcher implements SplitFetcher, Runnable {
             _changeNumber.set(change.till);
         }
 
-        _gates.registerSegments(segmentsInUse);
     }
 
     private List<String> collectSegmentsInUse(Split split) {
