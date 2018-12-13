@@ -5,7 +5,6 @@ import org.slf4j.LoggerFactory;
 
 import java.util.Collection;
 import java.util.Map;
-import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.CountDownLatch;
@@ -83,13 +82,32 @@ public class SDKReadinessGates {
         }
 
         for (String segmentName : segmentNames) {
-            _segmentsAreReady.putIfAbsent(segmentName, new CountDownLatch(1));
+            registerSegment(segmentName);
         }
 
-        Set<String> segments = _segmentsAreReady.keySet();
+        return true;
+    }
 
-        _log.info("Registered segments: " + segments);
+    /**
+     * Registers a segment that the SDK should download before it is ready.
+     * This method should be called right after the first successful download
+     * of split definitions.
+     * <p/>
+     * Note that if this method is called in subsequent fetches of splits,
+     * it will return false; meaning any segments used in new splits
+     * will not be able to block the SDK from being marked as complete.
+     *
+     * @param segmentName
+     * @return true if the segments were registered, false otherwise.
+     * @throws InterruptedException
+     */
+    public boolean registerSegment(String segmentName) throws InterruptedException {
+        if (segmentName == null || segmentName.isEmpty() || areSplitsReady(0L)) {
+            return false;
+        }
 
+        _segmentsAreReady.putIfAbsent(segmentName, new CountDownLatch(1));
+        _log.info("Registered segment: " + segmentName);
         return true;
     }
 
