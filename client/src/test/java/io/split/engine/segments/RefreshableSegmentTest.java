@@ -1,6 +1,5 @@
 package io.split.engine.segments;
 
-import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 import io.split.engine.SDKReadinessGates;
 import org.junit.Test;
@@ -43,7 +42,7 @@ public class RefreshableSegmentTest {
     public void works_when_there_are_no_changes() throws InterruptedException {
         long startingChangeNumber = -1L;
         SDKReadinessGates gates = new SDKReadinessGates();
-        gates.registerSegments(Lists.newArrayList("foo"));
+        gates.registerSegment("foo");
 
         OneChangeOnlySegmentChangeFetcher segmentChangeFetcher = new OneChangeOnlySegmentChangeFetcher();
         RefreshableSegment fetcher = new RefreshableSegment("foo", segmentChangeFetcher, startingChangeNumber, gates);
@@ -85,7 +84,7 @@ public class RefreshableSegmentTest {
     private void works(long startingChangeNumber) throws InterruptedException {
         SDKReadinessGates gates = new SDKReadinessGates();
         String segmentName = "foo";
-        gates.registerSegments(Lists.newArrayList(segmentName));
+        gates.registerSegment(segmentName);
 
         TheseManyChangesSegmentChangeFetcher segmentChangeFetcher = new TheseManyChangesSegmentChangeFetcher(2);
         RefreshableSegment fetcher = new RefreshableSegment(segmentName, segmentChangeFetcher, startingChangeNumber, gates);

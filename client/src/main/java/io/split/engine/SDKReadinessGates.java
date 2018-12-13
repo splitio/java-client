@@ -3,9 +3,7 @@ package io.split.engine;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.Collection;
 import java.util.Map;
-import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.CountDownLatch;
@@ -65,7 +63,7 @@ public class SDKReadinessGates {
     }
 
     /**
-     * Registers the segments that the SDK should download before it is ready.
+     * Registers a segment that the SDK should download before it is ready.
      * This method should be called right after the first successful download
      * of split definitions.
      * <p/>
@@ -73,23 +71,17 @@ public class SDKReadinessGates {
      * it will return false; meaning any segments used in new splits
      * will not be able to block the SDK from being marked as complete.
      *
-     * @param segmentNames
+     * @param segmentName the segment to register
      * @return true if the segments were registered, false otherwise.
      * @throws InterruptedException
      */
-    public boolean registerSegments(Collection<String> segmentNames) throws InterruptedException {
-        if (segmentNames.isEmpty() || areSplitsReady(0L)) {
+    public boolean registerSegment(String segmentName) throws InterruptedException {
+        if (segmentName == null || segmentName.isEmpty() || areSplitsReady(0L)) {
             return false;
         }
 
-        for (String segmentName : segmentNames) {
-            _segmentsAreReady.putIfAbsent(segmentName, new CountDownLatch(1));
-        }
-
-        Set<String> segments = _segmentsAreReady.keySet();
-
-        _log.info("Registered segments: " + segments);
-
+        _segmentsAreReady.putIfAbsent(segmentName, new CountDownLatch(1));
+        _log.info("Registered segment: " + segmentName);
         return true;
     }
 
