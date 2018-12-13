@@ -187,7 +187,7 @@ public class RefreshableSplitFetcherTest {
         RefreshableSplitFetcher fetcher = new RefreshableSplitFetcher(experimentChangeFetcher, new SplitParser(segmentFetcher), gates, startingChangeNumber);
 
         // execute the fetcher for a little bit.
-        executeWaitAndTerminate(fetcher, 1, 3, TimeUnit.SECONDS);
+        executeWaitAndTerminate(fetcher, 1, 5, TimeUnit.SECONDS);
 
         assertThat(experimentChangeFetcher.lastAdded(), is(greaterThan(startingChangeNumber)));
         assertThat(fetcher.changeNumber(), is(equalTo(experimentChangeFetcher.lastAdded())));
