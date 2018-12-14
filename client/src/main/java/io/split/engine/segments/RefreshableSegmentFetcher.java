@@ -65,6 +65,12 @@ public class RefreshableSegmentFetcher implements Closeable, SegmentFetcher {
                 return segment;
             }
 
+            try {
+                _gates.registerSegment(segmentName);
+            } catch (InterruptedException e) {
+                _log.error("Unable to register segment " + segmentName);
+                // We will try again inside the RefreshableSegment.
+            }
             segment = RefreshableSegment.create(segmentName, _segmentChangeFetcher, _gates);
 
             _scheduledExecutorService.scheduleWithFixedDelay(segment, 0L, _refreshEveryNSeconds.get(), TimeUnit.SECONDS);
