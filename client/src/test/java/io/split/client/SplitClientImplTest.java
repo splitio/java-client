@@ -26,6 +26,8 @@ import org.junit.Assert;
 import org.junit.Test;
 import org.mockito.ArgumentCaptor;
 
+import java.io.IOException;
+import java.net.URISyntaxException;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
@@ -865,5 +867,57 @@ public class SplitClientImplTest {
         key = new Key(matchingKey, bucketingKey);
         Assert.assertThat(client.getTreatment(key, "split", null),
                 org.hamcrest.Matchers.is(org.hamcrest.Matchers.is(Treatments.CONTROL)));
+    }
+
+    @Test
+    public void client_cannot_perform_actions_when_destroyed() throws InterruptedException, URISyntaxException, TimeoutException, IOException {
+        String test = "split";
+
+        ParsedCondition rollOutToEveryone = ParsedCondition.createParsedConditionForTests(CombiningMatcher.of(new AllKeysMatcher()), Lists.newArrayList(partition("on", 100)));
+        List<ParsedCondition> conditions = Lists.newArrayList(rollOutToEveryone);
+        ParsedSplit parsedSplit = ParsedSplit.createParsedSplitForTests(test, 123, false, Treatments.OFF, conditions, null, 1, 1);
+
+        SplitFetcher splitFetcher = mock(SplitFetcher.class);
+        when(splitFetcher.fetch(test)).thenReturn(parsedSplit);
+
+        SplitFactory mockFactory = new SplitFactory() {
+            private boolean destroyed = false;
+
+            @Override
+            public SplitClient client() { return null; }
+
+            @Override
+            public SplitManager manager() { return null; }
+
+            @Override
+            public void destroy() { destroyed = true; }
+
+            @Override
+            public boolean isDestroyed() { return destroyed; }
+        };
+
+        SplitClientImpl client = new SplitClientImpl(
+                mockFactory,
+                splitFetcher,
+                new ImpressionListener.NoopImpressionListener(),
+                new Metrics.NoopMetrics(),
+                NoopEventClient.create(),
+                config,
+                mock(SDKReadinessGates.class)
+        );
+
+        Assert.assertThat(client.getTreatment("valid", "split"),
+                org.hamcrest.Matchers.is(org.hamcrest.Matchers.not(Treatments.CONTROL)));
+
+        Assert.assertThat(client.track("validKey", "valid_traffic_type", "valid_event"),
+                org.hamcrest.Matchers.is(org.hamcrest.Matchers.equalTo(true)));
+
+        client.destroy();
+
+        Assert.assertThat(client.getTreatment("valid", "split"),
+                org.hamcrest.Matchers.is(org.hamcrest.Matchers.equalTo(Treatments.CONTROL)));
+
+        Assert.assertThat(client.track("validKey", "valid_traffic_type", "valid_event"),
+                org.hamcrest.Matchers.is(org.hamcrest.Matchers.equalTo(false)));
     }
 }
