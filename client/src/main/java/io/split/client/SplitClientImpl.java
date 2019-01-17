@@ -109,15 +109,15 @@ public final class SplitClientImpl implements SplitClient {
             }
 
             if (matchingKey == null) {
-                _log.error("getTreatment: you passed a null key, the key must be a non-empty string");
+                _log.error("getTreatment: you passed a null matchingKey, the matchingKey must be a non-empty string");
                 return Treatments.CONTROL;
             }
             if (matchingKey.length() > _config.maxStringLength()) {
-                _log.error("getTreatment: key too long - must be " + _config.maxStringLength() + " characters or less");
+                _log.error("getTreatment: matchingKey too long - must be " + _config.maxStringLength() + " characters or less");
                 return Treatments.CONTROL;
             }
             if (matchingKey.isEmpty()) {
-                _log.error("getTreatment: you passed an empty string, key must be a non-empty string");
+                _log.error("getTreatment: you passed an empty string, matchingKey must be a non-empty string");
                 return Treatments.CONTROL;
             }
             if (bucketingKey != null && bucketingKey.isEmpty()) {
