@@ -22,6 +22,7 @@ import io.split.engine.matchers.strings.WhitelistMatcher;
 import io.split.engine.metrics.Metrics;
 import io.split.grammar.Treatments;
 import org.apache.commons.lang3.RandomStringUtils;
+import org.junit.Assert;
 import org.junit.Test;
 import org.mockito.ArgumentCaptor;
 
@@ -704,5 +705,165 @@ public class SplitClientImplTest {
         );
 
         client.blockUntilReady();
+    }
+
+    @Test
+    public void track_with_valid_parameters() {
+        SplitClientImpl client = new SplitClientImpl(
+                mock(SplitFactory.class),
+                mock(SplitFetcher.class),
+                new ImpressionListener.NoopImpressionListener(),
+                new Metrics.NoopMetrics(),
+                NoopEventClient.create(),
+                config,
+                mock(SDKReadinessGates.class)
+        );
+
+        Assert.assertThat(client.track("validKey", "valid_traffic_type", "valid_event"),
+                org.hamcrest.Matchers.is(org.hamcrest.Matchers.equalTo(true)));
+
+        String validEventSize = new String(new char[80]).replace('\0', 'a');
+        String validKeySize = new String(new char[250]).replace('\0', 'a');
+        Assert.assertThat(client.track(validKeySize, "valid_traffic_type", validEventSize),
+                org.hamcrest.Matchers.is(org.hamcrest.Matchers.equalTo(true)));
+
+    }
+
+    @Test
+    public void track_with_invalid_event_type_ids() {
+        SplitClientImpl client = new SplitClientImpl(
+                mock(SplitFactory.class),
+                mock(SplitFetcher.class),
+                new ImpressionListener.NoopImpressionListener(),
+                new Metrics.NoopMetrics(),
+                NoopEventClient.create(),
+                config,
+                mock(SDKReadinessGates.class)
+        );
+
+        Assert.assertThat(client.track("validKey", "valid_traffic_type", ""),
+                org.hamcrest.Matchers.is(org.hamcrest.Matchers.equalTo(false)));
+
+        Assert.assertThat(client.track("validKey", "valid_traffic_type", null),
+                org.hamcrest.Matchers.is(org.hamcrest.Matchers.equalTo(false)));
+
+        Assert.assertThat(client.track("validKey", "valid_traffic_type", "invalid#char"),
+                org.hamcrest.Matchers.is(org.hamcrest.Matchers.equalTo(false)));
+
+        String invalidEventSize = new String(new char[81]).replace('\0', 'a');
+        Assert.assertThat(client.track("validKey", "valid_traffic_type", invalidEventSize),
+                org.hamcrest.Matchers.is(org.hamcrest.Matchers.equalTo(false)));
+
+    }
+
+    @Test
+    public void track_with_invalid_traffic_trype_names() {
+        SplitClientImpl client = new SplitClientImpl(
+                mock(SplitFactory.class),
+                mock(SplitFetcher.class),
+                new ImpressionListener.NoopImpressionListener(),
+                new Metrics.NoopMetrics(),
+                NoopEventClient.create(),
+                config,
+                mock(SDKReadinessGates.class)
+        );
+
+        Assert.assertThat(client.track("validKey", "", "valid"),
+                org.hamcrest.Matchers.is(org.hamcrest.Matchers.equalTo(false)));
+
+        Assert.assertThat(client.track("validKey", null, "valid"),
+                org.hamcrest.Matchers.is(org.hamcrest.Matchers.equalTo(false)));
+    }
+
+    @Test
+    public void track_with_invalid_keys() {
+        SplitClientImpl client = new SplitClientImpl(
+                mock(SplitFactory.class),
+                mock(SplitFetcher.class),
+                new ImpressionListener.NoopImpressionListener(),
+                new Metrics.NoopMetrics(),
+                NoopEventClient.create(),
+                config,
+                mock(SDKReadinessGates.class)
+        );
+
+        Assert.assertThat(client.track("", "valid_traffic_type", "valid"),
+                org.hamcrest.Matchers.is(org.hamcrest.Matchers.equalTo(false)));
+
+        Assert.assertThat(client.track(null, "valid_traffic_type", "valid"),
+                org.hamcrest.Matchers.is(org.hamcrest.Matchers.equalTo(false)));
+
+        String invalidKeySize = new String(new char[251]).replace('\0', 'a');
+        Assert.assertThat(client.track(invalidKeySize, "valid_traffic_type", "valid"),
+                org.hamcrest.Matchers.is(org.hamcrest.Matchers.equalTo(false)));
+    }
+
+    @Test
+    public void getTreatment_with_invalid_keys() {
+        String test = "split";
+
+        ParsedCondition rollOutToEveryone = ParsedCondition.createParsedConditionForTests(CombiningMatcher.of(new AllKeysMatcher()), Lists.newArrayList(partition("on", 100)));
+        List<ParsedCondition> conditions = Lists.newArrayList(rollOutToEveryone);
+        ParsedSplit parsedSplit = ParsedSplit.createParsedSplitForTests(test, 123, false, Treatments.OFF, conditions, null, 1, 1);
+
+        SplitFetcher splitFetcher = mock(SplitFetcher.class);
+        when(splitFetcher.fetch(test)).thenReturn(parsedSplit);
+
+
+        SplitClientImpl client = new SplitClientImpl(
+                mock(SplitFactory.class),
+                splitFetcher,
+                new ImpressionListener.NoopImpressionListener(),
+                new Metrics.NoopMetrics(),
+                NoopEventClient.create(),
+                config,
+                mock(SDKReadinessGates.class)
+        );
+
+
+        Assert.assertThat(client.getTreatment("valid", "split"),
+                org.hamcrest.Matchers.is(org.hamcrest.Matchers.not(Treatments.CONTROL)));
+
+        Assert.assertThat(client.getTreatment("", "split"),
+                org.hamcrest.Matchers.is(org.hamcrest.Matchers.equalTo(Treatments.CONTROL)));
+
+        Assert.assertThat(client.getTreatment(null, "split"),
+                org.hamcrest.Matchers.is(org.hamcrest.Matchers.equalTo(Treatments.CONTROL)));
+
+        String invalidKeySize = new String(new char[251]).replace('\0', 'a');
+        Assert.assertThat(client.getTreatment(invalidKeySize, "split"),
+                org.hamcrest.Matchers.is(org.hamcrest.Matchers.equalTo(Treatments.CONTROL)));
+
+        Assert.assertThat(client.getTreatment("valid", ""),
+                org.hamcrest.Matchers.is(org.hamcrest.Matchers.equalTo(Treatments.CONTROL)));
+
+        Assert.assertThat(client.getTreatment("valid", null),
+                org.hamcrest.Matchers.is(org.hamcrest.Matchers.equalTo(Treatments.CONTROL)));
+
+        String matchingKey = new String(new char[250]).replace('\0', 'a');
+        String bucketingKey = new String(new char[250]).replace('\0', 'a');
+        Key key = new Key(matchingKey, bucketingKey);
+        Assert.assertThat(client.getTreatment(key, "split", null),
+                org.hamcrest.Matchers.is(org.hamcrest.Matchers.not(Treatments.CONTROL)));
+
+        key = new Key("valid", "");
+        Assert.assertThat(client.getTreatment(key, "split", null),
+                org.hamcrest.Matchers.is(org.hamcrest.Matchers.equalTo(Treatments.CONTROL)));
+
+        key = new Key("", "valid");
+        Assert.assertThat(client.getTreatment(key, "split", null),
+                org.hamcrest.Matchers.is(org.hamcrest.Matchers.equalTo(Treatments.CONTROL)));
+
+        matchingKey = new String(new char[251]).replace('\0', 'a');
+        bucketingKey = new String(new char[250]).replace('\0', 'a');
+        key = new Key(matchingKey, bucketingKey);
+        Assert.assertThat(client.getTreatment(key, "split", null),
+                org.hamcrest.Matchers.is(org.hamcrest.Matchers.is(Treatments.CONTROL)));
+
+        matchingKey = new String(new char[250]).replace('\0', 'a');
+        bucketingKey = new String(new char[251]).replace('\0', 'a');
+        key = new Key(matchingKey, bucketingKey);
+        Assert.assertThat(client.getTreatment(key, "split", null),
+                org.hamcrest.Matchers.is(org.hamcrest.Matchers.is(Treatments.CONTROL)));
     }
 }

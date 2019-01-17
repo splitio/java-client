@@ -1,5 +1,6 @@
 package io.split.client;
 
+import com.google.common.annotations.VisibleForTesting;
 import io.split.client.api.Key;
 import io.split.client.dtos.ConditionType;
 import io.split.client.dtos.Event;
@@ -38,7 +39,7 @@ public final class SplitClientImpl implements SplitClient {
     private static final String EXCEPTION = "exception";
     private static final String KILLED = "killed";
 
-    private static final Pattern EVENT_TYPE_MATCHER = Pattern.compile("[a-zA-Z0-9][-_.:a-zA-Z0-9]{0,79}");
+    public static final Pattern EVENT_TYPE_MATCHER = Pattern.compile("^[a-zA-Z0-9][-_.:a-zA-Z0-9]{0,79}$");
 
     private final SplitFactory _container;
     private final SplitFetcher _splitFetcher;
@@ -83,6 +84,17 @@ public final class SplitClientImpl implements SplitClient {
     public String getTreatment(Key key, String split, Map<String, Object> attributes) {
         if (key == null) {
             _log.error("getTreatment: you passed a null key, the key must be a non-empty string");
+            return Treatments.CONTROL;
+        }
+
+        if (key.matchingKey() == null) {
+            _log.error("getTreatment: you passed a null matchingKey, the matchingKey must be a non-empty string");
+            return Treatments.CONTROL;
+        }
+
+
+        if (key.bucketingKey() == null) {
+            _log.error("getTreatment: you passed a null bucketingKey, the bucketingKey must be a non-empty string");
             return Treatments.CONTROL;
         }
 
@@ -164,6 +176,7 @@ public final class SplitClientImpl implements SplitClient {
         }
     }
 
+    @VisibleForTesting
     public String getTreatmentWithoutImpressions(String matchingKey, String bucketingKey, String split, Map<String, Object> attributes) {
         return getTreatmentResultWithoutImpressions(matchingKey, bucketingKey, split, attributes)._treatment;
     }
