@@ -48,8 +48,12 @@ public class SplitManagerImpl implements SplitManager {
 
     @Override
     public SplitView split(String featureName) {
-        if (featureName == null || featureName.isEmpty()) {
-            _log.error("split: you passed a null or empty featureName, split name must be a non-empty string");
+        if (featureName == null) {
+            _log.error("split: you passed a null split name, split name must be a non-empty string");
+            return null;
+        }
+        if (featureName.isEmpty()) {
+            _log.error("split: you passed an empty split name, split name must be a non-empty string");
             return null;
         }
         ParsedSplit parsedSplit = _splitFetcher.fetch(featureName);
