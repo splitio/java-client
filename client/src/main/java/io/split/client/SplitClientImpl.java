@@ -139,6 +139,12 @@ public final class SplitClientImpl implements SplitClient {
                 return Treatments.CONTROL;
             }
 
+            String trimmed = split.trim();
+            if (!trimmed.equals(split)) {
+                _log.warn("getTreatment: split name \"" + split + "\" has extra whitespace, trimming");
+                split = trimmed;
+            }
+
             long start = System.currentTimeMillis();
 
             TreatmentLabelAndChangeNumber result = getTreatmentResultWithoutImpressions(matchingKey, bucketingKey, split, attributes);
