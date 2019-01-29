@@ -1,7 +1,4 @@
 CHANGES
-3.0.5
-- Adding input validation for fast feedback of incorrect use of the client.
-
 3.0.4
 - Fix potential race condition when segment wait for readiness before they are registered to the readiness gates
 

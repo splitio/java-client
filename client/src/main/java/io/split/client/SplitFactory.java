@@ -7,5 +7,4 @@ public interface SplitFactory {
     SplitClient client();
     SplitManager manager();
     void destroy();
-    boolean isDestroyed();
 }

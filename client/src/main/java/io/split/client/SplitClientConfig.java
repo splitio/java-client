@@ -33,7 +33,6 @@ public class SplitClientConfig {
     private final int _waitBeforeShutdown;
     private final int _eventsQueueSize;
     private final long _eventFlushIntervalInMillis;
-    private final int _maxStringLength;
 
     // Proxy configs
     private final HttpHost _proxy;
@@ -68,8 +67,7 @@ public class SplitClientConfig {
                               String proxyUsername,
                               String proxyPassword,
                               int eventsQueueSize,
-                              long eventFlushIntervalInMillis,
-                              int maxStringLength) {
+                              long eventFlushIntervalInMillis) {
         _endpoint = endpoint;
         _eventsEndpoint = eventsEndpoint;
         _featuresRefreshRate = pollForFeatureChangesEveryNSeconds;
@@ -91,7 +89,6 @@ public class SplitClientConfig {
         _proxyPassword = proxyPassword;
         _eventsQueueSize = eventsQueueSize;
         _eventFlushIntervalInMillis = eventFlushIntervalInMillis;
-        _maxStringLength = maxStringLength;
 
         Properties props = new Properties();
         try {
@@ -188,10 +185,6 @@ public class SplitClientConfig {
         return _eventsQueueSize;
     }
 
-    public int maxStringLength() {
-        return _maxStringLength;
-    }
-
     public static final class Builder {
 
         private String _endpoint = "https://sdk.split.io";
@@ -218,7 +211,6 @@ public class SplitClientConfig {
         private String _proxyPassword;
         private int _eventsQueueSize = 500;
         private long _eventFlushIntervalInMillis = 30 * 1000;
-        private int _maxStringLength = 250;
 
         public Builder() {
         }
@@ -584,8 +576,7 @@ public class SplitClientConfig {
                     _proxyUsername,
                     _proxyPassword,
                     _eventsQueueSize,
-                    _eventFlushIntervalInMillis,
-                    _maxStringLength);
+                    _eventFlushIntervalInMillis);
         }
 
     }
