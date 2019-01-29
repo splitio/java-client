@@ -1,6 +1,6 @@
 package io.split.client;
 
-import com.google.common.annotations.VisibleForTesting;
+import com.google.common.base.Strings;
 import io.split.client.api.Key;
 import io.split.client.dtos.ConditionType;
 import io.split.client.dtos.Event;
@@ -20,7 +20,6 @@ import org.slf4j.LoggerFactory;
 import java.util.Collections;
 import java.util.Map;
 import java.util.concurrent.TimeoutException;
-import java.util.regex.Pattern;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
@@ -39,8 +38,6 @@ public final class SplitClientImpl implements SplitClient {
     private static final String EXCEPTION = "exception";
     private static final String KILLED = "killed";
 
-    public static final Pattern EVENT_TYPE_MATCHER = Pattern.compile("^[a-zA-Z0-9][-_.:a-zA-Z0-9]{0,79}$");
-
     private final SplitFactory _container;
     private final SplitFetcher _splitFetcher;
     private final ImpressionListener _impressionListener;
@@ -48,7 +45,6 @@ public final class SplitClientImpl implements SplitClient {
     private final SplitClientConfig _config;
     private final EventClient _eventClient;
     private final SDKReadinessGates _gates;
-
 
     public SplitClientImpl(SplitFactory container, SplitFetcher splitFetcher, ImpressionListener impressionListener,
                            Metrics metrics, EventClient eventClient, SplitClientConfig config, SDKReadinessGates gates) {
@@ -83,18 +79,12 @@ public final class SplitClientImpl implements SplitClient {
     @Override
     public String getTreatment(Key key, String split, Map<String, Object> attributes) {
         if (key == null) {
-            _log.error("getTreatment: you passed a null key, the key must be a non-empty string");
+            _log.warn("key object was null for feature: " + split);
             return Treatments.CONTROL;
         }
 
-        if (key.matchingKey() == null) {
-            _log.error("getTreatment: you passed a null matchingKey, the matchingKey must be a non-empty string");
-            return Treatments.CONTROL;
-        }
-
-
-        if (key.bucketingKey() == null) {
-            _log.error("getTreatment: you passed a null bucketingKey, the bucketingKey must be a non-empty string");
+        if (key.matchingKey() == null || key.bucketingKey() == null) {
+            _log.warn("key object had null matching or bucketing key: " + split);
             return Treatments.CONTROL;
         }
 
@@ -103,46 +93,14 @@ public final class SplitClientImpl implements SplitClient {
 
     private String getTreatment(String matchingKey, String bucketingKey, String split, Map<String, Object> attributes) {
         try {
-            if (_container.isDestroyed()) {
-                _log.error("Client has already been destroyed - no calls possible");
-                return Treatments.CONTROL;
-            }
-
             if (matchingKey == null) {
-                _log.error("getTreatment: you passed a null matchingKey, the matchingKey must be a non-empty string");
-                return Treatments.CONTROL;
-            }
-            if (matchingKey.length() > _config.maxStringLength()) {
-                _log.error("getTreatment: matchingKey too long - must be " + _config.maxStringLength() + " characters or less");
-                return Treatments.CONTROL;
-            }
-            if (matchingKey.isEmpty()) {
-                _log.error("getTreatment: you passed an empty string, matchingKey must be a non-empty string");
-                return Treatments.CONTROL;
-            }
-            if (bucketingKey != null && bucketingKey.isEmpty()) {
-                _log.error("getTreatment: you passed an empty string, bucketingKey must be a non-empty string");
-                return Treatments.CONTROL;
-            }
-            if (bucketingKey != null && bucketingKey.length() > _config.maxStringLength()) {
-                _log.error("getTreatment: bucketingKey too long - must be " + _config.maxStringLength() + " characters or less");
+                _log.warn("matchingKey was null for split: " + split);
                 return Treatments.CONTROL;
             }
 
             if (split == null) {
-                _log.error("getTreatment: you passed a null split name, split name must be a non-empty string");
+                _log.warn("split was null for key: " + matchingKey);
                 return Treatments.CONTROL;
-            }
-
-            if (split.isEmpty()) {
-                _log.error("getTreatment: you passed an empty split name, split name must be a non-empty string");
-                return Treatments.CONTROL;
-            }
-
-            String trimmed = split.trim();
-            if (!trimmed.equals(split)) {
-                _log.warn("getTreatment: split name \"" + split + "\" has extra whitespace, trimming");
-                split = trimmed;
             }
 
             long start = System.currentTimeMillis();
@@ -182,7 +140,6 @@ public final class SplitClientImpl implements SplitClient {
         }
     }
 
-    @VisibleForTesting
     public String getTreatmentWithoutImpressions(String matchingKey, String bucketingKey, String split, Map<String, Object> attributes) {
         return getTreatmentResultWithoutImpressions(matchingKey, bucketingKey, split, attributes)._treatment;
     }
@@ -305,62 +262,23 @@ public final class SplitClientImpl implements SplitClient {
     }
 
     private boolean track(Event event) {
-        if (_container.isDestroyed()) {
-            _log.error("Client has already been destroyed - no calls possible");
-            return false;
-        }
-        // Traffic Type validations
-        if (event.trafficTypeName == null) {
-            _log.error("track: you passed a null trafficTypeName, trafficTypeName must be a non-empty string");
+        if (Strings.isNullOrEmpty(event.trafficTypeName)) {
+            _log.warn("Traffic Type was null or empty");
             return false;
         }
 
-        if (event.trafficTypeName.isEmpty()) {
-            _log.error("track: you passed an empty trafficTypeName, trafficTypeName must be a non-empty string");
+        if (Strings.isNullOrEmpty(event.eventTypeId)) {
+            _log.warn("Event Type was null or empty");
             return false;
         }
 
-        if (!event.trafficTypeName.equals(event.trafficTypeName.toLowerCase())) {
-            _log.warn("track: trafficTypeName should be all lowercase - converting string to lowercase");
-            event.trafficTypeName = event.trafficTypeName.toLowerCase();
-        }
-
-        // EventType validations
-        if (event.eventTypeId == null) {
-            _log.error("track: you passed a null eventTypeId, eventTypeId must be a non-empty string");
-            return false;
-        }
-
-        if (event.eventTypeId.isEmpty()) {
-            _log.error("track:you passed an empty eventTypeId, eventTypeId must be a non-empty string");
-            return false;
-        }
-
-        if (!EVENT_TYPE_MATCHER.matcher(event.eventTypeId).find()) {
-            _log.error("track: you passed " + event.eventTypeId + ", eventTypeId must adhere to the regular expression " +
-                    "[a-zA-Z0-9][-_.:a-zA-Z0-9]{0,79}. This means an eventTypeID must be alphanumeric, " +
-                    "cannot be more than 80 characters long, and can only include a dash, underscore, period, " +
-                    "or colon as separators of alphanumeric characters");
-            return false;
-        }
-
-            // Key Validations
-        if (event.key == null) {
-            _log.error("track: you passed a null key, key must be a non-empty string");
-            return false;
-        }
-
-        if (event.key.isEmpty()) {
-            _log.error("track: you passed an empty key, key must be a non-empty string");
-            return false;
-        }
-
-        if (event.key.length() > _config.maxStringLength()) {
-            _log.error("track: key too long - must be " + _config.maxStringLength() + "characters or less");
+        if (Strings.isNullOrEmpty(event.key)) {
+            _log.warn("Cannot track event for null key");
             return false;
         }
 
         return _eventClient.track(event);
+
     }
 
     private static final class TreatmentLabelAndChangeNumber {

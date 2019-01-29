@@ -44,12 +44,6 @@ public class SplitFactoryBuilder {
      *                                               ready and the timeout specified via config#ready() passed.
      */
     public static synchronized SplitFactory build(String apiToken, SplitClientConfig config) throws IOException, InterruptedException, TimeoutException, URISyntaxException {
-        if (apiToken == null) {
-            _log.error("factory instantiation: you passed a null apiToken, apiToken must be a non-empty string");
-        }
-        if (apiToken.isEmpty()) {
-            _log.error("factory instantiation: you passed and empty apiToken, apiToken be a non-empty string");
-        }
         if (LocalhostSplitFactory.LOCALHOST.equals(apiToken)) {
             return LocalhostSplitFactory.createLocalhostSplitFactory();
         } else {

@@ -6,7 +6,7 @@ public class NoopEventClient implements EventClient {
 
     @Override
     public boolean track(Event event) {
-        return true;
+        return false;
     }
 
     @Override
