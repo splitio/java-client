@@ -95,12 +95,6 @@ public class SplitFactoryImpl implements SplitFactory {
                 .addInterceptorLast(new GzipEncoderRequestInterceptor())
                 .addInterceptorLast(new GzipDecoderResponseInterceptor());
 
-        if (config.blockUntilReady() == -1) {
-            //BlockUntilReady not been set
-            _log.warn("no setBlockUntilReadyTimeout parameter has been set - incorrect control treatments could be logged” " +
-                    "if no ready config has been set when building factory");
-
-        }
         // Set up proxy is it exists
         if (config.proxy() != null) {
             _log.info("Initializing Split SDK with proxy settings");
@@ -220,10 +214,5 @@ public class SplitFactoryImpl implements SplitFactory {
                 isTerminated = true;
             }
         }
-    }
-
-    @Override
-    public boolean isDestroyed() {
-        return isTerminated;
     }
 }

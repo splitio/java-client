@@ -7,8 +7,6 @@ import io.split.engine.SDKReadinessGates;
 import io.split.engine.experiments.ParsedCondition;
 import io.split.engine.experiments.ParsedSplit;
 import io.split.engine.experiments.SplitFetcher;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -20,8 +18,6 @@ import java.util.concurrent.TimeoutException;
  * Created by adilaijaz on 7/15/16.
  */
 public class SplitManagerImpl implements SplitManager {
-
-    private static final Logger _log = LoggerFactory.getLogger(SplitManagerImpl.class);
 
     private final SplitFetcher _splitFetcher;
     private final SplitClientConfig _config;
@@ -48,14 +44,6 @@ public class SplitManagerImpl implements SplitManager {
 
     @Override
     public SplitView split(String featureName) {
-        if (featureName == null) {
-            _log.error("split: you passed a null split name, split name must be a non-empty string");
-            return null;
-        }
-        if (featureName.isEmpty()) {
-            _log.error("split: you passed an empty split name, split name must be a non-empty string");
-            return null;
-        }
         ParsedSplit parsedSplit = _splitFetcher.fetch(featureName);
         return parsedSplit == null ? null : toSplitView(parsedSplit);
     }

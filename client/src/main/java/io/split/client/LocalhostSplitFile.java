@@ -39,7 +39,7 @@ public class LocalhostSplitFile extends Thread {
         _stop = new AtomicBoolean(false);
     }
 
-    public boolean isStopped() {
+    private boolean isStopped() {
         return _stop.get();
     }
 
