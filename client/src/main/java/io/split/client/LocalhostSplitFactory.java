@@ -35,7 +35,6 @@ public final class LocalhostSplitFactory implements SplitFactory {
         Preconditions.checkNotNull(directory, "directory must not be null");
 
         _log.info("home = " + directory);
-
         _splitFile = new LocalhostSplitFile(this, directory, FILENAME);
 
         Map<SplitAndKey, String> splitAndKeyToTreatment = _splitFile.readOnSplits();
