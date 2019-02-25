@@ -1,4 +1,7 @@
 CHANGES
+3.0.6
+- Setting CookieSpec to Standard
+
 3.0.5
 - Adding input validation for fast feedback of incorrect use of the client.
 

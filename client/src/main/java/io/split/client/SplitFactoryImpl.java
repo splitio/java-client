@@ -19,6 +19,7 @@ import org.apache.http.auth.AuthScope;
 import org.apache.http.auth.Credentials;
 import org.apache.http.auth.UsernamePasswordCredentials;
 import org.apache.http.client.CredentialsProvider;
+import org.apache.http.client.config.CookieSpecs;
 import org.apache.http.client.config.RequestConfig;
 import org.apache.http.config.Registry;
 import org.apache.http.config.RegistryBuilder;
@@ -81,6 +82,7 @@ public class SplitFactoryImpl implements SplitFactory {
         RequestConfig requestConfig = RequestConfig.custom()
                 .setConnectTimeout(config.connectionTimeout())
                 .setSocketTimeout(config.readTimeout())
+                .setCookieSpec(CookieSpecs.STANDARD)
                 .build();
 
         PoolingHttpClientConnectionManager cm = new PoolingHttpClientConnectionManager(registry);
