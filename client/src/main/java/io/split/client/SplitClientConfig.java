@@ -512,8 +512,8 @@ public class SplitClientConfig {
 
 
         public SplitClientConfig build() {
-            if (_featuresRefreshRate < 30 ) {
-                throw new IllegalArgumentException("featuresRefreshRate must be >= 30: " + _featuresRefreshRate);
+            if (_featuresRefreshRate < 5 ) {
+                throw new IllegalArgumentException("featuresRefreshRate must be >= 5: " + _featuresRefreshRate);
             }
 
             if (_segmentsRefreshRate < 30) {

@@ -9,9 +9,9 @@ import org.junit.Test;
 public class SplitClientConfigTest {
 
     @Test(expected = IllegalArgumentException.class)
-    public void cannot_set_feature_refresh_rate_to_less_than_30() {
+    public void cannot_set_feature_refresh_rate_to_less_than_5() {
         SplitClientConfig.builder()
-                .featuresRefreshRate(29)
+                .featuresRefreshRate(4)
                 .build();
     }
 
