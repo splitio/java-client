@@ -198,7 +198,7 @@ public class SplitClientConfig {
         private boolean _endpointSet = false;
         private String _eventsEndpoint = "https://events.split.io";
         private boolean _eventsEndpointSet = false;
-        private int _featuresRefreshRate = 60;
+        private int _featuresRefreshRate = 5;
         private int _segmentsRefreshRate = 60;
         private int _impressionsRefreshRate = 30;
         private int _impressionsQueueSize = 30000;
