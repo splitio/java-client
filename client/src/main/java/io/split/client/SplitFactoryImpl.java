@@ -188,13 +188,15 @@ public class SplitFactoryImpl implements SplitFactory {
             }
         };
 
-        Runtime.getRuntime().addShutdownHook(new Thread() {
-            @Override
-            public void run() {
-                // Using the full path to avoid conflicting with Thread.destroy()
-                SplitFactoryImpl.this.destroy();
-            }
-        });
+        if (config.destroyOnSIGTERM()) {
+            Runtime.getRuntime().addShutdownHook(new Thread() {
+                @Override
+                public void run() {
+                    // Using the full path to avoid conflicting with Thread.destroy()
+                    SplitFactoryImpl.this.destroy();
+                }
+            });
+        }
 
         _client = new SplitClientImpl(this, splitFetcherProvider.getFetcher(), impressionListener,
                 cachedFireAndForgetMetrics, eventClient, config, gates);
