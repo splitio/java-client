@@ -34,7 +34,7 @@ public class SplitClientConfig {
     private final int _eventsQueueSize;
     private final long _eventFlushIntervalInMillis;
     private final int _maxStringLength;
-    private final boolean _destroyOnSIGTERM;
+    private final boolean _destroyOnShutDown;
 
     // Proxy configs
     private final HttpHost _proxy;
@@ -71,7 +71,7 @@ public class SplitClientConfig {
                               int eventsQueueSize,
                               long eventFlushIntervalInMillis,
                               int maxStringLength,
-                              boolean destroyOnSIGTERM) {
+                              boolean destroyOnShutDown) {
         _endpoint = endpoint;
         _eventsEndpoint = eventsEndpoint;
         _featuresRefreshRate = pollForFeatureChangesEveryNSeconds;
@@ -94,7 +94,7 @@ public class SplitClientConfig {
         _eventsQueueSize = eventsQueueSize;
         _eventFlushIntervalInMillis = eventFlushIntervalInMillis;
         _maxStringLength = maxStringLength;
-        _destroyOnSIGTERM = destroyOnSIGTERM;
+        _destroyOnShutDown = destroyOnShutDown;
 
         Properties props = new Properties();
         try {
@@ -195,8 +195,8 @@ public class SplitClientConfig {
         return _maxStringLength;
     }
 
-    public boolean destroyOnSIGTERM() {
-        return _destroyOnSIGTERM;
+    public boolean destroyOnShutDown() {
+        return _destroyOnShutDown;
     }
 
     public static final class Builder {
@@ -226,7 +226,7 @@ public class SplitClientConfig {
         private int _eventsQueueSize = 500;
         private long _eventFlushIntervalInMillis = 30 * 1000;
         private int _maxStringLength = 250;
-        private boolean _destroyOnSIGTERM = true;
+        private boolean _destroyOnShutDown = true;
 
         public Builder() {
         }
@@ -515,8 +515,8 @@ public class SplitClientConfig {
          *
          * @return this builder
          */
-        public Builder disableDestroyOnSIGTERM() {
-            _destroyOnSIGTERM = false;
+        public Builder disableDestroyOnShutDown() {
+            _destroyOnShutDown = false;
             return this;
         }
 
@@ -604,7 +604,7 @@ public class SplitClientConfig {
                     _eventsQueueSize,
                     _eventFlushIntervalInMillis,
                     _maxStringLength,
-                    _destroyOnSIGTERM);
+                    _destroyOnShutDown);
         }
 
     }

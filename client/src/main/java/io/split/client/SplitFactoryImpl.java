@@ -188,7 +188,7 @@ public class SplitFactoryImpl implements SplitFactory {
             }
         };
 
-        if (config.destroyOnSIGTERM()) {
+        if (config.destroyOnShutDown()) {
             Runtime.getRuntime().addShutdownHook(new Thread() {
                 @Override
                 public void run() {
