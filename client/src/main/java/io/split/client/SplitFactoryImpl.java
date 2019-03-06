@@ -46,7 +46,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
 
 public class SplitFactoryImpl implements SplitFactory {
     private static final Logger _log = LoggerFactory.getLogger(SplitFactory.class);
@@ -58,7 +57,7 @@ public class SplitFactoryImpl implements SplitFactory {
     private final Runnable destroyer;
     private boolean isTerminated = false;
 
-    public SplitFactoryImpl(String apiToken, SplitClientConfig config) throws IOException, InterruptedException, TimeoutException, URISyntaxException {
+    public SplitFactoryImpl(String apiToken, SplitClientConfig config) throws URISyntaxException {
         SSLContext sslContext = null;
         try {
             sslContext = SSLContexts.custom()

@@ -198,7 +198,7 @@ public class SplitClientConfig {
         private boolean _endpointSet = false;
         private String _eventsEndpoint = "https://events.split.io";
         private boolean _eventsEndpointSet = false;
-        private int _featuresRefreshRate = 60;
+        private int _featuresRefreshRate = 5;
         private int _segmentsRefreshRate = 60;
         private int _impressionsRefreshRate = 30;
         private int _impressionsQueueSize = 30000;
@@ -512,8 +512,8 @@ public class SplitClientConfig {
 
 
         public SplitClientConfig build() {
-            if (_featuresRefreshRate < 30 ) {
-                throw new IllegalArgumentException("featuresRefreshRate must be >= 30: " + _featuresRefreshRate);
+            if (_featuresRefreshRate < 5 ) {
+                throw new IllegalArgumentException("featuresRefreshRate must be >= 5: " + _featuresRefreshRate);
             }
 
             if (_segmentsRefreshRate < 30) {

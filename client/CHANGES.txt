@@ -1,4 +1,8 @@
 CHANGES
+3.0.7
+- Removing unused thrown exceptions from build signature
+- Setting feature refresh rate to 5 seconds by default
+
 3.0.6
 - Setting CookieSpec to Standard
 
