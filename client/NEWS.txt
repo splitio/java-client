@@ -1,6 +1,6 @@
 NEWS
 3.0.8
-- Ability to disable destroy() un shutdown.
+- Ability to disable automatic destroy() on graceful shutdowns.
 
 3.0.7
 - Removing unused thrown exceptions from build signature
