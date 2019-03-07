@@ -34,6 +34,7 @@ public class SplitClientConfig {
     private final int _eventsQueueSize;
     private final long _eventFlushIntervalInMillis;
     private final int _maxStringLength;
+    private final boolean _destroyOnShutDown;
 
     // Proxy configs
     private final HttpHost _proxy;
@@ -69,7 +70,8 @@ public class SplitClientConfig {
                               String proxyPassword,
                               int eventsQueueSize,
                               long eventFlushIntervalInMillis,
-                              int maxStringLength) {
+                              int maxStringLength,
+                              boolean destroyOnShutDown) {
         _endpoint = endpoint;
         _eventsEndpoint = eventsEndpoint;
         _featuresRefreshRate = pollForFeatureChangesEveryNSeconds;
@@ -92,6 +94,7 @@ public class SplitClientConfig {
         _eventsQueueSize = eventsQueueSize;
         _eventFlushIntervalInMillis = eventFlushIntervalInMillis;
         _maxStringLength = maxStringLength;
+        _destroyOnShutDown = destroyOnShutDown;
 
         Properties props = new Properties();
         try {
@@ -192,13 +195,17 @@ public class SplitClientConfig {
         return _maxStringLength;
     }
 
+    public boolean destroyOnShutDown() {
+        return _destroyOnShutDown;
+    }
+
     public static final class Builder {
 
         private String _endpoint = "https://sdk.split.io";
         private boolean _endpointSet = false;
         private String _eventsEndpoint = "https://events.split.io";
         private boolean _eventsEndpointSet = false;
-        private int _featuresRefreshRate = 60;
+        private int _featuresRefreshRate = 5;
         private int _segmentsRefreshRate = 60;
         private int _impressionsRefreshRate = 30;
         private int _impressionsQueueSize = 30000;
@@ -219,6 +226,7 @@ public class SplitClientConfig {
         private int _eventsQueueSize = 500;
         private long _eventFlushIntervalInMillis = 30 * 1000;
         private int _maxStringLength = 250;
+        private boolean _destroyOnShutDown = true;
 
         public Builder() {
         }
@@ -502,6 +510,16 @@ public class SplitClientConfig {
             return this;
         }
 
+        /**
+         * Disables running destroy() on shutdown by default.
+         *
+         * @return this builder
+         */
+        public Builder disableDestroyOnShutDown() {
+            _destroyOnShutDown = false;
+            return this;
+        }
+
         HttpHost proxy() {
             if (_proxyPort != -1) {
                 return new HttpHost(_proxyHost, _proxyPort);
@@ -512,8 +530,8 @@ public class SplitClientConfig {
 
 
         public SplitClientConfig build() {
-            if (_featuresRefreshRate < 30 ) {
-                throw new IllegalArgumentException("featuresRefreshRate must be >= 30: " + _featuresRefreshRate);
+            if (_featuresRefreshRate < 5 ) {
+                throw new IllegalArgumentException("featuresRefreshRate must be >= 5: " + _featuresRefreshRate);
             }
 
             if (_segmentsRefreshRate < 30) {
@@ -585,7 +603,8 @@ public class SplitClientConfig {
                     _proxyPassword,
                     _eventsQueueSize,
                     _eventFlushIntervalInMillis,
-                    _maxStringLength);
+                    _maxStringLength,
+                    _destroyOnShutDown);
         }
 
     }
