@@ -1,4 +1,7 @@
 NEWS
+3.0.8
+- Ability to disable destroy() un shutdown.
+
 3.0.7
 - Removing unused thrown exceptions from build signature
 - Setting feature refresh rate to 5 seconds by default
