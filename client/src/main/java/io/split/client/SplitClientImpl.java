@@ -206,6 +206,11 @@ public final class SplitClientImpl implements SplitClient {
         ParsedSplit parsedSplit = _splitFetcher.fetch(split);
 
         if (parsedSplit == null) {
+            if (_gates.isSDKReadyNow()) {
+                _log.error(
+                        "getTreatment: you passed a split name that does not exist in this environment, " +
+                        "please double check what Splits exist in the web console.");
+            }
             if (_log.isDebugEnabled()) {
                 _log.debug("Returning control because no split was found for: " + split);
             }
