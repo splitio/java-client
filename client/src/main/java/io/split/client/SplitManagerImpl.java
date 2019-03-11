@@ -59,7 +59,7 @@ public class SplitManagerImpl implements SplitManager {
         ParsedSplit parsedSplit = _splitFetcher.fetch(featureName);
         if (parsedSplit == null) {
             if (_gates.isSDKReadyNow()) {
-                _log.error("split: you passed a split name that does not exist in this environment, " +
+                _log.error("split: you passed \"" + featureName + "\" that does not exist in this environment, " +
                         "please double check what Splits exist in the web console.");
             }
             return null;

@@ -208,7 +208,7 @@ public final class SplitClientImpl implements SplitClient {
         if (parsedSplit == null) {
             if (_gates.isSDKReadyNow()) {
                 _log.error(
-                        "getTreatment: you passed a split name that does not exist in this environment, " +
+                        "getTreatment: you passed \"" + split + "\" that does not exist in this environment, " +
                         "please double check what Splits exist in the web console.");
             }
             if (_log.isDebugEnabled()) {
