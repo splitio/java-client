@@ -15,12 +15,12 @@ import java.util.Map;
 /**
  * Created on 3/12/19.
  */
-public class SplitChangeFetcherWIthTrafficTypeNames implements SplitChangeFetcher {
+public class SplitChangeFetcherWithTrafficTypeNames implements SplitChangeFetcher {
 
     private final Map<Long, List<Split>> _trafficTypesToAdd = Maps.newHashMap();
     private final Map<Long, List<Split>> _trafficTypesToRemove = Maps.newHashMap();
 
-    public SplitChangeFetcherWIthTrafficTypeNames() { }
+    public SplitChangeFetcherWithTrafficTypeNames() { }
 
     public void addSplitForSince(Long since, String name, String trafficTypeName) {
         modifyTrafficTypeMap(_trafficTypesToAdd, since, name, trafficTypeName, Status.ACTIVE);
