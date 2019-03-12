@@ -46,7 +46,14 @@ public class SDKReadinessGates {
         timeLeft = end - System.currentTimeMillis();
 
         return areSegmentsReady(timeLeft);
+    }
 
+    public boolean isSDKReadyNow() {
+        try {
+            return isSDKReady(0);
+        } catch (InterruptedException e) {
+            return false;
+        }
     }
 
     /**
