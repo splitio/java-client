@@ -23,36 +23,11 @@ public class SplitChangeFetcherWIthTrafficTypeNames implements SplitChangeFetche
     public SplitChangeFetcherWIthTrafficTypeNames() { }
 
     public void addSplitForSince(Long since, String name, String trafficTypeName) {
-        List<Split> splits = _trafficTypesToAdd.get(since);
-        if (splits == null) {
-            splits = Lists.newArrayList();
-        }
-        splits.add(stubSplit(name, trafficTypeName, Status.ACTIVE, since));
-        _trafficTypesToAdd.put(since, splits);
+        modifyTrafficTypeMap(_trafficTypesToAdd, since, name, trafficTypeName, Status.ACTIVE);
     }
 
     public void removeSplitForSince(Long since, String name, String trafficTypeName) {
-        List<Split> splits = _trafficTypesToRemove.get(since);
-        if (splits == null) {
-            splits = Lists.newArrayList();
-        }
-        splits.add(stubSplit(name, trafficTypeName, Status.ARCHIVED, since));
-        _trafficTypesToRemove.put(since, splits);
-    }
-
-    private Split stubSplit(String name, String trafficTypeName, Status status, Long changeNumber) {
-        Split add = new Split();
-        Condition condition = ConditionsTestUtil.makeAllKeysCondition(Lists.newArrayList(ConditionsTestUtil.partition("on", 10)));
-        add.status = status;
-        add.trafficAllocation = 100;
-        add.trafficAllocationSeed = changeNumber.intValue();
-        add.seed = changeNumber.intValue();
-        add.conditions = Lists.newArrayList(condition);
-        add.name = name;
-        add.trafficTypeName = trafficTypeName;
-        add.defaultTreatment = Treatments.OFF;
-        add.changeNumber = changeNumber;
-        return add;
+        modifyTrafficTypeMap(_trafficTypesToRemove, since, name, trafficTypeName, Status.ARCHIVED);
     }
 
     @Override
@@ -72,5 +47,29 @@ public class SplitChangeFetcherWIthTrafficTypeNames implements SplitChangeFetche
             splitChange.splits.addAll(_trafficTypesToRemove.get(since));
         }
         return splitChange;
+    }
+
+    private void modifyTrafficTypeMap(Map<Long, List<Split>> map, Long since, String name, String trafficTypeName, Status status) {
+        List<Split> splits = map.get(since);
+        if (splits == null) {
+            splits = Lists.newArrayList();
+        }
+        splits.add(stubSplit(name, trafficTypeName, status, since));
+        map.put(since, splits);
+    }
+
+    private Split stubSplit(String name, String trafficTypeName, Status status, Long changeNumber) {
+        Split add = new Split();
+        Condition condition = ConditionsTestUtil.makeAllKeysCondition(Lists.newArrayList(ConditionsTestUtil.partition("on", 10)));
+        add.status = status;
+        add.trafficAllocation = 100;
+        add.trafficAllocationSeed = changeNumber.intValue();
+        add.seed = changeNumber.intValue();
+        add.conditions = Lists.newArrayList(condition);
+        add.name = name;
+        add.trafficTypeName = trafficTypeName;
+        add.defaultTreatment = Treatments.OFF;
+        add.changeNumber = changeNumber;
+        return add;
     }
 }

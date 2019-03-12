@@ -312,8 +312,6 @@ public class RefreshableSplitFetcherTest {
         expected.add("user");
         usedTrafficTypes = fetcher.fetchUsedTrafficTypes();
         Assert.assertThat(usedTrafficTypes, Matchers.is(Matchers.equalTo(expected)));
-
-
     }
 
     private void executeOnce(Runnable runnable) throws InterruptedException {
