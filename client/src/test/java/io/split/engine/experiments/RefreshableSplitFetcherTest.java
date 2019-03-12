@@ -1,6 +1,7 @@
 package io.split.engine.experiments;
 
 import com.google.common.collect.Lists;
+import com.google.common.collect.Sets;
 import io.split.client.dtos.Condition;
 import io.split.client.dtos.Matcher;
 import io.split.client.dtos.MatcherGroup;
@@ -18,12 +19,16 @@ import io.split.engine.segments.SegmentFetcher;
 import io.split.engine.segments.StaticSegment;
 import io.split.engine.segments.StaticSegmentFetcher;
 import io.split.grammar.Treatments;
+import org.hamcrest.Matchers;
+import org.junit.Assert;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.Set;
+import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
@@ -203,4 +208,121 @@ public class RefreshableSplitFetcherTest {
         assertThat(gates.areSegmentsReady(100), is(equalTo(true)));
         assertThat(gates.isSDKReady(0), is(equalTo(true)));
     }
+
+    @Test
+    public void fetch_traffic_type_names_works_with_adds() throws Exception {
+        long startingChangeNumber = -1;
+        SplitChangeFetcherWIthTrafficTypeNames changeFetcher = new SplitChangeFetcherWIthTrafficTypeNames();
+        SDKReadinessGates gates = new SDKReadinessGates();
+
+        SegmentChangeFetcher segmentChangeFetcher = new NoChangeSegmentChangeFetcher();
+        SegmentFetcher segmentFetcher = new RefreshableSegmentFetcher(segmentChangeFetcher, 1,10, gates);
+        RefreshableSplitFetcher fetcher = new RefreshableSplitFetcher(changeFetcher, new SplitParser(segmentFetcher), gates, startingChangeNumber);
+
+        // Before, it should be empty
+        Set<String> usedTrafficTypes = fetcher.fetchUsedTrafficTypes();
+        Set<String> expected = Sets.newHashSet();
+        Assert.assertThat(usedTrafficTypes, Matchers.is(Matchers.equalTo(expected)));
+
+        // execute once, it starts with since -1;
+        changeFetcher.addSplitForSince(-1L, "test_1", "user");
+        executeOnce(fetcher);
+        usedTrafficTypes = fetcher.fetchUsedTrafficTypes();
+        expected.add("user");
+        Assert.assertThat(usedTrafficTypes, Matchers.is(Matchers.equalTo(expected)));
+
+        // execute once, now with 0;
+        changeFetcher.addSplitForSince(0L, "test_2", "user");
+        changeFetcher.addSplitForSince(0L, "test_3", "account");
+        executeOnce(fetcher);
+        usedTrafficTypes = fetcher.fetchUsedTrafficTypes();
+        expected.add("account");
+        Assert.assertThat(usedTrafficTypes, Matchers.is(Matchers.equalTo(expected)));
+
+        // execute once, now with 1;
+        changeFetcher.addSplitForSince(1L, "test_4", "experiment");
+        executeOnce(fetcher);
+        usedTrafficTypes = fetcher.fetchUsedTrafficTypes();
+        expected.add("experiment");
+        Assert.assertThat(usedTrafficTypes, Matchers.is(Matchers.equalTo(expected)));
+
+        // execute once, now with 2;
+        changeFetcher.addSplitForSince(2L, "test_2", "user");
+        changeFetcher.addSplitForSince(2L, "test_4", "account");
+        changeFetcher.addSplitForSince(2L, "test_5", "experiment");
+        executeOnce(fetcher);
+        usedTrafficTypes = fetcher.fetchUsedTrafficTypes();
+        Assert.assertThat(usedTrafficTypes, Matchers.is(Matchers.equalTo(expected)));
+    }
+
+    @Test
+    public void fetch_traffic_type_names_works_with_remove() throws Exception {
+        long startingChangeNumber = -1;
+        SplitChangeFetcherWIthTrafficTypeNames changeFetcher = new SplitChangeFetcherWIthTrafficTypeNames();
+        SDKReadinessGates gates = new SDKReadinessGates();
+
+        SegmentChangeFetcher segmentChangeFetcher = new NoChangeSegmentChangeFetcher();
+        SegmentFetcher segmentFetcher = new RefreshableSegmentFetcher(segmentChangeFetcher, 1,10, gates);
+        RefreshableSplitFetcher fetcher = new RefreshableSplitFetcher(changeFetcher, new SplitParser(segmentFetcher), gates, startingChangeNumber);
+
+        Set<String> expected = Sets.newHashSet();
+
+        // execute once, it starts with since -1;
+        changeFetcher.addSplitForSince(-1L, "test_1", "user");
+        executeOnce(fetcher);
+        Set<String> usedTrafficTypes = fetcher.fetchUsedTrafficTypes();
+        expected.add("user");
+        Assert.assertThat(usedTrafficTypes, Matchers.is(Matchers.equalTo(expected)));
+
+        // execute once, now with 0;
+        changeFetcher.addSplitForSince(0L, "test_2", "user");
+        changeFetcher.addSplitForSince(0L, "test_3", "account");
+        executeOnce(fetcher);
+        expected.add("account");
+        usedTrafficTypes = fetcher.fetchUsedTrafficTypes();
+        Assert.assertThat(usedTrafficTypes, Matchers.is(Matchers.equalTo(expected)));
+
+        // execute once, now with 1;
+        // This removes test_1, but still test_2 exists with user, so it should still return user and account
+        changeFetcher.removeSplitForSince(1L, "test_1", "user");
+        executeOnce(fetcher);
+        usedTrafficTypes = fetcher.fetchUsedTrafficTypes();
+        Assert.assertThat(usedTrafficTypes, Matchers.is(Matchers.equalTo(expected)));
+
+        // execute once, now with 2;
+        // This removes test_2, so now there are no more splits with traffic type user.
+        changeFetcher.removeSplitForSince(2L, "test_2", "user");
+        executeOnce(fetcher);
+        expected.remove("user");
+        usedTrafficTypes = fetcher.fetchUsedTrafficTypes();
+        Assert.assertThat(usedTrafficTypes, Matchers.is(Matchers.equalTo(expected)));
+
+        // execute once, now with 3;
+        // This removes test_3, which removes account, now it should be empty
+        changeFetcher.removeSplitForSince(3L, "test_3", "account");
+        executeOnce(fetcher);
+        expected.remove("account");
+        usedTrafficTypes = fetcher.fetchUsedTrafficTypes();
+        Assert.assertThat(usedTrafficTypes, Matchers.is(Matchers.equalTo(expected)));
+
+        // execute once, now with 4;
+        // Adding user once more
+        changeFetcher.addSplitForSince(4L, "test_1", "user");
+        executeOnce(fetcher);
+        expected.add("user");
+        usedTrafficTypes = fetcher.fetchUsedTrafficTypes();
+        Assert.assertThat(usedTrafficTypes, Matchers.is(Matchers.equalTo(expected)));
+
+
+    }
+
+    private void executeOnce(Runnable runnable) throws InterruptedException {
+        // execute the fetcher for a little bit.
+        ExecutorService executor = Executors.newSingleThreadExecutor();
+        executor.submit(runnable);
+        executor.shutdown();
+        executor.awaitTermination(10, TimeUnit.SECONDS);
+    }
+
+
 }
