@@ -212,7 +212,7 @@ public class RefreshableSplitFetcherTest {
     @Test
     public void fetch_traffic_type_names_works_with_adds() throws Exception {
         long startingChangeNumber = -1;
-        SplitChangeFetcherWIthTrafficTypeNames changeFetcher = new SplitChangeFetcherWIthTrafficTypeNames();
+        SplitChangeFetcherWithTrafficTypeNames changeFetcher = new SplitChangeFetcherWithTrafficTypeNames();
         SDKReadinessGates gates = new SDKReadinessGates();
 
         SegmentChangeFetcher segmentChangeFetcher = new NoChangeSegmentChangeFetcher();
@@ -258,7 +258,7 @@ public class RefreshableSplitFetcherTest {
     @Test
     public void fetch_traffic_type_names_works_with_remove() throws Exception {
         long startingChangeNumber = -1;
-        SplitChangeFetcherWIthTrafficTypeNames changeFetcher = new SplitChangeFetcherWIthTrafficTypeNames();
+        SplitChangeFetcherWithTrafficTypeNames changeFetcher = new SplitChangeFetcherWithTrafficTypeNames();
         SDKReadinessGates gates = new SDKReadinessGates();
 
         SegmentChangeFetcher segmentChangeFetcher = new NoChangeSegmentChangeFetcher();
