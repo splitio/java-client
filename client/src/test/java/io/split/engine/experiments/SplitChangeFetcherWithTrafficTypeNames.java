@@ -13,7 +13,17 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * Created on 3/12/19.
+ * Mock Class for SplitChangeFetcher for testing.
+ *
+ * Every time you run this inside RefreshableSplitFetcher it will add +1 to the since.
+ * So the first time you run this, RefreshableSplitFetcher will send since -1 and next time will be run with 0
+ * So next time you run it, it will receive since 0 and will set to 1
+ * Next 1 and prepare for 2, etc.
+ *
+ * This is important since you can mock the changes that it will return given a specific since
+ * with addSplitForSince and removeSplitForSince.
+ * With those methods you can mock what changes (ACTIVE and ARCHIVED) are goint to be returned for since -1, 0, etc
+ *
  */
 public class SplitChangeFetcherWithTrafficTypeNames implements SplitChangeFetcher {
 
