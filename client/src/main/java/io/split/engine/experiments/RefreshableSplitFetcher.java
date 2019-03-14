@@ -38,6 +38,16 @@ public class RefreshableSplitFetcher implements SplitFetcher, Runnable {
     private final AtomicLong _changeNumber;
 
     private Map<String, ParsedSplit> _concurrentMap = Maps.newConcurrentMap();
+
+    /**
+     * Contains all the traffic types that are currently being used by the splits and also the count
+     *
+     * For example if there are three splits, one of traffic type "account" and two of traffic type "user",
+     * this multiset will contain [{"user", 2}, {"account", 1}
+     *
+     * The count is needed since it is needed to maintain how many splits are using a traffic type, so when
+     * an ARCHIVED split is message, we now if we need to remove a traffic type from the multiset.
+     */
     Multiset<String> _concurrentTrafficTypeNameSet = ConcurrentHashMultiset.create();
     private final SDKReadinessGates _gates;
 
@@ -91,6 +101,9 @@ public class RefreshableSplitFetcher implements SplitFetcher, Runnable {
 
     @Override
     public Set<String> fetchUsedTrafficTypes() {
+        // We return the "keys" of the multiset that have a count greater than 0
+        // If the multiset has [{"user",2}.{"account",0}], elementSet only returns
+        // ["user"] (it ignores "account")
         return Sets.newHashSet(_concurrentTrafficTypeNameSet.elementSet());
     }
 
@@ -197,6 +210,7 @@ public class RefreshableSplitFetcher implements SplitFetcher, Runnable {
 
             _concurrentMap.putAll(toAdd);
             _concurrentTrafficTypeNameSet.addAll(trafficTypeNamesToAdd);
+            //removeAll does not work here, since it wont remove all the occurrences, just one
             Multisets.removeOccurrences(_concurrentTrafficTypeNameSet, trafficTypeNamesToRemove);
 
             for (String remove : toRemove) {
