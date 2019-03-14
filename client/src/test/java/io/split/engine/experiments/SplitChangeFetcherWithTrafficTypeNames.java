@@ -13,7 +13,7 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * Mock Class for SplitChangeFetcher for testing.
+ * Mock Class of SplitChangeFetcher for testing.
  *
  * Every time you run this inside RefreshableSplitFetcher it will add +1 to the since.
  * So the first time you run this, RefreshableSplitFetcher will send since -1 and next time will be run with 0

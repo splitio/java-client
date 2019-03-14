@@ -43,10 +43,10 @@ public class RefreshableSplitFetcher implements SplitFetcher, Runnable {
      * Contains all the traffic types that are currently being used by the splits and also the count
      *
      * For example if there are three splits, one of traffic type "account" and two of traffic type "user",
-     * this multiset will contain [{"user", 2}, {"account", 1}
+     * this multiset will contain [{"user", 2}, {"account", 1}]
      *
-     * The count is needed since it is needed to maintain how many splits are using a traffic type, so when
-     * an ARCHIVED split is message, we now if we need to remove a traffic type from the multiset.
+     * The count is used to maintain how many splits are using a traffic type, so when
+     * an ARCHIVED split is received, we know if we need to remove a traffic type from the multiset.
      */
     Multiset<String> _concurrentTrafficTypeNameSet = ConcurrentHashMultiset.create();
     private final SDKReadinessGates _gates;
