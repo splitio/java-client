@@ -50,8 +50,13 @@ public final class SplitClientImpl implements SplitClient {
     private final SDKReadinessGates _gates;
 
 
-    public SplitClientImpl(SplitFactory container, SplitFetcher splitFetcher, ImpressionListener impressionListener,
-                           Metrics metrics, EventClient eventClient, SplitClientConfig config, SDKReadinessGates gates) {
+    public SplitClientImpl(SplitFactory container,
+                           SplitFetcher splitFetcher,
+                           ImpressionListener impressionListener,
+                           Metrics metrics,
+                           EventClient eventClient,
+                           SplitClientConfig config,
+                           SDKReadinessGates gates) {
         _container = container;
         _splitFetcher = splitFetcher;
         _impressionListener = impressionListener;
@@ -328,6 +333,11 @@ public final class SplitClientImpl implements SplitClient {
         if (!event.trafficTypeName.equals(event.trafficTypeName.toLowerCase())) {
             _log.warn("track: trafficTypeName should be all lowercase - converting string to lowercase");
             event.trafficTypeName = event.trafficTypeName.toLowerCase();
+        }
+
+        if (!_splitFetcher.fetchKnownTrafficTypes().contains(event.trafficTypeName)) {
+            _log.warn("track: Traffic Type " + event.trafficTypeName + " does not have any corresponding Splits in this environment, " +
+                    "make sure you’re tracking your events to a valid traffic type defined in the Split console.");
         }
 
         // EventType validations

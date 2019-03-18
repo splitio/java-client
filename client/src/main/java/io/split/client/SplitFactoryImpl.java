@@ -198,8 +198,13 @@ public class SplitFactoryImpl implements SplitFactory {
             });
         }
 
-        _client = new SplitClientImpl(this, splitFetcherProvider.getFetcher(), impressionListener,
-                cachedFireAndForgetMetrics, eventClient, config, gates);
+        _client = new SplitClientImpl(this,
+                splitFetcherProvider.getFetcher(),
+                impressionListener,
+                cachedFireAndForgetMetrics,
+                eventClient,
+                config,
+                gates);
         _manager = new SplitManagerImpl(splitFetcherProvider.getFetcher(), config, gates);
     }
 

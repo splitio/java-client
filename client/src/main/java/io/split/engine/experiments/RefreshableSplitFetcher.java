@@ -1,7 +1,10 @@
 package io.split.engine.experiments;
 
+import com.google.common.collect.ConcurrentHashMultiset;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
+import com.google.common.collect.Multiset;
+import com.google.common.collect.Multisets;
 import com.google.common.collect.Sets;
 import io.split.client.dtos.Condition;
 import io.split.client.dtos.Matcher;
@@ -35,6 +38,17 @@ public class RefreshableSplitFetcher implements SplitFetcher, Runnable {
     private final AtomicLong _changeNumber;
 
     private Map<String, ParsedSplit> _concurrentMap = Maps.newConcurrentMap();
+
+    /**
+     * Contains all the traffic types that are currently being used by the splits and also the count
+     *
+     * For example if there are three splits, one of traffic type "account" and two of traffic type "user",
+     * this multiset will contain [{"user", 2}, {"account", 1}]
+     *
+     * The count is used to maintain how many splits are using a traffic type, so when
+     * an ARCHIVED split is received, we know if we need to remove a traffic type from the multiset.
+     */
+    Multiset<String> _concurrentTrafficTypeNameSet = ConcurrentHashMultiset.create();
     private final SDKReadinessGates _gates;
 
     private final Object _lock = new Object();
@@ -85,12 +99,21 @@ public class RefreshableSplitFetcher implements SplitFetcher, Runnable {
         return Lists.newArrayList(_concurrentMap.values());
     }
 
+    @Override
+    public Set<String> fetchKnownTrafficTypes() {
+        // We return the "keys" of the multiset that have a count greater than 0
+        // If the multiset has [{"user",2}.{"account",0}], elementSet only returns
+        // ["user"] (it ignores "account")
+        return Sets.newHashSet(_concurrentTrafficTypeNameSet.elementSet());
+    }
+
     public Collection<ParsedSplit> fetch() {
         return _concurrentMap.values();
     }
 
     public void clear() {
         _concurrentMap.clear();
+        _concurrentTrafficTypeNameSet.clear();
     }
 
     @Override
@@ -151,6 +174,8 @@ public class RefreshableSplitFetcher implements SplitFetcher, Runnable {
 
             Set<String> toRemove = Sets.newHashSet();
             Map<String, ParsedSplit> toAdd = Maps.newHashMap();
+            List<String> trafficTypeNamesToRemove = Lists.newArrayList();
+            List<String> trafficTypeNamesToAdd = Lists.newArrayList();
 
             for (Split split : change.splits) {
                 if (Thread.currentThread().isInterrupted()) {
@@ -160,6 +185,9 @@ public class RefreshableSplitFetcher implements SplitFetcher, Runnable {
                 if (split.status != Status.ACTIVE) {
                     // archive.
                     toRemove.add(split.name);
+                    if (split.trafficTypeName != null) {
+                        trafficTypeNamesToRemove.add(split.trafficTypeName);
+                    }
                     continue;
                 }
 
@@ -167,14 +195,24 @@ public class RefreshableSplitFetcher implements SplitFetcher, Runnable {
                 if (parsedSplit == null) {
                     _log.info("We could not parse the experiment definition for: " + split.name + " so we are removing it completely to be careful");
                     toRemove.add(split.name);
+                    if (split.trafficTypeName != null) {
+                        trafficTypeNamesToRemove.add(split.trafficTypeName);
+                    }
                     continue;
                 }
 
                 segmentsInUse.addAll(collectSegmentsInUse(split));
                 toAdd.put(split.name, parsedSplit);
+                if (split.trafficTypeName != null) {
+                    trafficTypeNamesToAdd.add(split.trafficTypeName);
+                }
             }
 
             _concurrentMap.putAll(toAdd);
+            _concurrentTrafficTypeNameSet.addAll(trafficTypeNamesToAdd);
+            //removeAll does not work here, since it wont remove all the occurrences, just one
+            Multisets.removeOccurrences(_concurrentTrafficTypeNameSet, trafficTypeNamesToRemove);
+
             for (String remove : toRemove) {
                 _concurrentMap.remove(remove);
             }
