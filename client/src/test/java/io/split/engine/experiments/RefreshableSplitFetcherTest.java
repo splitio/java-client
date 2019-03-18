@@ -220,14 +220,14 @@ public class RefreshableSplitFetcherTest {
         RefreshableSplitFetcher fetcher = new RefreshableSplitFetcher(changeFetcher, new SplitParser(segmentFetcher), gates, startingChangeNumber);
 
         // Before, it should be empty
-        Set<String> usedTrafficTypes = fetcher.fetchUsedTrafficTypes();
+        Set<String> usedTrafficTypes = fetcher.fetchKnownTrafficTypes();
         Set<String> expected = Sets.newHashSet();
         Assert.assertThat(usedTrafficTypes, Matchers.is(Matchers.equalTo(expected)));
 
         // execute once, it starts with since -1;
         changeFetcher.addSplitForSince(-1L, "test_1", "user");
         executeOnce(fetcher);
-        usedTrafficTypes = fetcher.fetchUsedTrafficTypes();
+        usedTrafficTypes = fetcher.fetchKnownTrafficTypes();
         expected.add("user");
         Assert.assertThat(usedTrafficTypes, Matchers.is(Matchers.equalTo(expected)));
 
@@ -235,14 +235,14 @@ public class RefreshableSplitFetcherTest {
         changeFetcher.addSplitForSince(0L, "test_2", "user");
         changeFetcher.addSplitForSince(0L, "test_3", "account");
         executeOnce(fetcher);
-        usedTrafficTypes = fetcher.fetchUsedTrafficTypes();
+        usedTrafficTypes = fetcher.fetchKnownTrafficTypes();
         expected.add("account");
         Assert.assertThat(usedTrafficTypes, Matchers.is(Matchers.equalTo(expected)));
 
         // execute once, now with 1;
         changeFetcher.addSplitForSince(1L, "test_4", "experiment");
         executeOnce(fetcher);
-        usedTrafficTypes = fetcher.fetchUsedTrafficTypes();
+        usedTrafficTypes = fetcher.fetchKnownTrafficTypes();
         expected.add("experiment");
         Assert.assertThat(usedTrafficTypes, Matchers.is(Matchers.equalTo(expected)));
 
@@ -251,7 +251,7 @@ public class RefreshableSplitFetcherTest {
         changeFetcher.addSplitForSince(2L, "test_4", "account");
         changeFetcher.addSplitForSince(2L, "test_5", "experiment");
         executeOnce(fetcher);
-        usedTrafficTypes = fetcher.fetchUsedTrafficTypes();
+        usedTrafficTypes = fetcher.fetchKnownTrafficTypes();
         Assert.assertThat(usedTrafficTypes, Matchers.is(Matchers.equalTo(expected)));
     }
 
@@ -270,7 +270,7 @@ public class RefreshableSplitFetcherTest {
         // execute once, it starts with since -1;
         changeFetcher.addSplitForSince(-1L, "test_1", "user");
         executeOnce(fetcher);
-        Set<String> usedTrafficTypes = fetcher.fetchUsedTrafficTypes();
+        Set<String> usedTrafficTypes = fetcher.fetchKnownTrafficTypes();
         expected.add("user");
         Assert.assertThat(usedTrafficTypes, Matchers.is(Matchers.equalTo(expected)));
 
@@ -279,14 +279,14 @@ public class RefreshableSplitFetcherTest {
         changeFetcher.addSplitForSince(0L, "test_3", "account");
         executeOnce(fetcher);
         expected.add("account");
-        usedTrafficTypes = fetcher.fetchUsedTrafficTypes();
+        usedTrafficTypes = fetcher.fetchKnownTrafficTypes();
         Assert.assertThat(usedTrafficTypes, Matchers.is(Matchers.equalTo(expected)));
 
         // execute once, now with 1;
         // This removes test_1, but still test_2 exists with user, so it should still return user and account
         changeFetcher.removeSplitForSince(1L, "test_1", "user");
         executeOnce(fetcher);
-        usedTrafficTypes = fetcher.fetchUsedTrafficTypes();
+        usedTrafficTypes = fetcher.fetchKnownTrafficTypes();
         Assert.assertThat(usedTrafficTypes, Matchers.is(Matchers.equalTo(expected)));
 
         // execute once, now with 2;
@@ -294,7 +294,7 @@ public class RefreshableSplitFetcherTest {
         changeFetcher.removeSplitForSince(2L, "test_2", "user");
         executeOnce(fetcher);
         expected.remove("user");
-        usedTrafficTypes = fetcher.fetchUsedTrafficTypes();
+        usedTrafficTypes = fetcher.fetchKnownTrafficTypes();
         Assert.assertThat(usedTrafficTypes, Matchers.is(Matchers.equalTo(expected)));
 
         // execute once, now with 3;
@@ -302,7 +302,7 @@ public class RefreshableSplitFetcherTest {
         changeFetcher.removeSplitForSince(3L, "test_3", "account");
         executeOnce(fetcher);
         expected.remove("account");
-        usedTrafficTypes = fetcher.fetchUsedTrafficTypes();
+        usedTrafficTypes = fetcher.fetchKnownTrafficTypes();
         Assert.assertThat(usedTrafficTypes, Matchers.is(Matchers.equalTo(expected)));
 
         // execute once, now with 4;
@@ -310,7 +310,7 @@ public class RefreshableSplitFetcherTest {
         changeFetcher.addSplitForSince(4L, "test_1", "user");
         executeOnce(fetcher);
         expected.add("user");
-        usedTrafficTypes = fetcher.fetchUsedTrafficTypes();
+        usedTrafficTypes = fetcher.fetchKnownTrafficTypes();
         Assert.assertThat(usedTrafficTypes, Matchers.is(Matchers.equalTo(expected)));
     }
 

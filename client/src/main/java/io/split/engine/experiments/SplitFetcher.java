@@ -19,7 +19,7 @@ public interface SplitFetcher {
      *
      * @return a set of all the traffic types used by the parsed splits
      */
-    Set<String> fetchUsedTrafficTypes();
+    Set<String> fetchKnownTrafficTypes();
 
     /**
      * Forces a sync of splits, outside of any scheduled

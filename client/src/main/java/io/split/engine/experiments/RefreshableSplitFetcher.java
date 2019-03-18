@@ -100,7 +100,7 @@ public class RefreshableSplitFetcher implements SplitFetcher, Runnable {
     }
 
     @Override
-    public Set<String> fetchUsedTrafficTypes() {
+    public Set<String> fetchKnownTrafficTypes() {
         // We return the "keys" of the multiset that have a count greater than 0
         // If the multiset has [{"user",2}.{"account",0}], elementSet only returns
         // ["user"] (it ignores "account")
