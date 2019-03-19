@@ -1,8 +1,7 @@
 CHANGES
 3.0.9
 - Validate split names on getTreatment and manager calls
-- Validate traffic type name when calling track
-- Check for multiple factories instantiated
+- Validate traffic type name when calling track.
 
 3.0.8
 - Ability to disable automatic destroy() on graceful shutdowns.
