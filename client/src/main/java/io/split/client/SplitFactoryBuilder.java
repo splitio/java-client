@@ -1,6 +1,5 @@
 package io.split.client;
 
-import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ConcurrentHashMultiset;
 import com.google.common.collect.Multiset;
 import io.split.grammar.Treatments;
@@ -19,9 +18,7 @@ import java.util.concurrent.TimeoutException;
 public class SplitFactoryBuilder {
     private static final Logger _log = LoggerFactory.getLogger(SplitFactoryBuilder.class);
 
-    // Package private for unit testing.
-    @VisibleForTesting
-    static final Multiset<String> _usedApiTokens = ConcurrentHashMultiset.create();
+    private static final Multiset<String> USED_API_TOKENS = ConcurrentHashMultiset.create();
 
     /**
      * Instantiates a SplitFactory with default configurations
@@ -53,21 +50,21 @@ public class SplitFactoryBuilder {
         if (LocalhostSplitFactory.LOCALHOST.equals(apiToken)) {
             return LocalhostSplitFactory.createLocalhostSplitFactory();
         } else {
-            if (_usedApiTokens.contains(apiToken)) {
+            if (USED_API_TOKENS.contains(apiToken)) {
                 String message = String.format("factory instantiation: You are instantiating a Split factory with " +
                         "the exact same API Key you’ve used before. " +
                          "You already have %s instances with the same API Key. " +
                          "We recommend keeping only one instance of the factory at all times (Singleton pattern) " +
-                         "and reusing it throughout your application.", _usedApiTokens.count(apiToken));
+                         "and reusing it throughout your application.", USED_API_TOKENS.count(apiToken));
                 _log.warn(message);
-            } else if (!_usedApiTokens.isEmpty()) {
+            } else if (!USED_API_TOKENS.isEmpty()) {
                 String message = "factory instantiation: You already have an instance of the Split factory on this machine. " +
                         "Make sure you definitely want this additional instance. " +
                         "We recommend keeping only one instance of the factory at all times (Singleton pattern) " +
                         "and reusing it throughout your application.";
                 _log.warn(message);
             }
-            _usedApiTokens.add(apiToken);
+            USED_API_TOKENS.add(apiToken);
 
             return new SplitFactoryImpl(apiToken, config);
 
