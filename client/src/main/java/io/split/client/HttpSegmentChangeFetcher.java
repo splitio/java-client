@@ -63,9 +63,14 @@ public final class HttpSegmentChangeFetcher implements SegmentChangeFetcher {
 
             if (statusCode < 200 || statusCode >= 300) {
                 _log.error("Response status was: " + statusCode);
+                if (statusCode == 403) {
+                    _log.error("factory instantiation: you passed a browser type api_key, " +
+                            "please grab an api key from the Split console that is of type sdk");
+                }
                 _metrics.count(PREFIX + ".status." + statusCode, 1);
                 throw new IllegalStateException("Could not retrieve segment changes for " + segmentName + "; http return code " + statusCode);
             }
+
 
 
             String json = EntityUtils.toString(response.getEntity());
