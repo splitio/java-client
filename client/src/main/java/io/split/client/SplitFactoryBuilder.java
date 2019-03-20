@@ -42,6 +42,7 @@ public class SplitFactoryBuilder {
         if (apiToken.isEmpty()) {
             _log.error("factory instantiation: you passed and empty apiToken, apiToken be a non-empty string");
         }
+
         if (LocalhostSplitFactory.LOCALHOST.equals(apiToken)) {
             return LocalhostSplitFactory.createLocalhostSplitFactory();
         } else {
