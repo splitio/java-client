@@ -103,9 +103,10 @@ public class SplitFactoryImpl implements SplitFactory {
 
 
         if (USED_API_TOKENS.contains(apiToken)) {
-            String message = String.format("factory instantiation: You already have %s factories with this API Key. " +
+            String message = String.format("factory instantiation: You already have %s with this API Key. " +
                     "We recommend keeping only one instance of the factory at all times (Singleton pattern) and reusing " +
-                    "it throughout your application.", USED_API_TOKENS.count(apiToken));
+                    "it throughout your application.",
+                    USED_API_TOKENS.count(apiToken) == 1 ? "1 factory" : String.format("%s factories", USED_API_TOKENS.count(apiToken)));
             _log.warn(message);
         } else if (!USED_API_TOKENS.isEmpty()) {
             String message = "factory instantiation: You already have an instance of the Split factory. " +
