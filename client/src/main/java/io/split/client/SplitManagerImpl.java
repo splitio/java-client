@@ -57,7 +57,14 @@ public class SplitManagerImpl implements SplitManager {
             return null;
         }
         ParsedSplit parsedSplit = _splitFetcher.fetch(featureName);
-        return parsedSplit == null ? null : toSplitView(parsedSplit);
+        if (parsedSplit == null) {
+            if (_gates.isSDKReadyNow()) {
+                _log.error("split: you passed \"" + featureName + "\" that does not exist in this environment, " +
+                        "please double check what Splits exist in the web console.");
+            }
+            return null;
+        }
+        return toSplitView(parsedSplit);
     }
 
     @Override
