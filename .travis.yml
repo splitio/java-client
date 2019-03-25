@@ -4,5 +4,8 @@ dist: precise
 jdk:
   - oraclejdk7
 
+before_script:
+  echo "MAVEN_OPTS='-Dhttps.protocols=TLSv1.2'" > ~/.mavenrc
+
 script:
-  - mvn -Dhttps.protocols=TLSv1.2 clean install
+  - mvn clean install
