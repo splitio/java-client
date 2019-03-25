@@ -4,4 +4,4 @@ jdk:
   - oraclejdk8
 
 script:
-  - mvn -q -Dorg.slf4j.simpleLogger.defaultLogLevel=error -Dhttps.protocols=TLSv1.2 clean install
+  - mvn -q -Dhttps.protocols=TLSv1.2 clean install
