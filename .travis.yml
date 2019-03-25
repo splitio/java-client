@@ -1,7 +1,8 @@
 language: java
+dist: precise
 
 jdk:
-  - oraclejdk8
+  - oraclejdk7
 
 script:
-  - mvn -q -Dhttps.protocols=TLSv1.2 clean install
+  - mvn -Dhttps.protocols=TLSv1.2 clean install
