@@ -11,6 +11,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -103,7 +104,7 @@ public class SplitManagerImpl implements SplitManager {
         treatments.add(parsedSplit.defaultTreatment());
 
         splitView.treatments = new ArrayList<String>(treatments);
-        splitView.config = parsedSplit.configurations();
+        splitView.config = parsedSplit.configurations() == null? parsedSplit.configurations() : Collections.<String, String>emptyMap();
 
         return splitView;
     }

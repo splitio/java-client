@@ -1,4 +1,7 @@
 CHANGES
+3.1.0
+- Add Dynamic Configurations
+
 3.0.9
 - Validate split names on getTreatment and manager calls
 - Validate traffic type name when calling track
