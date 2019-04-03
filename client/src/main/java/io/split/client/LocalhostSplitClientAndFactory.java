@@ -1,6 +1,7 @@
 package io.split.client;
 
 import io.split.client.api.Key;
+import io.split.client.api.SplitResult;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -44,6 +45,21 @@ public final class LocalhostSplitClientAndFactory implements SplitClient {
     @Override
     public String getTreatment(Key key, String split, Map<String, Object> attributes) {
         return _splitClient.getTreatment(key.matchingKey(), split, attributes);
+    }
+
+    @Override
+    public SplitResult getTreatmentWithConfig(String key, String split) {
+        return null;
+    }
+
+    @Override
+    public SplitResult getTreatmentWithConfig(String key, String split, Map<String, Object> attributes) {
+        return null;
+    }
+
+    @Override
+    public SplitResult getTreatmentWithConfig(Key key, String split, Map<String, Object> attributes) {
+        return null;
     }
 
     public void updateFeatureToTreatmentMap(Map<SplitAndKey, String> map) {

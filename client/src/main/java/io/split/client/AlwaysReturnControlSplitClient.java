@@ -1,6 +1,7 @@
 package io.split.client;
 
 import io.split.client.api.Key;
+import io.split.client.api.SplitResult;
 import io.split.grammar.Treatments;
 
 import java.util.Map;
@@ -27,6 +28,21 @@ public class AlwaysReturnControlSplitClient implements SplitClient {
     @Override
     public String getTreatment(Key key, String split, Map<String, Object> attributes) {
         return Treatments.CONTROL;
+    }
+
+    @Override
+    public SplitResult getTreatmentWithConfig(String key, String split) {
+        return null;
+    }
+
+    @Override
+    public SplitResult getTreatmentWithConfig(String key, String split, Map<String, Object> attributes) {
+        return null;
+    }
+
+    @Override
+    public SplitResult getTreatmentWithConfig(Key key, String split, Map<String, Object> attributes) {
+        return null;
     }
 
     @Override

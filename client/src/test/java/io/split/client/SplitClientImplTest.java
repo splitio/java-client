@@ -565,7 +565,7 @@ public class SplitClientImplTest {
 
         List<ParsedCondition> conditions = Lists.newArrayList(whitelistCondition, rollOutToEveryone);
 
-        ParsedSplit parsedSplit = new ParsedSplit(test, 123, false, Treatments.OFF, conditions, null, 1, trafficAllocation, trafficAllocationSeed, 1);
+        ParsedSplit parsedSplit = new ParsedSplit(test, 123, false, Treatments.OFF, conditions, null, 1, trafficAllocation, trafficAllocationSeed, 1, null);
 
         SplitFetcher splitFetcher = mock(SplitFetcher.class);
         when(splitFetcher.fetch(test)).thenReturn(parsedSplit);

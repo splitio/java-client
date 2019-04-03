@@ -34,6 +34,7 @@ import org.junit.Test;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -86,6 +87,49 @@ public class SplitParserTest {
         ParsedSplit expected = ParsedSplit.createParsedSplitForTests("first.name", 123, false, Treatments.OFF, listOfMatcherAndSplits, "user", 1, 1);
 
         assertThat(actual, is(equalTo(expected)));
+    }
+
+    @Test
+    public void worksWithConfig() {
+
+        StaticSegment employees = new StaticSegment("employees", Sets.newHashSet("adil", "pato", "trevor"));
+        StaticSegment salespeople = new StaticSegment("salespeople", Sets.newHashSet("kunal"));
+
+        Map<String, StaticSegment> fetcherMap = Maps.newHashMap();
+        fetcherMap.put(employees.segmentName(), employees);
+        fetcherMap.put(salespeople.segmentName(), salespeople);
+
+        SegmentFetcher segmentFetcher = new StaticSegmentFetcher(fetcherMap);
+
+        SplitParser parser = new SplitParser(segmentFetcher);
+
+
+        Matcher employeesMatcher = ConditionsTestUtil.userDefinedSegmentMatcher(employees.segmentName(), false);
+        Matcher notSalespeople = ConditionsTestUtil.userDefinedSegmentMatcher(salespeople.segmentName(), true);
+
+        List<Partition> partitions = Lists.newArrayList(ConditionsTestUtil.partition("on", 100));
+
+        Condition c = ConditionsTestUtil.and(employeesMatcher, notSalespeople, partitions);
+
+        List<Condition> conditions = Lists.newArrayList(c);
+
+        Map<String, String> configurations = new HashMap<>();
+        configurations.put("on", "{\"size\":15,\"test\":20}");
+        configurations.put("off", "{\"size\":10}");
+        Split split = makeSplit("first.name", 123, conditions, 1, configurations);
+
+        ParsedSplit actual = parser.parse(split);
+
+        AttributeMatcher employeesMatcherLogic = AttributeMatcher.vanilla(new UserDefinedSegmentMatcher(employees));
+        AttributeMatcher notSalesPeopleMatcherLogic = new AttributeMatcher(null, new UserDefinedSegmentMatcher(salespeople), true);
+        CombiningMatcher combiningMatcher = new CombiningMatcher(MatcherCombiner.AND, Lists.newArrayList(employeesMatcherLogic, notSalesPeopleMatcherLogic));
+        ParsedCondition parsedCondition = ParsedCondition.createParsedConditionForTests(combiningMatcher, partitions);
+        List<ParsedCondition> listOfMatcherAndSplits = Lists.newArrayList(parsedCondition);
+
+        ParsedSplit expected = ParsedSplit.createParsedSplitForTests("first.name", 123, false, Treatments.OFF, listOfMatcherAndSplits, "user", 1, 1, configurations);
+
+        assertThat(actual, is(equalTo(expected)));
+        assertThat(actual.configurations().get("on"), is(equalTo(configurations.get("on"))));
     }
 
     @Test
@@ -482,6 +526,10 @@ public class SplitParserTest {
     }
 
     private Split makeSplit(String name, int seed, List<Condition> conditions, long changeNumber) {
+        return makeSplit(name, seed, conditions, changeNumber, null);
+    }
+
+    private Split makeSplit(String name, int seed, List<Condition> conditions, long changeNumber, Map<String, String> configurations) {
         Split split = new Split();
         split.name = name;
         split.seed = seed;
@@ -493,6 +541,7 @@ public class SplitParserTest {
         split.trafficTypeName = "user";
         split.changeNumber = changeNumber;
         split.algo = 1;
+        split.configurations = configurations;
         return split;
     }
 
