@@ -63,17 +63,17 @@ public final class LocalhostSplitClient implements SplitClient {
 
     @Override
     public SplitResult getTreatmentWithConfig(String key, String split) {
-        return null;
+        return new SplitResult(getTreatment(key, split), null);
     }
 
     @Override
     public SplitResult getTreatmentWithConfig(String key, String split, Map<String, Object> attributes) {
-        return null;
+        return new SplitResult(getTreatment(key, split), null);
     }
 
     @Override
     public SplitResult getTreatmentWithConfig(Key key, String split, Map<String, Object> attributes) {
-        return null;
+        return new SplitResult(getTreatment(key.matchingKey(), split, attributes), null);
     }
 
     public void updateFeatureToTreatmentMap(Map<SplitAndKey, String> map) {

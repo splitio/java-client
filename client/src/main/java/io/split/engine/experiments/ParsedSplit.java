@@ -200,7 +200,7 @@ public class ParsedSplit {
         bldr.append(_changeNumber);
         bldr.append(", algo:");
         bldr.append(_algo);
-        bldr.append(", configurations:");
+        bldr.append(", config:");
         bldr.append(_configurations);
         return bldr.toString();
 

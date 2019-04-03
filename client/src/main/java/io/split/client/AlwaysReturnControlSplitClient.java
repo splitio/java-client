@@ -15,6 +15,8 @@ import java.util.concurrent.TimeoutException;
  */
 public class AlwaysReturnControlSplitClient implements SplitClient {
 
+    private static final SplitResult RESULT_CONTROL = new SplitResult(Treatments.CONTROL, null);
+
     @Override
     public String getTreatment(String key, String split) {
         return Treatments.CONTROL;
@@ -32,17 +34,17 @@ public class AlwaysReturnControlSplitClient implements SplitClient {
 
     @Override
     public SplitResult getTreatmentWithConfig(String key, String split) {
-        return null;
+        return RESULT_CONTROL;
     }
 
     @Override
     public SplitResult getTreatmentWithConfig(String key, String split, Map<String, Object> attributes) {
-        return null;
+        return RESULT_CONTROL;
     }
 
     @Override
     public SplitResult getTreatmentWithConfig(Key key, String split, Map<String, Object> attributes) {
-        return null;
+        return RESULT_CONTROL;
     }
 
     @Override

@@ -111,17 +111,33 @@ public final class SplitClientImpl implements SplitClient {
 
     @Override
     public SplitResult getTreatmentWithConfig(String key, String split) {
-        return null;
+        return getTreatmentWithConfigInternal(key, null, split, Collections.<String, Object>emptyMap());
     }
 
     @Override
     public SplitResult getTreatmentWithConfig(String key, String split, Map<String, Object> attributes) {
-        return null;
+        return getTreatmentWithConfigInternal(key, null, split, attributes);
     }
 
     @Override
     public SplitResult getTreatmentWithConfig(Key key, String split, Map<String, Object> attributes) {
-        return null;
+        if (key == null) {
+            _log.error("getTreatment: you passed a null key, the key must be a non-empty string");
+            return SPLIT_RESULT_CONTROL;
+        }
+
+        if (key.matchingKey() == null) {
+            _log.error("getTreatment: you passed a null matchingKey, the matchingKey must be a non-empty string");
+            return SPLIT_RESULT_CONTROL;
+        }
+
+
+        if (key.bucketingKey() == null) {
+            _log.error("getTreatment: you passed a null bucketingKey, the bucketingKey must be a non-empty string");
+            return SPLIT_RESULT_CONTROL;
+        }
+
+        return getTreatmentWithConfigInternal(key.matchingKey(), key.bucketingKey(), split, attributes);
     }
 
     private String getTreatment(String matchingKey, String bucketingKey, String split, Map<String, Object> attributes) {
@@ -258,7 +274,8 @@ public final class SplitClientImpl implements SplitClient {
     private TreatmentLabelAndChangeNumber getTreatment(String matchingKey, String bucketingKey, ParsedSplit parsedSplit, Map<String, Object> attributes) throws ChangeNumberExceptionWrapper {
         try {
             if (parsedSplit.killed()) {
-                return new TreatmentLabelAndChangeNumber(parsedSplit.defaultTreatment(), KILLED, parsedSplit.changeNumber());
+                String config = parsedSplit.configurations() != null ? parsedSplit.configurations().get(parsedSplit.defaultTreatment()) : null;
+                return new TreatmentLabelAndChangeNumber(parsedSplit.defaultTreatment(), KILLED, parsedSplit.changeNumber(), config);
             }
 
             /*
@@ -290,12 +307,13 @@ public final class SplitClientImpl implements SplitClient {
 
                 if (parsedCondition.matcher().match(matchingKey, bucketingKey, attributes, this)) {
                     String treatment = Splitter.getTreatment(bk, parsedSplit.seed(), parsedCondition.partitions(), parsedSplit.algo());
-                    String config = parsedSplit.configurations().get(treatment);
-                    return new TreatmentLabelAndChangeNumber(treatment, parsedCondition.label(), parsedSplit.changeNumber());
+                    String config = parsedSplit.configurations() != null ? parsedSplit.configurations().get(treatment) : null;
+                    return new TreatmentLabelAndChangeNumber(treatment, parsedCondition.label(), parsedSplit.changeNumber(), config);
                 }
             }
 
-            return new TreatmentLabelAndChangeNumber(parsedSplit.defaultTreatment(), DEFAULT_RULE, parsedSplit.changeNumber());
+            String config = parsedSplit.configurations() != null ? parsedSplit.configurations().get(parsedSplit.defaultTreatment()) : null;
+            return new TreatmentLabelAndChangeNumber(parsedSplit.defaultTreatment(), DEFAULT_RULE, parsedSplit.changeNumber(), config);
         } catch (Exception e) {
             throw new ChangeNumberExceptionWrapper(e, parsedSplit.changeNumber());
         }

@@ -15,7 +15,7 @@ import java.util.Objects;
 /**
  * SplitScenarioAnnotationTest
  * Demonstration & Test file for the use of SplitScenarios with the SplitTestRunner
- * SplitTestRunner is a JUnitTestRunner which executes annotated tests to achieve a variety of Split configurations
+ * SplitTestRunner is a JUnitTestRunner which executes annotated tests to achieve a variety of Split config
  */
 @RunWith(SplitTestRunner.class)
 public class SplitScenarioAnnotationTest extends SplitAnnotationTestParent {

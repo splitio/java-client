@@ -17,7 +17,7 @@ public class SplitFactoryBuilder {
     private static final Logger _log = LoggerFactory.getLogger(SplitFactoryBuilder.class);
 
     /**
-     * Instantiates a SplitFactory with default configurations
+     * Instantiates a SplitFactory with default config
      *
      * @param apiToken the API token. MUST NOT be null
      * @return a SplitFactory

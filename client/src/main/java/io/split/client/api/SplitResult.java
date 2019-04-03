@@ -4,19 +4,19 @@ import com.google.common.base.Objects;
 
 public final class SplitResult {
     private final String _treatment;
-    private final String _configurations;
+    private final String _config;
 
-    public SplitResult(String treatment, String configurations) {
+    public SplitResult(String treatment, String config) {
         _treatment = treatment;
-        _configurations = configurations;
+        _config = config;
     }
 
     public String treatment() {
         return _treatment;
     }
 
-    public String configurations() {
-        return _configurations;
+    public String config() {
+        return _config;
     }
 
     @Override
@@ -25,12 +25,12 @@ public final class SplitResult {
         if (!(o instanceof SplitResult)) return false;
         SplitResult that = (SplitResult) o;
         return Objects.equal(_treatment, that._treatment) &&
-                Objects.equal(_configurations, that._configurations);
+                Objects.equal(_config, that._config);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hashCode(_treatment, _configurations);
+        return Objects.hashCode(_treatment, _config);
     }
 
     @Override
@@ -38,7 +38,7 @@ public final class SplitResult {
         StringBuilder bldr = new StringBuilder();
         bldr.append(_treatment);
         bldr.append(", ");
-        bldr.append(_configurations);
+        bldr.append(_config);
         return bldr.toString();
     }
 

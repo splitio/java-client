@@ -103,6 +103,7 @@ public class SplitManagerImpl implements SplitManager {
         treatments.add(parsedSplit.defaultTreatment());
 
         splitView.treatments = new ArrayList<String>(treatments);
+        splitView.config = parsedSplit.configurations();
 
         return splitView;
     }

@@ -3,6 +3,7 @@ package io.split.client;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 import io.split.client.api.Key;
+import io.split.client.api.SplitResult;
 import io.split.client.dtos.ConditionType;
 import io.split.client.dtos.DataType;
 import io.split.client.dtos.Partition;
@@ -29,6 +30,7 @@ import org.mockito.ArgumentCaptor;
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -37,6 +39,7 @@ import java.util.concurrent.TimeoutException;
 
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.nullValue;
 import static org.junit.Assert.assertThat;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Mockito.mock;
@@ -153,6 +156,76 @@ public class SplitClientImplTest {
         verify(splitFetcher, times(numKeys)).fetch(test);
     }
 
+    /**
+     * There is no config for this treatment
+     */
+    @Test
+    public void works_null_config() {
+        String test = "test1";
+
+        ParsedCondition rollOutToEveryone = ParsedCondition.createParsedConditionForTests(CombiningMatcher.of(new AllKeysMatcher()), Lists.newArrayList(partition("on", 100)));
+        List<ParsedCondition> conditions = Lists.newArrayList(rollOutToEveryone);
+        ParsedSplit parsedSplit = ParsedSplit.createParsedSplitForTests(test, 123, false, Treatments.OFF, conditions, null, 1, 1);
+
+        SplitFetcher splitFetcher = mock(SplitFetcher.class);
+        when(splitFetcher.fetch(test)).thenReturn(parsedSplit);
+
+        SplitClientImpl client = new SplitClientImpl(
+                mock(SplitFactory.class),
+                splitFetcher,
+                new ImpressionListener.NoopImpressionListener(),
+                new Metrics.NoopMetrics(),
+                NoopEventClient.create(),
+                config,
+                mock(SDKReadinessGates.class)
+        );
+
+
+        String randomKey = RandomStringUtils.random(10);
+        SplitResult result = client.getTreatmentWithConfig(randomKey, test);
+        assertThat(result.treatment(), is(equalTo(Treatments.ON)));
+        assertThat(result.config(), is(nullValue()));
+
+        verify(splitFetcher).fetch(test);
+    }
+
+    @Test
+    public void worksAndHasConfig() {
+        String test = "test1";
+
+        ParsedCondition rollOutToEveryone = ParsedCondition.createParsedConditionForTests(CombiningMatcher.of(new AllKeysMatcher()), Lists.newArrayList(partition("on", 100)));
+        List<ParsedCondition> conditions = Lists.newArrayList(rollOutToEveryone);
+
+        // Add config for only one treatment
+        Map<String, String> configurations = new HashMap<>();
+        configurations.put(Treatments.ON, "{\"size\" : 30}");
+
+        ParsedSplit parsedSplit = ParsedSplit.createParsedSplitForTests(test, 123, false, Treatments.OFF, conditions, null, 1, 1, configurations);
+
+        SplitFetcher splitFetcher = mock(SplitFetcher.class);
+        when(splitFetcher.fetch(test)).thenReturn(parsedSplit);
+
+        SplitClientImpl client = new SplitClientImpl(
+                mock(SplitFactory.class),
+                splitFetcher,
+                new ImpressionListener.NoopImpressionListener(),
+                new Metrics.NoopMetrics(),
+                NoopEventClient.create(),
+                config,
+                mock(SDKReadinessGates.class)
+        );
+
+        int numKeys = 5;
+        for (int i = 0; i < numKeys; i++) {
+            String randomKey = RandomStringUtils.random(10);
+            assertThat(client.getTreatment(randomKey, test), is(equalTo("on")));
+            assertThat(client.getTreatmentWithConfig(randomKey, test).config(), is(equalTo(configurations.get("on"))));
+        }
+
+        // Times 2 because we are calling getTreatment twice. Once for getTreatment and one for getTreatmentWithConfig
+        verify(splitFetcher, times(numKeys * 2)).fetch(test);
+    }
+
 
     @Test
     public void last_condition_is_always_default() {
@@ -176,6 +249,42 @@ public class SplitClientImplTest {
         );
 
         assertThat(client.getTreatment("pato@codigo.com", test), is(equalTo(Treatments.OFF)));
+
+        verify(splitFetcher).fetch(test);
+    }
+
+    /**
+     * Tests that we retrieve configs from the default treatment
+     */
+    @Test
+    public void last_condition_is_always_default_but_with_treatment() {
+        String test = "test1";
+
+        ParsedCondition rollOutToEveryone = ParsedCondition.createParsedConditionForTests(CombiningMatcher.of(new WhitelistMatcher(Lists.newArrayList("adil@codigo.com"))), Lists.newArrayList(partition("on", 100)));
+        List<ParsedCondition> conditions = Lists.newArrayList(rollOutToEveryone);
+
+        // Add config for only one treatment(default)
+        Map<String, String> configurations = new HashMap<>();
+        configurations.put(Treatments.OFF, "{\"size\" : 30}");
+
+        ParsedSplit parsedSplit = ParsedSplit.createParsedSplitForTests(test, 123, false, Treatments.OFF, conditions, "user", 1, 1, configurations);
+
+        SplitFetcher splitFetcher = mock(SplitFetcher.class);
+        when(splitFetcher.fetch(test)).thenReturn(parsedSplit);
+
+        SplitClientImpl client = new SplitClientImpl(
+                mock(SplitFactory.class),
+                splitFetcher,
+                new ImpressionListener.NoopImpressionListener(),
+                new Metrics.NoopMetrics(),
+                NoopEventClient.create(),
+                config,
+                mock(SDKReadinessGates.class)
+        );
+
+        SplitResult result = client.getTreatmentWithConfig("pato@codigo.com", test);
+        assertThat(result.treatment(), is(equalTo(Treatments.OFF)));
+        assertThat(result.config(), is(equalTo("{\"size\" : 30}")));
 
         verify(splitFetcher).fetch(test);
     }
@@ -234,6 +343,42 @@ public class SplitClientImplTest {
         );
 
         assertThat(client.getTreatment("adil@codigo.com", test), is(equalTo(Treatments.OFF)));
+
+        verify(splitFetcher).fetch(test);
+    }
+
+    /**
+     * when killed, the evaluator follows a slightly different path. So testing that when there is a config.
+     */
+    @Test
+    public void killed_test_always_goes_to_default_has_config() {
+        String test = "test1";
+
+        ParsedCondition rollOutToEveryone = ParsedCondition.createParsedConditionForTests(CombiningMatcher.of(new WhitelistMatcher(Lists.newArrayList("adil@codigo.com"))), Lists.newArrayList(partition("on", 100)));
+        List<ParsedCondition> conditions = Lists.newArrayList(rollOutToEveryone);
+
+        // Add config for only one treatment(default)
+        Map<String, String> configurations = new HashMap<>();
+        configurations.put(Treatments.OFF, "{\"size\" : 30}");
+
+        ParsedSplit parsedSplit = ParsedSplit.createParsedSplitForTests(test, 123, true, Treatments.OFF, conditions, "user", 1, 1, configurations);
+
+        SplitFetcher splitFetcher = mock(SplitFetcher.class);
+        when(splitFetcher.fetch(test)).thenReturn(parsedSplit);
+
+        SplitClientImpl client = new SplitClientImpl(
+                mock(SplitFactory.class),
+                splitFetcher,
+                new ImpressionListener.NoopImpressionListener(),
+                new Metrics.NoopMetrics(),
+                NoopEventClient.create(),
+                config,
+                mock(SDKReadinessGates.class)
+        );
+
+        SplitResult result = client.getTreatmentWithConfig("adil@codigo.com", test);
+        assertThat(result.treatment(), is(equalTo(Treatments.OFF)));
+        assertThat(result.config(), is(equalTo("{\"size\" : 30}")));
 
         verify(splitFetcher).fetch(test);
     }

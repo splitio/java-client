@@ -8,6 +8,7 @@ import java.util.Map;
 
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.nullValue;
 import static org.junit.Assert.assertThat;
 
 /**
@@ -32,6 +33,8 @@ public class LocalhostSplitClientTest {
         assertThat(client.getTreatment("user2", "onboarding"), is(equalTo("off")));
         assertThat(client.getTreatment("user1", "test"), is(equalTo("a")));
         assertThat(client.getTreatment("user2", "test"), is(equalTo("a")));
+        assertThat(client.getTreatmentWithConfig("user2", "test").config(), is(nullValue()));
+        assertThat(client.getTreatmentWithConfig("user2", "test").treatment(), is(equalTo("a")));
     }
 
     @Test
@@ -46,6 +49,8 @@ public class LocalhostSplitClientTest {
         assertThat(client.getTreatment("user1", "onboarding"), is(equalTo("off")));
         assertThat(client.getTreatment("user2", "onboarding"), is(equalTo("off")));
         assertThat(client.getTreatment("user3", "onboarding"), is(equalTo("on")));
+        assertThat(client.getTreatmentWithConfig("user3", "onboarding").config(), is(nullValue()));
+        assertThat(client.getTreatmentWithConfig("user3", "onboarding").treatment(), is(equalTo("on")));
     }
 
     @Test

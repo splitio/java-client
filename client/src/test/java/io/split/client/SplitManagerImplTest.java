@@ -9,10 +9,13 @@ import io.split.engine.experiments.ParsedSplit;
 import io.split.engine.experiments.SplitFetcher;
 import io.split.engine.matchers.AllKeysMatcher;
 import io.split.engine.matchers.CombiningMatcher;
+import io.split.grammar.Treatments;
 import org.junit.Test;
 import org.mockito.Mockito;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.TimeoutException;
 
 import static org.hamcrest.Matchers.empty;
@@ -57,6 +60,32 @@ public class SplitManagerImplTest {
         assertThat(theOne.trafficType, is(equalTo(response.trafficTypeName())));
         assertThat(theOne.treatments.size(), is(equalTo(1)));
         assertThat(theOne.treatments.get(0), is(equalTo("off")));
+        assertThat(theOne.config.get("off"), is(nullValue()));
+    }
+
+    @Test
+    public void splitCallWithExistentSplitAndConfigs() {
+        String existent = "existent";
+        SplitFetcher splitFetcher = Mockito.mock(SplitFetcher.class);
+
+        // Add config for only one treatment(default)
+        Map<String, String> configurations = new HashMap<>();
+        configurations.put(Treatments.OFF, "{\"size\" : 30}");
+
+        ParsedSplit response = ParsedSplit.createParsedSplitForTests("FeatureName", 123, true, "off", Lists.newArrayList(getTestCondition("off")), "traffic", 456L, 1, configurations);
+        Mockito.when(splitFetcher.fetch(existent)).thenReturn(response);
+
+        SplitManagerImpl splitManager = new SplitManagerImpl(splitFetcher,
+                Mockito.mock(SplitClientConfig.class),
+                Mockito.mock(SDKReadinessGates.class));
+        SplitView theOne = splitManager.split(existent);
+        assertThat(theOne.name, is(equalTo(response.feature())));
+        assertThat(theOne.changeNumber, is(equalTo(response.changeNumber())));
+        assertThat(theOne.killed, is(equalTo(response.killed())));
+        assertThat(theOne.trafficType, is(equalTo(response.trafficTypeName())));
+        assertThat(theOne.treatments.size(), is(equalTo(1)));
+        assertThat(theOne.treatments.get(0), is(equalTo("off")));
+        assertThat(theOne.config.get("off"), is(equalTo("{\"size\" : 30}")));
     }
 
     @Test
