@@ -22,7 +22,7 @@ public class LocalhostSplitFactoryYamlSampleTest {
     @Test
     public void works() throws IOException {
 
-        String file = getClass().getClassLoader().getResource(LocalhostSplitFactory.FILENAME_YAML).getFile();
+        String file = getClass().getClassLoader().getResource(SplitClientConfig.LOCALHOST_DEFAULT_FILE).getFile();
 
         LocalhostSplitFactory factory = new LocalhostSplitFactory("", file);
         SplitClient client = factory.client();

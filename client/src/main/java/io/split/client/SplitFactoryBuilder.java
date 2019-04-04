@@ -44,7 +44,7 @@ public class SplitFactoryBuilder {
         }
 
         if (LocalhostSplitFactory.LOCALHOST.equals(apiToken)) {
-            return LocalhostSplitFactory.createLocalhostSplitFactory();
+            return LocalhostSplitFactory.createLocalhostSplitFactory(config);
         } else {
             return new SplitFactoryImpl(apiToken, config);
 
@@ -58,7 +58,7 @@ public class SplitFactoryBuilder {
      * @throws IOException if there were problems reading the override file from disk.
      */
     public static SplitFactory local() throws IOException {
-        return LocalhostSplitFactory.createLocalhostSplitFactory();
+        return LocalhostSplitFactory.createLocalhostSplitFactory(SplitClientConfig.builder().build());
     }
 
     /**

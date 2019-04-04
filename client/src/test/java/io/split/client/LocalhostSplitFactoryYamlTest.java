@@ -44,7 +44,7 @@ public class LocalhostSplitFactoryYamlTest {
 
     @Test
     public void works() throws IOException {
-        File file = folder.newFile(LocalhostSplitFactory.FILENAME_YAML);
+        File file = folder.newFile(SplitClientConfig.LOCALHOST_DEFAULT_FILE);
 
         List<Map<String, Object>> allSplits = new ArrayList();
 

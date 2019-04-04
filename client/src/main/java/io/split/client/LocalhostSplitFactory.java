@@ -20,26 +20,25 @@ public final class LocalhostSplitFactory implements SplitFactory {
     private static final Logger _log = LoggerFactory.getLogger(LocalhostSplitFactory.class);
 
     static final String FILENAME = ".split";
-    static final String FILENAME_YAML = ".split.yaml";
     static final String LOCALHOST = "localhost";
 
     private final LocalhostSplitClientAndFactory _client;
     private final LocalhostSplitManager _manager;
     private final AbstractLocalhostSplitFile _splitFile;
 
-    public static LocalhostSplitFactory createLocalhostSplitFactory() throws IOException {
+    public static LocalhostSplitFactory createLocalhostSplitFactory(SplitClientConfig config) throws IOException {
         String directory = System.getProperty("user.home");
         Preconditions.checkNotNull(directory, "Property user.home should be set when using environment: " + LOCALHOST);
-        return new LocalhostSplitFactory(directory);
+        return new LocalhostSplitFactory(directory, config.splitFile());
     }
 
     public LocalhostSplitFactory(String directory, String file) throws IOException {
 
-        _log.info("home = " + directory);
-
         if (directory == null) {
             directory = "";
         }
+
+        _log.info("home = " + directory);
 
         File yaml = new File(directory, file);
 
@@ -59,7 +58,7 @@ public final class LocalhostSplitFactory implements SplitFactory {
     }
 
     public LocalhostSplitFactory(String directory) throws IOException {
-        this(directory, FILENAME_YAML);
+        this(directory, SplitClientConfig.LOCALHOST_DEFAULT_FILE);
     }
 
     @Override
