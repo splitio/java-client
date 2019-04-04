@@ -33,9 +33,6 @@ public final class LocalhostSplitFactory implements SplitFactory {
         return new LocalhostSplitFactory(directory);
     }
 
-    /**
-     * Visible for testing
-     */
     public LocalhostSplitFactory(String directory, String file) throws IOException {
 
         _log.info("home = " + directory);
