@@ -54,11 +54,20 @@ public class SplitFactoryBuilder {
     /**
      * Instantiates a local Off-The-Grid SplitFactory
      *
-     * @return a SplitFactory
      * @throws IOException if there were problems reading the override file from disk.
      */
     public static SplitFactory local() throws IOException {
         return LocalhostSplitFactory.createLocalhostSplitFactory(SplitClientConfig.builder().build());
+    }
+
+    /**
+     * Instantiates a local Off-The-Grid SplitFactory
+     *
+     * @return config Split config file
+     * @throws IOException if there were problems reading the override file from disk.
+     */
+    public static SplitFactory local(SplitClientConfig config) throws IOException {
+        return LocalhostSplitFactory.createLocalhostSplitFactory(config);
     }
 
     /**

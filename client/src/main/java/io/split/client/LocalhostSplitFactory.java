@@ -1,6 +1,5 @@
 package io.split.client;
 
-import com.google.common.base.Preconditions;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -14,7 +13,11 @@ import java.util.Map;
  * any other split to be 100% off for all users. This implementation
  * is useful for using Split in localhost environment.
  *
- * @author adil
+ * The startup order is as follows:
+ * 1. Split will look for $user.home/.split file if it exists (for backward compatibility with older versions)
+ * 2. Split will use config.splitFile (full path)
+ * 3. If full path is not specified, then $user.home/config.splitFile
+ *
  */
 public final class LocalhostSplitFactory implements SplitFactory {
     private static final Logger _log = LoggerFactory.getLogger(LocalhostSplitFactory.class);
@@ -28,25 +31,25 @@ public final class LocalhostSplitFactory implements SplitFactory {
 
     public static LocalhostSplitFactory createLocalhostSplitFactory(SplitClientConfig config) throws IOException {
         String directory = System.getProperty("user.home");
-        Preconditions.checkNotNull(directory, "Property user.home should be set when using environment: " + LOCALHOST);
         return new LocalhostSplitFactory(directory, config.splitFile());
     }
 
     public LocalhostSplitFactory(String directory, String file) throws IOException {
 
-        if (directory == null) {
+        if (directory == null || file.contains("/")) {
             directory = "";
         }
 
-        _log.info("home = " + directory);
-
-        File yaml = new File(directory, file);
-
-        if (yaml.exists()) {
-            _splitFile = new YamlLocalhostSplitFile(this, directory, file);
-        } else {
+        File legacyFile = new File(directory, ".split");
+        if (legacyFile.exists()) {
             _splitFile = new LegacyLocalhostSplitFile(this, directory, FILENAME);
+            _log.warn("(Deprecated) Starting Split in localhost mode using legacy file located at " + _splitFile._file.getAbsolutePath()
+                    + "\nPlease delete this file or split.yaml location will be ignored");
+        } else {
+            _splitFile = new YamlLocalhostSplitFile(this, directory, file);
+            _log.info("Starting Split in localhost mode with file at " + _splitFile._file.getAbsolutePath());
         }
+
 
         Map<SplitAndKey, LocalhostSplit> splitAndKeyToTreatment = _splitFile.readOnSplits();
         _client = new LocalhostSplitClientAndFactory(this, new LocalhostSplitClient(splitAndKeyToTreatment));
