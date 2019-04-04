@@ -14,7 +14,7 @@ import org.junit.runner.RunWith;
 /**
  * SplitTestAnnotationTest
  * Demonstration & Test file for the use of SplitTests with the SplitTestRunner
- * SplitTestRunner is a JUnitTestRunner which executes annotated tests to achieve a variety of Split config
+ * SplitTestRunner is a JUnitTestRunner which executes annotated tests to achieve a variety of Split configurations
  */
 @RunWith(SplitTestRunner.class)
 public class SplitTestAnnotationTest {
