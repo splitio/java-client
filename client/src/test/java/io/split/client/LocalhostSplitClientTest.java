@@ -20,10 +20,10 @@ public class LocalhostSplitClientTest {
 
     @Test
     public void defaultsWork() {
-        Map<SplitAndKey, String> map = Maps.newHashMap();
-        map.put(SplitAndKey.of("onboarding"), "on");
-        map.put(SplitAndKey.of("test"), "a");
-        map.put(SplitAndKey.of("onboarding"), "off"); // overwrite
+        Map<SplitAndKey, LocalhostSplit> map = Maps.newHashMap();
+        map.put(SplitAndKey.of("onboarding"), LocalhostSplit.of("on"));
+        map.put(SplitAndKey.of("test"), LocalhostSplit.of("a"));
+        map.put(SplitAndKey.of("onboarding"), LocalhostSplit.of("off")); // overwrite
 
         LocalhostSplitClient client = new LocalhostSplitClient(map);
 
@@ -39,10 +39,10 @@ public class LocalhostSplitClientTest {
 
     @Test
     public void overrides_work() {
-        Map<SplitAndKey, String> map = Maps.newHashMap();
-        map.put(SplitAndKey.of("onboarding"), "on");
-        map.put(SplitAndKey.of("onboarding", "user1"), "off");
-        map.put(SplitAndKey.of("onboarding", "user2"), "off");
+        Map<SplitAndKey, LocalhostSplit> map = Maps.newHashMap();
+        map.put(SplitAndKey.of("onboarding"), LocalhostSplit.of("on"));
+        map.put(SplitAndKey.of("onboarding", "user1"), LocalhostSplit.of("off"));
+        map.put(SplitAndKey.of("onboarding", "user2"), LocalhostSplit.of("off"));
 
         LocalhostSplitClient client = new LocalhostSplitClient(map);
 
@@ -55,9 +55,9 @@ public class LocalhostSplitClientTest {
 
     @Test
     public void if_only_overrides_exist() {
-        Map<SplitAndKey, String> map = Maps.newHashMap();
-        map.put(SplitAndKey.of("onboarding", "user1"), "off");
-        map.put(SplitAndKey.of("onboarding", "user2"), "off");
+        Map<SplitAndKey, LocalhostSplit> map = Maps.newHashMap();
+        map.put(SplitAndKey.of("onboarding", "user1"), LocalhostSplit.of("off"));
+        map.put(SplitAndKey.of("onboarding", "user2"), LocalhostSplit.of("off"));
 
         LocalhostSplitClient client = new LocalhostSplitClient(map);
 
@@ -68,10 +68,10 @@ public class LocalhostSplitClientTest {
 
     @Test
     public void attributes_work() {
-        Map<SplitAndKey, String> map = Maps.newHashMap();
-        map.put(SplitAndKey.of("onboarding"), "on");
-        map.put(SplitAndKey.of("onboarding", "user1"), "off");
-        map.put(SplitAndKey.of("onboarding", "user2"), "off");
+        Map<SplitAndKey, LocalhostSplit> map = Maps.newHashMap();
+        map.put(SplitAndKey.of("onboarding"), LocalhostSplit.of("on"));
+        map.put(SplitAndKey.of("onboarding", "user1"), LocalhostSplit.of("off"));
+        map.put(SplitAndKey.of("onboarding", "user2"), LocalhostSplit.of("off"));
 
         LocalhostSplitClient client = new LocalhostSplitClient(map);
 
@@ -85,10 +85,10 @@ public class LocalhostSplitClientTest {
 
     @Test
     public void update_works() {
-        Map<SplitAndKey, String> map = Maps.newHashMap();
-        map.put(SplitAndKey.of("onboarding"), "on");
-        map.put(SplitAndKey.of("onboarding", "user1"), "off");
-        map.put(SplitAndKey.of("onboarding", "user2"), "off");
+        Map<SplitAndKey, LocalhostSplit> map = Maps.newHashMap();
+        map.put(SplitAndKey.of("onboarding"), LocalhostSplit.of("on"));
+        map.put(SplitAndKey.of("onboarding", "user1"), LocalhostSplit.of("off"));
+        map.put(SplitAndKey.of("onboarding", "user2"), LocalhostSplit.of("off"));
 
         LocalhostSplitClient client = new LocalhostSplitClient(map);
 
@@ -97,8 +97,8 @@ public class LocalhostSplitClientTest {
         assertThat(client.getTreatment("user3", "onboarding"), is(equalTo("on")));
 
         map.clear();
-        map.put(SplitAndKey.of("onboarding"), "on");
-        map.put(SplitAndKey.of("onboarding", "user1"), "off");
+        map.put(SplitAndKey.of("onboarding"), LocalhostSplit.of("on"));
+        map.put(SplitAndKey.of("onboarding", "user1"), LocalhostSplit.of("off"));
 
         client.updateFeatureToTreatmentMap(map);
 

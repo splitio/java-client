@@ -1,15 +1,11 @@
 package io.split.client;
 
 import com.google.common.base.Preconditions;
-import com.google.common.collect.Maps;
 import com.sun.nio.file.SensitivityWatchEventModifier;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileReader;
 import java.io.IOException;
 import java.nio.file.FileSystems;
 import java.nio.file.Path;
@@ -21,15 +17,15 @@ import java.util.Map;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-public class LocalhostSplitFile extends Thread {
-    private static final Logger _log = LoggerFactory.getLogger(LocalhostSplitFile.class);
+public abstract class AbstractLocalhostSplitFile extends Thread {
+    private static final Logger _log = LoggerFactory.getLogger(AbstractLocalhostSplitFile.class);
 
-    private final LocalhostSplitFactory _splitFactory;
-    private final File _file;
-    private final WatchService _watcher;
-    private final AtomicBoolean _stop;
+    protected final LocalhostSplitFactory _splitFactory;
+    protected final File _file;
+    protected final WatchService _watcher;
+    protected final AtomicBoolean _stop;
 
-    public LocalhostSplitFile(LocalhostSplitFactory splitFactory, String directory, String fileName) throws IOException {
+    public AbstractLocalhostSplitFile(LocalhostSplitFactory splitFactory, String directory, String fileName) throws IOException {
         Preconditions.checkNotNull(directory);
         Preconditions.checkNotNull(fileName);
 
@@ -78,9 +74,9 @@ public class LocalhostSplitFile extends Thread {
                     if (kind == StandardWatchEventKinds.OVERFLOW) {
                         Thread.yield();
                         continue;
-                    } else if (kind == java.nio.file.StandardWatchEventKinds.ENTRY_MODIFY
+                    } else if (kind == StandardWatchEventKinds.ENTRY_MODIFY
                             && filename.toString().equals(_file.getName())) {
-                        Map<SplitAndKey, String> featureToSplitMap = readOnSplits();
+                        Map<SplitAndKey, LocalhostSplit> featureToSplitMap = readOnSplits();
                         _splitFactory.updateFeatureToTreatmentMap(featureToSplitMap);
                         _log.info("Detected change in Local Splits file - Splits Reloaded! file={}", _file.getPath());
                     }
@@ -97,40 +93,6 @@ public class LocalhostSplitFile extends Thread {
         }
     }
 
-    public Map<SplitAndKey, String> readOnSplits() throws IOException {
-        Map<SplitAndKey, String> onSplits = Maps.newHashMap();
+    public abstract Map<SplitAndKey, LocalhostSplit> readOnSplits() throws IOException;
 
-        try (BufferedReader reader = new BufferedReader(new FileReader(_file))) {
-            for (String line = reader.readLine(); line != null; line = reader.readLine()) {
-                line = line.trim();
-                if (line.isEmpty() || line.startsWith("#")) {
-                    continue;
-                }
-
-                String[] feature_treatment = line.split("\\s+");
-
-                if (feature_treatment.length < 2 || feature_treatment.length > 3) {
-                    _log.info("Ignoring line since it does not have 2 or 3 columns: " + line);
-                    continue;
-                }
-
-                SplitAndKey splitAndKey = null;
-                if (feature_treatment.length == 2) {
-                    splitAndKey = SplitAndKey.of(feature_treatment[0]);
-                } else {
-                    splitAndKey = SplitAndKey.of(feature_treatment[0], feature_treatment[2]);
-                }
-
-                onSplits.put(splitAndKey, feature_treatment[1]);
-            }
-        } catch (FileNotFoundException e) {
-            _log.warn("There was no file named " + _file.getPath() + " found. " +
-                    "We created a split client that returns default treatments for all features for all of your users. " +
-                    "If you wish to return a specific treatment for a feature, enter the name of that feature name and " +
-                    "treatment name separated by whitespace in " + _file.getPath() +
-                    "; one pair per line. Empty lines or lines starting with '#' are considered comments", e);
-        }
-
-        return onSplits;
-    }
 }

@@ -62,7 +62,7 @@ public final class LocalhostSplitClientAndFactory implements SplitClient {
         return _splitClient.getTreatmentWithConfig(key, split, attributes);
     }
 
-    public void updateFeatureToTreatmentMap(Map<SplitAndKey, String> map) {
+    public void updateFeatureToTreatmentMap(Map<SplitAndKey, LocalhostSplit> map) {
         if (map  == null) {
             _log.warn("A null map was passed as an update. Ignoring this update.");
             return;

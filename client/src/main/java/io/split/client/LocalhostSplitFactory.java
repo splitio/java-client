@@ -4,6 +4,7 @@ import com.google.common.base.Preconditions;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.Map;
 
@@ -19,11 +20,12 @@ public final class LocalhostSplitFactory implements SplitFactory {
     private static final Logger _log = LoggerFactory.getLogger(LocalhostSplitFactory.class);
 
     static final String FILENAME = ".split";
+    static final String FILENAME_YAML = ".split.yaml";
     static final String LOCALHOST = "localhost";
 
     private final LocalhostSplitClientAndFactory _client;
     private final LocalhostSplitManager _manager;
-    private final LocalhostSplitFile _splitFile;
+    private final AbstractLocalhostSplitFile _splitFile;
 
     public static LocalhostSplitFactory createLocalhostSplitFactory() throws IOException {
         String directory = System.getProperty("user.home");
@@ -31,20 +33,37 @@ public final class LocalhostSplitFactory implements SplitFactory {
         return new LocalhostSplitFactory(directory);
     }
 
-    public LocalhostSplitFactory(String directory) throws IOException {
-        Preconditions.checkNotNull(directory, "directory must not be null");
+    /**
+     * Visible for testing
+     */
+    public LocalhostSplitFactory(String directory, String file) throws IOException {
+        //Preconditions.checkNotNull(directory, "directory must not be null");
 
         _log.info("home = " + directory);
 
-        _splitFile = new LocalhostSplitFile(this, directory, FILENAME);
+        File yaml = null;
+        if (directory == null) {
+            directory = "";
+        }
+        yaml = new File(directory, file);
 
-        Map<SplitAndKey, String> splitAndKeyToTreatment = _splitFile.readOnSplits();
+        if (yaml.exists()) {
+            _splitFile = new YamlLocalhostSplitFile(this, directory, file);
+        } else {
+            _splitFile = new LegacyLocalhostSplitFile(this, directory, FILENAME);
+        }
+
+        Map<SplitAndKey, LocalhostSplit> splitAndKeyToTreatment = _splitFile.readOnSplits();
         _client = new LocalhostSplitClientAndFactory(this, new LocalhostSplitClient(splitAndKeyToTreatment));
         _manager = LocalhostSplitManager.of(splitAndKeyToTreatment);
 
         _splitFile.registerWatcher();
         _splitFile.setDaemon(true);
         _splitFile.start();
+    }
+
+    public LocalhostSplitFactory(String directory) throws IOException {
+        this(directory, FILENAME_YAML);
     }
 
     @Override
@@ -67,7 +86,7 @@ public final class LocalhostSplitFactory implements SplitFactory {
         return _splitFile.isStopped();
     }
 
-    public void updateFeatureToTreatmentMap(Map<SplitAndKey, String> featureToTreatmentMap) {
+    public void updateFeatureToTreatmentMap(Map<SplitAndKey, LocalhostSplit> featureToTreatmentMap) {
         _client.updateFeatureToTreatmentMap(featureToTreatmentMap);
         _manager.updateFeatureToTreatmentMap(featureToTreatmentMap);
     }

@@ -30,11 +30,11 @@ public class LocalhostSplitFactoryTest {
     public void works() throws IOException {
         File file = folder.newFile(LocalhostSplitFactory.FILENAME);
 
-        Map<SplitAndKey, String> map = Maps.newHashMap();
-        map.put(SplitAndKey.of("onboarding"), "on");
-        map.put(SplitAndKey.of("onboarding", "user1"), "off");
-        map.put(SplitAndKey.of("onboarding", "user2"), "off");
-        map.put(SplitAndKey.of("test"), "a");
+        Map<SplitAndKey, LocalhostSplit> map = Maps.newHashMap();
+        map.put(SplitAndKey.of("onboarding"), LocalhostSplit.of("on"));
+        map.put(SplitAndKey.of("onboarding", "user1"), LocalhostSplit.of("off"));
+        map.put(SplitAndKey.of("onboarding", "user2"), LocalhostSplit.of("off"));
+        map.put(SplitAndKey.of("test"), LocalhostSplit.of("a"));
 
         writeFile(file, map);
 
@@ -52,7 +52,7 @@ public class LocalhostSplitFactoryTest {
         // now update it.
         map.clear();
 
-        map.put(SplitAndKey.of("onboarding"), "on");
+        map.put(SplitAndKey.of("onboarding"), LocalhostSplit.of("on"));
 
         factory.updateFeatureToTreatmentMap(map);
 
@@ -62,10 +62,10 @@ public class LocalhostSplitFactoryTest {
         assertThat(client.getTreatment("user1", "test"), is(equalTo(Treatments.CONTROL)));
     }
 
-    private void writeFile(File f, Map<SplitAndKey, String> map) throws IOException {
+    private void writeFile(File f, Map<SplitAndKey, LocalhostSplit> map) throws IOException {
         BufferedWriter writer = new BufferedWriter(new FileWriter(f));
 
-        for (Map.Entry<SplitAndKey, String> entry : map.entrySet()) {
+        for (Map.Entry<SplitAndKey, LocalhostSplit> entry : map.entrySet()) {
             String line = toString(entry);
             writer.write(line);
         }
@@ -74,11 +74,11 @@ public class LocalhostSplitFactoryTest {
         writer.close();
     }
 
-    private String toString(Map.Entry<SplitAndKey, String> entry) {
+    private String toString(Map.Entry<SplitAndKey, LocalhostSplit> entry) {
         StringBuilder bldr = new StringBuilder();
         bldr.append(entry.getKey().split());
         bldr.append(' ');
-        bldr.append(entry.getValue());
+        bldr.append(entry.getValue().treatment);
         if (entry.getKey().key() != null) {
             bldr.append(' ');
             bldr.append(entry.getKey().key());
