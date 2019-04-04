@@ -1,11 +1,11 @@
 - split_1:
-  key: user_b
-  treatment: 'off'
-  config: { "size" : 20 }
+   key: user_b
+   treatment: 'off'
+   config: '{ "size" : 20 }'
 - split_1:
-  key: user_b
-  treatment: 'on'
+   key: user_a
+   treatment: 'on'
 - split_2:
-  key: user_b
-  treatment: 'off'
-  config: { "size" : 20 }
+   key: user_b
+   treatment: 'off'
+   config: '{ "size" : 44 }'

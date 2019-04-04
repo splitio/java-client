@@ -37,15 +37,14 @@ public final class LocalhostSplitFactory implements SplitFactory {
      * Visible for testing
      */
     public LocalhostSplitFactory(String directory, String file) throws IOException {
-        //Preconditions.checkNotNull(directory, "directory must not be null");
 
         _log.info("home = " + directory);
 
-        File yaml = null;
         if (directory == null) {
             directory = "";
         }
-        yaml = new File(directory, file);
+
+        File yaml = new File(directory, file);
 
         if (yaml.exists()) {
             _splitFile = new YamlLocalhostSplitFile(this, directory, file);

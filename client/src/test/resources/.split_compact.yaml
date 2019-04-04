@@ -1,0 +1,3 @@
+- split_1: {key: user_c, treatment: 'off', config: '{ "size" : 10 }'}
+- split_1: {key: user_d, treatment: 'on'}
+- split_2: {key: user_e, treatment: 'off', config: '{ "size" : 55 }'}
