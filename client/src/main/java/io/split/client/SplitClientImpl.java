@@ -430,7 +430,7 @@ public final class SplitClientImpl implements SplitClient {
         }
 
         public TreatmentLabelAndChangeNumber(String treatment, String label, Long changeNumber) {
-            this(treatment, label, null, null);
+            this(treatment, label, changeNumber, null);
         }
 
         public TreatmentLabelAndChangeNumber(String treatment, String label, Long changeNumber, String configurations) {
