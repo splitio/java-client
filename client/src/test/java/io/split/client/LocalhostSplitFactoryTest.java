@@ -38,7 +38,7 @@ public class LocalhostSplitFactoryTest {
 
         writeFile(file, map);
 
-        LocalhostSplitFactory factory = new LocalhostSplitFactory(folder.getRoot().getAbsolutePath());
+        LocalhostSplitFactory factory = new LocalhostSplitFactory(folder.getRoot().getAbsolutePath(), LocalhostSplitFactory.FILENAME);
         SplitClient client = factory.client();
 
         assertThat(client.getTreatment(null, "foo"), is(equalTo(Treatments.CONTROL)));

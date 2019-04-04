@@ -236,7 +236,7 @@ public class SplitClientConfig {
         private long _eventFlushIntervalInMillis = 30 * 1000;
         private int _maxStringLength = 250;
         private boolean _destroyOnShutDown = true;
-        private String _splitFile = LOCALHOST_DEFAULT_FILE;
+        private String _splitFile = null;
 
         public Builder() {
         }
@@ -539,7 +539,7 @@ public class SplitClientConfig {
         }
 
         /**
-         * Set the location of the file for localhost mode defaulting to .split.yaml first and if not found to .split(legacy format and deprecated)
+         * Set the location of the new yaml file for localhost mode defaulting to .split (legacy and deprecated format)
          * This setting is optional.
          *
          * @param splitFile location

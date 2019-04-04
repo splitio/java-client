@@ -3,7 +3,6 @@ package io.split.client;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.File;
 import java.io.IOException;
 import java.util.Map;
 
@@ -14,9 +13,8 @@ import java.util.Map;
  * is useful for using Split in localhost environment.
  *
  * The startup order is as follows:
- * 1. Split will look for $user.home/.split file if it exists (for backward compatibility with older versions)
- * 2. Split will use config.splitFile (full path)
- * 3. If full path is not specified, then $user.home/config.splitFile
+ *  - Split will use config.splitFile (full path) if set and will look for a yaml (new) format.
+ *  - otherwise Split will look for $user.home/.split file if it exists (for backward compatibility with older versions)
  *
  */
 public final class LocalhostSplitFactory implements SplitFactory {
@@ -36,20 +34,14 @@ public final class LocalhostSplitFactory implements SplitFactory {
 
     public LocalhostSplitFactory(String directory, String file) throws IOException {
 
-        if (directory == null || file.contains("/")) {
-            directory = "";
-        }
-
-        File legacyFile = new File(directory, ".split");
-        if (legacyFile.exists()) {
+        if (file != null && !file.isEmpty() && (file.endsWith(".yaml") || file.endsWith(".yml"))) {
+            _splitFile = new YamlLocalhostSplitFile(this, "", file);
+            _log.info("Starting Split in localhost mode with file at " + _splitFile._file.getAbsolutePath());
+        } else {
             _splitFile = new LegacyLocalhostSplitFile(this, directory, FILENAME);
             _log.warn("(Deprecated) Starting Split in localhost mode using legacy file located at " + _splitFile._file.getAbsolutePath()
                     + "\nPlease delete this file or split.yaml location will be ignored");
-        } else {
-            _splitFile = new YamlLocalhostSplitFile(this, directory, file);
-            _log.info("Starting Split in localhost mode with file at " + _splitFile._file.getAbsolutePath());
         }
-
 
         Map<SplitAndKey, LocalhostSplit> splitAndKeyToTreatment = _splitFile.readOnSplits();
         _client = new LocalhostSplitClientAndFactory(this, new LocalhostSplitClient(splitAndKeyToTreatment));
@@ -58,10 +50,6 @@ public final class LocalhostSplitFactory implements SplitFactory {
         _splitFile.registerWatcher();
         _splitFile.setDaemon(true);
         _splitFile.start();
-    }
-
-    public LocalhostSplitFactory(String directory) throws IOException {
-        this(directory, SplitClientConfig.LOCALHOST_DEFAULT_FILE);
     }
 
     @Override

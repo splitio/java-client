@@ -84,7 +84,7 @@ public class LocalhostSplitFactoryYamlTest {
 
         writeFile(file, writer);
 
-        LocalhostSplitFactory factory = new LocalhostSplitFactory(folder.getRoot().getAbsolutePath());
+        LocalhostSplitFactory factory = new LocalhostSplitFactory("", file.getAbsolutePath());
         SplitClient client = factory.client();
 
         assertThat(client.getTreatment(null, "foo"), is(equalTo(Treatments.CONTROL)));
