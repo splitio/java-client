@@ -14,5 +14,5 @@ public class SplitView {
     public boolean killed;
     public List<String> treatments;
     public long changeNumber;
-    public Map<String, String> config;
+    public Map<String, String> configs;
 }

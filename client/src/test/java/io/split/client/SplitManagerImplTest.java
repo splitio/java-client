@@ -60,7 +60,7 @@ public class SplitManagerImplTest {
         assertThat(theOne.trafficType, is(equalTo(response.trafficTypeName())));
         assertThat(theOne.treatments.size(), is(equalTo(1)));
         assertThat(theOne.treatments.get(0), is(equalTo("off")));
-        assertThat(theOne.config.size(), is(0));
+        assertThat(theOne.configs.size(), is(0));
     }
 
     @Test
@@ -85,7 +85,7 @@ public class SplitManagerImplTest {
         assertThat(theOne.trafficType, is(equalTo(response.trafficTypeName())));
         assertThat(theOne.treatments.size(), is(equalTo(1)));
         assertThat(theOne.treatments.get(0), is(equalTo("off")));
-        assertThat(theOne.config.get("off"), is(equalTo("{\"size\" : 30}")));
+        assertThat(theOne.configs.get("off"), is(equalTo("{\"size\" : 30}")));
     }
 
     @Test

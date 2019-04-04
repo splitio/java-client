@@ -104,7 +104,8 @@ public interface SplitClient {
      *
      * @param key         a unique key of your customer (e.g. user_id, user_email, account_id, etc.) MUST not be null.
      * @param split    the feature we want to evaluate. MUST NOT be null.
-     * @return the evaluated treatment, the default treatment of this feature, or 'control'.
+     * @return SplitResult containing the evaluated treatment (the default treatment of this feature, or 'control') and
+     *         a configuration associated to this treatment if set.
      */
     SplitResult getTreatmentWithConfig(String key, String split);
 
@@ -120,7 +121,8 @@ public interface SplitClient {
      * @param key         a unique key of your customer (e.g. user_id, user_email, account_id, etc.) MUST not be null.
      * @param split    the feature we want to evaluate. MUST NOT be null.
      * @param attributes of the customer (user, account etc.) to use in evaluation. Can be null or empty.
-     * @return the evaluated treatment, the default treatment of this feature, or 'control'.
+     * @return SplitResult containing the evaluated treatment (the default treatment of this feature, or 'control') and
+     *         a configuration associated to this treatment if set.
      */
     SplitResult getTreatmentWithConfig(String key, String split, Map<String, Object> attributes);
 
@@ -132,7 +134,8 @@ public interface SplitClient {
      * @param split the feature we want to evaluate. MUST NOT be null.
      * @param attributes of the entity (user, account etc.) to use in evaluation. Can be null or empty.
      *
-     * @return the evaluated treatment, the default treatment of this feature, or 'control'.
+     * @return SplitResult containing the evaluated treatment (the default treatment of this feature, or 'control') and
+     *         a configuration associated to this treatment if set.
      */
     SplitResult getTreatmentWithConfig(Key key, String split, Map<String, Object> attributes);
 

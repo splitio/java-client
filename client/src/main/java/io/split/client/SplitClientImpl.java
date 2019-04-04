@@ -34,6 +34,9 @@ public final class SplitClientImpl implements SplitClient {
 
     private static final Logger _log = LoggerFactory.getLogger(SplitClientImpl.class);
 
+    private static final String GET_TREATMENT_LABEL = "sdk.getTreatment";
+    private static final String GET_TREATMENT_CONFIG_LABEL = "sdk.getTreatmentWithConfig";
+
     private static final String NOT_IN_SPLIT = "not in split";
     private static final String DEFAULT_RULE = "default rule";
     private static final String DEFINITION_NOT_FOUND = "definition not found";
@@ -109,14 +112,18 @@ public final class SplitClientImpl implements SplitClient {
         return getTreatment(key.matchingKey(), key.bucketingKey(), split, attributes);
     }
 
+    private String getTreatment(String matchingKey, String bucketingKey, String split, Map<String, Object> attributes) {
+        return getTreatmentWithConfigInternal(GET_TREATMENT_LABEL, matchingKey, bucketingKey, split, attributes).treatment();
+    }
+
     @Override
     public SplitResult getTreatmentWithConfig(String key, String split) {
-        return getTreatmentWithConfigInternal(key, null, split, Collections.<String, Object>emptyMap());
+        return getTreatmentWithConfigInternal(GET_TREATMENT_LABEL, key, null, split, Collections.<String, Object>emptyMap());
     }
 
     @Override
     public SplitResult getTreatmentWithConfig(String key, String split, Map<String, Object> attributes) {
-        return getTreatmentWithConfigInternal(key, null, split, attributes);
+        return getTreatmentWithConfigInternal(GET_TREATMENT_LABEL, key, null, split, attributes);
     }
 
     @Override
@@ -137,14 +144,10 @@ public final class SplitClientImpl implements SplitClient {
             return SPLIT_RESULT_CONTROL;
         }
 
-        return getTreatmentWithConfigInternal(key.matchingKey(), key.bucketingKey(), split, attributes);
+        return getTreatmentWithConfigInternal(GET_TREATMENT_LABEL, key.matchingKey(), key.bucketingKey(), split, attributes);
     }
 
-    private String getTreatment(String matchingKey, String bucketingKey, String split, Map<String, Object> attributes) {
-        return getTreatmentWithConfigInternal(matchingKey, bucketingKey, split, attributes).treatment();
-    }
-
-    private SplitResult getTreatmentWithConfigInternal(String matchingKey, String bucketingKey, String split, Map<String, Object> attributes) {
+    private SplitResult getTreatmentWithConfigInternal(String label, String matchingKey, String bucketingKey, String split, Map<String, Object> attributes) {
         try {
             if (_container.isDestroyed()) {
                 _log.error("Client has already been destroyed - no calls possible");
@@ -152,39 +155,39 @@ public final class SplitClientImpl implements SplitClient {
             }
 
             if (matchingKey == null) {
-                _log.error("getTreatment: you passed a null matchingKey, the matchingKey must be a non-empty string");
+                _log.error("getTreatmentWithConfig: you passed a null matchingKey, the matchingKey must be a non-empty string");
                 return SPLIT_RESULT_CONTROL;
             }
             if (matchingKey.length() > _config.maxStringLength()) {
-                _log.error("getTreatment: matchingKey too long - must be " + _config.maxStringLength() + " characters or less");
+                _log.error("getTreatmentWithConfig: matchingKey too long - must be " + _config.maxStringLength() + " characters or less");
                 return SPLIT_RESULT_CONTROL;
             }
             if (matchingKey.isEmpty()) {
-                _log.error("getTreatment: you passed an empty string, matchingKey must be a non-empty string");
+                _log.error("getTreatmentWithConfig: you passed an empty string, matchingKey must be a non-empty string");
                 return SPLIT_RESULT_CONTROL;
             }
             if (bucketingKey != null && bucketingKey.isEmpty()) {
-                _log.error("getTreatment: you passed an empty string, bucketingKey must be a non-empty string");
+                _log.error("getTreatmentWithConfig: you passed an empty string, bucketingKey must be a non-empty string");
                 return SPLIT_RESULT_CONTROL;
             }
             if (bucketingKey != null && bucketingKey.length() > _config.maxStringLength()) {
-                _log.error("getTreatment: bucketingKey too long - must be " + _config.maxStringLength() + " characters or less");
+                _log.error("getTreatmentWithConfig: bucketingKey too long - must be " + _config.maxStringLength() + " characters or less");
                 return SPLIT_RESULT_CONTROL;
             }
 
             if (split == null) {
-                _log.error("getTreatment: you passed a null split name, split name must be a non-empty string");
+                _log.error("getTreatmentWithConfig: you passed a null split name, split name must be a non-empty string");
                 return SPLIT_RESULT_CONTROL;
             }
 
             if (split.isEmpty()) {
-                _log.error("getTreatment: you passed an empty split name, split name must be a non-empty string");
+                _log.error("getTreatmentWithConfig: you passed an empty split name, split name must be a non-empty string");
                 return SPLIT_RESULT_CONTROL;
             }
 
             String trimmed = split.trim();
             if (!trimmed.equals(split)) {
-                _log.warn("getTreatment: split name \"" + split + "\" has extra whitespace, trimming");
+                _log.warn("getTreatmentWithConfig: split name \"" + split + "\" has extra whitespace, trimming");
                 split = trimmed;
             }
 
@@ -198,7 +201,7 @@ public final class SplitClientImpl implements SplitClient {
                     split,
                     start,
                     result._treatment,
-                    "sdk.getTreatment",
+                    label,
                     _config.labelsEnabled() ? result._label : null,
                     result._changeNumber,
                     attributes
