@@ -1,6 +1,7 @@
 CHANGES
 3.1.0
 - Add Dynamic Configurations
+- Support Yaml files for localhost mode
 
 3.0.9
 - Validate split names on getTreatment and manager calls
