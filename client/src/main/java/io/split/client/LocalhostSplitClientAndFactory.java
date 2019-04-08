@@ -1,6 +1,7 @@
 package io.split.client;
 
 import io.split.client.api.Key;
+import io.split.client.api.SplitResult;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -46,7 +47,22 @@ public final class LocalhostSplitClientAndFactory implements SplitClient {
         return _splitClient.getTreatment(key.matchingKey(), split, attributes);
     }
 
-    public void updateFeatureToTreatmentMap(Map<SplitAndKey, String> map) {
+    @Override
+    public SplitResult getTreatmentWithConfig(String key, String split) {
+        return _splitClient.getTreatmentWithConfig(key, split);
+    }
+
+    @Override
+    public SplitResult getTreatmentWithConfig(String key, String split, Map<String, Object> attributes) {
+        return _splitClient.getTreatmentWithConfig(key, split, attributes);
+    }
+
+    @Override
+    public SplitResult getTreatmentWithConfig(Key key, String split, Map<String, Object> attributes) {
+        return _splitClient.getTreatmentWithConfig(key, split, attributes);
+    }
+
+    public void updateFeatureToTreatmentMap(Map<SplitAndKey, LocalhostSplit> map) {
         if (map  == null) {
             _log.warn("A null map was passed as an update. Ignoring this update.");
             return;

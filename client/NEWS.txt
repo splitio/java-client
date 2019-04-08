@@ -1,4 +1,8 @@
 NEWS
+3.1.0
+- Add getTreatmentWithConfig to Split client API to retrieve meta information associated to each treatment
+-  Localhost mode now support yaml and is the preferred file format. Default location of $user.home/.split file stills works but will be deprecated
+
 3.0.9
 - Validate split names on getTreatment and manager calls
 - Validate traffic type name when calling track.

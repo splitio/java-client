@@ -14,6 +14,8 @@ import java.util.Properties;
  */
 public class SplitClientConfig {
 
+    public static final String LOCALHOST_DEFAULT_FILE = "split.yaml";
+
     private final String _endpoint;
     private final String _eventsEndpoint;
 
@@ -35,6 +37,7 @@ public class SplitClientConfig {
     private final long _eventFlushIntervalInMillis;
     private final int _maxStringLength;
     private final boolean _destroyOnShutDown;
+    private final String _splitFile;
 
     // Proxy configs
     private final HttpHost _proxy;
@@ -71,7 +74,8 @@ public class SplitClientConfig {
                               int eventsQueueSize,
                               long eventFlushIntervalInMillis,
                               int maxStringLength,
-                              boolean destroyOnShutDown) {
+                              boolean destroyOnShutDown,
+                              String splitFile) {
         _endpoint = endpoint;
         _eventsEndpoint = eventsEndpoint;
         _featuresRefreshRate = pollForFeatureChangesEveryNSeconds;
@@ -95,6 +99,7 @@ public class SplitClientConfig {
         _eventFlushIntervalInMillis = eventFlushIntervalInMillis;
         _maxStringLength = maxStringLength;
         _destroyOnShutDown = destroyOnShutDown;
+        _splitFile = splitFile;
 
         Properties props = new Properties();
         try {
@@ -199,6 +204,10 @@ public class SplitClientConfig {
         return _destroyOnShutDown;
     }
 
+    public String splitFile() {
+        return _splitFile;
+    }
+
     public static final class Builder {
 
         private String _endpoint = "https://sdk.split.io";
@@ -227,6 +236,7 @@ public class SplitClientConfig {
         private long _eventFlushIntervalInMillis = 30 * 1000;
         private int _maxStringLength = 250;
         private boolean _destroyOnShutDown = true;
+        private String _splitFile = null;
 
         public Builder() {
         }
@@ -528,6 +538,18 @@ public class SplitClientConfig {
             return null;
         }
 
+        /**
+         * Set the location of the new yaml file for localhost mode defaulting to .split (legacy and deprecated format)
+         * This setting is optional.
+         *
+         * @param splitFile location
+         * @return this builder
+         */
+        public Builder splitFile(String splitFile) {
+            _splitFile = splitFile;
+            return this;
+        }
+
 
         public SplitClientConfig build() {
             if (_featuresRefreshRate < 5 ) {
@@ -604,7 +626,8 @@ public class SplitClientConfig {
                     _eventsQueueSize,
                     _eventFlushIntervalInMillis,
                     _maxStringLength,
-                    _destroyOnShutDown);
+                    _destroyOnShutDown,
+                    _splitFile);
         }
 
     }

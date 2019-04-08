@@ -1,0 +1,7 @@
+dist: precise
+
+jdk:
+  - oraclejdk7
+
+script:
+  - mvn -Dhttps.protocols=TLSv1.2 clean install

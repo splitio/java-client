@@ -1,0 +1,18 @@
+- split_1:
+   keys: user_b
+   treatment: 'off'
+   config: '{ "size" : 20 }'
+- split_1:
+   keys: [user_a]
+   treatment: 'on'
+- split_2:
+   keys: user_b
+   treatment: 'off'
+   config: '{ "size" : 44 }'
+- splitWithKeys:
+   keys: [user_1, user_2, user_3]
+   treatment: 'v1'
+   config: '{ "size" : 44 }'
+- splitWithNoKeys:
+   treatment: 'v2'
+   config: '{ "size" : 999 }'
