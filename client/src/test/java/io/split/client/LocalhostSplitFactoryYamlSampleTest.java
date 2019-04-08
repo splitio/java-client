@@ -42,6 +42,22 @@ public class LocalhostSplitFactoryYamlSampleTest {
         assertThat(client.getTreatmentWithConfig("user_b", "split_2").treatment(), is(equalTo("off")));
         assertThat(client.getTreatmentWithConfig("user_b", "split_2").config(), is(equalTo("{ \"size\" : 44 }")));
 
+        assertThat(client.getTreatment("user_1", "splitWithKeys"), is(equalTo("v1")));
+        assertThat(client.getTreatmentWithConfig("user_1", "splitWithKeys").treatment(), is(equalTo("v1")));
+        assertThat(client.getTreatmentWithConfig("user_1", "splitWithKeys").config(), is(equalTo("{ \"size\" : 44 }")));
+
+        assertThat(client.getTreatment("user_2", "splitWithKeys"), is(equalTo("v1")));
+        assertThat(client.getTreatmentWithConfig("user_2", "splitWithKeys").treatment(), is(equalTo("v1")));
+        assertThat(client.getTreatmentWithConfig("user_2", "splitWithKeys").config(), is(equalTo("{ \"size\" : 44 }")));
+
+        assertThat(client.getTreatment("user_3", "splitWithKeys"), is(equalTo("v1")));
+        assertThat(client.getTreatmentWithConfig("user_3", "splitWithKeys").treatment(), is(equalTo("v1")));
+        assertThat(client.getTreatmentWithConfig("user_3", "splitWithKeys").config(), is(equalTo("{ \"size\" : 44 }")));
+
+        assertThat(client.getTreatment("user_random", "splitWithNoKeys"), is(equalTo("v2")));
+        assertThat(client.getTreatmentWithConfig("user_random", "splitWithNoKeys").treatment(), is(equalTo("v2")));
+        assertThat(client.getTreatmentWithConfig("user_random", "splitWithNoKeys").config(), is(equalTo("{ \"size\" : 999 }")));
+
         // Update
 
         Map<SplitAndKey, LocalhostSplit> update = Maps.newHashMap();

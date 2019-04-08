@@ -1,5 +1,6 @@
 package io.split.client;
 
+import com.google.common.base.Preconditions;
 import com.google.common.collect.Maps;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -23,22 +24,34 @@ public class YamlLocalhostSplitFile extends AbstractLocalhostSplitFile {
         try {
 
             Yaml yaml = new Yaml();
-            List<Map<String, Map<String, String>>> yamlSplits = yaml.load(new FileReader(_file));
+            List<Map<String, Map<String, Object>>> yamlSplits = yaml.load(new FileReader(_file));
 
-            for(Map<String, Map<String, String>> aSplit : yamlSplits) {
+            for(Map<String, Map<String, Object>> aSplit : yamlSplits) {
                 // The outter map is a map with one key, the split name
-                Map.Entry<String, Map<String, String>> splitAndValues = aSplit.entrySet().iterator().next();
+                Map.Entry<String, Map<String, Object>> splitAndValues = aSplit.entrySet().iterator().next();
 
                 SplitAndKey splitAndKey = null;
-                if (splitAndValues.getValue().get("key") == null) {
-                    splitAndKey = SplitAndKey.of(splitAndValues.getKey()); // Key in this line is splitName
+                String splitName = splitAndValues.getKey();
+                String treatment = (String) splitAndValues.getValue().get("treatment");
+                String configurations = splitAndValues.getValue().get("config") != null? (String) splitAndValues.getValue().get("config") : null;
+                Object keyOrKeys = splitAndValues.getValue().get("keys");
+
+                if (keyOrKeys == null) {
+                    splitAndKey = SplitAndKey.of(splitName); // Key in this line is splitName
+                    onSplits.put(splitAndKey, LocalhostSplit.of(treatment, configurations));
                 } else {
-                    splitAndKey = SplitAndKey.of(splitAndValues.getKey(), splitAndValues.getValue().get("key"));
+                    if (keyOrKeys instanceof String) {
+                        splitAndKey = SplitAndKey.of(splitName, (String) keyOrKeys);
+                        onSplits.put(splitAndKey, LocalhostSplit.of(treatment, configurations));
+                    } else {
+                        Preconditions.checkArgument(keyOrKeys instanceof List, "'keys' is not a String nor a List.");
+                        for (String aKey : (List<String>) keyOrKeys) {
+                            splitAndKey = SplitAndKey.of(splitName, aKey);
+                            onSplits.put(splitAndKey, LocalhostSplit.of(treatment, configurations));
+                        }
+                    }
                 }
-
-                onSplits.put(splitAndKey, LocalhostSplit.of(splitAndValues.getValue().get("treatment"), splitAndValues.getValue().get("config")));
             }
-
         } catch (Exception e) {
             _log.warn("There was no file named " + _file.getPath() + " found. " +
                     "We created a split client that returns default treatments for all features for all of your users. " +

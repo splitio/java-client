@@ -50,7 +50,7 @@ public class LocalhostSplitFactoryYamlTest {
 
         Map<String, Object> split1_user_a = new LinkedHashMap<>();
         Map<String, Object> split1_user_a_data = new LinkedHashMap<>();
-        split1_user_a_data.put("key", "user_a");
+        split1_user_a_data.put("keys", "user_a");
         split1_user_a_data.put("treatment", "off");
         split1_user_a_data.put("config", "{ \"size\" : 20 }");
         split1_user_a.put("split_1", split1_user_a_data);
@@ -58,14 +58,14 @@ public class LocalhostSplitFactoryYamlTest {
 
         Map<String, Object> split1_user_b = new LinkedHashMap<>();
         Map<String, Object> split1_user_b_data = new LinkedHashMap<>();
-        split1_user_b_data.put("key", "user_b");
+        split1_user_b_data.put("keys", "user_b");
         split1_user_b_data.put("treatment", "on");
         split1_user_b.put("split_1", split1_user_b_data);
         allSplits.add(split1_user_b);
 
         Map<String, Object> split2_user_a = new LinkedHashMap<>();
         Map<String, Object> split2_user_a_data = new LinkedHashMap<>();
-        split2_user_a_data.put("key", "user_a");
+        split2_user_a_data.put("keys", "user_a");
         split2_user_a_data.put("treatment", "off");
         split2_user_a_data.put("config", "{ \"size\" : 20 }");
         split2_user_a.put("split_2", split2_user_a_data);
@@ -76,9 +76,9 @@ public class LocalhostSplitFactoryYamlTest {
         StringWriter writer = new StringWriter();
         yaml.dump(allSplits, writer);
 
-        String expectedYaml = "- split_1: {key: user_a, treatment: 'off', config: '{ \"size\" : 20 }'}\n" +
-                "- split_1: {key: user_b, treatment: 'on'}\n" +
-                "- split_2: {key: user_a, treatment: 'off', config: '{ \"size\" : 20 }'}\n";
+        String expectedYaml = "- split_1: {keys: user_a, treatment: 'off', config: '{ \"size\" : 20 }'}\n" +
+                "- split_1: {keys: user_b, treatment: 'on'}\n" +
+                "- split_2: {keys: user_a, treatment: 'off', config: '{ \"size\" : 20 }'}\n";
 
         assertEquals(expectedYaml, writer.toString());
 
@@ -103,13 +103,28 @@ public class LocalhostSplitFactoryYamlTest {
         assertThat(client.getTreatmentWithConfig("user_a", "split_2").config(), is(equalTo("{ \"size\" : 20 }")));
 
         // Update
-
         Map<SplitAndKey, LocalhostSplit> update = Maps.newHashMap();
         update.put(SplitAndKey.of("split_2", "user_a"), LocalhostSplit.of("on"));
-
         factory.updateFeatureToTreatmentMap(update);
 
         assertThat(client.getTreatment("user_a", "split_2"), is(equalTo("on")));
+
+        // Make split_1 "legacy" treatment for all keys mines the whitelisted ones.
+        update = Maps.newHashMap();
+        update.put(SplitAndKey.of("split_1", "user_a"), LocalhostSplit.of("off"));
+        update.put(SplitAndKey.of("split_1", "user_b"), LocalhostSplit.of("on"));
+        update.put(SplitAndKey.of("split_1"), LocalhostSplit.of("legacy"));
+        factory.updateFeatureToTreatmentMap(update);
+
+        // unchanged
+        assertThat(client.getTreatment("user_a", "split_1"), is(equalTo("off")));
+        // unchanged
+        assertThat(client.getTreatment("user_b", "split_1"), is(equalTo("on")));
+
+        // "legacy" for any other user
+        assertThat(client.getTreatment("user_blah", "split_1"), is(equalTo("legacy")));
+
+        factory.updateFeatureToTreatmentMap(update);
     }
 
     private void writeFile(File f, StringWriter content) throws IOException {
