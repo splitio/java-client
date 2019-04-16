@@ -17,7 +17,7 @@ public class SplitFactoryBuilder {
     private static final Logger _log = LoggerFactory.getLogger(SplitFactoryBuilder.class);
 
     /**
-     * Instantiates a SplitFactory with default configurations
+     * Instantiates a SplitFactory with default config
      *
      * @param apiToken the API token. MUST NOT be null
      * @return a SplitFactory
@@ -44,7 +44,7 @@ public class SplitFactoryBuilder {
         }
 
         if (LocalhostSplitFactory.LOCALHOST.equals(apiToken)) {
-            return LocalhostSplitFactory.createLocalhostSplitFactory();
+            return LocalhostSplitFactory.createLocalhostSplitFactory(config);
         } else {
             return new SplitFactoryImpl(apiToken, config);
 
@@ -54,22 +54,20 @@ public class SplitFactoryBuilder {
     /**
      * Instantiates a local Off-The-Grid SplitFactory
      *
-     * @return a SplitFactory
      * @throws IOException if there were problems reading the override file from disk.
      */
     public static SplitFactory local() throws IOException {
-        return LocalhostSplitFactory.createLocalhostSplitFactory();
+        return LocalhostSplitFactory.createLocalhostSplitFactory(SplitClientConfig.builder().build());
     }
 
     /**
      * Instantiates a local Off-The-Grid SplitFactory
      *
-     * @param home A directory containing the .split file from which to build treatments. MUST NOT be null
-     * @return a SplitFactory
+     * @return config Split config file
      * @throws IOException if there were problems reading the override file from disk.
      */
-    public static SplitFactory local(String home) throws IOException {
-        return new LocalhostSplitFactory(home);
+    public static SplitFactory local(SplitClientConfig config) throws IOException {
+        return LocalhostSplitFactory.createLocalhostSplitFactory(config);
     }
 
     public static void main(String... args) throws IOException, InterruptedException, TimeoutException, URISyntaxException {

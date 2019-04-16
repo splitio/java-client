@@ -2,6 +2,7 @@ package io.split.client;
 
 import com.google.common.annotations.VisibleForTesting;
 import io.split.client.api.Key;
+import io.split.client.api.SplitResult;
 import io.split.client.dtos.ConditionType;
 import io.split.client.dtos.Event;
 import io.split.client.exceptions.ChangeNumberExceptionWrapper;
@@ -33,6 +34,9 @@ public final class SplitClientImpl implements SplitClient {
 
     private static final Logger _log = LoggerFactory.getLogger(SplitClientImpl.class);
 
+    private static final String GET_TREATMENT_LABEL = "sdk.getTreatment";
+    private static final String GET_TREATMENT_CONFIG_LABEL = "sdk.getTreatmentWithConfig";
+
     private static final String NOT_IN_SPLIT = "not in split";
     private static final String DEFAULT_RULE = "default rule";
     private static final String DEFINITION_NOT_FOUND = "definition not found";
@@ -40,6 +44,8 @@ public final class SplitClientImpl implements SplitClient {
     private static final String KILLED = "killed";
 
     public static final Pattern EVENT_TYPE_MATCHER = Pattern.compile("^[a-zA-Z0-9][-_.:a-zA-Z0-9]{0,79}$");
+
+    public static final SplitResult SPLIT_RESULT_CONTROL = new SplitResult(Treatments.CONTROL, null);
 
     private final SplitFactory _container;
     private final SplitFetcher _splitFetcher;
@@ -107,46 +113,81 @@ public final class SplitClientImpl implements SplitClient {
     }
 
     private String getTreatment(String matchingKey, String bucketingKey, String split, Map<String, Object> attributes) {
+        return getTreatmentWithConfigInternal(GET_TREATMENT_LABEL, matchingKey, bucketingKey, split, attributes).treatment();
+    }
+
+    @Override
+    public SplitResult getTreatmentWithConfig(String key, String split) {
+        return getTreatmentWithConfigInternal(GET_TREATMENT_LABEL, key, null, split, Collections.<String, Object>emptyMap());
+    }
+
+    @Override
+    public SplitResult getTreatmentWithConfig(String key, String split, Map<String, Object> attributes) {
+        return getTreatmentWithConfigInternal(GET_TREATMENT_LABEL, key, null, split, attributes);
+    }
+
+    @Override
+    public SplitResult getTreatmentWithConfig(Key key, String split, Map<String, Object> attributes) {
+        if (key == null) {
+            _log.error("getTreatment: you passed a null key, the key must be a non-empty string");
+            return SPLIT_RESULT_CONTROL;
+        }
+
+        if (key.matchingKey() == null) {
+            _log.error("getTreatment: you passed a null matchingKey, the matchingKey must be a non-empty string");
+            return SPLIT_RESULT_CONTROL;
+        }
+
+
+        if (key.bucketingKey() == null) {
+            _log.error("getTreatment: you passed a null bucketingKey, the bucketingKey must be a non-empty string");
+            return SPLIT_RESULT_CONTROL;
+        }
+
+        return getTreatmentWithConfigInternal(GET_TREATMENT_LABEL, key.matchingKey(), key.bucketingKey(), split, attributes);
+    }
+
+    private SplitResult getTreatmentWithConfigInternal(String label, String matchingKey, String bucketingKey, String split, Map<String, Object> attributes) {
         try {
             if (_container.isDestroyed()) {
                 _log.error("Client has already been destroyed - no calls possible");
-                return Treatments.CONTROL;
+                return SPLIT_RESULT_CONTROL;
             }
 
             if (matchingKey == null) {
-                _log.error("getTreatment: you passed a null matchingKey, the matchingKey must be a non-empty string");
-                return Treatments.CONTROL;
+                _log.error("getTreatmentWithConfig: you passed a null matchingKey, the matchingKey must be a non-empty string");
+                return SPLIT_RESULT_CONTROL;
             }
             if (matchingKey.length() > _config.maxStringLength()) {
-                _log.error("getTreatment: matchingKey too long - must be " + _config.maxStringLength() + " characters or less");
-                return Treatments.CONTROL;
+                _log.error("getTreatmentWithConfig: matchingKey too long - must be " + _config.maxStringLength() + " characters or less");
+                return SPLIT_RESULT_CONTROL;
             }
             if (matchingKey.isEmpty()) {
-                _log.error("getTreatment: you passed an empty string, matchingKey must be a non-empty string");
-                return Treatments.CONTROL;
+                _log.error("getTreatmentWithConfig: you passed an empty string, matchingKey must be a non-empty string");
+                return SPLIT_RESULT_CONTROL;
             }
             if (bucketingKey != null && bucketingKey.isEmpty()) {
-                _log.error("getTreatment: you passed an empty string, bucketingKey must be a non-empty string");
-                return Treatments.CONTROL;
+                _log.error("getTreatmentWithConfig: you passed an empty string, bucketingKey must be a non-empty string");
+                return SPLIT_RESULT_CONTROL;
             }
             if (bucketingKey != null && bucketingKey.length() > _config.maxStringLength()) {
-                _log.error("getTreatment: bucketingKey too long - must be " + _config.maxStringLength() + " characters or less");
-                return Treatments.CONTROL;
+                _log.error("getTreatmentWithConfig: bucketingKey too long - must be " + _config.maxStringLength() + " characters or less");
+                return SPLIT_RESULT_CONTROL;
             }
 
             if (split == null) {
-                _log.error("getTreatment: you passed a null split name, split name must be a non-empty string");
-                return Treatments.CONTROL;
+                _log.error("getTreatmentWithConfig: you passed a null split name, split name must be a non-empty string");
+                return SPLIT_RESULT_CONTROL;
             }
 
             if (split.isEmpty()) {
-                _log.error("getTreatment: you passed an empty split name, split name must be a non-empty string");
-                return Treatments.CONTROL;
+                _log.error("getTreatmentWithConfig: you passed an empty split name, split name must be a non-empty string");
+                return SPLIT_RESULT_CONTROL;
             }
 
             String trimmed = split.trim();
             if (!trimmed.equals(split)) {
-                _log.warn("getTreatment: split name \"" + split + "\" has extra whitespace, trimming");
+                _log.warn("getTreatmentWithConfig: split name \"" + split + "\" has extra whitespace, trimming");
                 split = trimmed;
             }
 
@@ -160,20 +201,20 @@ public final class SplitClientImpl implements SplitClient {
                     split,
                     start,
                     result._treatment,
-                    "sdk.getTreatment",
+                    label,
                     _config.labelsEnabled() ? result._label : null,
                     result._changeNumber,
                     attributes
             );
 
-            return result._treatment;
+            return new SplitResult(result._treatment, result._configurations);
         } catch (Exception e) {
             try {
                 _log.error("CatchAll Exception", e);
             } catch (Exception e1) {
                 // ignore
             }
-            return Treatments.CONTROL;
+            return SPLIT_RESULT_CONTROL;
         }
     }
 
@@ -236,7 +277,8 @@ public final class SplitClientImpl implements SplitClient {
     private TreatmentLabelAndChangeNumber getTreatment(String matchingKey, String bucketingKey, ParsedSplit parsedSplit, Map<String, Object> attributes) throws ChangeNumberExceptionWrapper {
         try {
             if (parsedSplit.killed()) {
-                return new TreatmentLabelAndChangeNumber(parsedSplit.defaultTreatment(), KILLED, parsedSplit.changeNumber());
+                String config = parsedSplit.configurations() != null ? parsedSplit.configurations().get(parsedSplit.defaultTreatment()) : null;
+                return new TreatmentLabelAndChangeNumber(parsedSplit.defaultTreatment(), KILLED, parsedSplit.changeNumber(), config);
             }
 
             /*
@@ -268,11 +310,13 @@ public final class SplitClientImpl implements SplitClient {
 
                 if (parsedCondition.matcher().match(matchingKey, bucketingKey, attributes, this)) {
                     String treatment = Splitter.getTreatment(bk, parsedSplit.seed(), parsedCondition.partitions(), parsedSplit.algo());
-                    return new TreatmentLabelAndChangeNumber(treatment, parsedCondition.label(), parsedSplit.changeNumber());
+                    String config = parsedSplit.configurations() != null ? parsedSplit.configurations().get(treatment) : null;
+                    return new TreatmentLabelAndChangeNumber(treatment, parsedCondition.label(), parsedSplit.changeNumber(), config);
                 }
             }
 
-            return new TreatmentLabelAndChangeNumber(parsedSplit.defaultTreatment(), DEFAULT_RULE, parsedSplit.changeNumber());
+            String config = parsedSplit.configurations() != null ? parsedSplit.configurations().get(parsedSplit.defaultTreatment()) : null;
+            return new TreatmentLabelAndChangeNumber(parsedSplit.defaultTreatment(), DEFAULT_RULE, parsedSplit.changeNumber(), config);
         } catch (Exception e) {
             throw new ChangeNumberExceptionWrapper(e, parsedSplit.changeNumber());
         }
@@ -382,15 +426,21 @@ public final class SplitClientImpl implements SplitClient {
         private final String _treatment;
         private final String _label;
         private final Long _changeNumber;
+        private final String _configurations;
 
         public TreatmentLabelAndChangeNumber(String treatment, String label) {
-            this(treatment, label, null);
+            this(treatment, label, null, null);
         }
 
         public TreatmentLabelAndChangeNumber(String treatment, String label, Long changeNumber) {
+            this(treatment, label, changeNumber, null);
+        }
+
+        public TreatmentLabelAndChangeNumber(String treatment, String label, Long changeNumber, String configurations) {
             _treatment = treatment;
             _label = label;
             _changeNumber = changeNumber;
+            _configurations = configurations;
         }
     }
 }

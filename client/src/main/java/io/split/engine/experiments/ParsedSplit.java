@@ -3,6 +3,7 @@ package io.split.engine.experiments;
 import com.google.common.collect.ImmutableList;
 
 import java.util.List;
+import java.util.Map;
 
 /**
  * a value class representing an io.codigo.dtos.Experiment. Why are we not using
@@ -24,6 +25,7 @@ public class ParsedSplit {
     private final int _trafficAllocation;
     private final int _trafficAllocationSeed;
     private final int _algo;
+    private final Map<String, String> _configurations;
 
     public static ParsedSplit createParsedSplitForTests(
             String feature,
@@ -45,7 +47,34 @@ public class ParsedSplit {
                 changeNumber,
                 100,
                 seed,
-                algo
+                algo,
+                null
+        );
+    }
+
+    public static ParsedSplit createParsedSplitForTests(
+            String feature,
+            int seed,
+            boolean killed,
+            String defaultTreatment,
+            List<ParsedCondition> matcherAndSplits,
+            String trafficTypeName,
+            long changeNumber,
+            int algo,
+            Map<String, String> configurations
+    ) {
+        return new ParsedSplit(
+                feature,
+                seed,
+                killed,
+                defaultTreatment,
+                matcherAndSplits,
+                trafficTypeName,
+                changeNumber,
+                100,
+                seed,
+                algo,
+                configurations
         );
     }
 
@@ -59,7 +88,8 @@ public class ParsedSplit {
             long changeNumber,
             int trafficAllocation,
             int trafficAllocationSeed,
-            int algo
+            int algo,
+            Map<String, String> configurations
     ) {
         _split = feature;
         _seed = seed;
@@ -72,8 +102,9 @@ public class ParsedSplit {
         if (_defaultTreatment == null) {
             throw new IllegalArgumentException("DefaultTreatment is null");
         }
-        this._trafficAllocation = trafficAllocation;
-        this._trafficAllocationSeed = trafficAllocationSeed;
+        _trafficAllocation = trafficAllocation;
+        _trafficAllocationSeed = trafficAllocationSeed;
+        _configurations = configurations;
     }
 
 
@@ -112,6 +143,10 @@ public class ParsedSplit {
 
     public int algo() {return _algo;}
 
+    public Map<String, String> configurations() {
+        return _configurations;
+    }
+
     @Override
     public int hashCode() {
         int result = 17;
@@ -123,6 +158,7 @@ public class ParsedSplit {
         result = 31 * result + (_trafficTypeName == null ? 0 : _trafficTypeName.hashCode());
         result = 31 * result + (int)(_changeNumber ^ (_changeNumber >>> 32));
         result = 31 * result + (_algo ^ (_algo >>> 32));
+        result = 31 * result + (_configurations == null? 0 : _configurations.hashCode());
         return result;
     }
 
@@ -141,7 +177,8 @@ public class ParsedSplit {
                 && _parsedCondition.equals(other._parsedCondition)
                 && _trafficTypeName == null ? other._trafficTypeName == null : _trafficTypeName.equals(other._trafficTypeName)
                 && _changeNumber == other._changeNumber
-                && _algo == other._algo;
+                && _algo == other._algo
+                && _configurations == null ? other._configurations == null : _configurations.equals(other._configurations);
     }
 
     @Override
@@ -163,6 +200,8 @@ public class ParsedSplit {
         bldr.append(_changeNumber);
         bldr.append(", algo:");
         bldr.append(_algo);
+        bldr.append(", config:");
+        bldr.append(_configurations);
         return bldr.toString();
 
     }

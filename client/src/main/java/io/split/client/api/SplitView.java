@@ -1,9 +1,7 @@
 package io.split.client.api;
 
-import io.split.client.dtos.Condition;
-import io.split.client.dtos.Status;
-
 import java.util.List;
+import java.util.Map;
 
 /**
  * A view of a Split meant for consumption through SplitManager interface.
@@ -16,4 +14,5 @@ public class SplitView {
     public boolean killed;
     public List<String> treatments;
     public long changeNumber;
+    public Map<String, String> configs;
 }

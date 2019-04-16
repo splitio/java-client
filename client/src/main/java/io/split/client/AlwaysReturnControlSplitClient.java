@@ -1,6 +1,7 @@
 package io.split.client;
 
 import io.split.client.api.Key;
+import io.split.client.api.SplitResult;
 import io.split.grammar.Treatments;
 
 import java.util.Map;
@@ -13,6 +14,8 @@ import java.util.concurrent.TimeoutException;
  * @author adil
  */
 public class AlwaysReturnControlSplitClient implements SplitClient {
+
+    private static final SplitResult RESULT_CONTROL = new SplitResult(Treatments.CONTROL, null);
 
     @Override
     public String getTreatment(String key, String split) {
@@ -27,6 +30,21 @@ public class AlwaysReturnControlSplitClient implements SplitClient {
     @Override
     public String getTreatment(Key key, String split, Map<String, Object> attributes) {
         return Treatments.CONTROL;
+    }
+
+    @Override
+    public SplitResult getTreatmentWithConfig(String key, String split) {
+        return RESULT_CONTROL;
+    }
+
+    @Override
+    public SplitResult getTreatmentWithConfig(String key, String split, Map<String, Object> attributes) {
+        return RESULT_CONTROL;
+    }
+
+    @Override
+    public SplitResult getTreatmentWithConfig(Key key, String split, Map<String, Object> attributes) {
+        return RESULT_CONTROL;
     }
 
     @Override
