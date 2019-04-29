@@ -40,7 +40,7 @@ public final class LocalhostSplitFactory implements SplitFactory {
         } else {
             _splitFile = new LegacyLocalhostSplitFile(this, directory, FILENAME);
             _log.warn("(Deprecated) Starting Split in localhost mode using legacy file located at " + _splitFile._file.getAbsolutePath()
-                    + "\nPlease delete this file or split.yaml location will be ignored");
+                    + "\nPlease set SplitClientConfig.builder().splitFile(...) to point to the new split.yaml location.");
         }
 
         Map<SplitAndKey, LocalhostSplit> splitAndKeyToTreatment = _splitFile.readOnSplits();
