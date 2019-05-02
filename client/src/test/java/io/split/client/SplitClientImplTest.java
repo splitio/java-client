@@ -737,6 +737,55 @@ public class SplitClientImplTest {
         assertThat(impressionCaptor.getValue().appliedRule(), is(equalTo(label)));
     }
 
+    /**
+     * Tests that when the key is not in the traffic allocation, it gets the default config when it exists.
+     */
+    @Test
+    public void notInTrafficAllocationDefaultConfig() {
+
+        String test = "test1";
+        int trafficAllocation = 0;
+        int trafficAllocationSeed = 123;
+
+        // Add config for only one treatment
+        Map<String, String> configurations = new HashMap<>();
+        configurations.put(Treatments.ON, "{\"size\" : 30}");
+        configurations.put(Treatments.OFF, "{\"size\" : 30}"); // OFF is default treatment
+
+        ParsedCondition rollOutToEveryone = new ParsedCondition(ConditionType.ROLLOUT, CombiningMatcher.of(new AllKeysMatcher()), Lists.newArrayList(partition("on", 100), partition("off", 0)), "in segment all");
+
+        List<ParsedCondition> conditions = Lists.newArrayList(rollOutToEveryone);
+
+        ParsedSplit parsedSplit = new ParsedSplit(test, 123, false, Treatments.OFF, conditions, null, 1, trafficAllocation, trafficAllocationSeed, 1, configurations);
+
+        SplitFetcher splitFetcher = mock(SplitFetcher.class);
+        when(splitFetcher.fetch(test)).thenReturn(parsedSplit);
+
+        ImpressionListener impressionListener = mock(ImpressionListener.class);
+
+
+        SplitClientImpl client = new SplitClientImpl(
+                mock(SplitFactory.class),
+                splitFetcher,
+                impressionListener,
+                new Metrics.NoopMetrics(),
+                NoopEventClient.create(),
+                config,
+                mock(SDKReadinessGates.class)
+        );
+
+        assertThat(client.getTreatment("pato@split.io", test), is(equalTo(Treatments.OFF)));
+
+        SplitResult result = client.getTreatmentWithConfig("pato@split.io", test);
+        assertThat(result.treatment(), is(equalTo(Treatments.OFF)));
+        assertThat(result.config(), is(equalTo("{\"size\" : 30}")));
+
+        ArgumentCaptor<Impression> impressionCaptor = ArgumentCaptor.forClass(Impression.class);
+        verify(impressionListener, times(2)).log(impressionCaptor.capture());
+
+        assertThat(impressionCaptor.getValue().appliedRule(), is(equalTo("not in split")));
+    }
+
 
     @Test
     public void matching_bucketing_keys_work() {

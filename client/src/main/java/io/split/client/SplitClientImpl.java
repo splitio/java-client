@@ -301,7 +301,8 @@ public final class SplitClientImpl implements SplitClient {
 
                         if (bucket > parsedSplit.trafficAllocation()) {
                             // out of split
-                            return new TreatmentLabelAndChangeNumber(parsedSplit.defaultTreatment(), NOT_IN_SPLIT, parsedSplit.changeNumber());
+                            String config = parsedSplit.configurations() != null ? parsedSplit.configurations().get(parsedSplit.defaultTreatment()) : null;
+                            return new TreatmentLabelAndChangeNumber(parsedSplit.defaultTreatment(), NOT_IN_SPLIT, parsedSplit.changeNumber(), config);
                         }
 
                     }
