@@ -30,7 +30,13 @@ public abstract class AbstractLocalhostSplitFile extends Thread {
         Preconditions.checkNotNull(fileName);
 
         _splitFactory = Preconditions.checkNotNull(splitFactory);
-        _file = new File(directory, fileName);
+
+        //  If no directory is set, instantiate the file without parent, otherwise the path separator is inserted
+        // before the filename in the java.io.File.File(java.lang.String, java.lang.String) class (see line 319).
+        _file = (directory.length() > 0) ?
+                new File(directory, fileName) :
+                new File(fileName);
+
         _watcher = FileSystems.getDefault().newWatchService();
         _stop = new AtomicBoolean(false);
     }
