@@ -87,6 +87,16 @@ public final class LocalhostSplitClientAndFactory implements SplitClient {
     }
 
     @Override
+    public boolean track(String key, String trafficType, String eventType, Map<String, Object> properties) {
+        return _splitClient.track(key, trafficType, eventType, properties);
+    }
+
+    @Override
+    public boolean track(String key, String trafficType, String eventType, double value, Map<String, Object> properties) {
+        return _splitClient.track(key, trafficType, eventType, value, properties);
+    }
+
+    @Override
     public void blockUntilReady() throws TimeoutException, InterruptedException {
         _splitClient.blockUntilReady();
     }

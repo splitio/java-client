@@ -1,13 +1,22 @@
 package io.split.client;
 
+import io.split.client.dtos.Event;
+import javafx.util.Pair;
+import org.apache.http.client.methods.HttpUriRequest;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 import org.hamcrest.Matchers;
 import org.junit.Assert;
 import org.junit.Test;
+import org.mockito.Mockito;
 
+import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.concurrent.LinkedBlockingQueue;
 
 public class EventsClientImplTest {
     @Test
@@ -40,5 +49,29 @@ public class EventsClientImplTest {
         CloseableHttpClient httpClient = HttpClients.custom().build();
         EventClientImpl fetcher = EventClientImpl.create(httpClient, rootTarget, 5, 5, 5);
         Assert.assertThat(fetcher.getTarget().toString(), Matchers.is(Matchers.equalTo("https://kubernetesturl.com/split/api/events/bulk")));
+    }
+
+    @Test
+    public void testEventsFlushedWhenSizeLimitReached() throws URISyntaxException, InterruptedException, IOException {
+        CloseableHttpClient client = Mockito.mock(CloseableHttpClient.class);
+        EventClientImpl eventClient = new EventClientImpl(new LinkedBlockingQueue<Pair<Event, Integer>>(),
+                client,
+                URI.create("https://kubernetesturl.com/split"),
+                10000, // Long queue so it doesn't flush by # of events
+                100000, // Long period so it doesn't flush by timeout expiration.
+                0);
+
+        for (int i = 0; i < 159; ++i) {
+            Event event = new Event();
+            eventClient.track(event, 1024 * 32); // 159 32kb events should be about to flush
+        }
+
+        Thread.sleep(2000);
+        Mockito.verifyZeroInteractions(client);
+
+        Event event = new Event();
+        eventClient.track(event, 1024 * 32); // 159 32kb events should be about to flush
+        Thread.sleep(2000);
+        Mockito.verify(client, Mockito.times(1)).execute((HttpUriRequest) Mockito.any());
     }
 }

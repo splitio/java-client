@@ -176,6 +176,37 @@ public interface SplitClient {
     boolean track(String key, String trafficType, String eventType, double value);
 
     /**
+     * Enqueue a new event to be sent to split data collection services
+     *
+     * Example:
+     *      client.track(“account”, “Split Software”, “checkout”, Collections.singletonMap("age", 23))
+     *
+     * @param key the identifier of the entity
+     * @param trafficType the type of the event
+     * @param eventType the type of the event
+     * @param value the value of the event
+     *
+     * @return true if the track was successful, false otherwise
+     */
+    boolean track(String key, String trafficType, String eventType, Map<String, Object> properties);
+
+    /**
+     * Enqueue a new event to be sent to split data collection services
+     *
+     * Example:
+     *      client.track(“account”, “Split Software”, “checkout”, 123, Collections.singletonMap("age", 23))
+     *
+     * @param key the identifier of the entity
+     * @param trafficType the type of the event
+     * @param eventType the type of the event
+     * @param value the value of the event
+     *
+     * @return true if the track was successful, false otherwise
+     */
+    boolean track(String key, String trafficType, String eventType, double value, Map<String, Object> properties);
+
+
+    /**
      * The SDK kicks off background threads to download data necessary
      * for using the SDK. You can choose to block until the SDK has
      * downloaded split definitions so that you will not get

@@ -29,6 +29,8 @@ import org.mockito.ArgumentCaptor;
 
 import java.io.IOException;
 import java.net.URISyntaxException;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -953,7 +955,7 @@ public class SplitClientImplTest {
     }
 
     @Test
-    public void track_with_invalid_traffic_trype_names() {
+    public void track_with_invalid_traffic_type_names() {
         SplitClientImpl client = new SplitClientImpl(
                 mock(SplitFactory.class),
                 mock(SplitFetcher.class),
@@ -993,6 +995,46 @@ public class SplitClientImplTest {
         Assert.assertThat(client.track(invalidKeySize, "valid_traffic_type", "valid"),
                 org.hamcrest.Matchers.is(org.hamcrest.Matchers.equalTo(false)));
     }
+
+    @Test
+    public void track_with_properties() {
+        SplitClientImpl client = new SplitClientImpl(
+                mock(SplitFactory.class),
+                mock(SplitFetcher.class),
+                new ImpressionListener.NoopImpressionListener(),
+                new Metrics.NoopMetrics(),
+                NoopEventClient.create(),
+                config,
+                mock(SDKReadinessGates.class)
+        );
+
+        HashMap<String, Object> properties = new HashMap<>();
+
+        properties.put("some_property", new Object());
+        Assert.assertThat(client.track("key1", "user", "purchase", properties),
+                org.hamcrest.Matchers.is(false));
+
+        properties.clear();
+        properties.put("some_property", Arrays.asList(1, 2, 3));
+        Assert.assertThat(client.track("key1", "user", "purchase", properties),
+                org.hamcrest.Matchers.is(false));
+
+        properties.clear();
+        properties.put("some_property", new HashMap<String, Number>());
+        Assert.assertThat(client.track("key1", "user", "purchase", properties),
+                org.hamcrest.Matchers.is(false));
+
+        properties.clear();
+        properties.put("prop1", 1);
+        properties.put("prop2", 2L);
+        properties.put("prop3", 7.56);
+        properties.put("prop4", "something");
+        properties.put("prop5", true);
+        properties.put("prop6", null);
+        Assert.assertThat(client.track("key1", "user", "purchase", properties),
+                org.hamcrest.Matchers.is(true));
+    }
+
 
     @Test
     public void getTreatment_with_invalid_keys() {

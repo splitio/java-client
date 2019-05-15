@@ -4,6 +4,7 @@ import com.google.common.annotations.VisibleForTesting;
 import io.split.client.dtos.Event;
 import io.split.client.utils.GenericClientUtil;
 import io.split.client.utils.Utils;
+import javafx.util.Pair;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -29,7 +30,9 @@ import static java.lang.Thread.MIN_PRIORITY;
  */
 public class EventClientImpl implements EventClient {
 
-    private final BlockingQueue<Event> _eventQueue;
+    public static final Long MAX_SIZE_BYTES = 5 * 1024 * 1024L;
+
+    private final BlockingQueue<Pair<Event, Integer>> _eventQueue;
     private final int _maxQueueSize;
     private final long _flushIntervalMillis;
 
@@ -61,10 +64,15 @@ public class EventClientImpl implements EventClient {
 
 
     public static EventClientImpl create(CloseableHttpClient httpclient, URI eventsRootTarget, int maxQueueSize, long flushIntervalMillis, int waitBeforeShutdown) throws URISyntaxException {
-        return new EventClientImpl(new LinkedBlockingQueue<Event>(), httpclient,  Utils.appendPath(eventsRootTarget, "api/events/bulk"), maxQueueSize, flushIntervalMillis, waitBeforeShutdown);
+        return new EventClientImpl(new LinkedBlockingQueue<Pair<Event, Integer>>(),
+                httpclient,
+                Utils.appendPath(eventsRootTarget, "api/events/bulk"),
+                maxQueueSize,
+                flushIntervalMillis,
+                waitBeforeShutdown);
     }
 
-    EventClientImpl(BlockingQueue<Event> eventQueue, CloseableHttpClient httpclient, URI target, int maxQueueSize,
+    EventClientImpl(BlockingQueue<Pair<Event, Integer>> eventQueue, CloseableHttpClient httpclient, URI target, int maxQueueSize,
                     long flushIntervalMillis, int waitBeforeShutdown) throws URISyntaxException {
 
         _httpclient = httpclient;
@@ -107,15 +115,16 @@ public class EventClientImpl implements EventClient {
      * the existence of this message in the queue triggers a send event in the consumer thread.
      */
     public void flush() {
-        track(CENTINEL);
-    }
+        track(CENTINEL, 0);
+    }  // CENTINEL event won't be queued, so no size needed.
 
-    public boolean track(Event event) {
+    public boolean track(Event event, int eventSize) {
         try {
             if (event == null) {
                 return false;
             }
-            _eventQueue.put(event);
+            _eventQueue.put(new Pair<>(event, eventSize));
+
         } catch (InterruptedException e) {
             _log.warn("Interruption when adding event withed while adding message %s.", event);
             return false;
@@ -143,13 +152,16 @@ public class EventClientImpl implements EventClient {
         @Override
         public void run() {
             List<Event> events = new ArrayList<>();
-
+            long accumulated = 0;
             try {
                 while (true) {
-                    Event event = _eventQueue.take();
+                    Pair<Event, Integer> data = _eventQueue.take();
+                    Event event = data.getKey();
+                    Integer size = data.getValue();
 
                     if (event != CENTINEL) {
                         events.add(event);
+                        accumulated += size;
                     } else if (events.size() < 1) {
 
                         if (_log.isDebugEnabled()) {
@@ -159,7 +171,7 @@ public class EventClientImpl implements EventClient {
                         continue;
                     }
 
-                    if (events.size() >= _maxQueueSize || event == CENTINEL) {
+                    if (events.size() >= _maxQueueSize ||  accumulated >= MAX_SIZE_BYTES || event == CENTINEL) {
 
                         // Send over the network
                         if (_log.isDebugEnabled()) {
@@ -171,6 +183,7 @@ public class EventClientImpl implements EventClient {
 
                         // Clear the queue of events for the next batch.
                         events = new ArrayList<>();
+                        accumulated = 0;
                     }
                 }
             } catch (InterruptedException e) {
