@@ -6,6 +6,7 @@ import io.split.client.api.Key;
 import io.split.client.api.SplitResult;
 import io.split.client.dtos.ConditionType;
 import io.split.client.dtos.DataType;
+import io.split.client.dtos.Event;
 import io.split.client.dtos.Partition;
 import io.split.client.impressions.Impression;
 import io.split.client.impressions.ImpressionListener;
@@ -26,10 +27,10 @@ import org.apache.commons.lang3.RandomStringUtils;
 import org.junit.Assert;
 import org.junit.Test;
 import org.mockito.ArgumentCaptor;
+import org.mockito.Mockito;
 
 import java.io.IOException;
 import java.net.URISyntaxException;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
@@ -998,33 +999,63 @@ public class SplitClientImplTest {
 
     @Test
     public void track_with_properties() {
+
+        EventClient eventClientMock = Mockito.mock(EventClient.class);
+        Mockito.when(eventClientMock.track((Event) Mockito.any(), Mockito.anyInt())).thenReturn(true);
         SplitClientImpl client = new SplitClientImpl(
                 mock(SplitFactory.class),
                 mock(SplitFetcher.class),
                 new ImpressionListener.NoopImpressionListener(),
                 new Metrics.NoopMetrics(),
-                NoopEventClient.create(),
+                eventClientMock,
                 config,
                 mock(SDKReadinessGates.class)
         );
 
         HashMap<String, Object> properties = new HashMap<>();
+        ArgumentCaptor<Event> eventArgumentCaptor = ArgumentCaptor.forClass(Event.class);
 
+        properties.put("ok_property", 123);
         properties.put("some_property", new Object());
         Assert.assertThat(client.track("key1", "user", "purchase", properties),
-                org.hamcrest.Matchers.is(false));
+                org.hamcrest.Matchers.is(true));
+        verify(eventClientMock).track(eventArgumentCaptor.capture(), Mockito.anyInt());
+        Event captured = eventArgumentCaptor.getValue();
+        Assert.assertThat(captured.properties.size(), org.hamcrest.Matchers.is(2));
+        Assert.assertThat((Integer) captured.properties.get("ok_property"), org.hamcrest.Matchers.is(123));
+        Assert.assertThat(captured.properties.get("some_property"), org.hamcrest.Matchers.nullValue());
 
         properties.clear();
+        Mockito.reset(eventClientMock);
+        Mockito.when(eventClientMock.track((Event) Mockito.any(), Mockito.anyInt())).thenReturn(true);
+        properties.put("ok_property", 123);
         properties.put("some_property", Arrays.asList(1, 2, 3));
         Assert.assertThat(client.track("key1", "user", "purchase", properties),
-                org.hamcrest.Matchers.is(false));
+                org.hamcrest.Matchers.is(true));
+        eventArgumentCaptor = ArgumentCaptor.forClass(Event.class);
+        verify(eventClientMock).track(eventArgumentCaptor.capture(), Mockito.anyInt());
+        captured = eventArgumentCaptor.getValue();
+        Assert.assertThat(captured.properties.size(), org.hamcrest.Matchers.is(2));
+        Assert.assertThat((Integer) captured.properties.get("ok_property"), org.hamcrest.Matchers.is(123));
+        Assert.assertThat(captured.properties.get("some_property"), org.hamcrest.Matchers.nullValue());
 
         properties.clear();
+        Mockito.reset(eventClientMock);
+        Mockito.when(eventClientMock.track((Event) Mockito.any(), Mockito.anyInt())).thenReturn(true);
+        properties.put("ok_property", 123);
         properties.put("some_property", new HashMap<String, Number>());
         Assert.assertThat(client.track("key1", "user", "purchase", properties),
-                org.hamcrest.Matchers.is(false));
+                org.hamcrest.Matchers.is(true));
+        eventArgumentCaptor = ArgumentCaptor.forClass(Event.class);
+        verify(eventClientMock).track(eventArgumentCaptor.capture(), Mockito.anyInt());
+        captured = eventArgumentCaptor.getValue();
+        Assert.assertThat(captured.properties.size(), org.hamcrest.Matchers.is(2));
+        Assert.assertThat((Integer) captured.properties.get("ok_property"), org.hamcrest.Matchers.is(123));
+        Assert.assertThat(captured.properties.get("some_property"), org.hamcrest.Matchers.nullValue());
 
         properties.clear();
+        Mockito.reset(eventClientMock);
+        Mockito.when(eventClientMock.track((Event) Mockito.any(), Mockito.anyInt())).thenReturn(true);
         properties.put("prop1", 1);
         properties.put("prop2", 2L);
         properties.put("prop3", 7.56);
@@ -1033,6 +1064,24 @@ public class SplitClientImplTest {
         properties.put("prop6", null);
         Assert.assertThat(client.track("key1", "user", "purchase", properties),
                 org.hamcrest.Matchers.is(true));
+        eventArgumentCaptor = ArgumentCaptor.forClass(Event.class);
+        verify(eventClientMock).track(eventArgumentCaptor.capture(), Mockito.anyInt());
+        captured = eventArgumentCaptor.getValue();
+        Assert.assertThat(captured.properties.size(), org.hamcrest.Matchers.is(6));
+        Assert.assertThat((Integer) captured.properties.get("prop1"), org.hamcrest.Matchers.is(1));
+        Assert.assertThat((Long) captured.properties.get("prop2"), org.hamcrest.Matchers.is(2L));
+        Assert.assertThat((Double) captured.properties.get("prop3"), org.hamcrest.Matchers.is(7.56));
+        Assert.assertThat((String) captured.properties.get("prop4"), org.hamcrest.Matchers.is("something"));
+        Assert.assertThat((Boolean) captured.properties.get("prop5"), org.hamcrest.Matchers.is(true));
+        Assert.assertThat(captured.properties.get("prop6"), org.hamcrest.Matchers.nullValue());
+
+        // 110 props of 300 bytes shuold be enough to make the event fail.
+        properties.clear();
+        for (int i = 0; i < 110; ++i) {
+            properties.put(new String(new char[300]).replace('\0', 'a') + i ,
+                    new String(new char[300]).replace('\0', 'a') + i);
+        }
+        Assert.assertThat(client.track("key1", "user", "purchase", properties), org.hamcrest.Matchers.is(false));
     }
 
 
