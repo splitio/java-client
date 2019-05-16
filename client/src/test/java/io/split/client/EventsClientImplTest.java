@@ -54,7 +54,7 @@ public class EventsClientImplTest {
     @Test
     public void testEventsFlushedWhenSizeLimitReached() throws URISyntaxException, InterruptedException, IOException {
         CloseableHttpClient client = Mockito.mock(CloseableHttpClient.class);
-        EventClientImpl eventClient = new EventClientImpl(new LinkedBlockingQueue<Pair<Event, Integer>>(),
+        EventClientImpl eventClient = new EventClientImpl(new LinkedBlockingQueue<EventClientImpl.WrappedEvent>(),
                 client,
                 URI.create("https://kubernetesturl.com/split"),
                 10000, // Long queue so it doesn't flush by # of events

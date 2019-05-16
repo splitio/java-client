@@ -4,7 +4,6 @@ import com.google.common.annotations.VisibleForTesting;
 import io.split.client.dtos.Event;
 import io.split.client.utils.GenericClientUtil;
 import io.split.client.utils.Utils;
-import javafx.util.Pair;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -32,7 +31,7 @@ public class EventClientImpl implements EventClient {
 
     public static final Long MAX_SIZE_BYTES = 5 * 1024 * 1024L;
 
-    private final BlockingQueue<Pair<Event, Integer>> _eventQueue;
+    private final BlockingQueue<WrappedEvent> _eventQueue;
     private final int _maxQueueSize;
     private final long _flushIntervalMillis;
 
@@ -64,7 +63,7 @@ public class EventClientImpl implements EventClient {
 
 
     public static EventClientImpl create(CloseableHttpClient httpclient, URI eventsRootTarget, int maxQueueSize, long flushIntervalMillis, int waitBeforeShutdown) throws URISyntaxException {
-        return new EventClientImpl(new LinkedBlockingQueue<Pair<Event, Integer>>(),
+        return new EventClientImpl(new LinkedBlockingQueue<WrappedEvent>(),
                 httpclient,
                 Utils.appendPath(eventsRootTarget, "api/events/bulk"),
                 maxQueueSize,
@@ -72,7 +71,7 @@ public class EventClientImpl implements EventClient {
                 waitBeforeShutdown);
     }
 
-    EventClientImpl(BlockingQueue<Pair<Event, Integer>> eventQueue, CloseableHttpClient httpclient, URI target, int maxQueueSize,
+    EventClientImpl(BlockingQueue<WrappedEvent> eventQueue, CloseableHttpClient httpclient, URI target, int maxQueueSize,
                     long flushIntervalMillis, int waitBeforeShutdown) throws URISyntaxException {
 
         _httpclient = httpclient;
@@ -123,7 +122,7 @@ public class EventClientImpl implements EventClient {
             if (event == null) {
                 return false;
             }
-            _eventQueue.put(new Pair<>(event, eventSize));
+            _eventQueue.put(new WrappedEvent(event, eventSize));
 
         } catch (InterruptedException e) {
             _log.warn("Interruption when adding event withed while adding message %s.", event);
@@ -155,9 +154,9 @@ public class EventClientImpl implements EventClient {
             long accumulated = 0;
             try {
                 while (true) {
-                    Pair<Event, Integer> data = _eventQueue.take();
-                    Event event = data.getKey();
-                    Integer size = data.getValue();
+                    WrappedEvent data = _eventQueue.take();
+                    Event event = data.event();
+                    Long size = data.size();
 
                     if (event != CENTINEL) {
                         events.add(event);
@@ -189,6 +188,24 @@ public class EventClientImpl implements EventClient {
             } catch (InterruptedException e) {
                 _log.debug("Consumer thread was interrupted. Exiting...");
             }
+        }
+    }
+
+    static class WrappedEvent {
+        private final Event _event;
+        private final long _size;
+
+        public WrappedEvent(Event event, long size) {
+            _event = event;
+            _size = size;
+        }
+
+        public Event event() {
+            return _event;
+        }
+
+        public long size() {
+            return _size;
         }
     }
 
