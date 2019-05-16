@@ -449,8 +449,7 @@ public final class SplitClientImpl implements SplitClient {
                 }
 
                 if (!(value instanceof Number) && !(value instanceof Boolean) && !(value instanceof String)) {
-                    // TODO: Log error
-                    return false;
+                    entry.setValue(null);
                 }
 
                 if (value instanceof String) {

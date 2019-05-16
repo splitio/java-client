@@ -1,7 +1,6 @@
 package io.split.client;
 
 import io.split.client.dtos.Event;
-import javafx.util.Pair;
 import org.apache.http.client.methods.HttpUriRequest;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
@@ -13,9 +12,7 @@ import org.mockito.Mockito;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
+
 import java.util.concurrent.LinkedBlockingQueue;
 
 public class EventsClientImplTest {
