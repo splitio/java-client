@@ -19,6 +19,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.TimeoutException;
 import java.util.regex.Pattern;
@@ -339,6 +340,20 @@ public final class SplitClientImpl implements SplitClient {
     }
 
     @Override
+    public boolean track(String key, String trafficType, String eventType, Map<String, Object> properties) {
+        Event event = createEvent(key, trafficType, eventType);
+        event.properties = new HashMap<>(properties);
+        return track(event);
+    }
+
+    @Override
+    public boolean track(String key, String trafficType, String eventType, double value, Map<String, Object> properties) {
+        Event event = createEvent(key, trafficType, eventType);
+        event.properties = new HashMap<>(properties);
+        return track(event);
+    }
+
+    @Override
     public void blockUntilReady() throws TimeoutException, InterruptedException {
         long startTime = System.currentTimeMillis();
         if (_config.blockUntilReady() <= 0) {
@@ -420,7 +435,38 @@ public final class SplitClientImpl implements SplitClient {
             return false;
         }
 
-        return _eventClient.track(event);
+        int size = 1024; // We assume 1kb events without properties (750 bytes avg measured)
+        if (null != event.properties) {
+            if (event.properties.size() > 300) {
+                _log.warn("Event has more than 300 properties. Some of them will be trimmed when processed");
+            }
+
+            for (Map.Entry<String, Object> entry: event.properties.entrySet()) {
+                size += entry.getKey().length();
+                Object value = entry.getValue();
+                if (null == value) {
+                    continue;
+                }
+
+                if (!(value instanceof Number) && !(value instanceof Boolean) && !(value instanceof String)) {
+                    _log.warn(String.format("Property %s is of invalid type. Setting value to null", entry.getKey()));
+                    entry.setValue(null);
+                }
+
+                if (value instanceof String) {
+                    size += ((String) value).length();
+                }
+
+                if (size > Event.MAX_PROPERTIES_LENGTH_BYTES) {
+                    _log.error(String.format("The maximum size allowed for the properties is 32768 bytes. "
+                        + "Current one is %s bytes. Event not queued", size));
+                    return false;
+                }
+            }
+
+        }
+
+        return _eventClient.track(event, size);
     }
 
     private static final class TreatmentLabelAndChangeNumber {

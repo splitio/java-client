@@ -4,7 +4,7 @@ import io.split.client.dtos.Event;
 
 public interface EventClient {
 
-    boolean track(Event event);
+    boolean track(Event event, int eventSize);
 
     void close();
 }
