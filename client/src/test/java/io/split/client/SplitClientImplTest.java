@@ -1075,7 +1075,7 @@ public class SplitClientImplTest {
         Assert.assertThat((Boolean) captured.properties.get("prop5"), org.hamcrest.Matchers.is(true));
         Assert.assertThat(captured.properties.get("prop6"), org.hamcrest.Matchers.nullValue());
 
-        // 110 props of 300 bytes shuold be enough to make the event fail.
+        // 110 props of 300 bytes should be enough to make the event fail.
         properties.clear();
         for (int i = 0; i < 110; ++i) {
             properties.put(new String(new char[300]).replace('\0', 'a') + i ,
