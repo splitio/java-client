@@ -17,9 +17,9 @@ public class Json {
     private static final Gson _json = new GsonBuilder()
             .serializeNulls()  // Send nulls
             .registerTypeAdapter(Double.class, new JsonSerializer<Double>() {
-                @Override
 
                 // Send integers as such
+                @Override
                 public JsonElement serialize(Double src, Type typeOfSrc, JsonSerializationContext context) {
                     if (src == src.longValue())
                         return new JsonPrimitive(src.longValue());
