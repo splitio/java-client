@@ -63,6 +63,16 @@ public class AlwaysReturnControlSplitClient implements SplitClient {
     }
 
     @Override
+    public boolean track(String key, String trafficType, String eventType, Map<String, Object> properties) {
+        return false;
+    }
+
+    @Override
+    public boolean track(String key, String trafficType, String eventType, double value, Map<String, Object> properties) {
+        return false;
+    }
+
+    @Override
     public void blockUntilReady() throws TimeoutException, InterruptedException {
         //AlwaysReturnControl is always ready
     }

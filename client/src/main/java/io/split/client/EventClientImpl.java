@@ -29,7 +29,9 @@ import static java.lang.Thread.MIN_PRIORITY;
  */
 public class EventClientImpl implements EventClient {
 
-    private final BlockingQueue<Event> _eventQueue;
+    public static final Long MAX_SIZE_BYTES = 5 * 1024 * 1024L;
+
+    private final BlockingQueue<WrappedEvent> _eventQueue;
     private final int _maxQueueSize;
     private final long _flushIntervalMillis;
 
@@ -61,10 +63,15 @@ public class EventClientImpl implements EventClient {
 
 
     public static EventClientImpl create(CloseableHttpClient httpclient, URI eventsRootTarget, int maxQueueSize, long flushIntervalMillis, int waitBeforeShutdown) throws URISyntaxException {
-        return new EventClientImpl(new LinkedBlockingQueue<Event>(), httpclient,  Utils.appendPath(eventsRootTarget, "api/events/bulk"), maxQueueSize, flushIntervalMillis, waitBeforeShutdown);
+        return new EventClientImpl(new LinkedBlockingQueue<WrappedEvent>(),
+                httpclient,
+                Utils.appendPath(eventsRootTarget, "api/events/bulk"),
+                maxQueueSize,
+                flushIntervalMillis,
+                waitBeforeShutdown);
     }
 
-    EventClientImpl(BlockingQueue<Event> eventQueue, CloseableHttpClient httpclient, URI target, int maxQueueSize,
+    EventClientImpl(BlockingQueue<WrappedEvent> eventQueue, CloseableHttpClient httpclient, URI target, int maxQueueSize,
                     long flushIntervalMillis, int waitBeforeShutdown) throws URISyntaxException {
 
         _httpclient = httpclient;
@@ -107,15 +114,16 @@ public class EventClientImpl implements EventClient {
      * the existence of this message in the queue triggers a send event in the consumer thread.
      */
     public void flush() {
-        track(CENTINEL);
-    }
+        track(CENTINEL, 0);
+    }  // CENTINEL event won't be queued, so no size needed.
 
-    public boolean track(Event event) {
+    public boolean track(Event event, int eventSize) {
         try {
             if (event == null) {
                 return false;
             }
-            _eventQueue.put(event);
+            _eventQueue.put(new WrappedEvent(event, eventSize));
+
         } catch (InterruptedException e) {
             _log.warn("Interruption when adding event withed while adding message %s.", event);
             return false;
@@ -143,13 +151,16 @@ public class EventClientImpl implements EventClient {
         @Override
         public void run() {
             List<Event> events = new ArrayList<>();
-
+            long accumulated = 0;
             try {
                 while (true) {
-                    Event event = _eventQueue.take();
+                    WrappedEvent data = _eventQueue.take();
+                    Event event = data.event();
+                    Long size = data.size();
 
                     if (event != CENTINEL) {
                         events.add(event);
+                        accumulated += size;
                     } else if (events.size() < 1) {
 
                         if (_log.isDebugEnabled()) {
@@ -159,7 +170,7 @@ public class EventClientImpl implements EventClient {
                         continue;
                     }
 
-                    if (events.size() >= _maxQueueSize || event == CENTINEL) {
+                    if (events.size() >= _maxQueueSize ||  accumulated >= MAX_SIZE_BYTES || event == CENTINEL) {
 
                         // Send over the network
                         if (_log.isDebugEnabled()) {
@@ -171,11 +182,30 @@ public class EventClientImpl implements EventClient {
 
                         // Clear the queue of events for the next batch.
                         events = new ArrayList<>();
+                        accumulated = 0;
                     }
                 }
             } catch (InterruptedException e) {
                 _log.debug("Consumer thread was interrupted. Exiting...");
             }
+        }
+    }
+
+    static class WrappedEvent {
+        private final Event _event;
+        private final long _size;
+
+        public WrappedEvent(Event event, long size) {
+            _event = event;
+            _size = size;
+        }
+
+        public Event event() {
+            return _event;
+        }
+
+        public long size() {
+            return _size;
         }
     }
 
