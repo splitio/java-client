@@ -1056,6 +1056,24 @@ public class SplitClientImplTest {
         properties.clear();
         Mockito.reset(eventClientMock);
         Mockito.when(eventClientMock.track((Event) Mockito.any(), Mockito.anyInt())).thenReturn(true);
+        properties.put("ok_property", 123);
+        Assert.assertThat(client.track("key1", "user", "purchase", 123, properties),
+                org.hamcrest.Matchers.is(true));
+        eventArgumentCaptor = ArgumentCaptor.forClass(Event.class);
+        verify(eventClientMock).track(eventArgumentCaptor.capture(), Mockito.anyInt());
+        captured = eventArgumentCaptor.getValue();
+        Assert.assertThat(captured.value, org.hamcrest.Matchers.is(123.0));
+        Assert.assertThat(captured.trafficTypeName,org.hamcrest.Matchers.is("user"));
+        Assert.assertThat(captured.eventTypeId,org.hamcrest.Matchers.is("purchase"));
+        Assert.assertThat(captured.key,org.hamcrest.Matchers.is("key1"));
+        Assert.assertThat(captured.properties.size(), org.hamcrest.Matchers.is(1));
+        Assert.assertThat((Integer) captured.properties.get("ok_property"), org.hamcrest.Matchers.is(123));
+
+
+
+        properties.clear();
+        Mockito.reset(eventClientMock);
+        Mockito.when(eventClientMock.track((Event) Mockito.any(), Mockito.anyInt())).thenReturn(true);
         properties.put("prop1", 1);
         properties.put("prop2", 2L);
         properties.put("prop3", 7.56);
