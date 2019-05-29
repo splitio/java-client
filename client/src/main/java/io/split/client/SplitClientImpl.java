@@ -350,6 +350,7 @@ public final class SplitClientImpl implements SplitClient {
     public boolean track(String key, String trafficType, String eventType, double value, Map<String, Object> properties) {
         Event event = createEvent(key, trafficType, eventType);
         event.properties = new HashMap<>(properties);
+        event.value = value;
         return track(event);
     }
 
