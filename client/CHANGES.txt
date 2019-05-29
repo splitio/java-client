@@ -1,5 +1,8 @@
 CHANGES
 
+3.2.1
+- Fix issue with events not forwarding the value when sending properties as well.
+
 3.2.0
 - Add ability to send events with properties
 
