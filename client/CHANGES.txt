@@ -1,5 +1,8 @@
 CHANGES
 
+3.2.2
+- log warn and not error when Split doesn't exist in the environment
+
 3.2.1
 - Fix issue with events not forwarding the value when sending properties as well.
 
