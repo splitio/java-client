@@ -254,12 +254,9 @@ public final class SplitClientImpl implements SplitClient {
 
         if (parsedSplit == null) {
             if (_gates.isSDKReadyNow()) {
-                _log.error(
+                _log.warn(
                         "getTreatment: you passed \"" + split + "\" that does not exist in this environment, " +
                         "please double check what Splits exist in the web console.");
-            }
-            if (_log.isDebugEnabled()) {
-                _log.debug("Returning control because no split was found for: " + split);
             }
             return new TreatmentLabelAndChangeNumber(Treatments.CONTROL, DEFINITION_NOT_FOUND);
         }
