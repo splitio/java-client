@@ -344,9 +344,41 @@ public final class SplitClientImpl implements SplitClient {
     }
 
     @Override
+    public boolean track(String key, String trafficType, String eventType, long timestamp) {
+        Event event = createEvent(key, trafficType, eventType);
+        event.timestamp = timestamp;
+        return track(event);
+    }
+
+    @Override
     public boolean track(String key, String trafficType, String eventType, double value, Map<String, Object> properties) {
         Event event = createEvent(key, trafficType, eventType);
         event.properties = new HashMap<>(properties);
+        event.value = value;
+        return track(event);
+    }
+
+    @Override
+    public boolean track(String key, String trafficType, String eventType, double value, long timestamp) {
+        Event event = createEvent(key, trafficType, eventType);
+        event.timestamp = timestamp;
+        event.value = value;
+        return track(event);
+    }
+
+    @Override
+    public boolean track(String key, String trafficType, String eventType, Map<String, Object> properties, long timestamp) {
+        Event event = createEvent(key, trafficType, eventType);
+        event.properties = new HashMap<>(properties);
+        event.timestamp = timestamp;
+        return track(event);
+    }
+
+    @Override
+    public boolean track(String key, String trafficType, String eventType, double value, Map<String, Object> properties, long timestamp) {
+        Event event = createEvent(key, trafficType, eventType);
+        event.properties = new HashMap<>(properties);
+        event.timestamp = timestamp;
         event.value = value;
         return track(event);
     }

@@ -92,7 +92,27 @@ public class SplitClientForTest implements SplitClient {
     }
 
     @Override
+    public boolean track(String key, String trafficType, String eventType, long timestamp) {
+        return false;
+    }
+
+    @Override
     public boolean track(String key, String trafficType, String eventType, double value, Map<String, Object> properties) {
+        return false;
+    }
+
+    @Override
+    public boolean track(String key, String trafficType, String eventType, double value, long timestamp) {
+        return false;
+    }
+
+    @Override
+    public boolean track(String key, String trafficType, String eventType, Map<String, Object> properties, long timestamp) {
+        return false;
+    }
+
+    @Override
+    public boolean track(String key, String trafficType, String eventType, double value, Map<String, Object> properties, long timestamp) {
         return false;
     }
 

@@ -92,8 +92,28 @@ public final class LocalhostSplitClientAndFactory implements SplitClient {
     }
 
     @Override
+    public boolean track(String key, String trafficType, String eventType, long timestamp) {
+        return _splitClient.track(key, trafficType, eventType, timestamp);
+    }
+
+    @Override
     public boolean track(String key, String trafficType, String eventType, double value, Map<String, Object> properties) {
         return _splitClient.track(key, trafficType, eventType, value, properties);
+    }
+
+    @Override
+    public boolean track(String key, String trafficType, String eventType, double value, long timestamp) {
+        return _splitClient.track(key, trafficType, eventType, value, timestamp);
+    }
+
+    @Override
+    public boolean track(String key, String trafficType, String eventType, Map<String, Object> properties, long timestamp) {
+        return _splitClient.track(key, trafficType, eventType, properties, timestamp);
+    }
+
+    @Override
+    public boolean track(String key, String trafficType, String eventType, double value, Map<String, Object> properties, long timestamp) {
+        return _splitClient.track(key, trafficType, eventType, value, properties, timestamp);
     }
 
     @Override

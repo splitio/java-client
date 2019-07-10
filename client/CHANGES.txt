@@ -1,5 +1,8 @@
 CHANGES
 
+3.2.3
+- Add support for optional timestamp parameter when tracking an event.
+
 3.2.2
 - log warn and not error when Split doesn't exist in the environment
 

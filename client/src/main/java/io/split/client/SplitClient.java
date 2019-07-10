@@ -184,11 +184,26 @@ public interface SplitClient {
      * @param key the identifier of the entity
      * @param trafficType the type of the event
      * @param eventType the type of the event
-     * @param value the value of the event
+     * @param properties a map of key value pairs that can be used to filter your metrics
      *
      * @return true if the track was successful, false otherwise
      */
     boolean track(String key, String trafficType, String eventType, Map<String, Object> properties);
+
+    /**
+     * Enqueue a new event to be sent to split data collection services
+     *
+     * Example:
+     *      client.track("account, "Split Software", "checkout", 1562791206372L)
+     *
+     * @param key the identifier of the entity
+     * @param trafficType the type of the event
+     * @param eventType the type of the event
+     * @param timestamp the timestamp in milliseconds since midnight, January 1, 1970 UTC
+     *
+     * @return true if the track was successful, false otherwise
+     */
+    boolean track(String key, String trafficType, String eventType, long timestamp);
 
     /**
      * Enqueue a new event to be sent to split data collection services
@@ -200,10 +215,60 @@ public interface SplitClient {
      * @param trafficType the type of the event
      * @param eventType the type of the event
      * @param value the value of the event
+     * @param properties a map of key value pairs that can be used to filter your metrics
      *
      * @return true if the track was successful, false otherwise
      */
     boolean track(String key, String trafficType, String eventType, double value, Map<String, Object> properties);
+
+    /**
+     * Enqueue a new event to be sent to split data collection services
+     *
+     * Example:
+     *      client.track(“account”, “Split Software”, “checkout”, 123, 1562791206372L)
+     *
+     * @param key the identifier of the entity
+     * @param trafficType the type of the event
+     * @param eventType the type of the event
+     * @param value the value of the event
+     * @param timestamp the timestamp in milliseconds since midnight, January 1, 1970 UTC
+     *
+     * @return true if the track was successful, false otherwise
+     */
+    boolean track(String key, String trafficType, String eventType, double value, long timestamp);
+
+    /**
+     * Enqueue a new event to be sent to split data collection services
+     *
+     * Example:
+     *      client.track(“account”, “Split Software”, “checkout”, Collections.singletonMap("age", 23), 1562791206372L)
+     *
+     * @param key the identifier of the entity
+     * @param trafficType the type of the event
+     * @param eventType the type of the event
+     * @param properties a map of key value pairs that can be used to filter your metrics
+     * @param timestamp the timestamp in milliseconds since midnight, January 1, 1970 UTC
+     *
+     * @return true if the track was successful, false otherwise
+     */
+    boolean track(String key, String trafficType, String eventType, Map<String, Object> properties, long timestamp);
+
+    /**
+     * Enqueue a new event to be sent to split data collection services
+     *
+     * Example:
+     *      client.track(“account”, “Split Software”, “checkout”, 123, Collections.singletonMap("age", 23), 1562791206372L)
+     *
+     * @param key the identifier of the entity
+     * @param trafficType the type of the event
+     * @param eventType the type of the event
+     * @param value the value of the event
+     * @param properties a map of key value pairs that can be used to filter your metrics
+     * @param timestamp the timestamp in milliseconds since midnight, January 1, 1970 UTC
+     *
+     * @return true if the track was successful, false otherwise
+     */
+    boolean track(String key, String trafficType, String eventType, double value, Map<String, Object> properties, long timestamp);
 
 
     /**
