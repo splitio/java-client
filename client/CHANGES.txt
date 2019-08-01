@@ -1,7 +1,7 @@
 CHANGES
 
 3.2.3
-- allow to push impressions more often than one every 30 seconds
+- allow to push impressions more often than one every 30 seconds and events flush rate is now customizable
 
 3.2.2
 - log warn and not error when Split doesn't exist in the environment
