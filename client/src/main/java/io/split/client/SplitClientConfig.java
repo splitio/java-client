@@ -564,6 +564,10 @@ public class SplitClientConfig {
                 throw new IllegalArgumentException("impressionsRefreshRate must be > 0: " + _impressionsRefreshRate);
             }
 
+            if (_eventFlushIntervalInMillis < 1000) {
+                throw new IllegalArgumentException("_eventFlushIntervalInMillis must be >= 1000: " + _eventFlushIntervalInMillis);
+            }
+
             if (_metricsRefreshRate < 30) {
                 throw new IllegalArgumentException("metricsRefreshRate must be >= 30: " + _metricsRefreshRate);
             }

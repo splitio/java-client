@@ -41,6 +41,20 @@ public class SplitClientConfigTest {
     }
 
     @Test(expected = IllegalArgumentException.class)
+    public void cannot_set_events_flush_rate_to_equal_to_1000() {
+        SplitClientConfig.builder()
+                .eventFlushIntervalInMillis(999)
+                .build();
+    }
+
+    @Test
+    public void events_flush_rate_works() {
+        SplitClientConfig.builder()
+                .eventFlushIntervalInMillis(1000)
+                .build();
+    }
+
+    @Test(expected = IllegalArgumentException.class)
     public void cannot_set_metrics_refresh_rate_to_less_than_30() {
         SplitClientConfig.builder()
                 .metricsRefreshRate(29)
