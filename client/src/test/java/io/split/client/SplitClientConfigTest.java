@@ -3,9 +3,6 @@ package io.split.client;
 import io.split.client.impressions.ImpressionListener;
 import org.junit.Test;
 
-/**
- * Created by adilaijaz on 3/23/17.
- */
 public class SplitClientConfigTest {
 
     @Test(expected = IllegalArgumentException.class)
@@ -23,9 +20,37 @@ public class SplitClientConfigTest {
     }
 
     @Test(expected = IllegalArgumentException.class)
-    public void cannot_set_impression_refresh_rate_to_less_than_30() {
+    public void cannot_set_impression_refresh_rate_to_equal_to_0() {
         SplitClientConfig.builder()
-                .impressionsRefreshRate(29)
+                .impressionsRefreshRate(0)
+                .build();
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void cannot_set_impression_refresh_rate_to_less_than_0() {
+        SplitClientConfig.builder()
+                .impressionsRefreshRate(-1)
+                .build();
+    }
+
+    @Test
+    public void set_impression_refresh_rate_works() {
+        SplitClientConfig.builder()
+                .impressionsRefreshRate(1)
+                .build();
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void cannot_set_events_flush_rate_to_equal_to_1000() {
+        SplitClientConfig.builder()
+                .eventFlushIntervalInMillis(999)
+                .build();
+    }
+
+    @Test
+    public void events_flush_rate_works() {
+        SplitClientConfig.builder()
+                .eventFlushIntervalInMillis(1000)
                 .build();
     }
 
