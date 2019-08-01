@@ -560,8 +560,8 @@ public class SplitClientConfig {
                 throw new IllegalArgumentException("segmentsRefreshRate must be >= 30: " + _segmentsRefreshRate);
             }
 
-            if (_impressionsRefreshRate < 30) {
-                throw new IllegalArgumentException("impressionsRefreshRate must be >= 30: " + _impressionsRefreshRate);
+            if (_impressionsRefreshRate <= 0) {
+                throw new IllegalArgumentException("impressionsRefreshRate must be > 0: " + _impressionsRefreshRate);
             }
 
             if (_metricsRefreshRate < 30) {
