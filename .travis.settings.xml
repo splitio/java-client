@@ -13,7 +13,7 @@
                 <sonar.host.url>http://sonar.split.io:8080</sonar.host.url>
                 <sonar.login>${env.SONAR_TOKEN}</sonar.login>
                 <sonar.projectName>Split Java SDK</sonar.projectName>
-                <sonar.projectVersion>master</sonar.projectVersion>
+                <sonar.projectVersion>development</sonar.projectVersion>
                 <sonar.test.exclusions>**/test/**/*.*</sonar.test.exclusions>
                 <sonar.exclusions>**/ai/**/*.*,**/jdbc/**/*.*,**/mpt/**/*.*,**/jcr/**/*.*,**/JDBC*</sonar.exclusions>
             </properties>
