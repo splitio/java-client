@@ -18,4 +18,4 @@ deploy:
     skip_cleanup: true
     script: mvn -DskipTests sonar:sonar
     on:
-      branch: development
+      branch: test/ubuntu-trusty
