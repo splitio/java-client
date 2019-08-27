@@ -256,6 +256,44 @@ public class RefreshableSplitFetcherTest {
     }
 
     @Test
+    public void fetch_traffic_type_names_already_existing_split() throws Exception {
+        long startingChangeNumber = -1;
+        SplitChangeFetcherWithTrafficTypeNames changeFetcher = new SplitChangeFetcherWithTrafficTypeNames();
+        SDKReadinessGates gates = new SDKReadinessGates();
+
+        SegmentChangeFetcher segmentChangeFetcher = new NoChangeSegmentChangeFetcher();
+        SegmentFetcher segmentFetcher = new RefreshableSegmentFetcher(segmentChangeFetcher, 1,10, gates);
+        RefreshableSplitFetcher fetcher = new RefreshableSplitFetcher(changeFetcher, new SplitParser(segmentFetcher), gates, startingChangeNumber);
+
+        // Before, it should be empty
+        Set<String> usedTrafficTypes = fetcher.fetchKnownTrafficTypes();
+        Set<String> expected = Sets.newHashSet();
+        Assert.assertThat(usedTrafficTypes, Matchers.is(Matchers.equalTo(expected)));
+
+        // execute once, it starts with since -1;
+        changeFetcher.addSplitForSince(-1L, "test_1", "user");
+        executeOnce(fetcher);
+        usedTrafficTypes = fetcher.fetchKnownTrafficTypes();
+        expected.add("user");
+        Assert.assertThat(usedTrafficTypes, Matchers.is(Matchers.equalTo(expected)));
+
+        // Simulate that the split arrives again as active because it has been updated
+        changeFetcher.addSplitForSince(0L, "test_1", "user");
+        executeOnce(fetcher);
+        usedTrafficTypes = fetcher.fetchKnownTrafficTypes();
+        expected.add("user");
+        Assert.assertThat(usedTrafficTypes, Matchers.is(Matchers.equalTo(expected)));
+
+        // Simulate that the split is now removed. Traffic type user should no longer be present.
+        changeFetcher.removeSplitForSince(1L, "test_1", "user");
+        executeOnce(fetcher);
+        usedTrafficTypes = fetcher.fetchKnownTrafficTypes();
+        expected.clear();
+        Assert.assertThat(usedTrafficTypes, Matchers.is(Matchers.equalTo(expected)));
+    }
+
+
+    @Test
     public void fetch_traffic_type_names_works_with_remove() throws Exception {
         long startingChangeNumber = -1;
         SplitChangeFetcherWithTrafficTypeNames changeFetcher = new SplitChangeFetcherWithTrafficTypeNames();

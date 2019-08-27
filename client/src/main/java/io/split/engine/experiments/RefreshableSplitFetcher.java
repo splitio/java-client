@@ -203,6 +203,18 @@ public class RefreshableSplitFetcher implements SplitFetcher, Runnable {
 
                 segmentsInUse.addAll(collectSegmentsInUse(split));
                 toAdd.put(split.name, parsedSplit);
+
+                // If the split already exists, this is either an update, or the split has been
+                // deleted and recreated (possibly with a different traffic type).
+                // If it's an update, the traffic type should NOT be increased.
+                // If it's deleted & recreated, the old one should be decreased and the new one increased.
+                // To handle both cases, we simply delete the old one if the split is present.
+                // The new one is always increased.
+                ParsedSplit current = _concurrentMap.get(split.name);
+                if (current != null && current.trafficTypeName() != null) {
+                    trafficTypeNamesToRemove.add(current.trafficTypeName());
+                }
+
                 if (split.trafficTypeName != null) {
                     trafficTypeNamesToAdd.add(split.trafficTypeName);
                 }
