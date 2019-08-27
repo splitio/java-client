@@ -1,5 +1,8 @@
 CHANGES
 
+3.2.4
+- Fix small issue regarding traffic type validation on .track() calls.
+
 3.2.3
 - allow to push impressions more often than one every 30 seconds and events flush rate is now customizable
 
