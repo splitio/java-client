@@ -1,5 +1,8 @@
 CHANGES
 
+3.3.0
+- Add New Relic Integration
+
 3.2.3
 - allow to push impressions more often than one every 30 seconds and events flush rate is now customizable
 

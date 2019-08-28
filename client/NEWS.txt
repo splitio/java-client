@@ -1,5 +1,8 @@
 NEWS
 
+3.3.0
+- Adds New Relic Integration. Now if the New Relic agent is running, it will attach Impressoin data to the current transaction in New Relic,
+
 3.1.1
 - No news for this minor release
 
