@@ -5,6 +5,7 @@ import com.google.common.collect.Multiset;
 import io.split.client.impressions.AsynchronousImpressionListener;
 import io.split.client.impressions.ImpressionListener;
 import io.split.client.impressions.ImpressionsManager;
+import io.split.client.impressions.newrelic.NewRelicListener;
 import io.split.client.interceptors.AddSplitHeadersFilter;
 import io.split.client.interceptors.GzipDecoderResponseInterceptor;
 import io.split.client.interceptors.GzipEncoderRequestInterceptor;
@@ -128,7 +129,7 @@ public class SplitFactoryImpl implements SplitFactory {
             DefaultProxyRoutePlanner routePlanner = new DefaultProxyRoutePlanner(config.proxy());
             httpClientbuilder.setRoutePlanner(routePlanner);
 
-            if (config.proxyUsername() != null && config.proxyPassword() != null){
+            if (config.proxyUsername() != null && config.proxyPassword() != null) {
                 _log.debug("Proxy setup using credentials");
                 CredentialsProvider credsProvider = new BasicCredentialsProvider();
                 AuthScope siteScope = new AuthScope(config.proxy().getHostName(), config.proxy().getPort());
@@ -169,14 +170,23 @@ public class SplitFactoryImpl implements SplitFactory {
         final ImpressionsManager splitImpressionListener = ImpressionsManager.instance(httpclient, config);
         final ImpressionListener impressionListener;
 
-        if (config.impressionListener() != null) {
-            AsynchronousImpressionListener wrapper = AsynchronousImpressionListener.build(config.impressionListener(), config.impressionListenerCapactity());
+        ImpressionListener newReliceListener = getNewReliceListener();
+        if (newReliceListener == null && config.impressionListener() == null) {
+            impressionListener = splitImpressionListener;
+        } else {
             List<ImpressionListener> impressionListeners = new ArrayList<ImpressionListener>();
             impressionListeners.add(splitImpressionListener);
-            impressionListeners.add(wrapper);
+            if (config.impressionListener() != null) {
+                AsynchronousImpressionListener wrapper = AsynchronousImpressionListener.build(config.impressionListener(), config.impressionListenerCapactity());
+                impressionListeners.add(wrapper);
+            }
+            if (newReliceListener != null) {
+                // NewRelic Impression Listener needs to be synchronous.
+                // It is required so the Split Data is attached to the current New Relic Transaction.
+                impressionListeners.add(newReliceListener);
+                _log.info("Added New Relic Impression Listener");
+            }
             impressionListener = new ImpressionListener.FederatedImpressionListener(impressionListeners);
-        } else {
-            impressionListener = splitImpressionListener;
         }
 
         CachedMetrics cachedMetrics = new CachedMetrics(httpMetrics, TimeUnit.SECONDS.toMillis(config.metricsRefreshRate()));
@@ -254,5 +264,19 @@ public class SplitFactoryImpl implements SplitFactory {
     @Override
     public boolean isDestroyed() {
         return isTerminated;
+    }
+
+
+    private ImpressionListener getNewReliceListener() {
+        try {
+            Object.class.forName("com.newrelic.api.agent.NewRelic").newInstance();
+            return new NewRelicListener();
+        } catch (ClassNotFoundException e) {
+            //Agent is not running
+            return null;
+        } catch (Exception e) {
+            _log.error("Failed to check if the New Relic Agent is running", e);
+        }
+        return null;
     }
 }
