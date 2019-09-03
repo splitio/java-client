@@ -1,7 +1,21 @@
-dist: precise
+dist: trusty
 
 jdk:
-  - oraclejdk7
+  - oraclejdk8
+
+cache:
+  directories:
+    - $HOME/.m2
+
+before_script:
+  - cp .travis.settings.xml ${HOME}/.m2/settings.xml
 
 script:
-  - mvn -Dhttps.protocols=TLSv1.2 clean install
+  - mvn clean install
+
+deploy:
+  - provider: script
+    skip_cleanup: true
+    script: mvn -DskipTests sonar:sonar
+    on:
+      branch: development
