@@ -277,14 +277,13 @@ public class SplitFactoryImpl implements SplitFactory {
 
     private ImpressionListener getNewRelicListener() {
         try {
-            //Object.class.forName("com.newrelic.api.agent.NewRelic").newInstance();
             return new NewRelicListener();
-        } catch (ClassNotFoundException e) {
-            //Agent is not running
-            return null;
+        } catch (ClassNotFoundException | NoSuchMethodException | IllegalAccessException e) {
+            _log.warn("New Relic agent not found. Continuing without it", e);
         } catch (Exception e) {
-            _log.error("Failed to check if the New Relic Agent is running", e);
+            _log.warn("Failed to check if the New Relic Agent is running", e);
         }
+        // Agent is not running
         return null;
     }
 }

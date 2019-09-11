@@ -14,26 +14,18 @@ import static java.lang.invoke.MethodType.methodType;
  * Impression Listener implementation for New Relic that adds custom parameters to the active transaction
  * in New Relic.
  */
-public class NewRelicListener implements ImpressionListener  {
+public class NewRelicListener implements ImpressionListener {
     private static final Logger _log = LoggerFactory.getLogger(NewRelicListener.class);
 
-    //private final Method _addCustomParameter;
     private final MethodHandle _addCustomParameterMethodHandle;
 
-    public NewRelicListener() throws ClassNotFoundException {
+    public NewRelicListener() throws ClassNotFoundException, NoSuchMethodException, IllegalAccessException {
         _addCustomParameterMethodHandle = getAddCustomParameterMethodHandle();
-        if (_addCustomParameterMethodHandle == null) {
-            throw new ClassNotFoundException();
-        }
     }
 
-    private MethodHandle getAddCustomParameterMethodHandle() {
-        try {
-            Class<?> newRelicInstance = Class.forName("com.newrelic.api.agent.NewRelic");
-            return MethodHandles.lookup().findStatic(newRelicInstance, "addCustomParameter", methodType(String.class, String.class));
-        } catch (ClassNotFoundException | NoSuchMethodException | IllegalAccessException e) {
-            return null;
-        }
+    private MethodHandle getAddCustomParameterMethodHandle() throws ClassNotFoundException, NoSuchMethodException, IllegalAccessException {
+        Class<?> newRelicInstance = Class.forName("com.newrelic.api.agent.NewRelic");
+        return MethodHandles.lookup().findStatic(newRelicInstance, "addCustomParameter", methodType(String.class, String.class));
     }
 
     @Override
