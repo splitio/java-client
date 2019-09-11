@@ -38,6 +38,7 @@ public class SplitClientConfig {
     private final int _maxStringLength;
     private final boolean _destroyOnShutDown;
     private final String _splitFile;
+    private boolean _newRelicEnabled;
 
     // Proxy configs
     private final HttpHost _proxy;
@@ -75,7 +76,8 @@ public class SplitClientConfig {
                               long eventFlushIntervalInMillis,
                               int maxStringLength,
                               boolean destroyOnShutDown,
-                              String splitFile) {
+                              String splitFile,
+                              boolean newRelicEnabled) {
         _endpoint = endpoint;
         _eventsEndpoint = eventsEndpoint;
         _featuresRefreshRate = pollForFeatureChangesEveryNSeconds;
@@ -100,6 +102,7 @@ public class SplitClientConfig {
         _maxStringLength = maxStringLength;
         _destroyOnShutDown = destroyOnShutDown;
         _splitFile = splitFile;
+        _newRelicEnabled = newRelicEnabled;
 
         Properties props = new Properties();
         try {
@@ -208,6 +211,10 @@ public class SplitClientConfig {
         return _splitFile;
     }
 
+    public boolean newRelicEnabled() {
+        return _newRelicEnabled;
+    }
+
     public static final class Builder {
 
         private String _endpoint = "https://sdk.split.io";
@@ -237,6 +244,7 @@ public class SplitClientConfig {
         private int _maxStringLength = 250;
         private boolean _destroyOnShutDown = true;
         private String _splitFile = null;
+        private boolean _newRelicEnabled = false;
 
         public Builder() {
         }
@@ -550,6 +558,17 @@ public class SplitClientConfig {
             return this;
         }
 
+        /**
+         * Enables New Relic synchronous impressions listener to attach split impression to New Relic transaction data
+         * if a new relic agent is detected in the classpath.
+         * @param enabled
+         * @return
+         */
+        public Builder newRelicEnabled(boolean enabled) {
+            _newRelicEnabled = enabled;
+            return this;
+        }
+
 
         public SplitClientConfig build() {
             if (_featuresRefreshRate < 5 ) {
@@ -631,7 +650,8 @@ public class SplitClientConfig {
                     _eventFlushIntervalInMillis,
                     _maxStringLength,
                     _destroyOnShutDown,
-                    _splitFile);
+                    _splitFile,
+                    _newRelicEnabled);
         }
 
     }

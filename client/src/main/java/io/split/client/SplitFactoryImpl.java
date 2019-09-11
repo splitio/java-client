@@ -168,24 +168,30 @@ public class SplitFactoryImpl implements SplitFactory {
 
         // Impressions
         final ImpressionsManager splitImpressionListener = ImpressionsManager.instance(httpclient, config);
-        final ImpressionListener impressionListener;
+        // Set this as default preemptively to overwrite if necessary.
+        ImpressionListener impressionListener = splitImpressionListener;
 
-        ImpressionListener newReliceListener = getNewReliceListener();
-        if (newReliceListener == null && config.impressionListener() == null) {
-            impressionListener = splitImpressionListener;
-        } else {
-            List<ImpressionListener> impressionListeners = new ArrayList<ImpressionListener>();
-            impressionListeners.add(splitImpressionListener);
-            if (config.impressionListener() != null) {
-                AsynchronousImpressionListener wrapper = AsynchronousImpressionListener.build(config.impressionListener(), config.impressionListenerCapactity());
-                impressionListeners.add(wrapper);
-            }
-            if (newReliceListener != null) {
-                // NewRelic Impression Listener needs to be synchronous.
-                // It is required so the Split Data is attached to the current New Relic Transaction.
-                impressionListeners.add(newReliceListener);
+        List<ImpressionListener> impressionListeners = new ArrayList<ImpressionListener>();
+        impressionListeners.add(splitImpressionListener);
+
+        if (config.impressionListener() != null) {
+            AsynchronousImpressionListener wrapper = AsynchronousImpressionListener.build(config.impressionListener(), config.impressionListenerCapactity());
+            impressionListeners.add(wrapper);
+        }
+
+        // Check if we need to attach a New Relic listener
+        if (config.newRelicEnabled()) {
+            ImpressionListener newRelicListener = getNewRelicListener();
+            // New Relic Impression Listener needs to be synchronous.
+            // It is required so the Split Data is attached to the current New Relic Transaction.
+            if (newRelicListener != null) {
+                impressionListeners.add(newRelicListener);
                 _log.info("Added New Relic Impression Listener");
             }
+        }
+
+        if (impressionListeners.size() > 1) {
+            // since there are more than just the default integration, let's federate and add them all.
             impressionListener = new ImpressionListener.FederatedImpressionListener(impressionListeners);
         }
 
@@ -267,9 +273,9 @@ public class SplitFactoryImpl implements SplitFactory {
     }
 
 
-    private ImpressionListener getNewReliceListener() {
+    private ImpressionListener getNewRelicListener() {
         try {
-            Object.class.forName("com.newrelic.api.agent.NewRelic").newInstance();
+            //Object.class.forName("com.newrelic.api.agent.NewRelic").newInstance();
             return new NewRelicListener();
         } catch (ClassNotFoundException e) {
             //Agent is not running
