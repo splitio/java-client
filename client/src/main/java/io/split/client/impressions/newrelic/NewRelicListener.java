@@ -25,7 +25,7 @@ public class NewRelicListener implements ImpressionListener {
 
     private MethodHandle getAddCustomParameterMethodHandle() throws ClassNotFoundException, NoSuchMethodException, IllegalAccessException {
         Class<?> newRelicInstance = Class.forName("com.newrelic.api.agent.NewRelic");
-        return MethodHandles.lookup().findStatic(newRelicInstance, "addCustomParameter", methodType(String.class, String.class));
+        return MethodHandles.lookup().findStatic(newRelicInstance, "addCustomParameter", methodType(Void.TYPE, String.class, String.class));
     }
 
     @Override
