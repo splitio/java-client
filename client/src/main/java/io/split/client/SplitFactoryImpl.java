@@ -169,7 +169,7 @@ public class SplitFactoryImpl implements SplitFactory {
         // Impressions
         final ImpressionsManager splitImpressionListener = ImpressionsManager.instance(httpclient, config);
         // Set this as default preemptively to overwrite if necessary.
-        ImpressionListener impressionListener = splitImpressionListener;
+        final ImpressionListener impressionListener;
 
         List<ImpressionListener> impressionListeners = new ArrayList<ImpressionListener>();
         impressionListeners.add(splitImpressionListener);
@@ -193,6 +193,8 @@ public class SplitFactoryImpl implements SplitFactory {
         if (impressionListeners.size() > 1) {
             // since there are more than just the default integration, let's federate and add them all.
             impressionListener = new ImpressionListener.FederatedImpressionListener(impressionListeners);
+        } else {
+            impressionListener = splitImpressionListener;
         }
 
         CachedMetrics cachedMetrics = new CachedMetrics(httpMetrics, TimeUnit.SECONDS.toMillis(config.metricsRefreshRate()));
