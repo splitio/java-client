@@ -1,7 +1,10 @@
 CHANGES
 
 3.2.5
-- Add New Relic Integration
+- Adds New Relic Integration. Now if the New Relic agent is running, it will attach Impression data to the current transaction in New Relic,
+
+3.2.4
+- Fix small issue regarding traffic type validation on .track() calls.
 
 3.2.3
 - allow to push impressions more often than one every 30 seconds and events flush rate is now customizable
