@@ -5,7 +5,6 @@ import com.google.common.collect.Multiset;
 import io.split.client.impressions.AsynchronousImpressionListener;
 import io.split.client.impressions.ImpressionListener;
 import io.split.client.impressions.ImpressionsManager;
-import io.split.integrations.NewRelicListener;
 import io.split.client.interceptors.AddSplitHeadersFilter;
 import io.split.client.interceptors.GzipDecoderResponseInterceptor;
 import io.split.client.interceptors.GzipEncoderRequestInterceptor;
@@ -170,7 +169,7 @@ public class SplitFactoryImpl implements SplitFactory {
         // Impressions
         final ImpressionsManager splitImpressionListener = ImpressionsManager.instance(httpclient, config);
 
-        List<ImpressionListener> impressionListeners = new ArrayList<ImpressionListener>();
+        List<ImpressionListener> impressionListeners = new ArrayList<>();
         impressionListeners.add(splitImpressionListener);
 
         // Setup integrations
@@ -280,18 +279,5 @@ public class SplitFactoryImpl implements SplitFactory {
     @Override
     public boolean isDestroyed() {
         return isTerminated;
-    }
-
-
-    private ImpressionListener getNewRelicListener() {
-        try {
-            return new NewRelicListener();
-        } catch (ClassNotFoundException | NoSuchMethodException | IllegalAccessException e) {
-            _log.warn("New Relic agent not found. Continuing without it", e);
-        } catch (Exception e) {
-            _log.warn("Failed to check if the New Relic Agent is running", e);
-        }
-        // Agent is not running
-        return null;
     }
 }
