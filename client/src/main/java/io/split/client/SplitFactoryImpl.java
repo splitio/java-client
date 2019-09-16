@@ -5,7 +5,7 @@ import com.google.common.collect.Multiset;
 import io.split.client.impressions.AsynchronousImpressionListener;
 import io.split.client.impressions.ImpressionListener;
 import io.split.client.impressions.ImpressionsManager;
-import io.split.client.impressions.newrelic.NewRelicListener;
+import io.split.integrations.NewRelicListener;
 import io.split.client.interceptors.AddSplitHeadersFilter;
 import io.split.client.interceptors.GzipDecoderResponseInterceptor;
 import io.split.client.interceptors.GzipEncoderRequestInterceptor;
@@ -18,6 +18,7 @@ import io.split.engine.experiments.SplitChangeFetcher;
 import io.split.engine.experiments.SplitParser;
 import io.split.engine.segments.RefreshableSegmentFetcher;
 import io.split.engine.segments.SegmentChangeFetcher;
+import io.split.integrations.IntegrationsConfig;
 import org.apache.http.auth.AuthScope;
 import org.apache.http.auth.Credentials;
 import org.apache.http.auth.UsernamePasswordCredentials;
@@ -172,19 +173,27 @@ public class SplitFactoryImpl implements SplitFactory {
         List<ImpressionListener> impressionListeners = new ArrayList<ImpressionListener>();
         impressionListeners.add(splitImpressionListener);
 
-        if (config.impressionListener() != null) {
-            AsynchronousImpressionListener wrapper = AsynchronousImpressionListener.build(config.impressionListener(), config.impressionListenerCapactity());
-            impressionListeners.add(wrapper);
-        }
+        // Setup integrations
+        if (config.integrationsConfig() != null) {
 
-        // Check if we need to attach a New Relic listener
-        if (config.newRelicEnabled()) {
-            ImpressionListener newRelicListener = getNewRelicListener();
-            // New Relic Impression Listener needs to be synchronous.
-            // It is required so the Split Data is attached to the current New Relic Transaction.
-            if (newRelicListener != null) {
-                impressionListeners.add(newRelicListener);
-                _log.info("Added New Relic Impression Listener");
+            // asynchronous impressions listeners
+            List<IntegrationsConfig.ImpressionListenerWithMeta> asyncListeners = config
+                    .integrationsConfig()
+                    .getImpressionsListeners(IntegrationsConfig.Execution.ASYNC);
+
+            for (IntegrationsConfig.ImpressionListenerWithMeta listener : asyncListeners) {
+                AsynchronousImpressionListener wrapper = AsynchronousImpressionListener
+                        .build(listener.listener(), listener.queueSize());
+                impressionListeners.add(wrapper);
+            }
+
+            // synchronous impressions listeners
+            List<IntegrationsConfig.ImpressionListenerWithMeta> syncListeners = config
+                    .integrationsConfig()
+                    .getImpressionsListeners(IntegrationsConfig.Execution.SYNC);
+            for (IntegrationsConfig.ImpressionListenerWithMeta listener: syncListeners) {
+                impressionListeners.add(listener.listener());
+
             }
         }
 

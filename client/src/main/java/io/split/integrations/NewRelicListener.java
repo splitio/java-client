@@ -1,4 +1,4 @@
-package io.split.client.impressions.newrelic;
+package io.split.integrations;
 
 import io.split.client.impressions.Impression;
 import io.split.client.impressions.ImpressionListener;
