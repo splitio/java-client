@@ -557,7 +557,7 @@ public class SplitClientConfig {
          * @param config
          * @return
          */
-        public Builder IntegrationsConfig(IntegrationsConfig config) {
+        public Builder integrations(IntegrationsConfig config) {
             _integrationsConfig = config;
             return this;
         }
