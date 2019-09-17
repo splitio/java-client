@@ -65,6 +65,10 @@ public class IntegrationsConfig {
         _impressionListeners.add(new ImpressionListenerWithMeta(listener, Execution.ASYNC, queueSize));
     }
 
+    public static Builder builder() {
+        return new Builder();
+    }
+
     public static class Builder {
 
         private List<ImpressionListenerWithMeta> _listeners;
@@ -81,7 +85,7 @@ public class IntegrationsConfig {
             return this;
         }
 
-        public Builder newRelic() {
+        public Builder newRelicImpressionListener() {
             try {
                 _listeners.add(new ImpressionListenerWithMeta(new NewRelicListener(), Execution.SYNC, 0));
             } catch (ClassNotFoundException | NoSuchMethodException | IllegalAccessException e) {
