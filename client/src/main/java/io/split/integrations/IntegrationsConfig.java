@@ -72,8 +72,10 @@ public class IntegrationsConfig {
     public static class Builder {
 
         private List<ImpressionListenerWithMeta> _listeners;
+        private boolean _newRelicEnabled;
 
         public Builder() {
+            _newRelicEnabled = false;
             _listeners = new ArrayList<>();
         }
 
@@ -86,6 +88,12 @@ public class IntegrationsConfig {
         }
 
         public Builder newRelicImpressionListener() {
+            if (_newRelicEnabled) {
+                _log.warn("You can only add one new relic integration instance. Ignoring");
+                return this;
+            }
+
+            _newRelicEnabled = true;
             try {
                 _listeners.add(new ImpressionListenerWithMeta(new NewRelicListener(), Execution.SYNC, 0));
             } catch (ClassNotFoundException | NoSuchMethodException | IllegalAccessException e) {
