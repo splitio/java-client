@@ -11,35 +11,6 @@ public class IntegrationsConfig {
 
     private static final Logger _log = LoggerFactory.getLogger(IntegrationsConfig.class);
 
-    public enum Execution {
-        SYNC,
-        ASYNC
-    }
-
-    public static class ImpressionListenerWithMeta {
-        private final ImpressionListener _listener;
-        private final Execution _execution;
-        private final int _queueSize;
-
-        ImpressionListenerWithMeta(ImpressionListener listener, Execution execution, int queueSize) {
-            _listener = listener;
-            _execution = execution;
-            _queueSize = queueSize;
-        }
-
-        public ImpressionListener listener() {
-            return _listener;
-        }
-
-        Execution execution() {
-            return _execution;
-        }
-
-        public int queueSize() {
-            return _queueSize;
-        }
-    }
-
     private List<ImpressionListenerWithMeta> _impressionListeners;
 
     private IntegrationsConfig(List<ImpressionListenerWithMeta> impressionListeners) {
@@ -93,20 +64,49 @@ public class IntegrationsConfig {
                 return this;
             }
 
-            _newRelicEnabled = true;
             try {
                 _listeners.add(new ImpressionListenerWithMeta(new NewRelicListener(), Execution.SYNC, 0));
+                _log.info("Added New Relic Impression Listener");
+                _newRelicEnabled = true;
             } catch (ClassNotFoundException | NoSuchMethodException | IllegalAccessException e) {
                 _log.warn("New Relic agent not found. Continuing without it", e);
             } catch (Exception e) {
                 _log.warn("Failed to check if the New Relic Agent is running", e);
             }
-            // Agent is not running
             return this;
         }
 
         public IntegrationsConfig build() {
             return new IntegrationsConfig(_listeners);
+        }
+    }
+
+    public enum Execution {
+        SYNC,
+        ASYNC
+    }
+
+    public static class ImpressionListenerWithMeta {
+        private final ImpressionListener _listener;
+        private final Execution _execution;
+        private final int _queueSize;
+
+        ImpressionListenerWithMeta(ImpressionListener listener, Execution execution, int queueSize) {
+            _listener = listener;
+            _execution = execution;
+            _queueSize = queueSize;
+        }
+
+        public ImpressionListener listener() {
+            return _listener;
+        }
+
+        Execution execution() {
+            return _execution;
+        }
+
+        public int queueSize() {
+            return _queueSize;
         }
     }
 }

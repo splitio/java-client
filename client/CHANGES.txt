@@ -1,6 +1,6 @@
 CHANGES
 
-3.2.5
+3.3.0
 - Adds New Relic Integration. Now if the New Relic agent is running, it will attach Impression data to the current transaction in New Relic,
 
 3.2.4
