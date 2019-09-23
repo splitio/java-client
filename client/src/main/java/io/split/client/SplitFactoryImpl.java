@@ -17,6 +17,7 @@ import io.split.engine.experiments.SplitChangeFetcher;
 import io.split.engine.experiments.SplitParser;
 import io.split.engine.segments.RefreshableSegmentFetcher;
 import io.split.engine.segments.SegmentChangeFetcher;
+import io.split.integrations.IntegrationsConfig;
 import org.apache.http.auth.AuthScope;
 import org.apache.http.auth.Credentials;
 import org.apache.http.auth.UsernamePasswordCredentials;
@@ -128,7 +129,7 @@ public class SplitFactoryImpl implements SplitFactory {
             DefaultProxyRoutePlanner routePlanner = new DefaultProxyRoutePlanner(config.proxy());
             httpClientbuilder.setRoutePlanner(routePlanner);
 
-            if (config.proxyUsername() != null && config.proxyPassword() != null){
+            if (config.proxyUsername() != null && config.proxyPassword() != null) {
                 _log.debug("Proxy setup using credentials");
                 CredentialsProvider credsProvider = new BasicCredentialsProvider();
                 AuthScope siteScope = new AuthScope(config.proxy().getHostName(), config.proxy().getPort());
@@ -167,13 +168,37 @@ public class SplitFactoryImpl implements SplitFactory {
 
         // Impressions
         final ImpressionsManager splitImpressionListener = ImpressionsManager.instance(httpclient, config);
-        final ImpressionListener impressionListener;
 
-        if (config.impressionListener() != null) {
-            AsynchronousImpressionListener wrapper = AsynchronousImpressionListener.build(config.impressionListener(), config.impressionListenerCapactity());
-            List<ImpressionListener> impressionListeners = new ArrayList<ImpressionListener>();
-            impressionListeners.add(splitImpressionListener);
-            impressionListeners.add(wrapper);
+        List<ImpressionListener> impressionListeners = new ArrayList<>();
+        impressionListeners.add(splitImpressionListener);
+
+        // Setup integrations
+        if (config.integrationsConfig() != null) {
+
+            // asynchronous impressions listeners
+            List<IntegrationsConfig.ImpressionListenerWithMeta> asyncListeners = config
+                    .integrationsConfig()
+                    .getImpressionsListeners(IntegrationsConfig.Execution.ASYNC);
+
+            for (IntegrationsConfig.ImpressionListenerWithMeta listener : asyncListeners) {
+                AsynchronousImpressionListener wrapper = AsynchronousImpressionListener
+                        .build(listener.listener(), listener.queueSize());
+                impressionListeners.add(wrapper);
+            }
+
+            // synchronous impressions listeners
+            List<IntegrationsConfig.ImpressionListenerWithMeta> syncListeners = config
+                    .integrationsConfig()
+                    .getImpressionsListeners(IntegrationsConfig.Execution.SYNC);
+            for (IntegrationsConfig.ImpressionListenerWithMeta listener: syncListeners) {
+                impressionListeners.add(listener.listener());
+
+            }
+        }
+
+        final ImpressionListener impressionListener;
+        if (impressionListeners.size() > 1) {
+            // since there are more than just the default integration, let's federate and add them all.
             impressionListener = new ImpressionListener.FederatedImpressionListener(impressionListeners);
         } else {
             impressionListener = splitImpressionListener;
