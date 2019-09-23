@@ -1,6 +1,7 @@
 CHANGES
 
-3.3.0
+3.3.0 (Sept 23rd, 2019)
+- rename version.properties to splitversion.properties to avoid conflicts with other tools that use the former file name and causes this SDK to not properly report the version
 - Adds New Relic Integration. Now if the New Relic agent is running, it will attach Impression data to the current transaction in New Relic,
 
 3.2.4

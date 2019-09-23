@@ -3,6 +3,7 @@ package io.split.client;
 import io.split.client.impressions.Impression;
 import io.split.client.impressions.ImpressionListener;
 import io.split.integrations.IntegrationsConfig;
+import org.hamcrest.Matchers;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -114,5 +115,14 @@ public class SplitClientConfigTest {
         Assert.assertThat(
                 cfg.integrationsConfig().getImpressionsListeners(IntegrationsConfig.Execution.ASYNC).size(),
                 is(equalTo(1)));
+    }
+
+    @Test
+    public void testVesion() {
+        SplitClientConfig config = SplitClientConfig.builder()
+                .build();
+
+        Assert.assertThat(config.splitSdkVersion, Matchers.not(Matchers.equalTo("undefined")));
+        Assert.assertThat(config.splitSdkVersion, Matchers.startsWith("java-"));
     }
 }

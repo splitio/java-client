@@ -101,7 +101,7 @@ public class SplitClientConfig {
 
         Properties props = new Properties();
         try {
-            props.load(this.getClass().getClassLoader().getResourceAsStream("version.properties"));
+            props.load(this.getClass().getClassLoader().getResourceAsStream("splitversion.properties"));
         } catch (IOException e) {
             throw new IllegalStateException("cannot find client version in classpath", e);
         }
