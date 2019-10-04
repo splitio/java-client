@@ -1,42 +1,78 @@
 # Split Java SDK
 
+[https://api.travis-ci.com/splitio/java-client.svg?branch=master)](https://api.travis-ci.com/splitio/java-client)
+
+## Overview
 This SDK is designed to work with [Split](https://www.split.io), the platform for controlled rollouts, serving features to your users via the Split feature flag to manage your complete customer experience.
 
-### Quick setup
+[![Twitter Follow](https://img.shields.io/twitter/follow/splitsoftware.svg?style=social&label=Follow&maxAge=1529000)](https://twitter.com/intent/follow?screen_name=splitsoftware)
 
-For specific instructions on how to set up the Split SDK refer to our [Detailed-README](Detailed-README.md) or our [official SDK documentation](http://docs.split.io/docs/sdk-overview).
+## Compatibility
+This SDK is compatible with Java 6 and higher.
 
-### Commitment to Quality:
+## Getting started
+Below is a simple example that describes the instantiation and most basic usage of our SDK:
 
-Split’s SDKs are in active development and are constantly tested for quality. Unit tests are developed for each SDK based on the unique needs of that language, and integration tests, load and performance tests, and behavior consistency tests are running 24/7 via automated bots. In addition, monitoring instrumentation ensures that these SDKs behave under the expected parameters of memory, CPU, and I/O.
+```java
+import io.split.client.SplitFactoryBuilder;
+import io.split.client.SplitClient;
+public  class App {
+    public static void main() {
 
-### About Split:
+        SplitClientConfig config = SplitClientConfig.builder()
+                .setBlockUntilReadyTimeout(10000)
+                .build();
+        SplitFactory splitFactory = SplitFactoryBuilder.build("SDK_API_KEY", config);
+        SplitClient client = splitFactory.client();
+        try {
+            client.blockUntilReady();
+        } catch (TimeoutException | InterruptedException e) {
+            // log & handle 
+        }
 
-Split is the leading platform for feature experimentation, empowering businesses of all sizes to make smarter product decisions. Companies like Vevo, Twilio, and LendingTree rely on Split to securely release new features, target them to customers, and measure the impact of features on their customer experience metrics. Founded in 2015, Split's team comes from some of the most innovative enterprises in Silicon Valley, including Google, LinkedIn, Salesforce and Databricks. Split is based in Redwood City, California and backed by Accel Partners and Lightspeed Venture Partners.
+        String treatment = client.getTreatment("CUSTOMER_ID", "SPLIT_NAME");
+        if (treatment.equals("on")) {
+            // Feature is enabled for this user!
+        } else if (treatment.equals("off")) {
+            // Feature is disabled for this user!
+        } else {
+            // Unable to perform evaluation.
+        }
+    }
+}
+```
 
-Our platform is a unified solution for continuous delivery and full-stack experimentation. Split unifies DevOps and product management, helping agile engineering and product teams accelerate the pace of product delivery and make data-driven decisions, through our robust feature flagging and extensive experimentation capabilities. With Split, organizations can now accelerate time to value, mitigate risk, and drive better outcomes, all in a unified platform.
+## Submitting issues
+ 
+The Split team monitors all issues submitted to this [issue tracker](https://github.com/splitio/java-client/issues). We encourage you to use this issue tracker to submit any bug reports, feedback, and feature enhancements. We'll do our best to respond in a timely manner.
 
-To learn more about Split, contact hello@split.io, or start a 14-day trial at https://www.split.io/signup/.
+## Contributing
+Please see [Contributors Guide](CONTRIBUTORS-GUIDE.md) to find all you need to submit a Pull Request (PR).
 
-Split has built and maintains a SDKs for:
+## License
+Licensed under the Apache License, Version 2.0. See: [Apache License](http://www.apache.org/licenses/).
 
-* Java [Github](https://github.com/splitio/java-client) [Docs](http://docs.split.io/docs/java-sdk-guide)
-* Javascript [Github](https://github.com/splitio/javascript-client) [Docs](http://docs.split.io/docs/javascript-sdk-overview)
-* Node [Github](https://github.com/splitio/javascript-client) [Docs](http://docs.split.io/docs/nodejs-sdk-overview)
-* .NET [Github](https://github.com/splitio/.net-client) [Docs](http://docs.split.io/docs/net-sdk-overview)
-* Ruby [Github](https://github.com/splitio/ruby-client) [Docs](http://docs.split.io/docs/ruby-sdk-overview)
-* PHP [Github](https://github.com/splitio/php-client) [Docs](http://docs.split.io/docs/php-sdk-overview)
-* Python [Github](https://github.com/splitio/python-client) [Docs](http://docs.split.io/docs/python-sdk-overview)
-* GO [Github](https://github.com/splitio/go-client) [Docs](http://docs.split.io/docs/go-sdk-overview)
-* Android [Github](https://github.com/splitio/android-client) [Docs](https://docs.split.io/docs/android-sdk-overview)
-* IOS [Github](https://github.com/splitio/ios-client) [Docs](https://docs.split.io/docs/ios-sdk-overview)
-
-For a comprehensive list of opensource projects visit our [Github page](https://github.com/splitio?utf8=%E2%9C%93&query=%20only%3Apublic%20).
-
-**Learn more about Split:** 
-
-Visit [split.io/product](https://www.split.io/product) for an overview of Split, or visit our documentation at [docs.split.io](http://docs.split.io) for more detailed information.
-
-**System Status:**
-
-We use a status page to monitor the availability of Split’s various services. You can check the current status at [status.split.io](http://status.split.io).
+## About Split
+ 
+Split is the leading Feature Delivery Platform for engineering teams that want to confidently deploy features as fast as they can develop them. Split’s fine-grained management, real-time monitoring, and data-driven experimentation ensure that new features will improve the customer experience without breaking or degrading performance. Companies like Twilio, Salesforce, GoDaddy and WePay trust Split to power their feature delivery.
+ 
+To learn more about Split, contact hello@split.io, or get started with feature flags for free at https://www.split.io/signup.
+ 
+Split has built and maintains SDKs for:
+ 
+* Java [Github](https://github.com/splitio/java-client) [Docs](https://help.split.io/hc/en-us/articles/360020405151-Java-SDK)
+* Javascript [Github](https://github.com/splitio/javascript-client) [Docs](https://help.split.io/hc/en-us/articles/360020448791-JavaScript-SDK)
+* Node [Github](https://github.com/splitio/javascript-client) [Docs](https://help.split.io/hc/en-us/articles/360020564931-Node-js-SDK)
+* .NET [Github](https://github.com/splitio/.net-core-client) [Docs](https://help.split.io/hc/en-us/articles/360020240172--NET-SDK)
+* Ruby [Github](https://github.com/splitio/ruby-client) [Docs](https://help.split.io/hc/en-us/articles/360020673251-Ruby-SDK)
+* PHP [Github](https://github.com/splitio/php-client) [Docs](https://help.split.io/hc/en-us/articles/360020350372-PHP-SDK)
+* Python [Github](https://github.com/splitio/python-client) [Docs](https://help.split.io/hc/en-us/articles/360020359652-Python-SDK)
+* GO [Github](https://github.com/splitio/go-client) [Docs](https://help.split.io/hc/en-us/articles/360020093652-Go-SDK)
+* Android [Github](https://github.com/splitio/android-client) [Docs](https://help.split.io/hc/en-us/articles/360020343291-Android-SDK)
+* iOS [Github](https://github.com/splitio/ios-client) [Docs](https://help.split.io/hc/en-us/articles/360020401491-iOS-SDK)
+ 
+For a comprehensive list of open source projects visit our [Github page](https://github.com/splitio?utf8=%E2%9C%93&query=%20only%3Apublic%20).
+ 
+**Learn more about Split:**
+ 
+Visit [split.io/product](https://www.split.io/product) for an overview of Split, or visit our documentation at [help.split.io](http://help.split.io) for more detailed information.
