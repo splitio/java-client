@@ -1,9 +1,9 @@
 # Split Java SDK
 
-[https://api.travis-ci.com/splitio/java-client.svg?branch=master)](https://api.travis-ci.com/splitio/java-client)
+[![Build Status](https://api.travis-ci.com/splitio/java-client.svg?branch=master)](https://api.travis-ci.com/splitio/java-client)
 
 ## Overview
-This SDK is designed to work with [Split](https://www.split.io), the platform for controlled rollouts, serving features to your users via the Split feature flag to manage your complete customer experience.
+This SDK is designed to work with Split, the platform for controlled rollouts, serving features to your users via the Split feature flag to manage your complete customer experience.
 
 [![Twitter Follow](https://img.shields.io/twitter/follow/splitsoftware.svg?style=social&label=Follow&maxAge=1529000)](https://twitter.com/intent/follow?screen_name=splitsoftware)
 
