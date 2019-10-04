@@ -16,9 +16,10 @@ Below is a simple example that describes the instantiation and most basic usage 
 ```java
 import io.split.client.SplitFactoryBuilder;
 import io.split.client.SplitClient;
-public  class App {
-    public static void main() {
 
+public  class App {
+
+    public static void main() {
         SplitClientConfig config = SplitClientConfig.builder()
                 .setBlockUntilReadyTimeout(10000)
                 .build();
