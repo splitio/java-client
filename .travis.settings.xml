@@ -16,7 +16,7 @@
               <sonar.links.ci>https://travis-ci.com/splitio/java-client</sonar.links.ci>
               <sonar.links.scm>https://github.com/splitio/java-client</sonar.links.scm>
               <sonar.projectName>java-client</sonar.projectName>
-              <sonar.sources>./client/src</sonar.sources>
+              <sonar.sources>./src</sonar.sources>
               <sonar.test.exclusions>**/test/**/*.*,**/testing/**/*.*</sonar.test.exclusions>
               <sonar.exclusions>**/ai/**/*.*,**/jdbc/**/*.*,**/mpt/**/*.*,**/jcr/**/*.*,**/JDBC*</sonar.exclusions>
             </properties>
