@@ -10,12 +10,15 @@
                 <activeByDefault>true</activeByDefault>
             </activation>
             <properties>
-                <sonar.host.url>http://sonar.split.io:8080</sonar.host.url>
-                <sonar.login>${env.SONAR_TOKEN}</sonar.login>
-                <sonar.projectName>Split Java SDK</sonar.projectName>
-                <sonar.projectVersion>development</sonar.projectVersion>
-                <sonar.test.exclusions>**/test/**/*.*</sonar.test.exclusions>
-                <sonar.exclusions>**/ai/**/*.*,**/jdbc/**/*.*,**/mpt/**/*.*,**/jcr/**/*.*,**/JDBC*</sonar.exclusions>
+              <sonar.host.url>https://sonarqube.split-internal.com</sonar.host.url>
+              <sonar.login>${env.SONAR_TOKEN}</sonar.login>
+              <sonar.ws.timeout>300</sonar.ws.timeout>
+              <sonar.links.ci>https://travis-ci.com/splitio/java-client</sonar.links.ci>
+              <sonar.links.scm>https://github.com/splitio/java-client</sonar.links.scm>
+              <sonar.projectName>java-client</sonar.projectName>
+              <sonar.sources>./client/src</sonar.sources>
+              <sonar.test.exclusions>**/test/**/*.*,**/testing/**/*.*</sonar.test.exclusions>
+              <sonar.exclusions>**/ai/**/*.*,**/jdbc/**/*.*,**/mpt/**/*.*,**/jcr/**/*.*,**/JDBC*</sonar.exclusions>
             </properties>
         </profile>
     </profiles>

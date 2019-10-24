@@ -13,9 +13,5 @@ before_script:
 script:
   - mvn clean install
 
-deploy:
-  - provider: script
-    skip_cleanup: true
-    script: mvn -DskipTests sonar:sonar
-    on:
-      branch: development
+after_success:
+  - bash sonar-scanner.sh
