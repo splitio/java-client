@@ -18,9 +18,5 @@ before_script:
 script:
   - mvn clean install
 
-deploy:
-  - provider: script
-    skip_cleanup: true
-    script: bash sonar-scanner.sh
-    on:
-      all_branches: true
+after_success:
+  - bash sonar-scanner.sh
