@@ -29,7 +29,11 @@ public class AddSplitHeadersFilter implements HttpRequestInterceptor {
     private final String _hostname;
     private final String _ip;
 
-    public static AddSplitHeadersFilter instance(String apiToken) {
+    public static AddSplitHeadersFilter instance(String apiToken, boolean ipAddressEnabled) {
+        if (!ipAddressEnabled) {
+            return new AddSplitHeadersFilter(apiToken, null, null);
+        }
+
         String hostname = null;
         String ip = null;
 
@@ -56,7 +60,6 @@ public class AddSplitHeadersFilter implements HttpRequestInterceptor {
     public void process(HttpRequest request, HttpContext httpContext) throws HttpException, IOException {
         request.addHeader("Authorization", _apiTokenBearer);
         request.addHeader(CLIENT_VERSION, SplitClientConfig.splitSdkVersion);
-        ;
         request.addHeader(SDK_SPEC_VERSION, OUR_SDK_SPEC_VERSION);
 
         if (_hostname != null) {

@@ -30,6 +30,7 @@ public class SplitClientConfig {
     private final int _numThreadsForSegmentFetch;
     private final boolean _debugEnabled;
     private final boolean _labelsEnabled;
+    private final boolean _ipAddressEnabled;
     private final int _ready;
     private final int _waitBeforeShutdown;
     private final int _eventsQueueSize;
@@ -65,6 +66,7 @@ public class SplitClientConfig {
                               int ready,
                               boolean debugEnabled,
                               boolean labelsEnabled,
+                              boolean ipAddressEnabled,
                               int waitBeforeShutdown,
                               HttpHost proxy,
                               String proxyUsername,
@@ -88,6 +90,7 @@ public class SplitClientConfig {
         _ready = ready;
         _debugEnabled = debugEnabled;
         _labelsEnabled = labelsEnabled;
+        _ipAddressEnabled = ipAddressEnabled;
         _waitBeforeShutdown = waitBeforeShutdown;
         _proxy = proxy;
         _proxyUsername = proxyUsername;
@@ -158,6 +161,8 @@ public class SplitClientConfig {
 
     public boolean labelsEnabled() { return _labelsEnabled;}
 
+    public boolean ipAddressEnabled() { return _ipAddressEnabled; }
+
     public int blockUntilReady() {
         return _ready;
     }
@@ -219,6 +224,7 @@ public class SplitClientConfig {
         private int _ready = -1; // -1 means no blocking
         private int _metricsRefreshRate = 60;
         private boolean _labelsEnabled = true;
+        private  boolean _ipAddressEnabled = true;
         private int _waitBeforeShutdown = 5000;
         private String _proxyHost = "localhost";
         private int _proxyPort = -1;
@@ -444,6 +450,10 @@ public class SplitClientConfig {
             return this;
         }
 
+        public Builder disableIPAddress() {
+            _ipAddressEnabled = false;
+            return this;
+        }
 
         /**
          * The SDK kicks off background threads to download data necessary
@@ -626,6 +636,7 @@ public class SplitClientConfig {
                     _ready,
                     _debugEnabled,
                     _labelsEnabled,
+                    _ipAddressEnabled,
                     _waitBeforeShutdown,
                     proxy(),
                     _proxyUsername,

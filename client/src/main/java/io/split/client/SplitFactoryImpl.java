@@ -98,7 +98,7 @@ public class SplitFactoryImpl implements SplitFactory {
                 .setConnectionManager(cm)
                 .setDefaultRequestConfig(requestConfig)
                 .setSSLSocketFactory(sslsf)
-                .addInterceptorLast(AddSplitHeadersFilter.instance(apiToken))
+                .addInterceptorLast(AddSplitHeadersFilter.instance(apiToken, config.ipAddressEnabled()))
                 .addInterceptorLast(new GzipEncoderRequestInterceptor())
                 .addInterceptorLast(new GzipDecoderResponseInterceptor());
 
