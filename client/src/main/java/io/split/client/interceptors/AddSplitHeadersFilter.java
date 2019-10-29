@@ -19,11 +19,11 @@ import static com.google.common.base.Preconditions.checkNotNull;
 public class AddSplitHeadersFilter implements HttpRequestInterceptor {
     private static final Logger _log = LoggerFactory.getLogger(AddSplitHeadersFilter.class);
 
-    private static final String CLIENT_MACHINE_NAME_HEADER = "SplitSDKMachineName";
-    private static final String CLIENT_MACHINE_IP_HEADER = "SplitSDKMachineIP";
-    private static final String CLIENT_VERSION = "SplitSDKVersion";
-    private static final String SDK_SPEC_VERSION = "SplitSDKSpecVersion";
-    private static final String OUR_SDK_SPEC_VERSION = "1.3";
+    /* package private for testing purposes */
+    static final String AUTHORIZATION_HEADER = "Authorization";
+    static final String CLIENT_MACHINE_NAME_HEADER = "SplitSDKMachineName";
+    static final String CLIENT_MACHINE_IP_HEADER = "SplitSDKMachineIP";
+    static final String CLIENT_VERSION = "SplitSDKVersion";
 
     private final String _apiTokenBearer;
     private final String _hostname;
@@ -57,10 +57,9 @@ public class AddSplitHeadersFilter implements HttpRequestInterceptor {
     }
 
     @Override
-    public void process(HttpRequest request, HttpContext httpContext) throws HttpException, IOException {
-        request.addHeader("Authorization", _apiTokenBearer);
+    public void process(HttpRequest request, HttpContext httpContext) {
+        request.addHeader(AUTHORIZATION_HEADER, _apiTokenBearer);
         request.addHeader(CLIENT_VERSION, SplitClientConfig.splitSdkVersion);
-        request.addHeader(SDK_SPEC_VERSION, OUR_SDK_SPEC_VERSION);
 
         if (_hostname != null) {
             request.addHeader(CLIENT_MACHINE_NAME_HEADER, _hostname);
