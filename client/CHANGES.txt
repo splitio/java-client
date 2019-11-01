@@ -1,4 +1,6 @@
 CHANGES
+3.3.1 (Nov 1, 2019)
+ - Allow client to disable sending the IP address & hostname.
 
 3.3.0 (Sep 23, 2019)
 - rename version.properties to splitversion.properties to avoid conflicts with other tools that use the former file name and causes this SDK to not properly report the version
