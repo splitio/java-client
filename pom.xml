@@ -146,6 +146,7 @@
                                 </goals>
                                 <configuration>
                                     <additionalJOptions>-Xdoclint:none</additionalJOptions>
+                                    <source>1.7</source>
                                 </configuration>
                             </execution>
                         </executions>
