@@ -5,7 +5,7 @@
     <parent>
         <groupId>io.split.client</groupId>
         <artifactId>java-client-parent</artifactId>
-        <version>3.3.1</version>
+        <version>3.3.2-SNAPSHOT</version>
     </parent>
     <artifactId>java-client</artifactId>
     <packaging>jar</packaging>
@@ -46,6 +46,7 @@
                                     <include>org.apache.httpcomponents:httpclient</include>
                                     <include>org.apache.httpcomponents:httpcore</include>
                                     <include>com.google.code.gson:gson</include>
+                                    <include>com.google.guava:guava</include>
                                     <include>org.yaml.snakeyaml</include>
                                 </includes>
                             </artifactSet>
@@ -55,8 +56,8 @@
                                     <shadedPattern>split.org.apache.http</shadedPattern>
                                 </relocation>
                                 <relocation>
-                                    <pattern>com.google.gson</pattern>
-                                    <shadedPattern>split.com.google.gson</shadedPattern>
+                                    <pattern>com.google</pattern>
+                                    <shadedPattern>split.com.google</shadedPattern>
                                 </relocation>
                             </relocations>
                             <filters>
