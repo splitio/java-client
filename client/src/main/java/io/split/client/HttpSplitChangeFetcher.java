@@ -68,7 +68,7 @@ public final class HttpSplitChangeFetcher implements SplitChangeFetcher {
             }
 
 
-            String json = EntityUtils.toString(response.getEntity());
+            String json = EntityUtils.toString(response.getEntity(), "UTF-8");
             if (_log.isDebugEnabled()) {
                 _log.debug("Received json: " + json);
             }
