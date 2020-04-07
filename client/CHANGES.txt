@@ -1,6 +1,6 @@
 CHANGES
 
-3.3.3 (Apr , 2020)
+3.3.3 (Apr 7, 2020)
  - Fix issue regarding special characters come from split/segments fetchers.
 
 3.3.2 (Jan 24, 2020)
