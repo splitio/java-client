@@ -16,6 +16,7 @@ import org.slf4j.LoggerFactory;
 
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.nio.charset.StandardCharsets;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
@@ -68,7 +69,7 @@ public final class HttpSplitChangeFetcher implements SplitChangeFetcher {
             }
 
 
-            String json = EntityUtils.toString(response.getEntity());
+            String json = EntityUtils.toString(response.getEntity(), StandardCharsets.UTF_8);
             if (_log.isDebugEnabled()) {
                 _log.debug("Received json: " + json);
             }
