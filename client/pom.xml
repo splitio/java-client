@@ -19,8 +19,8 @@
                 <version>3.3</version>
                 <inherited>false</inherited>
                 <configuration>
-                    <source>1.7</source>
-                    <target>1.7</target>
+                    <source>8</source>
+                    <target>8</target>
                 </configuration>
             </plugin>
             <!-- Shade dependencies to avoid conflicts with other customer's libs -->
@@ -168,6 +168,16 @@
             <artifactId>slf4j-log4j12</artifactId>
             <version>1.7.21</version>
             <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.glassfish.jersey.inject</groupId>
+            <artifactId>jersey-hk2</artifactId>
+            <version>2.31</version>
+        </dependency>
+        <dependency>
+            <groupId>org.glassfish.jersey.media</groupId>
+            <artifactId>jersey-media-sse</artifactId>
+            <version>2.31</version>
         </dependency>
     </dependencies>
 </project>
