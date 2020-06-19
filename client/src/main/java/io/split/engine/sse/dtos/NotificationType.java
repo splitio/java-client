@@ -5,5 +5,6 @@ public enum NotificationType {
     SPLIT_KILL,
     SEGMENT_UPDATE,
     CONTROL,
-    OCCUPANCY
+    OCCUPANCY,
+    ERROR
 }

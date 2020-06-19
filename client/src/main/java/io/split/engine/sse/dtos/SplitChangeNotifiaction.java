@@ -1,13 +1,13 @@
 package io.split.engine.sse.dtos;
 
 public class SplitChangeNotifiaction extends IncomingNotification {
-    private String changeNumber;
+    private long changeNumber;
 
-    public String getChangeNumber() {
+    public long getChangeNumber() {
         return changeNumber;
     }
 
-    public void setChangeNumber(String changeNumber) {
+    public void setChangeNumber(long changeNumber) {
         this.changeNumber = changeNumber;
     }
 }
