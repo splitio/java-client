@@ -1,6 +1,7 @@
 package io.split.engine.sse;
 
 import io.split.engine.sse.dtos.IncomingNotification;
+import io.split.engine.sse.exceptions.EventParsingException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -83,12 +84,12 @@ public class EventSourceClientImp implements EventSourceClient, Runnable {
             if (payload.length() > 0) {
                 IncomingNotification incomingNotification = _notificationParser.parse(type, payload);
 
-                if (incomingNotification != null) {
-                    this.notifyIncomingNotification(incomingNotification);
-                }
+                notifyIncomingNotification(incomingNotification);
             }
+        } catch (EventParsingException ex){
+            _log.debug(String.format("Error parsing the event: %s. Payload: %s", ex.getMessage(), ex.getPayload()));
         } catch (Exception e) {
-            _log.debug(String.format("Error parsing the event: %s", e.getMessage()));
+            _log.error(String.format("Error onMessage: %s", e.getMessage()));
         }
     }
 }
