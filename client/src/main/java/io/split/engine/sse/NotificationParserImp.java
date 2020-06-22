@@ -1,47 +1,56 @@
 package io.split.engine.sse;
 
 import com.google.gson.Gson;
-import com.google.gson.reflect.TypeToken;
-import io.split.engine.sse.dtos.*;
+import io.split.engine.sse.dtos.IncomingNotification;
+import io.split.engine.sse.dtos.MessageNotification;
+import io.split.engine.sse.dtos.SplitChangeNotifiaction;
+import io.split.engine.sse.dtos.SplitKillNotification;
+import io.split.engine.sse.dtos.SegmentChangeNotification;
+import io.split.engine.sse.dtos.ControlNotification;
+import io.split.engine.sse.dtos.NotificationType;
+import io.split.engine.sse.dtos.OccupancyNotification;
+import io.split.engine.sse.dtos.ErrorNotification;
 import io.split.engine.sse.exceptions.EventParsingException;
 
 public class NotificationParserImp implements NotificationParser {
+    public static String OCCUPANCY_PREFIX = "[?occupancy=metrics.publishers]";
+
     private static Gson _gson = new Gson();
 
     @Override
     public IncomingNotification parse(String type, String payload) throws EventParsingException {
         try {
-            if (type.equals(StreamingConstants.eventMessage)) {
-                MessageNotification messageNotification = _gson.fromJson(payload, (new TypeToken<MessageNotification>() {
-                }).getType());
+            switch (type) {
+                case "message":
+                    MessageNotification messageNotification = _gson.fromJson(payload, MessageNotification.class);
 
-                if (messageNotification.getChannel().contains(StreamingConstants.occupancyPrefix)) {
-                    return parseOccupancy(messageNotification);
-                }
+                    if (messageNotification.getChannel().contains(OCCUPANCY_PREFIX)) {
+                        return parseOccupancy(messageNotification);
+                    }
 
-                return parseNotification(messageNotification);
-            } else if (type.equals(StreamingConstants.eventError)) {
-                return parseError(payload);
+                    return parseNotification(messageNotification);
+                case "error":
+                    return parseError(payload);
+                default:
+                    throw new Exception("Incorrect Notification type.");
             }
-
-            throw new Exception("Incorrect Notification type.");
         } catch (Exception ex) {
             throw new EventParsingException(ex, payload);
         }
     }
 
     private IncomingNotification parseNotification(MessageNotification notification) throws Exception {
-        IncomingNotification incomingNotification = _gson.fromJson(notification.getData(), (new TypeToken<IncomingNotification>(){}).getType());
+        IncomingNotification incomingNotification = _gson.fromJson(notification.getData(), IncomingNotification.class);
 
         switch (incomingNotification.getType()) {
             case SPLIT_UPDATE:
-                incomingNotification = _gson.fromJson(notification.getData(), (new TypeToken<SplitChangeNotifiaction>(){}).getType());
+                incomingNotification = _gson.fromJson(notification.getData(), SplitChangeNotifiaction.class);
                 break;
             case SPLIT_KILL:
-                incomingNotification = _gson.fromJson(notification.getData(), (new TypeToken<SplitKillNotification>(){}).getType());
+                incomingNotification = _gson.fromJson(notification.getData(), SplitKillNotification.class);
                 break;
             case SEGMENT_UPDATE:
-                incomingNotification = _gson.fromJson(notification.getData(), (new TypeToken<SegmentChangeNotification>(){}).getType());
+                incomingNotification = _gson.fromJson(notification.getData(), SegmentChangeNotification.class);
                 break;
             default:
                 throw new Exception("Incorrect Notification type");
@@ -53,17 +62,17 @@ public class NotificationParserImp implements NotificationParser {
     }
 
     private IncomingNotification parseOccupancy(MessageNotification notification) {
-        String channel = notification.getChannel().replace(StreamingConstants.occupancyPrefix, "");
+        String channel = notification.getChannel().replace(OCCUPANCY_PREFIX, "");
 
         if (notification.getData().contains("controlType")) {
-            ControlNotification controlNotification = _gson.fromJson(notification.getData(), (new TypeToken<ControlNotification>(){}).getType());
+            ControlNotification controlNotification = _gson.fromJson(notification.getData(), ControlNotification.class);
             controlNotification.setType(NotificationType.CONTROL);
             controlNotification.setChannel(channel);
 
             return controlNotification;
         }
 
-        OccupancyNotification occupancyNotification = _gson.fromJson(notification.getData(), (new TypeToken<OccupancyNotification>(){}).getType());
+        OccupancyNotification occupancyNotification = _gson.fromJson(notification.getData(), OccupancyNotification.class);
         occupancyNotification.setType(NotificationType.OCCUPANCY);
         occupancyNotification.setChannel(channel);
 
@@ -71,7 +80,7 @@ public class NotificationParserImp implements NotificationParser {
     }
 
     private ErrorNotification parseError(String payload) throws Exception {
-        ErrorNotification messageError = _gson.fromJson(payload, (new TypeToken<ErrorNotification>(){}).getType());
+        ErrorNotification messageError = _gson.fromJson(payload, ErrorNotification.class);
 
         if (messageError.getMessage() == null || messageError.getStatusCode() == null) throw new Exception("Incorrect notification format.");
 
