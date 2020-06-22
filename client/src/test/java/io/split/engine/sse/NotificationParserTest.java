@@ -16,7 +16,7 @@ public class NotificationParserTest {
 
         NotificationParser notificationParser = new NotificationParserImp();
         IncomingNotification result = notificationParser.parse(eventMessage, payload);
-        assertEquals(NotificationType.SPLIT_UPDATE, result.getType());
+        assertEquals(Notification.Type.SPLIT_UPDATE, result.getType());
         assertEquals("xxxx_xxxx_splits", result.getChannel());
         assertEquals(1592590435115L, ((SplitChangeNotifiaction) result).getChangeNumber());
     }
@@ -27,7 +27,7 @@ public class NotificationParserTest {
 
         NotificationParser notificationParser = new NotificationParserImp();
         IncomingNotification result = notificationParser.parse(eventMessage, payload);
-        assertEquals(NotificationType.SPLIT_KILL, result.getType());
+        assertEquals(Notification.Type.SPLIT_KILL, result.getType());
         assertEquals("xxxx_xxxx_splits", result.getChannel());
         assertEquals(1592591080818L, ((SplitKillNotification) result).getChangeNumber());
         assertEquals("test-split", ((SplitKillNotification) result).getSplitName());
@@ -40,7 +40,7 @@ public class NotificationParserTest {
 
         NotificationParser notificationParser = new NotificationParserImp();
         IncomingNotification result = notificationParser.parse(eventMessage, payload);
-        assertEquals(NotificationType.SEGMENT_UPDATE, result.getType());
+        assertEquals(Notification.Type.SEGMENT_UPDATE, result.getType());
         assertEquals("xxxx_xxxx_segments", result.getChannel());
         assertEquals(1592591695856L, ((SegmentChangeNotification) result).getChangeNumber());
         assertEquals("test-segment", ((SegmentChangeNotification) result).getSegmentName());
@@ -52,7 +52,7 @@ public class NotificationParserTest {
 
         NotificationParser notificationParser = new NotificationParserImp();
         IncomingNotification result = notificationParser.parse(eventError, payload);
-        assertEquals(NotificationType.ERROR, result.getType());
+        assertEquals(Notification.Type.ERROR, result.getType());
         assertEquals("Token expired", ((ErrorNotification) result).getMessage());
         assertEquals("401", ((ErrorNotification) result).getStatusCode());
         assertNull(result.getChannel());
@@ -104,7 +104,7 @@ public class NotificationParserTest {
         NotificationParser notificationParser = new NotificationParserImp();
         IncomingNotification result = notificationParser.parse(eventMessage, payload);
 
-        assertEquals(NotificationType.OCCUPANCY, result.getType());
+        assertEquals(Notification.Type.OCCUPANCY, result.getType());
         assertEquals("control_pri", result.getChannel());
         assertEquals(2, ((OccupancyNotification)result).getMetrics().getPublishers());
     }
@@ -116,7 +116,7 @@ public class NotificationParserTest {
         NotificationParser notificationParser = new NotificationParserImp();
         IncomingNotification result = notificationParser.parse(eventMessage, payload);
 
-        assertEquals(NotificationType.OCCUPANCY, result.getType());
+        assertEquals(Notification.Type.OCCUPANCY, result.getType());
         assertEquals("control_sec", result.getChannel());
         assertEquals(1, ((OccupancyNotification)result).getMetrics().getPublishers());
     }
@@ -128,7 +128,7 @@ public class NotificationParserTest {
         NotificationParser notificationParser = new NotificationParserImp();
         IncomingNotification result = notificationParser.parse(eventMessage, payload);
 
-        assertEquals(NotificationType.CONTROL, result.getType());
+        assertEquals(Notification.Type.CONTROL, result.getType());
         assertEquals("control_pri", result.getChannel());
         assertEquals(ControlType.STREAMING_PAUSED, ((ControlNotification)result).getControlType());
     }
@@ -140,7 +140,7 @@ public class NotificationParserTest {
         NotificationParser notificationParser = new NotificationParserImp();
         IncomingNotification result = notificationParser.parse(eventMessage, payload);
 
-        assertEquals(NotificationType.CONTROL, result.getType());
+        assertEquals(Notification.Type.CONTROL, result.getType());
         assertEquals("control_pri", result.getChannel());
         assertEquals(ControlType.STREAMING_RESUMED, ((ControlNotification)result).getControlType());
     }
@@ -152,7 +152,7 @@ public class NotificationParserTest {
         NotificationParser notificationParser = new NotificationParserImp();
         IncomingNotification result = notificationParser.parse(eventMessage, payload);
 
-        assertEquals(NotificationType.CONTROL, result.getType());
+        assertEquals(Notification.Type.CONTROL, result.getType());
         assertEquals("control_pri", result.getChannel());
         assertEquals(ControlType.STREAMING_DISABLED, ((ControlNotification)result).getControlType());
     }

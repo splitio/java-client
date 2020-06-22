@@ -7,9 +7,9 @@ import io.split.engine.sse.dtos.SplitChangeNotifiaction;
 import io.split.engine.sse.dtos.SplitKillNotification;
 import io.split.engine.sse.dtos.SegmentChangeNotification;
 import io.split.engine.sse.dtos.ControlNotification;
-import io.split.engine.sse.dtos.NotificationType;
 import io.split.engine.sse.dtos.OccupancyNotification;
 import io.split.engine.sse.dtos.ErrorNotification;
+import io.split.engine.sse.dtos.Notification;
 import io.split.engine.sse.exceptions.EventParsingException;
 
 public class NotificationParserImp implements NotificationParser {
@@ -66,14 +66,14 @@ public class NotificationParserImp implements NotificationParser {
 
         if (notification.getData().contains("controlType")) {
             ControlNotification controlNotification = _gson.fromJson(notification.getData(), ControlNotification.class);
-            controlNotification.setType(NotificationType.CONTROL);
+            controlNotification.setType(Notification.Type.CONTROL);
             controlNotification.setChannel(channel);
 
             return controlNotification;
         }
 
         OccupancyNotification occupancyNotification = _gson.fromJson(notification.getData(), OccupancyNotification.class);
-        occupancyNotification.setType(NotificationType.OCCUPANCY);
+        occupancyNotification.setType(Notification.Type.OCCUPANCY);
         occupancyNotification.setChannel(channel);
 
         return occupancyNotification;
@@ -84,7 +84,7 @@ public class NotificationParserImp implements NotificationParser {
 
         if (messageError.getMessage() == null || messageError.getStatusCode() == null) throw new Exception("Incorrect notification format.");
 
-        messageError.setType(NotificationType.ERROR);
+        messageError.setType(Notification.Type.ERROR);
 
         return  messageError;
     }
