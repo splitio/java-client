@@ -3,34 +3,34 @@ package io.split.engine.sse;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 import io.split.engine.sse.dtos.*;
+import io.split.engine.sse.exceptions.EventParsingException;
 
 public class NotificationParserImp implements NotificationParser {
-    private Gson _gson;
-
-    public NotificationParserImp(){
-        _gson = new Gson();
-    }
+    private static Gson _gson = new Gson();
 
     @Override
-    public IncomingNotification parse(String type, String payload) {
-        if (type.equals(StreamingConstants.eventMessage)) {
-            MessageNotification messageNotification = _gson.fromJson(payload, (new TypeToken<MessageNotification>(){}).getType());
+    public IncomingNotification parse(String type, String payload) throws EventParsingException {
+        try {
+            if (type.equals(StreamingConstants.eventMessage)) {
+                MessageNotification messageNotification = _gson.fromJson(payload, (new TypeToken<MessageNotification>() {
+                }).getType());
 
-            if (messageNotification.getChannel() == null || messageNotification.getData() == null) return null;
+                if (messageNotification.getChannel().contains(StreamingConstants.occupancyPrefix)) {
+                    return parseOccupancy(messageNotification);
+                }
 
-            if (messageNotification.getChannel().contains(StreamingConstants.occupancyPrefix)) {
-                return parseOccupancy(messageNotification);
+                return parseNotification(messageNotification);
+            } else if (type.equals(StreamingConstants.eventError)) {
+                return parseError(payload);
             }
 
-            return parseNotification(messageNotification);
-        } else if (type.equals(StreamingConstants.eventError)) {
-            return parseError(payload);
+            throw new Exception("Incorrect Notification type.");
+        } catch (Exception ex) {
+            throw new EventParsingException(ex, payload);
         }
-
-        return null;
     }
 
-    private IncomingNotification parseNotification(MessageNotification notification) {
+    private IncomingNotification parseNotification(MessageNotification notification) throws Exception {
         IncomingNotification incomingNotification = _gson.fromJson(notification.getData(), (new TypeToken<IncomingNotification>(){}).getType());
 
         switch (incomingNotification.getType()) {
@@ -44,7 +44,7 @@ public class NotificationParserImp implements NotificationParser {
                 incomingNotification = _gson.fromJson(notification.getData(), (new TypeToken<SegmentChangeNotification>(){}).getType());
                 break;
             default:
-                return null;
+                throw new Exception("Incorrect Notification type");
         }
 
         incomingNotification.setChannel(notification.getChannel());
@@ -54,6 +54,7 @@ public class NotificationParserImp implements NotificationParser {
 
     private IncomingNotification parseOccupancy(MessageNotification notification) {
         String channel = notification.getChannel().replace(StreamingConstants.occupancyPrefix, "");
+
         if (notification.getData().contains("controlType")) {
             ControlNotification controlNotification = _gson.fromJson(notification.getData(), (new TypeToken<ControlNotification>(){}).getType());
             controlNotification.setType(NotificationType.CONTROL);
@@ -69,10 +70,10 @@ public class NotificationParserImp implements NotificationParser {
         return occupancyNotification;
     }
 
-    private ErrorNotification parseError(String payload) {
+    private ErrorNotification parseError(String payload) throws Exception {
         ErrorNotification messageError = _gson.fromJson(payload, (new TypeToken<ErrorNotification>(){}).getType());
 
-        if (messageError.getMessage() == null || messageError.getStatusCode() == null) return null;
+        if (messageError.getMessage() == null || messageError.getStatusCode() == null) throw new Exception("Incorrect notification format.");
 
         messageError.setType(NotificationType.ERROR);
 
