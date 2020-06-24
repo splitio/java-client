@@ -1,22 +1,20 @@
 package io.split.engine.sse.dtos;
 
 public class SegmentChangeNotification extends IncomingNotification {
-    private long changeNumber;
-    private String segmentName;
+    private final long changeNumber;
+    private final String segmentName;
+
+    public SegmentChangeNotification(String channel, long changeNumber, String segmentName) {
+        super(Type.SEGMENT_UPDATE, channel);
+        this.changeNumber = changeNumber;
+        this.segmentName = segmentName;
+    }
 
     public String getSegmentName() {
         return segmentName;
     }
 
-    public void setSegmentName(String segmentName) {
-        this.segmentName = segmentName;
-    }
-
     public long getChangeNumber() {
         return changeNumber;
-    }
-
-    public void setChangeNumber(long changeNumber) {
-        this.changeNumber = changeNumber;
     }
 }
