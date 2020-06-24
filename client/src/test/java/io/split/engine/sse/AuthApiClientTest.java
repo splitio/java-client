@@ -43,6 +43,30 @@ public class AuthApiClientTest {
     }
 
     @Test
+    public void authenticateWithPushEnabledWithWrongTokenShouldReturnError() throws IOException {
+        CloseableHttpClient httpClientMock = Mockito.mock(CloseableHttpClient.class);
+        CloseableHttpResponse httpResponseMock = Mockito.mock(CloseableHttpResponse.class);
+        StatusLine statusLineMock = Mockito.mock(StatusLine.class);
+        HttpEntity entityMock = Mockito.mock(HttpEntity.class);
+
+        Mockito.when(statusLineMock.getStatusCode()).thenReturn(200);
+        Mockito.when(httpResponseMock.getStatusLine()).thenReturn(statusLineMock);
+        Mockito.when(entityMock.getContent()).thenReturn(getClass().getClassLoader().getResourceAsStream("streaming-auth-push-enabled-wrong-token.json"));
+        Mockito.when(httpResponseMock.getEntity()).thenReturn(entityMock);
+
+        Mockito.when(httpClientMock.execute((HttpUriRequest) Mockito.anyObject())).thenReturn(httpResponseMock);
+
+        AuthApiClient authApiClient = new AuthApiClientImp( "www.split-test.io", gson, httpClientMock);
+        AuthenticationResponse result = authApiClient.Authenticate();
+
+        assertFalse(result.isPushEnabled());
+        assertTrue(StringUtils.isEmpty(result.getChannels()));
+        assertFalse(result.isRetry());
+        assertTrue(StringUtils.isEmpty(result.getToken()));
+        assertFalse(result.getExpiration() > 0);
+    }
+
+    @Test
     public void authenticateWithPushDisabledShouldReturnSuccess() throws IOException {
         CloseableHttpClient httpClientMock = Mockito.mock(CloseableHttpClient.class);
         CloseableHttpResponse httpResponseMock = Mockito.mock(CloseableHttpResponse.class);
