@@ -1,5 +1,6 @@
 package io.split.engine.sse;
 
+import io.split.engine.sse.dtos.ErrorNotification;
 import io.split.engine.sse.dtos.IncomingNotification;
 
 public interface EventSourceClient {
@@ -7,7 +8,8 @@ public interface EventSourceClient {
     void stop();
 
     void registerListener(FeedbackLoopListener listener);
-    void notifyIncomingNotification (IncomingNotification incomingNotification);
+    void notifyMessageNotification (IncomingNotification incomingNotification);
+    void notifyErrorNotification (ErrorNotification errorNotification);
     void notifyConnected();
     void notifyDisconnect();
 }

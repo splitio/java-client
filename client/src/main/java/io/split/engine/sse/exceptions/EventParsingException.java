@@ -8,6 +8,11 @@ public class EventParsingException extends Exception {
         _payload = payload;
     }
 
+    public EventParsingException(String message, String payload) {
+        super(message);
+        _payload = payload;
+    }
+
     public String getPayload() {
         return _payload;
     }

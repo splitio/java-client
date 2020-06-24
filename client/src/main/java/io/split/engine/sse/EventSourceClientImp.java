@@ -1,5 +1,6 @@
 package io.split.engine.sse;
 
+import io.split.engine.sse.dtos.ErrorNotification;
 import io.split.engine.sse.dtos.IncomingNotification;
 import io.split.engine.sse.exceptions.EventParsingException;
 import org.slf4j.Logger;
@@ -62,8 +63,13 @@ public class EventSourceClientImp implements EventSourceClient, Runnable {
     }
 
     @Override
-    public void notifyIncomingNotification (IncomingNotification incomingNotification) {
-        this.listeners.forEach(listener -> listener.onIncomingNotificationAdded(incomingNotification));
+    public void notifyMessageNotification (IncomingNotification incomingNotification) {
+        this.listeners.forEach(listener -> listener.onMessageNotificationAdded(incomingNotification));
+    }
+
+    @Override
+    public void notifyErrorNotification (ErrorNotification errorNotification) {
+        this.listeners.forEach(listener -> listener.onErrorNotificationAdded(errorNotification));
     }
 
     @Override
@@ -82,9 +88,18 @@ public class EventSourceClientImp implements EventSourceClient, Runnable {
             String payload = event.readData();
 
             if (payload.length() > 0) {
-                IncomingNotification incomingNotification = _notificationParser.parse(type, payload);
-
-                notifyIncomingNotification(incomingNotification);
+                switch (type) {
+                    case "message":
+                        IncomingNotification incomingNotification = _notificationParser.parseMessage(payload);
+                        notifyMessageNotification(incomingNotification);
+                        break;
+                    case "error":
+                        ErrorNotification errorNotification = _notificationParser.parseError(payload);
+                        notifyErrorNotification(errorNotification);
+                        break;
+                    default:
+                        throw new EventParsingException("Wrong notification type.", payload);
+                }
             }
         } catch (EventParsingException ex){
             _log.debug(String.format("Error parsing the event: %s. Payload: %s", ex.getMessage(), ex.getPayload()));

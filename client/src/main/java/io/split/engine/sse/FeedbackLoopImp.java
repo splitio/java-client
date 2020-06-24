@@ -1,10 +1,16 @@
 package io.split.engine.sse;
 
+import io.split.engine.sse.dtos.ErrorNotification;
 import io.split.engine.sse.dtos.IncomingNotification;
 
 public class FeedbackLoopImp implements FeedbackLoopListener {
     @Override
-    public void onIncomingNotificationAdded(IncomingNotification incomingNotification) {
+    public void onMessageNotificationAdded(IncomingNotification incomingNotification) {
+        // TODO: implement this.
+    }
+
+    @Override
+    public void onErrorNotificationAdded(ErrorNotification errorNotification) {
         // TODO: implement this.
     }
 
