@@ -3,9 +3,11 @@ package io.split.engine.sse;
 import com.google.gson.Gson;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
+import com.google.gson.reflect.TypeToken;
 import io.split.client.interceptors.AddSplitHeadersFilter;
 import io.split.engine.sse.dtos.AuthenticationResponse;
 import io.split.engine.sse.dtos.Jwt;
+import io.split.engine.sse.dtos.RawAuthResponse;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.utils.URIBuilder;
@@ -27,19 +29,19 @@ public class AuthApiClientImp implements AuthApiClient {
     private final static String CONTROL_SEC = "control_sec";
 
     private static final Logger _log = LoggerFactory.getLogger(AuthApiClient.class);
-    private static final Gson _gson = new Gson();
 
-    private final CloseableHttpClient _client;
+    private final Gson _gson;
+    private final CloseableHttpClient _httpClient;
     private final String _target;
 
-
     public AuthApiClientImp(String apiToken,
-                            String url) {
-        HttpClientBuilder httpClientbuilder = HttpClients.custom()
-                .addInterceptorLast(AddSplitHeadersFilter.instance(apiToken, false));
-
-        _client = httpClientbuilder.build();
+                            String url,
+                            Gson gson,
+                            CloseableHttpClient httpClient) {
+        //HttpClientBuilder httpClientBuilder = HttpClients.custom().addInterceptorLast(AddSplitHeadersFilter.instance(apiToken, false));
+        _httpClient = httpClient;
         _target = url;
+        _gson = gson;
     }
 
     @Override
@@ -48,42 +50,42 @@ public class AuthApiClientImp implements AuthApiClient {
             URI uri = new URIBuilder(_target).build();
             HttpGet request = new HttpGet(uri);
 
-            CloseableHttpResponse response = _client.execute(request);
+            CloseableHttpResponse response = _httpClient.execute(request);
             Integer statusCode = response.getStatusLine().getStatusCode();
 
             if (statusCode == 200) {
-                _log.debug(String.format("Success connection to: %s"), _target);
+                _log.debug(String.format("Success connection to: %s", _target));
 
                 String jsonContent = EntityUtils.toString(response.getEntity(), StandardCharsets.UTF_8);
                 return getSuccessResponse(jsonContent);
             } else if (statusCode >= 400 && statusCode < 500) {
                 _log.debug(String.format("Problem to connect to : %s. Response status: %s", _target, statusCode));
 
-                return new AuthenticationResponse(false, false);
+                return buildErrorResponse(false);
             }
 
-            return new AuthenticationResponse(false, true);
+            return buildErrorResponse(true);
         } catch (Exception ex) {
             _log.error(ex.getMessage());
 
-            return new AuthenticationResponse(false, false);
+            return buildErrorResponse(false);
         }
     }
 
     private AuthenticationResponse getSuccessResponse(String jsonContent) {
-        AuthenticationResponse authenticationResponse = _gson.fromJson(jsonContent, AuthenticationResponse.class);
+        RawAuthResponse response = _gson.fromJson(jsonContent, RawAuthResponse.class);
+        String channels = "";
+        double expiration = 0;
 
-        if (authenticationResponse.isPushEnabled()) {
-            String tokenDecoded = decodeJwt(authenticationResponse.getToken());
+        if (response.isPushEnabled()) {
+            String tokenDecoded = decodeJwt(response.getToken());
             Jwt token = _gson.fromJson(tokenDecoded, Jwt.class);
 
-            authenticationResponse.setChannels(getChannels(token));
-            authenticationResponse.setExpiration(getExpiration(token));
+            channels = getChannels(token);
+            expiration = getExpiration(token);
         }
 
-        authenticationResponse.setRetry(false);
-
-        return authenticationResponse;
+        return buildSuccessResponse(response.isPushEnabled(), response.getToken(), channels, expiration, false);
     }
 
     private String getChannels(Jwt token) {
@@ -111,5 +113,13 @@ public class AuthApiClientImp implements AuthApiClient {
         byte[] decodedBytes = Base64.getDecoder().decode(encodedString);
 
         return new String(decodedBytes);
+    }
+
+    private AuthenticationResponse buildSuccessResponse(boolean pushEnabled, String token, String channels, double expiration, boolean retry) {
+        return new AuthenticationResponse(pushEnabled, token, channels, expiration, retry);
+    }
+
+    private AuthenticationResponse buildErrorResponse(boolean retry) {
+        return new AuthenticationResponse(false, null, null, 0, retry);
     }
 }
