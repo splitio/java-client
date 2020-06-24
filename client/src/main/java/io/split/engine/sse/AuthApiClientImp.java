@@ -38,7 +38,6 @@ public class AuthApiClientImp implements AuthApiClient {
                             String url,
                             Gson gson,
                             CloseableHttpClient httpClient) {
-        //HttpClientBuilder httpClientBuilder = HttpClients.custom().addInterceptorLast(AddSplitHeadersFilter.instance(apiToken, false));
         _httpClient = httpClient;
         _target = url;
         _gson = gson;
