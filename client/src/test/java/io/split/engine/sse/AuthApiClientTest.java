@@ -16,6 +16,8 @@ import java.io.IOException;
 import static org.junit.Assert.*;
 
 public class AuthApiClientTest {
+    private final Gson gson = new Gson();
+
     @Test
     public void authenticateWithPushEnabledShouldReturnSuccess() throws IOException {
         CloseableHttpClient httpClientMock = Mockito.mock(CloseableHttpClient.class);
@@ -30,7 +32,7 @@ public class AuthApiClientTest {
 
         Mockito.when(httpClientMock.execute((HttpUriRequest) Mockito.anyObject())).thenReturn(httpResponseMock);
 
-        AuthApiClient authApiClient = new AuthApiClientImp("api-test", "www.split-test.io", new Gson(), httpClientMock);
+        AuthApiClient authApiClient = new AuthApiClientImp( "www.split-test.io", gson, httpClientMock);
         AuthenticationResponse result = authApiClient.Authenticate();
 
         assertTrue(result.isPushEnabled());
@@ -54,7 +56,7 @@ public class AuthApiClientTest {
 
         Mockito.when(httpClientMock.execute((HttpUriRequest) Mockito.anyObject())).thenReturn(httpResponseMock);
 
-        AuthApiClient authApiClient = new AuthApiClientImp("api-test", "www.split-test.io", new Gson(), httpClientMock);
+        AuthApiClient authApiClient = new AuthApiClientImp("www.split-test.io", gson, httpClientMock);
         AuthenticationResponse result = authApiClient.Authenticate();
 
         assertFalse(result.isPushEnabled());
@@ -73,7 +75,7 @@ public class AuthApiClientTest {
         Mockito.when(httpResponseMock.getStatusLine()).thenReturn(statusLineMock);
         Mockito.when(httpClientMock.execute((HttpUriRequest) Mockito.anyObject())).thenReturn(httpResponseMock);
 
-        AuthApiClient authApiClient = new AuthApiClientImp("api-test", "www.split-test.io", new Gson(), httpClientMock);
+        AuthApiClient authApiClient = new AuthApiClientImp("www.split-test.io", gson, httpClientMock);
         AuthenticationResponse result = authApiClient.Authenticate();
 
         assertFalse(result.isPushEnabled());
@@ -92,7 +94,7 @@ public class AuthApiClientTest {
         Mockito.when(httpResponseMock.getStatusLine()).thenReturn(statusLineMock);
         Mockito.when(httpClientMock.execute((HttpUriRequest) Mockito.anyObject())).thenReturn(httpResponseMock);
 
-        AuthApiClient authApiClient = new AuthApiClientImp("api-test", "www.split-test.io", new Gson(), httpClientMock);
+        AuthApiClient authApiClient = new AuthApiClientImp("www.split-test.io", gson, httpClientMock);
         AuthenticationResponse result = authApiClient.Authenticate();
 
         assertFalse(result.isPushEnabled());
@@ -111,7 +113,7 @@ public class AuthApiClientTest {
         Mockito.when(httpResponseMock.getStatusLine()).thenReturn(statusLineMock);
         Mockito.when(httpClientMock.execute((HttpUriRequest) Mockito.anyObject())).thenReturn(httpResponseMock);
 
-        AuthApiClient authApiClient = new AuthApiClientImp("api-test", "www.split-test.io", new Gson(), httpClientMock);
+        AuthApiClient authApiClient = new AuthApiClientImp("www.split-test.io", gson, httpClientMock);
         AuthenticationResponse result = authApiClient.Authenticate();
 
         assertFalse(result.isPushEnabled());

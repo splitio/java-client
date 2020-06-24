@@ -34,8 +34,7 @@ public class AuthApiClientImp implements AuthApiClient {
     private final CloseableHttpClient _httpClient;
     private final String _target;
 
-    public AuthApiClientImp(String apiToken,
-                            String url,
+    public AuthApiClientImp(String url,
                             Gson gson,
                             CloseableHttpClient httpClient) {
         _httpClient = httpClient;
@@ -77,45 +76,11 @@ public class AuthApiClientImp implements AuthApiClient {
         double expiration = 0;
 
         if (response.isPushEnabled()) {
-            String tokenDecoded = decodeJwt(response.getToken());
-            Jwt token = _gson.fromJson(tokenDecoded, Jwt.class);
-
-            channels = getChannels(token);
-            expiration = getExpiration(token);
+            channels = response.getChannels();
+            expiration = response.getExpiration();
         }
 
-        return buildSuccessResponse(response.isPushEnabled(), response.getToken(), channels, expiration, false);
-    }
-
-    private String getChannels(Jwt token) {
-        List<String> channelsList = new ArrayList<>();
-        JsonObject jsonObject = _gson.fromJson(token.getCapability(), JsonObject.class);
-        Set<Map.Entry<String, JsonElement>> entries = jsonObject.entrySet();
-        entries.forEach(e -> channelsList.add(e.getKey()));
-
-        return addPrefixControlChannels(String.join(",", channelsList));
-    }
-
-    private double getExpiration(Jwt token) {
-        return token.getExpiration() - token.getIssueAt() - PUSH_SECONDS_BEFORE_EXPIRATION;
-    }
-
-    private String addPrefixControlChannels(String channels) {
-        return channels
-                .replace(CONTROL_PRI, String.format("%s%s", OCCUPANCY_PREFIX, CONTROL_PRI))
-                .replace(CONTROL_SEC, String.format("%s%s", OCCUPANCY_PREFIX, CONTROL_SEC));
-    }
-
-    private String decodeJwt(String token) {
-        String[] splitToken  = token.split("\\.");
-        String encodedString = splitToken[1];
-        byte[] decodedBytes = Base64.getDecoder().decode(encodedString);
-
-        return new String(decodedBytes);
-    }
-
-    private AuthenticationResponse buildSuccessResponse(boolean pushEnabled, String token, String channels, double expiration, boolean retry) {
-        return new AuthenticationResponse(pushEnabled, token, channels, expiration, retry);
+        return new AuthenticationResponse(response.isPushEnabled(), response.getToken(), channels, expiration, false);
     }
 
     private AuthenticationResponse buildErrorResponse(boolean retry) {
