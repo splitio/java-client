@@ -37,6 +37,7 @@ public class AuthApiClientTest {
         assertEquals("xxxx_xxxx_segments,xxxx_xxxx_splits,control", result.getChannels());
         assertFalse(result.isRetry());
         assertFalse(StringUtils.isEmpty(result.getToken()));
+        assertTrue(result.getExpiration() > 0);
     }
 
     @Test
