@@ -16,31 +16,11 @@ public class Jwt {
         return capability;
     }
 
-    public void setCapability(String capability) {
-        this.capability = capability;
-    }
-
-    public String getClientId() {
-        return clientId;
-    }
-
-    public void setClientId(String clientId) {
-        this.clientId = clientId;
-    }
-
     public long getExpiration() {
         return expiration;
     }
 
-    public void setExpiration(long expiration) {
-        this.expiration = expiration;
-    }
-
     public long getIssueAt() {
         return issueAt;
-    }
-
-    public void setIssueAt(long issueAt) {
-        this.issueAt = issueAt;
     }
 }

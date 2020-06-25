@@ -4,7 +4,12 @@ import com.google.gson.Gson;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Base64;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+
 
 public class RawAuthResponse {
     private final static Integer PUSH_SECONDS_BEFORE_EXPIRATION = 600;
@@ -12,7 +17,7 @@ public class RawAuthResponse {
     private final boolean pushEnabled;
     private final String token;
     private final Gson gson;
-    private Jwt jwt;
+    private final Jwt jwt;
 
     public RawAuthResponse(boolean pushEnabled, String token, Gson gson) {
         this.pushEnabled = pushEnabled;
@@ -22,6 +27,8 @@ public class RawAuthResponse {
         if (token != null && token != "") {
             String tokenDecoded = decodeJwt();
             this.jwt = gson.fromJson(tokenDecoded, Jwt.class);
+        } else {
+            this.jwt = new Jwt();
         }
     }
 
