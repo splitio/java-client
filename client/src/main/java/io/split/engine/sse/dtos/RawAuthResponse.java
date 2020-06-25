@@ -8,41 +8,38 @@ import java.util.*;
 
 public class RawAuthResponse {
     private final static Integer PUSH_SECONDS_BEFORE_EXPIRATION = 600;
-    private final static Gson gson = new Gson();
 
     private final boolean pushEnabled;
     private final String token;
+    private final Gson gson;
     private Jwt jwt;
 
-    public RawAuthResponse(boolean pushEnabled, String token) {
+    public RawAuthResponse(boolean pushEnabled, String token, Gson gson) {
         this.pushEnabled = pushEnabled;
         this.token = token;
+        this.gson = gson;
+
+        if (token != null && token != "") {
+            String tokenDecoded = decodeJwt();
+            this.jwt = gson.fromJson(tokenDecoded, Jwt.class);
+        }
     }
 
     public boolean isPushEnabled() { return pushEnabled; }
 
     public String getToken() { return token; }
 
-    public Jwt getJwt() {
-        if (this.jwt == null) {
-            String tokenDecoded = decodeJwt();
-            this.jwt = gson.fromJson(tokenDecoded, Jwt.class);
-        }
-
-        return this.jwt;
-    }
-
-    public String getChannels() {
+    public String getChannels(Gson gson) {
         List<String> channelsList = new ArrayList<>();
-        JsonObject jsonObject = gson.fromJson(getJwt().getCapability(), JsonObject.class);
+        JsonObject jsonObject = gson.fromJson(jwt.getCapability(), JsonObject.class);
         Set<Map.Entry<String, JsonElement>> entries = jsonObject.entrySet();
         entries.forEach(e -> channelsList.add(e.getKey()));
 
         return addPrefixControlChannels(String.join(",", channelsList));
     }
 
-    public double getExpiration() {
-        return getJwt().getExpiration() - getJwt().getIssueAt() - PUSH_SECONDS_BEFORE_EXPIRATION;
+    public double getExpiration(Gson gson) {
+        return jwt.getExpiration() - jwt.getIssueAt() - PUSH_SECONDS_BEFORE_EXPIRATION;
     }
 
     private String decodeJwt() {

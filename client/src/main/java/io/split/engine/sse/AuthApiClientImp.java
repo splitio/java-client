@@ -3,31 +3,20 @@ package io.split.engine.sse;
 import com.google.gson.Gson;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
-import com.google.gson.reflect.TypeToken;
-import io.split.client.interceptors.AddSplitHeadersFilter;
 import io.split.engine.sse.dtos.AuthenticationResponse;
-import io.split.engine.sse.dtos.Jwt;
 import io.split.engine.sse.dtos.RawAuthResponse;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.utils.URIBuilder;
 import org.apache.http.impl.client.CloseableHttpClient;
-import org.apache.http.impl.client.HttpClientBuilder;
-import org.apache.http.impl.client.HttpClients;
 import org.apache.http.util.EntityUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.net.URI;
 import java.nio.charset.StandardCharsets;
-import java.util.*;
 
 public class AuthApiClientImp implements AuthApiClient {
-    private final static Integer PUSH_SECONDS_BEFORE_EXPIRATION = 600;
-    private final static String OCCUPANCY_PREFIX = "[?occupancy=metrics.publishers]";
-    private final static String CONTROL_PRI = "control_pri";
-    private final static String CONTROL_SEC = "control_sec";
-
     private static final Logger _log = LoggerFactory.getLogger(AuthApiClient.class);
 
     private final Gson _gson;
@@ -71,13 +60,15 @@ public class AuthApiClientImp implements AuthApiClient {
     }
 
     private AuthenticationResponse getSuccessResponse(String jsonContent) {
-        RawAuthResponse response = _gson.fromJson(jsonContent, RawAuthResponse.class);
+        JsonObject jsonObject = _gson.fromJson(jsonContent, JsonObject.class);
+        String token = jsonObject.get("token") != null ? jsonObject.get("token").getAsString() : "";
+        RawAuthResponse response = new RawAuthResponse(jsonObject.get("pushEnabled").getAsBoolean(), token, _gson);
         String channels = "";
         double expiration = 0;
 
         if (response.isPushEnabled()) {
-            channels = response.getChannels();
-            expiration = response.getExpiration();
+            channels = response.getChannels(_gson);
+            expiration = response.getExpiration(_gson);
         }
 
         return new AuthenticationResponse(response.isPushEnabled(), response.getToken(), channels, expiration, false);
