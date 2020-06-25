@@ -1,8 +1,6 @@
-package io.split.engine.sse;
+package io.split.engine.sse.workers;
 
 import io.split.engine.experiments.SplitFetcher;
-import io.split.engine.sse.workers.SplitsWorker;
-import io.split.engine.sse.workers.SplitsWorkerImp;
 import org.junit.Test;
 import org.mockito.Mockito;
 
@@ -44,6 +42,30 @@ public class SplitsWorkerTest {
 
         Mockito.verify(splitFetcherMock, Mockito.times(4)).changeNumber();
         Mockito.verify(splitFetcherMock, Mockito.times(3)).forceRefresh();
+
+        thread.interrupt();
+    }
+
+    @Test
+    public void noSe() throws InterruptedException {
+        SplitFetcher splitFetcherMock = Mockito.mock(SplitFetcher.class);
+
+        Mockito.when(splitFetcherMock.changeNumber()).thenReturn(1585956698447L);
+
+        SplitsWorker splitsWorker = new SplitsWorkerImp(splitFetcherMock);
+        Thread thread = new Thread(splitsWorker);
+        thread.start();
+
+        splitsWorker.addToQueue(1585956698457L);
+        Thread.sleep(500);
+        splitsWorker.stop();
+
+        splitsWorker.addToQueue(1585956698467L);
+        splitsWorker.addToQueue(1585956698477L);
+        splitsWorker.addToQueue(1585956698476L);
+
+        Mockito.verify(splitFetcherMock, Mockito.times(1)).changeNumber();
+        Mockito.verify(splitFetcherMock, Mockito.times(1)).forceRefresh();
 
         thread.interrupt();
     }

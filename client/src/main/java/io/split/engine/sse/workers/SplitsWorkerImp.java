@@ -5,13 +5,17 @@ import io.split.engine.sse.queues.SplitNotificationsQueue;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.concurrent.atomic.AtomicBoolean;
+
 public class SplitsWorkerImp implements SplitsWorker {
     private static final Logger _log = LoggerFactory.getLogger(SplitsWorker.class);
 
     private final SplitFetcher _splitFetcher;
+    private final AtomicBoolean _stop;
 
     public SplitsWorkerImp(SplitFetcher splitFetcher) {
         _splitFetcher = splitFetcher;
+        _stop = new AtomicBoolean(false);
     }
 
     @Override
@@ -35,9 +39,16 @@ public class SplitsWorkerImp implements SplitsWorker {
     }
 
     @Override
+    public void stop() {
+        _stop.set(true);
+    }
+
+    @Override
     public void run() {
         try {
-            while(true) {
+            _stop.set(false);
+
+            while(!_stop.get()) {
                 long changeNumber = SplitNotificationsQueue.queue.take();
                 _log.debug(String.format("changeNumber dequeue: %s", changeNumber));
 
