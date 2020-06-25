@@ -85,10 +85,31 @@ public class RefreshableSplitFetcher implements SplitFetcher, Runnable {
         run();
     }
 
+    @Override
     public long changeNumber() {
         return _changeNumber.get();
     }
 
+    @Override
+    public void killSplit(String splitName, String defaultTreatment, long changeNumber) {
+        synchronized (_lock) {
+            ParsedSplit parsedSplit = _concurrentMap.get(splitName);
+
+            ParsedSplit updatedSplit = new ParsedSplit(parsedSplit.feature(),
+                    parsedSplit.seed(),
+                    true,
+                    defaultTreatment,
+                    parsedSplit.parsedConditions(),
+                    parsedSplit.trafficTypeName(),
+                    changeNumber,
+                    parsedSplit.trafficAllocation(),
+                    parsedSplit.trafficAllocationSeed(),
+                    parsedSplit.algo(),
+                    parsedSplit.configurations());
+
+            _concurrentMap.put(splitName, updatedSplit);
+        }
+    }
 
     @Override
     public ParsedSplit fetch(String test) {
