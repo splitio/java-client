@@ -5,10 +5,13 @@ import com.google.gson.reflect.TypeToken;
 import io.split.engine.sse.dtos.*;
 import io.split.engine.sse.exceptions.EventParsingException;
 
+import java.lang.reflect.Type;
 import java.util.Map;
 
 public class NotificationParserImp implements NotificationParser {
-    public static String OCCUPANCY_PREFIX = "[?occupancy=metrics.publishers]";
+    private static final String OCCUPANCY_PREFIX = "[?occupancy=metrics.publishers]";
+    private static final Type MAP_STRING_OBJECT_TYPE_TOKEN = new TypeToken<Map<String, Object>>(){}.getType();
+    private static final String  NOTIFICATION_TYPE_FIELD = "type";
 
     private final Gson _gson;
 
@@ -22,7 +25,7 @@ public class NotificationParserImp implements NotificationParser {
             RawMessageNotification rawMessageNotification = _gson.fromJson(payload, RawMessageNotification.class);
 
             if (rawMessageNotification.getChannel().contains(OCCUPANCY_PREFIX)) {
-                return parseOccupancy(rawMessageNotification);
+                return parseControlChannelMessage(rawMessageNotification);
             }
 
             return parseNotification(rawMessageNotification);
@@ -36,8 +39,9 @@ public class NotificationParserImp implements NotificationParser {
         try {
             ErrorNotification messageError = _gson.fromJson(payload, ErrorNotification.class);
 
-            if (messageError.getMessage() == null || messageError.getStatusCode() == null)
+            if (messageError.getMessage() == null || messageError.getStatusCode() == null) {
                 throw new Exception("Wrong notification format.");
+            }
 
             return messageError;
         } catch (Exception ex) {
@@ -46,8 +50,8 @@ public class NotificationParserImp implements NotificationParser {
     }
 
     private IncomingNotification parseNotification(RawMessageNotification rawMessageNotification) throws Exception {
-        Map<String, Object> data = _gson.fromJson(rawMessageNotification.getData(), new TypeToken<Map<String, Object>>(){}.getType());
-        IncomingNotification.Type type = IncomingNotification.Type.valueOf((String) data.get("type"));
+        Map<String, Object> data = _gson.fromJson(rawMessageNotification.getData(), MAP_STRING_OBJECT_TYPE_TOKEN);
+        IncomingNotification.Type type = IncomingNotification.Type.valueOf((String) data.get(NOTIFICATION_TYPE_FIELD));
 
         switch (type) {
             case SPLIT_UPDATE:
@@ -61,8 +65,8 @@ public class NotificationParserImp implements NotificationParser {
         }
     }
 
-    private IncomingNotification parseOccupancy(RawMessageNotification rawMessageNotification) {
-        Map<String, Object> data = _gson.fromJson(rawMessageNotification.getData(), new TypeToken<Map<String, Object>>(){}.getType());
+    private IncomingNotification parseControlChannelMessage(RawMessageNotification rawMessageNotification) {
+        Map<String, Object> data = _gson.fromJson(rawMessageNotification.getData(), MAP_STRING_OBJECT_TYPE_TOKEN);
         Object controlType = data.get("controlType");
         String channel =  rawMessageNotification.getChannel().replace(OCCUPANCY_PREFIX, "");
 
