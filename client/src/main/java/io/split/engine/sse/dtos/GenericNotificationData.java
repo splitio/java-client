@@ -1,14 +1,32 @@
 package io.split.engine.sse.dtos;
 
 public class GenericNotificationData {
-    private long changeNumber;
-    private String defaultTreatment;
-    private String splitName;
-    private ControlType controlType;
-    private OccupancyMetrics metrics;
-    private String segmentName;
-    private IncomingNotification.Type type;
+    private final long changeNumber;
+    private final String defaultTreatment;
+    private final String splitName;
+    private final ControlType controlType;
+    private final OccupancyMetrics metrics;
+    private final String segmentName;
+    private final IncomingNotification.Type type;
     private String channel;
+
+    public GenericNotificationData (long changeNumber,
+                                    String defaultTreatment,
+                                    String splitName,
+                                    ControlType controlType,
+                                    OccupancyMetrics occupancyMetrics,
+                                    String segmentName,
+                                    IncomingNotification.Type type,
+                                    String channel) {
+        this.changeNumber = changeNumber;
+        this.defaultTreatment = defaultTreatment;
+        this.splitName = splitName;
+        this.controlType = controlType;
+        this.metrics = occupancyMetrics;
+        this.segmentName = segmentName;
+        this.type = type;
+        this.channel = channel;
+    }
 
     public long getChangeNumber() {
         return changeNumber;

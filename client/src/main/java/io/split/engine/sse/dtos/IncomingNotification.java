@@ -9,8 +9,8 @@ public abstract class IncomingNotification {
         OCCUPANCY
     }
 
-    private Type type;
-    private String channel;
+    private final Type type;
+    private final String channel;
 
     public IncomingNotification(Type type, String channel) {
         this.type = type;

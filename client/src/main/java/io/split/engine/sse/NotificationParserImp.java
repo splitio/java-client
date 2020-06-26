@@ -48,11 +48,11 @@ public class NotificationParserImp implements NotificationParser {
     private IncomingNotification parseNotification(GenericNotificationData genericNotificationData) throws Exception {
         switch (genericNotificationData.getType()) {
             case SPLIT_UPDATE:
-                return buildSplitChangeNotification(genericNotificationData);
+                return new SplitChangeNotification(genericNotificationData);
             case SPLIT_KILL:
-                return buildSplitKillNotification(genericNotificationData);
+                return new SplitKillNotification(genericNotificationData);
             case SEGMENT_UPDATE:
-                return buildSegmentChangeNotification(genericNotificationData);
+                return new SegmentChangeNotification(genericNotificationData);
             default:
                 throw new Exception("Wrong Notification type.");
         }
@@ -63,29 +63,9 @@ public class NotificationParserImp implements NotificationParser {
         genericNotificationData.setChannel(channel);
 
         if (genericNotificationData.getControlType() != null) {
-            return buildControlNotification(genericNotificationData);
+            return new ControlNotification(genericNotificationData);
         }
 
-        return buildOccupancyNotification(genericNotificationData);
-    }
-
-    private SplitChangeNotification buildSplitChangeNotification(GenericNotificationData genericNotificationData) {
-        return new SplitChangeNotification(genericNotificationData);
-    }
-
-    private SplitKillNotification buildSplitKillNotification(GenericNotificationData genericNotificationData) {
-        return new SplitKillNotification(genericNotificationData);
-    }
-
-    private SegmentChangeNotification buildSegmentChangeNotification(GenericNotificationData genericNotificationData) {
-        return new SegmentChangeNotification(genericNotificationData);
-    }
-
-    private ControlNotification buildControlNotification(GenericNotificationData genericNotificationData) {
-        return new ControlNotification(genericNotificationData);
-    }
-
-    private OccupancyNotification buildOccupancyNotification(GenericNotificationData genericNotificationData) {
         return new OccupancyNotification(genericNotificationData);
     }
 }
