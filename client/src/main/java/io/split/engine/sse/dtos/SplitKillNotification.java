@@ -1,31 +1,26 @@
 package io.split.engine.sse.dtos;
 
 public class SplitKillNotification extends IncomingNotification {
-    private long changeNumber;
-    private String defaultTreatment;
-    private String splitName;
+    private final long changeNumber;
+    private final String defaultTreatment;
+    private final String splitName;
+
+    public  SplitKillNotification(GenericNotificationData genericNotificationData) {
+        super(Type.SPLIT_KILL, genericNotificationData.getChannel());
+        this.changeNumber = genericNotificationData.getChangeNumber();
+        this.defaultTreatment = genericNotificationData.getDefaultTreatment();
+        this.splitName = genericNotificationData.getSplitName();
+    }
 
     public long getChangeNumber() {
         return changeNumber;
-    }
-
-    public void setChangeNumber(long changeNumber) {
-        this.changeNumber = changeNumber;
     }
 
     public String getDefaultTreatment() {
         return defaultTreatment;
     }
 
-    public void setDefaultTreatment(String defaultTreatment) {
-        this.defaultTreatment = defaultTreatment;
-    }
-
     public String getSplitName() {
         return splitName;
-    }
-
-    public void setSplitName(String splitName) {
-        this.splitName = splitName;
     }
 }

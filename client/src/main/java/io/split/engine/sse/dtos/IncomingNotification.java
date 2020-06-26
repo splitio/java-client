@@ -1,22 +1,27 @@
 package io.split.engine.sse.dtos;
 
-public class IncomingNotification {
-    private NotificationType type;
-    private String channel;
+public abstract class IncomingNotification {
+    public enum Type {
+        SPLIT_UPDATE,
+        SPLIT_KILL,
+        SEGMENT_UPDATE,
+        CONTROL,
+        OCCUPANCY
+    }
+
+    private final Type type;
+    private final String channel;
+
+    public IncomingNotification(Type type, String channel) {
+        this.type = type;
+        this.channel = channel;
+    }
 
     public String getChannel() {
         return channel;
     }
 
-    public void setChannel(String channel) {
-        this.channel = channel;
-    }
-
-    public NotificationType getType() {
+    public Type getType() {
         return type;
-    }
-
-    public void setType(NotificationType type) {
-        this.type = type;
     }
 }

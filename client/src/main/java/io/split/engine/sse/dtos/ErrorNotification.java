@@ -1,22 +1,15 @@
 package io.split.engine.sse.dtos;
 
-public class ErrorNotification extends IncomingNotification {
-    private String statusCode;
-    private String message;
+public class ErrorNotification {
+    private final String statusCode;
+    private final String message;
 
-    public String getMessage() {
-        return message;
-    }
-
-    public void setMessage(String message) {
+    public ErrorNotification(String statusCode, String message) {
+        this.statusCode = statusCode;
         this.message = message;
     }
 
-    public String getStatusCode() {
-        return statusCode;
-    }
+    public String getMessage() { return message; }
 
-    public void setStatusCode(String statusCode) {
-        this.statusCode = statusCode;
-    }
+    public String getStatusCode() { return statusCode; }
 }
