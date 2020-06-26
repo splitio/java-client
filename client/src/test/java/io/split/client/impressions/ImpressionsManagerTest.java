@@ -16,6 +16,7 @@ import java.util.List;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertThat;
+import static org.mockito.Matchers.isNull;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 
@@ -146,6 +147,59 @@ public class ImpressionsManagerTest {
 
         verify(senderMock, never()).post(impressionsCaptor.capture());
     }
+
+    @Test
+    public void alreadySeenImpressionsAreMarked() throws URISyntaxException {
+
+        SplitClientConfig config = SplitClientConfig.builder()
+                .impressionsQueueSize(10)
+                .endpoint("nowhere.com", "nowhere.com")
+                .build();
+
+        ImpressionsSender senderMock = Mockito.mock(ImpressionsSender.class);
+
+        ImpressionsManager treatmentLog = ImpressionsManager.instanceForTest(null, config, senderMock);
+
+        // These 4 unique test name will cause 4 entries but we are caping at the first 3.
+        KeyImpression ki1 = keyImpression("test1", "adil", "on", 1L, 1L);
+        KeyImpression ki2 = keyImpression("test1", "adil2", "on", 2L, 1L);
+        KeyImpression ki3 = keyImpression("test1", "pato", "on", 3L, 1L);
+        KeyImpression ki4 = keyImpression("test1", "pato2", "on", 4L, 1L);
+
+        treatmentLog.log(new Impression(ki1.keyName, null, ki1.feature, ki1.treatment, ki1.time, null, 1L, null));
+        treatmentLog.log(new Impression(ki2.keyName, null, ki2.feature, ki2.treatment, ki2.time, null, 1L, null));
+        treatmentLog.log(new Impression(ki3.keyName, null, ki3.feature, ki3.treatment, ki3.time, null, 1L, null));
+        treatmentLog.log(new Impression(ki4.keyName, null, ki4.feature, ki4.treatment, ki4.time, null, 1L, null));
+        treatmentLog.run();
+
+        verify(senderMock).post(impressionsCaptor.capture());
+
+        List<TestImpressions> captured = impressionsCaptor.getValue();
+        for (TestImpressions testImpressions : captured) {
+            for (KeyImpression keyImpression : testImpressions.keyImpressions) {
+                assertThat(keyImpression.seenAt, is(equalTo(null)));
+            }
+        }
+
+        // Do it again. Now they should all have a `seenAt` value
+        Mockito.reset(senderMock);
+        treatmentLog.log(new Impression(ki1.keyName, null, ki1.feature, ki1.treatment, ki1.time, null, 1L, null));
+        treatmentLog.log(new Impression(ki2.keyName, null, ki2.feature, ki2.treatment, ki2.time, null, 1L, null));
+        treatmentLog.log(new Impression(ki3.keyName, null, ki3.feature, ki3.treatment, ki3.time, null, 1L, null));
+        treatmentLog.log(new Impression(ki4.keyName, null, ki4.feature, ki4.treatment, ki4.time, null, 1L, null));
+        treatmentLog.run();
+
+        verify(senderMock).post(impressionsCaptor.capture());
+
+        captured = impressionsCaptor.getValue();
+        for (TestImpressions testImpressions : captured) {
+            for (KeyImpression keyImpression : testImpressions.keyImpressions) {
+                assertThat(keyImpression.seenAt, is(equalTo(keyImpression.time)));
+            }
+        }
+
+    }
+
 
     private KeyImpression keyImpression(String feature, String key, String treatment, long time, Long changeNumber) {
         KeyImpression result = new KeyImpression();
