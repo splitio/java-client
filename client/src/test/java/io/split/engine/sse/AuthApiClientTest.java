@@ -4,6 +4,7 @@ import com.google.gson.Gson;
 import io.split.engine.sse.dtos.AuthenticationResponse;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.http.HttpEntity;
+import org.apache.http.HttpStatus;
 import org.apache.http.StatusLine;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpUriRequest;
@@ -25,7 +26,7 @@ public class AuthApiClientTest {
         StatusLine statusLineMock = Mockito.mock(StatusLine.class);
         HttpEntity entityMock = Mockito.mock(HttpEntity.class);
 
-        Mockito.when(statusLineMock.getStatusCode()).thenReturn(200);
+        Mockito.when(statusLineMock.getStatusCode()).thenReturn(HttpStatus.SC_OK);
         Mockito.when(httpResponseMock.getStatusLine()).thenReturn(statusLineMock);
         Mockito.when(entityMock.getContent()).thenReturn(getClass().getClassLoader().getResourceAsStream("streaming-auth-push-enabled.json"));
         Mockito.when(httpResponseMock.getEntity()).thenReturn(entityMock);
@@ -49,7 +50,7 @@ public class AuthApiClientTest {
         StatusLine statusLineMock = Mockito.mock(StatusLine.class);
         HttpEntity entityMock = Mockito.mock(HttpEntity.class);
 
-        Mockito.when(statusLineMock.getStatusCode()).thenReturn(200);
+        Mockito.when(statusLineMock.getStatusCode()).thenReturn(HttpStatus.SC_OK);
         Mockito.when(httpResponseMock.getStatusLine()).thenReturn(statusLineMock);
         Mockito.when(entityMock.getContent()).thenReturn(getClass().getClassLoader().getResourceAsStream("streaming-auth-push-enabled-wrong-token.json"));
         Mockito.when(httpResponseMock.getEntity()).thenReturn(entityMock);
@@ -73,7 +74,7 @@ public class AuthApiClientTest {
         StatusLine statusLineMock = Mockito.mock(StatusLine.class);
         HttpEntity entityMock = Mockito.mock(HttpEntity.class);
 
-        Mockito.when(statusLineMock.getStatusCode()).thenReturn(200);
+        Mockito.when(statusLineMock.getStatusCode()).thenReturn(HttpStatus.SC_OK);
         Mockito.when(httpResponseMock.getStatusLine()).thenReturn(statusLineMock);
         Mockito.when(entityMock.getContent()).thenReturn(getClass().getClassLoader().getResourceAsStream("streaming-auth-push-disabled.json"));
         Mockito.when(httpResponseMock.getEntity()).thenReturn(entityMock);
@@ -95,7 +96,7 @@ public class AuthApiClientTest {
         CloseableHttpResponse httpResponseMock = Mockito.mock(CloseableHttpResponse.class);
         StatusLine statusLineMock = Mockito.mock(StatusLine.class);
 
-        Mockito.when(statusLineMock.getStatusCode()).thenReturn(500);
+        Mockito.when(statusLineMock.getStatusCode()).thenReturn(HttpStatus.SC_INTERNAL_SERVER_ERROR);
         Mockito.when(httpResponseMock.getStatusLine()).thenReturn(statusLineMock);
         Mockito.when(httpClientMock.execute((HttpUriRequest) Mockito.anyObject())).thenReturn(httpResponseMock);
 
@@ -114,7 +115,7 @@ public class AuthApiClientTest {
         CloseableHttpResponse httpResponseMock = Mockito.mock(CloseableHttpResponse.class);
         StatusLine statusLineMock = Mockito.mock(StatusLine.class);
 
-        Mockito.when(statusLineMock.getStatusCode()).thenReturn(400);
+        Mockito.when(statusLineMock.getStatusCode()).thenReturn(HttpStatus.SC_BAD_REQUEST);
         Mockito.when(httpResponseMock.getStatusLine()).thenReturn(statusLineMock);
         Mockito.when(httpClientMock.execute((HttpUriRequest) Mockito.anyObject())).thenReturn(httpResponseMock);
 
@@ -133,7 +134,7 @@ public class AuthApiClientTest {
         CloseableHttpResponse httpResponseMock = Mockito.mock(CloseableHttpResponse.class);
         StatusLine statusLineMock = Mockito.mock(StatusLine.class);
 
-        Mockito.when(statusLineMock.getStatusCode()).thenReturn(401);
+        Mockito.when(statusLineMock.getStatusCode()).thenReturn(HttpStatus.SC_UNAUTHORIZED);
         Mockito.when(httpResponseMock.getStatusLine()).thenReturn(statusLineMock);
         Mockito.when(httpClientMock.execute((HttpUriRequest) Mockito.anyObject())).thenReturn(httpResponseMock);
 

@@ -5,6 +5,7 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import io.split.engine.sse.dtos.AuthenticationResponse;
 import io.split.engine.sse.dtos.RawAuthResponse;
+import org.apache.http.HttpStatus;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.utils.URIBuilder;
@@ -40,12 +41,12 @@ public class AuthApiClientImp implements AuthApiClient {
             CloseableHttpResponse response = _httpClient.execute(request);
             Integer statusCode = response.getStatusLine().getStatusCode();
 
-            if (statusCode == 200) {
+            if (statusCode == HttpStatus.SC_OK) {
                 _log.debug(String.format("Success connection to: %s", _target));
 
                 String jsonContent = EntityUtils.toString(response.getEntity(), StandardCharsets.UTF_8);
                 return getSuccessResponse(jsonContent);
-            } else if (statusCode >= 400 && statusCode < 500) {
+            } else if (statusCode >= HttpStatus.SC_BAD_REQUEST && statusCode < HttpStatus.SC_INTERNAL_SERVER_ERROR) {
                 _log.debug(String.format("Problem to connect to : %s. Response status: %s", _target, statusCode));
 
                 return buildErrorResponse(false);
