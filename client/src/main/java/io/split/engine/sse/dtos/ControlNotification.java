@@ -3,9 +3,9 @@ package io.split.engine.sse.dtos;
 public class ControlNotification extends IncomingNotification {
     private ControlType controlType;
 
-    public ControlNotification(String channel, ControlType controlType) {
-        super(Type.CONTROL, channel);
-        this.controlType = controlType;
+    public ControlNotification(GenericNotificationData genericNotificationData) {
+        super(Type.CONTROL, genericNotificationData.getChannel());
+        this.controlType = genericNotificationData.getControlType();
     }
 
     public ControlType getControlType() {

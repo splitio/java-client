@@ -5,11 +5,11 @@ public class SplitKillNotification extends IncomingNotification {
     private final String defaultTreatment;
     private final String splitName;
 
-    public  SplitKillNotification(String channel, long changeNumber, String defaultTreatment, String splitName) {
-        super(Type.SPLIT_KILL, channel);
-        this.changeNumber = changeNumber;
-        this.defaultTreatment = defaultTreatment;
-        this.splitName = splitName;
+    public  SplitKillNotification(GenericNotificationData genericNotificationData) {
+        super(Type.SPLIT_KILL, genericNotificationData.getChannel());
+        this.changeNumber = genericNotificationData.getChangeNumber();
+        this.defaultTreatment = genericNotificationData.getDefaultTreatment();
+        this.splitName = genericNotificationData.getSplitName();
     }
 
     public long getChangeNumber() {

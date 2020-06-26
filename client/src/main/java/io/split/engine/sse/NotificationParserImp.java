@@ -1,17 +1,11 @@
 package io.split.engine.sse;
 
 import com.google.gson.Gson;
-import com.google.gson.reflect.TypeToken;
 import io.split.engine.sse.dtos.*;
 import io.split.engine.sse.exceptions.EventParsingException;
 
-import java.lang.reflect.Type;
-import java.util.Map;
-
 public class NotificationParserImp implements NotificationParser {
     private static final String OCCUPANCY_PREFIX = "[?occupancy=metrics.publishers]";
-    private static final Type MAP_STRING_OBJECT_TYPE_TOKEN = new TypeToken<Map<String, Object>>(){}.getType();
-    private static final String  NOTIFICATION_TYPE_FIELD = "type";
 
     private final Gson _gson;
 
@@ -23,12 +17,14 @@ public class NotificationParserImp implements NotificationParser {
     public IncomingNotification parseMessage(String payload) throws EventParsingException {
         try {
             RawMessageNotification rawMessageNotification = _gson.fromJson(payload, RawMessageNotification.class);
+            GenericNotificationData genericNotificationData = _gson.fromJson(rawMessageNotification.getData(), GenericNotificationData.class);
+            genericNotificationData.setChannel(rawMessageNotification.getChannel());
 
             if (rawMessageNotification.getChannel().contains(OCCUPANCY_PREFIX)) {
-                return parseControlChannelMessage(rawMessageNotification);
+                return parseControlChannelMessage(genericNotificationData);
             }
 
-            return parseNotification(rawMessageNotification);
+            return parseNotification(genericNotificationData);
         } catch (Exception ex) {
             throw new EventParsingException("Error parsing event.", ex, payload);
         }
@@ -49,54 +45,47 @@ public class NotificationParserImp implements NotificationParser {
         }
     }
 
-    private IncomingNotification parseNotification(RawMessageNotification rawMessageNotification) throws Exception {
-        Map<String, Object> data = _gson.fromJson(rawMessageNotification.getData(), MAP_STRING_OBJECT_TYPE_TOKEN);
-        IncomingNotification.Type type = IncomingNotification.Type.valueOf((String) data.get(NOTIFICATION_TYPE_FIELD));
-
-        switch (type) {
+    private IncomingNotification parseNotification(GenericNotificationData genericNotificationData) throws Exception {
+        switch (genericNotificationData.getType()) {
             case SPLIT_UPDATE:
-                return buildSplitChangeNotification(rawMessageNotification.getChannel(), data);
+                return buildSplitChangeNotification(genericNotificationData);
             case SPLIT_KILL:
-                return buildSplitKillNotification(rawMessageNotification.getChannel(), data);
+                return buildSplitKillNotification(genericNotificationData);
             case SEGMENT_UPDATE:
-                return buildSegmentChangeNotification(rawMessageNotification.getChannel(), data);
+                return buildSegmentChangeNotification(genericNotificationData);
             default:
-                throw new Exception("Wrong Notification type");
+                throw new Exception("Wrong Notification type.");
         }
     }
 
-    private IncomingNotification parseControlChannelMessage(RawMessageNotification rawMessageNotification) {
-        Map<String, Object> data = _gson.fromJson(rawMessageNotification.getData(), MAP_STRING_OBJECT_TYPE_TOKEN);
-        Object controlType = data.get("controlType");
-        String channel =  rawMessageNotification.getChannel().replace(OCCUPANCY_PREFIX, "");
+    private IncomingNotification parseControlChannelMessage(GenericNotificationData genericNotificationData) {
+        String channel = genericNotificationData.getChannel().replace(OCCUPANCY_PREFIX, "");
+        genericNotificationData.setChannel(channel);
 
-        if (controlType != null) {
-            return buildControlNotification(channel, ControlType.valueOf((String) controlType));
+        if (genericNotificationData.getControlType() != null) {
+            return buildControlNotification(genericNotificationData);
         }
 
-        return buildOccupancyNotification(channel, data);
+        return buildOccupancyNotification(genericNotificationData);
     }
 
-    private SplitChangeNotification buildSplitChangeNotification(String channel, Map<String, Object> data) {
-        return new SplitChangeNotification(channel, Double.valueOf((double)data.get("changeNumber")).longValue());
+    private SplitChangeNotification buildSplitChangeNotification(GenericNotificationData genericNotificationData) {
+        return new SplitChangeNotification(genericNotificationData);
     }
 
-    private SplitKillNotification buildSplitKillNotification(String channel, Map<String, Object> data) {
-        return new SplitKillNotification(channel, Double.valueOf((double)data.get("changeNumber")).longValue(), (String) data.get("defaultTreatment"), (String) data.get("splitName"));
+    private SplitKillNotification buildSplitKillNotification(GenericNotificationData genericNotificationData) {
+        return new SplitKillNotification(genericNotificationData);
     }
 
-    private SegmentChangeNotification buildSegmentChangeNotification(String channel, Map<String, Object> data) {
-        return new SegmentChangeNotification(channel, Double.valueOf((double)data.get("changeNumber")).longValue(), (String) data.get("segmentName"));
+    private SegmentChangeNotification buildSegmentChangeNotification(GenericNotificationData genericNotificationData) {
+        return new SegmentChangeNotification(genericNotificationData);
     }
 
-    private ControlNotification buildControlNotification(String channel, ControlType controlType) {
-        return new ControlNotification(channel, controlType);
+    private ControlNotification buildControlNotification(GenericNotificationData genericNotificationData) {
+        return new ControlNotification(genericNotificationData);
     }
 
-    private OccupancyNotification buildOccupancyNotification(String channel, Map<String, Object> data) {
-        Map<String, Object> metrics = (Map<String, Object>) data.get("metrics");
-        int publishers = Double.valueOf((double)metrics.get("publishers")).intValue();
-
-        return new OccupancyNotification(channel, publishers);
+    private OccupancyNotification buildOccupancyNotification(GenericNotificationData genericNotificationData) {
+        return new OccupancyNotification(genericNotificationData);
     }
 }

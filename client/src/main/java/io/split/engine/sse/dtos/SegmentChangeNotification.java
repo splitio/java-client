@@ -4,10 +4,10 @@ public class SegmentChangeNotification extends IncomingNotification {
     private final long changeNumber;
     private final String segmentName;
 
-    public SegmentChangeNotification(String channel, long changeNumber, String segmentName) {
-        super(Type.SEGMENT_UPDATE, channel);
-        this.changeNumber = changeNumber;
-        this.segmentName = segmentName;
+    public SegmentChangeNotification(GenericNotificationData genericNotificationData) {
+        super(Type.SEGMENT_UPDATE, genericNotificationData.getChannel());
+        this.changeNumber = genericNotificationData.getChangeNumber();
+        this.segmentName = genericNotificationData.getSegmentName();
     }
 
     public String getSegmentName() {
