@@ -47,16 +47,14 @@ public class AuthApiClientImp implements AuthApiClient {
                 String jsonContent = EntityUtils.toString(response.getEntity(), StandardCharsets.UTF_8);
                 return getSuccessResponse(jsonContent);
             } else if (statusCode >= HttpStatus.SC_BAD_REQUEST && statusCode < HttpStatus.SC_INTERNAL_SERVER_ERROR) {
-                _log.debug(String.format("Problem to connect to : %s. Response status: %s", _target, statusCode));
-
-                return buildErrorResponse(false);
+                throw new Exception(String.format("Problem to connect to : %s. Response status: %s", _target, statusCode));
             }
 
-            return buildErrorResponse(true);
+            return new AuthenticationResponse(false,true);
         } catch (Exception ex) {
             _log.error(ex.getMessage());
 
-            return buildErrorResponse(false);
+            return new AuthenticationResponse(false,false);
         }
     }
 
@@ -73,9 +71,5 @@ public class AuthApiClientImp implements AuthApiClient {
         }
 
         return new AuthenticationResponse(response.isPushEnabled(), response.getToken(), channels, expiration, false);
-    }
-
-    private AuthenticationResponse buildErrorResponse(boolean retry) {
-        return new AuthenticationResponse(false, null, null, 0, retry);
     }
 }

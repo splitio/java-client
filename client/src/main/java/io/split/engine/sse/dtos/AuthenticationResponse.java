@@ -15,6 +15,14 @@ public class AuthenticationResponse {
         this.retry = retry;
     }
 
+    public AuthenticationResponse(boolean pushEnabled, boolean retry) {
+        this.pushEnabled = pushEnabled;
+        this.retry = retry;
+        this.token = null;
+        this.channels = null;
+        this.expiration = 0;
+    }
+
     public double getExpiration() {
         return expiration;
     }
