@@ -47,30 +47,6 @@ public class SplitsWorkerTest {
     }
 
     @Test
-    public void noSe() throws InterruptedException {
-        SplitFetcher splitFetcherMock = Mockito.mock(SplitFetcher.class);
-
-        Mockito.when(splitFetcherMock.changeNumber()).thenReturn(1585956698447L);
-
-        SplitsWorker splitsWorker = new SplitsWorkerImp(splitFetcherMock);
-        Thread thread = new Thread(splitsWorker);
-        thread.start();
-
-        splitsWorker.addToQueue(1585956698457L);
-        Thread.sleep(500);
-        splitsWorker.stop();
-
-        splitsWorker.addToQueue(1585956698467L);
-        splitsWorker.addToQueue(1585956698477L);
-        splitsWorker.addToQueue(1585956698476L);
-
-        Mockito.verify(splitFetcherMock, Mockito.times(1)).changeNumber();
-        Mockito.verify(splitFetcherMock, Mockito.times(1)).forceRefresh();
-
-        thread.interrupt();
-    }
-
-    @Test
     public void killShouldTriggerFetch() {
         long changeNumber = 1585956698457L;
         String splitName = "split-test";
