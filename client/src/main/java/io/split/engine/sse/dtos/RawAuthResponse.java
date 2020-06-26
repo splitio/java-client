@@ -28,7 +28,7 @@ public class RawAuthResponse {
             String tokenDecoded = decodeJwt();
             this.jwt = gson.fromJson(tokenDecoded, Jwt.class);
         } else {
-            this.jwt = new Jwt();
+            this.jwt = null;
         }
     }
 
