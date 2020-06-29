@@ -5,9 +5,11 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 public class SplitsWorkerImp implements SplitsWorker {
+    private static final int QUEUE_READ_TIMEOUT_SECONDS = 5;
     private static final Logger _log = LoggerFactory.getLogger(SplitsWorker.class);
 
     private final SplitFetcher _splitFetcher;
@@ -51,7 +53,7 @@ public class SplitsWorkerImp implements SplitsWorker {
             _stop.set(false);
 
             while(!_stop.get()) {
-                Long changeNumber = _queue.take();
+                Long changeNumber = _queue.poll(QUEUE_READ_TIMEOUT_SECONDS, TimeUnit.SECONDS);
 
                 if (changeNumber != null) {
                     _log.debug(String.format("changeNumber dequeue: %s", changeNumber));
