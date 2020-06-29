@@ -10,14 +10,8 @@ public class NotificationProcessorTest {
     @Test
     public void processSplitUpdateAddToQueueInWorker() {
         long changeNumber = 1585867723838L;
-        String defaultTreatment = null;
-        String splitName = null;
-        ControlType controlType = null;
-        OccupancyMetrics occupancyMetrics = null;
-        String segmentName = null;
-        IncomingNotification.Type type = null;
         String channel = "splits";
-        GenericNotificationData genericNotificationData = new GenericNotificationData(changeNumber, defaultTreatment, splitName, controlType, occupancyMetrics, segmentName, type, channel);
+        GenericNotificationData genericNotificationData = new GenericNotificationData(changeNumber, null, null, null, null, null, null, channel);
 
         SplitsWorker splitsWorker = Mockito.mock(SplitsWorker.class);
         SplitChangeNotification splitChangeNotification = new SplitChangeNotification(genericNotificationData);
@@ -33,12 +27,8 @@ public class NotificationProcessorTest {
         long changeNumber = 1585867723838L;
         String defaultTreatment = "off";
         String splitName = "test-split";
-        ControlType controlType = null;
-        OccupancyMetrics occupancyMetrics = null;
-        String segmentName = null;
-        IncomingNotification.Type type = null;
         String channel = "splits";
-        GenericNotificationData genericNotificationData = new GenericNotificationData(changeNumber, defaultTreatment, splitName, controlType, occupancyMetrics, segmentName, type, channel);
+        GenericNotificationData genericNotificationData = new GenericNotificationData(changeNumber, defaultTreatment, splitName, null, null, null, null, channel);
 
         SplitsWorker splitsWorker = Mockito.mock(SplitsWorker.class);
         SplitKillNotification splitKillNotification = new SplitKillNotification(genericNotificationData);
