@@ -1,10 +1,10 @@
 package io.split.engine.sse.workers;
 
 import io.split.engine.experiments.SplitFetcher;
-import io.split.engine.sse.queues.SplitNotificationsQueue;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 public class SplitsWorkerImp implements SplitsWorker {
@@ -12,16 +12,18 @@ public class SplitsWorkerImp implements SplitsWorker {
 
     private final SplitFetcher _splitFetcher;
     private final AtomicBoolean _stop;
+    private final LinkedBlockingQueue<Long> _queue;
 
     public SplitsWorkerImp(SplitFetcher splitFetcher) {
         _splitFetcher = splitFetcher;
         _stop = new AtomicBoolean(false);
+        _queue = new LinkedBlockingQueue<>();
     }
 
     @Override
     public void addToQueue(long changeNumber) {
         try {
-            SplitNotificationsQueue.queue.add(changeNumber);
+            _queue.add(changeNumber);
             _log.debug(String.format("Added to split queue: %s", changeNumber));
         } catch (Exception ex) {
             _log.error(String.format("Exception on SplitWorker addToQueue: %s", ex.getMessage()));
@@ -49,11 +51,14 @@ public class SplitsWorkerImp implements SplitsWorker {
             _stop.set(false);
 
             while(!_stop.get()) {
-                long changeNumber = SplitNotificationsQueue.queue.take();
-                _log.debug(String.format("changeNumber dequeue: %s", changeNumber));
+                Long changeNumber = _queue.take();
 
-                if (changeNumber > _splitFetcher.changeNumber()) {
-                    _splitFetcher.forceRefresh();
+                if (changeNumber != null) {
+                    _log.debug(String.format("changeNumber dequeue: %s", changeNumber));
+
+                    if (changeNumber > _splitFetcher.changeNumber()) {
+                        _splitFetcher.forceRefresh();
+                    }
                 }
             }
         } catch (Exception ex) {

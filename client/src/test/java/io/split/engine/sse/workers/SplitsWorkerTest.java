@@ -9,6 +9,7 @@ public class SplitsWorkerTest {
     @Test
     public void addToQueueWithoutElementsWShouldNotTriggerFetch() throws InterruptedException {
         SplitFetcher splitFetcherMock = Mockito.mock(SplitFetcher.class);
+
         SplitsWorker splitsWorker = new SplitsWorkerImp(splitFetcherMock);
         Thread thread = new Thread(splitsWorker);
         thread.start();
