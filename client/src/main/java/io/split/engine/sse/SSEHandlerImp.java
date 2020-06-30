@@ -10,8 +10,8 @@ public class SSEHandlerImp implements SSEHandler {
     private final EventSourceClient _eventSourceClient;
     private final String _streamingServiceUrl;
     private final SplitsWorker _splitsWorker;
-    private final Thread _eventSourceClientThread;
-    private final Thread _splitsWorkerThread;
+    private Thread _eventSourceClientThread;
+    private Thread _splitsWorkerThread;
 
     public SSEHandlerImp(EventSourceClient eventSourceClient,
                          String streamingServiceUrl,
@@ -19,9 +19,6 @@ public class SSEHandlerImp implements SSEHandler {
         _eventSourceClient = eventSourceClient;
         _streamingServiceUrl = streamingServiceUrl;
         _splitsWorker = splitsWorker;
-
-        _eventSourceClientThread = new Thread(_eventSourceClient);
-        _splitsWorkerThread = new Thread(_splitsWorker);
     }
 
     @Override
@@ -32,6 +29,7 @@ public class SSEHandlerImp implements SSEHandler {
             String url = String.format("%s?channels=%s&v=1.1&accessToken=%s", _streamingServiceUrl, channels, token);
 
             _eventSourceClient.resetUrl(url);
+            _eventSourceClientThread = new Thread(_eventSourceClient);
             _eventSourceClientThread.start();
         }catch (Exception ex) {
             _log.error("Exception in SSE Handler start: %s", ex.getMessage());
@@ -46,11 +44,13 @@ public class SSEHandlerImp implements SSEHandler {
 
     @Override
     public void startWorkers() {
+        _splitsWorkerThread = new Thread(_splitsWorker);
         _splitsWorkerThread.start();
     }
 
     @Override
     public void stropWorkers() {
+        _splitsWorker.stop();
         _splitsWorkerThread.interrupt();
     }
 }
