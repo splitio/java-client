@@ -5,17 +5,20 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 public class SplitsWorkerImp implements SplitsWorker {
     private static final Logger _log = LoggerFactory.getLogger(SplitsWorker.class);
 
     private final SplitFetcher _splitFetcher;
     private final LinkedBlockingQueue<Long> _queue;
+    private AtomicBoolean _running;
     private Thread _thread;
 
     public SplitsWorkerImp(SplitFetcher splitFetcher) {
         _splitFetcher = splitFetcher;
         _queue = new LinkedBlockingQueue<>();
+        _running = new AtomicBoolean(false);
     }
 
     @Override
@@ -40,37 +43,52 @@ public class SplitsWorkerImp implements SplitsWorker {
 
     @Override
     public void start() {
+        if (_running.get()) {
+            _log.error("Split Worker already running.");
+            return;
+        }
+
         _log.debug("Splits Worker starting ...");
+        _queue.clear();
+        _running.set(true);
         _thread = new Thread(this);
         _thread.start();
-        _queue.clear();
     }
 
     @Override
     public void stop() {
+        if (!_running.get()) {
+            _log.error("Split Worker not running.");
+            return;
+        }
+
+        _running.set(false);
         _thread.interrupt();
-        _queue.clear();
         _log.debug("Splits Worked stopped.");
     }
 
     @Override
     public void run() {
-        try {
-            while (!_thread.isInterrupted()) {
-                Long changeNumber = _queue.take();
+        while (_running.get()) {
+            Long changeNumber = null;
 
-                if (changeNumber != null) {
-                    _log.debug(String.format("changeNumber dequeue: %s", changeNumber));
-
-                    if (changeNumber > _splitFetcher.changeNumber()) {
-                        _splitFetcher.forceRefresh();
-                    }
-                }
+            try {
+                changeNumber = _queue.take();
+            }  catch (InterruptedException ex) {
+                _log.debug("The thread was stopped.");
+                Thread.currentThread().interrupt();
+                break;
             }
-        } catch (InterruptedException ex) {
-            _log.debug("The thread was stopped.");
-        } catch (Exception ex) {
-            _log.error(ex.getMessage());
+
+            if (changeNumber == null) {
+                continue;
+            }
+
+            _log.debug(String.format("changeNumber dequeue: %s", changeNumber));
+
+            if (changeNumber > _splitFetcher.changeNumber()) {
+                _splitFetcher.forceRefresh();
+            }
         }
     }
 }
