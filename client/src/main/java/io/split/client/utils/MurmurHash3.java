@@ -208,7 +208,7 @@ public final class MurmurHash3 {
      * @param seed The initial seed value
      * @return The 128-bit hash (2 longs)
      */
-    private static long[] hash128x64(final byte[] data, final int offset, final int length, final long seed) {
+    public static long[] hash128x64(final byte[] data, final int offset, final int length, final long seed) {
         long h1 = seed;
         long h2 = seed;
         final int nblocks = length >> 4;

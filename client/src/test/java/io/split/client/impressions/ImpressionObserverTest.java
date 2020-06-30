@@ -1,5 +1,6 @@
 package io.split.client.impressions;
 
+import com.google.common.base.Strings;
 import io.split.client.dtos.KeyImpression;
 // import jdk.nashorn.internal.ir.debug.ObjectSizeCalculator;
 import org.junit.Test;
@@ -58,7 +59,7 @@ public class ImpressionObserverTest {
     }
 
     @Test
-    public void testMemoryUsageStopsWhenCacheIsFull() throws InvocationTargetException, IllegalAccessException {
+    public void testMemoryUsageStopsWhenCacheIsFull() throws Exception {
 
         Class objectSizeCalculatorClass;
         ClassLoader classLoader = this.getClass().getClassLoader();
@@ -67,8 +68,11 @@ public class ImpressionObserverTest {
             objectSizeCalculatorClass = classLoader.loadClass("jdk.nashorn.internal.ir.debug.ObjectSizeCalculator");
             getObjectSize = objectSizeCalculatorClass.getMethod("getObjectSize", Object.class);    //getObjectSize(observer);
         } catch (ClassNotFoundException | NoSuchMethodException e) {
-            _log.error("This test only runs with the hotspot JVM. PLEASE ensure it runs correctly at least locally. " +
-                    "Ignoring test now.");
+            _log.error("This test only runs with the hotspot JVM. It's ignored locally, but mandatory on CI");
+            if (!Strings.isNullOrEmpty(System.getenv("CI"))) { // If the CI environment variable is present
+                throw new Exception("Setup CI to run with a hotspot JVM");
+            }
+            // Otherwise just ignore this test.
             return;
         }
 
