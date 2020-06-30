@@ -72,7 +72,7 @@ public class EventSourceClientImp implements EventSourceClient {
 
     @Override
     public void notifyMessageNotification (IncomingNotification incomingNotification) {
-        _notificationsListeners.forEach(listener -> listener.onMessageNotificationAdded(incomingNotification));
+        _notificationsListeners.forEach(listener -> listener.onMessageNotificationReceived(incomingNotification));
     }
 
     @Override

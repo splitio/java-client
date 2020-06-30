@@ -9,9 +9,9 @@ public class SSEHandlerImp implements SSEHandler, NotificationsListener {
     private static final Logger _log = LoggerFactory.getLogger(SSEHandler.class);
 
     private final EventSourceClient _eventSourceClient;
-    private final String _streamingServiceUrl;
     private final SplitsWorker _splitsWorker;
     private final NotificationProcessor _notificationProcessor;
+    private final String _streamingServiceUrl;
 
     public SSEHandlerImp(EventSourceClient eventSourceClient,
                          String streamingServiceUrl,
@@ -54,7 +54,7 @@ public class SSEHandlerImp implements SSEHandler, NotificationsListener {
     }
 
     @Override
-    public void onMessageNotificationAdded(IncomingNotification incomingNotification) {
+    public void onMessageNotificationReceived(IncomingNotification incomingNotification) {
         switch (incomingNotification.getType()) {
             case CONTROL:
             case OCCUPANCY:
