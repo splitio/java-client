@@ -1,16 +1,9 @@
 package io.split.engine.sse;
 
 import io.split.engine.sse.dtos.IncomingNotification;
-import io.split.engine.sse.dtos.SegmentChangeNotification;
-import io.split.engine.sse.dtos.SplitChangeNotification;
-import io.split.engine.sse.dtos.SplitKillNotification;
 import io.split.engine.sse.workers.SplitsWorker;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 public class NotificationProcessorImp implements NotificationProcessor {
-    private static final Logger _log = LoggerFactory.getLogger(NotificationProcessor.class);
-
     private final SplitsWorker _splitsWorker;
 
     public NotificationProcessorImp(SplitsWorker splitsWorker) {
@@ -19,27 +12,22 @@ public class NotificationProcessorImp implements NotificationProcessor {
 
     @Override
     public void process(IncomingNotification notification) {
-        try {
-            switch (notification.getType()){
-                case SPLIT_UPDATE:
-                    SplitChangeNotification splitChangeNotification = (SplitChangeNotification) notification;
-                    _splitsWorker.addToQueue(splitChangeNotification.getChangeNumber());
-                    break;
-                case SEGMENT_UPDATE:
-                    SegmentChangeNotification segmentChangeNotification = (SegmentChangeNotification) notification;
-                    // TODO: implement this after segmentsWorker implementation
-                    break;
-                case SPLIT_KILL:
-                    SplitKillNotification splitKillNotification = (SplitKillNotification) notification;
-                    _splitsWorker.killSplit(splitKillNotification.getChangeNumber(), splitKillNotification.getSplitName(), splitKillNotification.getDefaultTreatment());
-                    _splitsWorker.addToQueue(splitKillNotification.getChangeNumber());
-                    break;
-                default:
-                    _log.error(String.format("Unknown notification arrived: %s", notification.toString()));
-                    break;
-            }
-        }catch (Exception ex) {
-            _log.error(String.format("Unknown error while processing incoming push notification: %s", ex.getMessage()));
-        }
+        notification.handler(this);
+    }
+
+    @Override
+    public void processSplitUpdate(long changeNumber) {
+        _splitsWorker.addToQueue(changeNumber);
+    }
+
+    @Override
+    public void processSplitKill(long changeNumber, String splitName, String defaultTreatment) {
+        _splitsWorker.killSplit(changeNumber, splitName, defaultTreatment);
+        _splitsWorker.addToQueue(changeNumber);
+    }
+
+    @Override
+    public void processSegmentUpdate(long changeNumber, String segmentName) {
+        // TODO: implement this after segmentsWorker implementation
     }
 }

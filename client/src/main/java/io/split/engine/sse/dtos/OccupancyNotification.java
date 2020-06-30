@@ -1,5 +1,7 @@
 package io.split.engine.sse.dtos;
 
+import io.split.engine.sse.NotificationProcessor;
+
 public class OccupancyNotification extends IncomingNotification {
     private final OccupancyMetrics metrics;
 
@@ -10,5 +12,10 @@ public class OccupancyNotification extends IncomingNotification {
 
     public OccupancyMetrics getMetrics() {
         return metrics;
+    }
+
+    @Override
+    public void handler(NotificationProcessor notificationProcessor) {
+        return;
     }
 }
