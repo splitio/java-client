@@ -1,24 +1,28 @@
 package io.split.engine.sse;
 
+import io.split.engine.sse.dtos.IncomingNotification;
 import io.split.engine.sse.workers.SplitsWorker;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class SSEHandlerImp implements SSEHandler {
+public class SSEHandlerImp implements SSEHandler, NotificationsListener {
     private static final Logger _log = LoggerFactory.getLogger(SSEHandler.class);
 
     private final EventSourceClient _eventSourceClient;
     private final String _streamingServiceUrl;
     private final SplitsWorker _splitsWorker;
-    private Thread _eventSourceClientThread;
-    private Thread _splitsWorkerThread;
+    private final NotificationProcessor _notificationProcessor;
 
     public SSEHandlerImp(EventSourceClient eventSourceClient,
                          String streamingServiceUrl,
-                         SplitsWorker splitsWorker) {
+                         SplitsWorker splitsWorker,
+                         NotificationProcessor notificationProcessor) {
         _eventSourceClient = eventSourceClient;
         _streamingServiceUrl = streamingServiceUrl;
         _splitsWorker = splitsWorker;
+        _notificationProcessor = notificationProcessor;
+
+        _eventSourceClient.registerNotificationListener(this);
     }
 
     @Override
@@ -28,9 +32,7 @@ public class SSEHandlerImp implements SSEHandler {
 
             String url = String.format("%s?channels=%s&v=1.1&accessToken=%s", _streamingServiceUrl, channels, token);
 
-            _eventSourceClient.resetUrl(url);
-            _eventSourceClientThread = new Thread(_eventSourceClient);
-            _eventSourceClientThread.start();
+            _eventSourceClient.start(url);
         }catch (Exception ex) {
             _log.error("Exception in SSE Handler start: %s", ex.getMessage());
         }
@@ -39,18 +41,28 @@ public class SSEHandlerImp implements SSEHandler {
     @Override
     public void stop() {
         _eventSourceClient.stop();
-        _eventSourceClientThread.interrupt();
     }
 
     @Override
     public void startWorkers() {
-        _splitsWorkerThread = new Thread(_splitsWorker);
-        _splitsWorkerThread.start();
+        _splitsWorker.start();
     }
 
     @Override
     public void stropWorkers() {
         _splitsWorker.stop();
-        _splitsWorkerThread.interrupt();
+    }
+
+    @Override
+    public void onMessageNotificationAdded(IncomingNotification incomingNotification) {
+        switch (incomingNotification.getType()) {
+            case CONTROL:
+            case OCCUPANCY:
+                // TODO: use here the notificationManagerKeeper.
+                break;
+            default:
+                _notificationProcessor.process(incomingNotification);
+                break;
+        }
     }
 }
