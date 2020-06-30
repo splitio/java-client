@@ -19,7 +19,6 @@ public class EventSourceClientImp implements EventSourceClient {
     private final NotificationParser _notificationParser;
     private final List<FeedbackLoopListener> _listeners;
 
-    private String _url;
     private SseEventSource _sseEventSource;
 
     public EventSourceClientImp(NotificationParser notificationParser) {
@@ -30,22 +29,20 @@ public class EventSourceClientImp implements EventSourceClient {
 
     @Override
     public void start(String url) {
-        _url = url;
-
         try {
             if (_sseEventSource != null && _sseEventSource.isOpen()) { stop(); }
 
             _sseEventSource = SseEventSource
-                    .target(_client.target(_url))
+                    .target(_client.target(url))
                     .build();
             _sseEventSource.register(this::onMessage);
             _sseEventSource.open();
 
-            _log.info(String.format("Connected and reading from: %s", _url));
+            _log.info(String.format("Connected and reading from: %s", url));
 
             notifyConnected();
         } catch (Exception e) {
-            _log.error(String.format("Error connecting or reading from %s : %s", _url, e.getMessage()));
+            _log.error(String.format("Error connecting or reading from %s : %s", url, e.getMessage()));
             notifyDisconnect();
         }
     }
