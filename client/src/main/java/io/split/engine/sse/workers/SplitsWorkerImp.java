@@ -5,20 +5,16 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.concurrent.LinkedBlockingQueue;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicBoolean;
 
 public class SplitsWorkerImp implements SplitsWorker {
-    private static final int QUEUE_TIMEOUT_SECONDS = 5;
     private static final Logger _log = LoggerFactory.getLogger(SplitsWorker.class);
 
     private final SplitFetcher _splitFetcher;
-    private final AtomicBoolean _stop;
     private final LinkedBlockingQueue<Long> _queue;
+    private Thread _thread;
 
     public SplitsWorkerImp(SplitFetcher splitFetcher) {
         _splitFetcher = splitFetcher;
-        _stop = new AtomicBoolean(false);
         _queue = new LinkedBlockingQueue<>();
     }
 
@@ -43,17 +39,25 @@ public class SplitsWorkerImp implements SplitsWorker {
     }
 
     @Override
+    public void start() {
+        _log.debug("Splits Worker starting ...");
+        _thread = new Thread(this);
+        _thread.start();
+        _queue.clear();
+    }
+
+    @Override
     public void stop() {
-        _stop.set(true);
+        _thread.interrupt();
+        _queue.clear();
+        _log.debug("Splits Worked stopped.");
     }
 
     @Override
     public void run() {
         try {
-            _stop.set(false);
-
-            while(!_stop.get()) {
-                Long changeNumber = _queue.poll(QUEUE_TIMEOUT_SECONDS, TimeUnit.SECONDS);
+            while (!_thread.isInterrupted()) {
+                Long changeNumber = _queue.take();
 
                 if (changeNumber != null) {
                     _log.debug(String.format("changeNumber dequeue: %s", changeNumber));
@@ -63,6 +67,8 @@ public class SplitsWorkerImp implements SplitsWorker {
                     }
                 }
             }
+        } catch (InterruptedException ex) {
+            _log.debug("The thread was stopped.");
         } catch (Exception ex) {
             _log.error(ex.getMessage());
         }

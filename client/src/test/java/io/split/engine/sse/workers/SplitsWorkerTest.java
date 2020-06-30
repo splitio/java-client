@@ -11,14 +11,13 @@ public class SplitsWorkerTest {
         SplitFetcher splitFetcherMock = Mockito.mock(SplitFetcher.class);
 
         SplitsWorker splitsWorker = new SplitsWorkerImp(splitFetcherMock);
-        Thread thread = new Thread(splitsWorker);
-        thread.start();
+        splitsWorker.start();
 
         Thread.sleep(500);
         Mockito.verify(splitFetcherMock, Mockito.never()).changeNumber();
         Mockito.verify(splitFetcherMock, Mockito.never()).forceRefresh();
 
-        thread.interrupt();
+        splitsWorker.stop();
     }
 
     @Test
@@ -32,8 +31,7 @@ public class SplitsWorkerTest {
                 .thenReturn(1585956698477L);
 
         SplitsWorker splitsWorker = new SplitsWorkerImp(splitFetcherMock);
-        Thread thread = new Thread(splitsWorker);
-        thread.start();
+        splitsWorker.start();
 
         splitsWorker.addToQueue(1585956698457L);
         splitsWorker.addToQueue(1585956698467L);
@@ -44,7 +42,7 @@ public class SplitsWorkerTest {
         Mockito.verify(splitFetcherMock, Mockito.times(4)).changeNumber();
         Mockito.verify(splitFetcherMock, Mockito.times(3)).forceRefresh();
 
-        thread.interrupt();
+        splitsWorker.stop();
     }
 
     @Test
@@ -56,11 +54,46 @@ public class SplitsWorkerTest {
         SplitFetcher splitFetcherMock = Mockito.mock(SplitFetcher.class);
 
         SplitsWorker splitsWorker = new SplitsWorkerImp(splitFetcherMock);
-        Thread thread = new Thread(splitsWorker);
-        thread.start();
+        splitsWorker.start();
 
         splitsWorker.killSplit(changeNumber, splitName, defaultTreatment);
 
         Mockito.verify(splitFetcherMock, Mockito.times(1)).killSplit(splitName, defaultTreatment, changeNumber);
+
+        splitsWorker.stop();
+    }
+
+    @Test
+    public void addToQueueWithStopAndStartAgain() throws InterruptedException {
+        SplitFetcher splitFetcherMock = Mockito.mock(SplitFetcher.class);
+
+        SplitsWorker splitsWorker = new SplitsWorkerImp(splitFetcherMock);
+        splitsWorker.start();
+
+        Mockito.when(splitFetcherMock.changeNumber()).thenReturn(1585956698447L);
+        splitsWorker.addToQueue(1585956698457L);
+
+        Thread.sleep(500);
+
+        Mockito.verify(splitFetcherMock, Mockito.times(1)).changeNumber();
+        Mockito.verify(splitFetcherMock, Mockito.times(1)).forceRefresh();
+
+        splitsWorker.stop();
+        Thread.sleep(500);
+
+        splitsWorker.addToQueue(1585956698467L);
+
+        Mockito.verify(splitFetcherMock, Mockito.times(1)).changeNumber();
+        Mockito.verify(splitFetcherMock, Mockito.times(1)).forceRefresh();
+
+        splitsWorker.start();
+
+        Mockito.when(splitFetcherMock.changeNumber()).thenReturn(1585956698457L);
+        splitsWorker.addToQueue(1585956698477L);
+        Thread.sleep(500);
+
+        Mockito.verify(splitFetcherMock, Mockito.times(2)).changeNumber();
+        Mockito.verify(splitFetcherMock, Mockito.times(2)).forceRefresh();
+        splitsWorker.stop();
     }
 }
