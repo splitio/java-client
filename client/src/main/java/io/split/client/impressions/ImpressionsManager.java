@@ -132,7 +132,7 @@ public class ImpressionsManager implements ImpressionListener, Runnable {
                 impressionsForTest = new ArrayList<>();
                 tests.put(ki.feature, impressionsForTest);
             }
-            ki.seenAt = _impressionObserver.testAndSet(ki);
+            ki.pt = _impressionObserver.testAndSet(ki);
             impressionsForTest.add(ki);
         }
 

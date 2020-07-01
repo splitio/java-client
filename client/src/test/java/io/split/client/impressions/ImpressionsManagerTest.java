@@ -177,7 +177,7 @@ public class ImpressionsManagerTest {
         List<TestImpressions> captured = impressionsCaptor.getValue();
         for (TestImpressions testImpressions : captured) {
             for (KeyImpression keyImpression : testImpressions.keyImpressions) {
-                assertThat(keyImpression.seenAt, is(equalTo(null)));
+                assertThat(keyImpression.pt, is(equalTo(null)));
             }
         }
 
@@ -194,7 +194,7 @@ public class ImpressionsManagerTest {
         captured = impressionsCaptor.getValue();
         for (TestImpressions testImpressions : captured) {
             for (KeyImpression keyImpression : testImpressions.keyImpressions) {
-                assertThat(keyImpression.seenAt, is(equalTo(keyImpression.time)));
+                assertThat(keyImpression.pt, is(equalTo(keyImpression.time)));
             }
         }
 

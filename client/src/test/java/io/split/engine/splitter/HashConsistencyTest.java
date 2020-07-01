@@ -140,7 +140,6 @@ public class HashConsistencyTest {
             long expected_hash = Long.parseLong(parts[2]);
             long[] hash = MurmurHash3.hash128x64(key.getBytes(), 0, key.length(), seed);
             Assert.assertEquals(expected_hash, hash[0]);
-
         }
     }
 }

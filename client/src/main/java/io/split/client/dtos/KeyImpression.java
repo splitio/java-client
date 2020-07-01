@@ -9,7 +9,7 @@ public class KeyImpression {
     public String label;
     public long time;
     public Long changeNumber; // can be null if there is no changeNumber
-    public Long seenAt;
+    public Long pt;
 
     @Override
     public boolean equals(Object o) {
