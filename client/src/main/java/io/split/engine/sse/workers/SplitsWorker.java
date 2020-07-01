@@ -1,8 +1,5 @@
 package io.split.engine.sse.workers;
 
-public interface SplitsWorker extends Runnable{
-    void addToQueue(long changeNumber);
+public interface SplitsWorker extends Worker<Long> {
     void killSplit(long changeNumber, String splitName, String defaultTreatment);
-    void start();
-    void stop();
 }

@@ -5,4 +5,6 @@ package io.split.engine.segments;
  */
 public interface SegmentFetcher {
     Segment segment(String segmentName);
+    long getChangeNumber(String segmentName);
+    void forceRefresh(String segmentName);
 }

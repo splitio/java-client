@@ -27,4 +27,10 @@ public class StaticSegmentFetcher implements SegmentFetcher {
         }
         return segmentFetcher;
     }
+
+    @Override
+    public long getChangeNumber(String segmentName) { return 0; }
+
+    @Override
+    public void forceRefresh(String segmentName) { return; }
 }
