@@ -26,4 +26,8 @@ public interface SplitFetcher {
      * syncs. This method MUST NOT throw any exceptions.
      */
     void forceRefresh();
+
+    long changeNumber();
+
+    void killSplit(String splitName, String defaultTreatment, long changeNumber);
 }
