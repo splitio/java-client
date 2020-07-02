@@ -9,7 +9,7 @@ public class SplitsWorkerImp extends WorkerImp<Long> implements SplitsWorker {
     private final SplitFetcher _splitFetcher;
 
     public SplitsWorkerImp(SplitFetcher splitFetcher) {
-        super(LoggerFactory.getLogger(SplitsWorker.class), new LinkedBlockingQueue<>(), "Splits");
+        super(LoggerFactory.getLogger(SplitsWorker.class), "Splits");
         _splitFetcher = splitFetcher;
     }
 

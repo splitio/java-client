@@ -12,9 +12,9 @@ public abstract class WorkerImp<T> implements Worker<T> {
     protected AtomicBoolean _running;
     protected Thread _thread;
 
-    public WorkerImp(Logger log, LinkedBlockingQueue<T> queue, String workerName) {
+    public WorkerImp(Logger log, String workerName) {
         _log = log;
-        _queue = queue;
+        _queue = new LinkedBlockingQueue<>();
         _workerName = workerName;
         _running = new AtomicBoolean(false);
     }

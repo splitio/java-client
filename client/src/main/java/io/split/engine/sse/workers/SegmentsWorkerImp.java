@@ -10,7 +10,7 @@ public class SegmentsWorkerImp extends WorkerImp<SegmentQueueDto> {
     private final SegmentFetcher _segmentFetcher;
 
     public SegmentsWorkerImp(SegmentFetcher segmentFetcher) {
-        super(LoggerFactory.getLogger(SegmentsWorkerImp.class), new LinkedBlockingQueue<>(), "Segments");
+        super(LoggerFactory.getLogger(SegmentsWorkerImp.class), "Segments");
         _segmentFetcher = segmentFetcher;
     }
 
