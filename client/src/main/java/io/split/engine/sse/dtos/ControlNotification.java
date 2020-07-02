@@ -1,5 +1,7 @@
 package io.split.engine.sse.dtos;
 
+import io.split.engine.sse.NotificationProcessor;
+
 public class ControlNotification extends IncomingNotification {
     private final ControlType controlType;
 
@@ -10,5 +12,10 @@ public class ControlNotification extends IncomingNotification {
 
     public ControlType getControlType() {
         return controlType;
+    }
+
+    @Override
+    public void handler(NotificationProcessor notificationProcessor) {
+        return;
     }
 }

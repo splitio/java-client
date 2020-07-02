@@ -1,5 +1,7 @@
 package io.split.engine.sse.dtos;
 
+import io.split.engine.sse.NotificationProcessor;
+
 public abstract class IncomingNotification {
     public enum Type {
         SPLIT_UPDATE,
@@ -24,4 +26,6 @@ public abstract class IncomingNotification {
     public Type getType() {
         return type;
     }
+
+    public abstract void handler(NotificationProcessor notificationProcessor);
 }

@@ -1,5 +1,7 @@
 package io.split.engine.sse.dtos;
 
+import io.split.engine.sse.NotificationProcessor;
+
 public class SegmentChangeNotification extends IncomingNotification {
     private final long changeNumber;
     private final String segmentName;
@@ -16,5 +18,10 @@ public class SegmentChangeNotification extends IncomingNotification {
 
     public long getChangeNumber() {
         return changeNumber;
+    }
+
+    @Override
+    public void handler(NotificationProcessor notificationProcessor) {
+        notificationProcessor.processSegmentUpdate(getChangeNumber(), getSegmentName());
     }
 }

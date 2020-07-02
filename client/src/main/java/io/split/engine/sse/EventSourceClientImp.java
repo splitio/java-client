@@ -13,73 +13,74 @@ import javax.ws.rs.sse.SseEventSource;
 import java.util.ArrayList;
 import java.util.List;
 
-public class EventSourceClientImp implements EventSourceClient, Runnable {
+public class EventSourceClientImp implements EventSourceClient {
     private static final Logger _log = LoggerFactory.getLogger(EventSourceClient.class);
-    private String _url;
-    private SseEventSource _sseEventSource;
-    private Client _client;
-    private NotificationParser _notificationParser;
-    private List<FeedbackLoopListener> listeners = new ArrayList<>();
+    private final Client _client;
+    private final NotificationParser _notificationParser;
+    private final List<FeedbackLoopListener> _listeners;
 
-    public EventSourceClientImp(String url,
-                                NotificationParser notificationParser) {
-        resetUrl(url);
+    private SseEventSource _sseEventSource;
+
+    public EventSourceClientImp(NotificationParser notificationParser) {
         _notificationParser = notificationParser;
         _client = ClientBuilder.newBuilder().build();
+        _listeners = new ArrayList<>();
     }
 
     @Override
-    public void run() {
+    public void start(String url) {
         try {
-            if (_sseEventSource != null && _sseEventSource.isOpen()) stop();
+            if (_sseEventSource != null && _sseEventSource.isOpen()) { stop(); }
 
             _sseEventSource = SseEventSource
-                    .target(_client.target(_url))
+                    .target(_client.target(url))
                     .build();
             _sseEventSource.register(this::onMessage);
             _sseEventSource.open();
 
-            _log.info(String.format("Connected and reading from: %s", _url));
+            _log.info(String.format("Connected and reading from: %s", url));
+
             notifyConnected();
         } catch (Exception e) {
-            _log.error(String.format("Error connecting or reading from %s : %s", _url, e.getMessage()));
+            _log.error(String.format("Error connecting or reading from %s : %s", url, e.getMessage()));
             notifyDisconnect();
         }
     }
 
     @Override
-    public void resetUrl(String url) {
-        _url = url;
-    }
-
-    @Override
     public void stop() {
+        if (!_sseEventSource.isOpen()) {
+            _log.error("Event Source Client is closed.");
+            return;
+        }
+
         _sseEventSource.close();
+        notifyDisconnect();
     }
 
     @Override
     public void registerListener(FeedbackLoopListener listener) {
-        this.listeners.add(listener);
+        _listeners.add(listener);
     }
 
     @Override
     public void notifyMessageNotification (IncomingNotification incomingNotification) {
-        this.listeners.forEach(listener -> listener.onMessageNotificationAdded(incomingNotification));
+        _listeners.forEach(listener -> listener.onMessageNotificationAdded(incomingNotification));
     }
 
     @Override
     public void notifyErrorNotification (ErrorNotification errorNotification) {
-        this.listeners.forEach(listener -> listener.onErrorNotificationAdded(errorNotification));
+        _listeners.forEach(listener -> listener.onErrorNotificationAdded(errorNotification));
     }
 
     @Override
     public void notifyConnected () {
-        this.listeners.forEach(listener -> listener.onConnected());
+        _listeners.forEach(listener -> listener.onConnected());
     }
 
     @Override
     public void notifyDisconnect () {
-        this.listeners.forEach(listener -> listener.onDisconnect());
+        _listeners.forEach(listener -> listener.onDisconnect());
     }
 
     private void onMessage(InboundSseEvent event) {

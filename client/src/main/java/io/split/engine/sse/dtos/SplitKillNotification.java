@@ -1,5 +1,7 @@
 package io.split.engine.sse.dtos;
 
+import io.split.engine.sse.NotificationProcessor;
+
 public class SplitKillNotification extends IncomingNotification {
     private final long changeNumber;
     private final String defaultTreatment;
@@ -22,5 +24,10 @@ public class SplitKillNotification extends IncomingNotification {
 
     public String getSplitName() {
         return splitName;
+    }
+
+    @Override
+    public void handler(NotificationProcessor notificationProcessor) {
+        notificationProcessor.processSplitKill(getChangeNumber(), getSplitName(), getDefaultTreatment());
     }
 }
