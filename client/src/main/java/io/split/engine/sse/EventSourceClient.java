@@ -4,7 +4,7 @@ import io.split.engine.sse.dtos.ErrorNotification;
 import io.split.engine.sse.dtos.IncomingNotification;
 
 public interface EventSourceClient {
-    void resetUrl(String url);
+    void start(String url);
     void stop();
 
     void registerListener(FeedbackLoopListener listener);
