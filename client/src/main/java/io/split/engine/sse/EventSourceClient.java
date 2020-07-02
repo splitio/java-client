@@ -7,7 +7,8 @@ public interface EventSourceClient {
     void start(String url);
     void stop();
 
-    void registerListener(FeedbackLoopListener listener);
+    void registerNotificationListener(NotificationsListener listener);
+    void registerFeedbackListener(FeedbackLoopListener listener);
     void notifyMessageNotification (IncomingNotification incomingNotification);
     void notifyErrorNotification (ErrorNotification errorNotification);
     void notifyConnected();

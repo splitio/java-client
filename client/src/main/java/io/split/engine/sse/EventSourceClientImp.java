@@ -17,14 +17,16 @@ public class EventSourceClientImp implements EventSourceClient {
     private static final Logger _log = LoggerFactory.getLogger(EventSourceClient.class);
     private final Client _client;
     private final NotificationParser _notificationParser;
-    private final List<FeedbackLoopListener> _listeners;
+    private final List<FeedbackLoopListener> _feedbackListeners;
+    private final List<NotificationsListener> _notificationsListeners;
 
     private SseEventSource _sseEventSource;
 
     public EventSourceClientImp(NotificationParser notificationParser) {
         _notificationParser = notificationParser;
         _client = ClientBuilder.newBuilder().build();
-        _listeners = new ArrayList<>();
+        _feedbackListeners = new ArrayList<>();
+        _notificationsListeners = new ArrayList<>();
     }
 
     @Override
@@ -59,28 +61,33 @@ public class EventSourceClientImp implements EventSourceClient {
     }
 
     @Override
-    public void registerListener(FeedbackLoopListener listener) {
-        _listeners.add(listener);
+    public synchronized void registerNotificationListener(NotificationsListener listener) {
+        _notificationsListeners.add(listener);
     }
 
     @Override
-    public void notifyMessageNotification (IncomingNotification incomingNotification) {
-        _listeners.forEach(listener -> listener.onMessageNotificationAdded(incomingNotification));
+    public synchronized void registerFeedbackListener(FeedbackLoopListener listener) {
+        _feedbackListeners.add(listener);
     }
 
     @Override
-    public void notifyErrorNotification (ErrorNotification errorNotification) {
-        _listeners.forEach(listener -> listener.onErrorNotificationAdded(errorNotification));
+    public synchronized void notifyMessageNotification (IncomingNotification incomingNotification) {
+        _notificationsListeners.forEach(listener -> listener.onMessageNotificationReceived(incomingNotification));
     }
 
     @Override
-    public void notifyConnected () {
-        _listeners.forEach(listener -> listener.onConnected());
+    public synchronized void notifyErrorNotification (ErrorNotification errorNotification) {
+        _feedbackListeners.forEach(listener -> listener.onErrorNotificationAdded(errorNotification));
     }
 
     @Override
-    public void notifyDisconnect () {
-        _listeners.forEach(listener -> listener.onDisconnect());
+    public synchronized void notifyConnected () {
+        _feedbackListeners.forEach(listener -> listener.onConnected());
+    }
+
+    @Override
+    public synchronized void notifyDisconnect () {
+        _feedbackListeners.forEach(listener -> listener.onDisconnect());
     }
 
     private void onMessage(InboundSseEvent event) {
