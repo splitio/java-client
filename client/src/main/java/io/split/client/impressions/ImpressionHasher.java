@@ -5,7 +5,7 @@ import io.split.client.utils.MurmurHash3;
 
 public class ImpressionHasher {
 
-    private static final String HASHABLE_FORMAT = "%s:%s:%s:%d";
+    private static final String HASHABLE_FORMAT = "%s:%s:%s:%s:%d";
     private static final String UNKNOWN = "UNKNOWN";
 
     private static String unknownIfNull(String s) {
@@ -23,6 +23,7 @@ public class ImpressionHasher {
         return MurmurHash3.hash128x64(String.format(HASHABLE_FORMAT,
                 unknownIfNull(impression.keyName),
                 unknownIfNull(impression.feature),
+                unknownIfNull(impression.treatment),
                 unknownIfNull(impression.label),
                 zeroIfNull(impression.changeNumber)).getBytes())[0];
     }

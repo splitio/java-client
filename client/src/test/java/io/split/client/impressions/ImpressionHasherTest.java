@@ -16,6 +16,7 @@ public class ImpressionHasherTest {
         imp1.keyName = "someKey";
         imp1.changeNumber = 123L;
         imp1.label = "someLabel";
+        imp1.treatment = "someTreatment";
 
         // Different feature
         KeyImpression imp2 = new KeyImpression();
@@ -39,6 +40,11 @@ public class ImpressionHasherTest {
         imp2.changeNumber = imp1.changeNumber;
         imp2.label = "someOtherLabel";
         assertThat(ImpressionHasher.process(imp1), not(equalTo(ImpressionHasher.process(imp2))));
+
+        // different treatment
+        imp2.label = imp1.label;
+        imp2.treatment = "someOtherTreatment";
+        assertThat(ImpressionHasher.process(imp1), not(equalTo(ImpressionHasher.process(imp2))));
     }
 
     @Test
@@ -59,6 +65,9 @@ public class ImpressionHasherTest {
         imp1.label = null;
         assertNotNull(ImpressionHasher.process(imp1));
 
+        imp1.treatment = null;
+        assertNotNull(ImpressionHasher.process(imp1));
+        
         assertNull(ImpressionHasher.process(null));
     }
 }
