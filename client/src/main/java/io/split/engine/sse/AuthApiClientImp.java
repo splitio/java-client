@@ -67,7 +67,7 @@ public class AuthApiClientImp implements AuthApiClient {
 
         if (response.isPushEnabled()) {
             channels = response.getChannels(_gson);
-            expiration = response.getExpiration(_gson);
+            expiration = response.getExpiration();
         }
 
         return new AuthenticationResponse(response.isPushEnabled(), response.getToken(), channels, expiration, false);
