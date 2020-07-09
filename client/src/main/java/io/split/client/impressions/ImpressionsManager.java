@@ -32,8 +32,9 @@ public class ImpressionsManager implements ImpressionListener, Runnable {
     private final SplitClientConfig _config;
     private final CloseableHttpClient _client;
     private final BlockingQueue<KeyImpression> _queue;
-    private final ScheduledExecutorService _scheduler;
     private final ImpressionsSender _impressionsSender;
+
+    private ScheduledExecutorService _scheduler;
 
     public static ImpressionsManager instance(CloseableHttpClient client,
                                               SplitClientConfig config) throws URISyntaxException {
@@ -47,23 +48,24 @@ public class ImpressionsManager implements ImpressionListener, Runnable {
     }
 
     private ImpressionsManager(CloseableHttpClient client, SplitClientConfig config, ImpressionsSender impressionsSender) throws URISyntaxException {
-
         _config = config;
         _client = client;
         _queue = new ArrayBlockingQueue<KeyImpression>(config.impressionsQueueSize());
-
-        ThreadFactory threadFactory = new ThreadFactoryBuilder()
-                .setDaemon(true)
-                .setNameFormat("Split-ImpressionsManager-%d")
-                .build();
-        _scheduler = Executors.newSingleThreadScheduledExecutor(threadFactory);
-        _scheduler.scheduleAtFixedRate(this, 10, config.impressionsRefreshRate(), TimeUnit.SECONDS);
 
         if (impressionsSender != null) {
             _impressionsSender = impressionsSender;
         } else {
             _impressionsSender = HttpImpressionsSender.create(_client, URI.create(config.eventsEndpoint()));
         }
+    }
+
+    public void startPeriodicDataRecording() {
+        ThreadFactory threadFactory = new ThreadFactoryBuilder()
+                .setDaemon(true)
+                .setNameFormat("Split-ImpressionsManager-%d")
+                .build();
+        _scheduler = Executors.newSingleThreadScheduledExecutor(threadFactory);
+        _scheduler.scheduleAtFixedRate(this, 10, _config.impressionsRefreshRate(), TimeUnit.SECONDS);
     }
 
     @Override

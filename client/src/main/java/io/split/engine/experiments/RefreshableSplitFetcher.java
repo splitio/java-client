@@ -184,7 +184,6 @@ public class RefreshableSplitFetcher implements SplitFetcher, Runnable {
 
         Set<String> segmentsInUse = Sets.newHashSet();
 
-
         synchronized (_lock) {
             // check state one more time.
             if (change.since != _changeNumber.get()

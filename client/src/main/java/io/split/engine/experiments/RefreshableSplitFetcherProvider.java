@@ -63,17 +63,21 @@ public class RefreshableSplitFetcherProvider implements Closeable {
 
             RefreshableSplitFetcher splitFetcher = new RefreshableSplitFetcher(_splitChangeFetcher, _splitParser, _gates);
 
-            ThreadFactoryBuilder threadFactoryBuilder = new ThreadFactoryBuilder();
-            threadFactoryBuilder.setDaemon(true);
-            threadFactoryBuilder.setNameFormat("split-splitFetcher-%d");
-
-            ScheduledExecutorService scheduledExecutorService = Executors.newSingleThreadScheduledExecutor(threadFactoryBuilder.build());
-            scheduledExecutorService.scheduleWithFixedDelay(splitFetcher, 0L, _refreshEveryNSeconds.get(), TimeUnit.SECONDS);
-            _executorService.set(scheduledExecutorService);
-
             _splitFetcher.set(splitFetcher);
             return splitFetcher;
         }
+    }
+
+    public void startPeriodicFetching() {
+        RefreshableSplitFetcher splitFetcher = getFetcher();
+
+        ThreadFactoryBuilder threadFactoryBuilder = new ThreadFactoryBuilder();
+        threadFactoryBuilder.setDaemon(true);
+        threadFactoryBuilder.setNameFormat("split-splitFetcher-%d");
+
+        ScheduledExecutorService scheduledExecutorService = Executors.newSingleThreadScheduledExecutor(threadFactoryBuilder.build());
+        scheduledExecutorService.scheduleWithFixedDelay(splitFetcher, 0L, _refreshEveryNSeconds.get(), TimeUnit.SECONDS);
+        _executorService.set(scheduledExecutorService);
     }
 
     @Override

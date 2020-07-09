@@ -6,5 +6,7 @@ public interface EventClient {
 
     boolean track(Event event, int eventSize);
 
+    void startPeriodicDataRecording();
+
     void close();
 }

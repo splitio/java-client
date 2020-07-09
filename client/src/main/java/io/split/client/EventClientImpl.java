@@ -35,10 +35,10 @@ public class EventClientImpl implements EventClient {
     private final int _maxQueueSize;
     private final long _flushIntervalMillis;
 
-    private final ExecutorService _senderExecutor;
-    private final ExecutorService _consumerExecutor;
+    private ExecutorService _senderExecutor;
+    private ExecutorService _consumerExecutor;
 
-    private final ScheduledExecutorService _flushScheduler;
+    private ScheduledExecutorService _flushScheduler;
 
     static final Event CENTINEL = new Event();
     private static final Logger _log = LoggerFactory.getLogger(EventClientImpl.class);
@@ -83,7 +83,16 @@ public class EventClientImpl implements EventClient {
 
         _maxQueueSize = maxQueueSize;
         _flushIntervalMillis = flushIntervalMillis;
+    }
 
+    @Override
+    public void startPeriodicDataRecording() {
+        setSenderExecutor();
+        setConsumerExecutor();
+        setFlushScheduler();
+    }
+
+    private void setSenderExecutor() {
         _senderExecutor = new ThreadPoolExecutor(
                 1,
                 1,
@@ -97,10 +106,14 @@ public class EventClientImpl implements EventClient {
                         _log.warn("Executor queue full. Dropping events.");
                     }
                 });
+    }
 
+    private void setConsumerExecutor() {
         _consumerExecutor = Executors.newSingleThreadExecutor(eventClientThreadFactory("eventclient-consumer"));
         _consumerExecutor.submit(new Consumer());
+    }
 
+    private void setFlushScheduler() {
         _flushScheduler = Executors.newScheduledThreadPool(1, eventClientThreadFactory("eventclient-flush"));
         _flushScheduler.scheduleAtFixedRate(new Runnable() {
             @Override

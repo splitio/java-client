@@ -22,7 +22,7 @@ import static com.google.common.base.Preconditions.checkNotNull;
  *
  * @author adil
  */
-public class RefreshableSegmentFetcher implements Closeable, SegmentFetcher {
+public class RefreshableSegmentFetcher implements Closeable, SegmentFetcher, Runnable {
     private static final Logger _log = LoggerFactory.getLogger(RefreshableSegmentFetcher.class);
 
     private final SegmentChangeFetcher _segmentChangeFetcher;
@@ -30,9 +30,9 @@ public class RefreshableSegmentFetcher implements Closeable, SegmentFetcher {
 
     private final Object _lock = new Object();
     private final ConcurrentMap<String, RefreshableSegment> _segmentFetchers = Maps.newConcurrentMap();
-    private final ScheduledExecutorService _scheduledExecutorService;
     private final SDKReadinessGates _gates;
-
+    private final int _numThreads;
+    private ScheduledExecutorService _scheduledExecutorService;
 
     public RefreshableSegmentFetcher(SegmentChangeFetcher segmentChangeFetcher, long refreshEveryNSeconds, int numThreads, SDKReadinessGates gates) {
         _segmentChangeFetcher = segmentChangeFetcher;
@@ -41,13 +41,10 @@ public class RefreshableSegmentFetcher implements Closeable, SegmentFetcher {
         checkArgument(refreshEveryNSeconds >= 0L);
         _refreshEveryNSeconds = new AtomicLong(refreshEveryNSeconds);
 
-        ThreadFactoryBuilder threadFactoryBuilder = new ThreadFactoryBuilder();
-        threadFactoryBuilder.setDaemon(true);
-        threadFactoryBuilder.setNameFormat("split-segmentFetcher-" + "%d");
-        _scheduledExecutorService = Executors.newScheduledThreadPool(numThreads, threadFactoryBuilder.build());
-
         _gates = gates;
         checkNotNull(_gates);
+
+        _numThreads = numThreads;
     }
 
     public RefreshableSegment segment(String segmentName) {
@@ -72,8 +69,6 @@ public class RefreshableSegmentFetcher implements Closeable, SegmentFetcher {
                 // We will try again inside the RefreshableSegment.
             }
             segment = RefreshableSegment.create(segmentName, _segmentChangeFetcher, _gates);
-
-            _scheduledExecutorService.scheduleWithFixedDelay(segment, 0L, _refreshEveryNSeconds.get(), TimeUnit.SECONDS);
 
             _segmentFetchers.putIfAbsent(segmentName, segment);
 
@@ -101,6 +96,33 @@ public class RefreshableSegmentFetcher implements Closeable, SegmentFetcher {
         }
 
         segment.forceRefresh();
+    }
+
+    @Override
+    public void forceRefreshAll() {
+        for (ConcurrentMap.Entry<String, RefreshableSegment> entry : _segmentFetchers.entrySet()) {
+            RefreshableSegment refreshableSegment = entry.getValue();
+
+            if (refreshableSegment == null) {
+                continue;
+            }
+
+            refreshableSegment.forceRefresh();
+        }
+    }
+
+    @Override
+    public void startPeriodicFetching() {
+        ThreadFactoryBuilder threadFactoryBuilder = new ThreadFactoryBuilder();
+        threadFactoryBuilder.setDaemon(true);
+        threadFactoryBuilder.setNameFormat("split-segmentFetcher-" + "%d");
+        _scheduledExecutorService = Executors.newScheduledThreadPool(_numThreads, threadFactoryBuilder.build());
+        _scheduledExecutorService.scheduleWithFixedDelay(this, 0L, _refreshEveryNSeconds.get(), TimeUnit.SECONDS);
+    }
+
+    @Override
+    public void run() {
+        forceRefreshAll();
     }
 
     @Override
