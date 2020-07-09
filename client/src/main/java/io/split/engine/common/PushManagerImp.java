@@ -1,4 +1,4 @@
-package io.split.engine;
+package io.split.engine.common;
 
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import io.split.engine.sse.AuthApiClient;

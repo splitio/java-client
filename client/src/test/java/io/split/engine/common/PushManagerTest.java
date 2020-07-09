@@ -1,4 +1,4 @@
-package io.split.engine;
+package io.split.engine.common;
 
 import io.split.engine.sse.AuthApiClient;
 import io.split.engine.sse.SSEHandler;
