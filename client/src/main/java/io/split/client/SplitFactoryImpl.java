@@ -168,6 +168,7 @@ public class SplitFactoryImpl implements SplitFactory {
 
         // Impressions
         final ImpressionsManager splitImpressionListener = ImpressionsManager.instance(httpclient, config);
+        splitImpressionListener.startPeriodicDataRecording();
 
         List<ImpressionListener> impressionListeners = new ArrayList<>();
         impressionListeners.add(splitImpressionListener);
@@ -206,8 +207,10 @@ public class SplitFactoryImpl implements SplitFactory {
 
         CachedMetrics cachedMetrics = new CachedMetrics(httpMetrics, TimeUnit.SECONDS.toMillis(config.metricsRefreshRate()));
         final FireAndForgetMetrics cachedFireAndForgetMetrics = FireAndForgetMetrics.instance(cachedMetrics, 2, 1000);
+        cachedFireAndForgetMetrics.startPeriodicDataRecording();
 
         final EventClient eventClient = EventClientImpl.create(httpclient, eventsRootTarget, config.eventsQueueSize(), config.eventFlushIntervalInMillis(), config.waitBeforeShutdown());
+        eventClient.startPeriodicDataRecording();
 
         destroyer = new Runnable() {
             public void run() {
