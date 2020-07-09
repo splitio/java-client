@@ -67,7 +67,7 @@ public class ImpressionHasherTest {
 
         imp1.treatment = null;
         assertNotNull(ImpressionHasher.process(imp1));
-        
+
         assertNull(ImpressionHasher.process(null));
     }
 }
