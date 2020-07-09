@@ -7,9 +7,7 @@ import org.slf4j.LoggerFactory;
 
 import java.io.Closeable;
 import java.util.List;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.TimeUnit;
+import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.AtomicReference;
 
@@ -30,9 +28,10 @@ public class RefreshableSplitFetcherProvider implements Closeable {
     private final AtomicReference<RefreshableSplitFetcher> _splitFetcher = new AtomicReference<RefreshableSplitFetcher>();
     private final SDKReadinessGates _gates;
     private final AtomicReference<ScheduledExecutorService> _executorService = new AtomicReference<>();
-
+    private final ScheduledExecutorService _scheduledExecutorService;
     private final Object _lock = new Object();
 
+    private ScheduledFuture<?> _scheduledFuture;
 
     public RefreshableSplitFetcherProvider(SplitChangeFetcher splitChangeFetcher, SplitParser splitParser, long refreshEveryNSeconds, SDKReadinessGates sdkBuildBlocker) {
         _splitChangeFetcher = splitChangeFetcher;
@@ -47,6 +46,13 @@ public class RefreshableSplitFetcherProvider implements Closeable {
         _gates = sdkBuildBlocker;
         checkNotNull(_gates);
 
+        ThreadFactory threadFactory = new ThreadFactoryBuilder()
+                .setDaemon(true)
+                .setNameFormat("split-splitFetcher-%d")
+                .build();
+
+        _scheduledExecutorService = Executors.newSingleThreadScheduledExecutor(threadFactory);
+        _executorService.set(_scheduledExecutorService);
     }
 
     public RefreshableSplitFetcher getFetcher() {
@@ -69,15 +75,11 @@ public class RefreshableSplitFetcherProvider implements Closeable {
     }
 
     public void startPeriodicFetching() {
-        RefreshableSplitFetcher splitFetcher = getFetcher();
+        _scheduledFuture = _scheduledExecutorService.scheduleWithFixedDelay(getFetcher(), 0L, _refreshEveryNSeconds.get(), TimeUnit.SECONDS);
+    }
 
-        ThreadFactoryBuilder threadFactoryBuilder = new ThreadFactoryBuilder();
-        threadFactoryBuilder.setDaemon(true);
-        threadFactoryBuilder.setNameFormat("split-splitFetcher-%d");
-
-        ScheduledExecutorService scheduledExecutorService = Executors.newSingleThreadScheduledExecutor(threadFactoryBuilder.build());
-        scheduledExecutorService.scheduleWithFixedDelay(splitFetcher, 0L, _refreshEveryNSeconds.get(), TimeUnit.SECONDS);
-        _executorService.set(scheduledExecutorService);
+    public void stop() {
+        _scheduledFuture.cancel(false);
     }
 
     @Override

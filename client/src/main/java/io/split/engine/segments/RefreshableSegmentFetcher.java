@@ -8,10 +8,7 @@ import org.slf4j.LoggerFactory;
 
 import java.io.Closeable;
 import java.util.List;
-import java.util.concurrent.ConcurrentMap;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.TimeUnit;
+import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicLong;
 
 import static com.google.common.base.Preconditions.checkArgument;
@@ -31,8 +28,9 @@ public class RefreshableSegmentFetcher implements Closeable, SegmentFetcher, Run
     private final Object _lock = new Object();
     private final ConcurrentMap<String, RefreshableSegment> _segmentFetchers = Maps.newConcurrentMap();
     private final SDKReadinessGates _gates;
-    private final int _numThreads;
-    private ScheduledExecutorService _scheduledExecutorService;
+    private final ScheduledExecutorService _scheduledExecutorService;
+
+    private ScheduledFuture<?> _scheduledFuture;
 
     public RefreshableSegmentFetcher(SegmentChangeFetcher segmentChangeFetcher, long refreshEveryNSeconds, int numThreads, SDKReadinessGates gates) {
         _segmentChangeFetcher = segmentChangeFetcher;
@@ -44,7 +42,12 @@ public class RefreshableSegmentFetcher implements Closeable, SegmentFetcher, Run
         _gates = gates;
         checkNotNull(_gates);
 
-        _numThreads = numThreads;
+        ThreadFactory threadFactory = new ThreadFactoryBuilder()
+                .setDaemon(true)
+                .setNameFormat("split-segmentFetcher-" + "%d")
+                .build();
+
+        _scheduledExecutorService = Executors.newScheduledThreadPool(numThreads, threadFactory);
     }
 
     public RefreshableSegment segment(String segmentName) {
@@ -107,17 +110,18 @@ public class RefreshableSegmentFetcher implements Closeable, SegmentFetcher, Run
                 continue;
             }
 
-            refreshableSegment.forceRefresh();
+            _scheduledExecutorService.submit(refreshableSegment);
         }
     }
 
     @Override
     public void startPeriodicFetching() {
-        ThreadFactoryBuilder threadFactoryBuilder = new ThreadFactoryBuilder();
-        threadFactoryBuilder.setDaemon(true);
-        threadFactoryBuilder.setNameFormat("split-segmentFetcher-" + "%d");
-        _scheduledExecutorService = Executors.newScheduledThreadPool(_numThreads, threadFactoryBuilder.build());
-        _scheduledExecutorService.scheduleWithFixedDelay(this, 0L, _refreshEveryNSeconds.get(), TimeUnit.SECONDS);
+        _scheduledFuture = _scheduledExecutorService.scheduleWithFixedDelay(this, 0L, _refreshEveryNSeconds.get(), TimeUnit.SECONDS);
+    }
+
+    @Override
+    public void stop() {
+        _scheduledFuture.cancel(false);
     }
 
     @Override

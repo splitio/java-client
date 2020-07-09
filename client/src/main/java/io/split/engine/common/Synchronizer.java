@@ -6,6 +6,4 @@ public interface Synchronizer {
     void synchronizeSegment(String segmentName);
     void startPeriodicFetching();
     void stopPeriodicFetching();
-    void startPeriodicDataRecording();
-    void stopPeriodicDataRecording();
 }

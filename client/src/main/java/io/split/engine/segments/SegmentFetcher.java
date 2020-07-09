@@ -9,4 +9,5 @@ public interface SegmentFetcher {
     void forceRefresh(String segmentName);
     void forceRefreshAll();
     void startPeriodicFetching();
+    void stop();
 }

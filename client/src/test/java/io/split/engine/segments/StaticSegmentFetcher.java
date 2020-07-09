@@ -39,4 +39,7 @@ public class StaticSegmentFetcher implements SegmentFetcher {
 
     @Override
     public void startPeriodicFetching() { return; }
+
+    @Override
+    public void stop() { return; }
 }
