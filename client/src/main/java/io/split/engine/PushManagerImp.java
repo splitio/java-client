@@ -15,8 +15,7 @@ public class PushManagerImp implements PushManager, Runnable {
     private final AuthApiClient _authApiClient;
     private final SSEHandler _sseHandler;
     private final int _authRetryBackOffBase;
-
-    private ScheduledExecutorService _scheduledExecutorService;
+    private final ScheduledExecutorService _scheduledExecutorService;
 
     public PushManagerImp(AuthApiClient authApiClient,
                           SSEHandler sseHandler,
@@ -24,6 +23,13 @@ public class PushManagerImp implements PushManager, Runnable {
         _authApiClient = authApiClient;
         _sseHandler = sseHandler;
         _authRetryBackOffBase = authRetryBackOffBase;
+
+        ThreadFactory threadFactory = new ThreadFactoryBuilder()
+                .setDaemon(true)
+                .setNameFormat("Split-SSERefreshToken-%d")
+                .build();
+
+        _scheduledExecutorService = Executors.newSingleThreadScheduledExecutor(threadFactory);
     }
 
     @Override
@@ -59,12 +65,6 @@ public class PushManagerImp implements PushManager, Runnable {
     }
 
     private void scheduleNextTokenRefresh(double time) {
-        ThreadFactory threadFactory = new ThreadFactoryBuilder()
-                .setDaemon(true)
-                .setNameFormat("Split-SSERefreshToken-%d")
-                .build();
-
-        _scheduledExecutorService = Executors.newSingleThreadScheduledExecutor(threadFactory);
         _scheduledExecutorService.schedule(this, (long) time, TimeUnit.SECONDS);
     }
 }
