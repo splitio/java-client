@@ -7,7 +7,10 @@ import io.split.engine.sse.dtos.AuthenticationResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.concurrent.*;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ThreadFactory;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 
 public class PushManagerImp implements PushManager, Runnable {
     private static final Logger _log = LoggerFactory.getLogger(PushManager.class);
