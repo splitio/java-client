@@ -1,7 +1,7 @@
 package io.split.engine.sse.dtos;
 
 public class GenericNotificationData {
-    private final long changeNumber;
+    private final Long changeNumber;
     private final String defaultTreatment;
     private final String splitName;
     private final ControlType controlType;
@@ -10,7 +10,7 @@ public class GenericNotificationData {
     private final IncomingNotification.Type type;
     private String channel;
 
-    public GenericNotificationData (long changeNumber,
+    public GenericNotificationData (Long changeNumber,
                                     String defaultTreatment,
                                     String splitName,
                                     ControlType controlType,

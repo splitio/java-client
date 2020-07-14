@@ -1,6 +1,7 @@
 package io.split.engine.sse;
 
 import io.split.engine.sse.dtos.*;
+import io.split.engine.sse.listeners.NotificationsListener;
 import io.split.engine.sse.workers.SplitsWorker;
 import org.junit.Test;
 import org.mockito.Mockito;
@@ -88,7 +89,7 @@ public class SSEHandlerTest {
 
         sseHandler.onMessageNotificationReceived(controlNotification);
 
-        Mockito.verify(_notificationProcessor, Mockito.never()).process(controlNotification);
+        Mockito.verify(_notificationProcessor, Mockito.times(1)).process(controlNotification);
     }
 
     @Test
@@ -100,6 +101,6 @@ public class SSEHandlerTest {
 
         sseHandler.onMessageNotificationReceived(occupancyNotification);
 
-        Mockito.verify(_notificationProcessor, Mockito.never()).process(occupancyNotification);
+        Mockito.verify(_notificationProcessor, Mockito.times(1)).process(occupancyNotification);
     }
 }

@@ -1,6 +1,7 @@
 package io.split.engine.sse;
 
 import io.split.engine.sse.dtos.IncomingNotification;
+import io.split.engine.sse.listeners.NotificationsListener;
 import io.split.engine.sse.workers.SplitsWorker;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -55,14 +56,6 @@ public class SSEHandlerImp implements SSEHandler, NotificationsListener {
 
     @Override
     public void onMessageNotificationReceived(IncomingNotification incomingNotification) {
-        switch (incomingNotification.getType()) {
-            case CONTROL:
-            case OCCUPANCY:
-                // TODO: use here the notificationManagerKeeper.
-                break;
-            default:
-                _notificationProcessor.process(incomingNotification);
-                break;
-        }
+        _notificationProcessor.process(incomingNotification);
     }
 }

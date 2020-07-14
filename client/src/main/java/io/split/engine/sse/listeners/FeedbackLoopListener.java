@@ -1,4 +1,4 @@
-package io.split.engine.sse;
+package io.split.engine.sse.listeners;
 
 import io.split.engine.sse.dtos.ErrorNotification;
 

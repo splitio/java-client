@@ -1,6 +1,7 @@
 package io.split.engine.sse;
 
 import io.split.engine.sse.dtos.IncomingNotification;
+import io.split.engine.sse.dtos.PresenceNotification;
 import io.split.engine.sse.dtos.SegmentQueueDto;
 import io.split.engine.sse.workers.SplitsWorker;
 import io.split.engine.sse.workers.Worker;
@@ -8,11 +9,14 @@ import io.split.engine.sse.workers.Worker;
 public class NotificationProcessorImp implements NotificationProcessor {
     private final SplitsWorker _splitsWorker;
     private final Worker<SegmentQueueDto> _segmentWorker;
+    private final NotificationManagerKeeper _notificationManagerKeeper;
 
     public NotificationProcessorImp(SplitsWorker splitsWorker,
-                                    Worker<SegmentQueueDto> segmentWorker) {
+                                    Worker<SegmentQueueDto> segmentWorker,
+                                    NotificationManagerKeeper notificationManagerKeeper) {
         _splitsWorker = splitsWorker;
         _segmentWorker = segmentWorker;
+        _notificationManagerKeeper = notificationManagerKeeper;
     }
 
     @Override
@@ -34,5 +38,10 @@ public class NotificationProcessorImp implements NotificationProcessor {
     @Override
     public void processSegmentUpdate(long changeNumber, String segmentName) {
         _segmentWorker.addToQueue(new SegmentQueueDto(segmentName, changeNumber));
+    }
+
+    @Override
+    public void processPresence(PresenceNotification presenceNotification) {
+        presenceNotification.handlerPresence(_notificationManagerKeeper);
     }
 }

@@ -11,12 +11,14 @@ public class NotificationProcessorTest {
     private final SplitsWorker _splitsWorker;
     private final Worker<SegmentQueueDto> _segmentWorker;
     private final NotificationProcessor _notificationProcessor;
+    private final NotificationManagerKeeper _notificationManagerKeeper;
 
     public NotificationProcessorTest() {
         _splitsWorker = Mockito.mock(SplitsWorker.class);
         _segmentWorker = Mockito.mock(SegmentsWorkerImp.class);
+        _notificationManagerKeeper = Mockito.mock(NotificationManagerKeeper.class);
 
-        _notificationProcessor = new NotificationProcessorImp(_splitsWorker, _segmentWorker);
+        _notificationProcessor = new NotificationProcessorImp(_splitsWorker, _segmentWorker, _notificationManagerKeeper);
     }
 
     @Test
