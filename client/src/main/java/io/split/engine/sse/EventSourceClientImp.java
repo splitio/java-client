@@ -79,7 +79,7 @@ public class EventSourceClientImp implements EventSourceClient {
 
     @Override
     public synchronized void notifyErrorNotification (ErrorNotification errorNotification) {
-        _feedbackListeners.forEach(listener -> listener.onErrorNotificationAdded(errorNotification));
+        _feedbackListeners.forEach(listener -> listener.onErrorNotification(errorNotification));
     }
 
     @Override
