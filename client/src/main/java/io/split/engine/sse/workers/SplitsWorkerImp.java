@@ -2,7 +2,7 @@ package io.split.engine.sse.workers;
 
 import io.split.engine.experiments.SplitFetcher;
 
-public class SplitsWorkerImp extends WorkerImp<Long> implements SplitsWorker {
+public class SplitsWorkerImp extends Worker<Long> implements SplitsWorker {
     private final SplitFetcher _splitFetcher;
 
     public SplitsWorkerImp(SplitFetcher splitFetcher) {

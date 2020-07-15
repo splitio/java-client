@@ -6,15 +6,15 @@ import org.slf4j.LoggerFactory;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-public abstract class WorkerImp<T> implements Runnable {
-    protected static final Logger _log = LoggerFactory.getLogger(WorkerImp.class);
+public abstract class Worker<T> implements Runnable {
+    protected static final Logger _log = LoggerFactory.getLogger(Worker.class);
 
     private final String _workerName;
     protected final LinkedBlockingQueue<T> _queue;
     protected AtomicBoolean _running;
     protected Thread _thread;
 
-    public WorkerImp(String workerName) {
+    public Worker(String workerName) {
         _queue = new LinkedBlockingQueue<>();
         _workerName = workerName;
         _running = new AtomicBoolean(false);

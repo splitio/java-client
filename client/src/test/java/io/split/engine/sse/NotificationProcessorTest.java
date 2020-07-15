@@ -3,13 +3,13 @@ package io.split.engine.sse;
 import io.split.engine.sse.dtos.*;
 import io.split.engine.sse.workers.SegmentsWorkerImp;
 import io.split.engine.sse.workers.SplitsWorker;
-import io.split.engine.sse.workers.WorkerImp;
+import io.split.engine.sse.workers.Worker;
 import org.junit.Test;
 import org.mockito.Mockito;
 
 public class NotificationProcessorTest {
     private final SplitsWorker _splitsWorker;
-    private final WorkerImp<SegmentQueueDto> _segmentWorker;
+    private final Worker<SegmentQueueDto> _segmentWorker;
     private final NotificationProcessor _notificationProcessor;
 
     public NotificationProcessorTest() {

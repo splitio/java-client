@@ -3,14 +3,14 @@ package io.split.engine.sse;
 import io.split.engine.sse.dtos.IncomingNotification;
 import io.split.engine.sse.dtos.SegmentQueueDto;
 import io.split.engine.sse.workers.SplitsWorker;
-import io.split.engine.sse.workers.WorkerImp;
+import io.split.engine.sse.workers.Worker;
 
 public class NotificationProcessorImp implements NotificationProcessor {
     private final SplitsWorker _splitsWorker;
-    private final WorkerImp<SegmentQueueDto> _segmentWorker;
+    private final Worker<SegmentQueueDto> _segmentWorker;
 
     public NotificationProcessorImp(SplitsWorker splitsWorker,
-                                    WorkerImp<SegmentQueueDto> segmentWorker) {
+                                    Worker<SegmentQueueDto> segmentWorker) {
         _splitsWorker = splitsWorker;
         _segmentWorker = segmentWorker;
     }

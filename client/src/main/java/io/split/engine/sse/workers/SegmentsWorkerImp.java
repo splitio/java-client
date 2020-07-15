@@ -3,7 +3,7 @@ package io.split.engine.sse.workers;
 import io.split.engine.segments.SegmentFetcher;
 import io.split.engine.sse.dtos.SegmentQueueDto;
 
-public class SegmentsWorkerImp extends WorkerImp<SegmentQueueDto> {
+public class SegmentsWorkerImp extends Worker<SegmentQueueDto> {
     private final SegmentFetcher _segmentFetcher;
 
     public SegmentsWorkerImp(SegmentFetcher segmentFetcher) {
