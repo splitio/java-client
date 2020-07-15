@@ -1,15 +1,13 @@
 package io.split.engine.common;
 
 import io.split.engine.sse.SSEHandler;
-import io.split.engine.sse.dtos.ErrorNotification;
-import io.split.engine.sse.listeners.FeedbackLoopListener;
 import io.split.engine.sse.listeners.NotificationKeeperListener;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.concurrent.atomic.AtomicBoolean;
 
-public class SyncManagerImp implements SyncManager, NotificationKeeperListener, FeedbackLoopListener {
+public class SyncManagerImp implements SyncManager, NotificationKeeperListener {
     private static final Logger _log = LoggerFactory.getLogger(SyncManager.class);
 
     private final AtomicBoolean _streamingEnabledConfig;
@@ -42,17 +40,6 @@ public class SyncManagerImp implements SyncManager, NotificationKeeperListener, 
         _pushManager.stop();
     }
 
-    private void startStreamingMode() {
-        _log.debug("Starting in streaming mode ...");
-        _synchronizer.syncAll();
-        _pushManager.start();
-    }
-
-    private void startPollingMode() {
-        _log.debug("Starting in polling mode ...");
-        _synchronizer.startPeriodicFetching();
-    }
-
     @Override
     public void onStreamingAvailable() {
         _synchronizer.stopPeriodicFetching();
@@ -71,20 +58,14 @@ public class SyncManagerImp implements SyncManager, NotificationKeeperListener, 
         _pushManager.stop();
     }
 
-    @Override
-    public void onErrorNotification(ErrorNotification errorNotification) {
-        _pushManager.stop();
-        startStreamingMode();
-    }
-
-    @Override
-    public void onConnected() {
-        _synchronizer.stopPeriodicFetching();
+    private void startStreamingMode() {
+        _log.debug("Starting in streaming mode ...");
         _synchronizer.syncAll();
+        _pushManager.start();
     }
 
-    @Override
-    public void onDisconnect() {
+    private void startPollingMode() {
+        _log.debug("Starting in polling mode ...");
         _synchronizer.startPeriodicFetching();
     }
 }
