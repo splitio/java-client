@@ -82,6 +82,28 @@ public class RefreshableSegmentFetcher implements Closeable, SegmentFetcher {
     }
 
     @Override
+    public long getChangeNumber(String segmentName) {
+        RefreshableSegment segment = _segmentFetchers.get(segmentName);
+
+        if (segment == null) {
+            return -1;
+        }
+
+        return segment.changeNumber();
+    }
+
+    @Override
+    public void forceRefresh(String segmentName) {
+        RefreshableSegment segment = _segmentFetchers.get(segmentName);
+
+        if (segment == null) {
+            return;
+        }
+
+        segment.forceRefresh();
+    }
+
+    @Override
     public void close() {
         if (_scheduledExecutorService == null || _scheduledExecutorService.isShutdown()) {
             return;

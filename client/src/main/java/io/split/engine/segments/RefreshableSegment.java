@@ -48,6 +48,7 @@ public class RefreshableSegment implements Runnable, Segment {
         run();
     }
 
+    @Override
     public long changeNumber() {
         return _changeNumber.get();
     }

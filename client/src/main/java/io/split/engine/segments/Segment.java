@@ -21,4 +21,6 @@ public interface Segment {
      * syncs. This method MUST NOT throw any exceptions.
      */
     void forceRefresh();
+
+    long changeNumber();
 }
