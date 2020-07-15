@@ -58,13 +58,13 @@ public class PushManagerImp implements PushManager, Runnable {
         start();
     }
 
-    private void scheduleNextTokenRefresh(double time) {
+    private void scheduleNextTokenRefresh(long time) {
         ThreadFactory threadFactory = new ThreadFactoryBuilder()
                 .setDaemon(true)
                 .setNameFormat("Split-SSERefreshToken-%d")
                 .build();
 
         _scheduledExecutorService = Executors.newSingleThreadScheduledExecutor(threadFactory);
-        _scheduledExecutorService.schedule(this, (long) time, TimeUnit.SECONDS);
+        _scheduledExecutorService.schedule(this, time, TimeUnit.SECONDS);
     }
 }

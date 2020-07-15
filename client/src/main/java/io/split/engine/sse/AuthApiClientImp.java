@@ -63,7 +63,7 @@ public class AuthApiClientImp implements AuthApiClient {
         String token = jsonObject.get("token") != null ? jsonObject.get("token").getAsString() : "";
         RawAuthResponse response = new RawAuthResponse(jsonObject.get("pushEnabled").getAsBoolean(), token, _gson);
         String channels = "";
-        double expiration = 0;
+        long expiration = 0;
 
         if (response.isPushEnabled()) {
             channels = response.getChannels(_gson);
