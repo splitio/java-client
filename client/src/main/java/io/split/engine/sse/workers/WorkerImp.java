@@ -1,25 +1,25 @@
 package io.split.engine.sse.workers;
 
 import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-public abstract class WorkerImp<T> implements Worker<T> {
+public abstract class WorkerImp<T> implements Runnable {
+    protected static final Logger _log = LoggerFactory.getLogger(WorkerImp.class);
+
     private final String _workerName;
-    protected final Logger _log;
     protected final LinkedBlockingQueue<T> _queue;
     protected AtomicBoolean _running;
     protected Thread _thread;
 
-    public WorkerImp(Logger log, String workerName) {
-        _log = log;
+    public WorkerImp(String workerName) {
         _queue = new LinkedBlockingQueue<>();
         _workerName = workerName;
         _running = new AtomicBoolean(false);
     }
 
-    @Override
     public void start() {
         if (_running.get()) {
             _log.error(String.format("%s Worker already running.", _workerName));
@@ -33,7 +33,6 @@ public abstract class WorkerImp<T> implements Worker<T> {
         _thread.start();
     }
 
-    @Override
     public void stop() {
         if (!_running.get()) {
             _log.error(String.format("%s Worker not running.", _workerName));
@@ -45,7 +44,6 @@ public abstract class WorkerImp<T> implements Worker<T> {
         _log.debug(String.format("%s Worked stopped.", _workerName));
     }
 
-    @Override
     public void addToQueue(T element) {
         try {
             _queue.add(element);

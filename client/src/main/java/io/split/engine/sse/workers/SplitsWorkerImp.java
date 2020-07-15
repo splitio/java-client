@@ -1,15 +1,12 @@
 package io.split.engine.sse.workers;
 
 import io.split.engine.experiments.SplitFetcher;
-import org.slf4j.LoggerFactory;
-
-import java.util.concurrent.LinkedBlockingQueue;
 
 public class SplitsWorkerImp extends WorkerImp<Long> implements SplitsWorker {
     private final SplitFetcher _splitFetcher;
 
     public SplitsWorkerImp(SplitFetcher splitFetcher) {
-        super(LoggerFactory.getLogger(SplitsWorker.class), "Splits");
+        super("Splits");
         _splitFetcher = splitFetcher;
     }
 
