@@ -12,6 +12,7 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.ThreadFactory;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.AtomicReference;
 
@@ -34,6 +35,7 @@ public class RefreshableSplitFetcherProvider implements Closeable {
     private final AtomicReference<ScheduledExecutorService> _executorService = new AtomicReference<>();
     private final ScheduledExecutorService _scheduledExecutorService;
     private final Object _lock = new Object();
+    private final AtomicBoolean _running;
 
     private ScheduledFuture<?> _scheduledFuture;
 
@@ -57,6 +59,8 @@ public class RefreshableSplitFetcherProvider implements Closeable {
 
         _scheduledExecutorService = Executors.newSingleThreadScheduledExecutor(threadFactory);
         _executorService.set(_scheduledExecutorService);
+
+        _running = new AtomicBoolean();
     }
 
     public RefreshableSplitFetcher getFetcher() {
@@ -79,10 +83,20 @@ public class RefreshableSplitFetcherProvider implements Closeable {
     }
 
     public void startPeriodicFetching() {
+        if (_running.getAndSet(true)) {
+            _log.error("Splits PeriodicFetching is running...");
+            return;
+        }
+
         _scheduledFuture = _scheduledExecutorService.scheduleWithFixedDelay(getFetcher(), 0L, _refreshEveryNSeconds.get(), TimeUnit.SECONDS);
     }
 
     public void stop() {
+        if (!_running.getAndSet(false) || _scheduledFuture == null) {
+            _log.error("Splits PeriodicFetching not running...");
+            return;
+        }
+
         _scheduledFuture.cancel(false);
     }
 

@@ -14,6 +14,7 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.ThreadFactory;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicLong;
 
 import static com.google.common.base.Preconditions.checkArgument;
@@ -29,7 +30,7 @@ public class RefreshableSegmentFetcher implements Closeable, SegmentFetcher, Run
 
     private final SegmentChangeFetcher _segmentChangeFetcher;
     private final AtomicLong _refreshEveryNSeconds;
-
+    private final AtomicBoolean _running;
     private final Object _lock = new Object();
     private final ConcurrentMap<String, RefreshableSegment> _segmentFetchers = Maps.newConcurrentMap();
     private final SDKReadinessGates _gates;
@@ -53,6 +54,8 @@ public class RefreshableSegmentFetcher implements Closeable, SegmentFetcher, Run
                 .build();
 
         _scheduledExecutorService = Executors.newScheduledThreadPool(numThreads, threadFactory);
+
+        _running = new AtomicBoolean(false);
     }
 
     public RefreshableSegment segment(String segmentName) {
@@ -121,11 +124,21 @@ public class RefreshableSegmentFetcher implements Closeable, SegmentFetcher, Run
 
     @Override
     public void startPeriodicFetching() {
+        if (_running.getAndSet(true)) {
+            _log.error("Segments PeriodicFetching is running...");
+            return;
+        }
+
         _scheduledFuture = _scheduledExecutorService.scheduleWithFixedDelay(this, 0L, _refreshEveryNSeconds.get(), TimeUnit.SECONDS);
     }
 
     @Override
     public void stop() {
+        if (!_running.getAndSet(false) || _scheduledFuture == null) {
+            _log.error("Segments PeriodicFetching not running...");
+            return;
+        }
+
         _scheduledFuture.cancel(false);
     }
 
