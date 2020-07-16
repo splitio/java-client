@@ -56,6 +56,7 @@ public class SyncManagerImp implements SyncManager, NotificationKeeperListener {
     @Override
     public void onStreamingShutdown() {
         _pushManager.stop();
+        _sseHandler.stopWorkers();
     }
 
     private void startStreamingMode() {

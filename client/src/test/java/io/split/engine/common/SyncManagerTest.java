@@ -63,5 +63,6 @@ public class SyncManagerTest {
         syncManager.onStreamingShutdown();
 
         Mockito.verify(_pushManager, Mockito.times(1)).stop();
+        Mockito.verify(_sseHandler, Mockito.times(1)).stopWorkers();
     }
 }

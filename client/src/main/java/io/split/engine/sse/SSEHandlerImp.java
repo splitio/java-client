@@ -56,7 +56,7 @@ public class SSEHandlerImp implements SSEHandler, NotificationsListener {
     }
 
     @Override
-    public void stropWorkers() {
+    public void stopWorkers() {
         _splitsWorker.stop();
         _segmentWorker.stop();
     }
