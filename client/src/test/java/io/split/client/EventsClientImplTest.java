@@ -57,7 +57,7 @@ public class EventsClientImplTest {
                 10000, // Long queue so it doesn't flush by # of events
                 100000, // Long period so it doesn't flush by timeout expiration.
                 0);
-        eventClient.startPeriodicDataRecording();
+
         for (int i = 0; i < 159; ++i) {
             Event event = new Event();
             eventClient.track(event, 1024 * 32); // 159 32kb events should be about to flush
