@@ -53,7 +53,7 @@ public class NotificationManagerKeeperImp implements NotificationManagerKeeper {
     }
 
     @Override
-    public void registerNotificationKeeperListener(NotificationKeeperListener listener) {
+    public synchronized void registerNotificationKeeperListener(NotificationKeeperListener listener) {
         _notificationKeeperListeners.add(listener);
     }
 
@@ -61,15 +61,15 @@ public class NotificationManagerKeeperImp implements NotificationManagerKeeper {
         return _streamingAvailable.get();
     }
 
-    private void notifyStreamingAvailable() {
+    private synchronized void notifyStreamingAvailable() {
         _notificationKeeperListeners.forEach(l -> l.onStreamingAvailable());
     }
 
-    private void notifyStreamingDisabled() {
+    private synchronized void notifyStreamingDisabled() {
         _notificationKeeperListeners.forEach(l -> l.onStreamingDisabled());
     }
 
-    private void notifyStreamingShutdown() {
+    private synchronized void notifyStreamingShutdown() {
         _notificationKeeperListeners.forEach(l -> l.onStreamingShutdown());
     }
 }
