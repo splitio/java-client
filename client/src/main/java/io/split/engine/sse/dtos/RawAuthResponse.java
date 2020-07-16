@@ -45,7 +45,7 @@ public class RawAuthResponse {
         return addPrefixControlChannels(String.join(",", channelsList));
     }
 
-    public double getExpiration(Gson gson) {
+    public long getExpiration() {
         return jwt.getExpiration() - jwt.getIssueAt() - PUSH_SECONDS_BEFORE_EXPIRATION;
     }
 

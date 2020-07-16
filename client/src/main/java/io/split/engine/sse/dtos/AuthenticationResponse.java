@@ -4,10 +4,10 @@ public class AuthenticationResponse {
     private final boolean pushEnabled;
     private final String token;
     private final String channels;
-    private final double expiration;
+    private final long expiration;
     private final boolean retry;
 
-    public AuthenticationResponse(boolean pushEnabled, String token, String channels, double expiration, boolean retry) {
+    public AuthenticationResponse(boolean pushEnabled, String token, String channels, long expiration, boolean retry) {
         this.pushEnabled = pushEnabled;
         this.token = token;
         this.channels = channels;
@@ -23,7 +23,7 @@ public class AuthenticationResponse {
         this.expiration = 0;
     }
 
-    public double getExpiration() {
+    public long getExpiration() {
         return expiration;
     }
 
