@@ -33,4 +33,13 @@ public class StaticSegmentFetcher implements SegmentFetcher {
 
     @Override
     public void forceRefresh(String segmentName) { return; }
+
+    @Override
+    public void forceRefreshAll() { return; }
+
+    @Override
+    public void startPeriodicFetching() { return; }
+
+    @Override
+    public void stop() { return; }
 }

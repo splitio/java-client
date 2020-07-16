@@ -182,9 +182,6 @@ public class RefreshableSplitFetcher implements SplitFetcher, Runnable {
             return;
         }
 
-        Set<String> segmentsInUse = Sets.newHashSet();
-
-
         synchronized (_lock) {
             // check state one more time.
             if (change.since != _changeNumber.get()
@@ -222,7 +219,6 @@ public class RefreshableSplitFetcher implements SplitFetcher, Runnable {
                     continue;
                 }
 
-                segmentsInUse.addAll(collectSegmentsInUse(split));
                 toAdd.put(split.name, parsedSplit);
 
                 // If the split already exists, this is either an update, or the split has been

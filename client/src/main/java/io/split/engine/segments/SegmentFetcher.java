@@ -7,4 +7,7 @@ public interface SegmentFetcher {
     Segment segment(String segmentName);
     long getChangeNumber(String segmentName);
     void forceRefresh(String segmentName);
+    void forceRefreshAll();
+    void startPeriodicFetching();
+    void stop();
 }
