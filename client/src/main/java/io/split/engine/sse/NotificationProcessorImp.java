@@ -1,7 +1,7 @@
 package io.split.engine.sse;
 
 import io.split.engine.sse.dtos.IncomingNotification;
-import io.split.engine.sse.dtos.PresenceNotification;
+import io.split.engine.sse.dtos.StatusNotification;
 import io.split.engine.sse.dtos.SegmentQueueDto;
 import io.split.engine.sse.workers.SplitsWorker;
 import io.split.engine.sse.workers.Worker;
@@ -41,7 +41,7 @@ public class NotificationProcessorImp implements NotificationProcessor {
     }
 
     @Override
-    public void processPresence(PresenceNotification presenceNotification) {
-        presenceNotification.handlerPresence(_notificationManagerKeeper);
+    public void processStatus(StatusNotification statusNotification) {
+        statusNotification.handlerStatus(_notificationManagerKeeper);
     }
 }

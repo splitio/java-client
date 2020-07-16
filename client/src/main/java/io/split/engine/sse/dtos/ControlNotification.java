@@ -3,7 +3,7 @@ package io.split.engine.sse.dtos;
 import io.split.engine.sse.NotificationManagerKeeper;
 import io.split.engine.sse.NotificationProcessor;
 
-public class ControlNotification extends IncomingNotification implements PresenceNotification {
+public class ControlNotification extends IncomingNotification implements StatusNotification {
     private final ControlType controlType;
 
     public ControlNotification(GenericNotificationData genericNotificationData) {
@@ -17,11 +17,11 @@ public class ControlNotification extends IncomingNotification implements Presenc
 
     @Override
     public void handler(NotificationProcessor notificationProcessor) {
-        notificationProcessor.processPresence(this);
+        notificationProcessor.processStatus(this);
     }
 
     @Override
-    public void handlerPresence(NotificationManagerKeeper notificationManagerKeeper) {
+    public void handlerStatus(NotificationManagerKeeper notificationManagerKeeper) {
         notificationManagerKeeper.handleIncomingControlEvent(this);
     }
 }

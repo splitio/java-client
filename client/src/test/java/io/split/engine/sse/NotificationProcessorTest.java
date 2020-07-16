@@ -60,4 +60,24 @@ public class NotificationProcessorTest {
 
         Mockito.verify(_segmentWorker, Mockito.times(1)).addToQueue(Mockito.any(SegmentQueueDto.class));
     }
+
+    @Test
+    public void processControlNotification() {
+        GenericNotificationData genericNotificationData = Mockito.mock(GenericNotificationData.class);
+        ControlNotification controlNotification = new ControlNotification(genericNotificationData);
+
+        _notificationProcessor.process(controlNotification);
+
+        Mockito.verify(_notificationManagerKeeper, Mockito.times(1)).handleIncomingControlEvent(Mockito.any(ControlNotification.class));
+    }
+
+    @Test
+    public void processOccupancyNotification() {
+        GenericNotificationData genericNotificationData = new GenericNotificationData(null, null, null, null, null, null, null, "control_pri");
+        OccupancyNotification occupancyNotification = new OccupancyNotification(genericNotificationData);
+
+        _notificationProcessor.process(occupancyNotification);
+
+        Mockito.verify(_notificationManagerKeeper, Mockito.times(1)).handleIncomingOccupancyEvent(Mockito.any(OccupancyNotification.class));
+    }
 }
