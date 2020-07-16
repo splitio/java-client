@@ -65,4 +65,23 @@ public class SyncManagerTest {
         Mockito.verify(_pushManager, Mockito.times(1)).stop();
         Mockito.verify(_sseHandler, Mockito.times(1)).stopWorkers();
     }
+
+    @Test
+    public void onConnected() {
+        SyncManagerImp syncManager = new SyncManagerImp(true, _synchronizer, _pushManager, _sseHandler);
+
+        syncManager.onConnected();
+
+        Mockito.verify(_synchronizer, Mockito.times(1)).stopPeriodicFetching();
+        Mockito.verify(_synchronizer, Mockito.times(1)).syncAll();
+    }
+
+    @Test
+    public void onDisconnect() {
+        SyncManagerImp syncManager = new SyncManagerImp(true, _synchronizer, _pushManager, _sseHandler);
+
+        syncManager.onDisconnect();
+
+        Mockito.verify(_synchronizer, Mockito.times(1)).startPeriodicFetching();
+    }
 }
