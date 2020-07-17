@@ -4,13 +4,15 @@ import com.google.gson.Gson;
 import io.split.engine.sse.dtos.*;
 import io.split.engine.sse.exceptions.EventParsingException;
 
+import static com.google.common.base.Preconditions.checkNotNull;
+
 public class NotificationParserImp implements NotificationParser {
     private static final String OCCUPANCY_PREFIX = "[?occupancy=metrics.publishers]";
 
     private final Gson _gson;
 
     public NotificationParserImp(Gson gson) {
-        _gson = gson;
+        _gson = checkNotNull(gson);
     }
 
     @Override

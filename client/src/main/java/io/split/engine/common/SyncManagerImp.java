@@ -7,6 +7,8 @@ import org.slf4j.LoggerFactory;
 
 import java.util.concurrent.atomic.AtomicBoolean;
 
+import static com.google.common.base.Preconditions.checkNotNull;
+
 public class SyncManagerImp implements SyncManager, NotificationKeeperListener {
     private static final Logger _log = LoggerFactory.getLogger(SyncManager.class);
 
@@ -20,9 +22,9 @@ public class SyncManagerImp implements SyncManager, NotificationKeeperListener {
                           PushManager pushManager,
                           SSEHandler sseHandler) {
         _streamingEnabledConfig = new AtomicBoolean(streamingEnabledConfig);
-        _synchronizer = synchronizer;
-        _pushManager = pushManager;
-        _sseHandler = sseHandler;
+        _synchronizer = checkNotNull(synchronizer);
+        _pushManager = checkNotNull(pushManager);
+        _sseHandler = checkNotNull(sseHandler);
     }
 
     @Override
