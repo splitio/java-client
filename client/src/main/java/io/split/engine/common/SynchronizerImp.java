@@ -18,7 +18,7 @@ public class SynchronizerImp implements Synchronizer {
     public SynchronizerImp(RefreshableSplitFetcherProvider refreshableSplitFetcherProvider,
                            SegmentFetcher segmentFetcher) {
         _refreshableSplitFetcherProvider = checkNotNull(refreshableSplitFetcherProvider);
-        _splitFetcher = _refreshableSplitFetcherProvider.getFetcher();
+        _splitFetcher = checkNotNull(_refreshableSplitFetcherProvider.getFetcher());
         _segmentFetcher = checkNotNull(segmentFetcher);
     }
 
