@@ -6,6 +6,8 @@ import io.split.engine.sse.dtos.SegmentQueueDto;
 import io.split.engine.sse.workers.SplitsWorker;
 import io.split.engine.sse.workers.Worker;
 
+import static com.google.common.base.Preconditions.checkNotNull;
+
 public class NotificationProcessorImp implements NotificationProcessor {
     private final SplitsWorker _splitsWorker;
     private final Worker<SegmentQueueDto> _segmentWorker;
@@ -14,9 +16,9 @@ public class NotificationProcessorImp implements NotificationProcessor {
     public NotificationProcessorImp(SplitsWorker splitsWorker,
                                     Worker<SegmentQueueDto> segmentWorker,
                                     NotificationManagerKeeper notificationManagerKeeper) {
-        _splitsWorker = splitsWorker;
-        _segmentWorker = segmentWorker;
-        _notificationManagerKeeper = notificationManagerKeeper;
+        _splitsWorker = checkNotNull(splitsWorker);
+        _segmentWorker = checkNotNull(segmentWorker);
+        _notificationManagerKeeper = checkNotNull(notificationManagerKeeper);
     }
 
     @Override
