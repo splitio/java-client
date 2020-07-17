@@ -5,7 +5,6 @@ import io.split.engine.metrics.Metrics;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.swing.*;
 import java.io.Closeable;
 import java.util.List;
 import java.util.concurrent.ArrayBlockingQueue;
@@ -20,23 +19,10 @@ public class FireAndForgetMetrics implements Metrics, Closeable {
 
     private static final Logger _log = LoggerFactory.getLogger(FireAndForgetMetrics.class);
 
+    private final ExecutorService _executorService;
     private final Metrics _delegate;
-    private final int _numberOfThreads;
-    private final int _queueSize;
-
-    private ExecutorService _executorService;
 
     public static FireAndForgetMetrics instance(Metrics delegate, int numberOfThreads, int queueSize) {
-        return new FireAndForgetMetrics(delegate, numberOfThreads, queueSize);
-    }
-
-    private FireAndForgetMetrics(Metrics delegate, int numberOfThreads, int queueSize) {
-        _numberOfThreads = numberOfThreads;
-        _queueSize = queueSize;
-        _delegate = delegate;
-    }
-
-    public void startPeriodicDataRecording() {
         ThreadFactoryBuilder threadFactoryBuilder = new ThreadFactoryBuilder();
         threadFactoryBuilder.setDaemon(true);
         threadFactoryBuilder.setNameFormat("split-fireAndForgetMetrics-%d");
@@ -47,16 +33,23 @@ public class FireAndForgetMetrics implements Metrics, Closeable {
             }
         });
 
-        ExecutorService executorService = new ThreadPoolExecutor(_numberOfThreads,
-                _numberOfThreads,
+        final ExecutorService executorService = new ThreadPoolExecutor(numberOfThreads,
+                numberOfThreads,
                 0L,
                 TimeUnit.MILLISECONDS,
-                new ArrayBlockingQueue<Runnable>(_queueSize),
+                new ArrayBlockingQueue<Runnable>(queueSize),
                 threadFactoryBuilder.build(),
                 new ThreadPoolExecutor.DiscardPolicy());
 
+
+        return new FireAndForgetMetrics(delegate, executorService);
+    }
+
+    private FireAndForgetMetrics(Metrics delegate, ExecutorService executorService) {
+        _delegate = delegate;
         _executorService = executorService;
     }
+
 
     @Override
     public void count(String counter, long delta) {
