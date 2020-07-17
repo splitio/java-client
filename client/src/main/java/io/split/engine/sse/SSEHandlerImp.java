@@ -8,6 +8,8 @@ import io.split.engine.sse.workers.Worker;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import static com.google.common.base.Preconditions.checkNotNull;
+
 public class SSEHandlerImp implements SSEHandler, NotificationsListener {
     private static final Logger _log = LoggerFactory.getLogger(SSEHandler.class);
 
@@ -22,11 +24,11 @@ public class SSEHandlerImp implements SSEHandler, NotificationsListener {
                          SplitsWorker splitsWorker,
                          NotificationProcessor notificationProcessor,
                          Worker<SegmentQueueDto> segmentWorker) {
-        _eventSourceClient = eventSourceClient;
-        _streamingServiceUrl = streamingServiceUrl;
-        _splitsWorker = splitsWorker;
-        _notificationProcessor = notificationProcessor;
-        _segmentWorker = segmentWorker;
+        _eventSourceClient = checkNotNull(eventSourceClient);
+        _streamingServiceUrl = checkNotNull(streamingServiceUrl);
+        _splitsWorker = checkNotNull(splitsWorker);
+        _notificationProcessor = checkNotNull(notificationProcessor);
+        _segmentWorker = checkNotNull(segmentWorker);
 
         _eventSourceClient.registerNotificationListener(this);
     }

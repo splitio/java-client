@@ -17,6 +17,8 @@ import org.slf4j.LoggerFactory;
 import java.net.URI;
 import java.nio.charset.StandardCharsets;
 
+import static com.google.common.base.Preconditions.checkNotNull;
+
 public class AuthApiClientImp implements AuthApiClient {
     private static final Logger _log = LoggerFactory.getLogger(AuthApiClient.class);
 
@@ -27,9 +29,9 @@ public class AuthApiClientImp implements AuthApiClient {
     public AuthApiClientImp(String url,
                             Gson gson,
                             CloseableHttpClient httpClient) {
-        _httpClient = httpClient;
-        _target = url;
-        _gson = gson;
+        _httpClient = checkNotNull(httpClient);
+        _target = checkNotNull(url);
+        _gson = checkNotNull(gson);
     }
 
     @Override
