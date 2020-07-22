@@ -1,9 +1,28 @@
 package io.split.engine.common;
 
+import com.google.gson.Gson;
+import io.split.client.SplitClientConfig;
+import io.split.engine.experiments.RefreshableSplitFetcherProvider;
+import io.split.engine.segments.RefreshableSegmentFetcher;
+import io.split.engine.sse.AuthApiClient;
+import io.split.engine.sse.AuthApiClientImp;
+import io.split.engine.sse.EventSourceClient;
+import io.split.engine.sse.EventSourceClientImp;
+import io.split.engine.sse.NotificationManagerKeeper;
+import io.split.engine.sse.NotificationManagerKeeperImp;
+import io.split.engine.sse.NotificationParser;
+import io.split.engine.sse.NotificationParserImp;
+import io.split.engine.sse.NotificationProcessor;
+import io.split.engine.sse.NotificationProcessorImp;
 import io.split.engine.sse.SSEHandler;
+import io.split.engine.sse.SSEHandlerImp;
 import io.split.engine.sse.dtos.ErrorNotification;
-import io.split.engine.sse.listeners.FeedbackLoopListener;
-import io.split.engine.sse.listeners.NotificationKeeperListener;
+import io.split.engine.sse.dtos.SegmentQueueDto;
+import io.split.engine.sse.workers.SegmentsWorkerImp;
+import io.split.engine.sse.workers.SplitsWorker;
+import io.split.engine.sse.workers.SplitsWorkerImp;
+import io.split.engine.sse.workers.Worker;
+import org.apache.http.impl.client.CloseableHttpClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -27,6 +46,24 @@ public class SyncManagerImp implements SyncManager {
         _synchronizer = checkNotNull(synchronizer);
         _pushManager = checkNotNull(pushManager);
         _sseHandler = checkNotNull(sseHandler);
+    }
+
+    public static SyncManagerImp create(RefreshableSplitFetcherProvider splitFetcherProvider, RefreshableSegmentFetcher segmentFetcher, SplitClientConfig config, CloseableHttpClient httpclient) {
+        Gson gson = new Gson();
+        NotificationParser notificationParser = new NotificationParserImp(gson);
+        SplitsWorker splitsWorker = new SplitsWorkerImp(splitFetcherProvider.getFetcher());
+        Worker<SegmentQueueDto> segmentWorker = new SegmentsWorkerImp(segmentFetcher);
+        NotificationManagerKeeper notificationManagerKeeper = new NotificationManagerKeeperImp();
+        NotificationProcessor notificationProcessor = new NotificationProcessorImp(splitsWorker, segmentWorker, notificationManagerKeeper);
+        EventSourceClient eventSourceClient = new EventSourceClientImp(notificationParser);
+        SSEHandler sseHandler = new SSEHandlerImp(eventSourceClient, config.streamingServiceURL(), splitsWorker, notificationProcessor, segmentWorker);
+        AuthApiClient authApiClient = new AuthApiClientImp(config.authServiceURL(), gson, httpclient);
+        PushManager pushManager = new PushManagerImp(authApiClient, sseHandler, config.authRetryBackoffBase());
+        Synchronizer synchronizer = new SynchronizerImp(splitFetcherProvider, segmentFetcher);
+        SyncManagerImp syncManager = new SyncManagerImp(config.streamingEnabled(), synchronizer, pushManager, sseHandler);
+        eventSourceClient.registerFeedbackListener(syncManager);
+
+        return syncManager;
     }
 
     @Override
