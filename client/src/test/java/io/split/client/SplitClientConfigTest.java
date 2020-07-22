@@ -118,11 +118,39 @@ public class SplitClientConfigTest {
     }
 
     @Test
-    public void testVesion() {
+    public void testVersion() {
         SplitClientConfig config = SplitClientConfig.builder()
                 .build();
 
         Assert.assertThat(config.splitSdkVersion, Matchers.not(Matchers.equalTo("undefined")));
         Assert.assertThat(config.splitSdkVersion, Matchers.startsWith("java-"));
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void authRetryBackoffBaseLessThanAllowed() {
+        SplitClientConfig cfg = SplitClientConfig.builder()
+                .authRetryBackoffBase(0)
+                .build();
+    }
+
+    @Test
+    public void authRetryBackoffBaseAllowed() {
+        SplitClientConfig cfg = SplitClientConfig.builder()
+                .authRetryBackoffBase(2)
+                .build();
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void streamingReconnectBackoffBaseLessThanAllowed() {
+        SplitClientConfig cfg = SplitClientConfig.builder()
+                .streamingReconnectBackoffBase(0)
+                .build();
+    }
+
+    @Test
+    public void streamingReconnectBackoffBaseAllowed() {
+        SplitClientConfig cfg = SplitClientConfig.builder()
+                .streamingReconnectBackoffBase(1)
+                .build();
     }
 }

@@ -2,6 +2,7 @@ package io.split.client;
 
 import com.google.common.collect.ConcurrentHashMultiset;
 import com.google.common.collect.Multiset;
+import com.google.gson.Gson;
 import io.split.client.impressions.AsynchronousImpressionListener;
 import io.split.client.impressions.ImpressionListener;
 import io.split.client.impressions.ImpressionsManager;
@@ -12,11 +13,34 @@ import io.split.client.metrics.CachedMetrics;
 import io.split.client.metrics.FireAndForgetMetrics;
 import io.split.client.metrics.HttpMetrics;
 import io.split.engine.SDKReadinessGates;
+import io.split.engine.common.PushManager;
+import io.split.engine.common.PushManagerImp;
+import io.split.engine.common.Synchronizer;
+import io.split.engine.common.SynchronizerImp;
+import io.split.engine.common.SyncManager;
+import io.split.engine.common.SyncManagerImp;
 import io.split.engine.experiments.RefreshableSplitFetcherProvider;
 import io.split.engine.experiments.SplitChangeFetcher;
 import io.split.engine.experiments.SplitParser;
 import io.split.engine.segments.RefreshableSegmentFetcher;
 import io.split.engine.segments.SegmentChangeFetcher;
+import io.split.engine.sse.AuthApiClient;
+import io.split.engine.sse.AuthApiClientImp;
+import io.split.engine.sse.EventSourceClient;
+import io.split.engine.sse.EventSourceClientImp;
+import io.split.engine.sse.NotificationManagerKeeper;
+import io.split.engine.sse.NotificationManagerKeeperImp;
+import io.split.engine.sse.NotificationParser;
+import io.split.engine.sse.NotificationParserImp;
+import io.split.engine.sse.NotificationProcessor;
+import io.split.engine.sse.NotificationProcessorImp;
+import io.split.engine.sse.SSEHandler;
+import io.split.engine.sse.SSEHandlerImp;
+import io.split.engine.sse.dtos.SegmentQueueDto;
+import io.split.engine.sse.workers.SegmentsWorkerImp;
+import io.split.engine.sse.workers.SplitsWorker;
+import io.split.engine.sse.workers.SplitsWorkerImp;
+import io.split.engine.sse.workers.Worker;
 import io.split.integrations.IntegrationsConfig;
 import org.apache.http.auth.AuthScope;
 import org.apache.http.auth.Credentials;
@@ -209,6 +233,10 @@ public class SplitFactoryImpl implements SplitFactory {
 
         final EventClient eventClient = EventClientImpl.create(httpclient, eventsRootTarget, config.eventsQueueSize(), config.eventFlushIntervalInMillis(), config.waitBeforeShutdown());
 
+        // SyncManager
+        final SyncManager syncManager = buildSyncManager(splitFetcherProvider, segmentFetcher, config, httpclient);
+        syncManager.start();
+
         destroyer = new Runnable() {
             public void run() {
                 _log.info("Shutdown called for split");
@@ -227,6 +255,8 @@ public class SplitFactoryImpl implements SplitFactory {
                     _log.info("Successful shutdown of httpclient");
                     eventClient.close();
                     _log.info("Successful shutdown of httpclient");
+                    syncManager.shutdown();
+                    _log.info("Successful shutdown of syncManager");
                 } catch (IOException e) {
                     _log.error("We could not shutdown split", e);
                 }
@@ -279,5 +309,23 @@ public class SplitFactoryImpl implements SplitFactory {
     @Override
     public boolean isDestroyed() {
         return isTerminated;
+    }
+
+    private SyncManager buildSyncManager(RefreshableSplitFetcherProvider splitFetcherProvider, RefreshableSegmentFetcher segmentFetcher, SplitClientConfig config, CloseableHttpClient httpclient) {
+        Gson gson = new Gson();
+        NotificationParser notificationParser = new NotificationParserImp(gson);
+        SplitsWorker splitsWorker = new SplitsWorkerImp(splitFetcherProvider.getFetcher());
+        Worker<SegmentQueueDto> segmentWorker = new SegmentsWorkerImp(segmentFetcher);
+        NotificationManagerKeeper notificationManagerKeeper = new NotificationManagerKeeperImp();
+        NotificationProcessor notificationProcessor = new NotificationProcessorImp(splitsWorker, segmentWorker, notificationManagerKeeper);
+        EventSourceClient eventSourceClient = new EventSourceClientImp(notificationParser);
+        SSEHandler sseHandler = new SSEHandlerImp(eventSourceClient, config.streamingServiceURL(), splitsWorker, notificationProcessor, segmentWorker);
+        AuthApiClient authApiClient = new AuthApiClientImp(config.authServiceURL(), gson, httpclient);
+        PushManager pushManager = new PushManagerImp(authApiClient, sseHandler, config.authRetryBackoffBase());
+        Synchronizer synchronizer = new SynchronizerImp(splitFetcherProvider, segmentFetcher);
+        SyncManager syncManager = new SyncManagerImp(config.streamingEnabled(), synchronizer, pushManager, sseHandler);
+        eventSourceClient.registerFeedbackListener(syncManager);
+
+        return syncManager;
     }
 }
