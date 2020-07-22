@@ -11,7 +11,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
-public class SyncManagerImp implements SyncManager, NotificationKeeperListener, FeedbackLoopListener {
+public class SyncManagerImp implements SyncManager {
     private static final Logger _log = LoggerFactory.getLogger(SyncManager.class);
 
     private final AtomicBoolean _streamingEnabledConfig;
@@ -84,10 +84,12 @@ public class SyncManagerImp implements SyncManager, NotificationKeeperListener, 
     public void onConnected() {
         _synchronizer.stopPeriodicFetching();
         _synchronizer.syncAll();
+        _sseHandler.startWorkers();
     }
 
     @Override
     public void onDisconnect() {
         _synchronizer.startPeriodicFetching();
+        _sseHandler.stopWorkers();
     }
 }
