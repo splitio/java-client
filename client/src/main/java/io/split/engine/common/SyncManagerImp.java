@@ -37,12 +37,14 @@ public class SyncManagerImp implements SyncManager {
     private final Synchronizer _synchronizer;
     private final PushManager _pushManager;
     private final SSEHandler _sseHandler;
+    private final AtomicBoolean _shutdown;
 
     public SyncManagerImp(boolean streamingEnabledConfig,
                           Synchronizer synchronizer,
                           PushManager pushManager,
                           SSEHandler sseHandler) {
         _streamingEnabledConfig = new AtomicBoolean(streamingEnabledConfig);
+        _shutdown = new AtomicBoolean(false);
         _synchronizer = checkNotNull(synchronizer);
         _pushManager = checkNotNull(pushManager);
         _sseHandler = checkNotNull(sseHandler);
@@ -77,7 +79,9 @@ public class SyncManagerImp implements SyncManager {
 
     @Override
     public void shutdown() {
+        _shutdown.set(true);
         _synchronizer.stopPeriodicFetching();
+        _sseHandler.stopWorkers();
         _pushManager.stop();
     }
 
@@ -119,6 +123,7 @@ public class SyncManagerImp implements SyncManager {
 
     @Override
     public void onConnected() {
+        _log.debug("Event source client connected ...");
         _synchronizer.stopPeriodicFetching();
         _synchronizer.syncAll();
         _sseHandler.startWorkers();
@@ -126,6 +131,12 @@ public class SyncManagerImp implements SyncManager {
 
     @Override
     public void onDisconnect() {
+        _log.debug("Event source client disconnected ...");
+
+        if (_shutdown.get()) {
+            return;
+        }
+
         _synchronizer.startPeriodicFetching();
         _sseHandler.stopWorkers();
     }

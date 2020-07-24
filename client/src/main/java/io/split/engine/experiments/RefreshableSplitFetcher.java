@@ -139,6 +139,7 @@ public class RefreshableSplitFetcher implements SplitFetcher, Runnable {
 
     @Override
     public void run() {
+        _log.debug("Fetch splits starting ...");
         long start = _changeNumber.get();
         try {
             runWithoutExceptionHandling();

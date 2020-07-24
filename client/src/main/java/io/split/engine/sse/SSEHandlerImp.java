@@ -5,6 +5,7 @@ import io.split.engine.sse.dtos.SegmentQueueDto;
 import io.split.engine.sse.listeners.NotificationsListener;
 import io.split.engine.sse.workers.SplitsWorker;
 import io.split.engine.sse.workers.Worker;
+import org.apache.http.client.utils.URIBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -38,9 +39,12 @@ public class SSEHandlerImp implements SSEHandler, NotificationsListener {
         try {
             _log.debug("SSE Handel starting ...");
 
-            String url = String.format("%s?channels=%s&v=1.1&accessToken=%s", _streamingServiceUrl, channels, token);
+            URIBuilder uri = new URIBuilder(_streamingServiceUrl);
+            uri.addParameter("channels", channels);
+            uri.addParameter("v", "1.1");
+            uri.addParameter("accessToken", token);
 
-            _eventSourceClient.start(url);
+            _eventSourceClient.start(uri.toString());
         }catch (Exception ex) {
             _log.error("Exception in SSE Handler start: %s", ex.getMessage());
         }

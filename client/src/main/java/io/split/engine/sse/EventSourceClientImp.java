@@ -14,6 +14,7 @@ import javax.ws.rs.sse.InboundSseEvent;
 import javax.ws.rs.sse.SseEventSource;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
@@ -28,9 +29,13 @@ public class EventSourceClientImp implements EventSourceClient {
 
     public EventSourceClientImp(NotificationParser notificationParser) {
         _notificationParser = checkNotNull(notificationParser);
-        _client = ClientBuilder.newBuilder().build();
         _feedbackListeners = new ArrayList<>();
         _notificationsListeners = new ArrayList<>();
+
+        _client = ClientBuilder
+                .newBuilder()
+                .readTimeout(70, TimeUnit.SECONDS)
+                .build();
     }
 
     @Override
@@ -40,8 +45,9 @@ public class EventSourceClientImp implements EventSourceClient {
 
             _sseEventSource = SseEventSource
                     .target(_client.target(url))
+                    .reconnectingEvery(1, TimeUnit.SECONDS)
                     .build();
-            _sseEventSource.register(this::onMessage);
+            _sseEventSource.register(this::onMessage, this::onError);
             _sseEventSource.open();
 
             _log.info(String.format("Connected and reading from: %s", url));
@@ -55,6 +61,11 @@ public class EventSourceClientImp implements EventSourceClient {
 
     @Override
     public void stop() {
+        if (_sseEventSource == null) {
+            notifyDisconnect();
+            return;
+        }
+
         if (!_sseEventSource.isOpen()) {
             _log.error("Event Source Client is closed.");
             return;
@@ -114,5 +125,10 @@ public class EventSourceClientImp implements EventSourceClient {
         } catch (Exception e) {
             _log.error(String.format("Error onMessage: %s", e.getMessage()));
         }
+    }
+
+    private void onError(Throwable error) {
+        _log.error(String.format("EventSourceClient onError: ", error.getMessage()));
+        notifyDisconnect();
     }
 }

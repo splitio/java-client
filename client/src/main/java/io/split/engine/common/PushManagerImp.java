@@ -20,7 +20,7 @@ public class PushManagerImp implements PushManager, Runnable {
     private final AuthApiClient _authApiClient;
     private final SSEHandler _sseHandler;
     private final int _authRetryBackOffBase;
-    
+
     private ScheduledExecutorService _scheduledExecutorService;
 
     public PushManagerImp(AuthApiClient authApiClient,
