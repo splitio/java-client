@@ -107,7 +107,7 @@ public class EventSourceClientImp implements EventSourceClient {
             String payload = event.readData();
 
             if (payload.length() > 0) {
-                _log.debug(String.format("Payload received: ", payload));
+                _log.debug(String.format("Payload received: %s", payload));
                 switch (type) {
                     case "message":
                         IncomingNotification incomingNotification = _notificationParser.parseMessage(payload);
