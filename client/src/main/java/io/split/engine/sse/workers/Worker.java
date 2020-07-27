@@ -22,7 +22,7 @@ public abstract class Worker<T> implements Runnable {
 
     public void start() {
         if (_running.get()) {
-            _log.error(String.format("%s Worker already running.", _workerName));
+            _log.warn(String.format("%s Worker already running.", _workerName));
             return;
         }
 
@@ -35,7 +35,7 @@ public abstract class Worker<T> implements Runnable {
 
     public void stop() {
         if (!_running.get()) {
-            _log.error(String.format("%s Worker not running.", _workerName));
+            _log.warn(String.format("%s Worker not running.", _workerName));
             return;
         }
 
