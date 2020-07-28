@@ -1,8 +1,8 @@
 package io.split.engine.sse.dtos;
 
-import com.google.gson.Gson;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
+import io.split.client.utils.Json;
 
 import java.util.ArrayList;
 import java.util.Base64;
@@ -16,17 +16,15 @@ public class RawAuthResponse {
 
     private final boolean pushEnabled;
     private final String token;
-    private final Gson gson;
     private final Jwt jwt;
 
-    public RawAuthResponse(boolean pushEnabled, String token, Gson gson) {
+    public RawAuthResponse(boolean pushEnabled, String token) {
         this.pushEnabled = pushEnabled;
         this.token = token;
-        this.gson = gson;
 
         if (token != null && token != "") {
             String tokenDecoded = decodeJwt();
-            this.jwt = gson.fromJson(tokenDecoded, Jwt.class);
+            this.jwt = Json.fromJson(tokenDecoded, Jwt.class);
         } else {
             this.jwt = null;
         }
@@ -36,9 +34,9 @@ public class RawAuthResponse {
 
     public String getToken() { return token; }
 
-    public String getChannels(Gson gson) {
+    public String getChannels() {
         List<String> channelsList = new ArrayList<>();
-        JsonObject jsonObject = gson.fromJson(jwt.getCapability(), JsonObject.class);
+        JsonObject jsonObject = Json.fromJson(jwt.getCapability(), JsonObject.class);
         Set<Map.Entry<String, JsonElement>> entries = jsonObject.entrySet();
         entries.forEach(e -> channelsList.add(e.getKey()));
 

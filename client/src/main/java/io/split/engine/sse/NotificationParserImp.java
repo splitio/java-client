@@ -1,25 +1,17 @@
 package io.split.engine.sse;
 
-import com.google.gson.Gson;
+import io.split.client.utils.Json;
 import io.split.engine.sse.dtos.*;
 import io.split.engine.sse.exceptions.EventParsingException;
-
-import static com.google.common.base.Preconditions.checkNotNull;
 
 public class NotificationParserImp implements NotificationParser {
     private static final String OCCUPANCY_PREFIX = "[?occupancy=metrics.publishers]";
 
-    private final Gson _gson;
-
-    public NotificationParserImp(Gson gson) {
-        _gson = checkNotNull(gson);
-    }
-
     @Override
     public IncomingNotification parseMessage(String payload) throws EventParsingException {
         try {
-            RawMessageNotification rawMessageNotification = _gson.fromJson(payload, RawMessageNotification.class);
-            GenericNotificationData genericNotificationData = _gson.fromJson(rawMessageNotification.getData(), GenericNotificationData.class);
+            RawMessageNotification rawMessageNotification = Json.fromJson(payload, RawMessageNotification.class);
+            GenericNotificationData genericNotificationData = Json.fromJson(rawMessageNotification.getData(), GenericNotificationData.class);
             genericNotificationData.setChannel(rawMessageNotification.getChannel());
 
             if (rawMessageNotification.getChannel().contains(OCCUPANCY_PREFIX)) {
@@ -35,7 +27,7 @@ public class NotificationParserImp implements NotificationParser {
     @Override
     public ErrorNotification parseError(String payload) throws EventParsingException {
         try {
-            ErrorNotification messageError = _gson.fromJson(payload, ErrorNotification.class);
+            ErrorNotification messageError = Json.fromJson(payload, ErrorNotification.class);
 
             if (messageError.getMessage() == null || messageError.getStatusCode() == null) {
                 throw new Exception("Wrong notification format.");
