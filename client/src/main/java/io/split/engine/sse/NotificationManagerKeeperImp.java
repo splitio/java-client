@@ -1,5 +1,6 @@
 package io.split.engine.sse;
 
+import com.google.common.annotations.VisibleForTesting;
 import io.split.engine.sse.dtos.ControlNotification;
 import io.split.engine.sse.dtos.OccupancyNotification;
 import io.split.engine.sse.listeners.NotificationKeeperListener;
@@ -16,9 +17,14 @@ public class NotificationManagerKeeperImp implements NotificationManagerKeeper {
     private final AtomicBoolean _streamingAvailable;
     private final List<NotificationKeeperListener> _notificationKeeperListeners;
 
-    public NotificationManagerKeeperImp() {
+    @VisibleForTesting
+    /* package private */ NotificationManagerKeeperImp() {
         _streamingAvailable = new AtomicBoolean(true);
         _notificationKeeperListeners = new ArrayList<>();
+    }
+
+    public static NotificationManagerKeeperImp build() {
+        return new NotificationManagerKeeperImp();
     }
 
     @Override

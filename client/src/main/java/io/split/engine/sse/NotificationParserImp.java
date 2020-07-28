@@ -1,5 +1,6 @@
 package io.split.engine.sse;
 
+import com.google.common.annotations.VisibleForTesting;
 import io.split.client.utils.Json;
 import io.split.engine.sse.dtos.*;
 import io.split.engine.sse.exceptions.EventParsingException;

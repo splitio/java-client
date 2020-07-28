@@ -1,5 +1,6 @@
 package io.split.engine.sse;
 
+import com.google.common.annotations.VisibleForTesting;
 import io.split.engine.sse.dtos.ErrorNotification;
 import io.split.engine.sse.dtos.IncomingNotification;
 import io.split.engine.sse.exceptions.EventParsingException;
@@ -26,11 +27,16 @@ public class EventSourceClientImp implements EventSourceClient {
 
     private SseEventSource _sseEventSource;
 
-    public EventSourceClientImp(NotificationParser notificationParser) {
+    @VisibleForTesting
+    /* package private */ EventSourceClientImp(NotificationParser notificationParser) {
         _notificationParser = checkNotNull(notificationParser);
         _client = ClientBuilder.newBuilder().build();
         _feedbackListeners = new ArrayList<>();
         _notificationsListeners = new ArrayList<>();
+    }
+
+    public static EventSourceClientImp build() {
+        return new EventSourceClientImp(new NotificationParserImp());
     }
 
     @Override

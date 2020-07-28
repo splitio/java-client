@@ -1,5 +1,6 @@
 package io.split.engine.sse;
 
+import com.google.common.annotations.VisibleForTesting;
 import io.split.engine.sse.dtos.IncomingNotification;
 import io.split.engine.sse.dtos.StatusNotification;
 import io.split.engine.sse.dtos.SegmentQueueDto;
@@ -13,12 +14,17 @@ public class NotificationProcessorImp implements NotificationProcessor {
     private final Worker<SegmentQueueDto> _segmentWorker;
     private final NotificationManagerKeeper _notificationManagerKeeper;
 
-    public NotificationProcessorImp(SplitsWorker splitsWorker,
-                                    Worker<SegmentQueueDto> segmentWorker,
-                                    NotificationManagerKeeper notificationManagerKeeper) {
+    @VisibleForTesting
+    /* package private */ NotificationProcessorImp(SplitsWorker splitsWorker,
+                                                   Worker<SegmentQueueDto> segmentWorker,
+                                                   NotificationManagerKeeper notificationManagerKeeper) {
         _splitsWorker = checkNotNull(splitsWorker);
         _segmentWorker = checkNotNull(segmentWorker);
         _notificationManagerKeeper = checkNotNull(notificationManagerKeeper);
+    }
+
+    public static NotificationProcessorImp build(SplitsWorker splitsWorker, Worker<SegmentQueueDto> segmentWorker) {
+        return new NotificationProcessorImp(splitsWorker, segmentWorker, NotificationManagerKeeperImp.build());
     }
 
     @Override

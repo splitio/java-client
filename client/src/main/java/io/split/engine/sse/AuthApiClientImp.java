@@ -1,5 +1,6 @@
 package io.split.engine.sse;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.gson.JsonObject;
 import io.split.client.utils.Json;
 import io.split.engine.sse.dtos.AuthenticationResponse;
@@ -24,10 +25,15 @@ public class AuthApiClientImp implements AuthApiClient {
     private final CloseableHttpClient _httpClient;
     private final String _target;
 
-    public AuthApiClientImp(String url,
-                            CloseableHttpClient httpClient) {
+    @VisibleForTesting
+    /* package private */ AuthApiClientImp(String url,
+                                           CloseableHttpClient httpClient) {
         _httpClient = checkNotNull(httpClient);
         _target = checkNotNull(url);
+    }
+
+    public static AuthApiClientImp build(String url, CloseableHttpClient httpClient) {
+        return new AuthApiClientImp(url, httpClient);
     }
 
     @Override

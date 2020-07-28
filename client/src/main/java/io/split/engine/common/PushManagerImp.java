@@ -1,9 +1,15 @@
 package io.split.engine.common;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
+import io.split.engine.experiments.RefreshableSplitFetcherProvider;
+import io.split.engine.segments.RefreshableSegmentFetcher;
 import io.split.engine.sse.AuthApiClient;
+import io.split.engine.sse.AuthApiClientImp;
 import io.split.engine.sse.SSEHandler;
+import io.split.engine.sse.SSEHandlerImp;
 import io.split.engine.sse.dtos.AuthenticationResponse;
+import org.apache.http.impl.client.CloseableHttpClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -23,12 +29,17 @@ public class PushManagerImp implements PushManager, Runnable {
     
     private ScheduledExecutorService _scheduledExecutorService;
 
-    public PushManagerImp(AuthApiClient authApiClient,
-                          SSEHandler sseHandler,
-                          int authRetryBackOffBase) {
+    @VisibleForTesting
+    /* package private */ PushManagerImp(AuthApiClient authApiClient,
+                                         SSEHandler sseHandler,
+                                         int authRetryBackOffBase) {
         _authApiClient = checkNotNull(authApiClient);
         _sseHandler = checkNotNull(sseHandler);
         _authRetryBackOffBase = checkNotNull(authRetryBackOffBase);
+    }
+
+    public static PushManagerImp build(String authUrl, CloseableHttpClient httpClient, String streamingServiceUrl, RefreshableSplitFetcherProvider splitFetcherProvider, RefreshableSegmentFetcher segmentFetcher, int authRetryBackOffBase) {
+        return new PushManagerImp(AuthApiClientImp.build(authUrl, httpClient), SSEHandlerImp.build(streamingServiceUrl, splitFetcherProvider, segmentFetcher), authRetryBackOffBase);
     }
 
     @Override

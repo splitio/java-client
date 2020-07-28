@@ -217,7 +217,7 @@ public class SplitFactoryImpl implements SplitFactory {
         final EventClient eventClient = EventClientImpl.create(httpclient, eventsRootTarget, config.eventsQueueSize(), config.eventFlushIntervalInMillis(), config.waitBeforeShutdown());
 
         // SyncManager
-        final SyncManager syncManager = buildSyncManager(splitFetcherProvider, segmentFetcher, config, httpclient);
+        final SyncManager syncManager = SyncManagerImp.build(config.streamingEnabled(), splitFetcherProvider, segmentFetcher, config.authServiceURL(), httpclient, config.streamingServiceURL(), config.authRetryBackoffBase());
         syncManager.start();
 
         destroyer = new Runnable() {
@@ -292,22 +292,5 @@ public class SplitFactoryImpl implements SplitFactory {
     @Override
     public boolean isDestroyed() {
         return isTerminated;
-    }
-
-    private SyncManager buildSyncManager(RefreshableSplitFetcherProvider splitFetcherProvider, RefreshableSegmentFetcher segmentFetcher, SplitClientConfig config, CloseableHttpClient httpclient) {
-        NotificationParser notificationParser = new NotificationParserImp();
-        SplitsWorker splitsWorker = new SplitsWorkerImp(splitFetcherProvider.getFetcher());
-        Worker<SegmentQueueDto> segmentWorker = new SegmentsWorkerImp(segmentFetcher);
-        NotificationManagerKeeper notificationManagerKeeper = new NotificationManagerKeeperImp();
-        NotificationProcessor notificationProcessor = new NotificationProcessorImp(splitsWorker, segmentWorker, notificationManagerKeeper);
-        EventSourceClient eventSourceClient = new EventSourceClientImp(notificationParser);
-        SSEHandler sseHandler = new SSEHandlerImp(eventSourceClient, config.streamingServiceURL(), splitsWorker, notificationProcessor, segmentWorker);
-        AuthApiClient authApiClient = new AuthApiClientImp(config.authServiceURL(), httpclient);
-        PushManager pushManager = new PushManagerImp(authApiClient, sseHandler, config.authRetryBackoffBase());
-        Synchronizer synchronizer = new SynchronizerImp(splitFetcherProvider, segmentFetcher);
-        SyncManager syncManager = new SyncManagerImp(config.streamingEnabled(), synchronizer, pushManager, sseHandler);
-        eventSourceClient.registerFeedbackListener(syncManager);
-
-        return syncManager;
     }
 }
