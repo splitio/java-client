@@ -15,6 +15,8 @@ import javax.ws.rs.sse.SseEventSource;
 import java.util.ArrayList;
 import java.util.List;
 
+import static com.google.common.base.Preconditions.checkNotNull;
+
 public class EventSourceClientImp implements EventSourceClient {
     private static final Logger _log = LoggerFactory.getLogger(EventSourceClient.class);
     private final Client _client;
@@ -25,7 +27,7 @@ public class EventSourceClientImp implements EventSourceClient {
     private SseEventSource _sseEventSource;
 
     public EventSourceClientImp(NotificationParser notificationParser) {
-        _notificationParser = notificationParser;
+        _notificationParser = checkNotNull(notificationParser);
         _client = ClientBuilder.newBuilder().build();
         _feedbackListeners = new ArrayList<>();
         _notificationsListeners = new ArrayList<>();

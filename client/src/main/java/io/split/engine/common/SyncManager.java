@@ -1,6 +1,9 @@
 package io.split.engine.common;
 
-public interface SyncManager {
+import io.split.engine.sse.listeners.FeedbackLoopListener;
+import io.split.engine.sse.listeners.NotificationKeeperListener;
+
+public interface SyncManager extends NotificationKeeperListener, FeedbackLoopListener {
     void start();
     void shutdown();
 }
