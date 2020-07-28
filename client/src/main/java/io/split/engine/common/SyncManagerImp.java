@@ -1,9 +1,12 @@
 package io.split.engine.common;
 
+import com.google.common.annotations.VisibleForTesting;
+import io.split.engine.experiments.RefreshableSplitFetcherProvider;
+import io.split.engine.segments.RefreshableSegmentFetcher;
 import io.split.engine.sse.SSEHandler;
+import io.split.engine.sse.SSEHandlerImp;
 import io.split.engine.sse.dtos.ErrorNotification;
-import io.split.engine.sse.listeners.FeedbackLoopListener;
-import io.split.engine.sse.listeners.NotificationKeeperListener;
+import org.apache.http.impl.client.CloseableHttpClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -18,15 +21,35 @@ public class SyncManagerImp implements SyncManager {
     private final Synchronizer _synchronizer;
     private final PushManager _pushManager;
     private final SSEHandler _sseHandler;
+    private final AtomicBoolean _shutdown;
 
-    public SyncManagerImp(boolean streamingEnabledConfig,
-                          Synchronizer synchronizer,
-                          PushManager pushManager,
-                          SSEHandler sseHandler) {
+    @VisibleForTesting
+    /* package private */ SyncManagerImp(boolean streamingEnabledConfig,
+                                         Synchronizer synchronizer,
+                                         PushManager pushManager,
+                                         SSEHandler sseHandler) {
         _streamingEnabledConfig = new AtomicBoolean(streamingEnabledConfig);
         _synchronizer = checkNotNull(synchronizer);
         _pushManager = checkNotNull(pushManager);
         _sseHandler = checkNotNull(sseHandler);
+        _shutdown = new AtomicBoolean(false);
+
+        _sseHandler.registerFeedbackListener(this);
+    }
+
+    public static SyncManagerImp build(boolean streamingEnabledConfig,
+                                        RefreshableSplitFetcherProvider refreshableSplitFetcherProvider,
+                                        RefreshableSegmentFetcher segmentFetcher,
+                                        String authUrl,
+                                        CloseableHttpClient httpClient,
+                                        String streamingServiceUrl,
+                                        int authRetryBackOffBase) {
+        SSEHandler sseHandler = SSEHandlerImp.build(streamingServiceUrl, refreshableSplitFetcherProvider, segmentFetcher);
+
+        return new SyncManagerImp(streamingEnabledConfig,
+                new SynchronizerImp(refreshableSplitFetcherProvider, segmentFetcher),
+                PushManagerImp.build(authUrl, httpClient, sseHandler, authRetryBackOffBase),
+                sseHandler);
     }
 
     @Override
@@ -40,7 +63,9 @@ public class SyncManagerImp implements SyncManager {
 
     @Override
     public void shutdown() {
+        _shutdown.set(true);
         _synchronizer.stopPeriodicFetching();
+        _sseHandler.stopWorkers();
         _pushManager.stop();
     }
 
@@ -82,6 +107,7 @@ public class SyncManagerImp implements SyncManager {
 
     @Override
     public void onConnected() {
+        _log.debug("Event source client connected ...");
         _synchronizer.stopPeriodicFetching();
         _synchronizer.syncAll();
         _sseHandler.startWorkers();
@@ -89,6 +115,11 @@ public class SyncManagerImp implements SyncManager {
 
     @Override
     public void onDisconnect() {
+        _log.debug("Event source client disconnected ...");
+
+        if (_shutdown.get()) {
+            return;
+        }
         _synchronizer.startPeriodicFetching();
         _sseHandler.stopWorkers();
     }

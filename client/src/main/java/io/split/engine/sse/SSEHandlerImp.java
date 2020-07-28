@@ -1,9 +1,15 @@
 package io.split.engine.sse;
 
+import com.google.common.annotations.VisibleForTesting;
+import io.split.engine.experiments.RefreshableSplitFetcherProvider;
+import io.split.engine.segments.RefreshableSegmentFetcher;
 import io.split.engine.sse.dtos.IncomingNotification;
 import io.split.engine.sse.dtos.SegmentQueueDto;
+import io.split.engine.sse.listeners.FeedbackLoopListener;
 import io.split.engine.sse.listeners.NotificationsListener;
+import io.split.engine.sse.workers.SegmentsWorkerImp;
 import io.split.engine.sse.workers.SplitsWorker;
+import io.split.engine.sse.workers.SplitsWorkerImp;
 import io.split.engine.sse.workers.Worker;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -19,11 +25,12 @@ public class SSEHandlerImp implements SSEHandler, NotificationsListener {
     private final NotificationProcessor _notificationProcessor;
     private final String _streamingServiceUrl;
 
-    public SSEHandlerImp(EventSourceClient eventSourceClient,
-                         String streamingServiceUrl,
-                         SplitsWorker splitsWorker,
-                         NotificationProcessor notificationProcessor,
-                         Worker<SegmentQueueDto> segmentWorker) {
+    @VisibleForTesting
+    /* package private */ SSEHandlerImp(EventSourceClient eventSourceClient,
+                                        String streamingServiceUrl,
+                                        SplitsWorker splitsWorker,
+                                        NotificationProcessor notificationProcessor,
+                                        Worker<SegmentQueueDto> segmentWorker) {
         _eventSourceClient = checkNotNull(eventSourceClient);
         _streamingServiceUrl = checkNotNull(streamingServiceUrl);
         _splitsWorker = checkNotNull(splitsWorker);
@@ -31,6 +38,14 @@ public class SSEHandlerImp implements SSEHandler, NotificationsListener {
         _segmentWorker = checkNotNull(segmentWorker);
 
         _eventSourceClient.registerNotificationListener(this);
+    }
+
+    public static SSEHandlerImp build(String streamingServiceUrl, RefreshableSplitFetcherProvider splitFetcherProvider, RefreshableSegmentFetcher segmentFetcher) {
+        SplitsWorker splitsWorker = SplitsWorkerImp.build(splitFetcherProvider.getFetcher());
+        Worker<SegmentQueueDto> segmentWorker = SegmentsWorkerImp.build(segmentFetcher);
+        NotificationProcessor notificationProcessor = NotificationProcessorImp.build(splitsWorker, segmentWorker);
+
+        return new SSEHandlerImp(EventSourceClientImp.build(), streamingServiceUrl, splitsWorker, notificationProcessor, segmentWorker);
     }
 
     @Override
@@ -61,6 +76,11 @@ public class SSEHandlerImp implements SSEHandler, NotificationsListener {
     public void stopWorkers() {
         _splitsWorker.stop();
         _segmentWorker.stop();
+    }
+
+    @Override
+    public void registerFeedbackListener(FeedbackLoopListener listener) {
+        _eventSourceClient.registerFeedbackListener(listener);
     }
 
     @Override

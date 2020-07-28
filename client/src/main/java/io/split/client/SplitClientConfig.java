@@ -39,6 +39,11 @@ public class SplitClientConfig {
     private final boolean _destroyOnShutDown;
     private final String _splitFile;
     private final IntegrationsConfig _integrationsConfig;
+    private final boolean _streamingEnabled;
+    private final int _authRetryBackoffBase;
+    private final int _streamingReconnectBackoffBase;
+    private final String _authServiceURL;
+    private final String _streamingServiceURL;
 
     // Proxy configs
     private final HttpHost _proxy;
@@ -76,7 +81,12 @@ public class SplitClientConfig {
                               int maxStringLength,
                               boolean destroyOnShutDown,
                               String splitFile,
-                              IntegrationsConfig integrationsConfig) {
+                              IntegrationsConfig integrationsConfig,
+                              boolean streamingEnabled,
+                              int authRetryBackoffBase,
+                              int streamingReconnectBackoffBase,
+                              String authServiceURL,
+                              String streamingServiceURL) {
         _endpoint = endpoint;
         _eventsEndpoint = eventsEndpoint;
         _featuresRefreshRate = pollForFeatureChangesEveryNSeconds;
@@ -101,6 +111,11 @@ public class SplitClientConfig {
         _destroyOnShutDown = destroyOnShutDown;
         _splitFile = splitFile;
         _integrationsConfig = integrationsConfig;
+        _streamingEnabled = streamingEnabled;
+        _authRetryBackoffBase = authRetryBackoffBase;
+        _streamingReconnectBackoffBase = streamingReconnectBackoffBase;
+        _authServiceURL = authServiceURL;
+        _streamingServiceURL = streamingServiceURL;
 
         Properties props = new Properties();
         try {
@@ -207,6 +222,26 @@ public class SplitClientConfig {
         return _integrationsConfig;
     }
 
+    public boolean streamingEnabled() {
+        return _streamingEnabled;
+    }
+
+    public int authRetryBackoffBase() {
+        return _authRetryBackoffBase;
+    }
+
+    public int streamingReconnectBackoffBase() {
+        return _streamingReconnectBackoffBase;
+    }
+
+    public String authServiceURL() {
+        return _authServiceURL;
+    }
+
+    public String streamingServiceURL() {
+        return _streamingServiceURL;
+    }
+
     public static final class Builder {
 
         private String _endpoint = "https://sdk.split.io";
@@ -236,6 +271,11 @@ public class SplitClientConfig {
         private boolean _destroyOnShutDown = true;
         private String _splitFile = null;
         private IntegrationsConfig _integrationsConfig = null;
+        private boolean _streamingEnabled = true;
+        private int _authRetryBackoffBase = 1;
+        private int _streamingReconnectBackoffBase = 1;
+        private String _authServiceURL = "https://auth.split.io/api/auth";
+        private String _streamingServiceURL = "https://streaming.split.io/event-stream";
 
         public Builder() {
         }
@@ -572,6 +612,55 @@ public class SplitClientConfig {
             return this;
         }
 
+        /**
+         * Set if streaming is enabled or not. Default is true.
+         * @param streamingEnabled
+         * @return
+         */
+        public Builder streamingEnabled(boolean streamingEnabled) {
+            _streamingEnabled = streamingEnabled;
+            return this;
+        }
+
+        /**
+         * Set how many seconds to wait before re attempting to authenticate for push notifications. Default 1 second. Minimum 1 second.
+         * @param authRetryBackoffBase
+         * @return
+         */
+        public Builder authRetryBackoffBase(int authRetryBackoffBase) {
+            _authRetryBackoffBase = authRetryBackoffBase;
+            return this;
+        }
+
+        /**
+         * Set how many seconds to wait before re attempting to connect to streaming. Default 1 second. Minimum 1 second.
+         * @param streamingReconnectBackoffBase
+         * @return
+         */
+        public Builder streamingReconnectBackoffBase(int streamingReconnectBackoffBase) {
+            _streamingReconnectBackoffBase = streamingReconnectBackoffBase;
+            return this;
+        }
+
+        /**
+         * Set Authentication service URL.
+         * @param authServiceURL
+         * @return
+         */
+        public Builder authServiceURL(String authServiceURL) {
+            _authServiceURL = authServiceURL;
+            return this;
+        }
+
+        /**
+         * Set Streaming service URL.
+         * @param streamingServiceURL
+         * @return
+         */
+        public Builder streamingServiceURL(String streamingServiceURL) {
+            _streamingServiceURL = streamingServiceURL;
+            return this;
+        }
 
         public SplitClientConfig build() {
             if (_featuresRefreshRate < 5 ) {
@@ -622,6 +711,22 @@ public class SplitClientConfig {
                 throw new IllegalArgumentException("Number of threads for fetching segments MUST be greater than zero");
             }
 
+            if (_authRetryBackoffBase <= 0) {
+                throw new IllegalArgumentException("authRetryBackoffBase: must be >= 1");
+            }
+
+            if (_streamingReconnectBackoffBase <= 0) {
+                throw new IllegalArgumentException("streamingReconnectBackoffBase: must be >= 1");
+            }
+
+            if (_authServiceURL == null) {
+                throw new IllegalArgumentException("authServiceURL must not be null");
+            }
+
+            if (_streamingServiceURL == null) {
+                throw new IllegalArgumentException("streamingServiceURL must not be null");
+            }
+
             return new SplitClientConfig(
                     _endpoint,
                     _eventsEndpoint,
@@ -646,10 +751,12 @@ public class SplitClientConfig {
                     _maxStringLength,
                     _destroyOnShutDown,
                     _splitFile,
-                    _integrationsConfig);
+                    _integrationsConfig,
+                    _streamingEnabled,
+                    _authRetryBackoffBase,
+                    _streamingReconnectBackoffBase,
+                    _authServiceURL,
+                    _streamingServiceURL);
         }
-
     }
-
-
 }

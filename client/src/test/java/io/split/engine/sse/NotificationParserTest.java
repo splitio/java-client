@@ -1,6 +1,5 @@
 package io.split.engine.sse;
 
-import com.google.gson.Gson;
 import io.split.engine.sse.dtos.*;
 import io.split.engine.sse.exceptions.EventParsingException;
 import org.junit.Test;
@@ -11,7 +10,7 @@ public class NotificationParserTest {
     private NotificationParser notificationParser;
 
     public NotificationParserTest() {
-        notificationParser = new NotificationParserImp(new Gson());
+        notificationParser = new NotificationParserImp();
     }
 
     @Test

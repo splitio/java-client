@@ -1,13 +1,19 @@
 package io.split.engine.sse.workers;
 
+import com.google.common.annotations.VisibleForTesting;
 import io.split.engine.experiments.SplitFetcher;
 
 public class SplitsWorkerImp extends Worker<Long> implements SplitsWorker {
     private final SplitFetcher _splitFetcher;
 
-    public SplitsWorkerImp(SplitFetcher splitFetcher) {
+    @VisibleForTesting
+    /* package private */ SplitsWorkerImp(SplitFetcher splitFetcher) {
         super("Splits");
         _splitFetcher = splitFetcher;
+    }
+
+    public static SplitsWorkerImp build(SplitFetcher splitFetcher) {
+        return new SplitsWorkerImp(splitFetcher);
     }
 
     @Override

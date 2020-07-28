@@ -1,8 +1,7 @@
 package io.split.engine.sse;
 
-import com.google.gson.Gson;
-import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
+import io.split.client.utils.Json;
 import io.split.engine.sse.dtos.AuthenticationResponse;
 import io.split.engine.sse.dtos.RawAuthResponse;
 import org.apache.http.HttpStatus;
@@ -22,16 +21,13 @@ import static com.google.common.base.Preconditions.checkNotNull;
 public class AuthApiClientImp implements AuthApiClient {
     private static final Logger _log = LoggerFactory.getLogger(AuthApiClient.class);
 
-    private final Gson _gson;
     private final CloseableHttpClient _httpClient;
     private final String _target;
 
     public AuthApiClientImp(String url,
-                            Gson gson,
-                            CloseableHttpClient httpClient) {
+                                           CloseableHttpClient httpClient) {
         _httpClient = checkNotNull(httpClient);
         _target = checkNotNull(url);
-        _gson = checkNotNull(gson);
     }
 
     @Override
@@ -61,14 +57,14 @@ public class AuthApiClientImp implements AuthApiClient {
     }
 
     private AuthenticationResponse getSuccessResponse(String jsonContent) {
-        JsonObject jsonObject = _gson.fromJson(jsonContent, JsonObject.class);
+        JsonObject jsonObject = Json.fromJson(jsonContent, JsonObject.class);
         String token = jsonObject.get("token") != null ? jsonObject.get("token").getAsString() : "";
-        RawAuthResponse response = new RawAuthResponse(jsonObject.get("pushEnabled").getAsBoolean(), token, _gson);
+        RawAuthResponse response = new RawAuthResponse(jsonObject.get("pushEnabled").getAsBoolean(), token);
         String channels = "";
         long expiration = 0;
 
         if (response.isPushEnabled()) {
-            channels = response.getChannels(_gson);
+            channels = response.getChannels();
             expiration = response.getExpiration();
         }
 
