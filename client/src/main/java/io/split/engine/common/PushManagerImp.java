@@ -38,8 +38,8 @@ public class PushManagerImp implements PushManager, Runnable {
         _authRetryBackOffBase = checkNotNull(authRetryBackOffBase);
     }
 
-    public static PushManagerImp build(String authUrl, CloseableHttpClient httpClient, String streamingServiceUrl, RefreshableSplitFetcherProvider splitFetcherProvider, RefreshableSegmentFetcher segmentFetcher, int authRetryBackOffBase) {
-        return new PushManagerImp(AuthApiClientImp.build(authUrl, httpClient), SSEHandlerImp.build(streamingServiceUrl, splitFetcherProvider, segmentFetcher), authRetryBackOffBase);
+    public static PushManagerImp build(String authUrl, CloseableHttpClient httpClient, SSEHandler sseHandler, int authRetryBackOffBase) {
+        return new PushManagerImp(new AuthApiClientImp(authUrl, httpClient), sseHandler, authRetryBackOffBase);
     }
 
     @Override

@@ -24,7 +24,7 @@ public class NotificationProcessorImp implements NotificationProcessor {
     }
 
     public static NotificationProcessorImp build(SplitsWorker splitsWorker, Worker<SegmentQueueDto> segmentWorker) {
-        return new NotificationProcessorImp(splitsWorker, segmentWorker, NotificationManagerKeeperImp.build());
+        return new NotificationProcessorImp(splitsWorker, segmentWorker, new NotificationManagerKeeperImp());
     }
 
     @Override

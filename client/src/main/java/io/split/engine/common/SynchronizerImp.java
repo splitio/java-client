@@ -1,6 +1,5 @@
 package io.split.engine.common;
 
-import com.google.common.annotations.VisibleForTesting;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import io.split.engine.experiments.RefreshableSplitFetcher;
 import io.split.engine.experiments.RefreshableSplitFetcherProvider;
@@ -24,8 +23,7 @@ public class SynchronizerImp implements Synchronizer {
     private final ScheduledExecutorService _splitsScheduledExecutorService;
     private final ScheduledExecutorService _segmentsScheduledExecutorService;
 
-    @VisibleForTesting
-    /* package private */ SynchronizerImp(RefreshableSplitFetcherProvider refreshableSplitFetcherProvider,
+    public SynchronizerImp(RefreshableSplitFetcherProvider refreshableSplitFetcherProvider,
                                           RefreshableSegmentFetcher segmentFetcher) {
         _refreshableSplitFetcherProvider = checkNotNull(refreshableSplitFetcherProvider);
         _splitFetcher = checkNotNull(_refreshableSplitFetcherProvider.getFetcher());
@@ -42,10 +40,6 @@ public class SynchronizerImp implements Synchronizer {
                 .setNameFormat("Split-SegmentsRefresh-%d")
                 .build();
         _segmentsScheduledExecutorService = Executors.newSingleThreadScheduledExecutor(segmentsThreadFactory);
-    }
-
-    public static SynchronizerImp build(RefreshableSplitFetcherProvider refreshableSplitFetcherProvider, RefreshableSegmentFetcher segmentFetcher) {
-        return new SynchronizerImp(refreshableSplitFetcherProvider, segmentFetcher);
     }
 
     @Override

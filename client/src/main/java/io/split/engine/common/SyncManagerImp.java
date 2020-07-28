@@ -44,10 +44,12 @@ public class SyncManagerImp implements SyncManager {
                                         CloseableHttpClient httpClient,
                                         String streamingServiceUrl,
                                         int authRetryBackOffBase) {
+        SSEHandler sseHandler = SSEHandlerImp.build(streamingServiceUrl, refreshableSplitFetcherProvider, segmentFetcher);
+
         return new SyncManagerImp(streamingEnabledConfig,
-                SynchronizerImp.build(refreshableSplitFetcherProvider, segmentFetcher),
-                PushManagerImp.build(authUrl, httpClient, streamingServiceUrl, refreshableSplitFetcherProvider, segmentFetcher, authRetryBackOffBase),
-                SSEHandlerImp.build(streamingServiceUrl, refreshableSplitFetcherProvider, segmentFetcher));
+                new SynchronizerImp(refreshableSplitFetcherProvider, segmentFetcher),
+                PushManagerImp.build(authUrl, httpClient, sseHandler, authRetryBackOffBase),
+                sseHandler);
     }
 
     @Override
