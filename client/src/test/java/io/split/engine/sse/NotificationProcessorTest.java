@@ -11,12 +11,14 @@ public class NotificationProcessorTest {
     private final SplitsWorker _splitsWorker;
     private final Worker<SegmentQueueDto> _segmentWorker;
     private final NotificationProcessor _notificationProcessor;
+    private final NotificationManagerKeeper _notificationManagerKeeper;
 
     public NotificationProcessorTest() {
         _splitsWorker = Mockito.mock(SplitsWorker.class);
         _segmentWorker = Mockito.mock(SegmentsWorkerImp.class);
+        _notificationManagerKeeper = Mockito.mock(NotificationManagerKeeper.class);
 
-        _notificationProcessor = new NotificationProcessorImp(_splitsWorker, _segmentWorker);
+        _notificationProcessor = new NotificationProcessorImp(_splitsWorker, _segmentWorker, _notificationManagerKeeper);
     }
 
     @Test
@@ -57,5 +59,25 @@ public class NotificationProcessorTest {
         _notificationProcessor.process(segmentChangeNotification);
 
         Mockito.verify(_segmentWorker, Mockito.times(1)).addToQueue(Mockito.any(SegmentQueueDto.class));
+    }
+
+    @Test
+    public void processControlNotification() {
+        GenericNotificationData genericNotificationData = Mockito.mock(GenericNotificationData.class);
+        ControlNotification controlNotification = new ControlNotification(genericNotificationData);
+
+        _notificationProcessor.process(controlNotification);
+
+        Mockito.verify(_notificationManagerKeeper, Mockito.times(1)).handleIncomingControlEvent(Mockito.any(ControlNotification.class));
+    }
+
+    @Test
+    public void processOccupancyNotification() {
+        GenericNotificationData genericNotificationData = new GenericNotificationData(null, null, null, null, null, null, null, "control_pri");
+        OccupancyNotification occupancyNotification = new OccupancyNotification(genericNotificationData);
+
+        _notificationProcessor.process(occupancyNotification);
+
+        Mockito.verify(_notificationManagerKeeper, Mockito.times(1)).handleIncomingOccupancyEvent(Mockito.any(OccupancyNotification.class));
     }
 }

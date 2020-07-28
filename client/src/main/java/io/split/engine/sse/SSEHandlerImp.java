@@ -1,7 +1,10 @@
 package io.split.engine.sse;
 
 import io.split.engine.sse.dtos.IncomingNotification;
+import io.split.engine.sse.dtos.SegmentQueueDto;
+import io.split.engine.sse.listeners.NotificationsListener;
 import io.split.engine.sse.workers.SplitsWorker;
+import io.split.engine.sse.workers.Worker;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -10,17 +13,20 @@ public class SSEHandlerImp implements SSEHandler, NotificationsListener {
 
     private final EventSourceClient _eventSourceClient;
     private final SplitsWorker _splitsWorker;
+    private final Worker<SegmentQueueDto> _segmentWorker;
     private final NotificationProcessor _notificationProcessor;
     private final String _streamingServiceUrl;
 
     public SSEHandlerImp(EventSourceClient eventSourceClient,
                          String streamingServiceUrl,
                          SplitsWorker splitsWorker,
-                         NotificationProcessor notificationProcessor) {
+                         NotificationProcessor notificationProcessor,
+                         Worker<SegmentQueueDto> segmentWorker) {
         _eventSourceClient = eventSourceClient;
         _streamingServiceUrl = streamingServiceUrl;
         _splitsWorker = splitsWorker;
         _notificationProcessor = notificationProcessor;
+        _segmentWorker = segmentWorker;
 
         _eventSourceClient.registerNotificationListener(this);
     }
@@ -46,23 +52,17 @@ public class SSEHandlerImp implements SSEHandler, NotificationsListener {
     @Override
     public void startWorkers() {
         _splitsWorker.start();
+        _segmentWorker.start();
     }
 
     @Override
-    public void stropWorkers() {
+    public void stopWorkers() {
         _splitsWorker.stop();
+        _segmentWorker.stop();
     }
 
     @Override
     public void onMessageNotificationReceived(IncomingNotification incomingNotification) {
-        switch (incomingNotification.getType()) {
-            case CONTROL:
-            case OCCUPANCY:
-                // TODO: use here the notificationManagerKeeper.
-                break;
-            default:
-                _notificationProcessor.process(incomingNotification);
-                break;
-        }
+        _notificationProcessor.process(incomingNotification);
     }
 }

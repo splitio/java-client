@@ -3,6 +3,8 @@ package io.split.engine.sse;
 import io.split.engine.sse.dtos.ErrorNotification;
 import io.split.engine.sse.dtos.IncomingNotification;
 import io.split.engine.sse.exceptions.EventParsingException;
+import io.split.engine.sse.listeners.FeedbackLoopListener;
+import io.split.engine.sse.listeners.NotificationsListener;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -77,7 +79,7 @@ public class EventSourceClientImp implements EventSourceClient {
 
     @Override
     public synchronized void notifyErrorNotification (ErrorNotification errorNotification) {
-        _feedbackListeners.forEach(listener -> listener.onErrorNotificationAdded(errorNotification));
+        _feedbackListeners.forEach(listener -> listener.onErrorNotification(errorNotification));
     }
 
     @Override

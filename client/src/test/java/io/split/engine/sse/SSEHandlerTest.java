@@ -1,7 +1,10 @@
 package io.split.engine.sse;
 
 import io.split.engine.sse.dtos.*;
+import io.split.engine.sse.listeners.NotificationsListener;
+import io.split.engine.sse.workers.SegmentsWorkerImp;
 import io.split.engine.sse.workers.SplitsWorker;
+import io.split.engine.sse.workers.Worker;
 import org.junit.Test;
 import org.mockito.Mockito;
 
@@ -9,6 +12,7 @@ public class SSEHandlerTest {
 
     private final EventSourceClient _eventSourceClient;
     private final SplitsWorker _splitsWorker;
+    private final Worker<SegmentQueueDto> _segmentWorker;
     private final NotificationProcessor _notificationProcessor;
     private final GenericNotificationData _genericNotificationData;
     private final String _baseUrl = "www.fake.io";
@@ -18,6 +22,7 @@ public class SSEHandlerTest {
         _splitsWorker = Mockito.mock(SplitsWorker.class);
         _notificationProcessor = Mockito.mock(NotificationProcessor.class);
         _genericNotificationData = Mockito.mock(GenericNotificationData.class);
+        _segmentWorker = Mockito.mock(SegmentsWorkerImp.class);
     }
 
     @Test
@@ -26,7 +31,7 @@ public class SSEHandlerTest {
         String channels = "channels-test";
         String url = String.format("%s?channels=%s&v=1.1&accessToken=%s", _baseUrl, channels, token);
 
-        SSEHandler sseHandler = new SSEHandlerImp(_eventSourceClient, _baseUrl, _splitsWorker, _notificationProcessor);
+        SSEHandler sseHandler = new SSEHandlerImp(_eventSourceClient, _baseUrl, _splitsWorker, _notificationProcessor, _segmentWorker);
         sseHandler.start(token, channels);
 
         Mockito.verify(_eventSourceClient, Mockito.times(1)).start(url);
@@ -39,7 +44,7 @@ public class SSEHandlerTest {
         String channels = "channels-test";
         String url = String.format("%s?channels=%s&v=1.1&accessToken=%s", _baseUrl, channels, token);
 
-        SSEHandler sseHandler = new SSEHandlerImp(_eventSourceClient, _baseUrl, _splitsWorker, _notificationProcessor);
+        SSEHandler sseHandler = new SSEHandlerImp(_eventSourceClient, _baseUrl, _splitsWorker, _notificationProcessor, _segmentWorker);
         sseHandler.start(token, channels);
         sseHandler.stop();
 
@@ -51,7 +56,7 @@ public class SSEHandlerTest {
     public void onMessageNotificationReceivedSplitUpdateShouldProcessNotification() {
         SplitChangeNotification splitChangeNotification = new SplitChangeNotification(_genericNotificationData);
 
-        NotificationsListener sseHandler = new SSEHandlerImp(_eventSourceClient, _baseUrl, _splitsWorker, _notificationProcessor);
+        NotificationsListener sseHandler = new SSEHandlerImp(_eventSourceClient, _baseUrl, _splitsWorker, _notificationProcessor, _segmentWorker);
 
         sseHandler.onMessageNotificationReceived(splitChangeNotification);
 
@@ -62,7 +67,7 @@ public class SSEHandlerTest {
     public void onMessageNotificationReceivedSplitKillShouldProcessNotification() {
         SplitKillNotification splitKillNotification = new SplitKillNotification(_genericNotificationData);
 
-        NotificationsListener sseHandler = new SSEHandlerImp(_eventSourceClient, _baseUrl, _splitsWorker, _notificationProcessor);
+        NotificationsListener sseHandler = new SSEHandlerImp(_eventSourceClient, _baseUrl, _splitsWorker, _notificationProcessor, _segmentWorker);
 
         sseHandler.onMessageNotificationReceived(splitKillNotification);
 
@@ -73,7 +78,7 @@ public class SSEHandlerTest {
     public void onMessageNotificationReceivedSegmentChangeShouldProcessNotification() {
         SegmentChangeNotification segmentChangeNotification = new SegmentChangeNotification(_genericNotificationData);
 
-        NotificationsListener sseHandler = new SSEHandlerImp(_eventSourceClient, _baseUrl, _splitsWorker, _notificationProcessor);
+        NotificationsListener sseHandler = new SSEHandlerImp(_eventSourceClient, _baseUrl, _splitsWorker, _notificationProcessor, _segmentWorker);
 
         sseHandler.onMessageNotificationReceived(segmentChangeNotification);
 
@@ -84,11 +89,11 @@ public class SSEHandlerTest {
     public void onMessageNotificationReceivedControlShouldProcessNotification() {
         ControlNotification controlNotification = new ControlNotification(_genericNotificationData);
 
-        NotificationsListener sseHandler = new SSEHandlerImp(_eventSourceClient, _baseUrl, _splitsWorker, _notificationProcessor);
+        NotificationsListener sseHandler = new SSEHandlerImp(_eventSourceClient, _baseUrl, _splitsWorker, _notificationProcessor, _segmentWorker);
 
         sseHandler.onMessageNotificationReceived(controlNotification);
 
-        Mockito.verify(_notificationProcessor, Mockito.never()).process(controlNotification);
+        Mockito.verify(_notificationProcessor, Mockito.times(1)).process(controlNotification);
     }
 
     @Test
@@ -96,10 +101,10 @@ public class SSEHandlerTest {
         GenericNotificationData genericNotificationData = Mockito.mock(GenericNotificationData.class);
         OccupancyNotification occupancyNotification = new OccupancyNotification(genericNotificationData);
 
-        NotificationsListener sseHandler = new SSEHandlerImp(_eventSourceClient, _baseUrl, _splitsWorker, _notificationProcessor);
+        NotificationsListener sseHandler = new SSEHandlerImp(_eventSourceClient, _baseUrl, _splitsWorker, _notificationProcessor, _segmentWorker);
 
         sseHandler.onMessageNotificationReceived(occupancyNotification);
 
-        Mockito.verify(_notificationProcessor, Mockito.never()).process(occupancyNotification);
+        Mockito.verify(_notificationProcessor, Mockito.times(1)).process(occupancyNotification);
     }
 }

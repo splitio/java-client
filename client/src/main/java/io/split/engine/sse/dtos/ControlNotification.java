@@ -1,8 +1,9 @@
 package io.split.engine.sse.dtos;
 
+import io.split.engine.sse.NotificationManagerKeeper;
 import io.split.engine.sse.NotificationProcessor;
 
-public class ControlNotification extends IncomingNotification {
+public class ControlNotification extends IncomingNotification implements StatusNotification {
     private final ControlType controlType;
 
     public ControlNotification(GenericNotificationData genericNotificationData) {
@@ -16,6 +17,11 @@ public class ControlNotification extends IncomingNotification {
 
     @Override
     public void handler(NotificationProcessor notificationProcessor) {
-        return;
+        notificationProcessor.processStatus(this);
+    }
+
+    @Override
+    public void handlerStatus(NotificationManagerKeeper notificationManagerKeeper) {
+        notificationManagerKeeper.handleIncomingControlEvent(this);
     }
 }

@@ -1,18 +1,24 @@
 package io.split.engine.sse;
 
 import io.split.engine.sse.dtos.IncomingNotification;
+import io.split.engine.sse.dtos.StatusNotification;
 import io.split.engine.sse.dtos.SegmentQueueDto;
 import io.split.engine.sse.workers.SplitsWorker;
 import io.split.engine.sse.workers.Worker;
 
+import static com.google.common.base.Preconditions.checkNotNull;
+
 public class NotificationProcessorImp implements NotificationProcessor {
     private final SplitsWorker _splitsWorker;
     private final Worker<SegmentQueueDto> _segmentWorker;
+    private final NotificationManagerKeeper _notificationManagerKeeper;
 
     public NotificationProcessorImp(SplitsWorker splitsWorker,
-                                    Worker<SegmentQueueDto> segmentWorker) {
-        _splitsWorker = splitsWorker;
-        _segmentWorker = segmentWorker;
+                                    Worker<SegmentQueueDto> segmentWorker,
+                                    NotificationManagerKeeper notificationManagerKeeper) {
+        _splitsWorker = checkNotNull(splitsWorker);
+        _segmentWorker = checkNotNull(segmentWorker);
+        _notificationManagerKeeper = checkNotNull(notificationManagerKeeper);
     }
 
     @Override
@@ -34,5 +40,10 @@ public class NotificationProcessorImp implements NotificationProcessor {
     @Override
     public void processSegmentUpdate(long changeNumber, String segmentName) {
         _segmentWorker.addToQueue(new SegmentQueueDto(segmentName, changeNumber));
+    }
+
+    @Override
+    public void processStatus(StatusNotification statusNotification) {
+        statusNotification.handlerStatus(_notificationManagerKeeper);
     }
 }

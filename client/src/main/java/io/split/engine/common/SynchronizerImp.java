@@ -6,6 +6,8 @@ import io.split.engine.segments.SegmentFetcher;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import static com.google.common.base.Preconditions.checkNotNull;
+
 public class SynchronizerImp implements Synchronizer {
     private static final Logger _log = LoggerFactory.getLogger(Synchronizer.class);
 
@@ -15,9 +17,9 @@ public class SynchronizerImp implements Synchronizer {
 
     public SynchronizerImp(RefreshableSplitFetcherProvider refreshableSplitFetcherProvider,
                            SegmentFetcher segmentFetcher) {
-        _refreshableSplitFetcherProvider = refreshableSplitFetcherProvider;
-        _splitFetcher = _refreshableSplitFetcherProvider.getFetcher();
-        _segmentFetcher = segmentFetcher;
+        _refreshableSplitFetcherProvider = checkNotNull(refreshableSplitFetcherProvider);
+        _splitFetcher = checkNotNull(_refreshableSplitFetcherProvider.getFetcher());
+        _segmentFetcher = checkNotNull(segmentFetcher);
     }
 
     @Override

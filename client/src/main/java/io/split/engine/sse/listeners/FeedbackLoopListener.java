@@ -1,9 +1,9 @@
-package io.split.engine.sse;
+package io.split.engine.sse.listeners;
 
 import io.split.engine.sse.dtos.ErrorNotification;
 
 public interface FeedbackLoopListener {
-    void onErrorNotificationAdded(ErrorNotification errorNotification);
+    void onErrorNotification(ErrorNotification errorNotification);
     void onConnected();
     void onDisconnect();
 }
