@@ -83,7 +83,7 @@ public class SSEHandlerImp implements SSEHandler, NotificationsListener {
     }
 
     @Override
-    public void registerFeedbackListener(FeedbackLoopListener listener) {
+    public synchronized void registerFeedbackListener(FeedbackLoopListener listener) {
         _eventSourceClient.registerFeedbackListener(listener);
     }
 

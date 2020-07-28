@@ -2,12 +2,9 @@ package io.split.engine.common;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
-import io.split.engine.experiments.RefreshableSplitFetcherProvider;
-import io.split.engine.segments.RefreshableSegmentFetcher;
 import io.split.engine.sse.AuthApiClient;
 import io.split.engine.sse.AuthApiClientImp;
 import io.split.engine.sse.SSEHandler;
-import io.split.engine.sse.SSEHandlerImp;
 import io.split.engine.sse.dtos.AuthenticationResponse;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.slf4j.Logger;

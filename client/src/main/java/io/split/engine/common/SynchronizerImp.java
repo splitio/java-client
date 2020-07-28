@@ -45,7 +45,7 @@ public class SynchronizerImp implements Synchronizer {
     @Override
     public void syncAll() {
         _splitsScheduledExecutorService.schedule(_splitFetcher, 0, TimeUnit.SECONDS);
-        _segmentsScheduledExecutorService.schedule(_segmentFetcher, 0, TimeUnit.SECONDS);
+        _segmentsScheduledExecutorService.schedule(_segmentFetcher, 1, TimeUnit.SECONDS);
     }
 
     @Override
