@@ -1,6 +1,7 @@
 package io.split.engine.common;
 
 import io.split.engine.sse.SSEHandler;
+import io.split.engine.sse.dtos.ErrorNotification;
 import org.junit.Test;
 import org.mockito.Mockito;
 
@@ -64,5 +65,36 @@ public class SyncManagerTest {
 
         Mockito.verify(_pushManager, Mockito.times(1)).stop();
         Mockito.verify(_sseHandler, Mockito.times(1)).stopWorkers();
+    }
+
+    @Test
+    public void onConnected() {
+        SyncManagerImp syncManager = new SyncManagerImp(true, _synchronizer, _pushManager, _sseHandler);
+
+        syncManager.onConnected();
+
+        Mockito.verify(_synchronizer, Mockito.times(1)).stopPeriodicFetching();
+        Mockito.verify(_synchronizer, Mockito.times(1)).syncAll();
+    }
+
+    @Test
+    public void onDisconnect() {
+        SyncManagerImp syncManager = new SyncManagerImp(true, _synchronizer, _pushManager, _sseHandler);
+
+        syncManager.onDisconnect();
+
+        Mockito.verify(_synchronizer, Mockito.times(1)).startPeriodicFetching();
+    }
+
+    @Test
+    public void onErrorNotification() {
+        ErrorNotification errorNotification = new ErrorNotification("500", "Internal server error");
+
+        SyncManagerImp syncManager = new SyncManagerImp(true, _synchronizer, _pushManager, _sseHandler);
+        syncManager.onErrorNotification(errorNotification);
+
+        Mockito.verify(_pushManager, Mockito.times(1)).stop();
+        Mockito.verify(_synchronizer, Mockito.times(1)).syncAll();
+        Mockito.verify(_pushManager, Mockito.times(1)).start();
     }
 }

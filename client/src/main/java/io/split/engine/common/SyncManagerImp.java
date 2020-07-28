@@ -1,6 +1,8 @@
 package io.split.engine.common;
 
 import io.split.engine.sse.SSEHandler;
+import io.split.engine.sse.dtos.ErrorNotification;
+import io.split.engine.sse.listeners.FeedbackLoopListener;
 import io.split.engine.sse.listeners.NotificationKeeperListener;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -9,7 +11,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
-public class SyncManagerImp implements SyncManager, NotificationKeeperListener {
+public class SyncManagerImp implements SyncManager, NotificationKeeperListener, FeedbackLoopListener {
     private static final Logger _log = LoggerFactory.getLogger(SyncManager.class);
 
     private final AtomicBoolean _streamingEnabledConfig;
@@ -69,6 +71,23 @@ public class SyncManagerImp implements SyncManager, NotificationKeeperListener {
 
     private void startPollingMode() {
         _log.debug("Starting in polling mode ...");
+        _synchronizer.startPeriodicFetching();
+    }
+
+    @Override
+    public void onErrorNotification(ErrorNotification errorNotification) {
+        _pushManager.stop();
+        startStreamingMode();
+    }
+
+    @Override
+    public void onConnected() {
+        _synchronizer.stopPeriodicFetching();
+        _synchronizer.syncAll();
+    }
+
+    @Override
+    public void onDisconnect() {
         _synchronizer.startPeriodicFetching();
     }
 }

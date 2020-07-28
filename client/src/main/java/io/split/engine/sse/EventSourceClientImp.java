@@ -72,22 +72,18 @@ public class EventSourceClientImp implements EventSourceClient {
         _feedbackListeners.add(listener);
     }
 
-    @Override
     public synchronized void notifyMessageNotification (IncomingNotification incomingNotification) {
         _notificationsListeners.forEach(listener -> listener.onMessageNotificationReceived(incomingNotification));
     }
 
-    @Override
     public synchronized void notifyErrorNotification (ErrorNotification errorNotification) {
         _feedbackListeners.forEach(listener -> listener.onErrorNotification(errorNotification));
     }
 
-    @Override
     public synchronized void notifyConnected () {
         _feedbackListeners.forEach(listener -> listener.onConnected());
     }
 
-    @Override
     public synchronized void notifyDisconnect () {
         _feedbackListeners.forEach(listener -> listener.onDisconnect());
     }
