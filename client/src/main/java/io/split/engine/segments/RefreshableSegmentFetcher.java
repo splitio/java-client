@@ -100,6 +100,7 @@ public class RefreshableSegmentFetcher implements Closeable, SegmentFetcher, Run
 
     @Override
     public void forceRefresh(String segmentName) {
+        _log.debug(String.format("Fetching segment: %s ...", segmentName));
         RefreshableSegment segment = _segmentFetchers.get(segmentName);
 
         if (segment == null) {
@@ -144,6 +145,7 @@ public class RefreshableSegmentFetcher implements Closeable, SegmentFetcher, Run
 
     @Override
     public void run() {
+        _log.debug("Fetch Segments starting ...");
         forceRefreshAll();
     }
 
