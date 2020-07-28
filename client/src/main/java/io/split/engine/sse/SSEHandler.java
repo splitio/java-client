@@ -4,5 +4,5 @@ public interface SSEHandler {
     void start(String token, String channels);
     void stop();
     void startWorkers();
-    void stropWorkers();
+    void stopWorkers();
 }

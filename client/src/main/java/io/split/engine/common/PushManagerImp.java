@@ -12,6 +12,8 @@ import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
+import static com.google.common.base.Preconditions.checkNotNull;
+
 public class PushManagerImp implements PushManager, Runnable {
     private static final Logger _log = LoggerFactory.getLogger(PushManager.class);
 
@@ -24,9 +26,9 @@ public class PushManagerImp implements PushManager, Runnable {
     public PushManagerImp(AuthApiClient authApiClient,
                           SSEHandler sseHandler,
                           int authRetryBackOffBase) {
-        _authApiClient = authApiClient;
-        _sseHandler = sseHandler;
-        _authRetryBackOffBase = authRetryBackOffBase;
+        _authApiClient = checkNotNull(authApiClient);
+        _sseHandler = checkNotNull(sseHandler);
+        _authRetryBackOffBase = checkNotNull(authRetryBackOffBase);
     }
 
     @Override
