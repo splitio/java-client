@@ -1,5 +1,6 @@
 package io.split.engine.common;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import io.split.engine.experiments.RefreshableSplitFetcher;
 import io.split.engine.experiments.RefreshableSplitFetcherProvider;
@@ -20,42 +21,32 @@ public class SynchronizerImp implements Synchronizer {
     private final RefreshableSplitFetcherProvider _refreshableSplitFetcherProvider;
     private final RefreshableSplitFetcher _splitFetcher;
     private final RefreshableSegmentFetcher _segmentFetcher;
+    private final SyncAllServiceImp _syncAllService;
     private final ScheduledExecutorService _splitsScheduledExecutorService;
-    private final ScheduledExecutorService _segmentsScheduledExecutorService;
 
-    public SynchronizerImp(RefreshableSplitFetcherProvider refreshableSplitFetcherProvider,
-                                          RefreshableSegmentFetcher segmentFetcher) {
+    @VisibleForTesting
+    /* package private */ SynchronizerImp(RefreshableSplitFetcherProvider refreshableSplitFetcherProvider,
+                                          RefreshableSegmentFetcher segmentFetcher,
+                                          SyncAllServiceImp syncAllService) {
         _refreshableSplitFetcherProvider = checkNotNull(refreshableSplitFetcherProvider);
         _splitFetcher = checkNotNull(_refreshableSplitFetcherProvider.getFetcher());
         _segmentFetcher = checkNotNull(segmentFetcher);
+        _syncAllService = checkNotNull(syncAllService);
 
         ThreadFactory splitsThreadFactory = new ThreadFactoryBuilder()
                 .setDaemon(true)
-                .setNameFormat("Split-SplitsRefresh-%d")
+                .setNameFormat("Split-SyncAll-%d")
                 .build();
         _splitsScheduledExecutorService = Executors.newSingleThreadScheduledExecutor(splitsThreadFactory);
+    }
 
-        ThreadFactory segmentsThreadFactory = new ThreadFactoryBuilder()
-                .setDaemon(true)
-                .setNameFormat("Split-SegmentsRefresh-%d")
-                .build();
-        _segmentsScheduledExecutorService = Executors.newSingleThreadScheduledExecutor(segmentsThreadFactory);
+    public static SynchronizerImp build(RefreshableSplitFetcherProvider refreshableSplitFetcherProvider, RefreshableSegmentFetcher segmentFetcher) {
+        return new SynchronizerImp(refreshableSplitFetcherProvider, segmentFetcher, new SyncAllServiceImp(refreshableSplitFetcherProvider.getFetcher(), segmentFetcher));
     }
 
     @Override
     public void syncAll() {
-        _splitsScheduledExecutorService.schedule(_splitFetcher, 0, TimeUnit.SECONDS);
-        _segmentsScheduledExecutorService.schedule(_segmentFetcher, 1, TimeUnit.SECONDS);
-    }
-
-    @Override
-    public void synchronizeSplits() {
-        _splitFetcher.forceRefresh();
-    }
-
-    @Override
-    public void synchronizeSegment(String segmentName) {
-        _segmentFetcher.forceRefresh(segmentName);
+        _splitsScheduledExecutorService.schedule(_syncAllService, 0, TimeUnit.SECONDS);
     }
 
     @Override
