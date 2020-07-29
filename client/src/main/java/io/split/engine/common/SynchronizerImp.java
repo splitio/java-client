@@ -19,17 +19,15 @@ public class SynchronizerImp implements Synchronizer {
     private static final Logger _log = LoggerFactory.getLogger(Synchronizer.class);
 
     private final RefreshableSplitFetcherProvider _refreshableSplitFetcherProvider;
-    private final RefreshableSplitFetcher _splitFetcher;
     private final RefreshableSegmentFetcher _segmentFetcher;
     private final SyncAllServiceImp _syncAllService;
-    private final ScheduledExecutorService _splitsScheduledExecutorService;
+    private final ScheduledExecutorService _syncAllScheduledExecutorService;
 
     @VisibleForTesting
     /* package private */ SynchronizerImp(RefreshableSplitFetcherProvider refreshableSplitFetcherProvider,
                                           RefreshableSegmentFetcher segmentFetcher,
                                           SyncAllServiceImp syncAllService) {
         _refreshableSplitFetcherProvider = checkNotNull(refreshableSplitFetcherProvider);
-        _splitFetcher = checkNotNull(_refreshableSplitFetcherProvider.getFetcher());
         _segmentFetcher = checkNotNull(segmentFetcher);
         _syncAllService = checkNotNull(syncAllService);
 
@@ -37,7 +35,7 @@ public class SynchronizerImp implements Synchronizer {
                 .setDaemon(true)
                 .setNameFormat("Split-SyncAll-%d")
                 .build();
-        _splitsScheduledExecutorService = Executors.newSingleThreadScheduledExecutor(splitsThreadFactory);
+        _syncAllScheduledExecutorService = Executors.newSingleThreadScheduledExecutor(splitsThreadFactory);
     }
 
     public static SynchronizerImp build(RefreshableSplitFetcherProvider refreshableSplitFetcherProvider, RefreshableSegmentFetcher segmentFetcher) {
@@ -46,7 +44,7 @@ public class SynchronizerImp implements Synchronizer {
 
     @Override
     public void syncAll() {
-        _splitsScheduledExecutorService.schedule(_syncAllService, 0, TimeUnit.SECONDS);
+        _syncAllScheduledExecutorService.schedule(_syncAllService, 0, TimeUnit.SECONDS);
     }
 
     @Override
