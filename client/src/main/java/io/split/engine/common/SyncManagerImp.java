@@ -47,7 +47,7 @@ public class SyncManagerImp implements SyncManager {
         SSEHandler sseHandler = SSEHandlerImp.build(streamingServiceUrl, refreshableSplitFetcherProvider, segmentFetcher);
 
         return new SyncManagerImp(streamingEnabledConfig,
-                SynchronizerImp.build(refreshableSplitFetcherProvider, segmentFetcher),
+                new SynchronizerImp(refreshableSplitFetcherProvider, segmentFetcher),
                 PushManagerImp.build(authUrl, httpClient, sseHandler, authRetryBackOffBase),
                 sseHandler);
     }
