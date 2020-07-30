@@ -27,6 +27,7 @@ public class EventSourceClientImp implements EventSourceClient {
     private final List<NotificationsListener> _notificationsListeners;
 
     private SseEventSource _sseEventSource;
+    private SplitSseEventSource _splitSseEventSource;
 
     @VisibleForTesting
     /* package private */ EventSourceClientImp(NotificationParser notificationParser) {
@@ -45,6 +46,41 @@ public class EventSourceClientImp implements EventSourceClient {
 
     @Override
     public void start(String url) {
+        if (_splitSseEventSource != null && _splitSseEventSource.isOpen()) { stop(); }
+
+        _splitSseEventSource = new SplitSseEventSource(_client.target(url),
+                inboundEvent -> { onMessage(inboundEvent); return null; },
+                s -> { onError(s); return null; });
+        _splitSseEventSource.open();
+
+        if(!_splitSseEventSource.isOpen()) {
+            notifyDisconnect();
+            return;
+        }
+
+        _log.info(String.format("Connected and reading from: %s", url));
+        notifyConnected();
+    }
+
+    @Override
+    public void stop() {
+        if (_splitSseEventSource == null) {
+            notifyDisconnect();
+            return;
+        }
+
+        if (!_splitSseEventSource.isOpen()) {
+            _log.warn("Event Source Client is closed.");
+            return;
+        }
+
+        _splitSseEventSource.close();
+        notifyDisconnect();
+    }
+
+/*
+    @Override
+    public void start(String url) {
         try {
             if (_sseEventSource != null && _sseEventSource.isOpen()) { stop(); }
 
@@ -55,16 +91,18 @@ public class EventSourceClientImp implements EventSourceClient {
             _sseEventSource.register(this::onMessage, this::onError);
             _sseEventSource.open();
 
-            _log.info(String.format("Connected and reading from: %s", url));
+            if(_sseEventSource.isOpen()) {
+                _log.info(String.format("Connected and reading from: %s", url));
 
-            notifyConnected();
+                notifyConnected();
+            }
         } catch (Exception e) {
             _log.error(String.format("Error connecting or reading from %s : %s", url, e.getMessage()));
             notifyDisconnect();
         }
-    }
+    }*/
 
-    @Override
+    /*@Override
     public void stop() {
         if (_sseEventSource == null) {
             notifyDisconnect();
@@ -78,7 +116,7 @@ public class EventSourceClientImp implements EventSourceClient {
 
         _sseEventSource.close();
         notifyDisconnect();
-    }
+    }*/
 
     @Override
     public synchronized void registerNotificationListener(NotificationsListener listener) {
@@ -126,15 +164,22 @@ public class EventSourceClientImp implements EventSourceClient {
                         throw new EventParsingException("Wrong notification type.", payload);
                 }
             }
-        } catch (EventParsingException ex){
+        } catch (EventParsingException ex) {
             _log.debug(String.format("Error parsing the event: %s. Payload: %s", ex.getMessage(), ex.getPayload()));
         } catch (Exception e) {
             _log.error(String.format("Error onMessage: %s", e.getMessage()));
         }
     }
 
+    /*
     private void onError(Throwable error) {
         _log.error(String.format("EventSourceClient onError: ", error.getMessage()));
+        notifyDisconnect();
+    }
+    */
+
+    private void onError(String error) {
+        _log.error(String.format("EventSourceClient onError: ", error));
         notifyDisconnect();
     }
 }
