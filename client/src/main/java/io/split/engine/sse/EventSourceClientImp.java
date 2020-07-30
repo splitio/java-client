@@ -50,7 +50,7 @@ public class EventSourceClientImp implements EventSourceClient {
 
         _splitSseEventSource = new SplitSseEventSource(_client.target(url),
                 inboundEvent -> { onMessage(inboundEvent); return null; },
-                s -> { onError(s); return null; });
+                s -> { onDisconnect(s); return null; });
         _splitSseEventSource.open();
 
         if(!_splitSseEventSource.isOpen()) {
@@ -77,46 +77,6 @@ public class EventSourceClientImp implements EventSourceClient {
         _splitSseEventSource.close();
         notifyDisconnect();
     }
-
-/*
-    @Override
-    public void start(String url) {
-        try {
-            if (_sseEventSource != null && _sseEventSource.isOpen()) { stop(); }
-
-            _sseEventSource = SseEventSource
-                    .target(_client.target(url))
-                    .reconnectingEvery(1, TimeUnit.SECONDS)
-                    .build();
-            _sseEventSource.register(this::onMessage, this::onError);
-            _sseEventSource.open();
-
-            if(_sseEventSource.isOpen()) {
-                _log.info(String.format("Connected and reading from: %s", url));
-
-                notifyConnected();
-            }
-        } catch (Exception e) {
-            _log.error(String.format("Error connecting or reading from %s : %s", url, e.getMessage()));
-            notifyDisconnect();
-        }
-    }*/
-
-    /*@Override
-    public void stop() {
-        if (_sseEventSource == null) {
-            notifyDisconnect();
-            return;
-        }
-
-        if (!_sseEventSource.isOpen()) {
-            _log.error("Event Source Client is closed.");
-            return;
-        }
-
-        _sseEventSource.close();
-        notifyDisconnect();
-    }*/
 
     @Override
     public synchronized void registerNotificationListener(NotificationsListener listener) {
@@ -171,15 +131,8 @@ public class EventSourceClientImp implements EventSourceClient {
         }
     }
 
-    /*
-    private void onError(Throwable error) {
-        _log.error(String.format("EventSourceClient onError: ", error.getMessage()));
-        notifyDisconnect();
-    }
-    */
-
-    private void onError(String error) {
-        _log.error(String.format("EventSourceClient onError: ", error));
+    private void onDisconnect(String message) {
+        _log.error(String.format("EventSourceClient onError: ", message));
         notifyDisconnect();
     }
 }
