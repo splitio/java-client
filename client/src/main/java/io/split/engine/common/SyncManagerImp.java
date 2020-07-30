@@ -65,38 +65,25 @@ public class SyncManagerImp implements SyncManager {
     public void shutdown() {
         _shutdown.set(true);
         _synchronizer.stopPeriodicFetching();
-        _sseHandler.stopWorkers();
         _pushManager.stop();
     }
 
     @Override
     public void onStreamingAvailable() {
         _synchronizer.stopPeriodicFetching();
-        _synchronizer.syncAll();
         _sseHandler.startWorkers();
+        _synchronizer.syncAll();
     }
 
     @Override
     public void onStreamingDisabled() {
-        _sseHandler.stop();
+        _sseHandler.stopWorkers();
         _synchronizer.startPeriodicFetching();
     }
 
     @Override
     public void onStreamingShutdown() {
         _pushManager.stop();
-        _sseHandler.stopWorkers();
-    }
-
-    private void startStreamingMode() {
-        _log.debug("Starting in streaming mode ...");
-        _synchronizer.syncAll();
-        _pushManager.start();
-    }
-
-    private void startPollingMode() {
-        _log.debug("Starting in polling mode ...");
-        _synchronizer.startPeriodicFetching();
     }
 
     @Override
@@ -114,13 +101,29 @@ public class SyncManagerImp implements SyncManager {
     }
 
     @Override
-    public void onDisconnect() {
+    public void onDisconnect(Boolean reconnect) {
         _log.debug("Event source client disconnected ...");
 
         if (_shutdown.get()) {
             return;
         }
+
+        if (reconnect) {
+            startStreamingMode();
+            return;
+        }
+
         _synchronizer.startPeriodicFetching();
-        _sseHandler.stopWorkers();
+    }
+
+    private void startStreamingMode() {
+        _log.debug("Starting in streaming mode ...");
+        _synchronizer.syncAll();
+        _pushManager.start();
+    }
+
+    private void startPollingMode() {
+        _log.debug("Starting in polling mode ...");
+        _synchronizer.startPeriodicFetching();
     }
 }

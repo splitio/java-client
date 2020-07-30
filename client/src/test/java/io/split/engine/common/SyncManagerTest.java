@@ -54,7 +54,7 @@ public class SyncManagerTest {
         syncManager.onStreamingDisabled();
 
         Mockito.verify(_synchronizer, Mockito.times(1)).startPeriodicFetching();
-        Mockito.verify(_sseHandler, Mockito.times(1)).stop();
+        Mockito.verify(_sseHandler, Mockito.times(1)).stopWorkers();
     }
 
     @Test
@@ -64,7 +64,6 @@ public class SyncManagerTest {
         syncManager.onStreamingShutdown();
 
         Mockito.verify(_pushManager, Mockito.times(1)).stop();
-        Mockito.verify(_sseHandler, Mockito.times(1)).stopWorkers();
     }
 
     @Test
@@ -81,9 +80,20 @@ public class SyncManagerTest {
     public void onDisconnect() {
         SyncManagerImp syncManager = new SyncManagerImp(true, _synchronizer, _pushManager, _sseHandler);
 
-        syncManager.onDisconnect();
+        syncManager.onDisconnect(false);
 
         Mockito.verify(_synchronizer, Mockito.times(1)).startPeriodicFetching();
+    }
+
+    @Test
+    public void onDisconnectAndReconnect() {
+        SyncManagerImp syncManager = new SyncManagerImp(true, _synchronizer, _pushManager, _sseHandler);
+
+        syncManager.onDisconnect(true);
+
+        Mockito.verify(_synchronizer, Mockito.times(0)).startPeriodicFetching();
+        Mockito.verify(_synchronizer, Mockito.times(1)).syncAll();
+        Mockito.verify(_pushManager, Mockito.times(1)).start();
     }
 
     @Test

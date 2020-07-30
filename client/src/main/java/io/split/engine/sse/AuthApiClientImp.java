@@ -68,6 +68,6 @@ public class AuthApiClientImp implements AuthApiClient {
             expiration = response.getExpiration();
         }
 
-        return new AuthenticationResponse(response.isPushEnabled(), response.getToken(), channels, expiration, false);
+        return new AuthenticationResponse(response.isPushEnabled(), response.getToken(), channels, 3600/*expiration*/, false);
     }
 }

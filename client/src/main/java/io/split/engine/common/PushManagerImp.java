@@ -68,15 +68,22 @@ public class PushManagerImp implements PushManager, Runnable {
 
     @Override
     public void run() {
+        _log.debug("Starting refresh token ...");
+        _sseHandler.stop();
         start();
     }
 
     private void scheduleNextTokenRefresh(long time) {
+        if (_scheduledExecutorService != null && !_scheduledExecutorService.isShutdown()) {
+            _log.debug("Force _scheduledExecutorService.shutdown()");
+            _scheduledExecutorService.shutdown();
+        }
+
         ThreadFactory threadFactory = new ThreadFactoryBuilder()
                 .setDaemon(true)
                 .setNameFormat("Split-SSERefreshToken-%d")
                 .build();
-
+        _log.debug(String.format("scheduleNextTokenRefresh in %s SECONDS", time));
         _scheduledExecutorService = Executors.newSingleThreadScheduledExecutor(threadFactory);
         _scheduledExecutorService.schedule(this, time, TimeUnit.SECONDS);
     }

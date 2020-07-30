@@ -12,7 +12,6 @@ import org.slf4j.LoggerFactory;
 import javax.ws.rs.client.Client;
 import javax.ws.rs.client.ClientBuilder;
 import javax.ws.rs.sse.InboundSseEvent;
-import javax.ws.rs.sse.SseEventSource;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
@@ -21,13 +20,12 @@ import static com.google.common.base.Preconditions.checkNotNull;
 
 public class EventSourceClientImp implements EventSourceClient {
     private static final Logger _log = LoggerFactory.getLogger(EventSourceClient.class);
+
     private final Client _client;
     private final NotificationParser _notificationParser;
     private final List<FeedbackLoopListener> _feedbackListeners;
     private final List<NotificationsListener> _notificationsListeners;
-
-    private SseEventSource _sseEventSource;
-    private SplitSseEventSource _splitSseEventSource;
+    private final SplitSseEventSource _splitSseEventSource;
 
     @VisibleForTesting
     /* package private */ EventSourceClientImp(NotificationParser notificationParser) {
@@ -38,6 +36,9 @@ public class EventSourceClientImp implements EventSourceClient {
                 .newBuilder()
                 .readTimeout(70, TimeUnit.SECONDS)
                 .build();
+        _splitSseEventSource = new SplitSseEventSource(
+                inboundEvent -> { onMessage(inboundEvent); return null; },
+                reconnect -> { onDisconnect(reconnect); return null; });
     }
 
     public static EventSourceClientImp build() {
@@ -46,20 +47,21 @@ public class EventSourceClientImp implements EventSourceClient {
 
     @Override
     public void start(String url) {
-        if (_splitSseEventSource != null && _splitSseEventSource.isOpen()) { stop(); }
-
-        _splitSseEventSource = new SplitSseEventSource(_client.target(url),
-                inboundEvent -> { onMessage(inboundEvent); return null; },
-                s -> { onDisconnect(s); return null; });
-        _splitSseEventSource.open();
-
-        if(!_splitSseEventSource.isOpen()) {
-            notifyDisconnect();
-            return;
+        if (_splitSseEventSource != null && _splitSseEventSource.isOpen()) {
+            _splitSseEventSource.close();
         }
 
-        _log.info(String.format("Connected and reading from: %s", url));
-        notifyConnected();
+        /*_splitSseEventSource = new SplitSseEventSource(_client.target(url),
+                inboundEvent -> { onMessage(inboundEvent); return null; },
+                reconnect -> { onDisconnect(reconnect); return null; });*/
+
+        _splitSseEventSource.setTarget(_client.target(url));
+        _splitSseEventSource.open();
+
+        if(_splitSseEventSource.isOpen()) {
+            _log.info(String.format("Connected and reading from: %s", url));
+            notifyConnected();
+        }
     }
 
     @Override
@@ -74,8 +76,8 @@ public class EventSourceClientImp implements EventSourceClient {
             return;
         }
 
-        _splitSseEventSource.close();
         notifyDisconnect();
+        _splitSseEventSource.close();
     }
 
     @Override
@@ -86,22 +88,6 @@ public class EventSourceClientImp implements EventSourceClient {
     @Override
     public synchronized void registerFeedbackListener(FeedbackLoopListener listener) {
         _feedbackListeners.add(listener);
-    }
-
-    public synchronized void notifyMessageNotification (IncomingNotification incomingNotification) {
-        _notificationsListeners.forEach(listener -> listener.onMessageNotificationReceived(incomingNotification));
-    }
-
-    public synchronized void notifyErrorNotification (ErrorNotification errorNotification) {
-        _feedbackListeners.forEach(listener -> listener.onErrorNotification(errorNotification));
-    }
-
-    public synchronized void notifyConnected () {
-        _feedbackListeners.forEach(listener -> listener.onConnected());
-    }
-
-    public synchronized void notifyDisconnect () {
-        _feedbackListeners.forEach(listener -> listener.onDisconnect());
     }
 
     private void onMessage(InboundSseEvent event) {
@@ -127,12 +113,32 @@ public class EventSourceClientImp implements EventSourceClient {
         } catch (EventParsingException ex) {
             _log.debug(String.format("Error parsing the event: %s. Payload: %s", ex.getMessage(), ex.getPayload()));
         } catch (Exception e) {
-            _log.error(String.format("Error onMessage: %s", e.getMessage()));
+            _log.warn(String.format("Error onMessage: %s", e.getMessage()));
         }
     }
 
-    private void onDisconnect(String message) {
-        _log.error(String.format("EventSourceClient onError: ", message));
-        notifyDisconnect();
+    private void onDisconnect(Boolean reconnect) {
+        _log.warn(String.format("onDisconnect, reconnect: %s", reconnect));
+        notifyDisconnect(reconnect);
+    }
+
+    private synchronized void notifyMessageNotification (IncomingNotification incomingNotification) {
+        _notificationsListeners.forEach(listener -> listener.onMessageNotificationReceived(incomingNotification));
+    }
+
+    private synchronized void notifyErrorNotification (ErrorNotification errorNotification) {
+        _feedbackListeners.forEach(listener -> listener.onErrorNotification(errorNotification));
+    }
+
+    private synchronized void notifyConnected () {
+        _feedbackListeners.forEach(listener -> listener.onConnected());
+    }
+
+    private synchronized void notifyDisconnect (Boolean reconnect) {
+        _feedbackListeners.forEach(listener -> listener.onDisconnect(reconnect));
+    }
+
+    private synchronized void notifyDisconnect () {
+        _feedbackListeners.forEach(listener -> listener.onDisconnect(false));
     }
 }

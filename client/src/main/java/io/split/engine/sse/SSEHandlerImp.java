@@ -60,7 +60,7 @@ public class SSEHandlerImp implements SSEHandler, NotificationsListener {
             uri.addParameter("accessToken", token);
 
             _eventSourceClient.start(uri.toString());
-        }catch (Exception ex) {
+        } catch (Exception ex) {
             _log.error("Exception in SSE Handler start: %s", ex.getMessage());
         }
     }
@@ -68,6 +68,7 @@ public class SSEHandlerImp implements SSEHandler, NotificationsListener {
     @Override
     public void stop() {
         _eventSourceClient.stop();
+        stopWorkers();
     }
 
     @Override

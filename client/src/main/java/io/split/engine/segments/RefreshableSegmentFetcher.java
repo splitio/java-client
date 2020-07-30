@@ -130,6 +130,7 @@ public class RefreshableSegmentFetcher implements Closeable, SegmentFetcher, Run
             return;
         }
 
+        _log.debug("Starting PeriodicFetching Segments ...");
         _scheduledFuture = _scheduledExecutorService.scheduleWithFixedDelay(this, 0L, _refreshEveryNSeconds.get(), TimeUnit.SECONDS);
     }
 
@@ -141,6 +142,7 @@ public class RefreshableSegmentFetcher implements Closeable, SegmentFetcher, Run
         }
 
         _scheduledFuture.cancel(false);
+        _log.debug("Stopped PeriodicFetching Segments ...");
     }
 
     @Override
