@@ -55,8 +55,7 @@ public class PushManagerImp implements PushManager, Runnable {
 
         if (response.isPushEnabled()) {
             _sseHandler.start(response.getToken(), response.getChannels());
-//            scheduleConnectionReset(response.getExpiration());
-            scheduleConnectionReset(60);
+            scheduleConnectionReset(response.getExpiration());
         } else {
             stop();
         }

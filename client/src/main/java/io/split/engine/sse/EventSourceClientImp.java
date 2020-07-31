@@ -1,7 +1,6 @@
 package io.split.engine.sse;
 
 import com.google.common.annotations.VisibleForTesting;
-import io.split.engine.common.Backoff;
 import io.split.engine.sse.dtos.ErrorNotification;
 import io.split.engine.sse.dtos.IncomingNotification;
 import io.split.engine.sse.exceptions.EventParsingException;
@@ -12,23 +11,17 @@ import org.slf4j.LoggerFactory;
 
 import javax.ws.rs.client.Client;
 import javax.ws.rs.client.ClientBuilder;
-import javax.ws.rs.client.WebTarget;
 import javax.ws.rs.sse.InboundSseEvent;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicReference;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
 public class EventSourceClientImp implements EventSourceClient {
-
-    private static final double MAX_SECONDS_BACKOFF_ALLOWED = 1800;
-
     private static final Logger _log = LoggerFactory.getLogger(EventSourceClient.class);
 
     private final Client _client;
@@ -73,6 +66,11 @@ public class EventSourceClientImp implements EventSourceClient {
 
     @Override
     public void stop() {
+        if (_splitSseEventSource == null) {
+            _feedbackListeners.forEach(listener -> listener.onDisconnect(false));
+            return;
+        }
+
         if (!_splitSseEventSource.isOpen()) {
             _log.warn("Event Source Client is closed.");
             return;
@@ -112,7 +110,6 @@ public class EventSourceClientImp implements EventSourceClient {
             }
         } catch (EventParsingException ex) {
             _log.debug(String.format("Error parsing the event: %s. Payload: %s", ex.getMessage(), ex.getPayload()));
-            //onInternalReconnect("Reconnect - error parsing");
         } catch (Exception e) {
             _log.warn(String.format("Error onMessage: %s", e.getMessage()));
         }
@@ -126,16 +123,6 @@ public class EventSourceClientImp implements EventSourceClient {
     private synchronized void notifyErrorNotification (ErrorNotification errorNotification) {
         _feedbackListeners.forEach(listener -> listener.onErrorNotification(errorNotification));
     }
-
-    /*
-    SSE:
-     - error retryable:
-        - se avisa al sync manager
-        - sync manager hace switch a polling
-        - reinicia push manager
-        - syncAll()
-
-     */
 
     private void handleSSEStatusMessages() {
         while(true) {
@@ -162,11 +149,4 @@ public class EventSourceClientImp implements EventSourceClient {
         }
 
     }
-/*
-    private void onInternalReconnect(String message) {
-        _log.debug(message);
-        stop();
-        start();
-    }
- */
 }
