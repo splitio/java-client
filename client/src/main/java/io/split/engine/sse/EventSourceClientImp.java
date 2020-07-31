@@ -1,6 +1,7 @@
 package io.split.engine.sse;
 
 import com.google.common.annotations.VisibleForTesting;
+import io.split.engine.common.Backoff;
 import io.split.engine.sse.dtos.ErrorNotification;
 import io.split.engine.sse.dtos.IncomingNotification;
 import io.split.engine.sse.exceptions.EventParsingException;
@@ -15,6 +16,7 @@ import javax.ws.rs.sse.InboundSseEvent;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicReference;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
@@ -26,9 +28,10 @@ public class EventSourceClientImp implements EventSourceClient {
     private final List<FeedbackLoopListener> _feedbackListeners;
     private final List<NotificationsListener> _notificationsListeners;
     private final SplitSseEventSource _splitSseEventSource;
+    private final AtomicReference<String> _url;
 
     @VisibleForTesting
-    /* package private */ EventSourceClientImp(NotificationParser notificationParser) {
+    /* package private */ EventSourceClientImp(NotificationParser notificationParser, Backoff backoff) {
         _notificationParser = checkNotNull(notificationParser);
         _feedbackListeners = new ArrayList<>();
         _notificationsListeners = new ArrayList<>();
@@ -38,22 +41,29 @@ public class EventSourceClientImp implements EventSourceClient {
                 .build();
         _splitSseEventSource = new SplitSseEventSource(
                 inboundEvent -> { onMessage(inboundEvent); return null; },
-                reconnect -> { onDisconnect(reconnect); return null; });
+                reconnect -> { onDisconnect(reconnect); return null; },
+                message -> { onInternalReconnect(message); return null; },
+                backoff);
+
+        _url = new AtomicReference<>();
     }
 
+    //add parameter base backoff
     public static EventSourceClientImp build() {
-        return new EventSourceClientImp(new NotificationParserImp());
+        return new EventSourceClientImp(new NotificationParserImp(), new Backoff(1));
     }
 
     @Override
-    public void start(String url) {
+    public void setUrl(String url) {
+        _url.set(url);
+    }
+
+    @Override
+    public void start() {
+        String url = _url.get();
         if (_splitSseEventSource != null && _splitSseEventSource.isOpen()) {
             _splitSseEventSource.close();
         }
-
-        /*_splitSseEventSource = new SplitSseEventSource(_client.target(url),
-                inboundEvent -> { onMessage(inboundEvent); return null; },
-                reconnect -> { onDisconnect(reconnect); return null; });*/
 
         _splitSseEventSource.setTarget(_client.target(url));
         _splitSseEventSource.open();
@@ -76,7 +86,6 @@ public class EventSourceClientImp implements EventSourceClient {
             return;
         }
 
-        notifyDisconnect();
         _splitSseEventSource.close();
     }
 
@@ -112,6 +121,7 @@ public class EventSourceClientImp implements EventSourceClient {
             }
         } catch (EventParsingException ex) {
             _log.debug(String.format("Error parsing the event: %s. Payload: %s", ex.getMessage(), ex.getPayload()));
+            //onInternalReconnect("Reconnect - error parsing");
         } catch (Exception e) {
             _log.warn(String.format("Error onMessage: %s", e.getMessage()));
         }
@@ -140,5 +150,11 @@ public class EventSourceClientImp implements EventSourceClient {
 
     private synchronized void notifyDisconnect () {
         _feedbackListeners.forEach(listener -> listener.onDisconnect(false));
+    }
+
+    private void onInternalReconnect(String message) {
+        _log.debug(message);
+        stop();
+        start();
     }
 }

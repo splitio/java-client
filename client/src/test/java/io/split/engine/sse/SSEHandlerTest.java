@@ -34,7 +34,8 @@ public class SSEHandlerTest {
         SSEHandler sseHandler = new SSEHandlerImp(_eventSourceClient, _baseUrl, _splitsWorker, _notificationProcessor, _segmentWorker);
         sseHandler.start(token, channels);
 
-        Mockito.verify(_eventSourceClient, Mockito.times(1)).start(url);
+        Mockito.verify(_eventSourceClient, Mockito.times(1)).setUrl(url);
+        Mockito.verify(_eventSourceClient, Mockito.times(1)).start();
         Mockito.verify(_eventSourceClient, Mockito.never()).stop();
     }
 
@@ -48,7 +49,8 @@ public class SSEHandlerTest {
         sseHandler.start(token, channels);
         sseHandler.stop();
 
-        Mockito.verify(_eventSourceClient, Mockito.times(1)).start(url);
+        Mockito.verify(_eventSourceClient, Mockito.times(1)).setUrl(url);
+        Mockito.verify(_eventSourceClient, Mockito.times(1)).start();
         Mockito.verify(_eventSourceClient, Mockito.times(1)).stop();
     }
 

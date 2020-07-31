@@ -59,7 +59,8 @@ public class SSEHandlerImp implements SSEHandler, NotificationsListener {
             uri.addParameter("v", "1.1");
             uri.addParameter("accessToken", token);
 
-            _eventSourceClient.start(uri.toString());
+            _eventSourceClient.setUrl(uri.toString());
+            _eventSourceClient.start();
         } catch (Exception ex) {
             _log.error("Exception in SSE Handler start: %s", ex.getMessage());
         }

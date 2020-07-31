@@ -77,6 +77,7 @@ public class PushManagerImp implements PushManager, Runnable {
         if (_scheduledExecutorService != null && !_scheduledExecutorService.isShutdown()) {
             _log.debug("Force _scheduledExecutorService.shutdown()");
             _scheduledExecutorService.shutdown();
+            _scheduledExecutorService = null;
         }
 
         ThreadFactory threadFactory = new ThreadFactoryBuilder()
