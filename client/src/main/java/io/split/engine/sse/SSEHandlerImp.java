@@ -37,7 +37,6 @@ public class SSEHandlerImp implements SSEHandler, NotificationsListener {
         _splitsWorker = checkNotNull(splitsWorker);
         _notificationProcessor = checkNotNull(notificationProcessor);
         _segmentWorker = checkNotNull(segmentWorker);
-
         _eventSourceClient.registerNotificationListener(this);
     }
 
@@ -59,8 +58,7 @@ public class SSEHandlerImp implements SSEHandler, NotificationsListener {
             uri.addParameter("v", "1.1");
             uri.addParameter("accessToken", token);
 
-            _eventSourceClient.setUrl(uri.toString());
-            _eventSourceClient.start();
+            _eventSourceClient.start(uri.toString());
         } catch (Exception ex) {
             _log.error("Exception in SSE Handler start: %s", ex.getMessage());
         }

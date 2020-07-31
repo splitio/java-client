@@ -10,6 +10,7 @@ import org.apache.http.impl.client.CloseableHttpClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.concurrent.Future;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.Executors;
@@ -23,7 +24,8 @@ public class PushManagerImp implements PushManager, Runnable {
     private final AuthApiClient _authApiClient;
     private final SSEHandler _sseHandler;
     private final int _authRetryBackOffBase;
-    
+    private Future<?> _nextTokenRefreshTask;
+
     private ScheduledExecutorService _scheduledExecutorService;
 
     @VisibleForTesting
@@ -33,6 +35,13 @@ public class PushManagerImp implements PushManager, Runnable {
         _authApiClient = checkNotNull(authApiClient);
         _sseHandler = checkNotNull(sseHandler);
         _authRetryBackOffBase = checkNotNull(authRetryBackOffBase);
+
+        ThreadFactory threadFactory = new ThreadFactoryBuilder()
+                .setDaemon(true)
+                .setNameFormat("Split-SSERefreshToken-%d")
+                .build();
+        _scheduledExecutorService = Executors.newSingleThreadScheduledExecutor(threadFactory);
+
     }
 
     public static PushManagerImp build(String authUrl, CloseableHttpClient httpClient, SSEHandler sseHandler, int authRetryBackOffBase) {
@@ -46,23 +55,23 @@ public class PushManagerImp implements PushManager, Runnable {
 
         if (response.isPushEnabled()) {
             _sseHandler.start(response.getToken(), response.getChannels());
-            scheduleNextTokenRefresh(response.getExpiration());
+//            scheduleConnectionReset(response.getExpiration());
+            scheduleConnectionReset(60);
         } else {
             stop();
         }
 
         if (response.isRetry()) {
             // TODO: update this after backoffService implementation.
-            scheduleNextTokenRefresh(_authRetryBackOffBase);
+            scheduleConnectionReset(_authRetryBackOffBase);
         }
     }
 
     @Override
     public void stop() {
         _sseHandler.stop();
-
-        if (_scheduledExecutorService != null && !_scheduledExecutorService.isShutdown()) {
-            _scheduledExecutorService.shutdown();
+        if (_nextTokenRefreshTask != null) {
+            _nextTokenRefreshTask.cancel(false);
         }
     }
 
@@ -73,19 +82,11 @@ public class PushManagerImp implements PushManager, Runnable {
         start();
     }
 
-    private void scheduleNextTokenRefresh(long time) {
-        if (_scheduledExecutorService != null && !_scheduledExecutorService.isShutdown()) {
-            _log.debug("Force _scheduledExecutorService.shutdown()");
-            _scheduledExecutorService.shutdown();
-            _scheduledExecutorService = null;
-        }
-
-        ThreadFactory threadFactory = new ThreadFactoryBuilder()
-                .setDaemon(true)
-                .setNameFormat("Split-SSERefreshToken-%d")
-                .build();
+    private void scheduleConnectionReset(long time) {
         _log.debug(String.format("scheduleNextTokenRefresh in %s SECONDS", time));
-        _scheduledExecutorService = Executors.newSingleThreadScheduledExecutor(threadFactory);
-        _scheduledExecutorService.schedule(this, time, TimeUnit.SECONDS);
+        _nextTokenRefreshTask = _scheduledExecutorService.schedule(() -> {
+            stop();
+            start();
+        }, time, TimeUnit.SECONDS);
     }
 }

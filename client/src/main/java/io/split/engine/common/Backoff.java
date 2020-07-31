@@ -11,7 +11,7 @@ public class Backoff {
         _attempt = new AtomicInteger(0);
     }
 
-    public double interval() {
+    public long interval() {
         double interval = 0;
 
         int attempt = _attempt.get();
@@ -21,7 +21,7 @@ public class Backoff {
 
         _attempt.set(attempt++);
 
-        return interval;
+        return (long) interval;
     }
 
     public void reset() {

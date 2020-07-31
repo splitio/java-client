@@ -12,15 +12,23 @@ import org.slf4j.LoggerFactory;
 
 import javax.ws.rs.client.Client;
 import javax.ws.rs.client.ClientBuilder;
+import javax.ws.rs.client.WebTarget;
 import javax.ws.rs.sse.InboundSseEvent;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
 public class EventSourceClientImp implements EventSourceClient {
+
+    private static final double MAX_SECONDS_BACKOFF_ALLOWED = 1800;
+
     private static final Logger _log = LoggerFactory.getLogger(EventSourceClient.class);
 
     private final Client _client;
@@ -28,64 +36,47 @@ public class EventSourceClientImp implements EventSourceClient {
     private final List<FeedbackLoopListener> _feedbackListeners;
     private final List<NotificationsListener> _notificationsListeners;
     private final SplitSseEventSource _splitSseEventSource;
-    private final AtomicReference<String> _url;
+    private final LinkedBlockingQueue<StatusMessage> _incomingSSEStatus;
+    private final ScheduledExecutorService _sseMonitorExecutor;
 
     @VisibleForTesting
-    /* package private */ EventSourceClientImp(NotificationParser notificationParser, Backoff backoff) {
+    /* package private */ EventSourceClientImp(NotificationParser notificationParser) {
         _notificationParser = checkNotNull(notificationParser);
+
+        _incomingSSEStatus = new LinkedBlockingQueue<>();
+        _sseMonitorExecutor = Executors.newSingleThreadScheduledExecutor();
         _feedbackListeners = new ArrayList<>();
         _notificationsListeners = new ArrayList<>();
         _client = ClientBuilder
                 .newBuilder()
                 .readTimeout(70, TimeUnit.SECONDS)
                 .build();
-        _splitSseEventSource = new SplitSseEventSource(
-                inboundEvent -> { onMessage(inboundEvent); return null; },
-                reconnect -> { onDisconnect(reconnect); return null; },
-                message -> { onInternalReconnect(message); return null; },
-                backoff);
+        _splitSseEventSource = new SplitSseEventSource(inboundEvent -> { onMessage(inboundEvent); return null; });
 
-        _url = new AtomicReference<>();
+        // Start the SSE Monitor thread at construction time.
+        _sseMonitorExecutor.execute(this::handleSSEStatusMessages);
     }
 
     //add parameter base backoff
     public static EventSourceClientImp build() {
-        return new EventSourceClientImp(new NotificationParserImp(), new Backoff(1));
+        return new EventSourceClientImp(new NotificationParserImp());
     }
 
     @Override
-    public void setUrl(String url) {
-        _url.set(url);
-    }
-
-    @Override
-    public void start() {
-        String url = _url.get();
+    public void start(String url) {
         if (_splitSseEventSource != null && _splitSseEventSource.isOpen()) {
             _splitSseEventSource.close();
         }
 
-        _splitSseEventSource.setTarget(_client.target(url));
-        _splitSseEventSource.open();
-
-        if(_splitSseEventSource.isOpen()) {
-            _log.info(String.format("Connected and reading from: %s", url));
-            notifyConnected();
-        }
+        _splitSseEventSource.open(_client.target(url), _incomingSSEStatus);
     }
 
     @Override
     public void stop() {
-        if (_splitSseEventSource == null) {
-            notifyDisconnect();
-            return;
-        }
-
         if (!_splitSseEventSource.isOpen()) {
             _log.warn("Event Source Client is closed.");
             return;
         }
-
         _splitSseEventSource.close();
     }
 
@@ -127,10 +118,6 @@ public class EventSourceClientImp implements EventSourceClient {
         }
     }
 
-    private void onDisconnect(Boolean reconnect) {
-        _log.warn(String.format("onDisconnect, reconnect: %s", reconnect));
-        notifyDisconnect(reconnect);
-    }
 
     private synchronized void notifyMessageNotification (IncomingNotification incomingNotification) {
         _notificationsListeners.forEach(listener -> listener.onMessageNotificationReceived(incomingNotification));
@@ -140,21 +127,46 @@ public class EventSourceClientImp implements EventSourceClient {
         _feedbackListeners.forEach(listener -> listener.onErrorNotification(errorNotification));
     }
 
-    private synchronized void notifyConnected () {
-        _feedbackListeners.forEach(listener -> listener.onConnected());
-    }
+    /*
+    SSE:
+     - error retryable:
+        - se avisa al sync manager
+        - sync manager hace switch a polling
+        - reinicia push manager
+        - syncAll()
 
-    private synchronized void notifyDisconnect (Boolean reconnect) {
-        _feedbackListeners.forEach(listener -> listener.onDisconnect(reconnect));
-    }
+     */
 
-    private synchronized void notifyDisconnect () {
-        _feedbackListeners.forEach(listener -> listener.onDisconnect(false));
-    }
+    private void handleSSEStatusMessages() {
+        while(true) {
+            try {
+                StatusMessage message = _incomingSSEStatus.take();
+                switch (message.code) {
+                    case CONNECTED:
+                        _log.info("Successfully connected to sse");
+                        _feedbackListeners.forEach(FeedbackLoopListener::onConnected);
+                        break;
+                    case RETRYABLE_ERROR:
+                        _feedbackListeners.forEach(listener -> listener.onDisconnect(true));
+                        break;
+                    case NONRETRYABLE_ERROR:
+                    case DISCONNECTED:
+                        _feedbackListeners.forEach(listener -> listener.onDisconnect(false));
+                }
+            } catch (InterruptedException e) {
+                // TODO: Log
+                // Thread interrupted: exit gracefully.
+                Thread.currentThread().interrupt();
+                break;
+            }
+        }
 
+    }
+/*
     private void onInternalReconnect(String message) {
         _log.debug(message);
         stop();
         start();
     }
+ */
 }

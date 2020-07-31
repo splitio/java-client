@@ -1,7 +1,7 @@
 package io.split.engine.sse;
 
-import io.split.engine.common.Backoff;
 import org.glassfish.jersey.media.sse.EventInput;
+import org.glassfish.jersey.media.sse.InboundEvent;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -9,98 +9,85 @@ import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.client.Invocation;
 import javax.ws.rs.client.WebTarget;
 import javax.ws.rs.sse.InboundSseEvent;
-import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.Executors;
+import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Function;
 
 public class SplitSseEventSource {
     private static final Logger _log = LoggerFactory.getLogger(EventSourceClient.class);
     private static final String SERVER_SENT_EVENTS = "text/event-stream";
-    private static final double MAX_SECONDS_BACKOFF_ALLOWED = 1800;
-
     private final AtomicReference<SseState> _state = new AtomicReference<>(SseState.CLOSED);
-
     private final Function<InboundSseEvent, Void> _eventCallback;
-    private final Function<Boolean, Void> _disconnectedCallback;
-    private final Function<String, Void> _reconnectCallback;
-    private final Backoff _backoff;
-    private WebTarget _target;
-    private CountDownLatch _firstContactSignal;
+    private final ScheduledExecutorService _executor;
+
     private EventInput _eventInput;
-    private ScheduledExecutorService _executor;
 
-    public SplitSseEventSource(Function<InboundSseEvent, Void> eventCallback, Function<Boolean, Void> disconnectedCallback, Function<String, Void> reconnectCallback, Backoff backoff) {
-        _eventCallback = eventCallback;
-        _disconnectedCallback = disconnectedCallback;
-        _reconnectCallback = reconnectCallback;
-        _backoff = backoff;
-    }
 
-    public void setTarget(WebTarget target){
-        _target = target;
-    }
-
-    public void open() {
-        _eventInput = null;
-        double interval = _backoff.interval();
-        _log.debug(String.format("Sse Backoff interval: %s", interval));
-
-        if (interval > MAX_SECONDS_BACKOFF_ALLOWED) {
-            _disconnectedCallback.apply(false);
-            _state.set(SseState.CLOSED);
-            return;
-        }
-
-        _firstContactSignal = new CountDownLatch(1);
+    public SplitSseEventSource(Function<InboundSseEvent, Void> eventCallback) {
         _executor = Executors.newSingleThreadScheduledExecutor();
-        _executor.schedule(this::run, (long)interval, TimeUnit.SECONDS);
-        awaitFirstContact();
+        _eventCallback = eventCallback;
     }
 
-    private void run() {
+
+    public void open(WebTarget target, LinkedBlockingQueue<StatusMessage>  sseStatus) {
+        if (isOpen()) {
+            throw new IllegalStateException("Event Source Already connected.");
+        }
+        _executor.execute(() -> run(target, sseStatus));
+    }
+
+    private void notify(LinkedBlockingQueue<StatusMessage> queue, StatusMessage message) {
         try {
-            if (isOpen()) {
-                throw new IllegalStateException("Event Source Already connected.");
-            }
+            queue.put(message);
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            _log.debug("Waiting to propagate status but got interrupted.");
+        }
+    }
 
-            final Invocation.Builder request = _target.request(SERVER_SENT_EVENTS);
-
-            try {
-                _eventInput = request.get(EventInput.class);
+    private void run(WebTarget target, LinkedBlockingQueue<StatusMessage> feedback) {
+        try {
+            // Initialization
+            final Invocation.Builder request = target.request(SERVER_SENT_EVENTS);
+            _eventInput = request.get(EventInput.class);
+            if (_eventInput != null && !_eventInput.isClosed()) {
+                notify(feedback, new StatusMessage(StatusMessage.Code.CONNECTED));
                 _state.set(SseState.OPEN);
-                _log.debug(String.format("SplitSseEventSource.run state: %s", _state.get()));
-                _backoff.reset();
-            } finally {
-                if (_firstContactSignal != null) {
-                    // release the signal regardless of event source state or connection request outcome
-                    _firstContactSignal.countDown();
-                }
+            } else {
+                // TODO: Can this happen?
             }
 
-            while (isOpen() && !Thread.currentThread().isInterrupted()) {
-                if (_eventInput == null || _eventInput.isClosed()) {
-                    if (isOpen()) {
-                        _log.debug("SplitSseEventSource - Connection lost. Reconnect true");
-                        internalReconnect();
-                    }
-                    break;
-                } else {
-                    _eventCallback.apply(_eventInput.read());
+            // Processing incoming messages
+            while (isOpen() && !Thread.currentThread().isInterrupted() && null != _eventInput && !_eventInput.isClosed()) {
+                InboundEvent e = _eventInput.read();
+                if (null == e) {
+                    notify(feedback, new StatusMessage(StatusMessage.Code.RETRYABLE_ERROR));
+                    return;
                 }
+                _eventCallback.apply(e);
             }
+
+            // Notify graceful disconnection
+            notify(feedback, new StatusMessage(StatusMessage.Code.DISCONNECTED));
 
         } catch (WebApplicationException wae) {
-            _log.debug(String.format("Unable to connect. Reconnect: true. %s - %s", wae.getResponse(), wae.getMessage()));
-            close(true);
+            // TODO: Log!
+            if (wae.getResponse().getStatus() >= 400 && wae.getResponse().getStatus() < 500) {
+                notify(feedback, new StatusMessage(StatusMessage.Code.NONRETRYABLE_ERROR));
+            } else {
+                notify(feedback, new StatusMessage(StatusMessage.Code.RETRYABLE_ERROR));
+            }
         } catch (Exception exc) {
+            // Unexpected exception: disable streaming completely
             _log.warn(exc.getMessage());
-            close();
+            notify(feedback, new StatusMessage(StatusMessage.Code.NONRETRYABLE_ERROR));
         } finally {
+            if (_eventInput != null) {
+                _eventInput.close();
+            }
             _state.set(SseState.CLOSED);
-            Thread.currentThread().interrupt();
         }
     }
 
@@ -108,7 +95,7 @@ public class SplitSseEventSource {
         return _state.get() == SseState.OPEN;
     }
 
-    private void close(boolean reconnect) {
+    public void close() {
         _log.debug(String.format("SplitSseEventSource.close state: %s", _state.get()));
         if (!isOpen()) {
             _log.warn("SplitSseEventSource already closed.");
@@ -116,37 +103,8 @@ public class SplitSseEventSource {
         }
 
         _state.set(SseState.CLOSED);
-        _disconnectedCallback.apply(reconnect);
         _eventInput.close();
-        _executor.shutdown();
         _log.debug(String.format("SplitSseEventSource.close final state: %s", _state.get()));
-    }
-
-    public void close() {
-        close(false);
-    }
-
-    private void internalReconnect() {
-        _state.set(SseState.CLOSED);
-        _eventInput.close();
-        _executor.shutdown();
-        _reconnectCallback.apply("Reconnect - Connection lost.");
-    }
-
-    private void awaitFirstContact() {
-        try {
-            if (_firstContactSignal == null) {
-                return;
-            }
-
-            try {
-                _firstContactSignal.await();
-            } catch (InterruptedException ex) {
-                Thread.currentThread().interrupt();
-            }
-        } finally {
-            _log.debug("First contact signal released.");
-        }
     }
 
     public enum SseState {
