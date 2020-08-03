@@ -71,7 +71,7 @@ public class SplitSseEventSource {
             // Processing incoming messages
             while (isOpen() && !Thread.currentThread().isInterrupted() && null != _eventInput && !_eventInput.isClosed()) {
                 InboundEvent e = _eventInput.read();
-                if (null == e) {
+                if (null == e  && isOpen()) {
                     notify(feedback, new StatusMessage(StatusMessage.Code.RETRYABLE_ERROR));
                     return;
                 }

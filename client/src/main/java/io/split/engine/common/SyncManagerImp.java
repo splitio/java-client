@@ -115,7 +115,7 @@ public class SyncManagerImp implements SyncManager {
 
     @Override
     public void onDisconnect(Boolean reconnect) {
-        _log.debug("Event source client disconnected ...");
+        _log.debug(String.format("Event source client disconnected. Reconnect: %s.", reconnect));
 
         if (_shutdown.get()) {
             return;

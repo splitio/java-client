@@ -100,6 +100,7 @@ public class PushManagerImp implements PushManager {
     private void scheduleConnectionReset(long time) {
         _log.debug(String.format("scheduleNextTokenRefresh in %s SECONDS", time));
         _nextTokenRefreshTask = _scheduledExecutorService.schedule(() -> {
+            _log.debug("Starting scheduleNextTokenRefresh ...");
             stop();
             start();
         }, time, TimeUnit.SECONDS);
