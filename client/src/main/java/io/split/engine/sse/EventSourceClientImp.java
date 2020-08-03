@@ -56,12 +56,15 @@ public class EventSourceClientImp implements EventSourceClient {
     }
 
     @Override
-    public void start(String url) {
+    public boolean start(String url) {
         if (_splitSseEventSource != null && _splitSseEventSource.isOpen()) {
             _splitSseEventSource.close();
         }
 
         _splitSseEventSource.open(_client.target(url), _incomingSSEStatus);
+        _splitSseEventSource.awaitFirstContact();
+
+        return _splitSseEventSource.isOpen();
     }
 
     @Override
@@ -141,7 +144,7 @@ public class EventSourceClientImp implements EventSourceClient {
                         _feedbackListeners.forEach(listener -> listener.onDisconnect(false));
                 }
             } catch (InterruptedException e) {
-                // TODO: Log
+                _log.warn(String.format("handleSSEStatusMessages Thread interrupted: exit gracefully.", e.getMessage()));
                 // Thread interrupted: exit gracefully.
                 Thread.currentThread().interrupt();
                 break;

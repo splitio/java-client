@@ -9,6 +9,7 @@ import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.client.Invocation;
 import javax.ws.rs.client.WebTarget;
 import javax.ws.rs.sse.InboundSseEvent;
+import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.Executors;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ScheduledExecutorService;
@@ -21,6 +22,7 @@ public class SplitSseEventSource {
     private final AtomicReference<SseState> _state = new AtomicReference<>(SseState.CLOSED);
     private final Function<InboundSseEvent, Void> _eventCallback;
     private final ScheduledExecutorService _executor;
+    private CountDownLatch _firstContactSignal;
 
     private EventInput _eventInput;
 
@@ -35,6 +37,8 @@ public class SplitSseEventSource {
         if (isOpen()) {
             throw new IllegalStateException("Event Source Already connected.");
         }
+
+        _firstContactSignal = new CountDownLatch(1);
         _executor.execute(() -> run(target, sseStatus));
     }
 
@@ -50,13 +54,18 @@ public class SplitSseEventSource {
     private void run(WebTarget target, LinkedBlockingQueue<StatusMessage> feedback) {
         try {
             // Initialization
-            final Invocation.Builder request = target.request(SERVER_SENT_EVENTS);
-            _eventInput = request.get(EventInput.class);
-            if (_eventInput != null && !_eventInput.isClosed()) {
-                notify(feedback, new StatusMessage(StatusMessage.Code.CONNECTED));
-                _state.set(SseState.OPEN);
-            } else {
-                // TODO: Can this happen?
+            try {
+                final Invocation.Builder request = target.request(SERVER_SENT_EVENTS);
+                _eventInput = request.get(EventInput.class);
+                if (_eventInput != null && !_eventInput.isClosed()) {
+                    notify(feedback, new StatusMessage(StatusMessage.Code.CONNECTED));
+                    _state.set(SseState.OPEN);
+                }
+            } finally {
+                if (_firstContactSignal != null) {
+                    // release the signal regardless of event source state or connection request outcome
+                    _firstContactSignal.countDown();
+                }
             }
 
             // Processing incoming messages
@@ -74,6 +83,7 @@ public class SplitSseEventSource {
 
         } catch (WebApplicationException wae) {
             // TODO: Log!
+            _log.warn(wae.getMessage());
             if (wae.getResponse().getStatus() >= 400 && wae.getResponse().getStatus() < 500) {
                 notify(feedback, new StatusMessage(StatusMessage.Code.NONRETRYABLE_ERROR));
             } else {
@@ -88,6 +98,7 @@ public class SplitSseEventSource {
                 _eventInput.close();
             }
             _state.set(SseState.CLOSED);
+            _log.debug("SSE connection finished.");
         }
     }
 
@@ -110,5 +121,22 @@ public class SplitSseEventSource {
     public enum SseState {
         OPEN,
         CLOSED
+    }
+
+    public void awaitFirstContact() {
+        _log.debug("Awaiting first contact signal.");
+        try {
+            if (_firstContactSignal == null) {
+                return;
+            }
+
+            try {
+                _firstContactSignal.await();
+            } catch (InterruptedException ex) {
+                Thread.currentThread().interrupt();
+            }
+        } finally {
+           _log.debug("First contact signal released.");
+        }
     }
 }

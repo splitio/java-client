@@ -20,7 +20,6 @@ public class SyncManagerImp implements SyncManager {
     private final AtomicBoolean _streamingEnabledConfig;
     private final Synchronizer _synchronizer;
     private final PushManager _pushManager;
-    private final SSEHandler _sseHandler;
     private final AtomicBoolean _shutdown;
 
     @VisibleForTesting
@@ -31,10 +30,9 @@ public class SyncManagerImp implements SyncManager {
         _streamingEnabledConfig = new AtomicBoolean(streamingEnabledConfig);
         _synchronizer = checkNotNull(synchronizer);
         _pushManager = checkNotNull(pushManager);
-        _sseHandler = checkNotNull(sseHandler);
         _shutdown = new AtomicBoolean(false);
 
-        _sseHandler.registerFeedbackListener(this);
+        sseHandler.registerFeedbackListener(this);
     }
 
     public static SyncManagerImp build(boolean streamingEnabledConfig,
@@ -71,13 +69,13 @@ public class SyncManagerImp implements SyncManager {
     @Override
     public void onStreamingAvailable() {
         _synchronizer.stopPeriodicFetching();
-        _sseHandler.startWorkers();
+        _pushManager.startWorkers();
         _synchronizer.syncAll();
     }
 
     @Override
     public void onStreamingDisabled() {
-        _sseHandler.stopWorkers();
+        _pushManager.stopWorkers();
         _synchronizer.startPeriodicFetching();
     }
 
@@ -97,7 +95,7 @@ public class SyncManagerImp implements SyncManager {
         _log.debug("Event source client connected ...");
         _synchronizer.stopPeriodicFetching();
         _synchronizer.syncAll();
-        _sseHandler.startWorkers();
+        _pushManager.startWorkers();
     }
 
     @Override

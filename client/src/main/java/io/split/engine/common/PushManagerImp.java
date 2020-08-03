@@ -18,12 +18,13 @@ import java.util.concurrent.TimeUnit;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
-public class PushManagerImp implements PushManager, Runnable {
+public class PushManagerImp implements PushManager {
     private static final Logger _log = LoggerFactory.getLogger(PushManager.class);
 
     private final AuthApiClient _authApiClient;
     private final SSEHandler _sseHandler;
-    private final int _authRetryBackOffBase;
+    private final Backoff _backoff;
+
     private Future<?> _nextTokenRefreshTask;
 
     private ScheduledExecutorService _scheduledExecutorService;
@@ -31,10 +32,10 @@ public class PushManagerImp implements PushManager, Runnable {
     @VisibleForTesting
     /* package private */ PushManagerImp(AuthApiClient authApiClient,
                                          SSEHandler sseHandler,
-                                         int authRetryBackOffBase) {
+                                         Backoff backoff) {
         _authApiClient = checkNotNull(authApiClient);
         _sseHandler = checkNotNull(sseHandler);
-        _authRetryBackOffBase = checkNotNull(authRetryBackOffBase);
+        _backoff = checkNotNull(backoff);
 
         ThreadFactory threadFactory = new ThreadFactoryBuilder()
                 .setDaemon(true)
@@ -45,7 +46,9 @@ public class PushManagerImp implements PushManager, Runnable {
     }
 
     public static PushManagerImp build(String authUrl, CloseableHttpClient httpClient, SSEHandler sseHandler, int authRetryBackOffBase) {
-        return new PushManagerImp(new AuthApiClientImp(authUrl, httpClient), sseHandler, authRetryBackOffBase);
+        return new PushManagerImp(new AuthApiClientImp(authUrl, httpClient),
+                sseHandler,
+                new Backoff(authRetryBackOffBase));
     }
 
     @Override
@@ -53,16 +56,25 @@ public class PushManagerImp implements PushManager, Runnable {
         AuthenticationResponse response = _authApiClient.Authenticate();
         _log.debug(String.format("Auth service response pushEnabled: %s", response.isPushEnabled()));
 
+        if (!response.isPushEnabled() && !response.isRetry()) {
+            stop();
+            return;
+        }
+
+        boolean connected = false;
         if (response.isPushEnabled()) {
-            _sseHandler.start(response.getToken(), response.getChannels());
-            scheduleConnectionReset(response.getExpiration());
+            connected = _sseHandler.start(response.getToken(), response.getChannels());
+
+            if (connected) {
+                scheduleConnectionReset(response.getExpiration());
+                _backoff.reset();
+            }
         } else {
             stop();
         }
 
-        if (response.isRetry()) {
-            // TODO: update this after backoffService implementation.
-            scheduleConnectionReset(_authRetryBackOffBase);
+        if (response.isRetry() || !connected) {
+            scheduleConnectionReset(_backoff.interval());
         }
     }
 
@@ -75,10 +87,13 @@ public class PushManagerImp implements PushManager, Runnable {
     }
 
     @Override
-    public void run() {
-        _log.debug("Starting refresh token ...");
-        _sseHandler.stop();
-        start();
+    public void startWorkers() {
+        _sseHandler.startWorkers();
+    }
+
+    @Override
+    public void stopWorkers() {
+        _sseHandler.stopWorkers();
     }
 
     private void scheduleConnectionReset(long time) {

@@ -49,7 +49,7 @@ public class SSEHandlerImp implements SSEHandler, NotificationsListener {
     }
 
     @Override
-    public void start(String token, String channels) {
+    public boolean start(String token, String channels) {
         try {
             _log.debug("SSE Handel starting ...");
 
@@ -58,9 +58,10 @@ public class SSEHandlerImp implements SSEHandler, NotificationsListener {
             uri.addParameter("v", "1.1");
             uri.addParameter("accessToken", token);
 
-            _eventSourceClient.start(uri.toString());
+            return _eventSourceClient.start(uri.toString());
         } catch (Exception ex) {
             _log.error("Exception in SSE Handler start: %s", ex.getMessage());
+            return false;
         }
     }
 

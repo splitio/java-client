@@ -44,7 +44,7 @@ public class SyncManagerTest {
 
         Mockito.verify(_synchronizer, Mockito.times(1)).stopPeriodicFetching();
         Mockito.verify(_synchronizer, Mockito.times(1)).syncAll();
-        Mockito.verify(_sseHandler, Mockito.times(1)).startWorkers();
+        Mockito.verify(_pushManager, Mockito.times(1)).startWorkers();
     }
 
     @Test
@@ -54,7 +54,7 @@ public class SyncManagerTest {
         syncManager.onStreamingDisabled();
 
         Mockito.verify(_synchronizer, Mockito.times(1)).startPeriodicFetching();
-        Mockito.verify(_sseHandler, Mockito.times(1)).stopWorkers();
+        Mockito.verify(_pushManager, Mockito.times(1)).stopWorkers();
     }
 
     @Test
