@@ -1,5 +1,6 @@
 package io.split.engine.common;
 
+import io.split.engine.sse.NotificationManagerKeeper;
 import io.split.engine.sse.SSEHandler;
 import io.split.engine.sse.dtos.ErrorNotification;
 import org.junit.Test;
@@ -9,16 +10,18 @@ public class SyncManagerTest {
     private final Synchronizer _synchronizer;
     private final PushManager _pushManager;
     private final SSEHandler _sseHandler;
+    private final NotificationManagerKeeper _notificationManagerKeeper;
 
     public SyncManagerTest() {
         _synchronizer = Mockito.mock(Synchronizer.class);
         _pushManager = Mockito.mock(PushManager.class);
         _sseHandler = Mockito.mock(SSEHandler.class);
+        _notificationManagerKeeper = Mockito.mock(NotificationManagerKeeper.class);
     }
 
     @Test
     public void startWithStreamingFalseShouldStartPolling() {
-        SyncManager syncManager = new SyncManagerImp(false, _synchronizer, _pushManager, _sseHandler);
+        SyncManager syncManager = new SyncManagerImp(false, _synchronizer, _pushManager, _sseHandler, _notificationManagerKeeper);
         syncManager.start();
 
         Mockito.verify(_synchronizer, Mockito.times(1)).startPeriodicFetching();
@@ -28,7 +31,7 @@ public class SyncManagerTest {
 
     @Test
     public void startWithStreamingTrueShouldStartPolling() {
-        SyncManager syncManager = new SyncManagerImp(true, _synchronizer, _pushManager, _sseHandler);
+        SyncManager syncManager = new SyncManagerImp(true, _synchronizer, _pushManager, _sseHandler, _notificationManagerKeeper);
         syncManager.start();
 
         Mockito.verify(_synchronizer, Mockito.times(0)).startPeriodicFetching();
@@ -38,7 +41,7 @@ public class SyncManagerTest {
 
     @Test
     public void onStreamingAvailable() {
-        SyncManagerImp syncManager = new SyncManagerImp(true, _synchronizer, _pushManager, _sseHandler);
+        SyncManagerImp syncManager = new SyncManagerImp(true, _synchronizer, _pushManager, _sseHandler, _notificationManagerKeeper);
 
         syncManager.onStreamingAvailable();
 
@@ -49,7 +52,7 @@ public class SyncManagerTest {
 
     @Test
     public void onStreamingDisabled() {
-        SyncManagerImp syncManager = new SyncManagerImp(true, _synchronizer, _pushManager, _sseHandler);
+        SyncManagerImp syncManager = new SyncManagerImp(true, _synchronizer, _pushManager, _sseHandler, _notificationManagerKeeper);
 
         syncManager.onStreamingDisabled();
 
@@ -59,7 +62,7 @@ public class SyncManagerTest {
 
     @Test
     public void onStreamingShutdown() {
-        SyncManagerImp syncManager = new SyncManagerImp(true, _synchronizer, _pushManager, _sseHandler);
+        SyncManagerImp syncManager = new SyncManagerImp(true, _synchronizer, _pushManager, _sseHandler, _notificationManagerKeeper);
 
         syncManager.onStreamingShutdown();
 
@@ -68,7 +71,7 @@ public class SyncManagerTest {
 
     @Test
     public void onConnected() {
-        SyncManagerImp syncManager = new SyncManagerImp(true, _synchronizer, _pushManager, _sseHandler);
+        SyncManagerImp syncManager = new SyncManagerImp(true, _synchronizer, _pushManager, _sseHandler, _notificationManagerKeeper);
 
         syncManager.onConnected();
 
@@ -78,7 +81,7 @@ public class SyncManagerTest {
 
     @Test
     public void onDisconnect() {
-        SyncManagerImp syncManager = new SyncManagerImp(true, _synchronizer, _pushManager, _sseHandler);
+        SyncManagerImp syncManager = new SyncManagerImp(true, _synchronizer, _pushManager, _sseHandler, _notificationManagerKeeper);
 
         syncManager.onDisconnect(false);
 
@@ -87,7 +90,7 @@ public class SyncManagerTest {
 
     @Test
     public void onDisconnectAndReconnect() {
-        SyncManagerImp syncManager = new SyncManagerImp(true, _synchronizer, _pushManager, _sseHandler);
+        SyncManagerImp syncManager = new SyncManagerImp(true, _synchronizer, _pushManager, _sseHandler, _notificationManagerKeeper);
 
         syncManager.onDisconnect(true);
 
@@ -100,7 +103,7 @@ public class SyncManagerTest {
     public void onErrorNotification() {
         ErrorNotification errorNotification = new ErrorNotification("503", "Timeout error", 50003);
 
-        SyncManagerImp syncManager = new SyncManagerImp(true, _synchronizer, _pushManager, _sseHandler);
+        SyncManagerImp syncManager = new SyncManagerImp(true, _synchronizer, _pushManager, _sseHandler, _notificationManagerKeeper);
         syncManager.onErrorNotification(errorNotification);
 
         Mockito.verify(_pushManager, Mockito.times(0)).stop();
@@ -112,7 +115,7 @@ public class SyncManagerTest {
     public void onErrorNotificationTokenExpire() {
         ErrorNotification errorNotification = new ErrorNotification("401", "Token expire", 40142);
 
-        SyncManagerImp syncManager = new SyncManagerImp(true, _synchronizer, _pushManager, _sseHandler);
+        SyncManagerImp syncManager = new SyncManagerImp(true, _synchronizer, _pushManager, _sseHandler, _notificationManagerKeeper);
         syncManager.onErrorNotification(errorNotification);
 
         Mockito.verify(_pushManager, Mockito.times(1)).stop();

@@ -81,6 +81,7 @@ public class PushManagerImp implements PushManager {
     @Override
     public void stop() {
         _sseHandler.stop();
+
         if (_nextTokenRefreshTask != null) {
             _nextTokenRefreshTask.cancel(false);
         }

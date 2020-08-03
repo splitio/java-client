@@ -3,6 +3,8 @@ package io.split.engine.common;
 import com.google.common.annotations.VisibleForTesting;
 import io.split.engine.experiments.RefreshableSplitFetcherProvider;
 import io.split.engine.segments.RefreshableSegmentFetcher;
+import io.split.engine.sse.NotificationManagerKeeper;
+import io.split.engine.sse.NotificationManagerKeeperImp;
 import io.split.engine.sse.SSEHandler;
 import io.split.engine.sse.SSEHandlerImp;
 import io.split.engine.sse.dtos.ErrorNotification;
@@ -26,13 +28,15 @@ public class SyncManagerImp implements SyncManager {
     /* package private */ SyncManagerImp(boolean streamingEnabledConfig,
                                          Synchronizer synchronizer,
                                          PushManager pushManager,
-                                         SSEHandler sseHandler) {
+                                         SSEHandler sseHandler,
+                                         NotificationManagerKeeper notificationManagerKeeper) {
         _streamingEnabledConfig = new AtomicBoolean(streamingEnabledConfig);
         _synchronizer = checkNotNull(synchronizer);
         _pushManager = checkNotNull(pushManager);
         _shutdown = new AtomicBoolean(false);
 
         sseHandler.registerFeedbackListener(this);
+        notificationManagerKeeper.registerNotificationKeeperListener(this);
     }
 
     public static SyncManagerImp build(boolean streamingEnabledConfig,
@@ -42,12 +46,14 @@ public class SyncManagerImp implements SyncManager {
                                         CloseableHttpClient httpClient,
                                         String streamingServiceUrl,
                                         int authRetryBackOffBase) {
-        SSEHandler sseHandler = SSEHandlerImp.build(streamingServiceUrl, refreshableSplitFetcherProvider, segmentFetcher);
+        NotificationManagerKeeper notificationManagerKeeper = new NotificationManagerKeeperImp();
+        SSEHandler sseHandler = SSEHandlerImp.build(streamingServiceUrl, refreshableSplitFetcherProvider, segmentFetcher, notificationManagerKeeper);
 
         return new SyncManagerImp(streamingEnabledConfig,
                 new SynchronizerImp(refreshableSplitFetcherProvider, segmentFetcher),
                 PushManagerImp.build(authUrl, httpClient, sseHandler, authRetryBackOffBase),
-                sseHandler);
+                sseHandler,
+                notificationManagerKeeper);
     }
 
     @Override
