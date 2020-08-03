@@ -18,6 +18,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
@@ -31,6 +32,7 @@ public class EventSourceClientImp implements EventSourceClient {
     private final SplitSseEventSource _splitSseEventSource;
     private final LinkedBlockingQueue<StatusMessage> _incomingSSEStatus;
     private final ScheduledExecutorService _sseMonitorExecutor;
+    private final AtomicBoolean _firstTime;
 
     @VisibleForTesting
     /* package private */ EventSourceClientImp(NotificationParser notificationParser) {
@@ -40,6 +42,7 @@ public class EventSourceClientImp implements EventSourceClient {
         _sseMonitorExecutor = Executors.newSingleThreadScheduledExecutor();
         _feedbackListeners = new ArrayList<>();
         _notificationsListeners = new ArrayList<>();
+        _firstTime = new AtomicBoolean(true);
         _client = ClientBuilder
                 .newBuilder()
                 .readTimeout(70, TimeUnit.SECONDS)
@@ -63,13 +66,14 @@ public class EventSourceClientImp implements EventSourceClient {
 
         _splitSseEventSource.open(_client.target(url), _incomingSSEStatus);
         _splitSseEventSource.awaitFirstContact();
+        _firstTime.set(false);
 
         return _splitSseEventSource.isOpen();
     }
 
     @Override
     public void stop() {
-        if (_splitSseEventSource == null) {
+        if (_firstTime.get()) {
             _feedbackListeners.forEach(listener -> listener.onDisconnect(false));
             return;
         }
@@ -78,6 +82,7 @@ public class EventSourceClientImp implements EventSourceClient {
             _log.warn("Event Source Client is closed.");
             return;
         }
+
         _splitSseEventSource.close();
     }
 

@@ -107,7 +107,6 @@ public class SplitSseEventSource {
     }
 
     public void close() {
-        _log.debug(String.format("SplitSseEventSource.close state: %s", _state.get()));
         if (!isOpen()) {
             _log.warn("SplitSseEventSource already closed.");
             return;
