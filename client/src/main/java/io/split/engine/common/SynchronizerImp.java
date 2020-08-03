@@ -20,8 +20,7 @@ public class SynchronizerImp implements Synchronizer {
     private final RefreshableSplitFetcherProvider _refreshableSplitFetcherProvider;
     private final RefreshableSplitFetcher _splitFetcher;
     private final RefreshableSegmentFetcher _segmentFetcher;
-    private final ScheduledExecutorService _splitsScheduledExecutorService;
-    private final ScheduledExecutorService _segmentsScheduledExecutorService;
+    private final ScheduledExecutorService _syncAllScheduledExecutorService;
 
     public SynchronizerImp(RefreshableSplitFetcherProvider refreshableSplitFetcherProvider,
                                           RefreshableSegmentFetcher segmentFetcher) {
@@ -31,31 +30,17 @@ public class SynchronizerImp implements Synchronizer {
 
         ThreadFactory splitsThreadFactory = new ThreadFactoryBuilder()
                 .setDaemon(true)
-                .setNameFormat("Split-SplitsRefresh-%d")
+                .setNameFormat("Split-SyncAll-%d")
                 .build();
-        _splitsScheduledExecutorService = Executors.newSingleThreadScheduledExecutor(splitsThreadFactory);
-
-        ThreadFactory segmentsThreadFactory = new ThreadFactoryBuilder()
-                .setDaemon(true)
-                .setNameFormat("Split-SegmentsRefresh-%d")
-                .build();
-        _segmentsScheduledExecutorService = Executors.newSingleThreadScheduledExecutor(segmentsThreadFactory);
+        _syncAllScheduledExecutorService = Executors.newSingleThreadScheduledExecutor(splitsThreadFactory);
     }
 
     @Override
     public void syncAll() {
-        _splitsScheduledExecutorService.schedule(_splitFetcher, 0, TimeUnit.SECONDS);
-        _segmentsScheduledExecutorService.schedule(_segmentFetcher, 0, TimeUnit.SECONDS);
-    }
-
-    @Override
-    public void synchronizeSplits() {
-        _splitFetcher.forceRefresh();
-    }
-
-    @Override
-    public void synchronizeSegment(String segmentName) {
-        _segmentFetcher.forceRefresh(segmentName);
+        _syncAllScheduledExecutorService.schedule(() -> {
+            _splitFetcher.forceRefresh();
+            _segmentFetcher.forceRefreshAll();
+        }, 0, TimeUnit.SECONDS);
     }
 
     @Override

@@ -84,7 +84,7 @@ public class RefreshableSplitFetcherProvider implements Closeable {
 
     public void startPeriodicFetching() {
         if (_running.getAndSet(true)) {
-            _log.error("Splits PeriodicFetching is running...");
+            _log.warn("Splits PeriodicFetching is running...");
             return;
         }
 
@@ -93,7 +93,7 @@ public class RefreshableSplitFetcherProvider implements Closeable {
 
     public void stop() {
         if (!_running.getAndSet(false) || _scheduledFuture == null) {
-            _log.error("Splits PeriodicFetching not running...");
+            _log.warn("Splits PeriodicFetching not running...");
             return;
         }
 
