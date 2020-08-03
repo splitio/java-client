@@ -98,7 +98,19 @@ public class SyncManagerTest {
 
     @Test
     public void onErrorNotification() {
-        ErrorNotification errorNotification = new ErrorNotification("500", "Internal server error");
+        ErrorNotification errorNotification = new ErrorNotification("503", "Timeout error", 50003);
+
+        SyncManagerImp syncManager = new SyncManagerImp(true, _synchronizer, _pushManager, _sseHandler);
+        syncManager.onErrorNotification(errorNotification);
+
+        Mockito.verify(_pushManager, Mockito.times(0)).stop();
+        Mockito.verify(_synchronizer, Mockito.times(0)).syncAll();
+        Mockito.verify(_pushManager, Mockito.times(0)).start();
+    }
+
+    @Test
+    public void onErrorNotificationTokenExpire() {
+        ErrorNotification errorNotification = new ErrorNotification("401", "Token expire", 40142);
 
         SyncManagerImp syncManager = new SyncManagerImp(true, _synchronizer, _pushManager, _sseHandler);
         syncManager.onErrorNotification(errorNotification);

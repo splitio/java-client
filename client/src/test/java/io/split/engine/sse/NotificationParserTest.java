@@ -51,8 +51,9 @@ public class NotificationParserTest {
         String payload = "{\"message\":\"Token expired\",\"code\":40142,\"statusCode\":401,\"href\":\"https://help.io/error/40142\"}";
 
         ErrorNotification result = notificationParser.parseError(payload);
-        assertEquals("Token expired", ((ErrorNotification) result).getMessage());
-        assertEquals("401", ((ErrorNotification) result).getStatusCode());
+        assertEquals("Token expired", result.getMessage());
+        assertEquals("401", result.getStatusCode());
+        assertEquals(40142, result.getCode());
     }
 
     @Test

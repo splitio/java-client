@@ -86,8 +86,17 @@ public class SyncManagerImp implements SyncManager {
 
     @Override
     public void onErrorNotification(ErrorNotification errorNotification) {
-        _pushManager.stop();
-        startStreamingMode();
+        if (errorNotification.getCode() >= 40140 && errorNotification.getCode() <= 40149) {
+            _pushManager.stop();
+            startStreamingMode();
+            return;
+        }
+
+        if (errorNotification.getCode() >= 40000 && errorNotification.getCode() <= 49999) {
+            _pushManager.stop();
+            startPollingMode();
+            return;
+        }
     }
 
     @Override
