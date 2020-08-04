@@ -20,6 +20,7 @@ import static com.google.common.base.Preconditions.checkNotNull;
 
 public class PushManagerImp implements PushManager {
     private static final Logger _log = LoggerFactory.getLogger(PushManager.class);
+    private static final long BACKOFF_MAX_SECONDS_ALLOWED = 1800;
 
     private final AuthApiClient _authApiClient;
     private final SSEHandler _sseHandler;
@@ -75,6 +76,11 @@ public class PushManagerImp implements PushManager {
 
         if (response.isRetry() || !connected) {
             long interval = _backoff.interval();
+            if (interval > BACKOFF_MAX_SECONDS_ALLOWED) {
+                _log.warn(String.format("Backoff max allowed. Interval: %s", interval));
+                return;
+            }
+
             scheduleConnectionReset(interval);
         }
     }

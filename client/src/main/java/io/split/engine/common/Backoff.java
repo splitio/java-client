@@ -2,27 +2,19 @@ package io.split.engine.common;
 
 import java.util.concurrent.atomic.AtomicInteger;
 
+import static com.google.common.base.Preconditions.checkNotNull;
+
 public class Backoff {
-    private final AtomicInteger _backoffBase;
+    private final long _backoffBase;
     private AtomicInteger _attempt;
 
-    public Backoff(int backoffBase) {
-        _backoffBase = new AtomicInteger(backoffBase);
+    public Backoff(long backoffBase) {
+        _backoffBase = checkNotNull(backoffBase);
         _attempt = new AtomicInteger(0);
     }
 
     public long interval() {
-        double interval = 0;
-
-        int attempt = _attempt.get();
-        if (attempt > 0) {
-            interval = _backoffBase.get() * Math.pow(2, attempt);
-        }
-
-        attempt++;
-        _attempt.set(attempt);
-
-        return (long) interval;
+        return _backoffBase * (long) Math.pow(2, _attempt.getAndIncrement());
     }
 
     public void reset() {

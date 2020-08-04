@@ -11,7 +11,7 @@ public class BackoffTest {
         Backoff backoff = new Backoff(1);
 
         long interval = backoff.interval();
-        assertEquals(0L, interval);
+        assertEquals(1L, interval);
 
         interval = backoff.interval();
         assertEquals(2L, interval);
@@ -27,7 +27,7 @@ public class BackoffTest {
 
         backoff.reset();
         interval = backoff.interval();
-        assertEquals(0L, interval);
+        assertEquals(1L, interval);
 
         interval = backoff.interval();
         assertEquals(2L, interval);
