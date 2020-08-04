@@ -32,4 +32,24 @@ public class BackoffTest {
         interval = backoff.interval();
         assertEquals(2L, interval);
     }
+    @Test
+    public void backoffIncreaseIntervalMaxAllowed() {
+        long max_allowed = 1800;
+        Backoff backoff = new Backoff(450);
+
+        long interval = backoff.interval();
+        assertEquals(450L, interval);
+
+        interval = backoff.interval();
+        assertEquals(900L, interval);
+
+        interval = backoff.interval();
+        assertEquals(max_allowed, interval);
+
+        interval = backoff.interval();
+        assertEquals(max_allowed, interval);
+
+        interval = backoff.interval();
+        assertEquals(max_allowed, interval);
+    }
 }

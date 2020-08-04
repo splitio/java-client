@@ -5,6 +5,8 @@ import java.util.concurrent.atomic.AtomicInteger;
 import static com.google.common.base.Preconditions.checkNotNull;
 
 public class Backoff {
+    private static final long BACKOFF_MAX_SECONDS_ALLOWED = 1800;
+
     private final long _backoffBase;
     private AtomicInteger _attempt;
 
@@ -14,7 +16,9 @@ public class Backoff {
     }
 
     public long interval() {
-        return _backoffBase * (long) Math.pow(2, _attempt.getAndIncrement());
+        long interval = _backoffBase * (long) Math.pow(2, _attempt.getAndIncrement());
+
+        return interval >= BACKOFF_MAX_SECONDS_ALLOWED ? BACKOFF_MAX_SECONDS_ALLOWED : interval;
     }
 
     public void reset() {

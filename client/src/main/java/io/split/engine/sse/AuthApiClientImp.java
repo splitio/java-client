@@ -48,8 +48,8 @@ public class AuthApiClientImp implements AuthApiClient {
                 return getSuccessResponse(jsonContent);
             }
 
+            _log.warn(String.format("Problem to connect to : %s. Response status: %s", _target, statusCode));
             if (statusCode >= HttpStatus.SC_BAD_REQUEST && statusCode < HttpStatus.SC_INTERNAL_SERVER_ERROR) {
-                _log.warn(String.format("Problem to connect to : %s. Response status: %s", _target, statusCode));
                 return new AuthenticationResponse(false,false);
             }
 
