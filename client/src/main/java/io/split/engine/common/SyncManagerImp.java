@@ -121,12 +121,11 @@ public class SyncManagerImp implements SyncManager {
             return;
         }
 
+        _synchronizer.startPeriodicFetching();
+
         if (reconnect) {
             startStreamingMode();
-            return;
         }
-
-        _synchronizer.startPeriodicFetching();
     }
 
     private void startStreamingMode() {

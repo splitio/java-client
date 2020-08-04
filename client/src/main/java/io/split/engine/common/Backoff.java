@@ -19,7 +19,8 @@ public class Backoff {
             interval = _backoffBase.get() * Math.pow(2, attempt);
         }
 
-        _attempt.set(attempt++);
+        attempt++;
+        _attempt.set(attempt);
 
         return (long) interval;
     }

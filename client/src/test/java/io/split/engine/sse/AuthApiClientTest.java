@@ -59,7 +59,7 @@ public class AuthApiClientTest {
 
         assertFalse(result.isPushEnabled());
         assertTrue(StringUtils.isEmpty(result.getChannels()));
-        assertFalse(result.isRetry());
+        assertTrue(result.isRetry());
         assertTrue(StringUtils.isEmpty(result.getToken()));
         assertFalse(result.getExpiration() > 0);
     }

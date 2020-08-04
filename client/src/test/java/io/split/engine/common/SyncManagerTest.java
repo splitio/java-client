@@ -94,7 +94,7 @@ public class SyncManagerTest {
 
         syncManager.onDisconnect(true);
 
-        Mockito.verify(_synchronizer, Mockito.times(0)).startPeriodicFetching();
+        Mockito.verify(_synchronizer, Mockito.times(1)).startPeriodicFetching();
         Mockito.verify(_synchronizer, Mockito.times(1)).syncAll();
         Mockito.verify(_pushManager, Mockito.times(1)).start();
     }

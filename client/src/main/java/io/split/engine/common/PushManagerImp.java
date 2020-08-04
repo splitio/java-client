@@ -74,7 +74,8 @@ public class PushManagerImp implements PushManager {
         }
 
         if (response.isRetry() || !connected) {
-            scheduleConnectionReset(_backoff.interval());
+            long interval = _backoff.interval();
+            scheduleConnectionReset(interval);
         }
     }
 

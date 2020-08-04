@@ -13,7 +13,9 @@ import org.apache.http.util.EntityUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.net.SocketTimeoutException;
 import java.net.URI;
+import java.net.UnknownHostException;
 import java.nio.charset.StandardCharsets;
 
 import static com.google.common.base.Preconditions.checkNotNull;
@@ -44,15 +46,17 @@ public class AuthApiClientImp implements AuthApiClient {
 
                 String jsonContent = EntityUtils.toString(response.getEntity(), StandardCharsets.UTF_8);
                 return getSuccessResponse(jsonContent);
-            } else if (statusCode >= HttpStatus.SC_BAD_REQUEST && statusCode < HttpStatus.SC_INTERNAL_SERVER_ERROR) {
-                throw new Exception(String.format("Problem to connect to : %s. Response status: %s", _target, statusCode));
+            }
+
+            if (statusCode >= HttpStatus.SC_BAD_REQUEST && statusCode < HttpStatus.SC_INTERNAL_SERVER_ERROR) {
+                _log.warn(String.format("Problem to connect to : %s. Response status: %s", _target, statusCode));
+                return new AuthenticationResponse(false,false);
             }
 
             return new AuthenticationResponse(false,true);
         } catch (Exception ex) {
             _log.error(ex.getMessage());
-
-            return new AuthenticationResponse(false,false);
+            return new AuthenticationResponse(false,true);
         }
     }
 
