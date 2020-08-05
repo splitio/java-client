@@ -9,7 +9,7 @@ import org.mockito.Mockito;
 public class SynchronizerTest {
 
     @Test
-    public void syncAll() {
+    public void syncAll() throws InterruptedException {
         RefreshableSplitFetcherProvider refreshableSplitFetcherProvider = Mockito.mock(RefreshableSplitFetcherProvider.class);
         RefreshableSegmentFetcher segmentFetcher = Mockito.mock(RefreshableSegmentFetcher.class);
         RefreshableSplitFetcher splitFetcher = Mockito.mock(RefreshableSplitFetcher.class);
@@ -20,6 +20,7 @@ public class SynchronizerTest {
         Synchronizer synchronizer = new SynchronizerImp(refreshableSplitFetcherProvider, segmentFetcher);
         synchronizer.syncAll();
 
+        Thread.sleep(100);
         Mockito.verify(splitFetcher, Mockito.times(1)).forceRefresh();
         Mockito.verify(segmentFetcher, Mockito.times(1)).forceRefreshAll();
     }
