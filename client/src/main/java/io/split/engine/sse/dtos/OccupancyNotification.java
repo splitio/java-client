@@ -27,4 +27,13 @@ public class OccupancyNotification extends IncomingNotification implements Statu
             notificationManagerKeeper.handleIncomingOccupancyEvent(this);
         }
     }
+
+    @Override
+    public String toString() {
+        try {
+            return String.format("Type: %s; Channel: %s; Publishers: %s", getType(), getChannel(), getMetrics().getPublishers());
+        } catch (Exception ex) {
+            return super.toString();
+        }
+    }
 }

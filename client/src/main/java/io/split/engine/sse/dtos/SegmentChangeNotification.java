@@ -24,4 +24,9 @@ public class SegmentChangeNotification extends IncomingNotification {
     public void handler(NotificationProcessor notificationProcessor) {
         notificationProcessor.processSegmentUpdate(getChangeNumber(), getSegmentName());
     }
+
+    @Override
+    public String toString() {
+        return String.format("Type: %s; Channel: %s; ChangeNumber: %s; SegmentName: %s", getType(), getChannel(), getChangeNumber(), getSegmentName());
+    }
 }

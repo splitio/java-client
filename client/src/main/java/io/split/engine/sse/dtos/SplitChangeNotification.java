@@ -18,4 +18,9 @@ public class SplitChangeNotification extends IncomingNotification {
     public void handler(NotificationProcessor notificationProcessor) {
         notificationProcessor.processSplitUpdate(getChangeNumber());
     }
+
+    @Override
+    public String toString() {
+        return String.format("Type: %s; Channel: %s; ChangeNumber: %s", getType(), getChannel(), getChangeNumber());
+    }
 }

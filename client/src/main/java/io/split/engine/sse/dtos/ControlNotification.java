@@ -24,4 +24,9 @@ public class ControlNotification extends IncomingNotification implements StatusN
     public void handlerStatus(NotificationManagerKeeper notificationManagerKeeper) {
         notificationManagerKeeper.handleIncomingControlEvent(this);
     }
+
+    @Override
+    public String toString() {
+        return String.format("Type: %s; Channel: %s; ControlType: %s", getType(), getChannel(), getControlType());
+    }
 }

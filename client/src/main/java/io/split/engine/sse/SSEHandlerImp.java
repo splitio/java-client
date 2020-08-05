@@ -90,7 +90,7 @@ public class SSEHandlerImp implements SSEHandler, NotificationsListener {
 
     @Override
     public void onMessageNotificationReceived(IncomingNotification incomingNotification) {
-        _log.debug(String.format("Incoming notification received: %s", incomingNotification));
+        _log.debug(String.format("Incoming notification received: %s", incomingNotification.toString()));
         _notificationProcessor.process(incomingNotification);
     }
 }
