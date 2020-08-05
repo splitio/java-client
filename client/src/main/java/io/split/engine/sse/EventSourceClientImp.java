@@ -35,7 +35,7 @@ public class EventSourceClientImp implements EventSourceClient {
     private final AtomicBoolean _firstTime;
 
     @VisibleForTesting
-    /* package private */ EventSourceClientImp(NotificationParser notificationParser) {
+    /* package private */ EventSourceClientImp(NotificationParser notificationParser, Client client) {
         _notificationParser = checkNotNull(notificationParser);
 
         _incomingSSEStatus = new LinkedBlockingQueue<>();
@@ -43,10 +43,7 @@ public class EventSourceClientImp implements EventSourceClient {
         _feedbackListeners = new ArrayList<>();
         _notificationsListeners = new ArrayList<>();
         _firstTime = new AtomicBoolean(true);
-        _client = ClientBuilder
-                .newBuilder()
-                .readTimeout(70, TimeUnit.SECONDS)
-                .build();
+        _client = client;
         _splitSseEventSource = new SplitSseEventSource(inboundEvent -> { onMessage(inboundEvent); return null; });
 
         // Start the SSE Monitor thread at construction time.
@@ -55,7 +52,12 @@ public class EventSourceClientImp implements EventSourceClient {
 
     //add parameter base backoff
     public static EventSourceClientImp build() {
-        return new EventSourceClientImp(new NotificationParserImp());
+        Client client = ClientBuilder
+                .newBuilder()
+                .readTimeout(70, TimeUnit.SECONDS)
+                .build();
+
+        return new EventSourceClientImp(new NotificationParserImp(), client);
     }
 
     @Override
