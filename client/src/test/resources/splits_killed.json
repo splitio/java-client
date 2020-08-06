@@ -1,0 +1,91 @@
+{
+  "splits": [
+    {
+      "trafficTypeName": "user",
+      "name": "push_test",
+      "trafficAllocation": 44,
+      "trafficAllocationSeed": -2092979940,
+      "seed": 105482719,
+      "status": "ACTIVE",
+      "killed": true,
+      "defaultTreatment": "split_killed",
+      "changeNumber": 1585948850109,
+      "algo": 2,
+      "configurations": {},
+      "conditions": [
+        {
+          "conditionType": "WHITELIST",
+          "matcherGroup": {
+            "combiner": "AND",
+            "matchers": [
+              {
+                "keySelector": null,
+                "matcherType": "WHITELIST",
+                "negate": false,
+                "userDefinedSegmentMatcherData": null,
+                "whitelistMatcherData": {
+                  "whitelist": [
+                    "admin",
+                    "mauro"
+                  ]
+                },
+                "unaryNumericMatcherData": null,
+                "betweenMatcherData": null,
+                "booleanMatcherData": null,
+                "dependencyMatcherData": null,
+                "stringMatcherData": null
+              }
+            ]
+          },
+          "partitions": [
+            {
+              "treatment": "after_notification_received",
+              "size": 100
+            }
+          ],
+          "label": "whitelisted"
+        },
+        {
+          "conditionType": "ROLLOUT",
+          "matcherGroup": {
+            "combiner": "AND",
+            "matchers": [
+              {
+                "keySelector": {
+                  "trafficType": "user",
+                  "attribute": null
+                },
+                "matcherType": "ALL_KEYS",
+                "negate": false,
+                "userDefinedSegmentMatcherData": null,
+                "whitelistMatcherData": null,
+                "unaryNumericMatcherData": null,
+                "betweenMatcherData": null,
+                "booleanMatcherData": null,
+                "dependencyMatcherData": null,
+                "stringMatcherData": null
+              }
+            ]
+          },
+          "partitions": [
+            {
+              "treatment": "on",
+              "size": 100
+            },
+            {
+              "treatment": "off",
+              "size": 0
+            },
+            {
+              "treatment": "V1",
+              "size": 0
+            }
+          ],
+          "label": "default rule"
+        }
+      ]
+    }
+  ],
+  "since": 1585948850111,
+  "till": 1585948850112
+}
