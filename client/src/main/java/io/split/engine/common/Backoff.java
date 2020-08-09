@@ -21,7 +21,7 @@ public class Backoff {
         return interval >= BACKOFF_MAX_SECONDS_ALLOWED ? BACKOFF_MAX_SECONDS_ALLOWED : interval;
     }
 
-    public void reset() {
+    public synchronized void reset() {
         _attempt.set(0);
     }
 }

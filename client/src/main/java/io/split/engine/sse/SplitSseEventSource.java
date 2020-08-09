@@ -11,7 +11,6 @@ import javax.ws.rs.client.WebTarget;
 import javax.ws.rs.sse.InboundSseEvent;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.Executors;
-import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Function;
@@ -23,42 +22,36 @@ public class SplitSseEventSource {
     private final Function<InboundSseEvent, Void> _eventCallback;
     private final ScheduledExecutorService _executor;
     private CountDownLatch _firstContactSignal;
-
+    private final Function<SseStatus, Void> _sseStatusHandler;
     private EventInput _eventInput;
 
 
-    public SplitSseEventSource(Function<InboundSseEvent, Void> eventCallback) {
+    public SplitSseEventSource(Function<InboundSseEvent, Void> eventCallback, Function<SseStatus, Void> sseStatusHandler) {
         _executor = Executors.newSingleThreadScheduledExecutor();
         _eventCallback = eventCallback;
+        _sseStatusHandler = sseStatusHandler;
     }
 
 
-    public void open(WebTarget target, LinkedBlockingQueue<StatusMessage>  sseStatus) {
+    public boolean open(WebTarget target) {
         if (isOpen()) {
             throw new IllegalStateException("Event Source Already connected.");
         }
 
         _firstContactSignal = new CountDownLatch(1);
-        _executor.execute(() -> run(target, sseStatus));
+        _executor.execute(() -> run(target));
+        awaitFirstContact();
+        return isOpen();
     }
 
-    private void notify(LinkedBlockingQueue<StatusMessage> queue, StatusMessage message) {
-        try {
-            queue.put(message);
-        } catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
-            _log.debug("Waiting to propagate status but got interrupted.");
-        }
-    }
-
-    private void run(WebTarget target, LinkedBlockingQueue<StatusMessage> feedback) {
+    private void run(WebTarget target) {
         try {
             // Initialization
             try {
                 final Invocation.Builder request = target.request(SERVER_SENT_EVENTS);
                 _eventInput = request.get(EventInput.class);
                 if (_eventInput != null && !_eventInput.isClosed()) {
-                    notify(feedback, new StatusMessage(StatusMessage.Code.CONNECTED));
+                    _sseStatusHandler.apply(SseStatus.CONNECTED);
                     _state.set(SseState.OPEN);
                 }
             } finally {
@@ -72,27 +65,26 @@ public class SplitSseEventSource {
             while (isOpen() && !Thread.currentThread().isInterrupted() && null != _eventInput && !_eventInput.isClosed()) {
                 InboundEvent e = _eventInput.read();
                 if (null == e  && isOpen()) {
-                    notify(feedback, new StatusMessage(StatusMessage.Code.RETRYABLE_ERROR));
+                    _sseStatusHandler.apply(SseStatus.RETRYABLE_ERROR);
                     return;
                 }
                 _eventCallback.apply(e);
             }
 
             // Notify graceful disconnection
-            notify(feedback, new StatusMessage(StatusMessage.Code.DISCONNECTED));
+            _sseStatusHandler.apply(SseStatus.DISCONNECTED);
 
         } catch (WebApplicationException wae) {
-            // TODO: Log!
             _log.warn(wae.getMessage());
             if (wae.getResponse().getStatus() >= 400 && wae.getResponse().getStatus() < 500) {
-                notify(feedback, new StatusMessage(StatusMessage.Code.NONRETRYABLE_ERROR));
+                _sseStatusHandler.apply(SseStatus.NONRETRYABLE_ERROR);
             } else {
-                notify(feedback, new StatusMessage(StatusMessage.Code.RETRYABLE_ERROR));
+                _sseStatusHandler.apply(SseStatus.RETRYABLE_ERROR);
             }
         } catch (Exception exc) {
             // Unexpected exception: disable streaming completely
             _log.warn(exc.getMessage());
-            notify(feedback, new StatusMessage(StatusMessage.Code.NONRETRYABLE_ERROR));
+            _sseStatusHandler.apply(SseStatus.NONRETRYABLE_ERROR);
         } finally {
             if (_eventInput != null) {
                 _eventInput.close();
@@ -122,7 +114,7 @@ public class SplitSseEventSource {
         CLOSED
     }
 
-    public void awaitFirstContact() {
+    private void awaitFirstContact() {
         _log.debug("Awaiting first contact signal.");
         try {
             if (_firstContactSignal == null) {

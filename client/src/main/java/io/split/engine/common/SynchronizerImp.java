@@ -56,4 +56,25 @@ public class SynchronizerImp implements Synchronizer {
         _refreshableSplitFetcherProvider.stop();
         _segmentFetcher.stop();
     }
+
+    @Override
+    public void refreshSplits(long targetChangeNumber) {
+        if (targetChangeNumber > _splitFetcher.changeNumber()) {
+            _splitFetcher.forceRefresh();
+        }
+    }
+
+    @Override
+    public void localKillSplit(String splitName, String defaultTreatment, long newChangeNumber) {
+        if (newChangeNumber > _splitFetcher.changeNumber()) {
+            _splitFetcher.killSplit(splitName, defaultTreatment, newChangeNumber);
+        }
+    }
+
+    @Override
+    public void refreshSegment(String segmentName, long changeNumber) {
+        if (changeNumber > _segmentFetcher.getChangeNumber(segmentName)) {
+            _segmentFetcher.forceRefresh(segmentName);
+        }
+    }
 }

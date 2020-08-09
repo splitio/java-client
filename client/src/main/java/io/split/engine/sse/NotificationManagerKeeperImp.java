@@ -1,41 +1,32 @@
 package io.split.engine.sse;
 
+import io.split.engine.common.PushManager;
 import io.split.engine.sse.dtos.ControlNotification;
 import io.split.engine.sse.dtos.OccupancyNotification;
-import io.split.engine.sse.listeners.NotificationKeeperListener;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 public class NotificationManagerKeeperImp implements NotificationManagerKeeper {
     private static final Logger _log = LoggerFactory.getLogger(NotificationManagerKeeper.class);
 
     private final AtomicBoolean _streamingAvailable;
-    private final List<NotificationKeeperListener> _notificationKeeperListeners;
+    private final LinkedBlockingQueue<PushManager.Status> _statusMessages;
 
-    public NotificationManagerKeeperImp() {
+    public NotificationManagerKeeperImp(LinkedBlockingQueue<PushManager.Status> statusMessages) {
         _streamingAvailable = new AtomicBoolean(true);
-        _notificationKeeperListeners = new ArrayList<>();
+        _statusMessages = statusMessages;
     }
 
     @Override
     public void handleIncomingControlEvent(ControlNotification controlNotification) {
         switch (controlNotification.getControlType()) {
-            case STREAMING_PAUSED:
-                notifyStreamingDisabled();
-                break;
-            case STREAMING_RESUMED:
-                if (isStreamingAvailable()) { notifyStreamingAvailable(); }
-                break;
-            case STREAMING_DISABLED:
-                notifyStreamingShutdown();
-                break;
-            default:
-                _log.error(String.format("Incorrect control type. %s", controlNotification.getControlType()));
-                break;
+            case STREAMING_PAUSED: _statusMessages.offer(PushManager.Status.STREAMING_PAUSED); break;
+            case STREAMING_RESUMED: _statusMessages.offer(PushManager.Status.STREAMING_ENABLED); break;
+            case STREAMING_DISABLED: _statusMessages.offer(PushManager.Status.STREAMING_DISABLED); break;
+            default: _log.error(String.format("Incorrect control type. %s", controlNotification.getControlType()));
         }
     }
 
@@ -43,33 +34,10 @@ public class NotificationManagerKeeperImp implements NotificationManagerKeeper {
     public void handleIncomingOccupancyEvent(OccupancyNotification occupancyNotification) {
         int publishers = occupancyNotification.getMetrics().getPublishers();
 
-        if (publishers <= 0 && isStreamingAvailable()) {
-            _streamingAvailable.set(false);
-            notifyStreamingDisabled();
-        } else if (publishers >= 1 && !isStreamingAvailable()) {
-            _streamingAvailable.set(true);
-            notifyStreamingAvailable();
+        if (publishers <= 0 && _streamingAvailable.compareAndSet(true, false)) {
+            _statusMessages.offer(PushManager.Status.STREAMING_DISABLED);
+        } else if (publishers >= 1 && _streamingAvailable.compareAndSet(false, true)) {
+            _statusMessages.offer(PushManager.Status.STREAMING_ENABLED);
         }
-    }
-
-    @Override
-    public synchronized void registerNotificationKeeperListener(NotificationKeeperListener listener) {
-        _notificationKeeperListeners.add(listener);
-    }
-
-    private boolean isStreamingAvailable() {
-        return _streamingAvailable.get();
-    }
-
-    private synchronized void notifyStreamingAvailable() {
-        _notificationKeeperListeners.forEach(l -> l.onStreamingAvailable());
-    }
-
-    private synchronized void notifyStreamingDisabled() {
-        _notificationKeeperListeners.forEach(l -> l.onStreamingDisabled());
-    }
-
-    private synchronized void notifyStreamingShutdown() {
-        _notificationKeeperListeners.forEach(l -> l.onStreamingShutdown());
     }
 }

@@ -1,17 +1,17 @@
 package io.split.engine.common;
 
 import com.google.common.annotations.VisibleForTesting;
+import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import io.split.engine.experiments.RefreshableSplitFetcherProvider;
 import io.split.engine.segments.RefreshableSegmentFetcher;
-import io.split.engine.sse.NotificationManagerKeeper;
-import io.split.engine.sse.NotificationManagerKeeperImp;
-import io.split.engine.sse.SSEHandler;
-import io.split.engine.sse.SSEHandlerImp;
-import io.split.engine.sse.dtos.ErrorNotification;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import static com.google.common.base.Preconditions.checkNotNull;
@@ -23,20 +23,24 @@ public class SyncManagerImp implements SyncManager {
     private final Synchronizer _synchronizer;
     private final PushManager _pushManager;
     private final AtomicBoolean _shutdown;
+    private final LinkedBlockingQueue<PushManager.Status> _incomingPushStatus;
+    private final ExecutorService _executorService;
+    private Future<?> _pushStatusMonitorTask;
 
     @VisibleForTesting
     /* package private */ SyncManagerImp(boolean streamingEnabledConfig,
                                          Synchronizer synchronizer,
                                          PushManager pushManager,
-                                         SSEHandler sseHandler,
-                                         NotificationManagerKeeper notificationManagerKeeper) {
+                                         LinkedBlockingQueue<PushManager.Status> pushMessages) {
         _streamingEnabledConfig = new AtomicBoolean(streamingEnabledConfig);
         _synchronizer = checkNotNull(synchronizer);
         _pushManager = checkNotNull(pushManager);
         _shutdown = new AtomicBoolean(false);
-
-        sseHandler.registerFeedbackListener(this);
-        notificationManagerKeeper.registerNotificationKeeperListener(this);
+        _incomingPushStatus = pushMessages;
+        _executorService = Executors.newSingleThreadExecutor(new ThreadFactoryBuilder()
+                .setNameFormat("SPLIT-PushStatusMonitor-%d")
+                .setDaemon(true)
+                .build());
     }
 
     public static SyncManagerImp build(boolean streamingEnabledConfig,
@@ -46,14 +50,11 @@ public class SyncManagerImp implements SyncManager {
                                         CloseableHttpClient httpClient,
                                         String streamingServiceUrl,
                                         int authRetryBackOffBase) {
-        NotificationManagerKeeper notificationManagerKeeper = new NotificationManagerKeeperImp();
-        SSEHandler sseHandler = SSEHandlerImp.build(streamingServiceUrl, refreshableSplitFetcherProvider, segmentFetcher, notificationManagerKeeper);
 
-        return new SyncManagerImp(streamingEnabledConfig,
-                new SynchronizerImp(refreshableSplitFetcherProvider, segmentFetcher),
-                PushManagerImp.build(authUrl, httpClient, sseHandler, authRetryBackOffBase),
-                sseHandler,
-                notificationManagerKeeper);
+        LinkedBlockingQueue<PushManager.Status> pushMessages = new LinkedBlockingQueue<>();
+        Synchronizer synchronizer = new SynchronizerImp(refreshableSplitFetcherProvider, segmentFetcher);
+        PushManager pushManager = PushManagerImp.build(synchronizer, streamingServiceUrl, authUrl, httpClient, authRetryBackOffBase, pushMessages);
+        return new SyncManagerImp(streamingEnabledConfig, synchronizer, pushManager, pushMessages);
     }
 
     @Override
@@ -72,70 +73,55 @@ public class SyncManagerImp implements SyncManager {
         _pushManager.stop();
     }
 
-    @Override
-    public void onStreamingAvailable() {
-        _synchronizer.stopPeriodicFetching();
-        _pushManager.startWorkers();
-        _synchronizer.syncAll();
-    }
-
-    @Override
-    public void onStreamingDisabled() {
-        _pushManager.stopWorkers();
-        _synchronizer.startPeriodicFetching();
-    }
-
-    @Override
-    public void onStreamingShutdown() {
-        _pushManager.stop();
-    }
-
-    @Override
-    public void onErrorNotification(ErrorNotification errorNotification) {
-        if (errorNotification.getCode() >= 40140 && errorNotification.getCode() <= 40149) {
-            _pushManager.stop();
-            startStreamingMode();
-            return;
-        }
-
-        if (errorNotification.getCode() >= 40000 && errorNotification.getCode() <= 49999) {
-            _pushManager.stop();
-            startPollingMode();
-            return;
-        }
-    }
-
-    @Override
-    public void onConnected() {
-        _log.debug("Event source client connected ...");
-        _synchronizer.stopPeriodicFetching();
-        _synchronizer.syncAll();
-        _pushManager.startWorkers();
-    }
-
-    @Override
-    public void onDisconnect(Boolean reconnect) {
-        _log.debug(String.format("Event source client disconnected. Reconnect: %s.", reconnect));
-
-        if (_shutdown.get()) {
-            return;
-        }
-
-        _synchronizer.startPeriodicFetching();
-
-        if (reconnect) {
-            startStreamingMode();
-        }
-    }
-
     private void startStreamingMode() {
         _log.debug("Starting in streaming mode ...");
         _synchronizer.syncAll();
+        if (null == _pushStatusMonitorTask) {
+            _pushStatusMonitorTask = _executorService.submit(this::incomingPushStatusHandler);
+        }
         _pushManager.start();
+
     }
 
     private void startPollingMode() {
         _log.debug("Starting in polling mode ...");
         _synchronizer.startPeriodicFetching();
+    }
+
+    void incomingPushStatusHandler() {
+        while (!Thread.interrupted()) {
+            try {
+                PushManager.Status status = _incomingPushStatus.take();
+                switch (status) {
+                    case STREAMING_ENABLED:
+                        _synchronizer.stopPeriodicFetching();
+                        // FALLTHROUGH
+                    case STREAMING_READY:
+                        _synchronizer.syncAll();
+                        _pushManager.startWorkers();
+                        break;
+                    case STREAMING_PAUSED:
+                        _pushManager.stopWorkers();
+                        _synchronizer.startPeriodicFetching();
+                        break;
+                    case RETRYABLE_ERROR:
+                        _synchronizer.startPeriodicFetching();
+                        _pushManager.stop();
+                        _pushManager.start();
+                        break;
+                    case STREAMING_DISABLED:
+                    case NONRETRYABLE_ERROR:
+                        _pushManager.stop();
+                        _synchronizer.startPeriodicFetching();
+                        if (null != _pushStatusMonitorTask) {
+                            _pushStatusMonitorTask.cancel(false);
+                        }
+                        return; // Stop this task for the rest of the SDK lifetime
+                }
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+                break;
+            }
+        }
     }
 }
