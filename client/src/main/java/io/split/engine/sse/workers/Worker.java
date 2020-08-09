@@ -21,30 +21,31 @@ public abstract class Worker<T> implements Runnable {
     }
 
     public void start() {
-        if (_running.get()) {
+        if (_running.compareAndSet(false, true)) {
+            _log.debug(String.format("%s Worker starting ...", _workerName));
+            _queue.clear();
+            _thread = new Thread( this);
+            _thread.start();
+        } else {
             _log.warn(String.format("%s Worker already running.", _workerName));
             return;
         }
-
-        _log.debug(String.format("%s Worker starting ...", _workerName));
-        _queue.clear();
-        _running.set(true);
-        _thread = new Thread( this);
-        _thread.start();
     }
 
-    public void stop() {
-        if (!_running.get()) {
+    public  void stop() {
+        if (_running.compareAndSet(true, false)) {
+            _thread.interrupt();
+            _log.debug(String.format("%s Worked stopped.", _workerName));
+        } else {
             _log.warn(String.format("%s Worker not running.", _workerName));
-            return;
         }
-
-        _running.set(false);
-        _thread.interrupt();
-        _log.debug(String.format("%s Worked stopped.", _workerName));
     }
 
     public void addToQueue(T element) {
+        if (!_running.get()) {
+            _log.debug("workers not running, ignoring message");
+            return;
+        }
         try {
             _queue.add(element);
             _log.debug(String.format("Added to %s queue: %s", _workerName, element.toString()));
@@ -56,23 +57,15 @@ public abstract class Worker<T> implements Runnable {
     @Override
     public void run() {
         while (_running.get()) {
-            T element = null;
-
             try {
-                element = _queue.take();
+                T element = _queue.take();
+                _log.debug(String.format("Dequeue: %s", element.toString()));
+                executeRefresh(element);
             }  catch (InterruptedException ex) {
                 _log.debug("The thread was stopped.");
                 Thread.currentThread().interrupt();
                 break;
             }
-
-            if (element == null) {
-                continue;
-            }
-
-            _log.debug(String.format("Dequeue: %s", element.toString()));
-
-            executeRefresh(element);
         }
     }
 

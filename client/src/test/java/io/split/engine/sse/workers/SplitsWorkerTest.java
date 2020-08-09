@@ -1,5 +1,6 @@
 package io.split.engine.sse.workers;
 
+import io.split.engine.common.Synchronizer;
 import io.split.engine.experiments.SplitFetcher;
 import org.junit.Test;
 import org.mockito.Mockito;
@@ -8,15 +9,13 @@ public class SplitsWorkerTest {
 
     @Test
     public void addToQueueWithoutElementsWShouldNotTriggerFetch() throws InterruptedException {
-        SplitFetcher splitFetcherMock = Mockito.mock(SplitFetcher.class);
+        Synchronizer splitFetcherMock = Mockito.mock(Synchronizer.class);
 
         SplitsWorker splitsWorker = new SplitsWorkerImp(splitFetcherMock);
         splitsWorker.start();
 
         Thread.sleep(500);
-        Mockito.verify(splitFetcherMock, Mockito.never()).changeNumber();
-        Mockito.verify(splitFetcherMock, Mockito.never()).forceRefresh();
-
+        Mockito.verify(splitFetcherMock, Mockito.never()).refreshSplits(Mockito.anyLong());
         splitsWorker.stop();
     }
 

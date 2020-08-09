@@ -1,118 +1,107 @@
 package io.split.engine.sse;
 
 import com.google.common.annotations.VisibleForTesting;
+import io.split.engine.common.PushManager;
 import io.split.engine.sse.dtos.ErrorNotification;
-import io.split.engine.sse.dtos.IncomingNotification;
+import io.split.engine.sse.dtos.SegmentQueueDto;
 import io.split.engine.sse.exceptions.EventParsingException;
-import io.split.engine.sse.listeners.FeedbackLoopListener;
-import io.split.engine.sse.listeners.NotificationsListener;
+import io.split.engine.sse.workers.SplitsWorker;
+import io.split.engine.sse.workers.Worker;
+import org.apache.http.client.utils.URIBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.ws.rs.client.Client;
 import javax.ws.rs.client.ClientBuilder;
+import javax.ws.rs.client.WebTarget;
 import javax.ws.rs.sse.InboundSseEvent;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.concurrent.Executors;
+import java.net.URISyntaxException;
+import java.util.Optional;
 import java.util.concurrent.LinkedBlockingQueue;
-import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicBoolean;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
 public class EventSourceClientImp implements EventSourceClient {
     private static final Logger _log = LoggerFactory.getLogger(EventSourceClient.class);
 
+    private final String _baseStreamingUrl;
     private final Client _client;
     private final NotificationParser _notificationParser;
-    private final List<FeedbackLoopListener> _feedbackListeners;
-    private final List<NotificationsListener> _notificationsListeners;
+    private final NotificationProcessor _notificationProcessor;
     private final SplitSseEventSource _splitSseEventSource;
-    private final LinkedBlockingQueue<StatusMessage> _incomingSSEStatus;
-    private final ScheduledExecutorService _sseMonitorExecutor;
-    private final AtomicBoolean _firstTime;
+    private final LinkedBlockingQueue<PushManager.Status> _statusMessages;
 
     @VisibleForTesting
-    /* package private */ EventSourceClientImp(NotificationParser notificationParser, Client client) {
+    /* package private */ EventSourceClientImp(String baseStreamingUrl,
+                                               NotificationParser notificationParser,
+                                               NotificationProcessor notificationProcessor,
+                                               Client client,
+                                               LinkedBlockingQueue<PushManager.Status> statusMessages) {
+        _baseStreamingUrl = checkNotNull(baseStreamingUrl);
         _notificationParser = checkNotNull(notificationParser);
-
-        _incomingSSEStatus = new LinkedBlockingQueue<>();
-        _sseMonitorExecutor = Executors.newSingleThreadScheduledExecutor();
-        _feedbackListeners = new ArrayList<>();
-        _notificationsListeners = new ArrayList<>();
-        _firstTime = new AtomicBoolean(true);
-        _client = client;
-        _splitSseEventSource = new SplitSseEventSource(inboundEvent -> { onMessage(inboundEvent); return null; });
-
-        // Start the SSE Monitor thread at construction time.
-        _sseMonitorExecutor.execute(this::handleSSEStatusMessages);
+        _notificationProcessor = checkNotNull(notificationProcessor);
+        _client = checkNotNull(client);
+        _splitSseEventSource = new SplitSseEventSource(inboundEvent -> { onMessage(inboundEvent); return null; }, this::handleSseStatus);
+        _statusMessages = statusMessages;
     }
 
-    //add parameter base backoff
-    public static EventSourceClientImp build() {
-        Client client = ClientBuilder
-                .newBuilder()
-                .readTimeout(70, TimeUnit.SECONDS)
-                .build();
+    public static EventSourceClientImp build(String baseStreamingUrl,
+                                             SplitsWorker splitsWorker,
+                                             Worker<SegmentQueueDto> segmentWorker,
+                                             LinkedBlockingQueue<PushManager.Status> statusMessages) {
 
-        return new EventSourceClientImp(new NotificationParserImp(), client);
+        return new EventSourceClientImp(baseStreamingUrl,
+                new NotificationParserImp(),
+                NotificationProcessorImp.build(splitsWorker, segmentWorker, new NotificationManagerKeeperImp(statusMessages)),
+                ClientBuilder.newBuilder().readTimeout(70, TimeUnit.SECONDS).build(),
+                statusMessages);
     }
 
     @Override
-    public boolean start(String url) {
-        if (_splitSseEventSource != null && _splitSseEventSource.isOpen()) {
+    public boolean start(String channelList, String token) {
+        if (_splitSseEventSource.isOpen()) {
             _splitSseEventSource.close();
         }
 
-        _splitSseEventSource.open(_client.target(url), _incomingSSEStatus);
-        _splitSseEventSource.awaitFirstContact();
-        _firstTime.set(false);
-
-        return _splitSseEventSource.isOpen();
+        try {
+            return _splitSseEventSource.open(buildTarget(channelList, token));
+        } catch (URISyntaxException e) {
+            _log.error("Error building Streaming URI: " + e.getMessage());
+            return false;
+        }
     }
 
     @Override
     public void stop() {
-        if (_firstTime.get()) {
-            _feedbackListeners.forEach(listener -> listener.onDisconnect(false));
-            return;
-        }
-
         if (!_splitSseEventSource.isOpen()) {
             _log.warn("Event Source Client is closed.");
             return;
         }
-
         _splitSseEventSource.close();
     }
 
-    @Override
-    public synchronized void registerNotificationListener(NotificationsListener listener) {
-        _notificationsListeners.add(listener);
-    }
-
-    @Override
-    public synchronized void registerFeedbackListener(FeedbackLoopListener listener) {
-        _feedbackListeners.add(listener);
+    private WebTarget buildTarget(String channelList, String token) throws URISyntaxException {
+        return _client.target(new URIBuilder(_baseStreamingUrl)
+                .addParameter("channels", channelList)
+                .addParameter("v", "1.1")
+                .addParameter("accessToken", token)
+                .build());
     }
 
     private void onMessage(InboundSseEvent event) {
         try {
             String type = event.getName();
             String payload = event.readData();
-
             if (payload.length() > 0) {
                 _log.debug(String.format("Payload received: %s", payload));
                 switch (type) {
                     case "message":
-                        IncomingNotification incomingNotification = _notificationParser.parseMessage(payload);
-                        notifyMessageNotification(incomingNotification);
+                        _notificationProcessor.process(_notificationParser.parseMessage(payload));
                         break;
                     case "error":
                         ErrorNotification errorNotification = _notificationParser.parseError(payload);
-                        notifyErrorNotification(errorNotification);
+                        parseError(errorNotification).ifPresent(_statusMessages::offer);
                         break;
                     default:
                         throw new EventParsingException("Wrong notification type.", payload);
@@ -125,38 +114,23 @@ public class EventSourceClientImp implements EventSourceClient {
         }
     }
 
-
-    private synchronized void notifyMessageNotification (IncomingNotification incomingNotification) {
-        _notificationsListeners.forEach(listener -> listener.onMessageNotificationReceived(incomingNotification));
-    }
-
-    private synchronized void notifyErrorNotification (ErrorNotification errorNotification) {
-        _feedbackListeners.forEach(listener -> listener.onErrorNotification(errorNotification));
-    }
-
-    private void handleSSEStatusMessages() {
-        while(true) {
-            try {
-                StatusMessage message = _incomingSSEStatus.take();
-                switch (message.code) {
-                    case CONNECTED:
-                        _log.info("Successfully connected to sse");
-                        _feedbackListeners.forEach(FeedbackLoopListener::onConnected);
-                        break;
-                    case RETRYABLE_ERROR:
-                        _feedbackListeners.forEach(listener -> listener.onDisconnect(true));
-                        break;
-                    case NONRETRYABLE_ERROR:
-                    case DISCONNECTED:
-                        _feedbackListeners.forEach(listener -> listener.onDisconnect(false));
-                }
-            } catch (InterruptedException e) {
-                _log.warn(String.format("handleSSEStatusMessages Thread interrupted: exit gracefully.", e.getMessage()));
-                // Thread interrupted: exit gracefully.
-                Thread.currentThread().interrupt();
-                break;
-            }
+    private Optional<PushManager.Status> parseError(ErrorNotification notification) {
+        if (notification.getCode() >= 40140 && notification.getCode() <= 40149) {
+            return Optional.of(PushManager.Status.RETRYABLE_ERROR);
         }
+        if (notification.getCode() >= 40000 && notification.getCode() <= 49999) {
+            return Optional.of(PushManager.Status.NONRETRYABLE_ERROR);
+        }
+        return Optional.empty();
+    }
 
+    private Void handleSseStatus(SseStatus status) {
+        switch(status) {
+            case CONNECTED: _statusMessages.offer(PushManager.Status.STREAMING_READY); break;
+            case RETRYABLE_ERROR: _statusMessages.offer(PushManager.Status.RETRYABLE_ERROR); break;
+            case NONRETRYABLE_ERROR: _statusMessages.offer(PushManager.Status.NONRETRYABLE_ERROR); break;
+            case DISCONNECTED: /* nothing to do here. */ break;
+        }
+        return null;
     }
 }
