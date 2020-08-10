@@ -205,7 +205,7 @@
                 "matcherType":"IN_SEGMENT",
                 "negate":false,
                 "userDefinedSegmentMatcherData":{
-                  "segmentName":"segment3"
+                  "segmentName":"segment-test"
                 },
                 "whitelistMatcherData":null
               }
