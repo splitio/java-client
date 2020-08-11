@@ -3,7 +3,13 @@ package io.split.engine.sse.workers;
 import io.split.engine.common.Synchronizer;
 import io.split.engine.experiments.SplitFetcher;
 import org.junit.Test;
+import org.mockito.ArgumentCaptor;
 import org.mockito.Mockito;
+
+import java.util.List;
+
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.contains;
 
 public class SplitsWorkerTest {
 
@@ -21,26 +27,21 @@ public class SplitsWorkerTest {
 
     @Test
     public void addToQueueWithElementsWShouldTriggerFetch() throws InterruptedException {
-        SplitFetcher splitFetcherMock = Mockito.mock(SplitFetcher.class);
+        Synchronizer syncMock = Mockito.mock(Synchronizer.class);
 
-        Mockito.when(splitFetcherMock.changeNumber())
-                .thenReturn(1585956698447L)
-                .thenReturn(1585956698457L)
-                .thenReturn(1585956698467L)
-                .thenReturn(1585956698477L);
-
-        SplitsWorker splitsWorker = new SplitsWorkerImp(splitFetcherMock);
+        SplitsWorker splitsWorker = new SplitsWorkerImp(syncMock);
         splitsWorker.start();
 
+        ArgumentCaptor<Long> cnCaptor = ArgumentCaptor.forClass(Long.class);
         splitsWorker.addToQueue(1585956698457L);
         splitsWorker.addToQueue(1585956698467L);
         splitsWorker.addToQueue(1585956698477L);
         splitsWorker.addToQueue(1585956698476L);
         Thread.sleep(1000);
 
-        Mockito.verify(splitFetcherMock, Mockito.times(4)).changeNumber();
-        Mockito.verify(splitFetcherMock, Mockito.times(3)).forceRefresh();
-
+        Mockito.verify(syncMock, Mockito.times(4)).refreshSplits(cnCaptor.capture());
+        List<Long> captured = cnCaptor.getAllValues();
+        assertThat(captured, contains(1585956698457L, 1585956698467L, 1585956698477L, 1585956698476L));
         splitsWorker.stop();
     }
 
@@ -50,49 +51,35 @@ public class SplitsWorkerTest {
         String splitName = "split-test";
         String defaultTreatment = "off";
 
-        SplitFetcher splitFetcherMock = Mockito.mock(SplitFetcher.class);
-
-        SplitsWorker splitsWorker = new SplitsWorkerImp(splitFetcherMock);
+        Synchronizer syncMock = Mockito.mock(Synchronizer.class);
+        SplitsWorker splitsWorker = new SplitsWorkerImp(syncMock);
         splitsWorker.start();
 
         splitsWorker.killSplit(changeNumber, splitName, defaultTreatment);
-
-        Mockito.verify(splitFetcherMock, Mockito.times(1)).killSplit(splitName, defaultTreatment, changeNumber);
-
+        Mockito.verify(syncMock, Mockito.times(1)).localKillSplit(splitName, defaultTreatment, changeNumber);
         splitsWorker.stop();
     }
 
     @Test
-    public void addToQueueWithStopAndStartAgain() throws InterruptedException {
-        SplitFetcher splitFetcherMock = Mockito.mock(SplitFetcher.class);
-
-        SplitsWorker splitsWorker = new SplitsWorkerImp(splitFetcherMock);
+    public void messagesNotProcesedWhenWorkerStopped() throws InterruptedException {
+        Synchronizer syncMock = Mockito.mock(Synchronizer.class);
+        SplitsWorker splitsWorker = new SplitsWorkerImp(syncMock);
         splitsWorker.start();
-
-        Mockito.when(splitFetcherMock.changeNumber()).thenReturn(1585956698447L);
         splitsWorker.addToQueue(1585956698457L);
-
         Thread.sleep(500);
 
-        Mockito.verify(splitFetcherMock, Mockito.times(1)).changeNumber();
-        Mockito.verify(splitFetcherMock, Mockito.times(1)).forceRefresh();
 
         splitsWorker.stop();
         Thread.sleep(500);
 
         splitsWorker.addToQueue(1585956698467L);
+        Mockito.verify(syncMock, Mockito.times(1)).refreshSplits(1585956698457L); // Previous one!
 
-        Mockito.verify(splitFetcherMock, Mockito.times(1)).changeNumber();
-        Mockito.verify(splitFetcherMock, Mockito.times(1)).forceRefresh();
-
+        Mockito.reset(syncMock);
         splitsWorker.start();
-
-        Mockito.when(splitFetcherMock.changeNumber()).thenReturn(1585956698457L);
         splitsWorker.addToQueue(1585956698477L);
         Thread.sleep(500);
-
-        Mockito.verify(splitFetcherMock, Mockito.times(2)).changeNumber();
-        Mockito.verify(splitFetcherMock, Mockito.times(2)).forceRefresh();
+        Mockito.verify(syncMock, Mockito.times(1)).refreshSplits(1585956698477L);
         splitsWorker.stop();
     }
 }

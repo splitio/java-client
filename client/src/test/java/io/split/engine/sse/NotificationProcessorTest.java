@@ -11,14 +11,14 @@ public class NotificationProcessorTest {
     private final SplitsWorker _splitsWorker;
     private final Worker<SegmentQueueDto> _segmentWorker;
     private final NotificationProcessor _notificationProcessor;
-    private final NotificationManagerKeeper _notificationManagerKeeper;
+    private final PushStatusTracker _pushStatusTracker;
 
     public NotificationProcessorTest() {
         _splitsWorker = Mockito.mock(SplitsWorker.class);
         _segmentWorker = Mockito.mock(SegmentsWorkerImp.class);
-        _notificationManagerKeeper = Mockito.mock(NotificationManagerKeeper.class);
+        _pushStatusTracker = Mockito.mock(PushStatusTracker.class);
 
-        _notificationProcessor = new NotificationProcessorImp(_splitsWorker, _segmentWorker, _notificationManagerKeeper);
+        _notificationProcessor = new NotificationProcessorImp(_splitsWorker, _segmentWorker, _pushStatusTracker);
     }
 
     @Test
@@ -68,7 +68,7 @@ public class NotificationProcessorTest {
 
         _notificationProcessor.process(controlNotification);
 
-        Mockito.verify(_notificationManagerKeeper, Mockito.times(1)).handleIncomingControlEvent(Mockito.any(ControlNotification.class));
+        Mockito.verify(_pushStatusTracker, Mockito.times(1)).handleIncomingControlEvent(Mockito.any(ControlNotification.class));
     }
 
     @Test
@@ -78,6 +78,6 @@ public class NotificationProcessorTest {
 
         _notificationProcessor.process(occupancyNotification);
 
-        Mockito.verify(_notificationManagerKeeper, Mockito.times(1)).handleIncomingOccupancyEvent(Mockito.any(OccupancyNotification.class));
+        Mockito.verify(_pushStatusTracker, Mockito.times(1)).handleIncomingOccupancyEvent(Mockito.any(OccupancyNotification.class));
     }
 }
