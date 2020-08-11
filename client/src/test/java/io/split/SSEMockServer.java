@@ -60,7 +60,7 @@ public class SSEMockServer {
             throw new IllegalStateException("Server is not running");
         }
 
-        _server.stop();
+        _server.shutdownNow();
     }
 
     public int getPort() { return _port.get(); }

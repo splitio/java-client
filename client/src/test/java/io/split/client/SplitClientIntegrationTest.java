@@ -2,6 +2,7 @@ package io.split.client;
 
 import io.split.SSEMockServer;
 import io.split.SplitMockServer;
+import io.split.client.api.SplitView;
 import org.glassfish.grizzly.utils.Pair;
 import org.glassfish.jersey.media.sse.OutboundEvent;
 import org.junit.Assert;
@@ -10,6 +11,7 @@ import org.junit.Test;
 import javax.ws.rs.sse.OutboundSseEvent;
 import java.io.IOException;
 import java.net.URISyntaxException;
+import java.util.List;
 import java.util.concurrent.TimeoutException;
 
 public class SplitClientIntegrationTest {
@@ -111,7 +113,7 @@ public class SplitClientIntegrationTest {
     }
 
     @Test
-    public void getTreatmentWithStreamingDisabled() throws IOException, TimeoutException, InterruptedException, URISyntaxException {
+    public void getTreatmentWithStreamingEnabledAndAuthDisabled() throws IOException, TimeoutException, InterruptedException, URISyntaxException {
         SplitMockServer splitServer = new SplitMockServer();
         splitServer.start();
 
@@ -131,6 +133,69 @@ public class SplitClientIntegrationTest {
 
         client.destroy();
         splitServer.stop();
+    }
+
+    @Test
+    public void getTreatmentWithStreamingDisabled() throws IOException, TimeoutException, InterruptedException, URISyntaxException {
+        SplitMockServer splitServer = new SplitMockServer();
+        splitServer.start();
+
+        SplitClientConfig config = SplitClientConfig.builder()
+                .setBlockUntilReadyTimeout(10000)
+                .endpoint(splitServer.getUrl(), splitServer.getUrl())
+                .authServiceURL(String.format("%s/api/auth/enabled", splitServer.getUrl()))
+                .streamingEnabled(false)
+                .featuresRefreshRate(5)
+                .build();
+
+        SplitFactory factory = SplitFactoryBuilder.build("fake-api-token", config);
+        SplitClient client = factory.client();
+        client.blockUntilReady();
+
+        String result = client.getTreatment("admin", "push_test");
+        Assert.assertEquals("on_whitelist", result);
+
+        Thread.sleep(20000);
+
+        result = client.getTreatment("admin", "push_test");
+        Assert.assertEquals("split_killed", result);
+
+        client.destroy();
+        splitServer.stop();
+    }
+
+    @Test
+    public void managerSplitsWithStreamingEnabled() throws IOException, TimeoutException, InterruptedException, URISyntaxException {
+        SplitMockServer splitServer = new SplitMockServer();
+        SSEMockServer.SseEventQueue eventQueue = new SSEMockServer.SseEventQueue();
+        SSEMockServer sseServer = buildSSEMockServer(eventQueue);
+
+        splitServer.start();
+        sseServer.start();
+
+        SplitClientConfig config = buildSplitClientConfig("enabled", splitServer.getUrl(), sseServer.getPort(), true, 50);
+
+        SplitFactory factory = SplitFactoryBuilder.build("fake-api-token", config);
+        SplitManager manager = factory.manager();
+        manager.blockUntilReady();
+
+        List<SplitView> results = manager.splits();
+        Assert.assertEquals(4, results.size());
+
+        // SPLIT_KILL should fetch.
+        OutboundSseEvent sseEventSplitKill = new OutboundEvent
+                .Builder()
+                .name("message")
+                .data("{\"id\":\"22\",\"clientId\":\"22\",\"timestamp\":1592591081575,\"encoding\":\"json\",\"channel\":\"xxxx_xxxx_splits\",\"data\":\"{\\\"type\\\":\\\"SPLIT_KILL\\\",\\\"changeNumber\\\":1585948850112,\\\"defaultTreatment\\\":\\\"split_killed\\\",\\\"splitName\\\":\\\"push_test\\\"}\"}")
+                .build();
+        eventQueue.push(sseEventSplitKill);
+        Thread.sleep(1000);
+
+        List<SplitView> results2 = manager.splits();
+        Assert.assertEquals(3, results2.stream().filter(r -> !r.killed).toArray().length);
+
+        splitServer.stop();
+        sseServer.stop();
     }
 
     @Test
