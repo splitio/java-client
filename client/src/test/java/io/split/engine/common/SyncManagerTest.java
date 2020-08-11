@@ -1,125 +1,117 @@
 package io.split.engine.common;
 
-import io.split.engine.sse.NotificationManagerKeeper;
+import io.split.engine.sse.PushStatusTracker;
 import io.split.engine.sse.SSEHandler;
-import io.split.engine.sse.dtos.ErrorNotification;
 import org.junit.Test;
 import org.mockito.Mockito;
+
+import java.util.concurrent.LinkedBlockingQueue;
 
 public class SyncManagerTest {
     private final Synchronizer _synchronizer;
     private final PushManager _pushManager;
     private final SSEHandler _sseHandler;
-    private final NotificationManagerKeeper _notificationManagerKeeper;
+    private final PushStatusTracker _pushStatusTracker;
 
     public SyncManagerTest() {
         _synchronizer = Mockito.mock(Synchronizer.class);
         _pushManager = Mockito.mock(PushManager.class);
         _sseHandler = Mockito.mock(SSEHandler.class);
-        _notificationManagerKeeper = Mockito.mock(NotificationManagerKeeper.class);
+        _pushStatusTracker = Mockito.mock(PushStatusTracker.class);
     }
 
     @Test
     public void startWithStreamingFalseShouldStartPolling() {
-        SyncManager syncManager = new SyncManagerImp(false, _synchronizer, _pushManager, _sseHandler, _notificationManagerKeeper);
+        SyncManagerImp syncManager = new SyncManagerImp(false, _synchronizer, _pushManager, new LinkedBlockingQueue<>());
         syncManager.start();
-
         Mockito.verify(_synchronizer, Mockito.times(1)).startPeriodicFetching();
         Mockito.verify(_synchronizer, Mockito.times(0)).syncAll();
         Mockito.verify(_pushManager, Mockito.times(0)).start();
     }
 
     @Test
-    public void startWithStreamingTrueShouldStartPolling() {
-        SyncManager syncManager = new SyncManagerImp(true, _synchronizer, _pushManager, _sseHandler, _notificationManagerKeeper);
-        syncManager.start();
-
+    public void startWithStreamingTrueShouldStartSyncAll() {
+        SyncManager sm = new SyncManagerImp(true, _synchronizer, _pushManager, new LinkedBlockingQueue<>());
+        sm.start();
         Mockito.verify(_synchronizer, Mockito.times(0)).startPeriodicFetching();
         Mockito.verify(_synchronizer, Mockito.times(1)).syncAll();
         Mockito.verify(_pushManager, Mockito.times(1)).start();
     }
 
     @Test
-    public void onStreamingAvailable() {
-        SyncManagerImp syncManager = new SyncManagerImp(true, _synchronizer, _pushManager, _sseHandler, _notificationManagerKeeper);
-
-        syncManager.onStreamingAvailable();
-
+    public void onStreamingAvailable() throws InterruptedException {
+        LinkedBlockingQueue<PushManager.Status> messsages = new LinkedBlockingQueue<>();
+        SyncManagerImp syncManager = new SyncManagerImp(true, _synchronizer, _pushManager, messsages);
+        Thread t = new Thread(syncManager::incomingPushStatusHandler);
+        t.start();
+        messsages.offer(PushManager.Status.STREAMING_READY);
+        Thread.sleep(500);
         Mockito.verify(_synchronizer, Mockito.times(1)).stopPeriodicFetching();
         Mockito.verify(_synchronizer, Mockito.times(1)).syncAll();
         Mockito.verify(_pushManager, Mockito.times(1)).startWorkers();
+        t.interrupt();
     }
 
     @Test
-    public void onStreamingDisabled() {
-        SyncManagerImp syncManager = new SyncManagerImp(true, _synchronizer, _pushManager, _sseHandler, _notificationManagerKeeper);
-
-        syncManager.onStreamingDisabled();
+    public void onStreamingDisabled() throws InterruptedException {
+        LinkedBlockingQueue<PushManager.Status> messsages = new LinkedBlockingQueue<>();
+        SyncManagerImp syncManager = new SyncManagerImp(true, _synchronizer, _pushManager, messsages);
+        Thread t = new Thread(syncManager::incomingPushStatusHandler);
+        t.start();
+        messsages.offer(PushManager.Status.STREAMING_DOWN);
+        Thread.sleep(500);
 
         Mockito.verify(_synchronizer, Mockito.times(1)).startPeriodicFetching();
         Mockito.verify(_pushManager, Mockito.times(1)).stopWorkers();
+        t.interrupt();
     }
 
     @Test
-    public void onStreamingShutdown() {
-        SyncManagerImp syncManager = new SyncManagerImp(true, _synchronizer, _pushManager, _sseHandler, _notificationManagerKeeper);
-
-        syncManager.onStreamingShutdown();
-
+    public void onStreamingShutdown() throws InterruptedException {
+        LinkedBlockingQueue<PushManager.Status> messsages = new LinkedBlockingQueue<>();
+        SyncManagerImp syncManager = new SyncManagerImp(true, _synchronizer, _pushManager, messsages);
+        Thread t = new Thread(syncManager::incomingPushStatusHandler);
+        t.start();
+        messsages.offer(PushManager.Status.STREAMING_OFF);
+        Thread.sleep(500);
         Mockito.verify(_pushManager, Mockito.times(1)).stop();
+        t.interrupt();
     }
 
     @Test
-    public void onConnected() {
-        SyncManagerImp syncManager = new SyncManagerImp(true, _synchronizer, _pushManager, _sseHandler, _notificationManagerKeeper);
-
-        syncManager.onConnected();
-
+    public void onConnected() throws InterruptedException {
+        LinkedBlockingQueue<PushManager.Status> messsages = new LinkedBlockingQueue<>();
+        SyncManagerImp syncManager = new SyncManagerImp(true, _synchronizer, _pushManager, messsages);
+        Thread t = new Thread(syncManager::incomingPushStatusHandler);
+        t.start();
+        messsages.offer(PushManager.Status.STREAMING_READY);
+        Thread.sleep(500);
         Mockito.verify(_synchronizer, Mockito.times(1)).stopPeriodicFetching();
         Mockito.verify(_synchronizer, Mockito.times(1)).syncAll();
+        t.interrupt();
     }
 
     @Test
-    public void onDisconnect() {
-        SyncManagerImp syncManager = new SyncManagerImp(true, _synchronizer, _pushManager, _sseHandler, _notificationManagerKeeper);
-
-        syncManager.onDisconnect(false);
-
+    public void onDisconnect() throws InterruptedException {
+        LinkedBlockingQueue<PushManager.Status> messsages = new LinkedBlockingQueue<>();
+        SyncManagerImp syncManager = new SyncManagerImp(true, _synchronizer, _pushManager, messsages);
+        Thread t = new Thread(syncManager::incomingPushStatusHandler);
+        t.start();
+        messsages.offer(PushManager.Status.STREAMING_OFF);
+        Thread.sleep(500);
         Mockito.verify(_synchronizer, Mockito.times(1)).startPeriodicFetching();
+        t.interrupt();
     }
 
     @Test
-    public void onDisconnectAndReconnect() {
-        SyncManagerImp syncManager = new SyncManagerImp(true, _synchronizer, _pushManager, _sseHandler, _notificationManagerKeeper);
-
-        syncManager.onDisconnect(true);
-
+    public void onDisconnectAndReconnect() throws InterruptedException { // Check with mauro. reconnect should call pushManager.start again, right?
+        LinkedBlockingQueue<PushManager.Status> messsages = new LinkedBlockingQueue<>();
+        SyncManagerImp syncManager = new SyncManagerImp(true, _synchronizer, _pushManager, messsages);
+        syncManager.start();
+        messsages.offer(PushManager.Status.STREAMING_BACKOFF);
+        Thread.sleep(500);
         Mockito.verify(_synchronizer, Mockito.times(1)).startPeriodicFetching();
         Mockito.verify(_synchronizer, Mockito.times(1)).syncAll();
-        Mockito.verify(_pushManager, Mockito.times(1)).start();
-    }
-
-    @Test
-    public void onErrorNotification() {
-        ErrorNotification errorNotification = new ErrorNotification("503", "Timeout error", 50003);
-
-        SyncManagerImp syncManager = new SyncManagerImp(true, _synchronizer, _pushManager, _sseHandler, _notificationManagerKeeper);
-        syncManager.onErrorNotification(errorNotification);
-
-        Mockito.verify(_pushManager, Mockito.times(0)).stop();
-        Mockito.verify(_synchronizer, Mockito.times(0)).syncAll();
-        Mockito.verify(_pushManager, Mockito.times(0)).start();
-    }
-
-    @Test
-    public void onErrorNotificationTokenExpire() {
-        ErrorNotification errorNotification = new ErrorNotification("401", "Token expire", 40142);
-
-        SyncManagerImp syncManager = new SyncManagerImp(true, _synchronizer, _pushManager, _sseHandler, _notificationManagerKeeper);
-        syncManager.onErrorNotification(errorNotification);
-
-        Mockito.verify(_pushManager, Mockito.times(1)).stop();
-        Mockito.verify(_synchronizer, Mockito.times(1)).syncAll();
-        Mockito.verify(_pushManager, Mockito.times(1)).start();
+        Mockito.verify(_pushManager, Mockito.times(2)).start();
     }
 }

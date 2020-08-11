@@ -1,6 +1,6 @@
 package io.split.engine.sse.dtos;
 
-import io.split.engine.sse.NotificationManagerKeeper;
+import io.split.engine.sse.PushStatusTracker;
 import io.split.engine.sse.NotificationProcessor;
 
 public class ControlNotification extends IncomingNotification implements StatusNotification {
@@ -21,8 +21,8 @@ public class ControlNotification extends IncomingNotification implements StatusN
     }
 
     @Override
-    public void handlerStatus(NotificationManagerKeeper notificationManagerKeeper) {
-        notificationManagerKeeper.handleIncomingControlEvent(this);
+    public void handlerStatus(PushStatusTracker pushStatusTracker) {
+        pushStatusTracker.handleIncomingControlEvent(this);
     }
 
     @Override

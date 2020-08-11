@@ -6,6 +6,8 @@ import io.split.engine.sse.AuthApiClient;
 import io.split.engine.sse.AuthApiClientImp;
 import io.split.engine.sse.EventSourceClient;
 import io.split.engine.sse.EventSourceClientImp;
+import io.split.engine.sse.PushStatusTracker;
+import io.split.engine.sse.PushStatusTrackerImp;
 import io.split.engine.sse.dtos.AuthenticationResponse;
 import io.split.engine.sse.dtos.SegmentQueueDto;
 import io.split.engine.sse.workers.SegmentsWorkerImp;
@@ -32,7 +34,7 @@ public class PushManagerImp implements PushManager {
     private final Backoff _backoff;
     private final SplitsWorker _splitsWorker;
     private final Worker<SegmentQueueDto> _segmentWorker;
-    private final LinkedBlockingQueue<PushManager.Status> _statusMessages;
+    private final PushStatusTracker _pushStatusTracker;
 
     private Future<?> _nextTokenRefreshTask;
     private final ScheduledExecutorService _scheduledExecutorService;
@@ -43,14 +45,14 @@ public class PushManagerImp implements PushManager {
                                              SplitsWorker splitsWorker,
                                              Worker<SegmentQueueDto> segmentWorker,
                                              Backoff backoff,
-                                             LinkedBlockingQueue<PushManager.Status> statusMessages) {
+                                             PushStatusTracker pushStatusTracker) {
 
         _authApiClient = checkNotNull(authApiClient);
         _eventSourceClient = checkNotNull(eventSourceClient);
         _backoff = checkNotNull(backoff);
         _splitsWorker = splitsWorker;
         _segmentWorker = segmentWorker;
-        _statusMessages = statusMessages;
+        _pushStatusTracker = pushStatusTracker;
         _scheduledExecutorService = Executors.newSingleThreadScheduledExecutor(new ThreadFactoryBuilder()
                 .setDaemon(true)
                 .setNameFormat("Split-SSERefreshToken-%d")
@@ -66,13 +68,13 @@ public class PushManagerImp implements PushManager {
 
         SplitsWorker splitsWorker = new SplitsWorkerImp(synchronizer);
         Worker<SegmentQueueDto> segmentWorker = new SegmentsWorkerImp(synchronizer);
-
+        PushStatusTracker pushStatusTracker = new PushStatusTrackerImp(statusMessages);
         return new PushManagerImp(new AuthApiClientImp(authUrl, httpClient),
-                EventSourceClientImp.build(streamingUrl, splitsWorker, segmentWorker, statusMessages),
+                EventSourceClientImp.build(streamingUrl, splitsWorker, segmentWorker, pushStatusTracker),
                 splitsWorker,
                 segmentWorker,
                 new Backoff(authRetryBackOffBase),
-                statusMessages);
+                pushStatusTracker);
     }
 
     @Override
@@ -89,7 +91,7 @@ public class PushManagerImp implements PushManager {
         if (response.isRetry()) {
             scheduleConnectionReset(_backoff.interval());
         } else {
-            _statusMessages.offer(Status.STREAMING_DISABLED);
+            _pushStatusTracker.forcePushDisable();
         }
     }
 

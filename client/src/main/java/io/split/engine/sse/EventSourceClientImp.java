@@ -1,8 +1,6 @@
 package io.split.engine.sse;
 
 import com.google.common.annotations.VisibleForTesting;
-import io.split.engine.common.PushManager;
-import io.split.engine.sse.dtos.ErrorNotification;
 import io.split.engine.sse.dtos.SegmentQueueDto;
 import io.split.engine.sse.exceptions.EventParsingException;
 import io.split.engine.sse.workers.SplitsWorker;
@@ -16,8 +14,6 @@ import javax.ws.rs.client.ClientBuilder;
 import javax.ws.rs.client.WebTarget;
 import javax.ws.rs.sse.InboundSseEvent;
 import java.net.URISyntaxException;
-import java.util.Optional;
-import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
 
 import static com.google.common.base.Preconditions.checkNotNull;
@@ -30,32 +26,32 @@ public class EventSourceClientImp implements EventSourceClient {
     private final NotificationParser _notificationParser;
     private final NotificationProcessor _notificationProcessor;
     private final SplitSseEventSource _splitSseEventSource;
-    private final LinkedBlockingQueue<PushManager.Status> _statusMessages;
+    private final PushStatusTracker _pushStatusTracker;
 
     @VisibleForTesting
     /* package private */ EventSourceClientImp(String baseStreamingUrl,
                                                NotificationParser notificationParser,
                                                NotificationProcessor notificationProcessor,
                                                Client client,
-                                               LinkedBlockingQueue<PushManager.Status> statusMessages) {
+                                               PushStatusTracker pushStatusTracker) {
         _baseStreamingUrl = checkNotNull(baseStreamingUrl);
         _notificationParser = checkNotNull(notificationParser);
         _notificationProcessor = checkNotNull(notificationProcessor);
         _client = checkNotNull(client);
         _splitSseEventSource = new SplitSseEventSource(inboundEvent -> { onMessage(inboundEvent); return null; }, this::handleSseStatus);
-        _statusMessages = statusMessages;
+        _pushStatusTracker = pushStatusTracker;
     }
 
     public static EventSourceClientImp build(String baseStreamingUrl,
                                              SplitsWorker splitsWorker,
                                              Worker<SegmentQueueDto> segmentWorker,
-                                             LinkedBlockingQueue<PushManager.Status> statusMessages) {
+                                             PushStatusTracker pushStatusTracker) {
 
         return new EventSourceClientImp(baseStreamingUrl,
                 new NotificationParserImp(),
-                NotificationProcessorImp.build(splitsWorker, segmentWorker, new NotificationManagerKeeperImp(statusMessages)),
+                NotificationProcessorImp.build(splitsWorker, segmentWorker, pushStatusTracker),
                 ClientBuilder.newBuilder().readTimeout(70, TimeUnit.SECONDS).build(),
-                statusMessages);
+                pushStatusTracker);
     }
 
     @Override
@@ -100,8 +96,7 @@ public class EventSourceClientImp implements EventSourceClient {
                         _notificationProcessor.process(_notificationParser.parseMessage(payload));
                         break;
                     case "error":
-                        ErrorNotification errorNotification = _notificationParser.parseError(payload);
-                        parseError(errorNotification).ifPresent(_statusMessages::offer);
+                        _pushStatusTracker.handleIncomingAblyError(_notificationParser.parseError(payload));
                         break;
                     default:
                         throw new EventParsingException("Wrong notification type.", payload);
@@ -114,23 +109,8 @@ public class EventSourceClientImp implements EventSourceClient {
         }
     }
 
-    private Optional<PushManager.Status> parseError(ErrorNotification notification) {
-        if (notification.getCode() >= 40140 && notification.getCode() <= 40149) {
-            return Optional.of(PushManager.Status.RETRYABLE_ERROR);
-        }
-        if (notification.getCode() >= 40000 && notification.getCode() <= 49999) {
-            return Optional.of(PushManager.Status.NONRETRYABLE_ERROR);
-        }
-        return Optional.empty();
-    }
-
     private Void handleSseStatus(SseStatus status) {
-        switch(status) {
-            case CONNECTED: _statusMessages.offer(PushManager.Status.STREAMING_READY); break;
-            case RETRYABLE_ERROR: _statusMessages.offer(PushManager.Status.RETRYABLE_ERROR); break;
-            case NONRETRYABLE_ERROR: _statusMessages.offer(PushManager.Status.NONRETRYABLE_ERROR); break;
-            case DISCONNECTED: /* nothing to do here. */ break;
-        }
-        return null;
+        _pushStatusTracker.handleSseStatus(status);
+        return  null;
     }
 }

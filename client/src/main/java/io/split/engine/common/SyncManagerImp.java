@@ -88,29 +88,27 @@ public class SyncManagerImp implements SyncManager {
         _synchronizer.startPeriodicFetching();
     }
 
-    void incomingPushStatusHandler() {
+    @VisibleForTesting
+    /* package private */ void incomingPushStatusHandler() {
         while (!Thread.interrupted()) {
             try {
                 PushManager.Status status = _incomingPushStatus.take();
                 switch (status) {
-                    case STREAMING_ENABLED:
-                        _synchronizer.stopPeriodicFetching();
-                        // FALLTHROUGH
                     case STREAMING_READY:
+                        _synchronizer.stopPeriodicFetching();
                         _synchronizer.syncAll();
                         _pushManager.startWorkers();
                         break;
-                    case STREAMING_PAUSED:
+                    case STREAMING_DOWN:
                         _pushManager.stopWorkers();
                         _synchronizer.startPeriodicFetching();
                         break;
-                    case RETRYABLE_ERROR:
+                    case STREAMING_BACKOFF:
                         _synchronizer.startPeriodicFetching();
                         _pushManager.stop();
                         _pushManager.start();
                         break;
-                    case STREAMING_DISABLED:
-                    case NONRETRYABLE_ERROR:
+                    case STREAMING_OFF:
                         _pushManager.stop();
                         _synchronizer.startPeriodicFetching();
                         if (null != _pushStatusMonitorTask) {
