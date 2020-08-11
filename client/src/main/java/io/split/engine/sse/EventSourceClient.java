@@ -4,7 +4,7 @@ import io.split.engine.sse.listeners.FeedbackLoopListener;
 import io.split.engine.sse.listeners.NotificationsListener;
 
 public interface EventSourceClient {
-    void start(String url);
+    boolean start(String target);
     void stop();
 
     void registerNotificationListener(NotificationsListener listener);

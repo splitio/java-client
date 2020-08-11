@@ -37,37 +37,38 @@ public class SSEHandlerImp implements SSEHandler, NotificationsListener {
         _splitsWorker = checkNotNull(splitsWorker);
         _notificationProcessor = checkNotNull(notificationProcessor);
         _segmentWorker = checkNotNull(segmentWorker);
-
         _eventSourceClient.registerNotificationListener(this);
     }
 
-    public static SSEHandlerImp build(String streamingServiceUrl, RefreshableSplitFetcherProvider splitFetcherProvider, RefreshableSegmentFetcher segmentFetcher) {
+    public static SSEHandlerImp build(String streamingServiceUrl, RefreshableSplitFetcherProvider splitFetcherProvider, RefreshableSegmentFetcher segmentFetcher, NotificationManagerKeeper notificationManagerKeeper) {
         SplitsWorker splitsWorker = SplitsWorkerImp.build(splitFetcherProvider.getFetcher());
         Worker<SegmentQueueDto> segmentWorker = SegmentsWorkerImp.build(segmentFetcher);
-        NotificationProcessor notificationProcessor = NotificationProcessorImp.build(splitsWorker, segmentWorker);
+        NotificationProcessor notificationProcessor = NotificationProcessorImp.build(splitsWorker, segmentWorker, notificationManagerKeeper);
 
         return new SSEHandlerImp(EventSourceClientImp.build(), streamingServiceUrl, splitsWorker, notificationProcessor, segmentWorker);
     }
 
     @Override
-    public void start(String token, String channels) {
+    public boolean start(String token, String channels) {
         try {
-            _log.debug("SSE Handel starting ...");
+            _log.debug("SSE Handler starting ...");
 
             URIBuilder uri = new URIBuilder(_streamingServiceUrl);
             uri.addParameter("channels", channels);
             uri.addParameter("v", "1.1");
             uri.addParameter("accessToken", token);
 
-            _eventSourceClient.start(uri.toString());
-        }catch (Exception ex) {
+            return _eventSourceClient.start(uri.toString());
+        } catch (Exception ex) {
             _log.error("Exception in SSE Handler start: %s", ex.getMessage());
+            return false;
         }
     }
 
     @Override
     public void stop() {
         _eventSourceClient.stop();
+        stopWorkers();
     }
 
     @Override
@@ -89,7 +90,7 @@ public class SSEHandlerImp implements SSEHandler, NotificationsListener {
 
     @Override
     public void onMessageNotificationReceived(IncomingNotification incomingNotification) {
-        _log.debug(String.format("Incoming notification received: %s", incomingNotification));
+        _log.debug(String.format("Incoming notification received: %s", incomingNotification.toString()));
         _notificationProcessor.process(incomingNotification);
     }
 }

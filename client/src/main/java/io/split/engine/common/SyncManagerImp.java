@@ -3,6 +3,8 @@ package io.split.engine.common;
 import com.google.common.annotations.VisibleForTesting;
 import io.split.engine.experiments.RefreshableSplitFetcherProvider;
 import io.split.engine.segments.RefreshableSegmentFetcher;
+import io.split.engine.sse.NotificationManagerKeeper;
+import io.split.engine.sse.NotificationManagerKeeperImp;
 import io.split.engine.sse.SSEHandler;
 import io.split.engine.sse.SSEHandlerImp;
 import io.split.engine.sse.dtos.ErrorNotification;
@@ -20,21 +22,21 @@ public class SyncManagerImp implements SyncManager {
     private final AtomicBoolean _streamingEnabledConfig;
     private final Synchronizer _synchronizer;
     private final PushManager _pushManager;
-    private final SSEHandler _sseHandler;
     private final AtomicBoolean _shutdown;
 
     @VisibleForTesting
     /* package private */ SyncManagerImp(boolean streamingEnabledConfig,
                                          Synchronizer synchronizer,
                                          PushManager pushManager,
-                                         SSEHandler sseHandler) {
+                                         SSEHandler sseHandler,
+                                         NotificationManagerKeeper notificationManagerKeeper) {
         _streamingEnabledConfig = new AtomicBoolean(streamingEnabledConfig);
         _synchronizer = checkNotNull(synchronizer);
         _pushManager = checkNotNull(pushManager);
-        _sseHandler = checkNotNull(sseHandler);
         _shutdown = new AtomicBoolean(false);
 
-        _sseHandler.registerFeedbackListener(this);
+        sseHandler.registerFeedbackListener(this);
+        notificationManagerKeeper.registerNotificationKeeperListener(this);
     }
 
     public static SyncManagerImp build(boolean streamingEnabledConfig,
@@ -44,12 +46,14 @@ public class SyncManagerImp implements SyncManager {
                                         CloseableHttpClient httpClient,
                                         String streamingServiceUrl,
                                         int authRetryBackOffBase) {
-        SSEHandler sseHandler = SSEHandlerImp.build(streamingServiceUrl, refreshableSplitFetcherProvider, segmentFetcher);
+        NotificationManagerKeeper notificationManagerKeeper = new NotificationManagerKeeperImp();
+        SSEHandler sseHandler = SSEHandlerImp.build(streamingServiceUrl, refreshableSplitFetcherProvider, segmentFetcher, notificationManagerKeeper);
 
         return new SyncManagerImp(streamingEnabledConfig,
                 new SynchronizerImp(refreshableSplitFetcherProvider, segmentFetcher),
                 PushManagerImp.build(authUrl, httpClient, sseHandler, authRetryBackOffBase),
-                sseHandler);
+                sseHandler,
+                notificationManagerKeeper);
     }
 
     @Override
@@ -65,27 +69,63 @@ public class SyncManagerImp implements SyncManager {
     public void shutdown() {
         _shutdown.set(true);
         _synchronizer.stopPeriodicFetching();
-        _sseHandler.stopWorkers();
         _pushManager.stop();
     }
 
     @Override
     public void onStreamingAvailable() {
         _synchronizer.stopPeriodicFetching();
+        _pushManager.startWorkers();
         _synchronizer.syncAll();
-        _sseHandler.startWorkers();
     }
 
     @Override
     public void onStreamingDisabled() {
-        _sseHandler.stop();
+        _pushManager.stopWorkers();
         _synchronizer.startPeriodicFetching();
     }
 
     @Override
     public void onStreamingShutdown() {
         _pushManager.stop();
-        _sseHandler.stopWorkers();
+    }
+
+    @Override
+    public void onErrorNotification(ErrorNotification errorNotification) {
+        if (errorNotification.getCode() >= 40140 && errorNotification.getCode() <= 40149) {
+            _pushManager.stop();
+            startStreamingMode();
+            return;
+        }
+
+        if (errorNotification.getCode() >= 40000 && errorNotification.getCode() <= 49999) {
+            _pushManager.stop();
+            startPollingMode();
+            return;
+        }
+    }
+
+    @Override
+    public void onConnected() {
+        _log.debug("Event source client connected ...");
+        _synchronizer.stopPeriodicFetching();
+        _synchronizer.syncAll();
+        _pushManager.startWorkers();
+    }
+
+    @Override
+    public void onDisconnect(Boolean reconnect) {
+        _log.debug(String.format("Event source client disconnected. Reconnect: %s.", reconnect));
+
+        if (_shutdown.get()) {
+            return;
+        }
+
+        _synchronizer.startPeriodicFetching();
+
+        if (reconnect) {
+            startStreamingMode();
+        }
     }
 
     private void startStreamingMode() {
@@ -97,30 +137,5 @@ public class SyncManagerImp implements SyncManager {
     private void startPollingMode() {
         _log.debug("Starting in polling mode ...");
         _synchronizer.startPeriodicFetching();
-    }
-
-    @Override
-    public void onErrorNotification(ErrorNotification errorNotification) {
-        _pushManager.stop();
-        startStreamingMode();
-    }
-
-    @Override
-    public void onConnected() {
-        _log.debug("Event source client connected ...");
-        _synchronizer.stopPeriodicFetching();
-        _synchronizer.syncAll();
-        _sseHandler.startWorkers();
-    }
-
-    @Override
-    public void onDisconnect() {
-        _log.debug("Event source client disconnected ...");
-
-        if (_shutdown.get()) {
-            return;
-        }
-        _synchronizer.startPeriodicFetching();
-        _sseHandler.stopWorkers();
     }
 }

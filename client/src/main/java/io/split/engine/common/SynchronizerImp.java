@@ -23,7 +23,7 @@ public class SynchronizerImp implements Synchronizer {
     private final ScheduledExecutorService _syncAllScheduledExecutorService;
 
     public SynchronizerImp(RefreshableSplitFetcherProvider refreshableSplitFetcherProvider,
-                                          RefreshableSegmentFetcher segmentFetcher) {
+                           RefreshableSegmentFetcher segmentFetcher) {
         _refreshableSplitFetcherProvider = checkNotNull(refreshableSplitFetcherProvider);
         _splitFetcher = checkNotNull(_refreshableSplitFetcherProvider.getFetcher());
         _segmentFetcher = checkNotNull(segmentFetcher);

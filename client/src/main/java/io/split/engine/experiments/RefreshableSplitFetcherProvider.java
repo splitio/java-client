@@ -88,6 +88,7 @@ public class RefreshableSplitFetcherProvider implements Closeable {
             return;
         }
 
+        _log.debug("Starting PeriodicFetching Splits ...");
         _scheduledFuture = _scheduledExecutorService.scheduleWithFixedDelay(getFetcher(), 0L, _refreshEveryNSeconds.get(), TimeUnit.SECONDS);
     }
 
@@ -98,6 +99,7 @@ public class RefreshableSplitFetcherProvider implements Closeable {
         }
 
         _scheduledFuture.cancel(false);
+        _log.debug("Stopped PeriodicFetching Splits ...");
     }
 
     @Override

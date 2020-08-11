@@ -9,14 +9,14 @@ import org.mockito.Mockito;
 public class PushManagerTest {
     private final AuthApiClient _authApiClient;
     private final SSEHandler _sseHandler;
-    private final int _authRetryBackOffBase;
+    private final Backoff _backoff;
     private final PushManager _pushManager;
 
     public PushManagerTest() {
         _authApiClient = Mockito.mock(AuthApiClient.class);
         _sseHandler = Mockito.mock(SSEHandler.class);
-        _authRetryBackOffBase = 1;
-        _pushManager = new PushManagerImp(_authApiClient, _sseHandler, _authRetryBackOffBase);
+        _backoff = Mockito.mock(Backoff.class);
+        _pushManager = new PushManagerImp(_authApiClient, _sseHandler, _backoff);
     }
 
     @Test
@@ -27,6 +27,12 @@ public class PushManagerTest {
         Mockito.when(_authApiClient.Authenticate())
                 .thenReturn(response)
                 .thenReturn(response2);
+
+        Mockito.when(_sseHandler.start(response.getToken(), response.getChannels()))
+                .thenReturn(true);
+
+        Mockito.when(_sseHandler.start(response2.getToken(), response2.getChannels()))
+                .thenReturn(true);
 
         _pushManager.start();
 
@@ -65,6 +71,9 @@ public class PushManagerTest {
         Mockito.when(_authApiClient.Authenticate())
                 .thenReturn(response)
                 .thenReturn(response2);
+
+        Mockito.when(_backoff.interval())
+                .thenReturn(1L);
 
         _pushManager.start();
 

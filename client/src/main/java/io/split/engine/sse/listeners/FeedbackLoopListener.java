@@ -5,5 +5,5 @@ import io.split.engine.sse.dtos.ErrorNotification;
 public interface FeedbackLoopListener {
     void onErrorNotification(ErrorNotification errorNotification);
     void onConnected();
-    void onDisconnect();
+    void onDisconnect(Boolean reconnect);
 }

@@ -23,8 +23,8 @@ public class NotificationProcessorImp implements NotificationProcessor {
         _notificationManagerKeeper = checkNotNull(notificationManagerKeeper);
     }
 
-    public static NotificationProcessorImp build(SplitsWorker splitsWorker, Worker<SegmentQueueDto> segmentWorker) {
-        return new NotificationProcessorImp(splitsWorker, segmentWorker, new NotificationManagerKeeperImp());
+    public static NotificationProcessorImp build(SplitsWorker splitsWorker, Worker<SegmentQueueDto> segmentWorker, NotificationManagerKeeper notificationManagerKeeper) {
+        return new NotificationProcessorImp(splitsWorker, segmentWorker, notificationManagerKeeper);
     }
 
     @Override

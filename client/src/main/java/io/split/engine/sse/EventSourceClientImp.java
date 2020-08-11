@@ -12,72 +12,80 @@ import org.slf4j.LoggerFactory;
 import javax.ws.rs.client.Client;
 import javax.ws.rs.client.ClientBuilder;
 import javax.ws.rs.sse.InboundSseEvent;
-import javax.ws.rs.sse.SseEventSource;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.Executors;
+import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
 public class EventSourceClientImp implements EventSourceClient {
     private static final Logger _log = LoggerFactory.getLogger(EventSourceClient.class);
+
     private final Client _client;
     private final NotificationParser _notificationParser;
     private final List<FeedbackLoopListener> _feedbackListeners;
     private final List<NotificationsListener> _notificationsListeners;
-
-    private SseEventSource _sseEventSource;
+    private final SplitSseEventSource _splitSseEventSource;
+    private final LinkedBlockingQueue<StatusMessage> _incomingSSEStatus;
+    private final ScheduledExecutorService _sseMonitorExecutor;
+    private final AtomicBoolean _firstTime;
 
     @VisibleForTesting
-    /* package private */ EventSourceClientImp(NotificationParser notificationParser) {
+    /* package private */ EventSourceClientImp(NotificationParser notificationParser, Client client) {
         _notificationParser = checkNotNull(notificationParser);
+
+        _incomingSSEStatus = new LinkedBlockingQueue<>();
+        _sseMonitorExecutor = Executors.newSingleThreadScheduledExecutor();
         _feedbackListeners = new ArrayList<>();
         _notificationsListeners = new ArrayList<>();
-        _client = ClientBuilder
+        _firstTime = new AtomicBoolean(true);
+        _client = client;
+        _splitSseEventSource = new SplitSseEventSource(inboundEvent -> { onMessage(inboundEvent); return null; });
+
+        // Start the SSE Monitor thread at construction time.
+        _sseMonitorExecutor.execute(this::handleSSEStatusMessages);
+    }
+
+    //add parameter base backoff
+    public static EventSourceClientImp build() {
+        Client client = ClientBuilder
                 .newBuilder()
                 .readTimeout(70, TimeUnit.SECONDS)
                 .build();
-    }
 
-    public static EventSourceClientImp build() {
-        return new EventSourceClientImp(new NotificationParserImp());
+        return new EventSourceClientImp(new NotificationParserImp(), client);
     }
 
     @Override
-    public void start(String url) {
-        try {
-            if (_sseEventSource != null && _sseEventSource.isOpen()) { stop(); }
-
-            _sseEventSource = SseEventSource
-                    .target(_client.target(url))
-                    .reconnectingEvery(1, TimeUnit.SECONDS)
-                    .build();
-            _sseEventSource.register(this::onMessage, this::onError);
-            _sseEventSource.open();
-
-            _log.info(String.format("Connected and reading from: %s", url));
-
-            notifyConnected();
-        } catch (Exception e) {
-            _log.error(String.format("Error connecting or reading from %s : %s", url, e.getMessage()));
-            notifyDisconnect();
+    public boolean start(String url) {
+        if (_splitSseEventSource != null && _splitSseEventSource.isOpen()) {
+            _splitSseEventSource.close();
         }
+
+        _splitSseEventSource.open(_client.target(url), _incomingSSEStatus);
+        _splitSseEventSource.awaitFirstContact();
+        _firstTime.set(false);
+
+        return _splitSseEventSource.isOpen();
     }
 
     @Override
     public void stop() {
-        if (_sseEventSource == null) {
-            notifyDisconnect();
+        if (_firstTime.get()) {
+            _feedbackListeners.forEach(listener -> listener.onDisconnect(false));
             return;
         }
 
-        if (!_sseEventSource.isOpen()) {
-            _log.error("Event Source Client is closed.");
+        if (!_splitSseEventSource.isOpen()) {
+            _log.warn("Event Source Client is closed.");
             return;
         }
 
-        _sseEventSource.close();
-        notifyDisconnect();
+        _splitSseEventSource.close();
     }
 
     @Override
@@ -88,22 +96,6 @@ public class EventSourceClientImp implements EventSourceClient {
     @Override
     public synchronized void registerFeedbackListener(FeedbackLoopListener listener) {
         _feedbackListeners.add(listener);
-    }
-
-    public synchronized void notifyMessageNotification (IncomingNotification incomingNotification) {
-        _notificationsListeners.forEach(listener -> listener.onMessageNotificationReceived(incomingNotification));
-    }
-
-    public synchronized void notifyErrorNotification (ErrorNotification errorNotification) {
-        _feedbackListeners.forEach(listener -> listener.onErrorNotification(errorNotification));
-    }
-
-    public synchronized void notifyConnected () {
-        _feedbackListeners.forEach(listener -> listener.onConnected());
-    }
-
-    public synchronized void notifyDisconnect () {
-        _feedbackListeners.forEach(listener -> listener.onDisconnect());
     }
 
     private void onMessage(InboundSseEvent event) {
@@ -126,15 +118,45 @@ public class EventSourceClientImp implements EventSourceClient {
                         throw new EventParsingException("Wrong notification type.", payload);
                 }
             }
-        } catch (EventParsingException ex){
+        } catch (EventParsingException ex) {
             _log.debug(String.format("Error parsing the event: %s. Payload: %s", ex.getMessage(), ex.getPayload()));
         } catch (Exception e) {
-            _log.error(String.format("Error onMessage: %s", e.getMessage()));
+            _log.warn(String.format("Error onMessage: %s", e.getMessage()));
         }
     }
 
-    private void onError(Throwable error) {
-        _log.error(String.format("EventSourceClient onError: ", error.getMessage()));
-        notifyDisconnect();
+
+    private synchronized void notifyMessageNotification (IncomingNotification incomingNotification) {
+        _notificationsListeners.forEach(listener -> listener.onMessageNotificationReceived(incomingNotification));
+    }
+
+    private synchronized void notifyErrorNotification (ErrorNotification errorNotification) {
+        _feedbackListeners.forEach(listener -> listener.onErrorNotification(errorNotification));
+    }
+
+    private void handleSSEStatusMessages() {
+        while(true) {
+            try {
+                StatusMessage message = _incomingSSEStatus.take();
+                switch (message.code) {
+                    case CONNECTED:
+                        _log.info("Successfully connected to sse");
+                        _feedbackListeners.forEach(FeedbackLoopListener::onConnected);
+                        break;
+                    case RETRYABLE_ERROR:
+                        _feedbackListeners.forEach(listener -> listener.onDisconnect(true));
+                        break;
+                    case NONRETRYABLE_ERROR:
+                    case DISCONNECTED:
+                        _feedbackListeners.forEach(listener -> listener.onDisconnect(false));
+                }
+            } catch (InterruptedException e) {
+                _log.warn(String.format("handleSSEStatusMessages Thread interrupted: exit gracefully.", e.getMessage()));
+                // Thread interrupted: exit gracefully.
+                Thread.currentThread().interrupt();
+                break;
+            }
+        }
+
     }
 }
