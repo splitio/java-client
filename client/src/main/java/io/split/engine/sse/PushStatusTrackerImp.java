@@ -36,7 +36,8 @@ public class PushStatusTrackerImp implements PushStatusTracker {
         _log.debug(String.format("handleSseStatus current status: %s", _sseStatus.get().toString()));
         switch(newStatus) {
             case CONNECTED:
-                if (_sseStatus.compareAndSet(SseStatus.DISCONNECTED, SseStatus.CONNECTED)) {
+                if (_sseStatus.compareAndSet(SseStatus.DISCONNECTED, SseStatus.CONNECTED)
+                    || _sseStatus.compareAndSet(SseStatus.RETRYABLE_ERROR, SseStatus.CONNECTED)) {
                     _statusMessages.offer(PushManager.Status.STREAMING_READY);
                 }
                 break;
@@ -44,6 +45,7 @@ public class PushStatusTrackerImp implements PushStatusTracker {
                 if (_sseStatus.compareAndSet(SseStatus.CONNECTED, SseStatus.RETRYABLE_ERROR)) {
                     _statusMessages.offer(PushManager.Status.STREAMING_BACKOFF);
                 }
+                break;
             case NONRETRYABLE_ERROR:
                 if (_sseStatus.compareAndSet(SseStatus.CONNECTED, SseStatus.NONRETRYABLE_ERROR)
                     || _sseStatus.compareAndSet(SseStatus.RETRYABLE_ERROR, SseStatus.NONRETRYABLE_ERROR)) {
