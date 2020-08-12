@@ -38,7 +38,9 @@ public class EventSourceClientImp implements EventSourceClient {
         _notificationParser = checkNotNull(notificationParser);
         _notificationProcessor = checkNotNull(notificationProcessor);
         _client = checkNotNull(client);
-        _splitSseEventSource = new SplitSseEventSource(inboundEvent -> { onMessage(inboundEvent); return null; }, this::handleSseStatus);
+        _splitSseEventSource = new SplitSseEventSource(
+                inboundEvent -> { onMessage(inboundEvent); return null; },
+                status -> { onSSeStatusChange(status); return null; });
         _pushStatusTracker = pushStatusTracker;
     }
 
@@ -109,8 +111,7 @@ public class EventSourceClientImp implements EventSourceClient {
         }
     }
 
-    private Void handleSseStatus(SseStatus status) {
+    private void onSSeStatusChange(SseStatus status) {
         _pushStatusTracker.handleSseStatus(status);
-        return  null;
     }
 }

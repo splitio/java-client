@@ -19,7 +19,7 @@ public class SyncManagerTest {
         _sseHandler = Mockito.mock(SSEHandler.class);
         _pushStatusTracker = Mockito.mock(PushStatusTracker.class);
     }
-
+        
     @Test
     public void startWithStreamingFalseShouldStartPolling() {
         SyncManagerImp syncManager = new SyncManagerImp(false, _synchronizer, _pushManager, new LinkedBlockingQueue<>());
