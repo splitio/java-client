@@ -189,7 +189,7 @@ public class SplitClientIntegrationTest {
                 .data("{\"id\":\"22\",\"clientId\":\"22\",\"timestamp\":1592591081575,\"encoding\":\"json\",\"channel\":\"xxxx_xxxx_splits\",\"data\":\"{\\\"type\\\":\\\"SPLIT_KILL\\\",\\\"changeNumber\\\":1585948850112,\\\"defaultTreatment\\\":\\\"split_killed\\\",\\\"splitName\\\":\\\"push_test\\\"}\"}")
                 .build();
         eventQueue.push(sseEventSplitKill);
-        Thread.sleep(1000);
+        Thread.sleep(2000);
 
         List<SplitView> results2 = manager.splits();
         Assert.assertEquals(3, results2.stream().filter(r -> !r.killed).toArray().length);
@@ -464,6 +464,35 @@ public class SplitClientIntegrationTest {
         sseServer2.stop();
         sseServer3.stop();
         sseServer4.stop();
+    }
+
+    @Test
+    public void keepAlive() throws IOException, TimeoutException, InterruptedException, URISyntaxException {
+        SplitMockServer splitServer = new SplitMockServer();
+        SSEMockServer.SseEventQueue eventQueue = new SSEMockServer.SseEventQueue();
+        SSEMockServer sseServer = buildSSEMockServer(eventQueue);
+
+        splitServer.start();
+        sseServer.start();
+
+        SplitClientConfig config = buildSplitClientConfig("enabled", splitServer.getUrl(), sseServer.getPort(), true, 50);
+        SplitFactory factory = SplitFactoryBuilder.build("fake-api-token-1", config);
+        SplitClient client = factory.client();
+        client.blockUntilReady();
+
+        String result = client.getTreatment("admin", "push_test");
+        Assert.assertEquals("on_whitelist", result);
+
+        // wait to check keep alive notification.
+        Thread.sleep(80000);
+
+        // must reconnect and after the second syncAll the result must be different
+        result = client.getTreatment("admin", "push_test");
+        Assert.assertEquals("split_killed", result);
+
+        client.destroy();
+        splitServer.stop();
+        sseServer.stop();
     }
 
     private SSEMockServer buildSSEMockServer(SSEMockServer.SseEventQueue eventQueue) {
