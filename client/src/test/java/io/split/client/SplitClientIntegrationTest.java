@@ -47,7 +47,7 @@ public class SplitClientIntegrationTest {
                 .build();
         eventQueue.push(sseEvent1);
 
-        Thread.sleep(1000);
+        Thread.sleep(2000);
 
         result = client.getTreatment("admin", "push_test");
         Assert.assertEquals("after_notification_received", result);
@@ -60,7 +60,7 @@ public class SplitClientIntegrationTest {
                 .build();
         eventQueue.push(sseEvent1);
 
-        Thread.sleep(1000);
+        Thread.sleep(2000);
 
         result = client.getTreatment("admin", "push_test");
         Assert.assertEquals("after_notification_received", result);
@@ -76,7 +76,7 @@ public class SplitClientIntegrationTest {
                 .build();
         eventQueue.push(sseEvent2);
 
-        Thread.sleep(1000);
+        Thread.sleep(2000);
 
         result = client.getTreatment("test_in_segment", "push_test");
         Assert.assertEquals("in_segment_match", result);
@@ -89,7 +89,7 @@ public class SplitClientIntegrationTest {
                 .build();
         eventQueue.push(sseEvent5);
 
-        Thread.sleep(1000);
+        Thread.sleep(2000);
 
         result = client.getTreatment("test_in_segment", "push_test");
         Assert.assertEquals("in_segment_match", result);
@@ -102,7 +102,7 @@ public class SplitClientIntegrationTest {
                 .build();
         eventQueue.push(sseEvent3);
 
-        Thread.sleep(1000);
+        Thread.sleep(2000);
 
         result = client.getTreatment("admin", "push_test");
         Assert.assertEquals("split_killed", result);
@@ -181,6 +181,7 @@ public class SplitClientIntegrationTest {
 
         List<SplitView> results = manager.splits();
         Assert.assertEquals(4, results.size());
+        Assert.assertEquals(3, results.stream().filter(r -> !r.killed).toArray().length);
 
         // SPLIT_KILL should fetch.
         OutboundSseEvent sseEventSplitKill = new OutboundEvent
@@ -189,10 +190,10 @@ public class SplitClientIntegrationTest {
                 .data("{\"id\":\"22\",\"clientId\":\"22\",\"timestamp\":1592591081575,\"encoding\":\"json\",\"channel\":\"xxxx_xxxx_splits\",\"data\":\"{\\\"type\\\":\\\"SPLIT_KILL\\\",\\\"changeNumber\\\":1585948850112,\\\"defaultTreatment\\\":\\\"split_killed\\\",\\\"splitName\\\":\\\"push_test\\\"}\"}")
                 .build();
         eventQueue.push(sseEventSplitKill);
-        Thread.sleep(2000);
+        Thread.sleep(1000);
 
         List<SplitView> results2 = manager.splits();
-        Assert.assertEquals(3, results2.stream().filter(r -> !r.killed).toArray().length);
+        Assert.assertEquals(2, results2.stream().filter(r -> !r.killed).toArray().length);
 
         splitServer.stop();
         sseServer.stop();
