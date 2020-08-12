@@ -32,6 +32,8 @@ public class PushStatusTrackerImp implements PushStatusTracker {
 
     @Override
     public void handleSseStatus(SseStatus newStatus) {
+        _log.debug(String.format("handleSseStatus new status: %s", newStatus.toString()));
+        _log.debug(String.format("handleSseStatus current status: %s", _sseStatus.get().toString()));
         switch(newStatus) {
             case CONNECTED:
                 if (_sseStatus.compareAndSet(SseStatus.DISCONNECTED, SseStatus.CONNECTED)) {
@@ -91,6 +93,7 @@ public class PushStatusTrackerImp implements PushStatusTracker {
 
     @Override
     public void handleIncomingAblyError(ErrorNotification notification) {
+        _log.debug(String.format("handleIncomingAblyError :", notification.getMessage()));
         if (_backendStatus.get().equals(ControlType.STREAMING_DISABLED)) {
             return; // Ignore
         }
@@ -104,6 +107,7 @@ public class PushStatusTrackerImp implements PushStatusTracker {
 
     @Override
     public synchronized void forcePushDisable() {
+        _log.debug("forcePushDisable");
         _publishersOnline.set(false);
         _sseStatus.set(SseStatus.DISCONNECTED);
         _backendStatus.set(ControlType.STREAMING_DISABLED);

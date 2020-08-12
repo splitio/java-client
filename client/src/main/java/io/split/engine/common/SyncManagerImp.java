@@ -93,6 +93,7 @@ public class SyncManagerImp implements SyncManager {
         while (!Thread.interrupted()) {
             try {
                 PushManager.Status status = _incomingPushStatus.take();
+                _log.debug(String.format("Streaming status received: %s", status.toString()));
                 switch (status) {
                     case STREAMING_READY:
                         _synchronizer.stopPeriodicFetching();
@@ -105,7 +106,7 @@ public class SyncManagerImp implements SyncManager {
                         break;
                     case STREAMING_BACKOFF:
                         _synchronizer.startPeriodicFetching();
-                        _pushManager.stop();
+                        _pushManager.stopWorkers();
                         _pushManager.start();
                         break;
                     case STREAMING_OFF:
