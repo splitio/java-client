@@ -48,7 +48,8 @@ public class PushStatusTrackerImp implements PushStatusTracker {
                     _statusMessages.offer(PushManager.Status.STREAMING_OFF);
                 }
                 break;
-            case DISCONNECTED: /* nothing to do here */
+            case DISCONNECTED: // Restore initial status
+                reset();
                 break;
         }
     }
