@@ -3,6 +3,7 @@ package io.split.client;
 import io.split.SSEMockServer;
 import io.split.SplitMockServer;
 import io.split.client.api.SplitView;
+import org.awaitility.Awaitility;
 import org.glassfish.grizzly.utils.Pair;
 import org.glassfish.jersey.media.sse.OutboundEvent;
 import org.junit.Assert;
@@ -12,6 +13,7 @@ import javax.ws.rs.sse.OutboundSseEvent;
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
 public class SplitClientIntegrationTest {
@@ -47,10 +49,9 @@ public class SplitClientIntegrationTest {
                 .build();
         eventQueue.push(sseEvent1);
 
-        Thread.sleep(2000);
-
-        result = client.getTreatment("admin", "push_test");
-        Assert.assertEquals("after_notification_received", result);
+        Awaitility.await()
+                .atMost(10L, TimeUnit.SECONDS)
+                .until(() -> "after_notification_received".equals(client.getTreatment("admin", "push_test")));
 
         // SPLIT_UPDATED should not fetch -> changeNumber < since
         OutboundSseEvent sseEvent4 = new OutboundEvent
@@ -58,16 +59,12 @@ public class SplitClientIntegrationTest {
                 .name("message")
                 .data("{\"id\":\"22\",\"clientId\":\"22\",\"timestamp\":1592590436082,\"encoding\":\"json\",\"channel\":\"xxxx_xxxx_splits\",\"data\":\"{\\\"type\\\":\\\"SPLIT_UPDATE\\\",\\\"changeNumber\\\":1585948850109}\"}")
                 .build();
-        eventQueue.push(sseEvent1);
+        eventQueue.push(sseEvent4);
 
-        Thread.sleep(2000);
-
-        result = client.getTreatment("admin", "push_test");
-        Assert.assertEquals("after_notification_received", result);
-
-        // SEGMENT_UPDATE should fetch -> changeNumber > since
-        result = client.getTreatment("test_in_segment", "push_test");
-        Assert.assertEquals("on_rollout", result);
+        Awaitility.await()
+                .atMost(10L, TimeUnit.SECONDS)
+                .until(() -> "after_notification_received".equals(client.getTreatment("admin", "push_test"))
+                    && "on_rollout".equals(client.getTreatment("test_in_segment", "push_test")));
 
         OutboundSseEvent sseEvent2 = new OutboundEvent
                 .Builder()
@@ -76,10 +73,9 @@ public class SplitClientIntegrationTest {
                 .build();
         eventQueue.push(sseEvent2);
 
-        Thread.sleep(2000);
-
-        result = client.getTreatment("test_in_segment", "push_test");
-        Assert.assertEquals("in_segment_match", result);
+        Awaitility.await()
+                .atMost(10L, TimeUnit.SECONDS)
+                .until(() -> "in_segment_match".equals(client.getTreatment("test_in_segment", "push_test")));
 
         // SEGMENT_UPDATE should not fetch -> changeNumber < since
         OutboundSseEvent sseEvent5 = new OutboundEvent
@@ -89,10 +85,9 @@ public class SplitClientIntegrationTest {
                 .build();
         eventQueue.push(sseEvent5);
 
-        Thread.sleep(2000);
-
-        result = client.getTreatment("test_in_segment", "push_test");
-        Assert.assertEquals("in_segment_match", result);
+        Awaitility.await()
+                .atMost(10L, TimeUnit.SECONDS)
+                .until(() -> "in_segment_match".equals(client.getTreatment("test_in_segment", "push_test")));
 
         // SPLIT_KILL should fetch.
         OutboundSseEvent sseEvent3 = new OutboundEvent
@@ -102,10 +97,9 @@ public class SplitClientIntegrationTest {
                 .build();
         eventQueue.push(sseEvent3);
 
-        Thread.sleep(2000);
-
-        result = client.getTreatment("admin", "push_test");
-        Assert.assertEquals("split_killed", result);
+        Awaitility.await()
+                .atMost(10L, TimeUnit.SECONDS)
+                .until(() -> "split_killed".equals(client.getTreatment("admin", "push_test")));
 
         client.destroy();
         splitServer.stop();
