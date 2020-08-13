@@ -57,7 +57,7 @@ public class EventSourceClientTest {
         boolean result = eventSourceClient.start("channel-test","token-test");
 
         Assert.assertFalse(result);
-        Thread.sleep(1000);
+        Thread.sleep(2000);
         Mockito.verify(_pushStatusTracker, Mockito.times(1)).handleSseStatus(SseStatus.NONRETRYABLE_ERROR);
     }
 
@@ -82,7 +82,7 @@ public class EventSourceClientTest {
                 .data("{\"id\":\"22\",\"clientId\":\"22\",\"timestamp\":1592590436082,\"encoding\":\"json\",\"channel\":\"xxxx_xxxx_splits\",\"data\":\"{\\\"type\\\":\\\"SPLIT_UPDATE\\\",\\\"changeNumber\\\":1585948850111}\"}")
                 .build();
         eventQueue.push(sseEvent);
-        Thread.sleep(1000);
+        Thread.sleep(2000);
 
         Mockito.verify(_notificationParser, Mockito.times(1)).parseMessage(Mockito.anyString());
         Mockito.verify(_notificationProcessor, Mockito.times(1)).process(Mockito.any(SplitChangeNotification.class));
@@ -93,7 +93,7 @@ public class EventSourceClientTest {
                 .data("{\"message\":\"Token expired\",\"code\":40142,\"statusCode\":401,\"href\":\"https://help.io/error/40142\"}")
                 .build();
         eventQueue.push(sseEventError);
-        Thread.sleep(1000);
+        Thread.sleep(2000);
 
         Mockito.verify(_notificationParser, Mockito.times(1)).parseError(Mockito.anyString());
         Mockito.verify(_pushStatusTracker, Mockito.times(1)).handleIncomingAblyError(Mockito.any(ErrorNotification.class));

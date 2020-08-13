@@ -70,7 +70,7 @@ public class SplitSseEventSourceTest {
                 .addParameter("v", "1.1")
                 .build());
 
-        Thread.sleep(1000);
+        Thread.sleep(2000);
 
         boolean result = splitSseEventSource.open(target);
 
@@ -145,7 +145,7 @@ public class SplitSseEventSourceTest {
                 .build();
         eventQueue.push(sseEvent);
 
-        Thread.sleep(1000);
+        Thread.sleep(2000);
 
         Assert.assertNotNull(inboundSseEvent);
         Assert.assertEquals("message", inboundSseEvent.get().getName());

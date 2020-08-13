@@ -6,7 +6,6 @@ import io.split.client.api.SplitView;
 import org.glassfish.grizzly.utils.Pair;
 import org.glassfish.jersey.media.sse.OutboundEvent;
 import org.junit.Assert;
-import org.junit.Ignore;
 import org.junit.Test;
 
 import javax.ws.rs.sse.OutboundSseEvent;
@@ -191,7 +190,7 @@ public class SplitClientIntegrationTest {
                 .data("{\"id\":\"22\",\"clientId\":\"22\",\"timestamp\":1592591081575,\"encoding\":\"json\",\"channel\":\"xxxx_xxxx_splits\",\"data\":\"{\\\"type\\\":\\\"SPLIT_KILL\\\",\\\"changeNumber\\\":1585948850112,\\\"defaultTreatment\\\":\\\"split_killed\\\",\\\"splitName\\\":\\\"push_test\\\"}\"}")
                 .build();
         eventQueue.push(sseEventSplitKill);
-        Thread.sleep(1000);
+        Thread.sleep(2000);
 
         List<SplitView> results2 = manager.splits();
         // TODO: check this.
@@ -232,7 +231,7 @@ public class SplitClientIntegrationTest {
                 .data("{\"id\":\"222\",\"timestamp\":1588254668328,\"encoding\":\"json\",\"channel\":\"[?occupancy=metrics.publishers]control_pri\",\"data\":\"{\\\"metrics\\\":{\\\"publishers\\\":2}}\",\"name\":\"[meta]occupancy\"}")
                 .build();
         eventQueue.push(sseEventWithPublishers);
-        Thread.sleep(1000);
+        Thread.sleep(2000);
 
         OutboundSseEvent sseEventWithoutPublishers = new OutboundEvent
                 .Builder()
@@ -240,7 +239,7 @@ public class SplitClientIntegrationTest {
                 .data("{\"id\":\"222\",\"timestamp\":1588254668328,\"encoding\":\"json\",\"channel\":\"[?occupancy=metrics.publishers]control_pri\",\"data\":\"{\\\"metrics\\\":{\\\"publishers\\\":0}}\",\"name\":\"[meta]occupancy\"}")
                 .build();
         eventQueue.push(sseEventWithoutPublishers);
-        Thread.sleep(1000);
+        Thread.sleep(2000);
 
         OutboundSseEvent sseEventSplitKill = new OutboundEvent
                 .Builder()
@@ -248,15 +247,15 @@ public class SplitClientIntegrationTest {
                 .data("{\"id\":\"22\",\"clientId\":\"22\",\"timestamp\":1592590436082,\"encoding\":\"json\",\"channel\":\"xxxx_xxxx_splits\",\"data\":\"{\\\"type\\\":\\\"SPLIT_UPDATE\\\",\\\"changeNumber\\\":1585948850112}\"}")
                 .build();
         eventQueue.push(sseEventSplitKill);
-        Thread.sleep(1000);
+        Thread.sleep(2000);
 
         result = client.getTreatment("admin", "push_test");
         Assert.assertEquals("after_notification_received", result);
 
         eventQueue.push(sseEventWithPublishers);
-        Thread.sleep(1000);
+        Thread.sleep(2000);
         eventQueue.push(sseEventSplitKill);
-        Thread.sleep(1000);
+        Thread.sleep(2000);
 
         result = client.getTreatment("admin", "push_test");
         Assert.assertEquals("split_killed", result);
@@ -298,7 +297,7 @@ public class SplitClientIntegrationTest {
                 .data("{\"id\":\"2222\",\"clientId\":\"3333\",\"timestamp\":1588254699236,\"encoding\":\"json\",\"channel\":\"[?occupancy=metrics.publishers]control_pri\",\"data\":\"{\\\"type\\\":\\\"CONTROL\\\",\\\"controlType\\\":\\\"STREAMING_PAUSED\\\"}\"}")
                 .build();
         eventQueue.push(sseEventPause);
-        Thread.sleep(1000);
+        Thread.sleep(2000);
 
         result = client.getTreatment("admin", "push_test");
         Assert.assertEquals("after_notification_received", result);
@@ -309,7 +308,7 @@ public class SplitClientIntegrationTest {
                 .data("{\"id\":\"22\",\"clientId\":\"22\",\"timestamp\":1592590436082,\"encoding\":\"json\",\"channel\":\"xxxx_xxxx_splits\",\"data\":\"{\\\"type\\\":\\\"SPLIT_UPDATE\\\",\\\"changeNumber\\\":1585948850112}\"}")
                 .build();
         eventQueue.push(sseEventSplitUpdate);
-        Thread.sleep(1000);
+        Thread.sleep(2000);
 
         result = client.getTreatment("admin", "push_test");
         Assert.assertEquals("after_notification_received", result);
@@ -320,7 +319,7 @@ public class SplitClientIntegrationTest {
                 .data("{\"id\":\"22\",\"clientId\":\"22\",\"timestamp\":1592590436082,\"encoding\":\"json\",\"channel\":\"xxxx_xxxx_splits\",\"data\":\"{\\\"type\\\":\\\"SPLIT_UPDATE\\\",\\\"changeNumber\\\":1585948850113}\"}")
                 .build();
         eventQueue.push(sseEventSplitUpdate2);
-        Thread.sleep(1000);
+        Thread.sleep(2000);
 
         result = client.getTreatment("admin", "push_test");
         Assert.assertEquals("after_notification_received", result);
@@ -331,7 +330,7 @@ public class SplitClientIntegrationTest {
                 .data("{\"id\":\"2222\",\"clientId\":\"3333\",\"timestamp\":1588254699236,\"encoding\":\"json\",\"channel\":\"[?occupancy=metrics.publishers]control_pri\",\"data\":\"{\\\"type\\\":\\\"CONTROL\\\",\\\"controlType\\\":\\\"STREAMING_RESUMED\\\"}\"}")
                 .build();
         eventQueue.push(sseEventResumed);
-        Thread.sleep(1000);
+        Thread.sleep(2000);
 
         OutboundSseEvent sseEventSplitUpdate3 = new OutboundEvent
                 .Builder()
@@ -339,7 +338,7 @@ public class SplitClientIntegrationTest {
                 .data("{\"id\":\"22\",\"clientId\":\"22\",\"timestamp\":1592590436082,\"encoding\":\"json\",\"channel\":\"xxxx_xxxx_splits\",\"data\":\"{\\\"type\\\":\\\"SPLIT_UPDATE\\\",\\\"changeNumber\\\":1585948850112}\"}")
                 .build();
         eventQueue.push(sseEventSplitUpdate3);
-        Thread.sleep(1000);
+        Thread.sleep(2000);
 
         result = client.getTreatment("admin", "push_test");
         Assert.assertEquals("split_killed", result);
@@ -409,7 +408,7 @@ public class SplitClientIntegrationTest {
                 .data("{\"id\":\"22\",\"clientId\":\"22\",\"timestamp\":1592590436082,\"encoding\":\"json\",\"channel\":\"xxxx_xxxx_splits\",\"data\":\"{\\\"type\\\":\\\"SPLIT_UPDATE\\\",\\\"changeNumber\\\":1585948850111}\"}")
                 .build();
         eventQueue1.push(sseEventSplitUpdate);
-        Thread.sleep(1000);
+        Thread.sleep(2000);
 
         result1 = client1.getTreatment("admin", "push_test");
         Assert.assertEquals("after_notification_received", result1);
@@ -424,7 +423,7 @@ public class SplitClientIntegrationTest {
         Assert.assertEquals("on_whitelist", result4);
 
         eventQueue3.push(sseEventSplitUpdate);
-        Thread.sleep(1000);
+        Thread.sleep(2000);
 
         result1 = client1.getTreatment("admin", "push_test");
         Assert.assertEquals("after_notification_received", result1);
@@ -444,7 +443,7 @@ public class SplitClientIntegrationTest {
                 .data("{\"id\":\"22\",\"clientId\":\"22\",\"timestamp\":1592590436082,\"encoding\":\"json\",\"channel\":\"xxxx_xxxx_splits\",\"data\":\"{\\\"type\\\":\\\"SPLIT_UPDATE\\\",\\\"changeNumber\\\":1585948850112}\"}")
                 .build();
         eventQueue3.push(sseEventSplitUpdate3);
-        Thread.sleep(1000);
+        Thread.sleep(2000);
 
         result1 = client1.getTreatment("admin", "push_test");
         Assert.assertEquals("after_notification_received", result1);
