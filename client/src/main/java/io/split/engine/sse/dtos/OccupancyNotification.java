@@ -1,6 +1,6 @@
 package io.split.engine.sse.dtos;
 
-import io.split.engine.sse.NotificationManagerKeeper;
+import io.split.engine.sse.PushStatusTracker;
 import io.split.engine.sse.NotificationProcessor;
 
 public class OccupancyNotification extends IncomingNotification implements StatusNotification {
@@ -22,7 +22,7 @@ public class OccupancyNotification extends IncomingNotification implements Statu
     }
 
     @Override
-    public void handlerStatus(NotificationManagerKeeper notificationManagerKeeper) {
+    public void handlerStatus(PushStatusTracker notificationManagerKeeper) {
         if (CONTROL_PRI_CHANNEL.equals(getChannel())) {
             notificationManagerKeeper.handleIncomingOccupancyEvent(this);
         }

@@ -1,7 +1,7 @@
 package io.split.engine.sse.dtos;
 
-import io.split.engine.sse.NotificationManagerKeeper;
+import io.split.engine.sse.PushStatusTracker;
 
 public interface StatusNotification {
-    void handlerStatus(NotificationManagerKeeper notificationManagerKeeper);
+    void handlerStatus(PushStatusTracker pushStatusTracker);
 }

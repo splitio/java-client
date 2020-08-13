@@ -1,22 +1,34 @@
 package io.split.engine.common;
 
 import io.split.engine.sse.AuthApiClient;
-import io.split.engine.sse.SSEHandler;
+import io.split.engine.sse.EventSourceClient;
+import io.split.engine.sse.PushStatusTrackerImp;
 import io.split.engine.sse.dtos.AuthenticationResponse;
+import io.split.engine.sse.workers.SegmentsWorkerImp;
+import io.split.engine.sse.workers.SplitsWorker;
+import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mockito;
 
-public class PushManagerTest {
-    private final AuthApiClient _authApiClient;
-    private final SSEHandler _sseHandler;
-    private final Backoff _backoff;
-    private final PushManager _pushManager;
+import java.util.concurrent.LinkedBlockingQueue;
 
-    public PushManagerTest() {
+public class PushManagerTest {
+    private AuthApiClient _authApiClient;
+    private EventSourceClient _eventSourceClient;
+    private Backoff _backoff;
+    private PushManager _pushManager;
+
+    @Before
+    public void setUp() {
         _authApiClient = Mockito.mock(AuthApiClient.class);
-        _sseHandler = Mockito.mock(SSEHandler.class);
+        _eventSourceClient = Mockito.mock(EventSourceClient.class);
         _backoff = Mockito.mock(Backoff.class);
-        _pushManager = new PushManagerImp(_authApiClient, _sseHandler, _backoff);
+        _pushManager = new PushManagerImp(_authApiClient,
+                _eventSourceClient,
+                Mockito.mock(SplitsWorker.class),
+                Mockito.mock(SegmentsWorkerImp.class),
+                _backoff,
+                new PushStatusTrackerImp(new LinkedBlockingQueue<>()));
     }
 
     @Test
@@ -28,20 +40,20 @@ public class PushManagerTest {
                 .thenReturn(response)
                 .thenReturn(response2);
 
-        Mockito.when(_sseHandler.start(response.getToken(), response.getChannels()))
+        Mockito.when(_eventSourceClient.start(response.getChannels(), response.getToken()))
                 .thenReturn(true);
 
-        Mockito.when(_sseHandler.start(response2.getToken(), response2.getChannels()))
+        Mockito.when(_eventSourceClient.start(response2.getChannels(), response2.getToken()))
                 .thenReturn(true);
 
         _pushManager.start();
 
         Mockito.verify(_authApiClient, Mockito.times(1)).Authenticate();
-        Mockito.verify(_sseHandler, Mockito.times(1)).start(response.getToken(), response.getChannels());
+        Mockito.verify(_eventSourceClient, Mockito.times(1)).start(response.getChannels(), response.getToken());
 
         Thread.sleep(1500);
         Mockito.verify(_authApiClient, Mockito.times(2)).Authenticate();
-        Mockito.verify(_sseHandler, Mockito.times(1)).start(response2.getToken(), response2.getChannels());
+        Mockito.verify(_eventSourceClient, Mockito.times(1)).start(response2.getChannels(), response2.getToken());
     }
 
     @Test
@@ -53,14 +65,14 @@ public class PushManagerTest {
         _pushManager.start();
 
         Mockito.verify(_authApiClient, Mockito.times(1)).Authenticate();
-        Mockito.verify(_sseHandler, Mockito.never()).start(Mockito.any(String.class), Mockito.any(String.class));
-        Mockito.verify(_sseHandler, Mockito.times(1)).stop();
+        Mockito.verify(_eventSourceClient, Mockito.never()).start(Mockito.any(String.class), Mockito.any(String.class));
+        Mockito.verify(_eventSourceClient, Mockito.times(1)).stop();
 
         Thread.sleep(1500);
 
         Mockito.verify(_authApiClient, Mockito.times(1)).Authenticate();
-        Mockito.verify(_sseHandler, Mockito.never()).start(Mockito.any(String.class), Mockito.any(String.class));
-        Mockito.verify(_sseHandler, Mockito.times(1)).stop();
+        Mockito.verify(_eventSourceClient, Mockito.never()).start(Mockito.any(String.class), Mockito.any(String.class));
+        Mockito.verify(_eventSourceClient, Mockito.times(1)).stop();
     }
 
     @Test
@@ -78,12 +90,12 @@ public class PushManagerTest {
         _pushManager.start();
 
         Mockito.verify(_authApiClient, Mockito.times(1)).Authenticate();
-        Mockito.verify(_sseHandler, Mockito.never()).start(Mockito.any(String.class), Mockito.any(String.class));
-        Mockito.verify(_sseHandler, Mockito.times(1)).stop();
+        Mockito.verify(_eventSourceClient, Mockito.never()).start(Mockito.any(String.class), Mockito.any(String.class));
+        Mockito.verify(_eventSourceClient, Mockito.times(1)).stop();
 
         Thread.sleep(1500);
 
         Mockito.verify(_authApiClient, Mockito.times(2)).Authenticate();
-        Mockito.verify(_sseHandler, Mockito.times(1)).start(response2.getToken(), response2.getChannels());
+        Mockito.verify(_eventSourceClient, Mockito.times(1)).start(response2.getChannels(), response2.getToken());
     }
 }

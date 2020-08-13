@@ -1,25 +1,22 @@
 package io.split.engine.sse.workers;
 
-import com.google.common.annotations.VisibleForTesting;
+import io.split.engine.common.Synchronizer;
 import io.split.engine.experiments.SplitFetcher;
 
+import static com.google.common.base.Preconditions.checkNotNull;
+
 public class SplitsWorkerImp extends Worker<Long> implements SplitsWorker {
-    private final SplitFetcher _splitFetcher;
+    private final Synchronizer _synchronizer;
 
-    @VisibleForTesting
-    /* package private */ SplitsWorkerImp(SplitFetcher splitFetcher) {
+    public SplitsWorkerImp(Synchronizer synchronizer) {
         super("Splits");
-        _splitFetcher = splitFetcher;
-    }
-
-    public static SplitsWorkerImp build(SplitFetcher splitFetcher) {
-        return new SplitsWorkerImp(splitFetcher);
+        _synchronizer = checkNotNull(synchronizer);
     }
 
     @Override
     public void killSplit(long changeNumber, String splitName, String defaultTreatment) {
         try {
-            _splitFetcher.killSplit(splitName, defaultTreatment, changeNumber);
+            _synchronizer.localKillSplit(splitName, defaultTreatment, changeNumber);
             _log.debug(String.format("Kill split: %s, changeNumber: %s, defaultTreatment: %s", splitName, changeNumber, defaultTreatment));
         } catch (Exception ex) {
             _log.error(String.format("Exception on SplitWorker killSplit: %s", ex.getMessage()));
@@ -28,8 +25,6 @@ public class SplitsWorkerImp extends Worker<Long> implements SplitsWorker {
 
     @Override
     protected void executeRefresh(Long changeNumber) {
-        if (changeNumber > _splitFetcher.changeNumber()) {
-            _splitFetcher.forceRefresh();
-        }
+        _synchronizer.refreshSplits(changeNumber);
     }
 }

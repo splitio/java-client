@@ -12,19 +12,19 @@ import static com.google.common.base.Preconditions.checkNotNull;
 public class NotificationProcessorImp implements NotificationProcessor {
     private final SplitsWorker _splitsWorker;
     private final Worker<SegmentQueueDto> _segmentWorker;
-    private final NotificationManagerKeeper _notificationManagerKeeper;
+    private final PushStatusTracker _pushStatusTracker;
 
     @VisibleForTesting
     /* package private */ NotificationProcessorImp(SplitsWorker splitsWorker,
                                                    Worker<SegmentQueueDto> segmentWorker,
-                                                   NotificationManagerKeeper notificationManagerKeeper) {
+                                                   PushStatusTracker pushStatusTracker) {
         _splitsWorker = checkNotNull(splitsWorker);
         _segmentWorker = checkNotNull(segmentWorker);
-        _notificationManagerKeeper = checkNotNull(notificationManagerKeeper);
+        _pushStatusTracker = checkNotNull(pushStatusTracker);
     }
 
-    public static NotificationProcessorImp build(SplitsWorker splitsWorker, Worker<SegmentQueueDto> segmentWorker, NotificationManagerKeeper notificationManagerKeeper) {
-        return new NotificationProcessorImp(splitsWorker, segmentWorker, notificationManagerKeeper);
+    public static NotificationProcessorImp build(SplitsWorker splitsWorker, Worker<SegmentQueueDto> segmentWorker, PushStatusTracker pushStatusTracker) {
+        return new NotificationProcessorImp(splitsWorker, segmentWorker, pushStatusTracker);
     }
 
     @Override
@@ -50,6 +50,6 @@ public class NotificationProcessorImp implements NotificationProcessor {
 
     @Override
     public void processStatus(StatusNotification statusNotification) {
-        statusNotification.handlerStatus(_notificationManagerKeeper);
+        statusNotification.handlerStatus(_pushStatusTracker);
     }
 }
