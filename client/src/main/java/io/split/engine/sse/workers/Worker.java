@@ -47,6 +47,11 @@ public abstract class Worker<T> implements Runnable {
             return;
         }
         try {
+            if (!_running.get()) {
+                _log.warn(String.format("%s Worker not running. Can't add items.", _workerName));
+                return;
+            }
+
             _queue.add(element);
             _log.debug(String.format("Added to %s queue: %s", _workerName, element.toString()));
         } catch (Exception ex) {

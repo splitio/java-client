@@ -40,7 +40,7 @@ public class PushManagerImp implements PushManager {
     private final ScheduledExecutorService _scheduledExecutorService;
 
     @VisibleForTesting
-        /* package private */ PushManagerImp(AuthApiClient authApiClient,
+    /* package private */ PushManagerImp(AuthApiClient authApiClient,
                                              EventSourceClient eventSourceClient,
                                              SplitsWorker splitsWorker,
                                              Worker<SegmentQueueDto> segmentWorker,
