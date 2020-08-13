@@ -44,6 +44,26 @@ public class SplitSseEventSource {
         return isOpen();
     }
 
+    public boolean isOpen() {
+        return _state.get() == SseState.OPEN;
+    }
+
+    public void close() {
+        if (!isOpen()) {
+            _log.warn("SplitSseEventSource already closed.");
+            return;
+        }
+
+        _state.set(SseState.CLOSED);
+        _eventInput.close();
+        _log.debug(String.format("SplitSseEventSource.close final state: %s", _state.get()));
+    }
+
+    public enum SseState {
+        OPEN,
+        CLOSED
+    }
+
     private void run(WebTarget target) {
         try {
             // Initialization
@@ -83,8 +103,8 @@ public class SplitSseEventSource {
             }
         } catch (Exception exc) {
             // Unexpected exception: disable streaming completely
-            _log.warn(exc.getMessage());
             _sseStatusHandler.apply(SseStatus.NONRETRYABLE_ERROR);
+            _log.warn(exc.getMessage());
         } finally {
             if (_eventInput != null) {
                 _eventInput.close();
@@ -92,26 +112,6 @@ public class SplitSseEventSource {
             _state.set(SseState.CLOSED);
             _log.debug("SSE connection finished.");
         }
-    }
-
-    public boolean isOpen() {
-        return _state.get() == SseState.OPEN;
-    }
-
-    public void close() {
-        if (!isOpen()) {
-            _log.warn("SplitSseEventSource already closed.");
-            return;
-        }
-
-        _state.set(SseState.CLOSED);
-        _eventInput.close();
-        _log.debug(String.format("SplitSseEventSource.close final state: %s", _state.get()));
-    }
-
-    public enum SseState {
-        OPEN,
-        CLOSED
     }
 
     private void awaitFirstContact() {
