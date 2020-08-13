@@ -81,6 +81,10 @@ public class RefreshableSegmentFetcher implements Closeable, SegmentFetcher, Run
             }
             segment = RefreshableSegment.create(segmentName, _segmentChangeFetcher, _gates);
 
+            if (_running.get()) {
+                _scheduledExecutorService.submit(segment);
+            }
+
             _segmentFetchers.putIfAbsent(segmentName, segment);
 
             return segment;

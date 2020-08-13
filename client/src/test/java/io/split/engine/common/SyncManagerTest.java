@@ -1,25 +1,21 @@
 package io.split.engine.common;
 
-import io.split.engine.sse.PushStatusTracker;
-import io.split.engine.sse.SSEHandler;
+import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mockito;
 
 import java.util.concurrent.LinkedBlockingQueue;
 
 public class SyncManagerTest {
-    private final Synchronizer _synchronizer;
-    private final PushManager _pushManager;
-    private final SSEHandler _sseHandler;
-    private final PushStatusTracker _pushStatusTracker;
+    private Synchronizer _synchronizer;
+    private PushManager _pushManager;
 
-    public SyncManagerTest() {
+    @Before
+    public void setUp() {
         _synchronizer = Mockito.mock(Synchronizer.class);
         _pushManager = Mockito.mock(PushManager.class);
-        _sseHandler = Mockito.mock(SSEHandler.class);
-        _pushStatusTracker = Mockito.mock(PushStatusTracker.class);
     }
-        
+
     @Test
     public void startWithStreamingFalseShouldStartPolling() {
         SyncManagerImp syncManager = new SyncManagerImp(false, _synchronizer, _pushManager, new LinkedBlockingQueue<>());

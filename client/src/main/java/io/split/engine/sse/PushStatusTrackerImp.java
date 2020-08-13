@@ -36,7 +36,8 @@ public class PushStatusTrackerImp implements PushStatusTracker {
         _log.debug(String.format("handleSseStatus current status: %s", _sseStatus.get().toString()));
         switch(newStatus) {
             case CONNECTED:
-                if (_sseStatus.compareAndSet(SseStatus.DISCONNECTED, SseStatus.CONNECTED)) {
+                if (_sseStatus.compareAndSet(SseStatus.DISCONNECTED, SseStatus.CONNECTED)
+                    || _sseStatus.compareAndSet(SseStatus.RETRYABLE_ERROR, SseStatus.CONNECTED)) {
                     _statusMessages.offer(PushManager.Status.STREAMING_READY);
                 }
                 break;
@@ -44,6 +45,7 @@ public class PushStatusTrackerImp implements PushStatusTracker {
                 if (_sseStatus.compareAndSet(SseStatus.CONNECTED, SseStatus.RETRYABLE_ERROR)) {
                     _statusMessages.offer(PushManager.Status.STREAMING_BACKOFF);
                 }
+                break;
             case NONRETRYABLE_ERROR:
                 if (_sseStatus.compareAndSet(SseStatus.CONNECTED, SseStatus.NONRETRYABLE_ERROR)
                     || _sseStatus.compareAndSet(SseStatus.RETRYABLE_ERROR, SseStatus.NONRETRYABLE_ERROR)) {
@@ -58,6 +60,7 @@ public class PushStatusTrackerImp implements PushStatusTracker {
 
     @Override
     public void handleIncomingControlEvent(ControlNotification controlNotification) {
+        _log.debug(String.format("handleIncomingOccupancyEvent: %s", controlNotification.getControlType()));
         if (_backendStatus.get().equals(ControlType.STREAMING_DISABLED)) {
             return;
         }
@@ -83,6 +86,7 @@ public class PushStatusTrackerImp implements PushStatusTracker {
 
     @Override
     public void handleIncomingOccupancyEvent(OccupancyNotification occupancyNotification) {
+        _log.debug(String.format("handleIncomingOccupancyEvent: publishers=%d", occupancyNotification.getMetrics().getPublishers()));
         int publishers = occupancyNotification.getMetrics().getPublishers();
         if (publishers <= 0 && _publishersOnline.compareAndSet(true, false) && _backendStatus.get().equals(ControlType.STREAMING_RESUMED)) {
             _statusMessages.offer(PushManager.Status.STREAMING_DOWN);
@@ -93,7 +97,7 @@ public class PushStatusTrackerImp implements PushStatusTracker {
 
     @Override
     public void handleIncomingAblyError(ErrorNotification notification) {
-        _log.debug(String.format("handleIncomingAblyError :", notification.getMessage()));
+        _log.debug(String.format("handleIncomingAblyError: %s", notification.getMessage()));
         if (_backendStatus.get().equals(ControlType.STREAMING_DISABLED)) {
             return; // Ignore
         }

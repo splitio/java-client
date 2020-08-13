@@ -2,37 +2,33 @@ package io.split.engine.common;
 
 import io.split.engine.sse.AuthApiClient;
 import io.split.engine.sse.EventSourceClient;
-import io.split.engine.sse.PushStatusTracker;
 import io.split.engine.sse.PushStatusTrackerImp;
 import io.split.engine.sse.dtos.AuthenticationResponse;
-import io.split.engine.sse.dtos.SegmentQueueDto;
 import io.split.engine.sse.workers.SegmentsWorkerImp;
 import io.split.engine.sse.workers.SplitsWorker;
-import io.split.engine.sse.workers.Worker;
+import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mockito;
 
 import java.util.concurrent.LinkedBlockingQueue;
 
 public class PushManagerTest {
-    private final AuthApiClient _authApiClient;
-    private final EventSourceClient _eventSourceClient;
-    private final Backoff _backoff;
-    private final SplitsWorker _splitWorker;
-    private final Worker<SegmentQueueDto> _segmentWorker;
-    private final PushManager _pushManager;
-    private final LinkedBlockingQueue<PushManager.Status> _messages = new LinkedBlockingQueue<>();
-    private final PushStatusTracker _pushStatusTracker = new PushStatusTrackerImp(_messages);
+    private AuthApiClient _authApiClient;
+    private EventSourceClient _eventSourceClient;
+    private Backoff _backoff;
+    private PushManager _pushManager;
 
-    public PushManagerTest() {
+    @Before
+    public void setUp() {
         _authApiClient = Mockito.mock(AuthApiClient.class);
         _eventSourceClient = Mockito.mock(EventSourceClient.class);
         _backoff = Mockito.mock(Backoff.class);
-        _splitWorker = Mockito.mock(SplitsWorker.class);
-        _segmentWorker = Mockito.mock(SegmentsWorkerImp.class);
-
-
-        _pushManager = new PushManagerImp(_authApiClient, _eventSourceClient, _splitWorker, _segmentWorker, _backoff, _pushStatusTracker);
+        _pushManager = new PushManagerImp(_authApiClient,
+                _eventSourceClient,
+                Mockito.mock(SplitsWorker.class),
+                Mockito.mock(SegmentsWorkerImp.class),
+                _backoff,
+                new PushStatusTrackerImp(new LinkedBlockingQueue<>()));
     }
 
     @Test
