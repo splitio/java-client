@@ -1,7 +1,6 @@
 package io.split.engine.sse.workers;
 
 import io.split.engine.common.Synchronizer;
-import io.split.engine.experiments.SplitFetcher;
 import org.junit.Test;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mockito;

@@ -4,16 +4,18 @@ import io.split.engine.sse.dtos.*;
 import io.split.engine.sse.workers.SegmentsWorkerImp;
 import io.split.engine.sse.workers.SplitsWorker;
 import io.split.engine.sse.workers.Worker;
+import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mockito;
 
 public class NotificationProcessorTest {
-    private final SplitsWorker _splitsWorker;
-    private final Worker<SegmentQueueDto> _segmentWorker;
-    private final NotificationProcessor _notificationProcessor;
-    private final PushStatusTracker _pushStatusTracker;
+    private SplitsWorker _splitsWorker;
+    private Worker<SegmentQueueDto> _segmentWorker;
+    private NotificationProcessor _notificationProcessor;
+    private PushStatusTracker _pushStatusTracker;
 
-    public NotificationProcessorTest() {
+    @Before
+    public void setUp() {
         _splitsWorker = Mockito.mock(SplitsWorker.class);
         _segmentWorker = Mockito.mock(SegmentsWorkerImp.class);
         _pushStatusTracker = Mockito.mock(PushStatusTracker.class);
