@@ -46,7 +46,7 @@ public class EventSourceClientTest {
     }
 
     @Test
-    public void startShouldNotConnect() throws IOException {
+    public void startShouldNotConnect() throws IOException, InterruptedException {
         SSEMockServer.SseEventQueue eventQueue = new SSEMockServer.SseEventQueue();
         SSEMockServer sseServer = buildSSEMockServer(eventQueue);
         sseServer.start();
@@ -57,6 +57,7 @@ public class EventSourceClientTest {
         boolean result = eventSourceClient.start("channel-test","token-test");
 
         Assert.assertFalse(result);
+        Thread.sleep(1000);
         Mockito.verify(_pushStatusTracker, Mockito.times(1)).handleSseStatus(SseStatus.NONRETRYABLE_ERROR);
     }
 
