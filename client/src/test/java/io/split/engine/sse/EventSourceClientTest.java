@@ -4,6 +4,7 @@ import io.split.SSEMockServer;
 import io.split.engine.sse.dtos.ErrorNotification;
 import io.split.engine.sse.dtos.SplitChangeNotification;
 import io.split.engine.sse.exceptions.EventParsingException;
+import org.awaitility.Awaitility;
 import org.glassfish.grizzly.utils.Pair;
 import org.glassfish.jersey.media.sse.OutboundEvent;
 import org.junit.Assert;
@@ -57,8 +58,10 @@ public class EventSourceClientTest {
         boolean result = eventSourceClient.start("channel-test","token-test");
 
         Assert.assertFalse(result);
-        Thread.sleep(2000);
-        Mockito.verify(_pushStatusTracker, Mockito.times(1)).handleSseStatus(SseStatus.NONRETRYABLE_ERROR);
+
+        Awaitility.await()
+                .atMost(50L, TimeUnit.SECONDS)
+                .untilAsserted(() -> Mockito.verify(_pushStatusTracker, Mockito.times(1)).handleSseStatus(SseStatus.NONRETRYABLE_ERROR));
     }
 
     @Test
@@ -82,10 +85,14 @@ public class EventSourceClientTest {
                 .data("{\"id\":\"22\",\"clientId\":\"22\",\"timestamp\":1592590436082,\"encoding\":\"json\",\"channel\":\"xxxx_xxxx_splits\",\"data\":\"{\\\"type\\\":\\\"SPLIT_UPDATE\\\",\\\"changeNumber\\\":1585948850111}\"}")
                 .build();
         eventQueue.push(sseEvent);
-        Thread.sleep(2000);
 
-        Mockito.verify(_notificationParser, Mockito.times(1)).parseMessage(Mockito.anyString());
-        Mockito.verify(_notificationProcessor, Mockito.times(1)).process(Mockito.any(SplitChangeNotification.class));
+        Awaitility.await()
+                .atMost(50L, TimeUnit.SECONDS)
+                .untilAsserted(() -> Mockito.verify(_notificationParser, Mockito.times(1)).parseMessage(Mockito.anyString()));
+
+        Awaitility.await()
+                .atMost(50L, TimeUnit.SECONDS)
+                .untilAsserted(() -> Mockito.verify(_notificationProcessor, Mockito.times(1)).process(Mockito.any(SplitChangeNotification.class)));
 
         OutboundSseEvent sseEventError = new OutboundEvent
                 .Builder()
@@ -93,10 +100,14 @@ public class EventSourceClientTest {
                 .data("{\"message\":\"Token expired\",\"code\":40142,\"statusCode\":401,\"href\":\"https://help.io/error/40142\"}")
                 .build();
         eventQueue.push(sseEventError);
-        Thread.sleep(2000);
 
-        Mockito.verify(_notificationParser, Mockito.times(1)).parseError(Mockito.anyString());
-        Mockito.verify(_pushStatusTracker, Mockito.times(1)).handleIncomingAblyError(Mockito.any(ErrorNotification.class));
+        Awaitility.await()
+                .atMost(50L, TimeUnit.SECONDS)
+                .untilAsserted(() -> Mockito.verify(_notificationParser, Mockito.times(1)).parseError(Mockito.anyString()));
+
+        Awaitility.await()
+                .atMost(50L, TimeUnit.SECONDS)
+                .untilAsserted(() -> Mockito.verify(_pushStatusTracker, Mockito.times(1)).handleIncomingAblyError(Mockito.any(ErrorNotification.class)));
     }
 
     private SSEMockServer buildSSEMockServer(SSEMockServer.SseEventQueue eventQueue) {
