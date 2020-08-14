@@ -50,7 +50,7 @@ public class SplitClientIntegrationTest {
         eventQueue.push(sseEvent1);
 
         Awaitility.await()
-                .atMost(10L, TimeUnit.SECONDS)
+                .atMost(50L, TimeUnit.SECONDS)
                 .until(() -> "after_notification_received".equals(client.getTreatment("admin", "push_test")));
 
         // SPLIT_UPDATED should not fetch -> changeNumber < since
@@ -62,7 +62,7 @@ public class SplitClientIntegrationTest {
         eventQueue.push(sseEvent4);
 
         Awaitility.await()
-                .atMost(10L, TimeUnit.SECONDS)
+                .atMost(50L, TimeUnit.SECONDS)
                 .until(() -> "after_notification_received".equals(client.getTreatment("admin", "push_test"))
                     && "on_rollout".equals(client.getTreatment("test_in_segment", "push_test")));
 
@@ -74,7 +74,7 @@ public class SplitClientIntegrationTest {
         eventQueue.push(sseEvent2);
 
         Awaitility.await()
-                .atMost(10L, TimeUnit.SECONDS)
+                .atMost(50L, TimeUnit.SECONDS)
                 .until(() -> "in_segment_match".equals(client.getTreatment("test_in_segment", "push_test")));
 
         // SEGMENT_UPDATE should not fetch -> changeNumber < since
@@ -86,7 +86,7 @@ public class SplitClientIntegrationTest {
         eventQueue.push(sseEvent5);
 
         Awaitility.await()
-                .atMost(10L, TimeUnit.SECONDS)
+                .atMost(50L, TimeUnit.SECONDS)
                 .until(() -> "in_segment_match".equals(client.getTreatment("test_in_segment", "push_test")));
 
         // SPLIT_KILL should fetch.
@@ -98,7 +98,7 @@ public class SplitClientIntegrationTest {
         eventQueue.push(sseEvent3);
 
         Awaitility.await()
-                .atMost(10L, TimeUnit.SECONDS)
+                .atMost(50L, TimeUnit.SECONDS)
                 .until(() -> "split_killed".equals(client.getTreatment("admin", "push_test")));
 
         client.destroy();
