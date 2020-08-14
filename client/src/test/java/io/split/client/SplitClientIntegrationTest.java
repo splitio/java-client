@@ -483,10 +483,12 @@ public class SplitClientIntegrationTest {
         Assert.assertEquals("on_whitelist", result);
 
         // wait to check keep alive notification.
+        Thread.sleep(80000);
+
         // must reconnect and after the second syncAll the result must be different
         Awaitility.await()
-                .atMost(2L, TimeUnit.MINUTES)
-                .until(() -> "split_killed".equals(client.getTreatment("admin", "push_test")));
+                .atMost(1L, TimeUnit.MINUTES)
+                .untilAsserted(() -> Assert.assertEquals("split_killed", client.getTreatment("admin", "push_test")));
 
         client.destroy();
         splitServer.stop();
