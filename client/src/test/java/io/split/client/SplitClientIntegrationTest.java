@@ -184,9 +184,9 @@ public class SplitClientIntegrationTest {
                 .build();
         eventQueue.push(sseEventSplitKill);
 
-        //Awaitility.await()
-        //        .atMost(50L, TimeUnit.SECONDS)
-        //        .until(() -> 2 == manager.splits().stream().filter(r -> !r.killed).toArray().length);
+        Awaitility.await()
+                .atMost(2L, TimeUnit.MINUTES)
+                .until(() -> 2 == manager.splits().stream().filter(r -> !r.killed).toArray().length);
 
         splitServer.stop();
         sseServer.stop();
