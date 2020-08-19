@@ -189,6 +189,7 @@ public class RefreshableSplitFetcherTest {
 
         SegmentChangeFetcher segmentChangeFetcher = new NoChangeSegmentChangeFetcher();
         SegmentFetcher segmentFetcher = new RefreshableSegmentFetcher(segmentChangeFetcher, 1,10, gates);
+        segmentFetcher.startPeriodicFetching();
         RefreshableSplitFetcher fetcher = new RefreshableSplitFetcher(experimentChangeFetcher, new SplitParser(segmentFetcher), gates, startingChangeNumber);
 
         // execute the fetcher for a little bit.

@@ -9,7 +9,10 @@ import java.io.Closeable;
 import java.util.List;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.ThreadFactory;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.AtomicReference;
 
@@ -30,9 +33,11 @@ public class RefreshableSplitFetcherProvider implements Closeable {
     private final AtomicReference<RefreshableSplitFetcher> _splitFetcher = new AtomicReference<RefreshableSplitFetcher>();
     private final SDKReadinessGates _gates;
     private final AtomicReference<ScheduledExecutorService> _executorService = new AtomicReference<>();
-
+    private final ScheduledExecutorService _scheduledExecutorService;
     private final Object _lock = new Object();
+    private final AtomicBoolean _running;
 
+    private ScheduledFuture<?> _scheduledFuture;
 
     public RefreshableSplitFetcherProvider(SplitChangeFetcher splitChangeFetcher, SplitParser splitParser, long refreshEveryNSeconds, SDKReadinessGates sdkBuildBlocker) {
         _splitChangeFetcher = splitChangeFetcher;
@@ -47,6 +52,15 @@ public class RefreshableSplitFetcherProvider implements Closeable {
         _gates = sdkBuildBlocker;
         checkNotNull(_gates);
 
+        ThreadFactory threadFactory = new ThreadFactoryBuilder()
+                .setDaemon(true)
+                .setNameFormat("split-splitFetcher-%d")
+                .build();
+
+        _scheduledExecutorService = Executors.newSingleThreadScheduledExecutor(threadFactory);
+        _executorService.set(_scheduledExecutorService);
+
+        _running = new AtomicBoolean();
     }
 
     public RefreshableSplitFetcher getFetcher() {
@@ -63,17 +77,29 @@ public class RefreshableSplitFetcherProvider implements Closeable {
 
             RefreshableSplitFetcher splitFetcher = new RefreshableSplitFetcher(_splitChangeFetcher, _splitParser, _gates);
 
-            ThreadFactoryBuilder threadFactoryBuilder = new ThreadFactoryBuilder();
-            threadFactoryBuilder.setDaemon(true);
-            threadFactoryBuilder.setNameFormat("split-splitFetcher-%d");
-
-            ScheduledExecutorService scheduledExecutorService = Executors.newSingleThreadScheduledExecutor(threadFactoryBuilder.build());
-            scheduledExecutorService.scheduleWithFixedDelay(splitFetcher, 0L, _refreshEveryNSeconds.get(), TimeUnit.SECONDS);
-            _executorService.set(scheduledExecutorService);
-
             _splitFetcher.set(splitFetcher);
             return splitFetcher;
         }
+    }
+
+    public void startPeriodicFetching() {
+        if (_running.getAndSet(true)) {
+            _log.warn("Splits PeriodicFetching is running...");
+            return;
+        }
+
+        _log.debug("Starting PeriodicFetching Splits ...");
+        _scheduledFuture = _scheduledExecutorService.scheduleWithFixedDelay(getFetcher(), 0L, _refreshEveryNSeconds.get(), TimeUnit.SECONDS);
+    }
+
+    public void stop() {
+        if (!_running.getAndSet(false) || _scheduledFuture == null) {
+            _log.warn("Splits PeriodicFetching not running...");
+            return;
+        }
+
+        _scheduledFuture.cancel(false);
+        _log.debug("Stopped PeriodicFetching Splits ...");
     }
 
     @Override

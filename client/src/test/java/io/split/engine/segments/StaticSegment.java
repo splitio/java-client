@@ -1,7 +1,5 @@
 package io.split.engine.segments;
 
-import io.split.engine.segments.Segment;
-
 import java.util.Set;
 
 import static com.google.common.base.Preconditions.checkNotNull;
@@ -38,4 +36,7 @@ public final class StaticSegment implements Segment {
     public void forceRefresh() {
         return;
     }
+
+    @Override
+    public long changeNumber() { return 0; }
 }
