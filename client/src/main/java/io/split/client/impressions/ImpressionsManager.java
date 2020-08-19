@@ -28,12 +28,14 @@ import java.util.concurrent.TimeUnit;
 public class ImpressionsManager implements ImpressionListener, Runnable {
 
     private static final Logger _log = LoggerFactory.getLogger(ImpressionsManager.class);
+    private static final long LAST_SEEN_CACHE_SIZE = 500000; // cache up to 500k impression hashes
 
     private final SplitClientConfig _config;
     private final CloseableHttpClient _client;
     private final BlockingQueue<KeyImpression> _queue;
     private final ScheduledExecutorService _scheduler;
     private final ImpressionsSender _impressionsSender;
+    private final ImpressionObserver _impressionObserver;
 
     public static ImpressionsManager instance(CloseableHttpClient client,
                                               SplitClientConfig config) throws URISyntaxException {
@@ -51,6 +53,7 @@ public class ImpressionsManager implements ImpressionListener, Runnable {
         _config = config;
         _client = client;
         _queue = new ArrayBlockingQueue<KeyImpression>(config.impressionsQueueSize());
+        _impressionObserver = new ImpressionObserver(LAST_SEEN_CACHE_SIZE);
 
         ThreadFactory threadFactory = new ThreadFactoryBuilder()
                 .setDaemon(true)
@@ -129,6 +132,7 @@ public class ImpressionsManager implements ImpressionListener, Runnable {
                 impressionsForTest = new ArrayList<>();
                 tests.put(ki.feature, impressionsForTest);
             }
+            ki.pt = _impressionObserver.testAndSet(ki);
             impressionsForTest.add(ki);
         }
 
