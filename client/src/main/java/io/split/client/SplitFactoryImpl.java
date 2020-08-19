@@ -12,6 +12,8 @@ import io.split.client.metrics.CachedMetrics;
 import io.split.client.metrics.FireAndForgetMetrics;
 import io.split.client.metrics.HttpMetrics;
 import io.split.engine.SDKReadinessGates;
+import io.split.engine.common.SyncManager;
+import io.split.engine.common.SyncManagerImp;
 import io.split.engine.experiments.RefreshableSplitFetcherProvider;
 import io.split.engine.experiments.SplitChangeFetcher;
 import io.split.engine.experiments.SplitParser;
@@ -209,6 +211,10 @@ public class SplitFactoryImpl implements SplitFactory {
 
         final EventClient eventClient = EventClientImpl.create(httpclient, eventsRootTarget, config.eventsQueueSize(), config.eventFlushIntervalInMillis(), config.waitBeforeShutdown());
 
+        // SyncManager
+        final SyncManager syncManager = SyncManagerImp.build(config.streamingEnabled(), splitFetcherProvider, segmentFetcher, config.authServiceURL(), httpclient, config.streamingServiceURL(), config.authRetryBackoffBase());
+        syncManager.start();
+
         destroyer = new Runnable() {
             public void run() {
                 _log.info("Shutdown called for split");
@@ -227,6 +233,8 @@ public class SplitFactoryImpl implements SplitFactory {
                     _log.info("Successful shutdown of httpclient");
                     eventClient.close();
                     _log.info("Successful shutdown of httpclient");
+                    new Thread(syncManager::shutdown).start();
+                    _log.info("Successful shutdown of syncManager");
                 } catch (IOException e) {
                     _log.error("We could not shutdown split", e);
                 }

@@ -85,10 +85,31 @@ public class RefreshableSplitFetcher implements SplitFetcher, Runnable {
         run();
     }
 
+    @Override
     public long changeNumber() {
         return _changeNumber.get();
     }
 
+    @Override
+    public void killSplit(String splitName, String defaultTreatment, long changeNumber) {
+        synchronized (_lock) {
+            ParsedSplit parsedSplit = _concurrentMap.get(splitName);
+
+            ParsedSplit updatedSplit = new ParsedSplit(parsedSplit.feature(),
+                    parsedSplit.seed(),
+                    true,
+                    defaultTreatment,
+                    parsedSplit.parsedConditions(),
+                    parsedSplit.trafficTypeName(),
+                    changeNumber,
+                    parsedSplit.trafficAllocation(),
+                    parsedSplit.trafficAllocationSeed(),
+                    parsedSplit.algo(),
+                    parsedSplit.configurations());
+
+            _concurrentMap.put(splitName, updatedSplit);
+        }
+    }
 
     @Override
     public ParsedSplit fetch(String test) {
@@ -118,6 +139,7 @@ public class RefreshableSplitFetcher implements SplitFetcher, Runnable {
 
     @Override
     public void run() {
+        _log.debug("Fetch splits starting ...");
         long start = _changeNumber.get();
         try {
             runWithoutExceptionHandling();
@@ -161,9 +183,6 @@ public class RefreshableSplitFetcher implements SplitFetcher, Runnable {
             return;
         }
 
-        Set<String> segmentsInUse = Sets.newHashSet();
-
-
         synchronized (_lock) {
             // check state one more time.
             if (change.since != _changeNumber.get()
@@ -201,7 +220,6 @@ public class RefreshableSplitFetcher implements SplitFetcher, Runnable {
                     continue;
                 }
 
-                segmentsInUse.addAll(collectSegmentsInUse(split));
                 toAdd.put(split.name, parsedSplit);
 
                 // If the split already exists, this is either an update, or the split has been
