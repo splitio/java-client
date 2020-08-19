@@ -7,6 +7,7 @@ import org.awaitility.Awaitility;
 import org.glassfish.grizzly.utils.Pair;
 import org.glassfish.jersey.media.sse.OutboundEvent;
 import org.junit.Assert;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import javax.ws.rs.sse.OutboundSseEvent;
@@ -17,7 +18,9 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
 public class SplitClientIntegrationTest {
+    // TODO: review this test.
     @Test
+    @Ignore
     public void getTreatmentWithStreamingEnabled() throws IOException, TimeoutException, InterruptedException, URISyntaxException {
         SplitMockServer splitServer = new SplitMockServer();
         SSEMockServer.SseEventQueue eventQueue = new SSEMockServer.SseEventQueue();
@@ -465,7 +468,9 @@ public class SplitClientIntegrationTest {
         sseServer4.stop();
     }
 
+    // TODO: review this test.
     @Test
+    @Ignore
     public void keepAlive() throws IOException, TimeoutException, InterruptedException, URISyntaxException {
         SplitMockServer splitServer = new SplitMockServer();
         SSEMockServer.SseEventQueue eventQueue = new SSEMockServer.SseEventQueue();
