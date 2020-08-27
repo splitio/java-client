@@ -1,6 +1,8 @@
 package io.split.engine.sse;
 
 import com.google.common.annotations.VisibleForTesting;
+import io.split.engine.sse.client.RawEvent;
+import io.split.engine.sse.client.SSEClient;
 import io.split.engine.sse.dtos.SegmentQueueDto;
 import io.split.engine.sse.exceptions.EventParsingException;
 import io.split.engine.sse.workers.SplitsWorker;
@@ -9,12 +11,8 @@ import org.apache.http.client.utils.URIBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.ws.rs.client.Client;
-import javax.ws.rs.client.ClientBuilder;
-import javax.ws.rs.client.WebTarget;
-import javax.ws.rs.sse.InboundSseEvent;
+import java.net.URI;
 import java.net.URISyntaxException;
-import java.util.concurrent.TimeUnit;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
@@ -22,26 +20,25 @@ public class EventSourceClientImp implements EventSourceClient {
     private static final Logger _log = LoggerFactory.getLogger(EventSourceClient.class);
 
     private final String _baseStreamingUrl;
-    private final Client _client;
     private final NotificationParser _notificationParser;
     private final NotificationProcessor _notificationProcessor;
-    private final SplitSseEventSource _splitSseEventSource;
+    private final SSEClient _sseClient;
     private final PushStatusTracker _pushStatusTracker;
 
     @VisibleForTesting
     /* package private */ EventSourceClientImp(String baseStreamingUrl,
                                                NotificationParser notificationParser,
                                                NotificationProcessor notificationProcessor,
-                                               Client client,
                                                PushStatusTracker pushStatusTracker) {
         _baseStreamingUrl = checkNotNull(baseStreamingUrl);
         _notificationParser = checkNotNull(notificationParser);
         _notificationProcessor = checkNotNull(notificationProcessor);
-        _client = checkNotNull(client);
-        _splitSseEventSource = new SplitSseEventSource(
-                inboundEvent -> { onMessage(inboundEvent); return null; },
-                status -> { onSSeStatusChange(status); return null; });
         _pushStatusTracker = pushStatusTracker;
+
+        _sseClient = new SSEClient(
+                inboundEvent -> { onMessage(inboundEvent); return null; },
+                status -> { _pushStatusTracker.handleSseStatus(status); return null; });
+
     }
 
     public static EventSourceClientImp build(String baseStreamingUrl,
@@ -52,18 +49,17 @@ public class EventSourceClientImp implements EventSourceClient {
         return new EventSourceClientImp(baseStreamingUrl,
                 new NotificationParserImp(),
                 NotificationProcessorImp.build(splitsWorker, segmentWorker, pushStatusTracker),
-                ClientBuilder.newBuilder().readTimeout(70, TimeUnit.SECONDS).build(),
                 pushStatusTracker);
     }
 
     @Override
     public boolean start(String channelList, String token) {
-        if (_splitSseEventSource.isOpen()) {
-            _splitSseEventSource.close();
+        if (_sseClient.isOpen()) {
+            _sseClient.close();
         }
 
         try {
-            return _splitSseEventSource.open(buildTarget(channelList, token));
+            return _sseClient.open(buildUri(channelList, token));
         } catch (URISyntaxException e) {
             _log.error("Error building Streaming URI: " + e.getMessage());
             return false;
@@ -72,25 +68,25 @@ public class EventSourceClientImp implements EventSourceClient {
 
     @Override
     public void stop() {
-        if (!_splitSseEventSource.isOpen()) {
+        if (!_sseClient.isOpen()) {
             _log.warn("Event Source Client is closed.");
             return;
         }
-        _splitSseEventSource.close();
+        _sseClient.close();
     }
 
-    private WebTarget buildTarget(String channelList, String token) throws URISyntaxException {
-        return _client.target(new URIBuilder(_baseStreamingUrl)
+    private URI buildUri(String channelList, String token) throws URISyntaxException {
+        return new URIBuilder(_baseStreamingUrl)
                 .addParameter("channels", channelList)
                 .addParameter("v", "1.1")
                 .addParameter("accessToken", token)
-                .build());
+                .build();
     }
 
-    private void onMessage(InboundSseEvent event) {
+    private void onMessage(RawEvent event) {
         try {
-            String type = event.getName();
-            String payload = event.readData();
+            String type = event.event();
+            String payload = event.data();
             if (payload.length() > 0) {
                 _log.debug(String.format("Payload received: %s", payload));
                 switch (type) {
@@ -109,9 +105,5 @@ public class EventSourceClientImp implements EventSourceClient {
         } catch (Exception e) {
             _log.warn(String.format("Error onMessage: %s", e.getMessage()));
         }
-    }
-
-    private void onSSeStatusChange(SseStatus status) {
-        _pushStatusTracker.handleSseStatus(status);
     }
 }

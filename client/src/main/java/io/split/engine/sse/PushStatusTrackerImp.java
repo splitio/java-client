@@ -1,6 +1,7 @@
 package io.split.engine.sse;
 
 import io.split.engine.common.PushManager;
+import io.split.engine.sse.client.SSEClient;
 import io.split.engine.sse.dtos.ControlNotification;
 import io.split.engine.sse.dtos.ControlType;
 import io.split.engine.sse.dtos.ErrorNotification;
@@ -16,7 +17,7 @@ public class PushStatusTrackerImp implements PushStatusTracker {
     private static final Logger _log = LoggerFactory.getLogger(PushStatusTracker.class);
 
     private final AtomicBoolean _publishersOnline = new AtomicBoolean(true);
-    private final AtomicReference<SseStatus> _sseStatus = new AtomicReference<>(SseStatus.DISCONNECTED);
+    private final AtomicReference<SSEClient.StatusMessage> _sseStatus = new AtomicReference<>(SSEClient.StatusMessage.DISCONNECTED);
     private final AtomicReference<ControlType> _backendStatus = new AtomicReference<>(ControlType.STREAMING_RESUMED);
     private final LinkedBlockingQueue<PushManager.Status> _statusMessages;
 
@@ -26,29 +27,29 @@ public class PushStatusTrackerImp implements PushStatusTracker {
 
     public synchronized void reset() {
         _publishersOnline.set(true);
-        _sseStatus.set(SseStatus.DISCONNECTED);
+        _sseStatus.set(SSEClient.StatusMessage.DISCONNECTED);
         _backendStatus.set(ControlType.STREAMING_RESUMED);
     }
 
     @Override
-    public void handleSseStatus(SseStatus newStatus) {
+    public void handleSseStatus(SSEClient.StatusMessage newStatus) {
         _log.debug(String.format("handleSseStatus new status: %s", newStatus.toString()));
         _log.debug(String.format("handleSseStatus current status: %s", _sseStatus.get().toString()));
         switch(newStatus) {
             case CONNECTED:
-                if (_sseStatus.compareAndSet(SseStatus.DISCONNECTED, SseStatus.CONNECTED)
-                    || _sseStatus.compareAndSet(SseStatus.RETRYABLE_ERROR, SseStatus.CONNECTED)) {
+                if (_sseStatus.compareAndSet(SSEClient.StatusMessage.DISCONNECTED, SSEClient.StatusMessage.CONNECTED)
+                    || _sseStatus.compareAndSet(SSEClient.StatusMessage.RETRYABLE_ERROR, SSEClient.StatusMessage.CONNECTED)) {
                     _statusMessages.offer(PushManager.Status.STREAMING_READY);
                 }
                 break;
             case RETRYABLE_ERROR:
-                if (_sseStatus.compareAndSet(SseStatus.CONNECTED, SseStatus.RETRYABLE_ERROR)) {
+                if (_sseStatus.compareAndSet(SSEClient.StatusMessage.CONNECTED, SSEClient.StatusMessage.RETRYABLE_ERROR)) {
                     _statusMessages.offer(PushManager.Status.STREAMING_BACKOFF);
                 }
                 break;
             case NONRETRYABLE_ERROR:
-                if (_sseStatus.compareAndSet(SseStatus.CONNECTED, SseStatus.NONRETRYABLE_ERROR)
-                    || _sseStatus.compareAndSet(SseStatus.RETRYABLE_ERROR, SseStatus.NONRETRYABLE_ERROR)) {
+                if (_sseStatus.compareAndSet(SSEClient.StatusMessage.CONNECTED, SSEClient.StatusMessage.NONRETRYABLE_ERROR)
+                    || _sseStatus.compareAndSet(SSEClient.StatusMessage.RETRYABLE_ERROR, SSEClient.StatusMessage.NONRETRYABLE_ERROR)) {
                     _statusMessages.offer(PushManager.Status.STREAMING_OFF);
                 }
                 break;
@@ -113,7 +114,7 @@ public class PushStatusTrackerImp implements PushStatusTracker {
     public synchronized void forcePushDisable() {
         _log.debug("forcePushDisable");
         _publishersOnline.set(false);
-        _sseStatus.set(SseStatus.DISCONNECTED);
+        _sseStatus.set(SSEClient.StatusMessage.DISCONNECTED);
         _backendStatus.set(ControlType.STREAMING_DISABLED);
         _statusMessages.offer(PushManager.Status.STREAMING_OFF);
     }

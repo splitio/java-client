@@ -1,9 +1,9 @@
 package io.split.engine.sse;
 
 import io.split.SSEMockServer;
+import io.split.engine.sse.client.SSEClient;
 import io.split.engine.sse.dtos.ErrorNotification;
 import io.split.engine.sse.dtos.SplitChangeNotification;
-import io.split.engine.sse.exceptions.EventParsingException;
 import org.awaitility.Awaitility;
 import org.glassfish.grizzly.utils.Pair;
 import org.glassfish.jersey.media.sse.OutboundEvent;
@@ -12,8 +12,6 @@ import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mockito;
 
-import javax.ws.rs.client.Client;
-import javax.ws.rs.client.ClientBuilder;
 import javax.ws.rs.sse.OutboundSseEvent;
 import java.io.IOException;
 import java.util.concurrent.TimeUnit;
@@ -35,25 +33,21 @@ public class EventSourceClientTest {
         SSEMockServer.SseEventQueue eventQueue = new SSEMockServer.SseEventQueue();
         SSEMockServer sseServer = buildSSEMockServer(eventQueue);
         sseServer.start();
-        Client client = ClientBuilder.newBuilder().readTimeout(70, TimeUnit.SECONDS).build();
-
-        EventSourceClient eventSourceClient = new EventSourceClientImp("http://localhost:" + sseServer.getPort(), _notificationParser, _notificationProcessor, client, _pushStatusTracker);
+        EventSourceClient eventSourceClient = new EventSourceClientImp("http://localhost:" + sseServer.getPort(), _notificationParser, _notificationProcessor, _pushStatusTracker);
 
         boolean result = eventSourceClient.start("channel-test","token-test");
 
         Assert.assertTrue(result);
 
-        Mockito.verify(_pushStatusTracker, Mockito.times(1)).handleSseStatus(SseStatus.CONNECTED);
+        Mockito.verify(_pushStatusTracker, Mockito.times(1)).handleSseStatus(SSEClient.StatusMessage.CONNECTED);
     }
 
     @Test
-    public void startShouldNotConnect() throws IOException, InterruptedException {
+    public void startShouldNotConnect() throws IOException {
         SSEMockServer.SseEventQueue eventQueue = new SSEMockServer.SseEventQueue();
         SSEMockServer sseServer = buildSSEMockServer(eventQueue);
         sseServer.start();
-        Client client = ClientBuilder.newBuilder().readTimeout(70, TimeUnit.SECONDS).build();
-
-        EventSourceClient eventSourceClient = new EventSourceClientImp("http://fake:" + sseServer.getPort(), _notificationParser, _notificationProcessor, client, _pushStatusTracker);
+        EventSourceClient eventSourceClient = new EventSourceClientImp("http://fake:" + sseServer.getPort(), _notificationParser, _notificationProcessor, _pushStatusTracker);
 
         boolean result = eventSourceClient.start("channel-test","token-test");
 
@@ -61,23 +55,21 @@ public class EventSourceClientTest {
 
         Awaitility.await()
                 .atMost(50L, TimeUnit.SECONDS)
-                .untilAsserted(() -> Mockito.verify(_pushStatusTracker, Mockito.times(1)).handleSseStatus(SseStatus.NONRETRYABLE_ERROR));
+                .untilAsserted(() -> Mockito.verify(_pushStatusTracker, Mockito.times(1)).handleSseStatus(SSEClient.StatusMessage.NONRETRYABLE_ERROR));
     }
 
     @Test
-    public void startAndReceiveNotification() throws IOException, InterruptedException, EventParsingException {
+    public void startAndReceiveNotification() throws IOException {
         SSEMockServer.SseEventQueue eventQueue = new SSEMockServer.SseEventQueue();
         SSEMockServer sseServer = buildSSEMockServer(eventQueue);
         sseServer.start();
-        Client client = ClientBuilder.newBuilder().readTimeout(70, TimeUnit.SECONDS).build();
-
-        EventSourceClient eventSourceClient = new EventSourceClientImp("http://localhost:" + sseServer.getPort(), _notificationParser, _notificationProcessor, client, _pushStatusTracker);
+        EventSourceClient eventSourceClient = new EventSourceClientImp("http://localhost:" + sseServer.getPort(), _notificationParser, _notificationProcessor, _pushStatusTracker);
 
         boolean result = eventSourceClient.start("channel-test","token-test");
 
         Assert.assertTrue(result);
 
-        Mockito.verify(_pushStatusTracker, Mockito.times(1)).handleSseStatus(SseStatus.CONNECTED);
+        Mockito.verify(_pushStatusTracker, Mockito.times(1)).handleSseStatus(SSEClient.StatusMessage.CONNECTED);
 
         OutboundSseEvent sseEvent = new OutboundEvent
                 .Builder()
