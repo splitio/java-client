@@ -36,7 +36,7 @@ public class SSEClient {
         CLOSED
     }
 
-    private final static String KEEP_ALIVE_PAYLOAD = ":keepalive";
+    private final static String KEEP_ALIVE_PAYLOAD = ":keepalive\n";
     private final static Integer CONNECT_TIMEOUT = 30000;
     private final static Integer SOCKET_TIMEOUT = 70000;
 
