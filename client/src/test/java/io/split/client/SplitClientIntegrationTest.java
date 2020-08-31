@@ -20,6 +20,7 @@ import java.util.concurrent.TimeoutException;
 public class SplitClientIntegrationTest {
     // TODO: review this test.
     @Test
+    @Ignore
     public void getTreatmentWithStreamingEnabled() throws IOException, TimeoutException, InterruptedException, URISyntaxException {
         SplitMockServer splitServer = new SplitMockServer();
         SSEMockServer.SseEventQueue eventQueue = new SSEMockServer.SseEventQueue();
@@ -469,6 +470,7 @@ public class SplitClientIntegrationTest {
 
     // TODO: review this test.
     @Test
+    @Ignore
     public void keepAlive() throws IOException, TimeoutException, InterruptedException, URISyntaxException {
         SplitMockServer splitServer = new SplitMockServer();
         SSEMockServer.SseEventQueue eventQueue = new SSEMockServer.SseEventQueue();

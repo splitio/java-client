@@ -2,6 +2,7 @@ package io.split.engine.sse;
 
 import io.split.engine.sse.client.SSEClient;
 import org.apache.http.client.utils.URIBuilder;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import java.net.URI;
@@ -10,6 +11,7 @@ import java.net.URISyntaxException;
 public class SSEClientTest {
 
     @Test
+    @Ignore
     public void basicUsageTest() throws URISyntaxException, InterruptedException {
         URI uri = new URIBuilder("https://streaming.split.io/sse")
                 .addParameter("accessToken", "X")
