@@ -1,5 +1,6 @@
 package io.split.engine.sse.client;
 
+import com.google.common.base.Strings;
 import org.apache.http.client.config.RequestConfig;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
@@ -130,7 +131,7 @@ public class SSEClient {
 
     private boolean establishConnection(URI uri, CountDownLatch signal) {
         HttpGet request = new HttpGet(uri);
-        request.addHeader("Content-Type","text/event-stream");
+
         try {
             _ongoingResponse.set(_client.execute(request));
             if (_ongoingResponse.get().getStatusLine().getStatusCode() != 200) {
