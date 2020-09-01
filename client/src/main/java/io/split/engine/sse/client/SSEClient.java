@@ -1,12 +1,15 @@
 package io.split.engine.sse.client;
 
 import com.google.common.base.Strings;
+import io.split.engine.sse.EventSourceClient;
 import org.apache.http.client.config.RequestConfig;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.impl.conn.PoolingHttpClientConnectionManager;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.BufferedReader;
 import java.io.EOFException;
@@ -40,6 +43,7 @@ public class SSEClient {
     private final static String KEEP_ALIVE_PAYLOAD = ":keepalive\n";
     private final static Integer CONNECT_TIMEOUT = 30000;
     private final static Integer SOCKET_TIMEOUT = 70000;
+    private static final Logger _log = LoggerFactory.getLogger(SSEClient.class);
 
     private final CloseableHttpClient _client;
     private final Function<RawEvent, Void> _eventCallback;
@@ -55,7 +59,7 @@ public class SSEClient {
 
     public synchronized boolean open(URI uri) {
         if (isOpen()) {
-            // TODO: Log:
+            _log.warn("SSEClient already open.");
             return false;
         }
 
@@ -66,7 +70,7 @@ public class SSEClient {
         try {
             signal.await(CONNECT_TIMEOUT, TimeUnit.SECONDS);
         } catch (InterruptedException e) {
-            // TODO: Log
+            _log.warn(e.getMessage());
             return false;
         }
         return isOpen();
@@ -82,7 +86,7 @@ public class SSEClient {
                 try {
                     _ongoingResponse.get().close();
                 } catch (IOException e) {
-                    // TODO: Log
+                    _log.warn(String.format("Error closing SSEClient: %s", e.getMessage()));
                 }
             }
         }
@@ -99,6 +103,7 @@ public class SSEClient {
         try {
             final InputStream stream = _ongoingResponse.get().getEntity().getContent();
             final BufferedReader reader = new BufferedReader(new InputStreamReader(stream));
+
             while (isOpen() && !Thread.currentThread().isInterrupted()) {
                 try {
                     handleMessage(readMessageAsString(reader));
@@ -118,14 +123,16 @@ public class SSEClient {
                 }
             }
         } catch (IOException e) {
-            // TODO: Log
+            _log.warn(e.getMessage());
             _statusCallback.apply(StatusMessage.NONRETRYABLE_ERROR);
-        }  finally {
+        } finally {
             try {
                 _ongoingResponse.get().close();
             } catch (IOException e) {
-                // TODO: Log
+                _log.warn(e.getMessage());
             }
+
+            _log.warn("SSEClient finished.");
         }
     }
 
@@ -140,7 +147,7 @@ public class SSEClient {
             _state.set(ConnectionState.OPEN);
             _statusCallback.apply(StatusMessage.CONNECTED);
         } catch (IOException exc) {
-            // TODO
+            _log.warn(String.format("Error establishConnection: %s", exc.getMessage()));
             exc.printStackTrace();
             return false;
         } finally {
@@ -180,8 +187,8 @@ public class SSEClient {
     }
 
     private void handleMessage(String message) {
-        if (KEEP_ALIVE_PAYLOAD.equals(message)) {
-            // TODO: Log keepalive in debug mode?
+        if (Strings.isNullOrEmpty(message) || KEEP_ALIVE_PAYLOAD.equals(message)) {
+            _log.debug("Keep Alive event");
             return;
         }
 
