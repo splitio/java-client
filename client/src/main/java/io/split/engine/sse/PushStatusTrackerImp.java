@@ -17,7 +17,7 @@ public class PushStatusTrackerImp implements PushStatusTracker {
     private static final Logger _log = LoggerFactory.getLogger(PushStatusTracker.class);
 
     private final AtomicBoolean _publishersOnline = new AtomicBoolean(true);
-    private final AtomicReference<SSEClient.StatusMessage> _sseStatus = new AtomicReference<>(SSEClient.StatusMessage.DISCONNECTED);
+    private final AtomicReference<SSEClient.StatusMessage> _sseStatus = new AtomicReference<>(SSEClient.StatusMessage.INITIALIZATION_IN_PROGRESS);
     private final AtomicReference<ControlType> _backendStatus = new AtomicReference<>(ControlType.STREAMING_RESUMED);
     private final LinkedBlockingQueue<PushManager.Status> _statusMessages;
 
@@ -27,7 +27,7 @@ public class PushStatusTrackerImp implements PushStatusTracker {
 
     public synchronized void reset() {
         _publishersOnline.set(true);
-        _sseStatus.set(SSEClient.StatusMessage.DISCONNECTED);
+        _sseStatus.set(SSEClient.StatusMessage.INITIALIZATION_IN_PROGRESS);
         _backendStatus.set(ControlType.STREAMING_RESUMED);
     }
 
@@ -37,7 +37,7 @@ public class PushStatusTrackerImp implements PushStatusTracker {
         _log.debug(String.format("handleSseStatus current status: %s", _sseStatus.get().toString()));
         switch(newStatus) {
             case CONNECTED:
-                if (_sseStatus.compareAndSet(SSEClient.StatusMessage.DISCONNECTED, SSEClient.StatusMessage.CONNECTED)
+                if (_sseStatus.compareAndSet(SSEClient.StatusMessage.INITIALIZATION_IN_PROGRESS, SSEClient.StatusMessage.CONNECTED)
                     || _sseStatus.compareAndSet(SSEClient.StatusMessage.RETRYABLE_ERROR, SSEClient.StatusMessage.CONNECTED)) {
                     _statusMessages.offer(PushManager.Status.STREAMING_READY);
                 }
@@ -53,7 +53,7 @@ public class PushStatusTrackerImp implements PushStatusTracker {
                     _statusMessages.offer(PushManager.Status.STREAMING_OFF);
                 }
                 break;
-            case DISCONNECTED: // Restore initial status
+            case INITIALIZATION_IN_PROGRESS: // Restore initial status
                 reset();
                 break;
         }
@@ -114,7 +114,7 @@ public class PushStatusTrackerImp implements PushStatusTracker {
     public synchronized void forcePushDisable() {
         _log.debug("forcePushDisable");
         _publishersOnline.set(false);
-        _sseStatus.set(SSEClient.StatusMessage.DISCONNECTED);
+        _sseStatus.set(SSEClient.StatusMessage.INITIALIZATION_IN_PROGRESS);
         _backendStatus.set(ControlType.STREAMING_DISABLED);
         _statusMessages.offer(PushManager.Status.STREAMING_OFF);
     }

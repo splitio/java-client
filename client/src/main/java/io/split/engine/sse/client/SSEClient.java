@@ -1,7 +1,7 @@
 package io.split.engine.sse.client;
 
 import com.google.common.base.Strings;
-import io.split.engine.sse.EventSourceClient;
+import io.split.engine.sse.exceptions.EventParsingException;
 import org.apache.http.client.config.RequestConfig;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
@@ -32,7 +32,7 @@ public class SSEClient {
         CONNECTED,
         RETRYABLE_ERROR,
         NONRETRYABLE_ERROR,
-        DISCONNECTED
+        INITIALIZATION_IN_PROGRESS
     }
 
     private enum ConnectionState {
@@ -62,6 +62,8 @@ public class SSEClient {
             _log.warn("SSEClient already open.");
             return false;
         }
+
+        _statusCallback.apply(StatusMessage.INITIALIZATION_IN_PROGRESS);
 
         CountDownLatch signal = new CountDownLatch(1);
         Thread thread = new Thread(() -> connectAndLoop(uri, signal));
@@ -109,29 +111,31 @@ public class SSEClient {
                     handleMessage(readMessageAsString(reader));
                 } catch (EOFException exc) {
                     // This is when ably closes the connection on their end. IE: an invalid or expired token.
-                    // Evaluate if we should send the DISCONNECTED event or not.
-                    _statusCallback.apply(StatusMessage.DISCONNECTED);
+                    _statusCallback.apply(StatusMessage.RETRYABLE_ERROR);
                     return;
                 } catch (SocketTimeoutException exc) { // KeepAlive expired
                     _statusCallback.apply(StatusMessage.RETRYABLE_ERROR);
                 } catch (SocketException exc) { // Connection closed by us
                     if ("Socket closed".equals(exc.getMessage())) {
-                        _statusCallback.apply(StatusMessage.DISCONNECTED);
+                        _statusCallback.apply(StatusMessage.NONRETRYABLE_ERROR);
                         return;
                     }
+
                     throw exc; // If it's not a socket closed (caused by us), rethrow the exception
                 }
             }
-        } catch (IOException e) {
-            _log.warn(e.getMessage());
+        } catch (Exception e) {
+            _log.error(e.getMessage());
             _statusCallback.apply(StatusMessage.NONRETRYABLE_ERROR);
-        } finally {
+        }
+        finally {
             try {
                 _ongoingResponse.get().close();
             } catch (IOException e) {
                 _log.warn(e.getMessage());
             }
 
+            _state.set(ConnectionState.CLOSED);
             _log.warn("SSEClient finished.");
         }
     }
