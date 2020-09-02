@@ -33,8 +33,8 @@ public class PushStatusTrackerImp implements PushStatusTracker {
 
     @Override
     public void handleSseStatus(SSEClient.StatusMessage newStatus) {
-        _log.debug(String.format("handleSseStatus new status: %s", newStatus.toString()));
-        _log.debug(String.format("handleSseStatus current status: %s", _sseStatus.get().toString()));
+        _log.debug(String.format("Current status: %s. New status: %s", _sseStatus.get().toString(), newStatus.toString()));
+
         switch(newStatus) {
             case CONNECTED:
                 if (_sseStatus.compareAndSet(SSEClient.StatusMessage.INITIALIZATION_IN_PROGRESS, SSEClient.StatusMessage.CONNECTED)
@@ -53,6 +53,13 @@ public class PushStatusTrackerImp implements PushStatusTracker {
                     _statusMessages.offer(PushManager.Status.STREAMING_OFF);
                 }
                 break;
+            case FORCED_STOP:
+                if (_sseStatus.compareAndSet(SSEClient.StatusMessage.CONNECTED, SSEClient.StatusMessage.FORCED_STOP)
+                    || _sseStatus.compareAndSet(SSEClient.StatusMessage.RETRYABLE_ERROR, SSEClient.StatusMessage.FORCED_STOP)
+                    || _sseStatus.compareAndSet(SSEClient.StatusMessage.INITIALIZATION_IN_PROGRESS, SSEClient.StatusMessage.FORCED_STOP)) {
+                    _statusMessages.offer(PushManager.Status.STREAMING_DOWN);
+                }
+                break;
             case INITIALIZATION_IN_PROGRESS: // Restore initial status
                 reset();
                 break;
@@ -62,6 +69,7 @@ public class PushStatusTrackerImp implements PushStatusTracker {
     @Override
     public void handleIncomingControlEvent(ControlNotification controlNotification) {
         _log.debug(String.format("handleIncomingOccupancyEvent: %s", controlNotification.getControlType()));
+
         if (_backendStatus.get().equals(ControlType.STREAMING_DISABLED)) {
             return;
         }
@@ -88,6 +96,7 @@ public class PushStatusTrackerImp implements PushStatusTracker {
     @Override
     public void handleIncomingOccupancyEvent(OccupancyNotification occupancyNotification) {
         _log.debug(String.format("handleIncomingOccupancyEvent: publishers=%d", occupancyNotification.getMetrics().getPublishers()));
+
         int publishers = occupancyNotification.getMetrics().getPublishers();
         if (publishers <= 0 && _publishersOnline.compareAndSet(true, false) && _backendStatus.get().equals(ControlType.STREAMING_RESUMED)) {
             _statusMessages.offer(PushManager.Status.STREAMING_DOWN);
@@ -99,6 +108,7 @@ public class PushStatusTrackerImp implements PushStatusTracker {
     @Override
     public void handleIncomingAblyError(ErrorNotification notification) {
         _log.debug(String.format("handleIncomingAblyError: %s", notification.getMessage()));
+
         if (_backendStatus.get().equals(ControlType.STREAMING_DISABLED)) {
             return; // Ignore
         }
@@ -113,6 +123,7 @@ public class PushStatusTrackerImp implements PushStatusTracker {
     @Override
     public synchronized void forcePushDisable() {
         _log.debug("forcePushDisable");
+
         _publishersOnline.set(false);
         _sseStatus.set(SSEClient.StatusMessage.INITIALIZATION_IN_PROGRESS);
         _backendStatus.set(ControlType.STREAMING_DISABLED);

@@ -1,7 +1,6 @@
 package io.split.engine.sse.client;
 
 import com.google.common.base.Strings;
-import io.split.engine.sse.exceptions.EventParsingException;
 import org.apache.http.client.config.RequestConfig;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
@@ -32,7 +31,8 @@ public class SSEClient {
         CONNECTED,
         RETRYABLE_ERROR,
         NONRETRYABLE_ERROR,
-        INITIALIZATION_IN_PROGRESS
+        INITIALIZATION_IN_PROGRESS,
+        FORCED_STOP
     }
 
     private enum ConnectionState {
@@ -117,7 +117,7 @@ public class SSEClient {
                     _statusCallback.apply(StatusMessage.RETRYABLE_ERROR);
                 } catch (SocketException exc) { // Connection closed by us
                     if ("Socket closed".equals(exc.getMessage())) {
-                        _statusCallback.apply(StatusMessage.NONRETRYABLE_ERROR);
+                        _statusCallback.apply(StatusMessage.FORCED_STOP);
                         return;
                     }
 

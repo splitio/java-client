@@ -110,7 +110,7 @@ public class SyncManagerImp implements SyncManager {
                         _pushManager.start();
                         break;
                     case STREAMING_OFF:
-                        _pushManager.stop();
+                        _pushManager.stopWorkers();
                         _synchronizer.startPeriodicFetching();
                         if (null != _pushStatusMonitorTask) {
                             _pushStatusMonitorTask.cancel(false);
