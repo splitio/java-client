@@ -70,7 +70,7 @@ public class SyncManagerTest {
         t.start();
         messsages.offer(PushManager.Status.STREAMING_OFF);
         Thread.sleep(500);
-        Mockito.verify(_pushManager, Mockito.times(1)).stop();
+        Mockito.verify(_pushManager, Mockito.times(1)).stopWorkers();
         t.interrupt();
     }
 
