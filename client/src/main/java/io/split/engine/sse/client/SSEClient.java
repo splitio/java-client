@@ -40,6 +40,7 @@ public class SSEClient {
         CLOSED
     }
 
+
     private final static String KEEP_ALIVE_PAYLOAD = ":keepalive\n";
     private final static Integer CONNECT_TIMEOUT = 30000;
     private final static Integer SOCKET_TIMEOUT = 70000;
@@ -109,26 +110,31 @@ public class SSEClient {
             while (isOpen() && !Thread.currentThread().isInterrupted()) {
                 try {
                     handleMessage(readMessageAsString(reader));
-                } catch (EOFException exc) {
-                    // This is when ably closes the connection on their end. IE: an invalid or expired token.
+                } catch (EOFException | SocketTimeoutException exc) {
+                    // EOFException: This is when ably closes the connection on their end. IE: an invalid or expired token.
+                    // SocketTimeoutException: KeepAlive expired
+                    _log.warn(exc.getMessage());
                     _statusCallback.apply(StatusMessage.RETRYABLE_ERROR);
                     return;
-                } catch (SocketTimeoutException exc) { // KeepAlive expired
-                    _statusCallback.apply(StatusMessage.RETRYABLE_ERROR);
-                } catch (SocketException exc) { // Connection closed by us
+                } catch (SocketException exc) {
+                    _log.warn(exc.getMessage());
+
                     if ("Socket closed".equals(exc.getMessage())) {
+                        // Connection closed by us
                         _statusCallback.apply(StatusMessage.FORCED_STOP);
                         return;
                     }
 
-                    throw exc; // If it's not a socket closed (caused by us), rethrow the exception
+                    // Connection closed by server
+                    _statusCallback.apply(StatusMessage.RETRYABLE_ERROR);
+                    return;
                 }
             }
         } catch (Exception e) {
             _log.error(e.getMessage());
+
             _statusCallback.apply(StatusMessage.NONRETRYABLE_ERROR);
-        }
-        finally {
+        } finally {
             try {
                 _ongoingResponse.get().close();
             } catch (IOException e) {
