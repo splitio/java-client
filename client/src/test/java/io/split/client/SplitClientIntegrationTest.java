@@ -543,7 +543,7 @@ public class SplitClientIntegrationTest {
         result = client.getTreatment("admin", "push_test");
         Assert.assertEquals("on_whitelist", result);
     }
-    
+
     private SSEMockServer buildSSEMockServer(SSEMockServer.SseEventQueue eventQueue) {
         return new SSEMockServer(eventQueue, (token, version, channel) -> {
             if (!"1.1".equals(version)) {

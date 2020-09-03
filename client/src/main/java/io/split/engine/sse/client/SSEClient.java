@@ -72,6 +72,7 @@ public class SSEClient {
         try {
             signal.await(CONNECT_TIMEOUT, TimeUnit.SECONDS);
         } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
             _log.warn(e.getMessage());
             return false;
         }
