@@ -11,11 +11,13 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Random;
+import java.util.concurrent.ConcurrentLinkedQueue;
 
-import static org.hamcrest.Matchers.lessThan;
-import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertThat;
+import static org.mockito.AdditionalMatchers.or;
 
 public class ImpressionObserverTest {
 
@@ -92,6 +94,42 @@ public class ImpressionObserverTest {
         long sizeAfterSecondPopulation = (long) getObjectSize.invoke(null, observer);
 
         assertThat((double) (sizeAfterSecondPopulation - sizeAfterInitialPopulation), lessThan (SIZE_DELTA * sizeAfterInitialPopulation));
+    }
 
+
+    private void caller(ImpressionObserver o, int count, ConcurrentLinkedQueue<KeyImpression> imps) {
+        Random rand = new Random();
+        while (count-- > 0) {
+            KeyImpression k = new KeyImpression();
+            k.keyName = "key_" + rand.nextInt(100);
+            k.feature = "feature_" + rand.nextInt(10);
+            k.label = "label" + rand.nextInt(5);
+            k.treatment = rand.nextBoolean() ? "on" : "off";
+            k.changeNumber = 1234567L;
+            k.time = System.currentTimeMillis();
+            k.pt = o.testAndSet(k);
+            imps.offer(k);
+        }
+    }
+
+    @Test
+    public void testConcurrencyVsAccuracy() throws InterruptedException {
+        ImpressionObserver observer = new ImpressionObserver(500000);
+        ConcurrentLinkedQueue<KeyImpression> imps = new ConcurrentLinkedQueue<>();
+        Thread t1 = new Thread(() -> caller(observer, 1000000, imps));
+        Thread t2 = new Thread(() -> caller(observer, 1000000, imps));
+        Thread t3 = new Thread(() -> caller(observer, 1000000, imps));
+        Thread t4 = new Thread(() -> caller(observer, 1000000, imps));
+        Thread t5 = new Thread(() -> caller(observer, 1000000, imps));
+
+        // start the 5 threads an wait for them to finish.
+        t1.setDaemon(true); t2.setDaemon(true); t3.setDaemon(true); t4.setDaemon(true); t5.setDaemon(true);
+        t1.start(); t2.start(); t3.start(); t4.start(); t5.start();
+        t1.join(); t2.join(); t3.join(); t4.join(); t5.join();
+
+        assertThat(imps.size(), is(equalTo(5000000)));
+        for (KeyImpression i : imps) {
+            assertThat(i.pt, is(anyOf(nullValue(), lessThanOrEqualTo(i.time))));
+        }
     }
 }
