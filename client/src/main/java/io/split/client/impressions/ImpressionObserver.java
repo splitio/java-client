@@ -3,7 +3,8 @@ package io.split.client.impressions;
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
 import io.split.client.dtos.KeyImpression;
-import org.apache.http.annotation.NotThreadSafe;
+
+import java.util.Objects;
 
 /*
 According to guava's docs (https://guava.dev/releases/18.0/api/docs/com/google/common/annotations/Beta.html),
@@ -13,7 +14,6 @@ Since the library is shaded and should not be exposed to users of the SDK, it's 
  */
 
 @SuppressWarnings("UnstableApiUsage")
-@NotThreadSafe
 public class ImpressionObserver {
 
     private final Cache<Long, Long> _cache;
@@ -33,6 +33,6 @@ public class ImpressionObserver {
         Long hash = ImpressionHasher.process(impression);
         Long previous = _cache.getIfPresent(hash);
         _cache.put(hash, impression.time);
-        return previous;
+        return (Objects.isNull(previous)) ? null : Math.min(previous, impression.time);
     }
 }

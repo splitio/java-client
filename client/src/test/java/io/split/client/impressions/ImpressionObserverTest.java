@@ -2,18 +2,22 @@ package io.split.client.impressions;
 
 import com.google.common.base.Strings;
 import io.split.client.dtos.KeyImpression;
-// import jdk.nashorn.internal.ir.debug.ObjectSizeCalculator;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Random;
+import java.util.concurrent.ConcurrentLinkedQueue;
 
+import static org.hamcrest.CoreMatchers.nullValue;
 import static org.hamcrest.Matchers.lessThan;
-import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.lessThanOrEqualTo;
+import static org.hamcrest.core.AnyOf.anyOf;
+import static org.hamcrest.core.Is.is;
+import static org.hamcrest.core.IsEqual.equalTo;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertThat;
 
@@ -24,6 +28,7 @@ public class ImpressionObserverTest {
     // We allow the cache implementation to have a 0.01% drift in size when elements change, given that it's internal
     // structure/references might vary, and the ObjectSizeCalculator is not 100% accurate
     private static final double SIZE_DELTA = 0.01;
+    private final Random _rand = new Random();
 
     private List<KeyImpression> generateKeyImpressions(long count) {
         ArrayList<KeyImpression> imps = new ArrayList<>();
@@ -91,7 +96,43 @@ public class ImpressionObserverTest {
 
         long sizeAfterSecondPopulation = (long) getObjectSize.invoke(null, observer);
 
-        assertThat((double) (sizeAfterSecondPopulation - sizeAfterInitialPopulation), lessThan (SIZE_DELTA * sizeAfterInitialPopulation));
+        assertThat((double) (sizeAfterSecondPopulation - sizeAfterInitialPopulation), lessThan(SIZE_DELTA * sizeAfterInitialPopulation));
+    }
 
+
+    private void caller(ImpressionObserver o, int count, ConcurrentLinkedQueue<KeyImpression> imps) {
+
+        while (count-- > 0) {
+            KeyImpression k = new KeyImpression();
+            k.keyName = "key_" + _rand.nextInt(100);
+            k.feature = "feature_" + _rand.nextInt(10);
+            k.label = "label" + _rand.nextInt(5);
+            k.treatment = _rand.nextBoolean() ? "on" : "off";
+            k.changeNumber = 1234567L;
+            k.time = System.currentTimeMillis();
+            k.pt = o.testAndSet(k);
+            imps.offer(k);
+        }
+    }
+
+    @Test
+    public void testConcurrencyVsAccuracy() throws InterruptedException {
+        ImpressionObserver observer = new ImpressionObserver(500000);
+        ConcurrentLinkedQueue<KeyImpression> imps = new ConcurrentLinkedQueue<>();
+        Thread t1 = new Thread(() -> caller(observer, 1000000, imps));
+        Thread t2 = new Thread(() -> caller(observer, 1000000, imps));
+        Thread t3 = new Thread(() -> caller(observer, 1000000, imps));
+        Thread t4 = new Thread(() -> caller(observer, 1000000, imps));
+        Thread t5 = new Thread(() -> caller(observer, 1000000, imps));
+
+        // start the 5 threads an wait for them to finish.
+        t1.setDaemon(true); t2.setDaemon(true); t3.setDaemon(true); t4.setDaemon(true); t5.setDaemon(true);
+        t1.start(); t2.start(); t3.start(); t4.start(); t5.start();
+        t1.join(); t2.join(); t3.join(); t4.join(); t5.join();
+
+        assertThat(imps.size(), is(equalTo(5000000)));
+        for (KeyImpression i : imps) {
+            assertThat(i.pt, is(anyOf(nullValue(), lessThanOrEqualTo(i.time))));
+        }
     }
 }
