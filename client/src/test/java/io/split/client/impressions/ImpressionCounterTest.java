@@ -3,7 +3,7 @@ package io.split.client.impressions;
 import org.junit.Test;
 
 import java.util.Calendar;
-import java.util.Date;
+import java.util.GregorianCalendar;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -15,33 +15,33 @@ public class ImpressionCounterTest {
 
     @Test
     public void testTruncateTimeFrame() {
-        assertThat(ImpressionCounter.truncateTimeframe(new Date(2020, Calendar.SEPTEMBER, 2, 10, 53, 12).getTime()),
-                is(equalTo(new Date(2020, Calendar.SEPTEMBER, 2, 10, 0, 0).getTime())));
-        assertThat(ImpressionCounter.truncateTimeframe(new Date(2020, Calendar.SEPTEMBER, 2, 10, 00, 00).getTime()),
-                is(equalTo(new Date(2020, Calendar.SEPTEMBER, 2, 10, 0, 0).getTime())));
-        assertThat(ImpressionCounter.truncateTimeframe(new Date(2020, Calendar.SEPTEMBER, 2, 10, 53, 00).getTime()),
-                is(equalTo(new Date(2020, Calendar.SEPTEMBER, 2, 10, 0, 0).getTime())));
-        assertThat(ImpressionCounter.truncateTimeframe(new Date(2020, Calendar.SEPTEMBER, 2, 10, 00, 12).getTime()),
-                is(equalTo(new Date(2020, Calendar.SEPTEMBER, 2, 10, 0, 0).getTime())));
-        assertThat(ImpressionCounter.truncateTimeframe(new Date(1970, Calendar.JANUARY, 0, 0, 0, 0).getTime()),
-                is(equalTo(new Date(1970, Calendar.JANUARY, 0, 0, 0, 0).getTime())));
+        assertThat(ImpressionCounter.truncateTimeframe(new GregorianCalendar(2020, Calendar.SEPTEMBER, 2, 10, 53, 12).getTimeInMillis()),
+                is(equalTo(new GregorianCalendar(2020, Calendar.SEPTEMBER, 2, 10, 0, 0).getTimeInMillis())));
+        assertThat(ImpressionCounter.truncateTimeframe(new GregorianCalendar(2020, Calendar.SEPTEMBER, 2, 10, 0, 0).getTimeInMillis()),
+                is(equalTo(new GregorianCalendar(2020, Calendar.SEPTEMBER, 2, 10, 0, 0).getTimeInMillis())));
+        assertThat(ImpressionCounter.truncateTimeframe(new GregorianCalendar(2020, Calendar.SEPTEMBER, 2, 10, 53, 0 ).getTimeInMillis()),
+                is(equalTo(new GregorianCalendar(2020, Calendar.SEPTEMBER, 2, 10, 0, 0).getTimeInMillis())));
+        assertThat(ImpressionCounter.truncateTimeframe(new GregorianCalendar(2020, Calendar.SEPTEMBER, 2, 10, 0, 12).getTimeInMillis()),
+                is(equalTo(new GregorianCalendar(2020, Calendar.SEPTEMBER, 2, 10, 0, 0).getTimeInMillis())));
+        assertThat(ImpressionCounter.truncateTimeframe(new GregorianCalendar(1970, Calendar.JANUARY, 0, 0, 0, 0).getTimeInMillis()),
+                is(equalTo(new GregorianCalendar(1970, Calendar.JANUARY, 0, 0, 0, 0).getTimeInMillis())));
     }
 
     @Test
     public void testMakeKey() {
-        assertThat(ImpressionCounter.makeKey("someFeature", new Date(2020, Calendar.SEPTEMBER, 2, 10, 5, 23).getTime()),
-                is(equalTo("someFeature::61557195600000")));
-        assertThat(ImpressionCounter.makeKey("", new Date(2020, Calendar.SEPTEMBER, 2, 10, 5, 23).getTime()),
-                is(equalTo("::61557195600000")));
-        assertThat(ImpressionCounter.makeKey(null, new Date(2020, Calendar.SEPTEMBER, 2, 10, 5, 23).getTime()),
-                is(equalTo("null::61557195600000")));
+        assertThat(ImpressionCounter.makeKey("someFeature", new GregorianCalendar(2020, Calendar.SEPTEMBER, 2, 10, 5, 23).getTimeInMillis()),
+                is(equalTo("someFeature::1599051600000")));
+        assertThat(ImpressionCounter.makeKey("", new GregorianCalendar(2020, Calendar.SEPTEMBER, 2, 10, 5, 23).getTimeInMillis()),
+                is(equalTo("::1599051600000")));
+        assertThat(ImpressionCounter.makeKey(null, new GregorianCalendar(2020, Calendar.SEPTEMBER, 2, 10, 5, 23).getTimeInMillis()),
+                is(equalTo("null::1599051600000")));
         assertThat(ImpressionCounter.makeKey(null, 0L), is(equalTo("null::0")));
     }
 
     @Test
     public void testBasicUsage() {
         final ImpressionCounter counter = new ImpressionCounter();
-        final long timestamp = new Date(2020, Calendar.SEPTEMBER, 2, 10, 10, 12).getTime();
+        final long timestamp = new GregorianCalendar(2020, Calendar.SEPTEMBER, 2, 10, 10, 12).getTimeInMillis();
         counter.inc("feature1", timestamp, 1);
         counter.inc("feature1", timestamp + 1, 1);
         counter.inc("feature1", timestamp + 2, 1);
@@ -53,7 +53,7 @@ public class ImpressionCounterTest {
         assertThat(counted.get(ImpressionCounter.makeKey("feature2", timestamp)), is(equalTo(4)));
         assertThat(counter.popAll().size(), is(equalTo(0)));
 
-        final long nextHourTimestamp = new Date(2020, Calendar.SEPTEMBER, 2, 11, 10, 12).getTime();
+        final long nextHourTimestamp = new GregorianCalendar(2020, Calendar.SEPTEMBER, 2, 11, 10, 12).getTimeInMillis();
         counter.inc("feature1", timestamp, 1);
         counter.inc("feature1", timestamp + 1, 1);
         counter.inc("feature1", timestamp + 2, 1);
@@ -76,8 +76,8 @@ public class ImpressionCounterTest {
     @Test
     public void manyConcurrentCalls() throws InterruptedException {
         final int iterations = 10000000;
-        final long timestamp = new Date(2020, Calendar.SEPTEMBER, 2, 10, 10, 12).getTime();
-        final long nextHourTimestamp = new Date(2020, Calendar.SEPTEMBER, 2, 11, 10, 12).getTime();
+        final long timestamp = new GregorianCalendar(2020, Calendar.SEPTEMBER, 2, 10, 10, 12).getTimeInMillis();
+        final long nextHourTimestamp = new GregorianCalendar(2020, Calendar.SEPTEMBER, 2, 11, 10, 12).getTimeInMillis();
         ImpressionCounter counter = new ImpressionCounter();
         Thread t1 = new Thread(() -> {
             int times = iterations;

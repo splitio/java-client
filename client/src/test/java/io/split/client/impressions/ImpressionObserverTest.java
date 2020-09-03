@@ -2,22 +2,24 @@ package io.split.client.impressions;
 
 import com.google.common.base.Strings;
 import io.split.client.dtos.KeyImpression;
-// import jdk.nashorn.internal.ir.debug.ObjectSizeCalculator;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
-import static org.hamcrest.Matchers.*;
+import static org.hamcrest.CoreMatchers.nullValue;
+import static org.hamcrest.Matchers.lessThan;
+import static org.hamcrest.Matchers.lessThanOrEqualTo;
+import static org.hamcrest.core.AnyOf.anyOf;
+import static org.hamcrest.core.Is.is;
+import static org.hamcrest.core.IsEqual.equalTo;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertThat;
-import static org.mockito.AdditionalMatchers.or;
 
 public class ImpressionObserverTest {
 
@@ -93,7 +95,7 @@ public class ImpressionObserverTest {
 
         long sizeAfterSecondPopulation = (long) getObjectSize.invoke(null, observer);
 
-        assertThat((double) (sizeAfterSecondPopulation - sizeAfterInitialPopulation), lessThan (SIZE_DELTA * sizeAfterInitialPopulation));
+        assertThat((double) (sizeAfterSecondPopulation - sizeAfterInitialPopulation), lessThan(SIZE_DELTA * sizeAfterInitialPopulation));
     }
 
 
