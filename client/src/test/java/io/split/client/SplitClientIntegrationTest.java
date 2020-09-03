@@ -500,6 +500,50 @@ public class SplitClientIntegrationTest {
         sseServer.stop();
     }
 
+    @Test
+    public void testConnectionClosedByRemoteHostIsProperlyHandled() throws IOException, TimeoutException, InterruptedException, URISyntaxException {
+        SplitMockServer splitServer = new SplitMockServer();
+        SSEMockServer.SseEventQueue eventQueue = new SSEMockServer.SseEventQueue();
+        SSEMockServer sseServer = buildSSEMockServer(eventQueue);
+
+        splitServer.start();
+        sseServer.start();
+
+        SplitClientConfig config = buildSplitClientConfig("enabled", splitServer.getUrl(), sseServer.getPort(), true, 50);
+        SplitFactory factory = SplitFactoryBuilder.build("fake-api-token-1", config);
+        SplitClient client = factory.client();
+        client.blockUntilReady();
+
+        String result = client.getTreatment("admin", "push_test");
+        Assert.assertEquals("on_whitelist", result);
+        eventQueue.push(SSEMockServer.CONNECTION_CLOSED_BY_REMOTE_HOST);
+        Thread.sleep(1000);
+        result = client.getTreatment("admin", "push_test");
+        Assert.assertEquals("on_whitelist", result);
+    }
+
+    @Test
+    public void testConnectionClosedIsProperlyHandled() throws IOException, TimeoutException, InterruptedException, URISyntaxException {
+        SplitMockServer splitServer = new SplitMockServer();
+        SSEMockServer.SseEventQueue eventQueue = new SSEMockServer.SseEventQueue();
+        SSEMockServer sseServer = buildSSEMockServer(eventQueue);
+
+        splitServer.start();
+        sseServer.start();
+
+        SplitClientConfig config = buildSplitClientConfig("enabled", splitServer.getUrl(), sseServer.getPort(), true, 50);
+        SplitFactory factory = SplitFactoryBuilder.build("fake-api-token-1", config);
+        SplitClient client = factory.client();
+        client.blockUntilReady();
+
+        String result = client.getTreatment("admin", "push_test");
+        Assert.assertEquals("on_whitelist", result);
+        sseServer.stop();
+        Thread.sleep(1000);
+        result = client.getTreatment("admin", "push_test");
+        Assert.assertEquals("on_whitelist", result);
+    }
+    
     private SSEMockServer buildSSEMockServer(SSEMockServer.SseEventQueue eventQueue) {
         return new SSEMockServer(eventQueue, (token, version, channel) -> {
             if (!"1.1".equals(version)) {

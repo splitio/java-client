@@ -16,7 +16,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.SocketException;
-import java.net.SocketTimeoutException;
 import java.net.URI;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
@@ -40,7 +39,7 @@ public class SSEClient {
         CLOSED
     }
 
-
+    private final static String SOCKET_CLOSED_MESSAGE = "Socket closed";
     private final static String KEEP_ALIVE_PAYLOAD = ":keepalive\n";
     private final static Integer CONNECT_TIMEOUT = 30000;
     private final static Integer SOCKET_TIMEOUT = 70000;
@@ -110,29 +109,21 @@ public class SSEClient {
             while (isOpen() && !Thread.currentThread().isInterrupted()) {
                 try {
                     handleMessage(readMessageAsString(reader));
-                } catch (EOFException | SocketTimeoutException exc) {
-                    // EOFException: This is when ably closes the connection on their end. IE: an invalid or expired token.
-                    // SocketTimeoutException: KeepAlive expired
-                    _log.warn(exc.getMessage());
-                    _statusCallback.apply(StatusMessage.RETRYABLE_ERROR);
-                    return;
                 } catch (SocketException exc) {
                     _log.warn(exc.getMessage());
-
-                    if ("Socket closed".equals(exc.getMessage())) {
-                        // Connection closed by us
+                    if (SOCKET_CLOSED_MESSAGE.equals(exc.getMessage())) { // Connection closed by us
                         _statusCallback.apply(StatusMessage.FORCED_STOP);
                         return;
                     }
-
                     // Connection closed by server
                     _statusCallback.apply(StatusMessage.RETRYABLE_ERROR);
-                    return;
+                } catch (IOException exc) { // Other type of connection error
+                    _log.warn(exc.getMessage());
+                    _statusCallback.apply(StatusMessage.RETRYABLE_ERROR);
                 }
             }
-        } catch (Exception e) {
-            _log.error(e.getMessage());
-
+        } catch (Exception e) { // Any other error non related to the connection disables streaming altogether
+            _log.error(e.getMessage(), e);
             _statusCallback.apply(StatusMessage.NONRETRYABLE_ERROR);
         } finally {
             try {
