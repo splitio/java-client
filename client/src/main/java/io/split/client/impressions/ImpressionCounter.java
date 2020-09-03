@@ -7,7 +7,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 public class ImpressionCounter {
 
-    private static final long TIME_INTERVAL_MS = 3600 * 1000;
+    private static final long TIME_INTERVAL_MS = 3600L * 1000L;
 
     private final ConcurrentHashMap<String, AtomicInteger> _counts;
 

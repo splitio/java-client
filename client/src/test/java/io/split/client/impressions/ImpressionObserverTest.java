@@ -28,6 +28,7 @@ public class ImpressionObserverTest {
     // We allow the cache implementation to have a 0.01% drift in size when elements change, given that it's internal
     // structure/references might vary, and the ObjectSizeCalculator is not 100% accurate
     private static final double SIZE_DELTA = 0.01;
+    private final Random _rand = new Random();
 
     private List<KeyImpression> generateKeyImpressions(long count) {
         ArrayList<KeyImpression> imps = new ArrayList<>();
@@ -100,13 +101,13 @@ public class ImpressionObserverTest {
 
 
     private void caller(ImpressionObserver o, int count, ConcurrentLinkedQueue<KeyImpression> imps) {
-        Random rand = new Random();
+
         while (count-- > 0) {
             KeyImpression k = new KeyImpression();
-            k.keyName = "key_" + rand.nextInt(100);
-            k.feature = "feature_" + rand.nextInt(10);
-            k.label = "label" + rand.nextInt(5);
-            k.treatment = rand.nextBoolean() ? "on" : "off";
+            k.keyName = "key_" + _rand.nextInt(100);
+            k.feature = "feature_" + _rand.nextInt(10);
+            k.label = "label" + _rand.nextInt(5);
+            k.treatment = _rand.nextBoolean() ? "on" : "off";
             k.changeNumber = 1234567L;
             k.time = System.currentTimeMillis();
             k.pt = o.testAndSet(k);
