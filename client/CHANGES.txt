@@ -1,5 +1,9 @@
 CHANGES
 
+4.0.1 (Sep 4, 2020)
+- Remove jersey. Use custom SSE implementation
+- Bumped guava version to 29
+
 4.0.0 (Aug 19, 2020)
 - Deprecated Java 7 support. Java 8 is the minimum supported version for this and future releases.
 - Added support for the new Split streaming architecture. When enabled (default), the SDK will not poll for updates but instead receive notifications every time there's a change in your environments, allowing to process those much quicker. If disabled or in the event of an issue, the SDK will fallback to the known polling mechanism to provide a seamless experience.

@@ -4,6 +4,7 @@ import org.glassfish.grizzly.http.server.HttpServer;
 import org.glassfish.grizzly.utils.Pair;
 import org.glassfish.hk2.utilities.binding.AbstractBinder;
 import org.glassfish.jersey.grizzly2.httpserver.GrizzlyHttpServerFactory;
+import org.glassfish.jersey.media.sse.OutboundEvent;
 import org.glassfish.jersey.server.ResourceConfig;
 import org.jvnet.hk2.annotations.Service;
 
@@ -28,8 +29,11 @@ public class SSEMockServer {
     private static final String BASE_URL = "http://localhost:%d";
     private final SseEventQueue _queue;
     private final Validator _validator;
-    private AtomicInteger _port;
+    private final AtomicInteger _port;
     private HttpServer _server;
+
+    public static final OutboundEvent CONNECTION_CLOSED_BY_REMOTE_HOST = new OutboundEvent.Builder().comment("CCBRH").build();
+//    public static final OutboundEvent CONNECTION_RESET_EVENT = new OutboundEvent.Builder().comment("RST").build();
 
     public SSEMockServer(SseEventQueue queue, Validator validator) {
         _queue = queue;
@@ -110,6 +114,10 @@ public class SSEMockServer {
                 while(!eventSink.isClosed()) {
                     try {
                         OutboundSseEvent event = _eventsToSend.pull();
+                        if (CONNECTION_CLOSED_BY_REMOTE_HOST == event) { // Comparing references, no need for .equals()
+                            eventSink.close();
+                            return;
+                        }
                         eventSink.send(event);
                     } catch (InterruptedException e) {
                         break;
