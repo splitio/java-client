@@ -519,7 +519,7 @@ public class SplitClientIntegrationTest {
         eventQueue.push(SSEMockServer.CONNECTION_CLOSED_BY_REMOTE_HOST);
         Thread.sleep(1000);
         result = client.getTreatment("admin", "push_test");
-        Assert.assertEquals("on_whitelist", result);
+        Assert.assertNotEquals("on_whitelist", result);
     }
 
     @Test
@@ -538,10 +538,11 @@ public class SplitClientIntegrationTest {
 
         String result = client.getTreatment("admin", "push_test");
         Assert.assertEquals("on_whitelist", result);
+        Thread.sleep(1000);
         sseServer.stop();
         Thread.sleep(1000);
         result = client.getTreatment("admin", "push_test");
-        Assert.assertEquals("on_whitelist", result);
+        Assert.assertNotEquals("on_whitelist", result);
     }
 
     private SSEMockServer buildSSEMockServer(SSEMockServer.SseEventQueue eventQueue) {
