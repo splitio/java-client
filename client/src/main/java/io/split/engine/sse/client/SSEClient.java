@@ -70,7 +70,9 @@ public class SSEClient {
         thread.setDaemon(true);
         thread.start();
         try {
-            signal.await(CONNECT_TIMEOUT, TimeUnit.SECONDS);
+            if (!signal.await(CONNECT_TIMEOUT, TimeUnit.SECONDS)) {
+                return false;
+            };
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
             _log.warn(e.getMessage());
@@ -151,8 +153,7 @@ public class SSEClient {
             _state.set(ConnectionState.OPEN);
             _statusCallback.apply(StatusMessage.CONNECTED);
         } catch (IOException exc) {
-            _log.warn(String.format("Error establishConnection: %s", exc.getMessage()));
-            exc.printStackTrace();
+            _log.warn(String.format("Error establishConnection: %s", exc));
             return false;
         } finally {
             signal.countDown();
