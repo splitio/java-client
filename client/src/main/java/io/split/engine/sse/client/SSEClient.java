@@ -118,9 +118,11 @@ public class SSEClient {
                     }
                     // Connection closed by server
                     _statusCallback.apply(StatusMessage.RETRYABLE_ERROR);
+                    return;
                 } catch (IOException exc) { // Other type of connection error
                     _log.warn(exc.getMessage());
                     _statusCallback.apply(StatusMessage.RETRYABLE_ERROR);
+                    return;
                 }
             }
         } catch (Exception e) { // Any other error non related to the connection disables streaming altogether
