@@ -1,6 +1,7 @@
 package io.split.engine.sse;
 
 import io.split.engine.common.PushManager;
+import io.split.engine.sse.client.SSEClient;
 import io.split.engine.sse.dtos.ControlNotification;
 import io.split.engine.sse.dtos.ControlType;
 import io.split.engine.sse.dtos.ErrorNotification;
@@ -16,7 +17,7 @@ public class PushStatusTrackerImp implements PushStatusTracker {
     private static final Logger _log = LoggerFactory.getLogger(PushStatusTracker.class);
 
     private final AtomicBoolean _publishersOnline = new AtomicBoolean(true);
-    private final AtomicReference<SseStatus> _sseStatus = new AtomicReference<>(SseStatus.DISCONNECTED);
+    private final AtomicReference<SSEClient.StatusMessage> _sseStatus = new AtomicReference<>(SSEClient.StatusMessage.INITIALIZATION_IN_PROGRESS);
     private final AtomicReference<ControlType> _backendStatus = new AtomicReference<>(ControlType.STREAMING_RESUMED);
     private final LinkedBlockingQueue<PushManager.Status> _statusMessages;
 
@@ -26,33 +27,40 @@ public class PushStatusTrackerImp implements PushStatusTracker {
 
     public synchronized void reset() {
         _publishersOnline.set(true);
-        _sseStatus.set(SseStatus.DISCONNECTED);
+        _sseStatus.set(SSEClient.StatusMessage.INITIALIZATION_IN_PROGRESS);
         _backendStatus.set(ControlType.STREAMING_RESUMED);
     }
 
     @Override
-    public void handleSseStatus(SseStatus newStatus) {
-        _log.debug(String.format("handleSseStatus new status: %s", newStatus.toString()));
-        _log.debug(String.format("handleSseStatus current status: %s", _sseStatus.get().toString()));
+    public void handleSseStatus(SSEClient.StatusMessage newStatus) {
+        _log.debug(String.format("Current status: %s. New status: %s", _sseStatus.get().toString(), newStatus.toString()));
+
         switch(newStatus) {
             case CONNECTED:
-                if (_sseStatus.compareAndSet(SseStatus.DISCONNECTED, SseStatus.CONNECTED)
-                    || _sseStatus.compareAndSet(SseStatus.RETRYABLE_ERROR, SseStatus.CONNECTED)) {
+                if (_sseStatus.compareAndSet(SSEClient.StatusMessage.INITIALIZATION_IN_PROGRESS, SSEClient.StatusMessage.CONNECTED)
+                    || _sseStatus.compareAndSet(SSEClient.StatusMessage.RETRYABLE_ERROR, SSEClient.StatusMessage.CONNECTED)) {
                     _statusMessages.offer(PushManager.Status.STREAMING_READY);
                 }
                 break;
             case RETRYABLE_ERROR:
-                if (_sseStatus.compareAndSet(SseStatus.CONNECTED, SseStatus.RETRYABLE_ERROR)) {
+                if (_sseStatus.compareAndSet(SSEClient.StatusMessage.CONNECTED, SSEClient.StatusMessage.RETRYABLE_ERROR)) {
                     _statusMessages.offer(PushManager.Status.STREAMING_BACKOFF);
                 }
                 break;
             case NONRETRYABLE_ERROR:
-                if (_sseStatus.compareAndSet(SseStatus.CONNECTED, SseStatus.NONRETRYABLE_ERROR)
-                    || _sseStatus.compareAndSet(SseStatus.RETRYABLE_ERROR, SseStatus.NONRETRYABLE_ERROR)) {
+                if (_sseStatus.compareAndSet(SSEClient.StatusMessage.CONNECTED, SSEClient.StatusMessage.NONRETRYABLE_ERROR)
+                    || _sseStatus.compareAndSet(SSEClient.StatusMessage.RETRYABLE_ERROR, SSEClient.StatusMessage.NONRETRYABLE_ERROR)) {
                     _statusMessages.offer(PushManager.Status.STREAMING_OFF);
                 }
                 break;
-            case DISCONNECTED: // Restore initial status
+            case FORCED_STOP:
+                if (_sseStatus.compareAndSet(SSEClient.StatusMessage.CONNECTED, SSEClient.StatusMessage.FORCED_STOP)
+                    || _sseStatus.compareAndSet(SSEClient.StatusMessage.RETRYABLE_ERROR, SSEClient.StatusMessage.FORCED_STOP)
+                    || _sseStatus.compareAndSet(SSEClient.StatusMessage.INITIALIZATION_IN_PROGRESS, SSEClient.StatusMessage.FORCED_STOP)) {
+                    _statusMessages.offer(PushManager.Status.STREAMING_DOWN);
+                }
+                break;
+            case INITIALIZATION_IN_PROGRESS: // Restore initial status
                 reset();
                 break;
         }
@@ -61,6 +69,7 @@ public class PushStatusTrackerImp implements PushStatusTracker {
     @Override
     public void handleIncomingControlEvent(ControlNotification controlNotification) {
         _log.debug(String.format("handleIncomingOccupancyEvent: %s", controlNotification.getControlType()));
+
         if (_backendStatus.get().equals(ControlType.STREAMING_DISABLED)) {
             return;
         }
@@ -87,6 +96,7 @@ public class PushStatusTrackerImp implements PushStatusTracker {
     @Override
     public void handleIncomingOccupancyEvent(OccupancyNotification occupancyNotification) {
         _log.debug(String.format("handleIncomingOccupancyEvent: publishers=%d", occupancyNotification.getMetrics().getPublishers()));
+
         int publishers = occupancyNotification.getMetrics().getPublishers();
         if (publishers <= 0 && _publishersOnline.compareAndSet(true, false) && _backendStatus.get().equals(ControlType.STREAMING_RESUMED)) {
             _statusMessages.offer(PushManager.Status.STREAMING_DOWN);
@@ -98,6 +108,7 @@ public class PushStatusTrackerImp implements PushStatusTracker {
     @Override
     public void handleIncomingAblyError(ErrorNotification notification) {
         _log.debug(String.format("handleIncomingAblyError: %s", notification.getMessage()));
+
         if (_backendStatus.get().equals(ControlType.STREAMING_DISABLED)) {
             return; // Ignore
         }
@@ -112,8 +123,9 @@ public class PushStatusTrackerImp implements PushStatusTracker {
     @Override
     public synchronized void forcePushDisable() {
         _log.debug("forcePushDisable");
+
         _publishersOnline.set(false);
-        _sseStatus.set(SseStatus.DISCONNECTED);
+        _sseStatus.set(SSEClient.StatusMessage.INITIALIZATION_IN_PROGRESS);
         _backendStatus.set(ControlType.STREAMING_DISABLED);
         _statusMessages.offer(PushManager.Status.STREAMING_OFF);
     }

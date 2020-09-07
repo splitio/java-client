@@ -275,7 +275,7 @@ public class SplitClientConfig {
         private int _authRetryBackoffBase = 1;
         private int _streamingReconnectBackoffBase = 1;
         private String _authServiceURL = "https://auth.split.io/api/auth";
-        private String _streamingServiceURL = "https://streaming.split.io/event-stream";
+        private String _streamingServiceURL = "https://streaming.split.io/sse";
 
         public Builder() {
         }
