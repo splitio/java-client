@@ -1,6 +1,8 @@
 package io.split.client.dtos;
 
 
+import io.split.client.impressions.Impression;
+
 public class KeyImpression {
     public String feature;
     public String keyName;
@@ -38,5 +40,17 @@ public class KeyImpression {
         result = 31 * result + treatment.hashCode();
         result = 31 * result + (int) (time ^ (time >>> 32));
         return result;
+    }
+
+    public static KeyImpression fromImpression(Impression i) {
+        KeyImpression ki = new KeyImpression();
+        ki.feature = i.split();
+        ki.keyName = i.key();
+        ki.bucketingKey = i.bucketingKey();
+        ki.time = i.time();
+        ki.changeNumber = i.changeNumber();
+        ki.treatment = i.treatment();
+        ki.label = i.appliedRule();
+        return ki;
     }
 }

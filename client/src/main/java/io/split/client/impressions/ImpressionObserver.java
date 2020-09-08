@@ -2,7 +2,6 @@ package io.split.client.impressions;
 
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
-import io.split.client.dtos.KeyImpression;
 
 import java.util.Objects;
 
@@ -25,14 +24,14 @@ public class ImpressionObserver {
                 .build();
     }
     
-    public Long testAndSet(KeyImpression impression) {
+    public Long testAndSet(Impression impression) {
         if (null == impression) {
             return null;
         }
 
         Long hash = ImpressionHasher.process(impression);
         Long previous = _cache.getIfPresent(hash);
-        _cache.put(hash, impression.time);
-        return (Objects.isNull(previous)) ? null : Math.min(previous, impression.time);
+        _cache.put(hash, impression.time());
+        return (Objects.isNull(previous)) ? null : Math.min(previous, impression.time());
     }
 }
