@@ -53,9 +53,9 @@ public class ImpressionsManagerImplTest {
         treatmentLog.track(new Impression(ki4.keyName, null, ki4.feature, ki4.treatment, ki4.time, null, ki4.changeNumber, null));
 
         // Do what the scheduler would do.
-        treatmentLog.run();
+        treatmentLog.sendImpressions();
 
-        verify(senderMock).post(impressionsCaptor.capture());
+        verify(senderMock).postImpressionsBulk(impressionsCaptor.capture());
 
         List<TestImpressions> captured = impressionsCaptor.getValue();
 
@@ -86,9 +86,9 @@ public class ImpressionsManagerImplTest {
         treatmentLog.track(new Impression(ki4.keyName, null, ki4.feature, ki4.treatment, ki4.time, null, null, null));
 
         // Do what the scheduler would do.
-        treatmentLog.run();
+        treatmentLog.sendImpressions();
 
-        verify(senderMock).post(impressionsCaptor.capture());
+        verify(senderMock).postImpressionsBulk(impressionsCaptor.capture());
 
         List<TestImpressions> captured = impressionsCaptor.getValue();
 
@@ -119,9 +119,9 @@ public class ImpressionsManagerImplTest {
         treatmentLog.track(new Impression(ki4.keyName, null, ki4.feature, ki4.treatment, ki4.time, null, 1L, null));
 
         // Do what the scheduler would do.
-        treatmentLog.run();
+        treatmentLog.sendImpressions();
 
-        verify(senderMock).post(impressionsCaptor.capture());
+        verify(senderMock).postImpressionsBulk(impressionsCaptor.capture());
 
         List<TestImpressions> captured = impressionsCaptor.getValue();
 
@@ -144,9 +144,9 @@ public class ImpressionsManagerImplTest {
         // There are no impressions to post.
 
         // Do what the scheduler would do.
-        treatmentLog.run();
+        treatmentLog.sendImpressions();
 
-        verify(senderMock, never()).post(impressionsCaptor.capture());
+        verify(senderMock, never()).postImpressionsBulk(impressionsCaptor.capture());
     }
 
     @Test
@@ -172,14 +172,14 @@ public class ImpressionsManagerImplTest {
         treatmentLog.track(new Impression(ki2.keyName, null, ki2.feature, ki2.treatment, ki2.time, null, 1L, null));
         treatmentLog.track(new Impression(ki3.keyName, null, ki3.feature, ki3.treatment, ki3.time, null, 1L, null));
         treatmentLog.track(new Impression(ki4.keyName, null, ki4.feature, ki4.treatment, ki4.time, null, 1L, null));
-        treatmentLog.run();
+        treatmentLog.sendImpressions();
 
-        verify(senderMock).post(impressionsCaptor.capture());
+        verify(senderMock).postImpressionsBulk(impressionsCaptor.capture());
 
         List<TestImpressions> captured = impressionsCaptor.getValue();
         for (TestImpressions testImpressions : captured) {
             for (KeyImpression keyImpression : testImpressions.keyImpressions) {
-                assertThat(keyImpression.pt, is(equalTo(null)));
+                assertThat(keyImpression.previousTime, is(equalTo(null)));
             }
         }
 
@@ -189,14 +189,14 @@ public class ImpressionsManagerImplTest {
         treatmentLog.track(new Impression(ki2.keyName, null, ki2.feature, ki2.treatment, ki2.time, null, 1L, null));
         treatmentLog.track(new Impression(ki3.keyName, null, ki3.feature, ki3.treatment, ki3.time, null, 1L, null));
         treatmentLog.track(new Impression(ki4.keyName, null, ki4.feature, ki4.treatment, ki4.time, null, 1L, null));
-        treatmentLog.run();
+        treatmentLog.sendImpressions();
 
-        verify(senderMock).post(impressionsCaptor.capture());
+        verify(senderMock).postImpressionsBulk(impressionsCaptor.capture());
 
         captured = impressionsCaptor.getValue();
         for (TestImpressions testImpressions : captured) {
             for (KeyImpression keyImpression : testImpressions.keyImpressions) {
-                assertThat(keyImpression.pt, is(equalTo(keyImpression.time)));
+                assertThat(keyImpression.previousTime, is(equalTo(keyImpression.time)));
             }
         }
 

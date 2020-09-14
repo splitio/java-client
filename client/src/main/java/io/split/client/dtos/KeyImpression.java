@@ -1,17 +1,43 @@
 package io.split.client.dtos;
 
 
+import com.google.gson.annotations.SerializedName;
 import io.split.client.impressions.Impression;
 
+import java.util.Objects;
+
 public class KeyImpression {
-    public String feature;
+
+    /* package private */ static final String FIELD_KEY_NAME = "k";
+    /* package private */ static final String FIELD_BUCKETING_KEY = "b";
+    /* package private */ static final String FIELD_TREATMENT = "t";
+    /* package private */ static final String FIELD_LABEL = "r";
+    /* package private */ static final String FIELD_TIME = "m";
+    /* package private */ static final String FIELD_CHANGE_NUMBER = "c";
+    /* package private */ static final String FIELD_PREVIOUS_TIME = "pt";
+
+    public transient String feature; // Non-serializable
+
+    @SerializedName(FIELD_KEY_NAME)
     public String keyName;
+
+    @SerializedName(FIELD_BUCKETING_KEY)
     public String bucketingKey;
+
+    @SerializedName(FIELD_TREATMENT)
     public String treatment;
+
+    @SerializedName(FIELD_LABEL)
     public String label;
+
+    @SerializedName(FIELD_TIME)
     public long time;
+
+    @SerializedName(FIELD_CHANGE_NUMBER)
     public Long changeNumber; // can be null if there is no changeNumber
-    public Long pt;
+
+    @SerializedName(FIELD_PREVIOUS_TIME)
+    public Long previousTime;
 
     @Override
     public boolean equals(Object o) {
@@ -21,7 +47,7 @@ public class KeyImpression {
         KeyImpression that = (KeyImpression) o;
 
         if (time != that.time) return false;
-        if (feature != null ? !feature.equals(that.feature) : that.feature != null) return false;
+        if (!Objects.equals(feature, that.feature)) return false;
         if (!keyName.equals(that.keyName)) return false;
         if (!treatment.equals(that.treatment)) return false;
 

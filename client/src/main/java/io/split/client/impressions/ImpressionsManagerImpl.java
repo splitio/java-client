@@ -1,5 +1,6 @@
 package io.split.client.impressions;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import io.split.client.SplitClientConfig;
 import io.split.client.dtos.KeyImpression;
@@ -18,73 +19,80 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
 
+import static com.google.common.base.Preconditions.checkNotNull;
+
 /**
  * Created by patricioe on 6/17/16.
  */
-public class ImpressionsManagerImpl implements ImpressionsManager, Runnable, Closeable {
+public class ImpressionsManagerImpl implements ImpressionsManager, Closeable {
 
     private static final Logger _log = LoggerFactory.getLogger(ImpressionsManagerImpl.class);
     private static final long LAST_SEEN_CACHE_SIZE = 500000; // cache up to 500k impression hashes
-    private static final long TIMEFRAME_MS = 3600 * 1000;
 
     private final SplitClientConfig _config;
-    private final CloseableHttpClient _client;
     private final ImpressionsStorage _storage;
     private final ScheduledExecutorService _scheduler;
     private final ImpressionsSender _impressionsSender;
     private final ImpressionObserver _impressionObserver;
+    private final ImpressionCounter _counter;
     private final ImpressionListener _listener;
+    private final ImpressionsManager.Mode _mode;
 
     public static ImpressionsManagerImpl instance(CloseableHttpClient client,
                                                   SplitClientConfig config,
-                                                  List<ImpressionListener> listeners) throws URISyntaxException {
-        return new ImpressionsManagerImpl(client, config, null, listeners);
+                                                  List<ImpressionListener> listeners,
+                                                  Mode mode) throws URISyntaxException {
+        return new ImpressionsManagerImpl(client, config, null, listeners, mode);
     }
 
     public static ImpressionsManagerImpl instanceForTest(CloseableHttpClient client,
                                                          SplitClientConfig config,
                                                          ImpressionsSender impressionsSender,
                                                          List<ImpressionListener> listeners) throws URISyntaxException {
-        return new ImpressionsManagerImpl(client, config, impressionsSender, listeners);
+        return new ImpressionsManagerImpl(client, config, impressionsSender, listeners, Mode.DEBUG);
     }
 
     private ImpressionsManagerImpl(CloseableHttpClient client,
                                    SplitClientConfig config,
                                    ImpressionsSender impressionsSender,
-                                   List<ImpressionListener> listeners) throws URISyntaxException {
+                                   List<ImpressionListener> listeners,
+                                   Mode mode) throws URISyntaxException {
 
+        _mode = checkNotNull(mode);
         _config = config;
-        _client = client;
         _storage = new InMemoryImpressionsStorage(config.impressionsQueueSize());
         _impressionObserver = new ImpressionObserver(LAST_SEEN_CACHE_SIZE);
+        _counter = new ImpressionCounter();
+        _impressionsSender = (null != impressionsSender) ? impressionsSender
+                : HttpImpressionsSender.create(client, URI.create(config.eventsEndpoint()));
 
-        ThreadFactory threadFactory = new ThreadFactoryBuilder()
-                .setDaemon(true)
-                .setNameFormat("Split-ImpressionsManager-%d")
-                .build();
-        _scheduler = Executors.newSingleThreadScheduledExecutor(threadFactory);
-        _scheduler.scheduleAtFixedRate(this, 10, config.impressionsRefreshRate(), TimeUnit.SECONDS);
-
-        if (impressionsSender != null) {
-            _impressionsSender = impressionsSender;
-        } else {
-            _impressionsSender = HttpImpressionsSender.create(_client, URI.create(config.eventsEndpoint()));
-        }
+        _scheduler = buildExecutor();
+        _scheduler.scheduleAtFixedRate(this::sendImpressions, 10, config.impressionsRefreshRate(), TimeUnit.SECONDS);
+        _scheduler.scheduleAtFixedRate(this::sendImpressionCounters, 100, config.impressionsRefreshRate(), TimeUnit.SECONDS);
 
         _listener = (null != listeners && !listeners.isEmpty()) ? new ImpressionListener.FederatedImpressionListener(listeners)
                 : new ImpressionListener.NoopImpressionListener();
     }
 
     private static boolean shouldQueueImpression(Impression i) {
-        return Objects.isNull(i.pt()) || (i.pt() < (System.currentTimeMillis() - TIMEFRAME_MS));
+        return Objects.isNull(i.pt()) ||
+                ImpressionUtils.truncateTimeframe(i.pt()) != ImpressionUtils.truncateTimeframe(i.time());
     }
 
     @Override
     public void track(Impression impression) {
-        // TODO: Increment count
+        if (null == impression) {
+            return;
+        }
+
         impression = impression.withPreviousTime(_impressionObserver.testAndSet(impression));
         _listener.log(impression);
-        if (shouldQueueImpression(impression)) {
+
+        if (Mode.OPTIMIZED.equals(_mode)) {
+            _counter.inc(impression.split(), impression.time(), 1);
+        }
+
+        if (Mode.DEBUG.equals(_mode) || shouldQueueImpression(impression)) {
             _storage.put(KeyImpression.fromImpression(impression));
         }
     }
@@ -103,12 +111,8 @@ public class ImpressionsManagerImpl implements ImpressionsManager, Runnable, Clo
 
     }
 
-    @Override
-    public void run() {
-        sendImpressions();
-    }
-
-    private void sendImpressions() {
+    @VisibleForTesting
+    /* package private */ void sendImpressions() {
         if (_storage.isFull()) {
             _log.warn("Split SDK impressions queue is full. Impressions may have been dropped. Consider increasing capacity.");
         }
@@ -119,10 +123,24 @@ public class ImpressionsManagerImpl implements ImpressionsManager, Runnable, Clo
             return; // Nothing to send
         }
 
-        _impressionsSender.post(TestImpressions.fromKeyImpressions(impressions));
+        _impressionsSender.postImpressionsBulk(TestImpressions.fromKeyImpressions(impressions));
         if(_config.debugEnabled()) {
             _log.info(String.format("Posting %d Split impressions took %d millis",
                     impressions.size(), (System.currentTimeMillis() - start)));
         }
+    }
+
+    private void sendImpressionCounters() {
+        if (!_counter.isEmpty()) {
+            _impressionsSender.postCounters(_counter.popAll());
+        }
+    }
+
+    private ScheduledExecutorService buildExecutor() {
+        ThreadFactory threadFactory = new ThreadFactoryBuilder()
+                .setDaemon(true)
+                .setNameFormat("Split-ImpressionsManager-%d")
+                .build();
+        return Executors.newScheduledThreadPool(2, threadFactory);
     }
 }

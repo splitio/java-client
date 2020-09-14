@@ -1,5 +1,6 @@
 package io.split.client.utils;
 
+import com.google.common.base.Charsets;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.utils.URIBuilder;
 import org.apache.http.entity.StringEntity;
@@ -17,7 +18,7 @@ public class Utils {
 
     public static StringEntity toJsonEntity(Object obj) {
         String json = Json.toJson(obj);
-        StringEntity entity = new StringEntity(json, "UTF-8");
+        StringEntity entity = new StringEntity(json, Charsets.UTF_8);
         entity.setContentType("application/json");
         return entity;
     }

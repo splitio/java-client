@@ -2,6 +2,7 @@ package io.split.client;
 
 
 import io.split.client.impressions.ImpressionListener;
+import io.split.client.impressions.ImpressionsManager;
 import io.split.integrations.IntegrationsConfig;
 import org.apache.http.HttpHost;
 
@@ -24,6 +25,7 @@ public class SplitClientConfig {
     private final int _segmentsRefreshRate;
     private final int _impressionsRefreshRate;
     private final int _impressionsQueueSize;
+    private final ImpressionsManager.Mode _impressionsMode;
     private final int _metricsRefreshRate;
     private final int _connectionTimeout;
     private final int _readTimeout;
@@ -64,6 +66,7 @@ public class SplitClientConfig {
                               int segmentsRefreshRate,
                               int impressionsRefreshRate,
                               int impressionsQueueSize,
+                              ImpressionsManager.Mode impressionsMode,
                               int metricsRefreshRate,
                               int connectionTimeout,
                               int readTimeout,
@@ -93,6 +96,7 @@ public class SplitClientConfig {
         _segmentsRefreshRate = segmentsRefreshRate;
         _impressionsRefreshRate = impressionsRefreshRate;
         _impressionsQueueSize = impressionsQueueSize;
+        _impressionsMode = impressionsMode;
         _metricsRefreshRate = metricsRefreshRate;
         _connectionTimeout = connectionTimeout;
         _readTimeout = readTimeout;
@@ -157,6 +161,8 @@ public class SplitClientConfig {
     public int impressionsQueueSize() {
         return _impressionsQueueSize;
     }
+
+    public ImpressionsManager.Mode impressionsMode() { return _impressionsMode; }
 
     public int metricsRefreshRate() {
         return _metricsRefreshRate;
@@ -252,6 +258,7 @@ public class SplitClientConfig {
         private int _segmentsRefreshRate = 60;
         private int _impressionsRefreshRate = 30;
         private int _impressionsQueueSize = 30000;
+        private ImpressionsManager.Mode _impressionsMode = ImpressionsManager.Mode.OPTIMIZED;
         private int _connectionTimeout = 15000;
         private int _readTimeout = 15000;
         private int _numThreadsForSegmentFetch = 2;
@@ -377,6 +384,11 @@ public class SplitClientConfig {
          */
         public Builder impressionsRefreshRate(int seconds) {
             _impressionsRefreshRate = seconds;
+            return this;
+        }
+
+        public Builder impressionsMode(ImpressionsManager.Mode mode) {
+            _impressionsMode = mode;
             return this;
         }
 
@@ -734,6 +746,7 @@ public class SplitClientConfig {
                     _segmentsRefreshRate,
                     _impressionsRefreshRate,
                     _impressionsQueueSize,
+                    _impressionsMode,
                     _metricsRefreshRate,
                     _connectionTimeout,
                     _readTimeout,

@@ -1,8 +1,10 @@
 package io.split.client.impressions;
 
 import com.google.common.annotations.VisibleForTesting;
+import io.split.client.dtos.ImpressionCount;
 import io.split.client.dtos.TestImpressions;
 import io.split.client.utils.Utils;
+
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.entity.StringEntity;
@@ -10,8 +12,10 @@ import org.apache.http.impl.client.CloseableHttpClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.HashMap;
 import java.util.List;
 
 /**
@@ -19,30 +23,37 @@ import java.util.List;
  */
 public class HttpImpressionsSender implements ImpressionsSender {
 
+    private static final String BULK_ENDPOINT_PATH = "api/testImpressions/bulk";
+    private static final String COUNT_ENDPOINT_PATH = "api/testImpressions/count";
+
     private static final Logger _logger = LoggerFactory.getLogger(HttpImpressionsSender.class);
 
-    private CloseableHttpClient _client;
-    private URI _target;
+    private final CloseableHttpClient _client;
+    private final URI _impressionBulkTarget;
+    private final URI _impressionCountTarget;
 
 
     public static HttpImpressionsSender create(CloseableHttpClient client, URI eventsRootEndpoint) throws URISyntaxException {
-        return new HttpImpressionsSender(client, Utils.appendPath(eventsRootEndpoint, "api/testImpressions/bulk"));
+        return new HttpImpressionsSender(client,
+                Utils.appendPath(eventsRootEndpoint, BULK_ENDPOINT_PATH),
+                Utils.appendPath(eventsRootEndpoint, COUNT_ENDPOINT_PATH));
     }
 
-    private HttpImpressionsSender(CloseableHttpClient client, URI target) throws URISyntaxException {
+    private HttpImpressionsSender(CloseableHttpClient client, URI impressionBulkTarget, URI impressionCountTarget) {
         _client = client;
-        _target = target;
+        _impressionBulkTarget = impressionBulkTarget;
+        _impressionCountTarget = impressionCountTarget;
     }
 
     @Override
-    public void post(List<TestImpressions> impressions) {
+    public void postImpressionsBulk(List<TestImpressions> impressions) {
 
         CloseableHttpResponse response = null;
 
         try {
             StringEntity entity = Utils.toJsonEntity(impressions);
 
-            HttpPost request = new HttpPost(_target);
+            HttpPost request = new HttpPost(_impressionBulkTarget);
             request.setEntity(entity);
 
             response = _client.execute(request);
@@ -61,8 +72,23 @@ public class HttpImpressionsSender implements ImpressionsSender {
 
     }
 
+    @Override
+    public void postCounters(HashMap<ImpressionCounter.Key, Integer> raw) {
+        HttpPost request = new HttpPost(_impressionCountTarget);
+        request.setEntity(Utils.toJsonEntity(ImpressionCount.fromImpressionCounterData(raw)));
+        try (CloseableHttpResponse response = _client.execute(request)) {
+            int status = response.getStatusLine().getStatusCode();
+
+            if (status < 200 || status >= 300) {
+                _logger.warn("Response status was: " + status);
+            }
+        } catch (IOException exc) {
+            _logger.warn("Exception when posting impression counters: ", exc);
+        }
+    }
+
     @VisibleForTesting
     URI getTarget() {
-        return _target;
+        return _impressionBulkTarget;
     }
 }
