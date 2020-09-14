@@ -202,6 +202,8 @@ public class SplitFactoryImpl implements SplitFactory {
                     _log.info("Successful shutdown of segment fetchers");
                     splitFetcherProvider.close();
                     _log.info("Successful shutdown of splits");
+                    impressionsManager.close();
+                    _log.info("Successful shutdown of impressions manager");
                     uncachedFireAndForget.close();
                     _log.info("Successful shutdown of metrics 1");
                     cachedFireAndForgetMetrics.close();
