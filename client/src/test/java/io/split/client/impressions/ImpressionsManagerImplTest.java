@@ -270,5 +270,4 @@ public class ImpressionsManagerImplTest {
         treatmentLog.sendImpressionCounters();
         verify(senderMock, Mockito.times(0)).postCounters(Mockito.any());
     }
-
 }

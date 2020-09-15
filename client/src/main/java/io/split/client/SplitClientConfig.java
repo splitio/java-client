@@ -688,7 +688,7 @@ public class SplitClientConfig {
                     _impressionsRefreshRate = (_impressionsRefreshRate <= 0) ? 300 : Math.max(60, _impressionsRefreshRate);
                     break;
                 case DEBUG:
-                    _impressionsRefreshRate = (_impressionsRefreshRate <= 0) ? 30 : _impressionsRefreshRate;
+                    _impressionsRefreshRate = (_impressionsRefreshRate <= 0) ? 60 : _impressionsRefreshRate;
                     break;
             }
 

@@ -25,7 +25,7 @@ public class HttpImpressionsSender implements ImpressionsSender {
 
     private static final String BULK_ENDPOINT_PATH = "api/testImpressions/bulk";
     private static final String COUNT_ENDPOINT_PATH = "api/testImpressions/count";
-    private static final String IMPRESSIONS_MODE_HEADER = "SplitImpressionsMode";
+    private static final String IMPRESSIONS_MODE_HEADER = "SplitSDKImpressionsMode";
 
     private static final Logger _logger = LoggerFactory.getLogger(HttpImpressionsSender.class);
 
