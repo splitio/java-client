@@ -156,7 +156,7 @@ public class HttpImpressionsSenderTest {
         HttpUriRequest request = captor.getValue();
         assertThat(request.getURI(), is(equalTo(URI.create("https://kubernetesturl.com/split/api/testImpressions/bulk"))));
         assertThat(request.getAllHeaders().length, is(1));
-        assertThat(request.getFirstHeader("SplitImpressionsMode").getValue(), is(equalTo("OPTIMIZED")));
+        assertThat(request.getFirstHeader("SplitSDKImpressionsMode").getValue(), is(equalTo("OPTIMIZED")));
         assertThat(request, instanceOf(HttpPost.class));
         HttpPost asPostRequest = (HttpPost) request;
         InputStreamReader reader = new InputStreamReader(asPostRequest.getEntity().getContent());
@@ -175,7 +175,7 @@ public class HttpImpressionsSenderTest {
         verify(httpClient).execute(captor.capture());
         request = captor.getValue();
         assertThat(request.getAllHeaders().length, is(1));
-        assertThat(request.getFirstHeader("SplitImpressionsMode").getValue(), is(equalTo("DEBUG")));
+        assertThat(request.getFirstHeader("SplitSDKImpressionsMode").getValue(), is(equalTo("DEBUG")));
     }
 
 }
