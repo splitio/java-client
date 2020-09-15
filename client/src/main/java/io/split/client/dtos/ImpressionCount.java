@@ -42,7 +42,7 @@ public class ImpressionCount {
 
         private static final String FIELD_FEATURE = "f";
         private static final String FIELD_TIMEFRAME = "m";
-        private static final String FIELD_COUNT = "c";
+        private static final String FIELD_COUNT = "rc";
 
         @SerializedName(FIELD_FEATURE)
         public final String feature;
