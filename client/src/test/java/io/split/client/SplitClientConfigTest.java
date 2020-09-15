@@ -57,7 +57,7 @@ public class SplitClientConfigTest {
                 .build(); // OPTIMIZED BY DEFAULT
 
         assertThat(cfg.impressionsMode(), is(equalTo(ImpressionsManager.Mode.DEBUG)));
-        assertThat(cfg.impressionsRefreshRate(), is(equalTo(30))); // 5 minutes
+        assertThat(cfg.impressionsRefreshRate(), is(equalTo(60)));
 
         cfg = SplitClientConfig.builder()
                 .impressionsMode(ImpressionsManager.Mode.DEBUG)
@@ -65,7 +65,7 @@ public class SplitClientConfigTest {
                 .build(); // OPTIMIZED BY DEFAULT
 
         assertThat(cfg.impressionsMode(), is(equalTo(ImpressionsManager.Mode.DEBUG)));
-        assertThat(cfg.impressionsRefreshRate(), is(equalTo(30))); // 5 minutes
+        assertThat(cfg.impressionsRefreshRate(), is(equalTo(60)));
 
         cfg = SplitClientConfig.builder()
                 .impressionsMode(ImpressionsManager.Mode.DEBUG)
@@ -73,7 +73,7 @@ public class SplitClientConfigTest {
                 .build(); // OPTIMIZED BY DEFAULT
 
         assertThat(cfg.impressionsMode(), is(equalTo(ImpressionsManager.Mode.DEBUG)));
-        assertThat(cfg.impressionsRefreshRate(), is(equalTo(1))); // 5 minutes
+        assertThat(cfg.impressionsRefreshRate(), is(equalTo(1)));
     }
 
     @Test
