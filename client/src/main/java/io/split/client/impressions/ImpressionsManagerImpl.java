@@ -27,6 +27,9 @@ import static com.google.common.base.Preconditions.checkNotNull;
 public class ImpressionsManagerImpl implements ImpressionsManager, Closeable {
 
     private static final Logger _log = LoggerFactory.getLogger(ImpressionsManagerImpl.class);
+
+    private static final long BULK_INITIAL_DELAY_SECONDS = 10L;
+    private static final long COUNT_INITIAL_DELAY_SECONDS = 100L;
     private static final long LAST_SEEN_CACHE_SIZE = 500000; // cache up to 500k impression hashes
 
     private final SplitClientConfig _config;
@@ -40,35 +43,36 @@ public class ImpressionsManagerImpl implements ImpressionsManager, Closeable {
 
     public static ImpressionsManagerImpl instance(CloseableHttpClient client,
                                                   SplitClientConfig config,
-                                                  List<ImpressionListener> listeners,
-                                                  Mode mode) throws URISyntaxException {
-        return new ImpressionsManagerImpl(client, config, null, listeners, mode);
+                                                  List<ImpressionListener> listeners) throws URISyntaxException {
+        return new ImpressionsManagerImpl(client, config, null, listeners);
     }
 
     public static ImpressionsManagerImpl instanceForTest(CloseableHttpClient client,
                                                          SplitClientConfig config,
                                                          ImpressionsSender impressionsSender,
                                                          List<ImpressionListener> listeners) throws URISyntaxException {
-        return new ImpressionsManagerImpl(client, config, impressionsSender, listeners, Mode.DEBUG);
+        return new ImpressionsManagerImpl(client, config, impressionsSender, listeners);
     }
 
     private ImpressionsManagerImpl(CloseableHttpClient client,
                                    SplitClientConfig config,
                                    ImpressionsSender impressionsSender,
-                                   List<ImpressionListener> listeners,
-                                   Mode mode) throws URISyntaxException {
+                                   List<ImpressionListener> listeners) throws URISyntaxException {
 
-        _mode = checkNotNull(mode);
-        _config = config;
+
+        _config = checkNotNull(config);
+        _mode = checkNotNull(config.impressionsMode());
         _storage = new InMemoryImpressionsStorage(config.impressionsQueueSize());
         _impressionObserver = new ImpressionObserver(LAST_SEEN_CACHE_SIZE);
         _counter = new ImpressionCounter();
         _impressionsSender = (null != impressionsSender) ? impressionsSender
-                : HttpImpressionsSender.create(client, URI.create(config.eventsEndpoint()));
+                : HttpImpressionsSender.create(client, URI.create(config.eventsEndpoint()), _mode);
 
         _scheduler = buildExecutor();
-        _scheduler.scheduleAtFixedRate(this::sendImpressions, 10, config.impressionsRefreshRate(), TimeUnit.SECONDS);
-        _scheduler.scheduleAtFixedRate(this::sendImpressionCounters, 100, config.impressionsRefreshRate(), TimeUnit.SECONDS);
+        _scheduler.scheduleAtFixedRate(this::sendImpressions, BULK_INITIAL_DELAY_SECONDS,config.impressionsRefreshRate(), TimeUnit.SECONDS);
+        if (Mode.OPTIMIZED.equals(_mode)) {
+            _scheduler.scheduleAtFixedRate(this::sendImpressionCounters, COUNT_INITIAL_DELAY_SECONDS, config.impressionsRefreshRate(), TimeUnit.SECONDS);
+        }
 
         _listener = (null != listeners && !listeners.isEmpty()) ? new ImpressionListener.FederatedImpressionListener(listeners)
                 : new ImpressionListener.NoopImpressionListener();
@@ -130,7 +134,8 @@ public class ImpressionsManagerImpl implements ImpressionsManager, Closeable {
         }
     }
 
-    private void sendImpressionCounters() {
+    @VisibleForTesting
+    /* package private */ void sendImpressionCounters() {
         if (!_counter.isEmpty()) {
             _impressionsSender.postCounters(_counter.popAll());
         }

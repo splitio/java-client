@@ -256,7 +256,7 @@ public class SplitClientConfig {
         private boolean _eventsEndpointSet = false;
         private int _featuresRefreshRate = 60;
         private int _segmentsRefreshRate = 60;
-        private int _impressionsRefreshRate = 30;
+        private int _impressionsRefreshRate = -1; // use -1 to identify lack of a user submitted value & handle in build()
         private int _impressionsQueueSize = 30000;
         private ImpressionsManager.Mode _impressionsMode = ImpressionsManager.Mode.OPTIMIZED;
         private int _connectionTimeout = 15000;
@@ -683,8 +683,13 @@ public class SplitClientConfig {
                 throw new IllegalArgumentException("segmentsRefreshRate must be >= 30: " + _segmentsRefreshRate);
             }
 
-            if (_impressionsRefreshRate <= 0) {
-                throw new IllegalArgumentException("impressionsRefreshRate must be > 0: " + _impressionsRefreshRate);
+            switch (_impressionsMode) {
+                case OPTIMIZED:
+                    _impressionsRefreshRate = (_impressionsRefreshRate <= 0) ? 300 : Math.max(60, _impressionsRefreshRate);
+                    break;
+                case DEBUG:
+                    _impressionsRefreshRate = (_impressionsRefreshRate <= 0) ? 30 : _impressionsRefreshRate;
+                    break;
             }
 
             if (_eventFlushIntervalInMillis < 1000) {

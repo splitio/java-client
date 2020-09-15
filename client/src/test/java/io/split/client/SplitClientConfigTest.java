@@ -2,11 +2,13 @@ package io.split.client;
 
 import io.split.client.impressions.Impression;
 import io.split.client.impressions.ImpressionListener;
+import io.split.client.impressions.ImpressionsManager;
 import io.split.integrations.IntegrationsConfig;
 import org.hamcrest.Matchers;
 import org.junit.Assert;
 import org.junit.Test;
 
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.is;
 
@@ -26,18 +28,52 @@ public class SplitClientConfigTest {
                 .build();
     }
 
-    @Test(expected = IllegalArgumentException.class)
-    public void cannot_set_impression_refresh_rate_to_equal_to_0() {
-        SplitClientConfig.builder()
-                .impressionsRefreshRate(0)
-                .build();
-    }
-
-    @Test(expected = IllegalArgumentException.class)
-    public void cannot_set_impression_refresh_rate_to_less_than_0() {
-        SplitClientConfig.builder()
+    @Test
+    public void testImpressionRefreshRateConstraints() {
+        SplitClientConfig cfg = SplitClientConfig.builder()
                 .impressionsRefreshRate(-1)
-                .build();
+                .build(); // OPTIMIZED BY DEFAULT
+
+        assertThat(cfg.impressionsMode(), is(equalTo(ImpressionsManager.Mode.OPTIMIZED)));
+        assertThat(cfg.impressionsRefreshRate(), is(equalTo(5 * 60))); // 5 minutes
+
+        cfg = SplitClientConfig.builder()
+                .impressionsRefreshRate(0)
+                .build(); // OPTIMIZED BY DEFAULT
+
+        assertThat(cfg.impressionsMode(), is(equalTo(ImpressionsManager.Mode.OPTIMIZED)));
+        assertThat(cfg.impressionsRefreshRate(), is(equalTo(5 * 60))); // 5 minutes
+
+        cfg = SplitClientConfig.builder()
+                .impressionsRefreshRate(1)  // default value
+                .build(); // OPTIMIZED BY DEFAULT
+
+        assertThat(cfg.impressionsMode(), is(equalTo(ImpressionsManager.Mode.OPTIMIZED)));
+        assertThat(cfg.impressionsRefreshRate(), is(equalTo(60))); // 5 minutes
+
+        cfg = SplitClientConfig.builder()
+                .impressionsMode(ImpressionsManager.Mode.DEBUG)
+                .impressionsRefreshRate(-1)
+                .build(); // OPTIMIZED BY DEFAULT
+
+        assertThat(cfg.impressionsMode(), is(equalTo(ImpressionsManager.Mode.DEBUG)));
+        assertThat(cfg.impressionsRefreshRate(), is(equalTo(30))); // 5 minutes
+
+        cfg = SplitClientConfig.builder()
+                .impressionsMode(ImpressionsManager.Mode.DEBUG)
+                .impressionsRefreshRate(0)
+                .build(); // OPTIMIZED BY DEFAULT
+
+        assertThat(cfg.impressionsMode(), is(equalTo(ImpressionsManager.Mode.DEBUG)));
+        assertThat(cfg.impressionsRefreshRate(), is(equalTo(30))); // 5 minutes
+
+        cfg = SplitClientConfig.builder()
+                .impressionsMode(ImpressionsManager.Mode.DEBUG)
+                .impressionsRefreshRate(1)  // default value
+                .build(); // OPTIMIZED BY DEFAULT
+
+        assertThat(cfg.impressionsMode(), is(equalTo(ImpressionsManager.Mode.DEBUG)));
+        assertThat(cfg.impressionsRefreshRate(), is(equalTo(1))); // 5 minutes
     }
 
     @Test

@@ -25,22 +25,25 @@ public class HttpImpressionsSender implements ImpressionsSender {
 
     private static final String BULK_ENDPOINT_PATH = "api/testImpressions/bulk";
     private static final String COUNT_ENDPOINT_PATH = "api/testImpressions/count";
+    private static final String IMPRESSIONS_MODE_HEADER = "SplitImpressionsMode";
 
     private static final Logger _logger = LoggerFactory.getLogger(HttpImpressionsSender.class);
 
     private final CloseableHttpClient _client;
     private final URI _impressionBulkTarget;
     private final URI _impressionCountTarget;
+    private final ImpressionsManager.Mode _mode;
 
-
-    public static HttpImpressionsSender create(CloseableHttpClient client, URI eventsRootEndpoint) throws URISyntaxException {
+    public static HttpImpressionsSender create(CloseableHttpClient client, URI eventsRootEndpoint, ImpressionsManager.Mode mode) throws URISyntaxException {
         return new HttpImpressionsSender(client,
                 Utils.appendPath(eventsRootEndpoint, BULK_ENDPOINT_PATH),
-                Utils.appendPath(eventsRootEndpoint, COUNT_ENDPOINT_PATH));
+                Utils.appendPath(eventsRootEndpoint, COUNT_ENDPOINT_PATH),
+                mode);
     }
 
-    private HttpImpressionsSender(CloseableHttpClient client, URI impressionBulkTarget, URI impressionCountTarget) {
+    private HttpImpressionsSender(CloseableHttpClient client, URI impressionBulkTarget, URI impressionCountTarget, ImpressionsManager.Mode mode) {
         _client = client;
+        _mode = mode;
         _impressionBulkTarget = impressionBulkTarget;
         _impressionCountTarget = impressionCountTarget;
     }
@@ -54,6 +57,7 @@ public class HttpImpressionsSender implements ImpressionsSender {
             StringEntity entity = Utils.toJsonEntity(impressions);
 
             HttpPost request = new HttpPost(_impressionBulkTarget);
+            request.addHeader(IMPRESSIONS_MODE_HEADER, _mode.toString());
             request.setEntity(entity);
 
             response = _client.execute(request);
@@ -74,11 +78,15 @@ public class HttpImpressionsSender implements ImpressionsSender {
 
     @Override
     public void postCounters(HashMap<ImpressionCounter.Key, Integer> raw) {
+        if (_mode.equals(ImpressionsManager.Mode.DEBUG)) {
+            _logger.warn("Attempted to submit counters in impressions debugging mode. Ignoring");
+            return;
+        }
+
         HttpPost request = new HttpPost(_impressionCountTarget);
         request.setEntity(Utils.toJsonEntity(ImpressionCount.fromImpressionCounterData(raw)));
         try (CloseableHttpResponse response = _client.execute(request)) {
             int status = response.getStatusLine().getStatusCode();
-
             if (status < 200 || status >= 300) {
                 _logger.warn("Response status was: " + status);
             }
