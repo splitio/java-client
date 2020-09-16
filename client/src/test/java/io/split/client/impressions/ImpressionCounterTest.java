@@ -4,7 +4,6 @@ import org.junit.Test;
 
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
-import java.util.HashMap;
 import java.util.Map;
 
 import static org.hamcrest.CoreMatchers.is;
@@ -19,28 +18,16 @@ public class ImpressionCounterTest {
 
     @Test
     public void testTruncateTimeFrame() {
-        assertThat(ImpressionCounter.truncateTimeframe(makeTimestamp(2020, 9, 2, 10, 53, 12)),
+        assertThat(ImpressionUtils.truncateTimeframe(makeTimestamp(2020, 9, 2, 10, 53, 12)),
                 is(equalTo(makeTimestamp(2020, 9, 2, 10, 0, 0))));
-        assertThat(ImpressionCounter.truncateTimeframe(makeTimestamp(2020, 9, 2, 10, 0, 0)),
+        assertThat(ImpressionUtils.truncateTimeframe(makeTimestamp(2020, 9, 2, 10, 0, 0)),
                 is(equalTo(makeTimestamp(2020, 9, 2, 10, 0, 0))));
-        assertThat(ImpressionCounter.truncateTimeframe(makeTimestamp(2020, 9, 2, 10, 53, 0 )),
+        assertThat(ImpressionUtils.truncateTimeframe(makeTimestamp(2020, 9, 2, 10, 53, 0 )),
                 is(equalTo(makeTimestamp(2020, 9, 2, 10, 0, 0))));
-        assertThat(ImpressionCounter.truncateTimeframe(makeTimestamp(2020, 9, 2, 10, 0, 12)),
+        assertThat(ImpressionUtils.truncateTimeframe(makeTimestamp(2020, 9, 2, 10, 0, 12)),
                 is(equalTo(makeTimestamp(2020, 9, 2, 10, 0, 0))));
-        assertThat(ImpressionCounter.truncateTimeframe(makeTimestamp(1970, 1, 1, 0, 0, 0)),
+        assertThat(ImpressionUtils.truncateTimeframe(makeTimestamp(1970, 1, 1, 0, 0, 0)),
                 is(equalTo(makeTimestamp(1970, 1, 1, 0, 0, 0))));
-    }
-
-    @Test
-    public void testMakeKey() {
-        long targetTZ = makeTimestamp(2020, 9, 2, 10, 0, 0);
-        assertThat(ImpressionCounter.makeKey("someFeature", makeTimestamp(2020, 9, 2, 10, 5, 23)),
-                is(equalTo("someFeature::" + targetTZ)));
-        assertThat(ImpressionCounter.makeKey("", makeTimestamp(2020, 9, 2, 10, 5, 23)),
-                is(equalTo("::" + targetTZ)));
-        assertThat(ImpressionCounter.makeKey(null, makeTimestamp(2020, 9, 2, 10, 5, 23)),
-                is(equalTo("null::" + targetTZ)));
-        assertThat(ImpressionCounter.makeKey(null, 0L), is(equalTo("null::0")));
     }
 
     @Test
@@ -52,10 +39,10 @@ public class ImpressionCounterTest {
         counter.inc("feature1", timestamp + 2, 1);
         counter.inc("feature2", timestamp + 3, 2);
         counter.inc("feature2", timestamp + 4, 2);
-        Map<String, Integer> counted = counter.popAll();
+        Map<ImpressionCounter.Key, Integer> counted = counter.popAll();
         assertThat(counted.size(), is(equalTo(2)));
-        assertThat(counted.get(ImpressionCounter.makeKey("feature1", timestamp)), is(equalTo(3)));
-        assertThat(counted.get(ImpressionCounter.makeKey("feature2", timestamp)), is(equalTo(4)));
+        assertThat(counted.get(new ImpressionCounter.Key("feature1", ImpressionUtils.truncateTimeframe(timestamp))), is(equalTo(3)));
+        assertThat(counted.get(new ImpressionCounter.Key("feature2", ImpressionUtils.truncateTimeframe(timestamp))), is(equalTo(4)));
         assertThat(counter.popAll().size(), is(equalTo(0)));
 
         final long nextHourTimestamp = makeTimestamp(2020, 9, 2, 11, 10, 12);
@@ -71,10 +58,10 @@ public class ImpressionCounterTest {
         counter.inc("feature2", nextHourTimestamp + 4, 2);
         counted = counter.popAll();
         assertThat(counted.size(), is(equalTo(4)));
-        assertThat(counted.get(ImpressionCounter.makeKey("feature1", timestamp)), is(equalTo(3)));
-        assertThat(counted.get(ImpressionCounter.makeKey("feature2", timestamp)), is(equalTo(4)));
-        assertThat(counted.get(ImpressionCounter.makeKey("feature1", nextHourTimestamp)), is(equalTo(3)));
-        assertThat(counted.get(ImpressionCounter.makeKey("feature2", nextHourTimestamp)), is(equalTo(4)));
+        assertThat(counted.get(new ImpressionCounter.Key("feature1", ImpressionUtils.truncateTimeframe(timestamp))), is(equalTo(3)));
+        assertThat(counted.get(new ImpressionCounter.Key("feature2", ImpressionUtils.truncateTimeframe(timestamp))), is(equalTo(4)));
+        assertThat(counted.get(new ImpressionCounter.Key("feature1", ImpressionUtils.truncateTimeframe(nextHourTimestamp))), is(equalTo(3)));
+        assertThat(counted.get(new ImpressionCounter.Key("feature2", ImpressionUtils.truncateTimeframe(nextHourTimestamp))), is(equalTo(4)));
         assertThat(counter.popAll().size(), is(equalTo(0)));
     }
 
@@ -107,11 +94,11 @@ public class ImpressionCounterTest {
         t1.start(); t2.start();
         t1.join(); t2.join();
 
-        HashMap<String, Integer> counted = counter.popAll();
+        Map<ImpressionCounter.Key, Integer> counted = counter.popAll();
         assertThat(counted.size(), is(equalTo(4)));
-        assertThat(counted.get(ImpressionCounter.makeKey("feature1", timestamp)), is(equalTo(iterations * 3)));
-        assertThat(counted.get(ImpressionCounter.makeKey("feature2", timestamp)), is(equalTo(iterations * 3)));
-        assertThat(counted.get(ImpressionCounter.makeKey("feature1", nextHourTimestamp)), is(equalTo(iterations * 3)));
-        assertThat(counted.get(ImpressionCounter.makeKey("feature2", nextHourTimestamp)), is(equalTo(iterations * 3)));
+        assertThat(counted.get(new ImpressionCounter.Key("feature1", ImpressionUtils.truncateTimeframe(timestamp))), is(equalTo(iterations * 3)));
+        assertThat(counted.get(new ImpressionCounter.Key("feature2", ImpressionUtils.truncateTimeframe(timestamp))), is(equalTo(iterations * 3)));
+        assertThat(counted.get(new ImpressionCounter.Key("feature1", ImpressionUtils.truncateTimeframe(nextHourTimestamp))), is(equalTo(iterations * 3)));
+        assertThat(counted.get(new ImpressionCounter.Key("feature2", ImpressionUtils.truncateTimeframe(nextHourTimestamp))), is(equalTo(iterations * 3)));
     }
 }

@@ -11,63 +11,124 @@ public class ImpressionHasherTest {
 
     @Test
     public void works() {
-        KeyImpression imp1 = new KeyImpression();
-        imp1.feature = "someFeature";
-        imp1.keyName = "someKey";
-        imp1.changeNumber = 123L;
-        imp1.label = "someLabel";
-        imp1.treatment = "someTreatment";
+        Impression imp1 = new Impression("someKey",
+                null,
+                "someFeature",
+                "someTreatment",
+                System.currentTimeMillis(),
+                "someLabel",
+                123L,
+                null);
 
         // Different feature
-        KeyImpression imp2 = new KeyImpression();
-        imp2.feature = "someOtherFeature";
-        imp2.keyName = "someKey";
-        imp2.changeNumber = 123L;
-        imp2.label = "someLabel";
+        Impression imp2 = new Impression("someKey",
+                null,
+                "someOtherFeature",
+                "someTreatment",
+                System.currentTimeMillis(),
+                "someLabel",
+                123L,
+                null);
+
         assertThat(ImpressionHasher.process(imp1), not(equalTo(ImpressionHasher.process(imp2))));
 
         // different key
-        imp2.feature = imp1.feature;
-        imp2.keyName = "someOtherKey";
+        imp2 = new Impression("someOtherKey",
+                null,
+                "someFeature",
+                "someTreatment",
+                System.currentTimeMillis(),
+                "someLabel",
+                123L,
+                null);
         assertThat(ImpressionHasher.process(imp1), not(equalTo(ImpressionHasher.process(imp2))));
 
         // different changeNumber
-        imp2.keyName = imp1.keyName;
-        imp2.changeNumber = 456L;
+        imp2 = new Impression("someKey",
+                null,
+                "someFeature",
+                "someTreatment",
+                System.currentTimeMillis(),
+                "someLabel",
+                456L,
+                null);
         assertThat(ImpressionHasher.process(imp1), not(equalTo(ImpressionHasher.process(imp2))));
 
         // different label
-        imp2.changeNumber = imp1.changeNumber;
-        imp2.label = "someOtherLabel";
+        imp2 = new Impression("someKey",
+                null,
+                "someFeature",
+                "someTreatment",
+                System.currentTimeMillis(),
+                "someOtherLabel",
+                123L,
+                null);
         assertThat(ImpressionHasher.process(imp1), not(equalTo(ImpressionHasher.process(imp2))));
 
         // different treatment
-        imp2.label = imp1.label;
-        imp2.treatment = "someOtherTreatment";
+        imp2 = new Impression("someKey",
+                null,
+                "someFeature",
+                "someOtherTreatment",
+                System.currentTimeMillis(),
+                "someLabel",
+                123L,
+                null);
+
         assertThat(ImpressionHasher.process(imp1), not(equalTo(ImpressionHasher.process(imp2))));
     }
 
     @Test
     public void doesNotCrash() {
-        KeyImpression imp1 = new KeyImpression();
-        imp1.feature = null;
-        imp1.keyName = "someKey";
-        imp1.changeNumber = 123L;
-        imp1.label = "someLabel";
+        Impression imp1 = new Impression("someKey",
+                null,
+                null,
+                "someTreatment",
+                System.currentTimeMillis(),
+                "someLabel",
+                123L,
+                null);
         assertNotNull(ImpressionHasher.process(imp1));
 
-        imp1.keyName = null;
+        imp1 = new Impression(null,
+                null,
+                null,
+                "someTreatment",
+                System.currentTimeMillis(),
+                "someLabel",
+                123L,
+                null);
         assertNotNull(ImpressionHasher.process(imp1));
 
-        imp1.changeNumber = null;
+        imp1 = new Impression(null,
+                null,
+                null,
+                "someTreatment",
+                System.currentTimeMillis(),
+                "someLabel",
+                null,
+                null);
         assertNotNull(ImpressionHasher.process(imp1));
 
-        imp1.label = null;
+        imp1 = new Impression(null,
+                null,
+                null,
+                "someTreatment",
+                System.currentTimeMillis(),
+                null,
+                null,
+                null);
         assertNotNull(ImpressionHasher.process(imp1));
 
-        imp1.treatment = null;
+        imp1 = new Impression(null,
+                null,
+                null,
+                null,
+                System.currentTimeMillis(),
+                "someLabel",
+                null,
+                null);
         assertNotNull(ImpressionHasher.process(imp1));
-
         assertNull(ImpressionHasher.process(null));
     }
 }

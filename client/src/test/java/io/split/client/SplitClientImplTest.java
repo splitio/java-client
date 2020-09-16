@@ -10,6 +10,7 @@ import io.split.client.dtos.Event;
 import io.split.client.dtos.Partition;
 import io.split.client.impressions.Impression;
 import io.split.client.impressions.ImpressionListener;
+import io.split.client.impressions.ImpressionsManager;
 import io.split.engine.SDKReadinessGates;
 import io.split.engine.experiments.ParsedCondition;
 import io.split.engine.experiments.ParsedSplit;
@@ -73,7 +74,7 @@ public class SplitClientImplTest {
         SplitClientImpl client = new SplitClientImpl(
                 mock(SplitFactory.class),
                 splitFetcher,
-                new ImpressionListener.NoopImpressionListener(),
+                new ImpressionsManager.NoOpImpressionsManager(),
                 new Metrics.NoopMetrics(),
                 NoopEventClient.create(),
                 config,
@@ -98,7 +99,7 @@ public class SplitClientImplTest {
         SplitClientImpl client = new SplitClientImpl(
                 mock(SplitFactory.class),
                 splitFetcher,
-                new ImpressionListener.NoopImpressionListener(),
+                new ImpressionsManager.NoOpImpressionsManager(),
                 new Metrics.NoopMetrics(),
                 NoopEventClient.create(),
                 config,
@@ -118,7 +119,7 @@ public class SplitClientImplTest {
         SplitClientImpl client = new SplitClientImpl(
                 mock(SplitFactory.class),
                 splitFetcher,
-                new ImpressionListener.NoopImpressionListener(),
+                new ImpressionsManager.NoOpImpressionsManager(),
                 new Metrics.NoopMetrics(),
                 NoopEventClient.create(),
                 config,
@@ -143,7 +144,7 @@ public class SplitClientImplTest {
         SplitClientImpl client = new SplitClientImpl(
                 mock(SplitFactory.class),
                 splitFetcher,
-                new ImpressionListener.NoopImpressionListener(),
+                new ImpressionsManager.NoOpImpressionsManager(),
                 new Metrics.NoopMetrics(),
                 NoopEventClient.create(),
                 config,
@@ -176,7 +177,7 @@ public class SplitClientImplTest {
         SplitClientImpl client = new SplitClientImpl(
                 mock(SplitFactory.class),
                 splitFetcher,
-                new ImpressionListener.NoopImpressionListener(),
+                new ImpressionsManager.NoOpImpressionsManager(),
                 new Metrics.NoopMetrics(),
                 NoopEventClient.create(),
                 config,
@@ -211,7 +212,7 @@ public class SplitClientImplTest {
         SplitClientImpl client = new SplitClientImpl(
                 mock(SplitFactory.class),
                 splitFetcher,
-                new ImpressionListener.NoopImpressionListener(),
+                new ImpressionsManager.NoOpImpressionsManager(),
                 new Metrics.NoopMetrics(),
                 NoopEventClient.create(),
                 config,
@@ -244,7 +245,7 @@ public class SplitClientImplTest {
         SplitClientImpl client = new SplitClientImpl(
                 mock(SplitFactory.class),
                 splitFetcher,
-                new ImpressionListener.NoopImpressionListener(),
+                new ImpressionsManager.NoOpImpressionsManager(),
                 new Metrics.NoopMetrics(),
                 NoopEventClient.create(),
                 config,
@@ -278,7 +279,7 @@ public class SplitClientImplTest {
         SplitClientImpl client = new SplitClientImpl(
                 mock(SplitFactory.class),
                 splitFetcher,
-                new ImpressionListener.NoopImpressionListener(),
+                new ImpressionsManager.NoOpImpressionsManager(),
                 new Metrics.NoopMetrics(),
                 NoopEventClient.create(),
                 config,
@@ -309,7 +310,7 @@ public class SplitClientImplTest {
         SplitClientImpl client = new SplitClientImpl(
                 mock(SplitFactory.class),
                 splitFetcher,
-                new ImpressionListener.NoopImpressionListener(),
+                new ImpressionsManager.NoOpImpressionsManager(),
                 new Metrics.NoopMetrics(),
                 NoopEventClient.create(),
                 config,
@@ -338,7 +339,7 @@ public class SplitClientImplTest {
         SplitClientImpl client = new SplitClientImpl(
                 mock(SplitFactory.class),
                 splitFetcher,
-                new ImpressionListener.NoopImpressionListener(),
+                new ImpressionsManager.NoOpImpressionsManager(),
                 new Metrics.NoopMetrics(),
                 NoopEventClient.create(),
                 config,
@@ -372,7 +373,7 @@ public class SplitClientImplTest {
         SplitClientImpl client = new SplitClientImpl(
                 mock(SplitFactory.class),
                 splitFetcher,
-                new ImpressionListener.NoopImpressionListener(),
+                new ImpressionsManager.NoOpImpressionsManager(),
                 new Metrics.NoopMetrics(),
                 NoopEventClient.create(),
                 config,
@@ -406,7 +407,7 @@ public class SplitClientImplTest {
         SplitClientImpl client = new SplitClientImpl(
                 mock(SplitFactory.class),
                 splitFetcher,
-                new ImpressionListener.NoopImpressionListener(),
+                new ImpressionsManager.NoOpImpressionsManager(),
                 new Metrics.NoopMetrics(),
                 NoopEventClient.create(),
                 config,
@@ -437,7 +438,7 @@ public class SplitClientImplTest {
         SplitClientImpl client = new SplitClientImpl(
                 mock(SplitFactory.class),
                 splitFetcher,
-                new ImpressionListener.NoopImpressionListener(),
+                new ImpressionsManager.NoOpImpressionsManager(),
                 new Metrics.NoopMetrics(),
                 NoopEventClient.create(),
                 config,
@@ -462,7 +463,7 @@ public class SplitClientImplTest {
         SplitClientImpl client = new SplitClientImpl(
                 mock(SplitFactory.class),
                 splitFetcher,
-                new ImpressionListener.NoopImpressionListener(),
+                new ImpressionsManager.NoOpImpressionsManager(),
                 new Metrics.NoopMetrics(),
                 NoopEventClient.create(),
                 config,
@@ -490,7 +491,7 @@ public class SplitClientImplTest {
         SplitClientImpl client = new SplitClientImpl(
                 mock(SplitFactory.class),
                 splitFetcher,
-                new ImpressionListener.NoopImpressionListener(),
+                new ImpressionsManager.NoOpImpressionsManager(),
                 new Metrics.NoopMetrics(),
                 NoopEventClient.create(),
                 config,
@@ -522,7 +523,7 @@ public class SplitClientImplTest {
         SplitClientImpl client = new SplitClientImpl(
                 mock(SplitFactory.class),
                 splitFetcher,
-                new ImpressionListener.NoopImpressionListener(),
+                new ImpressionsManager.NoOpImpressionsManager(),
                 new Metrics.NoopMetrics(),
                 NoopEventClient.create(),
                 config,
@@ -554,7 +555,7 @@ public class SplitClientImplTest {
         SplitClientImpl client = new SplitClientImpl(
                 mock(SplitFactory.class),
                 splitFetcher,
-                new ImpressionListener.NoopImpressionListener(),
+                new ImpressionsManager.NoOpImpressionsManager(),
                 new Metrics.NoopMetrics(),
                 NoopEventClient.create(),
                 config,
@@ -589,7 +590,7 @@ public class SplitClientImplTest {
         SplitClientImpl client = new SplitClientImpl(
                 mock(SplitFactory.class),
                 splitFetcher,
-                new ImpressionListener.NoopImpressionListener(),
+                new ImpressionsManager.NoOpImpressionsManager(),
                 new Metrics.NoopMetrics(),
                 NoopEventClient.create(),
                 config,
@@ -626,13 +627,11 @@ public class SplitClientImplTest {
         SplitFetcher splitFetcher = mock(SplitFetcher.class);
         when(splitFetcher.fetch(test)).thenReturn(parsedSplit);
 
-        ImpressionListener impressionListener = mock(ImpressionListener.class);
-
-
+        ImpressionsManager impressionsManager = mock(ImpressionsManager.class);
         SplitClientImpl client = new SplitClientImpl(
                 mock(SplitFactory.class),
                 splitFetcher,
-                impressionListener,
+                impressionsManager,
                 new Metrics.NoopMetrics(),
                 NoopEventClient.create(),
                 config,
@@ -644,7 +643,7 @@ public class SplitClientImplTest {
 
         ArgumentCaptor<Impression> impressionCaptor = ArgumentCaptor.forClass(Impression.class);
 
-        verify(impressionListener).log(impressionCaptor.capture());
+        verify(impressionsManager).track(impressionCaptor.capture());
 
         assertThat(impressionCaptor.getValue().appliedRule(), is(equalTo("foolabel")));
 
@@ -718,13 +717,11 @@ public class SplitClientImplTest {
         SplitFetcher splitFetcher = mock(SplitFetcher.class);
         when(splitFetcher.fetch(test)).thenReturn(parsedSplit);
 
-        ImpressionListener impressionListener = mock(ImpressionListener.class);
-
-
+        ImpressionsManager impressionsManager = mock(ImpressionsManager.class);
         SplitClientImpl client = new SplitClientImpl(
                 mock(SplitFactory.class),
                 splitFetcher,
-                impressionListener,
+                impressionsManager,
                 new Metrics.NoopMetrics(),
                 NoopEventClient.create(),
                 config,
@@ -735,7 +732,7 @@ public class SplitClientImplTest {
 
         ArgumentCaptor<Impression> impressionCaptor = ArgumentCaptor.forClass(Impression.class);
 
-        verify(impressionListener).log(impressionCaptor.capture());
+        verify(impressionsManager).track(impressionCaptor.capture());
 
         assertThat(impressionCaptor.getValue().appliedRule(), is(equalTo(label)));
     }
@@ -764,13 +761,13 @@ public class SplitClientImplTest {
         SplitFetcher splitFetcher = mock(SplitFetcher.class);
         when(splitFetcher.fetch(test)).thenReturn(parsedSplit);
 
-        ImpressionListener impressionListener = mock(ImpressionListener.class);
+        ImpressionsManager impressionsManager = mock(ImpressionsManager.class);
 
 
         SplitClientImpl client = new SplitClientImpl(
                 mock(SplitFactory.class),
                 splitFetcher,
-                impressionListener,
+                impressionsManager,
                 new Metrics.NoopMetrics(),
                 NoopEventClient.create(),
                 config,
@@ -784,7 +781,7 @@ public class SplitClientImplTest {
         assertThat(result.config(), is(equalTo("{\"size\" : 30}")));
 
         ArgumentCaptor<Impression> impressionCaptor = ArgumentCaptor.forClass(Impression.class);
-        verify(impressionListener, times(2)).log(impressionCaptor.capture());
+        verify(impressionsManager, times(2)).track(impressionCaptor.capture());
 
         assertThat(impressionCaptor.getValue().appliedRule(), is(equalTo("not in split")));
     }
@@ -808,7 +805,7 @@ public class SplitClientImplTest {
         SplitClientImpl client = new SplitClientImpl(
                 mock(SplitFactory.class),
                 splitFetcher,
-                new ImpressionListener.NoopImpressionListener(),
+                new ImpressionsManager.NoOpImpressionsManager(),
                 new Metrics.NoopMetrics(),
                 NoopEventClient.create(),
                 config,
@@ -840,13 +837,11 @@ public class SplitClientImplTest {
         SplitFetcher splitFetcher = mock(SplitFetcher.class);
         when(splitFetcher.fetch(test)).thenReturn(parsedSplit);
 
-        ImpressionListener impressionListener = mock(ImpressionListener.class);
-
-
+        ImpressionsManager impressionsManager = mock(ImpressionsManager.class);
         SplitClientImpl client = new SplitClientImpl(
                 mock(SplitFactory.class),
                 splitFetcher,
-                impressionListener,
+                impressionsManager,
                 new Metrics.NoopMetrics(),
                 NoopEventClient.create(),
                 config,
@@ -859,7 +854,7 @@ public class SplitClientImplTest {
 
         ArgumentCaptor<Impression> impressionCaptor = ArgumentCaptor.forClass(Impression.class);
 
-        verify(impressionListener).log(impressionCaptor.capture());
+        verify(impressionsManager).track(impressionCaptor.capture());
 
         assertThat(impressionCaptor.getValue().appliedRule(), is(equalTo("foolabel")));
         assertThat(impressionCaptor.getValue().attributes(), is(equalTo(attributes)));
@@ -879,7 +874,7 @@ public class SplitClientImplTest {
         SplitClientImpl client = new SplitClientImpl(
                 mock(SplitFactory.class),
                 mock(SplitFetcher.class),
-                mock(ImpressionListener.class),
+                mock(ImpressionsManager.class),
                 new Metrics.NoopMetrics(),
                 NoopEventClient.create(),
                 config,
@@ -896,7 +891,7 @@ public class SplitClientImplTest {
         SplitClientImpl client = new SplitClientImpl(
                 mock(SplitFactory.class),
                 mock(SplitFetcher.class),
-                mock(ImpressionListener.class),
+                mock(ImpressionsManager.class),
                 new Metrics.NoopMetrics(),
                 NoopEventClient.create(),
                 config,
@@ -911,7 +906,7 @@ public class SplitClientImplTest {
         SplitClientImpl client = new SplitClientImpl(
                 mock(SplitFactory.class),
                 mock(SplitFetcher.class),
-                new ImpressionListener.NoopImpressionListener(),
+                new ImpressionsManager.NoOpImpressionsManager(),
                 new Metrics.NoopMetrics(),
                 NoopEventClient.create(),
                 config,
@@ -933,7 +928,7 @@ public class SplitClientImplTest {
         SplitClientImpl client = new SplitClientImpl(
                 mock(SplitFactory.class),
                 mock(SplitFetcher.class),
-                new ImpressionListener.NoopImpressionListener(),
+                new ImpressionsManager.NoOpImpressionsManager(),
                 new Metrics.NoopMetrics(),
                 NoopEventClient.create(),
                 config,
@@ -960,7 +955,7 @@ public class SplitClientImplTest {
         SplitClientImpl client = new SplitClientImpl(
                 mock(SplitFactory.class),
                 mock(SplitFetcher.class),
-                new ImpressionListener.NoopImpressionListener(),
+                new ImpressionsManager.NoOpImpressionsManager(),
                 new Metrics.NoopMetrics(),
                 NoopEventClient.create(),
                 config,
@@ -979,7 +974,7 @@ public class SplitClientImplTest {
         SplitClientImpl client = new SplitClientImpl(
                 mock(SplitFactory.class),
                 mock(SplitFetcher.class),
-                new ImpressionListener.NoopImpressionListener(),
+                new ImpressionsManager.NoOpImpressionsManager(),
                 new Metrics.NoopMetrics(),
                 NoopEventClient.create(),
                 config,
@@ -1005,7 +1000,7 @@ public class SplitClientImplTest {
         SplitClientImpl client = new SplitClientImpl(
                 mock(SplitFactory.class),
                 mock(SplitFetcher.class),
-                new ImpressionListener.NoopImpressionListener(),
+                new ImpressionsManager.NoOpImpressionsManager(),
                 new Metrics.NoopMetrics(),
                 eventClientMock,
                 config,
@@ -1118,7 +1113,7 @@ public class SplitClientImplTest {
         SplitClientImpl client = new SplitClientImpl(
                 mock(SplitFactory.class),
                 splitFetcher,
-                new ImpressionListener.NoopImpressionListener(),
+                new ImpressionsManager.NoOpImpressionsManager(),
                 new Metrics.NoopMetrics(),
                 NoopEventClient.create(),
                 config,
@@ -1202,7 +1197,7 @@ public class SplitClientImplTest {
         SplitClientImpl client = new SplitClientImpl(
                 mockFactory,
                 splitFetcher,
-                new ImpressionListener.NoopImpressionListener(),
+                new ImpressionsManager.NoOpImpressionsManager(),
                 new Metrics.NoopMetrics(),
                 NoopEventClient.create(),
                 config,

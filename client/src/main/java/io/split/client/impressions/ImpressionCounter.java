@@ -5,18 +5,46 @@ import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import static com.google.common.base.Preconditions.checkNotNull;
+
 public class ImpressionCounter {
 
-    private static final long TIME_INTERVAL_MS = 3600L * 1000L;
+    public static class Key {
+        private final String _featureName;
+        private final long _timeFrame;
 
-    private final ConcurrentHashMap<String, AtomicInteger> _counts;
+        public Key(String featureName, long timeframe) {
+            _featureName = checkNotNull(featureName);
+            _timeFrame = timeframe;
+        }
+
+        public String featureName() { return  _featureName; }
+        public long timeFrame() { return  _timeFrame; }
+
+        @Override
+        public int hashCode() {
+            return Objects.hash(_featureName, _timeFrame);
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) return true;
+            if (o == null || getClass() != o.getClass()) return false;
+
+            Key key = (Key) o;
+            return Objects.equals(_featureName, key._featureName) && Objects.equals(_timeFrame, key._timeFrame);
+        }
+    }
+
+
+    private final ConcurrentHashMap<Key, AtomicInteger> _counts;
 
     public ImpressionCounter() {
         _counts = new ConcurrentHashMap<>();
     }
 
     public void inc(String featureName, long timeFrame, int amount) {
-        String key = makeKey(featureName, timeFrame);
+        Key key = new Key(featureName, ImpressionUtils.truncateTimeframe(timeFrame));
         AtomicInteger count = _counts.get(key);
         if (Objects.isNull(count)) {
             count = new AtomicInteger();
@@ -28,20 +56,14 @@ public class ImpressionCounter {
         count.addAndGet(amount);
     }
 
-    public HashMap<String, Integer> popAll() {
-        HashMap<String, Integer> toReturn = new HashMap<>();
-        for (String key : _counts.keySet()) {
+    public HashMap<Key, Integer> popAll() {
+        HashMap<Key, Integer> toReturn = new HashMap<>();
+        for (Key key : _counts.keySet()) {
             AtomicInteger curr = _counts.remove(key);
-            toReturn.put(key ,curr.get());
+            toReturn.put(key, curr.get());
         }
         return toReturn;
     }
 
-    static String makeKey(String featureName, long timeFrame) {
-        return String.join("::", featureName, String.valueOf(truncateTimeframe(timeFrame)));
-    }
-
-    static long truncateTimeframe(long timestampInMs) {
-        return timestampInMs - (timestampInMs % TIME_INTERVAL_MS);
-    }
+    public boolean isEmpty() { return _counts.isEmpty(); }
 }
