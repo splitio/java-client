@@ -30,6 +30,7 @@ public class ImpressionsManagerImpl implements ImpressionsManager, Closeable {
 
     private static final long BULK_INITIAL_DELAY_SECONDS = 10L;
     private static final long COUNT_INITIAL_DELAY_SECONDS = 100L;
+    private static final long COUNT_REFRESH_RATE_SECONDS = 30 * 60;
     private static final long LAST_SEEN_CACHE_SIZE = 500000; // cache up to 500k impression hashes
 
     private final SplitClientConfig _config;
@@ -71,7 +72,7 @@ public class ImpressionsManagerImpl implements ImpressionsManager, Closeable {
         _scheduler = buildExecutor();
         _scheduler.scheduleAtFixedRate(this::sendImpressions, BULK_INITIAL_DELAY_SECONDS,config.impressionsRefreshRate(), TimeUnit.SECONDS);
         if (Mode.OPTIMIZED.equals(_mode)) {
-            _scheduler.scheduleAtFixedRate(this::sendImpressionCounters, COUNT_INITIAL_DELAY_SECONDS, config.impressionsRefreshRate(), TimeUnit.SECONDS);
+            _scheduler.scheduleAtFixedRate(this::sendImpressionCounters, COUNT_INITIAL_DELAY_SECONDS, COUNT_REFRESH_RATE_SECONDS, TimeUnit.SECONDS);
         }
 
         _listener = (null != listeners && !listeners.isEmpty()) ? new ImpressionListener.FederatedImpressionListener(listeners)
