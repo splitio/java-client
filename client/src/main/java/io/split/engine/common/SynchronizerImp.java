@@ -58,8 +58,8 @@ public class SynchronizerImp implements Synchronizer {
     }
 
     @Override
-    public void refreshSplits(long targetChangeNumber) {
-        if (targetChangeNumber > _splitFetcher.changeNumber()) {
+    public synchronized void refreshSplits(long targetChangeNumber) {
+        while (targetChangeNumber > _splitFetcher.changeNumber()) {
             _splitFetcher.forceRefresh();
         }
     }
@@ -68,12 +68,13 @@ public class SynchronizerImp implements Synchronizer {
     public void localKillSplit(String splitName, String defaultTreatment, long newChangeNumber) {
         if (newChangeNumber > _splitFetcher.changeNumber()) {
             _splitFetcher.killSplit(splitName, defaultTreatment, newChangeNumber);
+            refreshSplits(newChangeNumber);
         }
     }
 
     @Override
-    public void refreshSegment(String segmentName, long changeNumber) {
-        if (changeNumber > _segmentFetcher.getChangeNumber(segmentName)) {
+    public synchronized void refreshSegment(String segmentName, long changeNumber) {
+        while (changeNumber > _segmentFetcher.getChangeNumber(segmentName)) {
             _segmentFetcher.forceRefresh(segmentName);
         }
     }
