@@ -14,6 +14,7 @@ public class Impression {
     private final long _time;
     private final String _appliedRule;
     private final Long _changeNumber;
+    private Long _pt;
     private final Map<String, Object> _attributes;
 
 
@@ -59,4 +60,10 @@ public class Impression {
     public Map<String, Object> attributes() {
         return _attributes;
     }
+
+    public Long pt() {
+        return _pt;
+    }
+
+    public Impression withPreviousTime(Long pt) { _pt = pt; return this; }
 }
