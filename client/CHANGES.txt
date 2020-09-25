@@ -1,6 +1,6 @@
 CHANGES
 
-4.1.0 (Sep 23, 2020)
+4.1.0 (Sep 25, 2020)
 - Add local impressions deduping (enabled by default)
 
 4.0.1 (Sep 4, 2020)
