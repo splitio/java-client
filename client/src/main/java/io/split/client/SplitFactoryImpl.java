@@ -4,7 +4,7 @@ import com.google.common.collect.ConcurrentHashMultiset;
 import com.google.common.collect.Multiset;
 import io.split.client.impressions.AsynchronousImpressionListener;
 import io.split.client.impressions.ImpressionListener;
-import io.split.client.impressions.ImpressionsManager;
+import io.split.client.impressions.ImpressionsManagerImpl;
 import io.split.client.interceptors.AddSplitHeadersFilter;
 import io.split.client.interceptors.GzipDecoderResponseInterceptor;
 import io.split.client.interceptors.GzipEncoderRequestInterceptor;
@@ -51,6 +51,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 
 public class SplitFactoryImpl implements SplitFactory {
     private static final Logger _log = LoggerFactory.getLogger(SplitFactory.class);
@@ -168,43 +169,21 @@ public class SplitFactoryImpl implements SplitFactory {
 
         final RefreshableSplitFetcherProvider splitFetcherProvider = new RefreshableSplitFetcherProvider(splitChangeFetcher, splitParser, findPollingPeriod(RANDOM, config.featuresRefreshRate()), gates);
 
-        // Impressions
-        final ImpressionsManager splitImpressionListener = ImpressionsManager.instance(httpclient, config);
 
         List<ImpressionListener> impressionListeners = new ArrayList<>();
-        impressionListeners.add(splitImpressionListener);
-
         // Setup integrations
         if (config.integrationsConfig() != null) {
+            config.integrationsConfig().getImpressionsListeners(IntegrationsConfig.Execution.ASYNC).stream()
+                    .map(l -> AsynchronousImpressionListener.build(l.listener(), l.queueSize()))
+                    .collect(Collectors.toCollection(() -> impressionListeners));
 
-            // asynchronous impressions listeners
-            List<IntegrationsConfig.ImpressionListenerWithMeta> asyncListeners = config
-                    .integrationsConfig()
-                    .getImpressionsListeners(IntegrationsConfig.Execution.ASYNC);
-
-            for (IntegrationsConfig.ImpressionListenerWithMeta listener : asyncListeners) {
-                AsynchronousImpressionListener wrapper = AsynchronousImpressionListener
-                        .build(listener.listener(), listener.queueSize());
-                impressionListeners.add(wrapper);
-            }
-
-            // synchronous impressions listeners
-            List<IntegrationsConfig.ImpressionListenerWithMeta> syncListeners = config
-                    .integrationsConfig()
-                    .getImpressionsListeners(IntegrationsConfig.Execution.SYNC);
-            for (IntegrationsConfig.ImpressionListenerWithMeta listener: syncListeners) {
-                impressionListeners.add(listener.listener());
-
-            }
+            config.integrationsConfig().getImpressionsListeners(IntegrationsConfig.Execution.SYNC).stream()
+                    .map(IntegrationsConfig.ImpressionListenerWithMeta::listener)
+                    .collect(Collectors.toCollection(() -> impressionListeners));
         }
 
-        final ImpressionListener impressionListener;
-        if (impressionListeners.size() > 1) {
-            // since there are more than just the default integration, let's federate and add them all.
-            impressionListener = new ImpressionListener.FederatedImpressionListener(impressionListeners);
-        } else {
-            impressionListener = splitImpressionListener;
-        }
+        // Impressions
+        final ImpressionsManagerImpl impressionsManager = ImpressionsManagerImpl.instance(httpclient, config, impressionListeners);
 
         CachedMetrics cachedMetrics = new CachedMetrics(httpMetrics, TimeUnit.SECONDS.toMillis(config.metricsRefreshRate()));
         final FireAndForgetMetrics cachedFireAndForgetMetrics = FireAndForgetMetrics.instance(cachedMetrics, 2, 1000);
@@ -223,12 +202,12 @@ public class SplitFactoryImpl implements SplitFactory {
                     _log.info("Successful shutdown of segment fetchers");
                     splitFetcherProvider.close();
                     _log.info("Successful shutdown of splits");
+                    impressionsManager.close();
+                    _log.info("Successful shutdown of impressions manager");
                     uncachedFireAndForget.close();
                     _log.info("Successful shutdown of metrics 1");
                     cachedFireAndForgetMetrics.close();
                     _log.info("Successful shutdown of metrics 2");
-                    impressionListener.close();
-                    _log.info("Successful shutdown of ImpressionListener");
                     httpclient.close();
                     _log.info("Successful shutdown of httpclient");
                     eventClient.close();
@@ -253,7 +232,7 @@ public class SplitFactoryImpl implements SplitFactory {
 
         _client = new SplitClientImpl(this,
                 splitFetcherProvider.getFetcher(),
-                impressionListener,
+                impressionsManager,
                 cachedFireAndForgetMetrics,
                 eventClient,
                 config,

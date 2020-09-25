@@ -1,6 +1,5 @@
 package io.split.client.impressions;
 
-import io.split.client.dtos.KeyImpression;
 import io.split.client.utils.MurmurHash3;
 
 public class ImpressionHasher {
@@ -16,15 +15,15 @@ public class ImpressionHasher {
         return (l == null) ? 0 : l;
     }
 
-    public static Long process(KeyImpression impression) {
+    public static Long process(Impression impression) {
         if (null == impression) {
             return null;
         }
         return MurmurHash3.hash128x64(String.format(HASHABLE_FORMAT,
-                unknownIfNull(impression.keyName),
-                unknownIfNull(impression.feature),
-                unknownIfNull(impression.treatment),
-                unknownIfNull(impression.label),
-                zeroIfNull(impression.changeNumber)).getBytes())[0];
+                unknownIfNull(impression.key()),
+                unknownIfNull(impression.split()),
+                unknownIfNull(impression.treatment()),
+                unknownIfNull(impression.appliedRule()),
+                zeroIfNull(impression.changeNumber())).getBytes())[0];
     }
 }

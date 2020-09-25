@@ -7,7 +7,8 @@ import io.split.client.dtos.ConditionType;
 import io.split.client.dtos.Event;
 import io.split.client.exceptions.ChangeNumberExceptionWrapper;
 import io.split.client.impressions.Impression;
-import io.split.client.impressions.ImpressionListener;
+import io.split.client.impressions.ImpressionsManager;
+import io.split.client.impressions.ImpressionsManagerImpl;
 import io.split.engine.SDKReadinessGates;
 import io.split.engine.experiments.ParsedCondition;
 import io.split.engine.experiments.ParsedSplit;
@@ -50,7 +51,7 @@ public final class SplitClientImpl implements SplitClient {
 
     private final SplitFactory _container;
     private final SplitFetcher _splitFetcher;
-    private final ImpressionListener _impressionListener;
+    private final ImpressionsManager _impressionManager;
     private final Metrics _metrics;
     private final SplitClientConfig _config;
     private final EventClient _eventClient;
@@ -59,14 +60,14 @@ public final class SplitClientImpl implements SplitClient {
 
     public SplitClientImpl(SplitFactory container,
                            SplitFetcher splitFetcher,
-                           ImpressionListener impressionListener,
+                           ImpressionsManager impressionManager,
                            Metrics metrics,
                            EventClient eventClient,
                            SplitClientConfig config,
                            SDKReadinessGates gates) {
         _container = container;
         _splitFetcher = splitFetcher;
-        _impressionListener = impressionListener;
+        _impressionManager = impressionManager;
         _metrics = metrics;
         _eventClient = eventClient;
         _config = config;
@@ -74,7 +75,7 @@ public final class SplitClientImpl implements SplitClient {
 
         checkNotNull(gates);
         checkNotNull(_splitFetcher);
-        checkNotNull(_impressionListener);
+        checkNotNull(_impressionManager);
     }
 
     @Override
@@ -222,7 +223,7 @@ public final class SplitClientImpl implements SplitClient {
     private void recordStats(String matchingKey, String bucketingKey, String split, long start, String result,
                              String operation, String label, Long changeNumber, Map<String, Object> attributes) {
         try {
-            _impressionListener.log(new Impression(matchingKey, bucketingKey, split, result, System.currentTimeMillis(), label, changeNumber, attributes));
+            _impressionManager.track(new Impression(matchingKey, bucketingKey, split, result, System.currentTimeMillis(), label, changeNumber, attributes));
             _metrics.time(operation, System.currentTimeMillis() - start);
         } catch (Throwable t) {
             _log.error("Exception", t);
