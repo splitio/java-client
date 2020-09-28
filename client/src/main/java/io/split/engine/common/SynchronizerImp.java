@@ -38,7 +38,7 @@ public class SynchronizerImp implements Synchronizer {
     @Override
     public void syncAll() {
         _syncAllScheduledExecutorService.schedule(() -> {
-            _splitFetcher.forceRefresh();
+            _splitFetcher.run();
             _segmentFetcher.forceRefreshAll();
         }, 0, TimeUnit.SECONDS);
     }

@@ -82,7 +82,23 @@ public class RefreshableSplitFetcher implements SplitFetcher, Runnable {
 
     @Override
     public void forceRefresh() {
-        run();
+        _log.debug("Force Refresh splits starting ...");
+        try {
+            while (true) {
+                long start = _changeNumber.get();
+                runWithoutExceptionHandling();
+                long end = _changeNumber.get();
+
+                if (start >= end) {
+                    break;
+                }
+            }
+        } catch (InterruptedException e) {
+            _log.warn("Interrupting split fetcher task");
+            Thread.currentThread().interrupt();
+        } catch (Throwable t) {
+            _log.error("RefreshableSplitFetcher failed: " + t.getMessage());
+        }
     }
 
     @Override
@@ -160,103 +176,101 @@ public class RefreshableSplitFetcher implements SplitFetcher, Runnable {
     }
 
     public void runWithoutExceptionHandling() throws InterruptedException {
-        while (true) {
-            SplitChange change = _splitChangeFetcher.fetch(_changeNumber.get());
+        SplitChange change = _splitChangeFetcher.fetch(_changeNumber.get());
 
-            if (change == null) {
-                throw new IllegalStateException("SplitChange was null");
-            }
+        if (change == null) {
+            throw new IllegalStateException("SplitChange was null");
+        }
 
-            if (change.till == _changeNumber.get()) {
-                // no change.
-                break;
-            }
+        if (change.till == _changeNumber.get()) {
+            // no change.
+            return;
+        }
 
-            if (change.since != _changeNumber.get() || change.till < _changeNumber.get()) {
+        if (change.since != _changeNumber.get() || change.till < _changeNumber.get()) {
+            // some other thread may have updated the shared state. exit
+            return;
+        }
+
+        if (change.splits.isEmpty()) {
+            // there are no changes. weird!
+            _changeNumber.set(change.till);
+            return;
+        }
+
+        synchronized (_lock) {
+            // check state one more time.
+            if (change.since != _changeNumber.get()
+                    || change.till < _changeNumber.get()) {
                 // some other thread may have updated the shared state. exit
-                break;
+                return;
             }
 
-            if (change.splits.isEmpty()) {
-                // there are no changes. weird!
-                _changeNumber.set(change.till);
-                break;
-            }
+            Set<String> toRemove = Sets.newHashSet();
+            Map<String, ParsedSplit> toAdd = Maps.newHashMap();
+            List<String> trafficTypeNamesToRemove = Lists.newArrayList();
+            List<String> trafficTypeNamesToAdd = Lists.newArrayList();
 
-            synchronized (_lock) {
-                // check state one more time.
-                if (change.since != _changeNumber.get()
-                        || change.till < _changeNumber.get()) {
-                    // some other thread may have updated the shared state. exit
-                    break;
+            for (Split split : change.splits) {
+                if (Thread.currentThread().isInterrupted()) {
+                    throw new InterruptedException();
                 }
 
-                Set<String> toRemove = Sets.newHashSet();
-                Map<String, ParsedSplit> toAdd = Maps.newHashMap();
-                List<String> trafficTypeNamesToRemove = Lists.newArrayList();
-                List<String> trafficTypeNamesToAdd = Lists.newArrayList();
-
-                for (Split split : change.splits) {
-                    if (Thread.currentThread().isInterrupted()) {
-                        throw new InterruptedException();
-                    }
-
-                    if (split.status != Status.ACTIVE) {
-                        // archive.
-                        toRemove.add(split.name);
-                        if (split.trafficTypeName != null) {
-                            trafficTypeNamesToRemove.add(split.trafficTypeName);
-                        }
-                        continue;
-                    }
-
-                    ParsedSplit parsedSplit = _parser.parse(split);
-                    if (parsedSplit == null) {
-                        _log.info("We could not parse the experiment definition for: " + split.name + " so we are removing it completely to be careful");
-                        toRemove.add(split.name);
-                        if (split.trafficTypeName != null) {
-                            trafficTypeNamesToRemove.add(split.trafficTypeName);
-                        }
-                        continue;
-                    }
-
-                    toAdd.put(split.name, parsedSplit);
-
-                    // If the split already exists, this is either an update, or the split has been
-                    // deleted and recreated (possibly with a different traffic type).
-                    // If it's an update, the traffic type should NOT be increased.
-                    // If it's deleted & recreated, the old one should be decreased and the new one increased.
-                    // To handle both cases, we simply delete the old one if the split is present.
-                    // The new one is always increased.
-                    ParsedSplit current = _concurrentMap.get(split.name);
-                    if (current != null && current.trafficTypeName() != null) {
-                        trafficTypeNamesToRemove.add(current.trafficTypeName());
-                    }
-
+                if (split.status != Status.ACTIVE) {
+                    // archive.
+                    toRemove.add(split.name);
                     if (split.trafficTypeName != null) {
-                        trafficTypeNamesToAdd.add(split.trafficTypeName);
+                        trafficTypeNamesToRemove.add(split.trafficTypeName);
                     }
+                    continue;
                 }
 
-                _concurrentMap.putAll(toAdd);
-                _concurrentTrafficTypeNameSet.addAll(trafficTypeNamesToAdd);
-                //removeAll does not work here, since it wont remove all the occurrences, just one
-                Multisets.removeOccurrences(_concurrentTrafficTypeNameSet, trafficTypeNamesToRemove);
-
-                for (String remove : toRemove) {
-                    _concurrentMap.remove(remove);
+                ParsedSplit parsedSplit = _parser.parse(split);
+                if (parsedSplit == null) {
+                    _log.info("We could not parse the experiment definition for: " + split.name + " so we are removing it completely to be careful");
+                    toRemove.add(split.name);
+                    if (split.trafficTypeName != null) {
+                        trafficTypeNamesToRemove.add(split.trafficTypeName);
+                    }
+                    continue;
                 }
 
-                if (!toAdd.isEmpty()) {
-                    _log.debug("Updated features: " + toAdd.keySet());
+                toAdd.put(split.name, parsedSplit);
+
+                // If the split already exists, this is either an update, or the split has been
+                // deleted and recreated (possibly with a different traffic type).
+                // If it's an update, the traffic type should NOT be increased.
+                // If it's deleted & recreated, the old one should be decreased and the new one increased.
+                // To handle both cases, we simply delete the old one if the split is present.
+                // The new one is always increased.
+                ParsedSplit current = _concurrentMap.get(split.name);
+                if (current != null && current.trafficTypeName() != null) {
+                    trafficTypeNamesToRemove.add(current.trafficTypeName());
                 }
 
-                if (!toRemove.isEmpty()) {
-                    _log.debug("Deleted features: " + toRemove);
+                if (split.trafficTypeName != null) {
+                    trafficTypeNamesToAdd.add(split.trafficTypeName);
                 }
-
-                _changeNumber.set(change.till);
             }
+
+            _concurrentMap.putAll(toAdd);
+            _concurrentTrafficTypeNameSet.addAll(trafficTypeNamesToAdd);
+            //removeAll does not work here, since it wont remove all the occurrences, just one
+            Multisets.removeOccurrences(_concurrentTrafficTypeNameSet, trafficTypeNamesToRemove);
+
+            for (String remove : toRemove) {
+                _concurrentMap.remove(remove);
+            }
+
+            if (!toAdd.isEmpty()) {
+                _log.debug("Updated features: " + toAdd.keySet());
+            }
+
+            if (!toRemove.isEmpty()) {
+                _log.debug("Deleted features: " + toRemove);
+            }
+
+            _changeNumber.set(change.till);
         }
     }
 }

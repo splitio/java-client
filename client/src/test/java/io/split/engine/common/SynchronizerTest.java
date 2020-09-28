@@ -25,7 +25,7 @@ public class SynchronizerTest {
         synchronizer.syncAll();
 
         Thread.sleep(100);
-        Mockito.verify(splitFetcher, Mockito.times(1)).forceRefresh();
+        Mockito.verify(splitFetcher, Mockito.times(1)).run();
         Mockito.verify(segmentFetcher, Mockito.times(1)).forceRefreshAll();
     }
 
