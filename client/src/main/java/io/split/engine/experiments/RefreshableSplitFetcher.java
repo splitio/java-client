@@ -82,7 +82,23 @@ public class RefreshableSplitFetcher implements SplitFetcher, Runnable {
 
     @Override
     public void forceRefresh() {
-        run();
+        _log.debug("Force Refresh splits starting ...");
+        try {
+            while (true) {
+                long start = _changeNumber.get();
+                runWithoutExceptionHandling();
+                long end = _changeNumber.get();
+
+                if (start >= end) {
+                    break;
+                }
+            }
+        } catch (InterruptedException e) {
+            _log.warn("Interrupting split fetcher task");
+            Thread.currentThread().interrupt();
+        } catch (Throwable t) {
+            _log.error("RefreshableSplitFetcher failed: " + t.getMessage());
+        }
     }
 
     @Override
@@ -171,8 +187,7 @@ public class RefreshableSplitFetcher implements SplitFetcher, Runnable {
             return;
         }
 
-        if (change.since != _changeNumber.get()
-                || change.till < _changeNumber.get()) {
+        if (change.since != _changeNumber.get() || change.till < _changeNumber.get()) {
             // some other thread may have updated the shared state. exit
             return;
         }
@@ -257,20 +272,5 @@ public class RefreshableSplitFetcher implements SplitFetcher, Runnable {
 
             _changeNumber.set(change.till);
         }
-
-    }
-
-    private List<String> collectSegmentsInUse(Split split) {
-        List<String> result = Lists.newArrayList();
-        for (Condition condition : split.conditions) {
-            for (Matcher matcher : condition.matcherGroup.matchers) {
-                if (matcher.matcherType == MatcherType.IN_SEGMENT) {
-                    if (matcher.userDefinedSegmentMatcherData != null && matcher.userDefinedSegmentMatcherData.segmentName != null) {
-                        result.add(matcher.userDefinedSegmentMatcherData.segmentName);
-                    }
-                }
-            }
-        }
-        return result;
     }
 }

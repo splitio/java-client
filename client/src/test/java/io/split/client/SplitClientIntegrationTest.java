@@ -402,7 +402,7 @@ public class SplitClientIntegrationTest {
 
         Awaitility.await()
                 .atMost(50L, TimeUnit.SECONDS)
-                .until(() -> "after_notification_received".equals(client1.getTreatment("admin", "push_test")));
+                .until(() -> "split_killed".equals(client1.getTreatment("admin", "push_test")));
 
         Awaitility.await()
                 .atMost(50L, TimeUnit.SECONDS)
@@ -420,30 +420,7 @@ public class SplitClientIntegrationTest {
 
         Awaitility.await()
                 .atMost(50L, TimeUnit.SECONDS)
-                .until(() -> "after_notification_received".equals(client1.getTreatment("admin", "push_test")));
-
-        Awaitility.await()
-                .atMost(50L, TimeUnit.SECONDS)
-                .until(() -> "on_whitelist".equals(client2.getTreatment("admin", "push_test")));
-
-        Awaitility.await()
-                .atMost(50L, TimeUnit.SECONDS)
-                .until(() -> "after_notification_received".equals(client3.getTreatment("admin", "push_test")));
-
-        Awaitility.await()
-                .atMost(50L, TimeUnit.SECONDS)
-                .until(() -> "on_whitelist".equals(client4.getTreatment("admin", "push_test")));
-
-        OutboundSseEvent sseEventSplitUpdate3 = new OutboundEvent
-                .Builder()
-                .name("message")
-                .data("{\"id\":\"22\",\"clientId\":\"22\",\"timestamp\":1592590436082,\"encoding\":\"json\",\"channel\":\"xxxx_xxxx_splits\",\"data\":\"{\\\"type\\\":\\\"SPLIT_UPDATE\\\",\\\"changeNumber\\\":1585948850112}\"}")
-                .build();
-        eventQueue3.push(sseEventSplitUpdate3);
-
-        Awaitility.await()
-                .atMost(50L, TimeUnit.SECONDS)
-                .until(() -> "after_notification_received".equals(client1.getTreatment("admin", "push_test")));
+                .until(() -> "split_killed".equals(client1.getTreatment("admin", "push_test")));
 
         Awaitility.await()
                 .atMost(50L, TimeUnit.SECONDS)

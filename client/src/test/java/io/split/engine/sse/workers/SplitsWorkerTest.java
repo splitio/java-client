@@ -60,7 +60,7 @@ public class SplitsWorkerTest {
     }
 
     @Test
-    public void messagesNotProcesedWhenWorkerStopped() throws InterruptedException {
+    public void messagesNotProcessedWhenWorkerStopped() throws InterruptedException {
         Synchronizer syncMock = Mockito.mock(Synchronizer.class);
         SplitsWorker splitsWorker = new SplitsWorkerImp(syncMock);
         splitsWorker.start();
