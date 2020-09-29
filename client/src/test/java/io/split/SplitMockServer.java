@@ -46,12 +46,16 @@ public class SplitMockServer {
                         return new MockResponse().setBody(inputStreamToString("splits2.json"));
                     case "/api/splitChanges?since=1585948850111":
                         return new MockResponse().setBody(inputStreamToString("splits_killed.json"));
+                    case "/api/splitChanges?since=1585948850112":
+                        return new MockResponse().setBody("{\"splits\": [], \"since\":1585948850112, \"till\":1585948850112}");
                     case "/api/segmentChanges/segment-test?since=-1":
                         return new MockResponse().setBody("{\"name\": \"segment3\",\"added\": [],\"removed\": [],\"since\": -1,\"till\": -1}");
                     case "/api/segmentChanges/segment3?since=-1":
                         return new MockResponse().setBody(inputStreamToString("segment3.json"));
                     case "/api/segmentChanges/segment3?since=1585948850110":
                         return new MockResponse().setBody("{\"name\": \"segment3\",\"added\": [],\"removed\": [],\"since\": 1585948850110,\"till\": 1585948850110}");
+                    case "/api/segmentChanges/segment3?since=1585948850111":
+                        return new MockResponse().setBody("{\"name\": \"segment3\",\"added\": [],\"removed\": [],\"since\": 1585948850111,\"till\": 1585948850111}");
                     case "/api/metrics/time":
                     case "api/metrics/counter":
                         return new MockResponse().setResponseCode(200);
