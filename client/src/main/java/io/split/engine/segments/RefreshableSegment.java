@@ -45,7 +45,20 @@ public class RefreshableSegment implements Runnable, Segment {
 
     @Override
     public void forceRefresh() {
-        run();
+        try {
+            _log.debug("Force Refresh segment starting ...");
+            while (true) {
+                long start = _changeNumber.get();
+                runWithoutExceptionHandling();
+                long end = _changeNumber.get();
+
+                if (start >= end) {
+                    break;
+                }
+            }
+        } catch (Throwable t) {
+            _log.error("forceRefresh segment failed: " + t.getMessage());
+        }
     }
 
     @Override

@@ -103,7 +103,7 @@ public class EventSourceClientImp implements EventSourceClient {
         } catch (EventParsingException ex) {
             _log.debug(String.format("Error parsing the event: %s. Payload: %s", ex.getMessage(), ex.getPayload()));
         } catch (Exception e) {
-            _log.warn(String.format("Error onMessage: %s", e.getMessage()));
+            _log.debug(String.format("Error onMessage: %s", e.getMessage()));
         }
     }
 }

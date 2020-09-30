@@ -1,8 +1,12 @@
 package io.split.engine.common;
 
+import io.split.client.HttpSegmentChangeFetcher;
+import io.split.engine.SDKReadinessGates;
 import io.split.engine.experiments.RefreshableSplitFetcher;
 import io.split.engine.experiments.RefreshableSplitFetcherProvider;
 import io.split.engine.segments.RefreshableSegmentFetcher;
+import io.split.engine.segments.SegmentChangeFetcher;
+import org.apache.http.impl.client.CloseableHttpClient;
 import org.junit.Test;
 import org.mockito.Mockito;
 
@@ -21,7 +25,7 @@ public class SynchronizerTest {
         synchronizer.syncAll();
 
         Thread.sleep(100);
-        Mockito.verify(splitFetcher, Mockito.times(1)).forceRefresh();
+        Mockito.verify(splitFetcher, Mockito.times(1)).run();
         Mockito.verify(segmentFetcher, Mockito.times(1)).forceRefreshAll();
     }
 

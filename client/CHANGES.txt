@@ -1,5 +1,8 @@
 CHANGES
 
+4.1.1 (Sep 30, 2020)
+- Fixed fetch retries after received an SPLIT_CHANGE.
+
 4.1.0 (Sep 25, 2020)
 - Add local impressions deduping (enabled by default)
 

@@ -38,7 +38,7 @@ public class SynchronizerImp implements Synchronizer {
     @Override
     public void syncAll() {
         _syncAllScheduledExecutorService.schedule(() -> {
-            _splitFetcher.forceRefresh();
+            _splitFetcher.run();
             _segmentFetcher.forceRefreshAll();
         }, 0, TimeUnit.SECONDS);
     }
@@ -68,6 +68,7 @@ public class SynchronizerImp implements Synchronizer {
     public void localKillSplit(String splitName, String defaultTreatment, long newChangeNumber) {
         if (newChangeNumber > _splitFetcher.changeNumber()) {
             _splitFetcher.killSplit(splitName, defaultTreatment, newChangeNumber);
+            refreshSplits(newChangeNumber);
         }
     }
 
