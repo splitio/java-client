@@ -1,6 +1,6 @@
 CHANGES
 
-4.1.2(Nov 3, 2020)
+4.1.2(XXX XX, 2020)
 - Updated junit from 4.12 to 4.13.1
 
 4.1.1 (Sep 30, 2020)
