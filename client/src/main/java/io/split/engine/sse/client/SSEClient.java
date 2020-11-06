@@ -41,8 +41,8 @@ public class SSEClient {
 
     private final static String SOCKET_CLOSED_MESSAGE = "Socket closed";
     private final static String KEEP_ALIVE_PAYLOAD = ":keepalive\n";
-    private final static Integer CONNECT_TIMEOUT = 30000;
-    private final static Integer SOCKET_TIMEOUT = 70000;
+    private final static Integer CONNECT_TIMEOUT_MS = 30000;
+    private final static Integer SOCKET_TIMEOUT_MS = 70000;
     private static final Logger _log = LoggerFactory.getLogger(SSEClient.class);
 
     private final CloseableHttpClient _client;
@@ -70,7 +70,7 @@ public class SSEClient {
         thread.setDaemon(true);
         thread.start();
         try {
-            if (!signal.await(CONNECT_TIMEOUT, TimeUnit.SECONDS)) {
+            if (!signal.await(CONNECT_TIMEOUT_MS, TimeUnit.MILLISECONDS)) {
                 return false;
             };
         } catch (InterruptedException e) {
@@ -177,8 +177,8 @@ public class SSEClient {
 
     private static CloseableHttpClient buildHttpClient() {
         RequestConfig requestConfig = RequestConfig.custom()
-                .setConnectTimeout(CONNECT_TIMEOUT)
-                .setSocketTimeout(SOCKET_TIMEOUT)
+                .setConnectTimeout(CONNECT_TIMEOUT_MS)
+                .setSocketTimeout(SOCKET_TIMEOUT_MS)
                 .build();
 
         PoolingHttpClientConnectionManager cm = new PoolingHttpClientConnectionManager();
