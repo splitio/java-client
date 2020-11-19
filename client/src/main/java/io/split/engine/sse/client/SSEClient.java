@@ -1,12 +1,13 @@
 package io.split.engine.sse.client;
 
 import com.google.common.base.Strings;
-import org.apache.http.client.config.RequestConfig;
-import org.apache.http.client.methods.CloseableHttpResponse;
-import org.apache.http.client.methods.HttpGet;
-import org.apache.http.impl.client.CloseableHttpClient;
-import org.apache.http.impl.client.HttpClients;
-import org.apache.http.impl.conn.PoolingHttpClientConnectionManager;
+import org.apache.hc.client5.http.classic.methods.HttpGet;
+import org.apache.hc.client5.http.config.RequestConfig;
+import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
+import org.apache.hc.client5.http.impl.classic.CloseableHttpResponse;
+import org.apache.hc.client5.http.impl.classic.HttpClients;
+import org.apache.hc.client5.http.impl.io.PoolingHttpClientConnectionManager;
+import org.apache.hc.core5.util.Timeout;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -41,8 +42,8 @@ public class SSEClient {
 
     private final static String SOCKET_CLOSED_MESSAGE = "Socket closed";
     private final static String KEEP_ALIVE_PAYLOAD = ":keepalive\n";
-    private final static Integer CONNECT_TIMEOUT = 30000;
-    private final static Integer SOCKET_TIMEOUT = 70000;
+    private final static long CONNECT_TIMEOUT = 30000;
+    private final static long SOCKET_TIMEOUT = 70000;
     private static final Logger _log = LoggerFactory.getLogger(SSEClient.class);
 
     private final CloseableHttpClient _client;
@@ -147,7 +148,7 @@ public class SSEClient {
 
         try {
             _ongoingResponse.set(_client.execute(request));
-            if (_ongoingResponse.get().getStatusLine().getStatusCode() != 200) {
+            if (_ongoingResponse.get().getCode() != 200) {
                 return false;
             }
             _state.set(ConnectionState.OPEN);
@@ -177,8 +178,8 @@ public class SSEClient {
 
     private static CloseableHttpClient buildHttpClient() {
         RequestConfig requestConfig = RequestConfig.custom()
-                .setConnectTimeout(CONNECT_TIMEOUT)
-                .setSocketTimeout(SOCKET_TIMEOUT)
+                .setConnectTimeout(Timeout.of(CONNECT_TIMEOUT, TimeUnit.MILLISECONDS))
+                //.setSocketTimeout(SOCKET_TIMEOUT) TODO: Use a PoolingHttpClientConnectionManager to set socket timeout
                 .build();
 
         PoolingHttpClientConnectionManager cm = new PoolingHttpClientConnectionManager();

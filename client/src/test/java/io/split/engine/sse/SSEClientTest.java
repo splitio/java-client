@@ -1,7 +1,7 @@
 package io.split.engine.sse;
 
 import io.split.engine.sse.client.SSEClient;
-import org.apache.http.client.utils.URIBuilder;
+import org.apache.hc.core5.net.URIBuilder;
 import org.junit.Ignore;
 import org.junit.Test;
 

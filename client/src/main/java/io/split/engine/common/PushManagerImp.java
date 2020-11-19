@@ -14,7 +14,8 @@ import io.split.engine.sse.workers.SegmentsWorkerImp;
 import io.split.engine.sse.workers.SplitsWorker;
 import io.split.engine.sse.workers.SplitsWorkerImp;
 import io.split.engine.sse.workers.Worker;
-import org.apache.http.impl.client.CloseableHttpClient;
+
+import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

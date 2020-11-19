@@ -1,7 +1,6 @@
 package io.split.engine.sse;
 
 import io.split.SSEMockServer;
-import org.apache.http.client.utils.URIBuilder;
 import org.awaitility.Awaitility;
 import org.glassfish.grizzly.utils.Pair;
 import org.glassfish.jersey.media.sse.OutboundEvent;

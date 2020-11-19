@@ -5,10 +5,10 @@ import io.split.client.dtos.ImpressionCount;
 import io.split.client.dtos.TestImpressions;
 import io.split.client.utils.Utils;
 
-import org.apache.http.client.methods.CloseableHttpResponse;
-import org.apache.http.client.methods.HttpPost;
-import org.apache.http.entity.StringEntity;
-import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.hc.client5.http.classic.methods.HttpPost;
+import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
+import org.apache.hc.client5.http.impl.classic.CloseableHttpResponse;
+import org.apache.hc.core5.http.HttpEntity;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -54,7 +54,7 @@ public class HttpImpressionsSender implements ImpressionsSender {
         CloseableHttpResponse response = null;
 
         try {
-            StringEntity entity = Utils.toJsonEntity(impressions);
+            HttpEntity entity = Utils.toJsonEntity(impressions);
 
             HttpPost request = new HttpPost(_impressionBulkTarget);
             request.addHeader(IMPRESSIONS_MODE_HEADER, _mode.toString());
@@ -62,7 +62,7 @@ public class HttpImpressionsSender implements ImpressionsSender {
 
             response = _client.execute(request);
 
-            int status = response.getStatusLine().getStatusCode();
+            int status = response.getCode();
 
             if (status < 200 || status >= 300) {
                 _logger.warn("Response status was: " + status);
@@ -86,7 +86,7 @@ public class HttpImpressionsSender implements ImpressionsSender {
         HttpPost request = new HttpPost(_impressionCountTarget);
         request.setEntity(Utils.toJsonEntity(ImpressionCount.fromImpressionCounterData(raw)));
         try (CloseableHttpResponse response = _client.execute(request)) {
-            int status = response.getStatusLine().getStatusCode();
+            int status = response.getCode();
             if (status < 200 || status >= 300) {
                 _logger.warn("Response status was: " + status);
             }

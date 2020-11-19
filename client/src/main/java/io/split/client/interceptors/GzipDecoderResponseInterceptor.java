@@ -1,13 +1,11 @@
 package io.split.client.interceptors;
 
-import org.apache.http.Header;
-import org.apache.http.HeaderElement;
-import org.apache.http.HttpEntity;
-import org.apache.http.HttpException;
-import org.apache.http.HttpResponse;
-import org.apache.http.HttpResponseInterceptor;
-import org.apache.http.client.entity.GzipDecompressingEntity;
-import org.apache.http.protocol.HttpContext;
+
+import org.apache.hc.core5.http.EntityDetails;
+import org.apache.hc.core5.http.HttpException;
+import org.apache.hc.core5.http.HttpResponse;
+import org.apache.hc.core5.http.HttpResponseInterceptor;
+import org.apache.hc.core5.http.protocol.HttpContext;
 
 import java.io.IOException;
 
@@ -16,6 +14,7 @@ import java.io.IOException;
  */
 public class GzipDecoderResponseInterceptor implements HttpResponseInterceptor {
 
+    /*
     @Override
     public void process(HttpResponse response, HttpContext httpContext) throws HttpException, IOException {
         HttpEntity entity = response.getEntity();
@@ -31,5 +30,11 @@ public class GzipDecoderResponseInterceptor implements HttpResponseInterceptor {
                 }
             }
         }
+    }
+*/
+    // TODO: Check if this is still necessary
+    @Override
+    public void process(HttpResponse response, EntityDetails entity, HttpContext context) throws HttpException, IOException {
+
     }
 }

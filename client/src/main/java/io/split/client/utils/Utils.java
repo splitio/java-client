@@ -1,9 +1,12 @@
 package io.split.client.utils;
 
 import com.google.common.base.Charsets;
-import org.apache.http.client.methods.CloseableHttpResponse;
-import org.apache.http.client.utils.URIBuilder;
-import org.apache.http.entity.StringEntity;
+import org.apache.hc.client5.http.impl.classic.CloseableHttpResponse;
+import org.apache.hc.core5.http.ContentType;
+import org.apache.hc.core5.http.HttpEntity;
+import org.apache.hc.core5.http.io.entity.HttpEntities;
+import org.apache.hc.core5.http.io.entity.StringEntity;
+import org.apache.hc.core5.net.URIBuilder;
 
 import java.io.IOException;
 import java.net.URI;
@@ -16,11 +19,9 @@ import static com.google.common.base.Preconditions.checkNotNull;
  */
 public class Utils {
 
-    public static StringEntity toJsonEntity(Object obj) {
+    public static HttpEntity toJsonEntity(Object obj) {
         String json = Json.toJson(obj);
-        StringEntity entity = new StringEntity(json, Charsets.UTF_8);
-        entity.setContentType("application/json");
-        return entity;
+        return HttpEntities.create(json, ContentType.APPLICATION_JSON);
     }
 
 

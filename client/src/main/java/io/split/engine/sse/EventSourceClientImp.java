@@ -7,7 +7,7 @@ import io.split.engine.sse.dtos.SegmentQueueDto;
 import io.split.engine.sse.exceptions.EventParsingException;
 import io.split.engine.sse.workers.SplitsWorker;
 import io.split.engine.sse.workers.Worker;
-import org.apache.http.client.utils.URIBuilder;
+import org.apache.hc.core5.net.URIBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

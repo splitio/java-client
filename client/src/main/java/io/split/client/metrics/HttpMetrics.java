@@ -7,10 +7,10 @@ import io.split.client.dtos.Counter;
 import io.split.client.dtos.Latency;
 import io.split.client.utils.Utils;
 import io.split.engine.metrics.Metrics;
-import org.apache.http.client.methods.CloseableHttpResponse;
-import org.apache.http.client.methods.HttpPost;
-import org.apache.http.entity.StringEntity;
-import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.hc.client5.http.classic.methods.HttpPost;
+import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
+import org.apache.hc.client5.http.impl.classic.CloseableHttpResponse;
+import org.apache.hc.core5.http.HttpEntity;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -71,14 +71,14 @@ public class HttpMetrics implements Metrics, DTOMetrics {
         CloseableHttpResponse response = null;
 
         try {
-            StringEntity entity = Utils.toJsonEntity(dto);
+            HttpEntity entity = Utils.toJsonEntity(dto);
 
             HttpPost request = new HttpPost(uri);
             request.setEntity(entity);
 
             response = _client.execute(request);
 
-            int status = response.getStatusLine().getStatusCode();
+            int status = response.getCode();
 
             if (status < 200 || status >= 300) {
                 _log.warn("Response status was: " + status);
