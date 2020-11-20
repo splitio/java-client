@@ -1,4 +1,4 @@
-/*package io.split.engine.sse;
+package io.split.engine.sse;
 
 import io.split.engine.sse.client.SSEClient;
 import org.apache.hc.client5.http.config.RequestConfig;
@@ -12,7 +12,6 @@ import org.junit.Test;
 
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.util.concurrent.TimeUnit;
 
 public class SSEClientTest {
 
@@ -26,7 +25,7 @@ public class SSEClientTest {
                 .build();
 
         RequestConfig requestConfig = RequestConfig.custom()
-                .setConnectTimeout(Timeout.of(70000, TimeUnit.MILLISECONDS))
+                .setConnectTimeout(Timeout.ofMilliseconds(70000))
                 .build();
 
         HttpClientBuilder httpClientbuilder = HttpClients.custom()
@@ -42,4 +41,3 @@ public class SSEClientTest {
         Thread.sleep(100000);
     }
 }
-*/

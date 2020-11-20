@@ -101,7 +101,7 @@ public class PushManagerImp implements PushManager {
         _eventSourceClient.stop();
         stopWorkers();
         if (_nextTokenRefreshTask != null) {
-            _log.warn("Cancel nextTokenRefreshTask");
+            _log.debug("Cancel nextTokenRefreshTask");
             _nextTokenRefreshTask.cancel(false);
         }
     }
@@ -120,7 +120,7 @@ public class PushManagerImp implements PushManager {
             _log.debug("SSE Handler starting ...");
             return _eventSourceClient.start(channels, token);
         } catch (Exception e) {
-            _log.error("Exception in SSE Handler start: " + e.getMessage());
+            _log.debug("Exception in SSE Handler start: " + e.getMessage());
             return false;
         }
     }

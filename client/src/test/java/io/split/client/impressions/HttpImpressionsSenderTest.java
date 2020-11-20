@@ -34,8 +34,6 @@ import static org.hamcrest.core.IsInstanceOf.instanceOf;
 import static org.mockito.Mockito.verify;
 
 public class HttpImpressionsSenderTest {
-    private final TestHelper _testHelper = new TestHelper();
-
     @Test
     public void testDefaultURL() throws URISyntaxException {
         URI rootTarget = URI.create("https://api.split.io");
@@ -73,7 +71,7 @@ public class HttpImpressionsSenderTest {
         URI rootTarget = URI.create("https://kubernetesturl.com/split");
 
         // Setup response mock
-        CloseableHttpClient httpClient = _testHelper.mockHttpClient("", HttpStatus.SC_OK);
+        CloseableHttpClient httpClient = TestHelper.mockHttpClient("", HttpStatus.SC_OK);
 
         // Send counters
         HttpImpressionsSender sender = HttpImpressionsSender.create(httpClient, rootTarget, ImpressionsManager.Mode.OPTIMIZED);
@@ -103,7 +101,7 @@ public class HttpImpressionsSenderTest {
         URI rootTarget = URI.create("https://kubernetesturl.com/split");
 
         // Setup response mock
-        CloseableHttpClient httpClient = _testHelper.mockHttpClient("", HttpStatus.SC_OK);
+        CloseableHttpClient httpClient = TestHelper.mockHttpClient("", HttpStatus.SC_OK);
 
         // Send counters
         HttpImpressionsSender sender = HttpImpressionsSender.create(httpClient, rootTarget, ImpressionsManager.Mode.DEBUG);
@@ -121,7 +119,7 @@ public class HttpImpressionsSenderTest {
         URI rootTarget = URI.create("https://kubernetesturl.com/split");
 
         // Setup response mock
-        CloseableHttpClient httpClient = _testHelper.mockHttpClient("", HttpStatus.SC_OK);
+        CloseableHttpClient httpClient = TestHelper.mockHttpClient("", HttpStatus.SC_OK);
 
         HttpImpressionsSender sender = HttpImpressionsSender.create(httpClient, rootTarget, ImpressionsManager.Mode.OPTIMIZED);
 
@@ -152,7 +150,7 @@ public class HttpImpressionsSenderTest {
         assertThat(payload.size(), is(equalTo(2)));
 
         // Do the same flow for imrpessionsMode = debug
-        CloseableHttpClient httpClientDebugMode = _testHelper.mockHttpClient("", HttpStatus.SC_OK);
+        CloseableHttpClient httpClientDebugMode = TestHelper.mockHttpClient("", HttpStatus.SC_OK);
 
         sender = HttpImpressionsSender.create(httpClientDebugMode, rootTarget, ImpressionsManager.Mode.DEBUG);
         sender.postImpressionsBulk(toSend);

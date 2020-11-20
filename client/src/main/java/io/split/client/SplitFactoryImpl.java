@@ -102,7 +102,7 @@ public class SplitFactoryImpl implements SplitFactory {
 
     private static CloseableHttpClient buildSSEdHttpClient(SplitClientConfig config) {
         RequestConfig requestConfig = RequestConfig.custom()
-                .setConnectTimeout(Timeout.of(SSE_CONNECT_TIMEOUT, TimeUnit.MILLISECONDS))
+                .setConnectTimeout(Timeout.ofMilliseconds(SSE_CONNECT_TIMEOUT))
                 .build();
 
         SSLConnectionSocketFactory sslSocketFactory = SSLConnectionSocketFactoryBuilder.create()

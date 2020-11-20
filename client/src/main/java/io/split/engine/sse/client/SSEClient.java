@@ -43,7 +43,6 @@ public class SSEClient {
     private final static String SOCKET_CLOSED_MESSAGE = "Socket closed";
     private final static String KEEP_ALIVE_PAYLOAD = ":keepalive\n";
     private final static long CONNECT_TIMEOUT = 30000;
-    private final static long SOCKET_TIMEOUT = 70000;
     private static final Logger _log = LoggerFactory.getLogger(SSEClient.class);
 
     private final CloseableHttpClient _client;
@@ -62,7 +61,7 @@ public class SSEClient {
 
     public synchronized boolean open(URI uri) {
         if (isOpen()) {
-            _log.warn("SSEClient already open.");
+            _log.debug("SSEClient already open.");
             return false;
         }
 
@@ -78,7 +77,7 @@ public class SSEClient {
             };
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
-            _log.warn(e.getMessage());
+            _log.debug(e.getMessage());
             return false;
         }
         return isOpen();
@@ -94,7 +93,7 @@ public class SSEClient {
                 try {
                     _ongoingResponse.get().close();
                 } catch (IOException e) {
-                    _log.warn(String.format("Error closing SSEClient: %s", e.getMessage()));
+                    _log.debug(String.format("Error closing SSEClient: %s", e.getMessage()));
                 }
             }
         }
@@ -116,7 +115,7 @@ public class SSEClient {
                 try {
                     handleMessage(readMessageAsString(reader));
                 } catch (SocketException exc) {
-                    _log.warn(exc.getMessage());
+                    _log.debug(exc.getMessage());
                     if (SOCKET_CLOSED_MESSAGE.equals(exc.getMessage())) { // Connection closed by us
                         _statusCallback.apply(StatusMessage.FORCED_STOP);
                         return;
@@ -125,23 +124,23 @@ public class SSEClient {
                     _statusCallback.apply(StatusMessage.RETRYABLE_ERROR);
                     return;
                 } catch (IOException exc) { // Other type of connection error
-                    _log.warn(exc.getMessage());
+                    _log.debug(exc.getMessage());
                     _statusCallback.apply(StatusMessage.RETRYABLE_ERROR);
                     return;
                 }
             }
         } catch (Exception e) { // Any other error non related to the connection disables streaming altogether
-            _log.error(e.getMessage(), e);
+            _log.warn(e.getMessage(), e);
             _statusCallback.apply(StatusMessage.NONRETRYABLE_ERROR);
         } finally {
             try {
                 _ongoingResponse.get().close();
             } catch (IOException e) {
-                _log.warn(e.getMessage());
+                _log.debug(e.getMessage());
             }
 
             _state.set(ConnectionState.CLOSED);
-            _log.warn("SSEClient finished.");
+            _log.debug("SSEClient finished.");
         }
     }
 
@@ -156,7 +155,7 @@ public class SSEClient {
             _state.set(ConnectionState.OPEN);
             _statusCallback.apply(StatusMessage.CONNECTED);
         } catch (IOException exc) {
-            _log.warn(String.format("Error establishConnection: %s", exc));
+            _log.debug(String.format("Error establishConnection: %s", exc));
             return false;
         } finally {
             signal.countDown();

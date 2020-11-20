@@ -18,8 +18,6 @@ import java.net.URISyntaxException;
 import java.util.Map;
 
 public class HttpSplitChangeFetcherTest {
-    private final TestHelper _testHelper = new TestHelper();
-
     @Test
     public void testDefaultURL() throws URISyntaxException {
         URI rootTarget = URI.create("https://api.split.io");
@@ -60,7 +58,7 @@ public class HttpSplitChangeFetcherTest {
     public void testFetcherWithSpecialCharacters() throws URISyntaxException, InvocationTargetException, NoSuchMethodException, IllegalAccessException, IOException {
         URI rootTarget = URI.create("https://api.split.io");
 
-        CloseableHttpClient httpClientMock = _testHelper.mockHttpClient("split-change-special-characters.json", HttpStatus.SC_OK);
+        CloseableHttpClient httpClientMock = TestHelper.mockHttpClient("split-change-special-characters.json", HttpStatus.SC_OK);
 
         Metrics.NoopMetrics metrics = new Metrics.NoopMetrics();
         HttpSplitChangeFetcher fetcher = HttpSplitChangeFetcher.create(httpClientMock, rootTarget, metrics);

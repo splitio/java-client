@@ -16,8 +16,6 @@ import java.net.URI;
 import java.net.URISyntaxException;
 
 public class HttpSegmentChangeFetcherTest {
-    private final TestHelper _testHelper = new TestHelper();
-
     @Test
     public void testDefaultURL() throws URISyntaxException {
         URI rootTarget = URI.create("https://api.split.io");
@@ -58,7 +56,7 @@ public class HttpSegmentChangeFetcherTest {
     public void testFetcherWithSpecialCharacters() throws URISyntaxException, IOException, IllegalAccessException, NoSuchMethodException, InvocationTargetException {
         URI rootTarget = URI.create("https://api.split.io/api/segmentChanges");
 
-        CloseableHttpClient httpClientMock = _testHelper.mockHttpClient("segment-change-special-chatacters.json", HttpStatus.SC_OK);
+        CloseableHttpClient httpClientMock = TestHelper.mockHttpClient("segment-change-special-chatacters.json", HttpStatus.SC_OK);
 
         Metrics.NoopMetrics metrics = new Metrics.NoopMetrics();
         HttpSegmentChangeFetcher fetcher = HttpSegmentChangeFetcher.create(httpClientMock, rootTarget, metrics);

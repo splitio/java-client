@@ -11,9 +11,9 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 
 public class TestHelper {
-    public CloseableHttpClient mockHttpClient(String jsonName, int httpStatus) throws IOException, IllegalAccessException, NoSuchMethodException, InvocationTargetException {
+    public static CloseableHttpClient mockHttpClient(String jsonName, int httpStatus) throws IOException, IllegalAccessException, NoSuchMethodException, InvocationTargetException {
         HttpEntity entityMock = Mockito.mock(HttpEntity.class);
-        Mockito.when(entityMock.getContent()).thenReturn(getClass().getClassLoader().getResourceAsStream(jsonName));
+        Mockito.when(entityMock.getContent()).thenReturn(TestHelper.class.getClassLoader().getResourceAsStream(jsonName));
 
         ClassicHttpResponse httpResponseMock = Mockito.mock(ClassicHttpResponse.class);
         Mockito.when(httpResponseMock.getEntity()).thenReturn(entityMock);
@@ -25,7 +25,7 @@ public class TestHelper {
         return httpClientMock;
     }
 
-    private CloseableHttpResponse classicResponseToCloseableMock(ClassicHttpResponse mocked) throws InvocationTargetException, IllegalAccessException, NoSuchMethodException {
+    private static CloseableHttpResponse classicResponseToCloseableMock(ClassicHttpResponse mocked) throws InvocationTargetException, IllegalAccessException, NoSuchMethodException {
         Method adaptMethod = CloseableHttpResponse.class.getDeclaredMethod("adapt", ClassicHttpResponse.class);
         adaptMethod.setAccessible(true);
         return (CloseableHttpResponse) adaptMethod.invoke(null, mocked);

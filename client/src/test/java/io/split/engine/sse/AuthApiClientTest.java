@@ -12,11 +12,9 @@ import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 
 public class AuthApiClientTest {
-    private final TestHelper _testHelper = new TestHelper();
-
     @Test
     public void authenticateWithPushEnabledShouldReturnSuccess() throws IOException, IllegalAccessException, NoSuchMethodException, InvocationTargetException {
-        CloseableHttpClient httpClientMock = _testHelper.mockHttpClient("streaming-auth-push-enabled.json", HttpStatus.SC_OK);
+        CloseableHttpClient httpClientMock = TestHelper.mockHttpClient("streaming-auth-push-enabled.json", HttpStatus.SC_OK);
 
         AuthApiClient authApiClient = new AuthApiClientImp( "www.split-test.io", httpClientMock);
         AuthenticationResponse result = authApiClient.Authenticate();
@@ -31,7 +29,7 @@ public class AuthApiClientTest {
 
     @Test
     public void authenticateWithPushEnabledWithWrongTokenShouldReturnError() throws IOException, IllegalAccessException, NoSuchMethodException, InvocationTargetException {
-        CloseableHttpClient httpClientMock = _testHelper.mockHttpClient("streaming-auth-push-enabled-wrong-token.json", HttpStatus.SC_OK);
+        CloseableHttpClient httpClientMock = TestHelper.mockHttpClient("streaming-auth-push-enabled-wrong-token.json", HttpStatus.SC_OK);
 
         AuthApiClient authApiClient = new AuthApiClientImp( "www.split-test.io", httpClientMock);
         AuthenticationResponse result = authApiClient.Authenticate();
@@ -45,7 +43,7 @@ public class AuthApiClientTest {
 
     @Test
     public void authenticateWithPushDisabledShouldReturnSuccess() throws IOException, IllegalAccessException, NoSuchMethodException, InvocationTargetException {
-        CloseableHttpClient httpClientMock = _testHelper.mockHttpClient("streaming-auth-push-disabled.json", HttpStatus.SC_OK);
+        CloseableHttpClient httpClientMock = TestHelper.mockHttpClient("streaming-auth-push-disabled.json", HttpStatus.SC_OK);
 
         AuthApiClient authApiClient = new AuthApiClientImp("www.split-test.io", httpClientMock);
         AuthenticationResponse result = authApiClient.Authenticate();
@@ -58,7 +56,7 @@ public class AuthApiClientTest {
 
     @Test
     public void authenticateServerErrorShouldReturnErrorWithRetry() throws IOException, IllegalAccessException, NoSuchMethodException, InvocationTargetException {
-        CloseableHttpClient httpClientMock = _testHelper.mockHttpClient("", HttpStatus.SC_INTERNAL_SERVER_ERROR);
+        CloseableHttpClient httpClientMock = TestHelper.mockHttpClient("", HttpStatus.SC_INTERNAL_SERVER_ERROR);
 
         AuthApiClient authApiClient = new AuthApiClientImp("www.split-test.io", httpClientMock);
         AuthenticationResponse result = authApiClient.Authenticate();
@@ -71,7 +69,7 @@ public class AuthApiClientTest {
 
     @Test
     public void authenticateServerBadRequestShouldReturnErrorWithoutRetry() throws IOException, IllegalAccessException, NoSuchMethodException, InvocationTargetException {
-        CloseableHttpClient httpClientMock = _testHelper.mockHttpClient("", HttpStatus.SC_BAD_REQUEST);
+        CloseableHttpClient httpClientMock = TestHelper.mockHttpClient("", HttpStatus.SC_BAD_REQUEST);
 
         AuthApiClient authApiClient = new AuthApiClientImp("www.split-test.io", httpClientMock);
         AuthenticationResponse result = authApiClient.Authenticate();
@@ -84,7 +82,7 @@ public class AuthApiClientTest {
 
     @Test
     public void authenticateServerUnauthorizedShouldReturnErrorWithoutRetry() throws IOException, IllegalAccessException, NoSuchMethodException, InvocationTargetException {
-        CloseableHttpClient httpClientMock = _testHelper.mockHttpClient("", HttpStatus.SC_UNAUTHORIZED);
+        CloseableHttpClient httpClientMock = TestHelper.mockHttpClient("", HttpStatus.SC_UNAUTHORIZED);
 
         AuthApiClient authApiClient = new AuthApiClientImp("www.split-test.io", httpClientMock);
         AuthenticationResponse result = authApiClient.Authenticate();

@@ -119,7 +119,7 @@ public class EventSourceClientTest {
 
     private static CloseableHttpClient buildHttpClient() {
         RequestConfig requestConfig = RequestConfig.custom()
-                .setConnectTimeout(Timeout.of(70000, TimeUnit.MILLISECONDS))
+                .setConnectTimeout(Timeout.ofMilliseconds(70000))
                 .build();
 
         PoolingHttpClientConnectionManager cm = new PoolingHttpClientConnectionManager();
