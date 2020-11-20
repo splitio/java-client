@@ -2,11 +2,15 @@ package io.split.client.impressions;
 
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
+import io.split.TestHelper;
 import io.split.client.dtos.ImpressionCount;
 import io.split.client.dtos.KeyImpression;
 import io.split.client.dtos.TestImpressions;
+import org.apache.hc.client5.http.classic.methods.HttpPost;
+import org.apache.hc.client5.http.classic.methods.HttpUriRequest;
 import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
 import org.apache.hc.client5.http.impl.classic.HttpClients;
+import org.apache.hc.core5.http.HttpStatus;
 import org.hamcrest.Matchers;
 import org.junit.Assert;
 import org.junit.Test;
@@ -15,6 +19,7 @@ import org.mockito.Mockito;
 
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.lang.reflect.InvocationTargetException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.Arrays;
@@ -27,9 +32,9 @@ import static org.hamcrest.core.Is.is;
 import static org.hamcrest.core.IsEqual.equalTo;
 import static org.hamcrest.core.IsInstanceOf.instanceOf;
 import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
 
 public class HttpImpressionsSenderTest {
+    private final TestHelper _testHelper = new TestHelper();
 
     @Test
     public void testDefaultURL() throws URISyntaxException {
@@ -63,20 +68,12 @@ public class HttpImpressionsSenderTest {
         Assert.assertThat(fetcher.getTarget().toString(), Matchers.is(Matchers.equalTo("https://kubernetesturl.com/split/api/testImpressions/bulk")));
     }
 
-    // TODO: Fix this test by mocking .getCode() instead of the status line of the request
-/*
-
     @Test
-    public void testImpressionCountsEndpointOptimized() throws URISyntaxException, IOException {
+    public void testImpressionCountsEndpointOptimized() throws URISyntaxException, IOException, IllegalAccessException, NoSuchMethodException, InvocationTargetException {
         URI rootTarget = URI.create("https://kubernetesturl.com/split");
 
         // Setup response mock
-        CloseableHttpClient httpClient = Mockito.mock(CloseableHttpClient.class);
-        CloseableHttpResponse response = Mockito.mock(CloseableHttpResponse.class);
-        StatusLine statusLine = Mockito.mock(StatusLine.class);
-        when(statusLine.getStatusCode()).thenReturn(200);
-        when(response.getStatusLine()).thenReturn(statusLine);
-        when(httpClient.execute(Mockito.any())).thenReturn(response);
+        CloseableHttpClient httpClient = _testHelper.mockHttpClient("", HttpStatus.SC_OK);
 
         // Send counters
         HttpImpressionsSender sender = HttpImpressionsSender.create(httpClient, rootTarget, ImpressionsManager.Mode.OPTIMIZED);
@@ -89,8 +86,8 @@ public class HttpImpressionsSenderTest {
         ArgumentCaptor<HttpUriRequest> captor = ArgumentCaptor.forClass(HttpUriRequest.class);
         verify(httpClient).execute(captor.capture());
         HttpUriRequest request = captor.getValue();
-        assertThat(request.getURI(), is(equalTo(URI.create("https://kubernetesturl.com/split/api/testImpressions/count"))));
-        assertThat(request.getAllHeaders().length, is(0));
+        assertThat(request.getUri(), is(equalTo(URI.create("https://kubernetesturl.com/split/api/testImpressions/count"))));
+        assertThat(request.getHeaders().length, is(0));
         assertThat(request, instanceOf(HttpPost.class));
         HttpPost asPostRequest = (HttpPost) request;
         InputStreamReader reader = new InputStreamReader(asPostRequest.getEntity().getContent());
@@ -102,16 +99,11 @@ public class HttpImpressionsSenderTest {
     }
 
     @Test
-    public void testImpressionCountsEndpointDebug() throws URISyntaxException, IOException {
+    public void testImpressionCountsEndpointDebug() throws URISyntaxException, IOException, IllegalAccessException, NoSuchMethodException, InvocationTargetException {
         URI rootTarget = URI.create("https://kubernetesturl.com/split");
 
         // Setup response mock
-        CloseableHttpClient httpClient = Mockito.mock(CloseableHttpClient.class);
-        CloseableHttpResponse response = Mockito.mock(CloseableHttpResponse.class);
-        StatusLine statusLine = Mockito.mock(StatusLine.class);
-        when(statusLine.getStatusCode()).thenReturn(200);
-        when(response.getStatusLine()).thenReturn(statusLine);
-        when(httpClient.execute(Mockito.any())).thenReturn(response);
+        CloseableHttpClient httpClient = _testHelper.mockHttpClient("", HttpStatus.SC_OK);
 
         // Send counters
         HttpImpressionsSender sender = HttpImpressionsSender.create(httpClient, rootTarget, ImpressionsManager.Mode.DEBUG);
@@ -125,16 +117,12 @@ public class HttpImpressionsSenderTest {
     }
 
     @Test
-    public void testImpressionBulksEndpoint() throws URISyntaxException, IOException {
+    public void testImpressionBulksEndpoint() throws URISyntaxException, IOException, IllegalAccessException, NoSuchMethodException, InvocationTargetException {
         URI rootTarget = URI.create("https://kubernetesturl.com/split");
 
         // Setup response mock
-        CloseableHttpClient httpClient = Mockito.mock(CloseableHttpClient.class);
-        CloseableHttpResponse response = Mockito.mock(CloseableHttpResponse.class);
-        StatusLine statusLine = Mockito.mock(StatusLine.class);
-        when(statusLine.getStatusCode()).thenReturn(200);
-        when(response.getStatusLine()).thenReturn(statusLine);
-        when(httpClient.execute(Mockito.any())).thenReturn(response);
+        CloseableHttpClient httpClient = _testHelper.mockHttpClient("", HttpStatus.SC_OK);
+
         HttpImpressionsSender sender = HttpImpressionsSender.create(httpClient, rootTarget, ImpressionsManager.Mode.OPTIMIZED);
 
         // Send impressions
@@ -153,8 +141,8 @@ public class HttpImpressionsSenderTest {
         ArgumentCaptor<HttpUriRequest> captor = ArgumentCaptor.forClass(HttpUriRequest.class);
         verify(httpClient).execute(captor.capture());
         HttpUriRequest request = captor.getValue();
-        assertThat(request.getURI(), is(equalTo(URI.create("https://kubernetesturl.com/split/api/testImpressions/bulk"))));
-        assertThat(request.getAllHeaders().length, is(1));
+        assertThat(request.getUri(), is(equalTo(URI.create("https://kubernetesturl.com/split/api/testImpressions/bulk"))));
+        assertThat(request.getHeaders().length, is(1));
         assertThat(request.getFirstHeader("SplitSDKImpressionsMode").getValue(), is(equalTo("OPTIMIZED")));
         assertThat(request, instanceOf(HttpPost.class));
         HttpPost asPostRequest = (HttpPost) request;
@@ -164,20 +152,14 @@ public class HttpImpressionsSenderTest {
         assertThat(payload.size(), is(equalTo(2)));
 
         // Do the same flow for imrpessionsMode = debug
-        Mockito.reset(httpClient, response, statusLine);
-        when(statusLine.getStatusCode()).thenReturn(200);
-        when(response.getStatusLine()).thenReturn(statusLine);
-        when(httpClient.execute(Mockito.any())).thenReturn(response);
-        sender = HttpImpressionsSender.create(httpClient, rootTarget, ImpressionsManager.Mode.DEBUG);
+        CloseableHttpClient httpClientDebugMode = _testHelper.mockHttpClient("", HttpStatus.SC_OK);
+
+        sender = HttpImpressionsSender.create(httpClientDebugMode, rootTarget, ImpressionsManager.Mode.DEBUG);
         sender.postImpressionsBulk(toSend);
         captor = ArgumentCaptor.forClass(HttpUriRequest.class);
-        verify(httpClient).execute(captor.capture());
+        verify(httpClientDebugMode).execute(captor.capture());
         request = captor.getValue();
-        assertThat(request.getAllHeaders().length, is(1));
+        assertThat(request.getHeaders().length, is(1));
         assertThat(request.getFirstHeader("SplitSDKImpressionsMode").getValue(), is(equalTo("DEBUG")));
     }
-
-
- */
-
 }

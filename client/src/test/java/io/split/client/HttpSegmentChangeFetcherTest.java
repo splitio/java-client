@@ -1,20 +1,22 @@
 package io.split.client;
 
+import io.split.TestHelper;
 import io.split.client.dtos.SegmentChange;
 import io.split.engine.metrics.Metrics;
 import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
-import org.apache.hc.client5.http.impl.classic.CloseableHttpResponse;
 import org.apache.hc.client5.http.impl.classic.HttpClients;
+import org.apache.hc.core5.http.HttpStatus;
 import org.hamcrest.Matchers;
 import org.junit.Assert;
 import org.junit.Test;
-import org.mockito.Mockito;
 
 import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
 import java.net.URI;
 import java.net.URISyntaxException;
 
 public class HttpSegmentChangeFetcherTest {
+    private final TestHelper _testHelper = new TestHelper();
 
     @Test
     public void testDefaultURL() throws URISyntaxException {
@@ -52,23 +54,11 @@ public class HttpSegmentChangeFetcherTest {
         Assert.assertThat(fetcher.getTarget().toString(), Matchers.is(Matchers.equalTo("https://kubernetesturl.com/split/api/segmentChanges")));
     }
 
-    // TODO: Fix this test by mocking .getCode() instead of the status line of the request
-/*
     @Test
-    public void testFetcherWithSpecialCharacters() throws URISyntaxException, IOException {
+    public void testFetcherWithSpecialCharacters() throws URISyntaxException, IOException, IllegalAccessException, NoSuchMethodException, InvocationTargetException {
         URI rootTarget = URI.create("https://api.split.io/api/segmentChanges");
 
-        CloseableHttpClient httpClientMock = Mockito.mock(CloseableHttpClient.class);
-        CloseableHttpResponse httpResponseMock = Mockito.mock(CloseableHttpResponse.class, Mockito.RETURNS_DEEP_STUBS);
-        StatusLine statusLineMock = Mockito.mock(StatusLine.class);
-        HttpEntity entityMock = Mockito.mock(HttpEntity.class);
-
-        Mockito.when(statusLineMock.getStatusCode()).thenReturn(200);
-        Mockito.when(httpResponseMock.getStatusLine()).thenReturn(statusLineMock);
-        Mockito.when(entityMock.getContent()).thenReturn(getClass().getClassLoader().getResourceAsStream("segment-change-special-chatacters.json"));
-        Mockito.when(httpResponseMock.getEntity()).thenReturn(entityMock);
-
-        Mockito.when(httpClientMock.execute((HttpUriRequest) Mockito.anyObject())).thenReturn(httpResponseMock);
+        CloseableHttpClient httpClientMock = _testHelper.mockHttpClient("segment-change-special-chatacters.json", HttpStatus.SC_OK);
 
         Metrics.NoopMetrics metrics = new Metrics.NoopMetrics();
         HttpSegmentChangeFetcher fetcher = HttpSegmentChangeFetcher.create(httpClientMock, rootTarget, metrics);
@@ -81,7 +71,4 @@ public class HttpSegmentChangeFetcherTest {
         Assert.assertEquals(1, change.removed.size());
         Assert.assertEquals("other_user", change.removed.get(0));
     }
-
-
- */
 }

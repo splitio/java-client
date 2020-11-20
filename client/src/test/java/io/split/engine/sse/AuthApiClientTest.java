@@ -1,147 +1,97 @@
 package io.split.engine.sse;
 
+import io.split.TestHelper;
 import io.split.engine.sse.dtos.AuthenticationResponse;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
-import org.apache.hc.client5.http.impl.classic.CloseableHttpResponse;
+import org.apache.hc.core5.http.HttpStatus;
+import org.junit.Assert;
 import org.junit.Test;
-import org.mockito.Mockito;
 
 import java.io.IOException;
-
-import static org.junit.Assert.*;
+import java.lang.reflect.InvocationTargetException;
 
 public class AuthApiClientTest {
+    private final TestHelper _testHelper = new TestHelper();
 
-    // TODO: Fix this test by mocking .getCode() instead of the status line of the request
-    /*
     @Test
-    public void authenticateWithPushEnabledShouldReturnSuccess() throws IOException {
-        CloseableHttpClient httpClientMock = Mockito.mock(CloseableHttpClient.class);
-        CloseableHttpResponse httpResponseMock = Mockito.mock(CloseableHttpResponse.class);
-        StatusLine statusLineMock = Mockito.mock(StatusLine.class);
-        HttpEntity entityMock = Mockito.mock(HttpEntity.class);
-
-        Mockito.when(statusLineMock.getStatusCode()).thenReturn(HttpStatus.SC_OK);
-        Mockito.when(httpResponseMock.getStatusLine()).thenReturn(statusLineMock);
-        Mockito.when(entityMock.getContent()).thenReturn(getClass().getClassLoader().getResourceAsStream("streaming-auth-push-enabled.json"));
-        Mockito.when(httpResponseMock.getEntity()).thenReturn(entityMock);
-
-        Mockito.when(httpClientMock.execute((HttpUriRequest) Mockito.anyObject())).thenReturn(httpResponseMock);
+    public void authenticateWithPushEnabledShouldReturnSuccess() throws IOException, IllegalAccessException, NoSuchMethodException, InvocationTargetException {
+        CloseableHttpClient httpClientMock = _testHelper.mockHttpClient("streaming-auth-push-enabled.json", HttpStatus.SC_OK);
 
         AuthApiClient authApiClient = new AuthApiClientImp( "www.split-test.io", httpClientMock);
         AuthenticationResponse result = authApiClient.Authenticate();
 
-        assertTrue(result.isPushEnabled());
-        assertEquals("xxxx_xxxx_segments,xxxx_xxxx_splits,control", result.getChannels());
-        assertFalse(result.isRetry());
-        assertFalse(StringUtils.isEmpty(result.getToken()));
-        assertTrue(result.getExpiration() > 0);
+        Assert.assertTrue(result.isPushEnabled());
+        Assert.assertEquals("xxxx_xxxx_segments,xxxx_xxxx_splits,control", result.getChannels());
+        Assert.assertFalse(result.isRetry());
+        Assert.assertFalse(StringUtils.isEmpty(result.getToken()));
+        Assert.assertTrue(result.getExpiration() > 0);
+
     }
 
     @Test
-    public void authenticateWithPushEnabledWithWrongTokenShouldReturnError() throws IOException {
-        CloseableHttpClient httpClientMock = Mockito.mock(CloseableHttpClient.class);
-        CloseableHttpResponse httpResponseMock = Mockito.mock(CloseableHttpResponse.class);
-        StatusLine statusLineMock = Mockito.mock(StatusLine.class);
-        HttpEntity entityMock = Mockito.mock(HttpEntity.class);
-
-        Mockito.when(statusLineMock.getStatusCode()).thenReturn(HttpStatus.SC_OK);
-        Mockito.when(httpResponseMock.getStatusLine()).thenReturn(statusLineMock);
-        Mockito.when(entityMock.getContent()).thenReturn(getClass().getClassLoader().getResourceAsStream("streaming-auth-push-enabled-wrong-token.json"));
-        Mockito.when(httpResponseMock.getEntity()).thenReturn(entityMock);
-
-        Mockito.when(httpClientMock.execute((HttpUriRequest) Mockito.anyObject())).thenReturn(httpResponseMock);
+    public void authenticateWithPushEnabledWithWrongTokenShouldReturnError() throws IOException, IllegalAccessException, NoSuchMethodException, InvocationTargetException {
+        CloseableHttpClient httpClientMock = _testHelper.mockHttpClient("streaming-auth-push-enabled-wrong-token.json", HttpStatus.SC_OK);
 
         AuthApiClient authApiClient = new AuthApiClientImp( "www.split-test.io", httpClientMock);
         AuthenticationResponse result = authApiClient.Authenticate();
 
-        assertFalse(result.isPushEnabled());
-        assertTrue(StringUtils.isEmpty(result.getChannels()));
-        assertTrue(result.isRetry());
-        assertTrue(StringUtils.isEmpty(result.getToken()));
-        assertFalse(result.getExpiration() > 0);
+        Assert.assertFalse(result.isPushEnabled());
+        Assert.assertTrue(StringUtils.isEmpty(result.getChannels()));
+        Assert.assertTrue(result.isRetry());
+        Assert.assertTrue(StringUtils.isEmpty(result.getToken()));
+        Assert.assertFalse(result.getExpiration() > 0);
     }
 
     @Test
-    public void authenticateWithPushDisabledShouldReturnSuccess() throws IOException {
-        CloseableHttpClient httpClientMock = Mockito.mock(CloseableHttpClient.class);
-        CloseableHttpResponse httpResponseMock = Mockito.mock(CloseableHttpResponse.class);
-        StatusLine statusLineMock = Mockito.mock(StatusLine.class);
-        HttpEntity entityMock = Mockito.mock(HttpEntity.class);
-
-        Mockito.when(statusLineMock.getStatusCode()).thenReturn(HttpStatus.SC_OK);
-        Mockito.when(httpResponseMock.getStatusLine()).thenReturn(statusLineMock);
-        Mockito.when(entityMock.getContent()).thenReturn(getClass().getClassLoader().getResourceAsStream("streaming-auth-push-disabled.json"));
-        Mockito.when(httpResponseMock.getEntity()).thenReturn(entityMock);
-
-        Mockito.when(httpClientMock.execute((HttpUriRequest) Mockito.anyObject())).thenReturn(httpResponseMock);
+    public void authenticateWithPushDisabledShouldReturnSuccess() throws IOException, IllegalAccessException, NoSuchMethodException, InvocationTargetException {
+        CloseableHttpClient httpClientMock = _testHelper.mockHttpClient("streaming-auth-push-disabled.json", HttpStatus.SC_OK);
 
         AuthApiClient authApiClient = new AuthApiClientImp("www.split-test.io", httpClientMock);
         AuthenticationResponse result = authApiClient.Authenticate();
 
-        assertFalse(result.isPushEnabled());
-        assertTrue(StringUtils.isEmpty(result.getChannels()));
-        assertFalse(result.isRetry());
-        assertTrue(StringUtils.isEmpty(result.getToken()));
+        Assert.assertFalse(result.isPushEnabled());
+        Assert.assertTrue(StringUtils.isEmpty(result.getChannels()));
+        Assert.assertFalse(result.isRetry());
+        Assert.assertTrue(StringUtils.isEmpty(result.getToken()));
     }
 
     @Test
-    public void authenticateServerErrorShouldReturnErrorWithRetry() throws IOException {
-        CloseableHttpClient httpClientMock = Mockito.mock(CloseableHttpClient.class);
-        CloseableHttpResponse httpResponseMock = Mockito.mock(CloseableHttpResponse.class);
-        StatusLine statusLineMock = Mockito.mock(StatusLine.class);
-
-        Mockito.when(statusLineMock.getStatusCode()).thenReturn(HttpStatus.SC_INTERNAL_SERVER_ERROR);
-        Mockito.when(httpResponseMock.getStatusLine()).thenReturn(statusLineMock);
-        Mockito.when(httpClientMock.execute((HttpUriRequest) Mockito.anyObject())).thenReturn(httpResponseMock);
+    public void authenticateServerErrorShouldReturnErrorWithRetry() throws IOException, IllegalAccessException, NoSuchMethodException, InvocationTargetException {
+        CloseableHttpClient httpClientMock = _testHelper.mockHttpClient("", HttpStatus.SC_INTERNAL_SERVER_ERROR);
 
         AuthApiClient authApiClient = new AuthApiClientImp("www.split-test.io", httpClientMock);
         AuthenticationResponse result = authApiClient.Authenticate();
 
-        assertFalse(result.isPushEnabled());
-        assertTrue(StringUtils.isEmpty(result.getChannels()));
-        assertTrue(StringUtils.isEmpty(result.getToken()));
-        assertTrue(result.isRetry());
+        Assert.assertFalse(result.isPushEnabled());
+        Assert.assertTrue(StringUtils.isEmpty(result.getChannels()));
+        Assert.assertTrue(StringUtils.isEmpty(result.getToken()));
+        Assert.assertTrue(result.isRetry());
     }
 
     @Test
-    public void authenticateServerBadRequestShouldReturnErrorWithoutRetry() throws IOException {
-        CloseableHttpClient httpClientMock = Mockito.mock(CloseableHttpClient.class);
-        CloseableHttpResponse httpResponseMock = Mockito.mock(CloseableHttpResponse.class);
-        StatusLine statusLineMock = Mockito.mock(StatusLine.class);
-
-        Mockito.when(statusLineMock.getStatusCode()).thenReturn(HttpStatus.SC_BAD_REQUEST);
-        Mockito.when(httpResponseMock.getStatusLine()).thenReturn(statusLineMock);
-        Mockito.when(httpClientMock.execute((HttpUriRequest) Mockito.anyObject())).thenReturn(httpResponseMock);
+    public void authenticateServerBadRequestShouldReturnErrorWithoutRetry() throws IOException, IllegalAccessException, NoSuchMethodException, InvocationTargetException {
+        CloseableHttpClient httpClientMock = _testHelper.mockHttpClient("", HttpStatus.SC_BAD_REQUEST);
 
         AuthApiClient authApiClient = new AuthApiClientImp("www.split-test.io", httpClientMock);
         AuthenticationResponse result = authApiClient.Authenticate();
 
-        assertFalse(result.isPushEnabled());
-        assertTrue(StringUtils.isEmpty(result.getChannels()));
-        assertTrue(StringUtils.isEmpty(result.getToken()));
-        assertFalse(result.isRetry());
+        Assert.assertFalse(result.isPushEnabled());
+        Assert.assertTrue(StringUtils.isEmpty(result.getChannels()));
+        Assert.assertTrue(StringUtils.isEmpty(result.getToken()));
+        Assert.assertFalse(result.isRetry());
     }
 
     @Test
-    public void authenticateServerUnauthorizedShouldReturnErrorWithoutRetry() throws IOException {
-        CloseableHttpClient httpClientMock = Mockito.mock(CloseableHttpClient.class);
-        CloseableHttpResponse httpResponseMock = Mockito.mock(CloseableHttpResponse.class);
-        StatusLine statusLineMock = Mockito.mock(StatusLine.class);
-
-        Mockito.when(statusLineMock.getStatusCode()).thenReturn(HttpStatus.SC_UNAUTHORIZED);
-        Mockito.when(httpResponseMock.getStatusLine()).thenReturn(statusLineMock);
-        Mockito.when(httpClientMock.execute((HttpUriRequest) Mockito.anyObject())).thenReturn(httpResponseMock);
+    public void authenticateServerUnauthorizedShouldReturnErrorWithoutRetry() throws IOException, IllegalAccessException, NoSuchMethodException, InvocationTargetException {
+        CloseableHttpClient httpClientMock = _testHelper.mockHttpClient("", HttpStatus.SC_UNAUTHORIZED);
 
         AuthApiClient authApiClient = new AuthApiClientImp("www.split-test.io", httpClientMock);
         AuthenticationResponse result = authApiClient.Authenticate();
 
-        assertFalse(result.isPushEnabled());
-        assertTrue(StringUtils.isEmpty(result.getChannels()));
-        assertTrue(StringUtils.isEmpty(result.getToken()));
-        assertFalse(result.isRetry());
+        Assert.assertFalse(result.isPushEnabled());
+        Assert.assertTrue(StringUtils.isEmpty(result.getChannels()));
+        Assert.assertTrue(StringUtils.isEmpty(result.getToken()));
+        Assert.assertFalse(result.isRetry());
     }
-
-     */
 }
