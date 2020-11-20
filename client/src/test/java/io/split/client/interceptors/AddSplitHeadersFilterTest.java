@@ -1,14 +1,14 @@
 package io.split.client.interceptors;
 
-import org.apache.http.HttpException;
-import org.apache.http.HttpRequest;
+import org.apache.hc.core5.http.HttpException;
+import org.apache.hc.core5.http.HttpRequest;
+import org.apache.hc.core5.http.protocol.HttpContext;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.Mockito;
 
-import org.apache.http.protocol.HttpContext;
 import org.mockito.runners.MockitoJUnitRunner;
 
 import java.io.IOException;
@@ -34,7 +34,7 @@ public class AddSplitHeadersFilterTest {
         HttpRequest req = Mockito.mock(HttpRequest.class);
         HttpContext ctx = Mockito.mock(HttpContext.class);
 
-        filter.process(req, ctx);
+        filter.process(req, null, ctx);
         Mockito.verify(req, Mockito.times(4)).addHeader(headerNameCaptor.capture(), headerValueCaptor.capture());
 
         List<String> headerNames = headerNameCaptor.getAllValues();
@@ -50,12 +50,12 @@ public class AddSplitHeadersFilterTest {
     }
 
     @Test
-    public void testHeadersWithoutIpAndHostname() {
+    public void testHeadersWithoutIpAndHostname() throws IOException, HttpException {
         AddSplitHeadersFilter filter = AddSplitHeadersFilter.instance("abc", false);
         HttpRequest req = Mockito.mock(HttpRequest.class);
         HttpContext ctx = Mockito.mock(HttpContext.class);
 
-        filter.process(req, ctx);
+        filter.process(req, null, ctx);
         Mockito.verify(req, Mockito.times(2)).addHeader(headerNameCaptor.capture(), headerValueCaptor.capture());
 
         List<String> headerNames = headerNameCaptor.getAllValues();

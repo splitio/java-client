@@ -1,7 +1,12 @@
 package io.split.engine.sse;
 
 import io.split.engine.sse.client.SSEClient;
-import org.apache.http.client.utils.URIBuilder;
+import org.apache.hc.client5.http.config.RequestConfig;
+import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
+import org.apache.hc.client5.http.impl.classic.HttpClientBuilder;
+import org.apache.hc.client5.http.impl.classic.HttpClients;
+import org.apache.hc.core5.net.URIBuilder;
+import org.apache.hc.core5.util.Timeout;
 import org.junit.Ignore;
 import org.junit.Test;
 
@@ -19,9 +24,17 @@ public class SSEClientTest {
                 .addParameter("channels", "[?occupancy=metrics.publishers]control_pri")
                 .build();
 
+        RequestConfig requestConfig = RequestConfig.custom()
+                .setConnectTimeout(Timeout.ofMilliseconds(70000))
+                .build();
+
+        HttpClientBuilder httpClientbuilder = HttpClients.custom()
+                .setDefaultRequestConfig(requestConfig);
+
+        CloseableHttpClient httpClient =  httpClientbuilder.build();
 
         SSEClient sse = new SSEClient(e -> { System.out.println(e); return null; },
-                s -> { System.out.println(s); return null; });
+                s -> { System.out.println(s); return null; }, httpClient);
         sse.open(uri);
         Thread.sleep(5000);
         sse.close();

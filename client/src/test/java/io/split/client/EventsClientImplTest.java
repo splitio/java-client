@@ -1,9 +1,9 @@
 package io.split.client;
 
 import io.split.client.dtos.Event;
-import org.apache.http.client.methods.HttpUriRequest;
-import org.apache.http.impl.client.CloseableHttpClient;
-import org.apache.http.impl.client.HttpClients;
+import org.apache.hc.client5.http.classic.methods.HttpUriRequest;
+import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
+import org.apache.hc.client5.http.impl.classic.HttpClients;
 import org.hamcrest.Matchers;
 import org.junit.Assert;
 import org.junit.Test;
