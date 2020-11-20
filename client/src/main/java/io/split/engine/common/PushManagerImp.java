@@ -65,13 +65,13 @@ public class PushManagerImp implements PushManager {
                                        String authUrl,
                                        CloseableHttpClient httpClient,
                                        int authRetryBackOffBase,
-                                       LinkedBlockingQueue<PushManager.Status> statusMessages) {
-
+                                       LinkedBlockingQueue<PushManager.Status> statusMessages,
+                                       CloseableHttpClient sseHttpClient) {
         SplitsWorker splitsWorker = new SplitsWorkerImp(synchronizer);
         Worker<SegmentQueueDto> segmentWorker = new SegmentsWorkerImp(synchronizer);
         PushStatusTracker pushStatusTracker = new PushStatusTrackerImp(statusMessages);
         return new PushManagerImp(new AuthApiClientImp(authUrl, httpClient),
-                EventSourceClientImp.build(streamingUrl, splitsWorker, segmentWorker, pushStatusTracker),
+                EventSourceClientImp.build(streamingUrl, splitsWorker, segmentWorker, pushStatusTracker, sseHttpClient),
                 splitsWorker,
                 segmentWorker,
                 new Backoff(authRetryBackOffBase),

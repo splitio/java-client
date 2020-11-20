@@ -22,7 +22,6 @@ import io.split.engine.segments.SegmentChangeFetcher;
 import io.split.integrations.IntegrationsConfig;
 import org.apache.hc.client5.http.auth.AuthScope;
 import org.apache.hc.client5.http.auth.Credentials;
-import org.apache.hc.client5.http.auth.CredentialsProvider;
 import org.apache.hc.client5.http.auth.UsernamePasswordCredentials;
 import org.apache.hc.client5.http.config.RequestConfig;
 import org.apache.hc.client5.http.cookie.StandardCookieSpec;
@@ -33,12 +32,8 @@ import org.apache.hc.client5.http.impl.classic.HttpClients;
 import org.apache.hc.client5.http.impl.io.PoolingHttpClientConnectionManager;
 import org.apache.hc.client5.http.impl.io.PoolingHttpClientConnectionManagerBuilder;
 import org.apache.hc.client5.http.impl.routing.DefaultProxyRoutePlanner;
-import org.apache.hc.client5.http.socket.ConnectionSocketFactory;
-import org.apache.hc.client5.http.socket.PlainConnectionSocketFactory;
 import org.apache.hc.client5.http.ssl.SSLConnectionSocketFactory;
 import org.apache.hc.client5.http.ssl.SSLConnectionSocketFactoryBuilder;
-import org.apache.hc.core5.http.config.Registry;
-import org.apache.hc.core5.http.config.RegistryBuilder;
 import org.apache.hc.core5.http.io.SocketConfig;
 import org.apache.hc.core5.http.ssl.TLS;
 import org.apache.hc.core5.ssl.SSLContexts;
@@ -46,12 +41,9 @@ import org.apache.hc.core5.util.Timeout;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.net.ssl.SSLContext;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.security.KeyManagementException;
-import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
@@ -60,6 +52,8 @@ import java.util.stream.Collectors;
 
 public class SplitFactoryImpl implements SplitFactory {
     private static final Logger _log = LoggerFactory.getLogger(SplitFactory.class);
+    private final static long SSE_CONNECT_TIMEOUT = 30000;
+    private final static long SSE_SOCKET_TIMEOUT = 70000;
 
     private static final Multiset<String> USED_API_TOKENS = ConcurrentHashMultiset.create();
     private static Random RANDOM = new Random();
@@ -100,21 +94,58 @@ public class SplitFactoryImpl implements SplitFactory {
 
         // Set up proxy is it exists
         if (config.proxy() != null) {
-            _log.info("Initializing Split SDK with proxy settings");
-            DefaultProxyRoutePlanner routePlanner = new DefaultProxyRoutePlanner(config.proxy());
-            httpClientbuilder.setRoutePlanner(routePlanner);
-
-            if (config.proxyUsername() != null && config.proxyPassword() != null) {
-                _log.debug("Proxy setup using credentials");
-                BasicCredentialsProvider credsProvider = new BasicCredentialsProvider();
-                AuthScope siteScope = new AuthScope(config.proxy().getHostName(), config.proxy().getPort());
-                Credentials siteCreds = new UsernamePasswordCredentials(config.proxyUsername(), config.proxyPassword().toCharArray());
-                credsProvider.setCredentials(siteScope, siteCreds);
-                httpClientbuilder.setDefaultCredentialsProvider(credsProvider);
-            }
+            httpClientbuilder = setupProxy(httpClientbuilder, config);
         }
 
         return httpClientbuilder.build();
+    }
+
+    private static CloseableHttpClient buildSSEdHttpClient(SplitClientConfig config) {
+        RequestConfig requestConfig = RequestConfig.custom()
+                .setConnectTimeout(Timeout.of(SSE_CONNECT_TIMEOUT, TimeUnit.MILLISECONDS))
+                .build();
+
+        SSLConnectionSocketFactory sslSocketFactory = SSLConnectionSocketFactoryBuilder.create()
+                .setSslContext(SSLContexts.createSystemDefault())
+                .setTlsVersions(TLS.V_1_1, TLS.V_1_2)
+                .build();
+
+        PoolingHttpClientConnectionManager cm = PoolingHttpClientConnectionManagerBuilder.create()
+                .setSSLSocketFactory(sslSocketFactory)
+                .setDefaultSocketConfig(SocketConfig.custom()
+                        .setSoTimeout(Timeout.ofMilliseconds(SSE_SOCKET_TIMEOUT))
+                        .build())
+                .build();
+        cm.setMaxTotal(1);
+        cm.setDefaultMaxPerRoute(1);
+
+        HttpClientBuilder httpClientbuilder = HttpClients.custom()
+                .setConnectionManager(cm)
+                .setDefaultRequestConfig(requestConfig);
+
+        // Set up proxy is it exists
+        if (config.proxy() != null) {
+            httpClientbuilder = setupProxy(httpClientbuilder, config);
+        }
+
+        return httpClientbuilder.build();
+    }
+
+    private static HttpClientBuilder setupProxy(HttpClientBuilder httpClientbuilder, SplitClientConfig config) {
+        _log.info("Initializing Split SDK with proxy settings");
+        DefaultProxyRoutePlanner routePlanner = new DefaultProxyRoutePlanner(config.proxy());
+        httpClientbuilder.setRoutePlanner(routePlanner);
+
+        if (config.proxyUsername() != null && config.proxyPassword() != null) {
+            _log.debug("Proxy setup using credentials");
+            BasicCredentialsProvider credsProvider = new BasicCredentialsProvider();
+            AuthScope siteScope = new AuthScope(config.proxy().getHostName(), config.proxy().getPort());
+            Credentials siteCreds = new UsernamePasswordCredentials(config.proxyUsername(), config.proxyPassword().toCharArray());
+            credsProvider.setCredentials(siteScope, siteCreds);
+            httpClientbuilder.setDefaultCredentialsProvider(credsProvider);
+        }
+
+        return  httpClientbuilder;
     }
 
     public SplitFactoryImpl(String apiToken, SplitClientConfig config) throws URISyntaxException {
@@ -190,7 +221,7 @@ public class SplitFactoryImpl implements SplitFactory {
         final EventClient eventClient = EventClientImpl.create(httpclient, eventsRootTarget, config.eventsQueueSize(), config.eventFlushIntervalInMillis(), config.waitBeforeShutdown());
 
         // SyncManager
-        final SyncManager syncManager = SyncManagerImp.build(config.streamingEnabled(), splitFetcherProvider, segmentFetcher, config.authServiceURL(), httpclient, config.streamingServiceURL(), config.authRetryBackoffBase());
+        final SyncManager syncManager = SyncManagerImp.build(config.streamingEnabled(), splitFetcherProvider, segmentFetcher, config.authServiceURL(), httpclient, config.streamingServiceURL(), config.authRetryBackoffBase(), buildSSEdHttpClient(config));
         syncManager.start();
 
         destroyer = new Runnable() {

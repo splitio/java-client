@@ -1,12 +1,18 @@
-package io.split.engine.sse;
+/*package io.split.engine.sse;
 
 import io.split.engine.sse.client.SSEClient;
+import org.apache.hc.client5.http.config.RequestConfig;
+import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
+import org.apache.hc.client5.http.impl.classic.HttpClientBuilder;
+import org.apache.hc.client5.http.impl.classic.HttpClients;
 import org.apache.hc.core5.net.URIBuilder;
+import org.apache.hc.core5.util.Timeout;
 import org.junit.Ignore;
 import org.junit.Test;
 
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.concurrent.TimeUnit;
 
 public class SSEClientTest {
 
@@ -19,12 +25,21 @@ public class SSEClientTest {
                 .addParameter("channels", "[?occupancy=metrics.publishers]control_pri")
                 .build();
 
+        RequestConfig requestConfig = RequestConfig.custom()
+                .setConnectTimeout(Timeout.of(70000, TimeUnit.MILLISECONDS))
+                .build();
+
+        HttpClientBuilder httpClientbuilder = HttpClients.custom()
+                .setDefaultRequestConfig(requestConfig);
+
+        CloseableHttpClient httpClient =  httpClientbuilder.build();
 
         SSEClient sse = new SSEClient(e -> { System.out.println(e); return null; },
-                s -> { System.out.println(s); return null; });
+                s -> { System.out.println(s); return null; }, httpClient);
         sse.open(uri);
         Thread.sleep(5000);
         sse.close();
         Thread.sleep(100000);
     }
 }
+*/

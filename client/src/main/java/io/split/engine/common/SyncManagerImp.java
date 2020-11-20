@@ -49,11 +49,11 @@ public class SyncManagerImp implements SyncManager {
                                         String authUrl,
                                         CloseableHttpClient httpClient,
                                         String streamingServiceUrl,
-                                        int authRetryBackOffBase) {
-
+                                        int authRetryBackOffBase,
+                                       CloseableHttpClient sseHttpClient) {
         LinkedBlockingQueue<PushManager.Status> pushMessages = new LinkedBlockingQueue<>();
         Synchronizer synchronizer = new SynchronizerImp(refreshableSplitFetcherProvider, segmentFetcher);
-        PushManager pushManager = PushManagerImp.build(synchronizer, streamingServiceUrl, authUrl, httpClient, authRetryBackOffBase, pushMessages);
+        PushManager pushManager = PushManagerImp.build(synchronizer, streamingServiceUrl, authUrl, httpClient, authRetryBackOffBase, pushMessages, sseHttpClient);
         return new SyncManagerImp(streamingEnabledConfig, synchronizer, pushManager, pushMessages);
     }
 

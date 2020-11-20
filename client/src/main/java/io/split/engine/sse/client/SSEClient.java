@@ -52,10 +52,12 @@ public class SSEClient {
     private final AtomicReference<ConnectionState> _state = new AtomicReference<>(ConnectionState.CLOSED);
     private final AtomicReference<CloseableHttpResponse> _ongoingResponse = new AtomicReference<>();
 
-    public SSEClient(Function<RawEvent, Void> eventCallback, Function<StatusMessage, Void> statusCallback) {
-        _client = buildHttpClient();
+    public SSEClient(Function<RawEvent, Void> eventCallback,
+                     Function<StatusMessage, Void> statusCallback,
+                     CloseableHttpClient client) {
         _eventCallback = eventCallback;
         _statusCallback = statusCallback;
+        _client = client;
     }
 
     public synchronized boolean open(URI uri) {
@@ -174,22 +176,6 @@ public class SSEClient {
             }
             lines.append(line).append("\n");
         }
-    }
-
-    private static CloseableHttpClient buildHttpClient() {
-        RequestConfig requestConfig = RequestConfig.custom()
-                .setConnectTimeout(Timeout.of(CONNECT_TIMEOUT, TimeUnit.MILLISECONDS))
-                //.setSocketTimeout(SOCKET_TIMEOUT) TODO: Use a PoolingHttpClientConnectionManager to set socket timeout
-                .build();
-
-        PoolingHttpClientConnectionManager cm = new PoolingHttpClientConnectionManager();
-        cm.setMaxTotal(1);
-        cm.setDefaultMaxPerRoute(1);
-
-        return HttpClients.custom()
-                .setConnectionManager(cm)
-                .setDefaultRequestConfig(requestConfig)
-                .build();
     }
 
     private void handleMessage(String message) {

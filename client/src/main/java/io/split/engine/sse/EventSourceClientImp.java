@@ -7,6 +7,7 @@ import io.split.engine.sse.dtos.SegmentQueueDto;
 import io.split.engine.sse.exceptions.EventParsingException;
 import io.split.engine.sse.workers.SplitsWorker;
 import io.split.engine.sse.workers.Worker;
+import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
 import org.apache.hc.core5.net.URIBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -29,7 +30,8 @@ public class EventSourceClientImp implements EventSourceClient {
     /* package private */ EventSourceClientImp(String baseStreamingUrl,
                                                NotificationParser notificationParser,
                                                NotificationProcessor notificationProcessor,
-                                               PushStatusTracker pushStatusTracker) {
+                                               PushStatusTracker pushStatusTracker,
+                                               CloseableHttpClient sseHttpClient) {
         _baseStreamingUrl = checkNotNull(baseStreamingUrl);
         _notificationParser = checkNotNull(notificationParser);
         _notificationProcessor = checkNotNull(notificationProcessor);
@@ -37,19 +39,21 @@ public class EventSourceClientImp implements EventSourceClient {
 
         _sseClient = new SSEClient(
                 inboundEvent -> { onMessage(inboundEvent); return null; },
-                status -> { _pushStatusTracker.handleSseStatus(status); return null; });
+                status -> { _pushStatusTracker.handleSseStatus(status); return null; },
+                sseHttpClient);
 
     }
 
     public static EventSourceClientImp build(String baseStreamingUrl,
                                              SplitsWorker splitsWorker,
                                              Worker<SegmentQueueDto> segmentWorker,
-                                             PushStatusTracker pushStatusTracker) {
-
+                                             PushStatusTracker pushStatusTracker,
+                                             CloseableHttpClient sseHttpClient) {
         return new EventSourceClientImp(baseStreamingUrl,
                 new NotificationParserImp(),
                 NotificationProcessorImp.build(splitsWorker, segmentWorker, pushStatusTracker),
-                pushStatusTracker);
+                pushStatusTracker,
+                sseHttpClient);
     }
 
     @Override
