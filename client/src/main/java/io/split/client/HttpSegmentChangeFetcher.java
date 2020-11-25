@@ -6,11 +6,11 @@ import io.split.client.utils.Json;
 import io.split.client.utils.Utils;
 import io.split.engine.metrics.Metrics;
 import io.split.engine.segments.SegmentChangeFetcher;
-import org.apache.http.client.methods.CloseableHttpResponse;
-import org.apache.http.client.methods.HttpGet;
-import org.apache.http.client.utils.URIBuilder;
-import org.apache.http.impl.client.CloseableHttpClient;
-import org.apache.http.util.EntityUtils;
+import org.apache.hc.client5.http.classic.methods.HttpGet;
+import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
+import org.apache.hc.client5.http.impl.classic.CloseableHttpResponse;
+import org.apache.hc.core5.http.io.entity.EntityUtils;
+import org.apache.hc.core5.net.URIBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -60,7 +60,7 @@ public final class HttpSegmentChangeFetcher implements SegmentChangeFetcher {
             HttpGet request = new HttpGet(uri);
             response = _client.execute(request);
 
-            int statusCode = response.getStatusLine().getStatusCode();
+            int statusCode = response.getCode();
 
             if (statusCode < 200 || statusCode >= 300) {
                 _log.error("Response status was: " + statusCode);

@@ -1,26 +1,23 @@
 package io.split.client;
 
+import io.split.TestHelper;
 import io.split.client.dtos.Split;
 import io.split.client.dtos.SplitChange;
 import io.split.engine.metrics.Metrics;
-import org.apache.http.HttpEntity;
-import org.apache.http.StatusLine;
-import org.apache.http.client.methods.CloseableHttpResponse;
-import org.apache.http.client.methods.HttpUriRequest;
-import org.apache.http.impl.client.CloseableHttpClient;
-import org.apache.http.impl.client.HttpClients;
+import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
+import org.apache.hc.client5.http.impl.classic.HttpClients;
+import org.apache.hc.core5.http.HttpStatus;
 import org.hamcrest.Matchers;
 import org.junit.Assert;
 import org.junit.Test;
-import org.mockito.Mockito;
 
 import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.Map;
 
 public class HttpSplitChangeFetcherTest {
-
     @Test
     public void testDefaultURL() throws URISyntaxException {
         URI rootTarget = URI.create("https://api.split.io");
@@ -58,20 +55,10 @@ public class HttpSplitChangeFetcherTest {
     }
 
     @Test
-    public void testFetcherWithSpecialCharacters() throws URISyntaxException, IOException {
+    public void testFetcherWithSpecialCharacters() throws URISyntaxException, InvocationTargetException, NoSuchMethodException, IllegalAccessException, IOException {
         URI rootTarget = URI.create("https://api.split.io");
 
-        CloseableHttpClient httpClientMock = Mockito.mock(CloseableHttpClient.class);
-        CloseableHttpResponse httpResponseMock = Mockito.mock(CloseableHttpResponse.class, Mockito.RETURNS_DEEP_STUBS);
-        StatusLine statusLineMock = Mockito.mock(StatusLine.class);
-        HttpEntity entityMock = Mockito.mock(HttpEntity.class);
-
-        Mockito.when(statusLineMock.getStatusCode()).thenReturn(200);
-        Mockito.when(httpResponseMock.getStatusLine()).thenReturn(statusLineMock);
-        Mockito.when(entityMock.getContent()).thenReturn(getClass().getClassLoader().getResourceAsStream("split-change-special-characters.json"));
-        Mockito.when(httpResponseMock.getEntity()).thenReturn(entityMock);
-
-        Mockito.when(httpClientMock.execute((HttpUriRequest) Mockito.anyObject())).thenReturn(httpResponseMock);
+        CloseableHttpClient httpClientMock = TestHelper.mockHttpClient("split-change-special-characters.json", HttpStatus.SC_OK);
 
         Metrics.NoopMetrics metrics = new Metrics.NoopMetrics();
         HttpSplitChangeFetcher fetcher = HttpSplitChangeFetcher.create(httpClientMock, rootTarget, metrics);

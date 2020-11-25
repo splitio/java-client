@@ -27,7 +27,7 @@ public abstract class Worker<T> implements Runnable {
             _thread = new Thread( this);
             _thread.start();
         } else {
-            _log.warn(String.format("%s Worker already running.", _workerName));
+            _log.debug(String.format("%s Worker already running.", _workerName));
             return;
         }
     }
@@ -37,7 +37,7 @@ public abstract class Worker<T> implements Runnable {
             _thread.interrupt();
             _log.debug(String.format("%s Worked stopped.", _workerName));
         } else {
-            _log.warn(String.format("%s Worker not running.", _workerName));
+            _log.debug(String.format("%s Worker not running.", _workerName));
         }
     }
 
@@ -48,14 +48,14 @@ public abstract class Worker<T> implements Runnable {
         }
         try {
             if (!_running.get()) {
-                _log.warn(String.format("%s Worker not running. Can't add items.", _workerName));
+                _log.debug(String.format("%s Worker not running. Can't add items.", _workerName));
                 return;
             }
 
             _queue.add(element);
             _log.debug(String.format("Added to %s queue: %s", _workerName, element.toString()));
         } catch (Exception ex) {
-            _log.error(String.format("Exception on %s Worker addToQueue: %s", _workerName, ex.getMessage()));
+            _log.debug(String.format("Exception on %s Worker addToQueue: %s", _workerName, ex.getMessage()));
         }
     }
 

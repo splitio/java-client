@@ -1,5 +1,9 @@
 CHANGES
 
+4.1.2 (Nov 25, 2020)
+- Updated junit from 4.12 to 4.13.1
+- Updated HttpClient from 4.5.2 to 5.0.3
+
 4.1.1 (Sep 30, 2020)
 - Fixed fetch retries after received an SPLIT_CHANGE.
 

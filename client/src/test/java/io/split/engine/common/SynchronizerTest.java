@@ -1,12 +1,8 @@
 package io.split.engine.common;
 
-import io.split.client.HttpSegmentChangeFetcher;
-import io.split.engine.SDKReadinessGates;
 import io.split.engine.experiments.RefreshableSplitFetcher;
 import io.split.engine.experiments.RefreshableSplitFetcherProvider;
 import io.split.engine.segments.RefreshableSegmentFetcher;
-import io.split.engine.segments.SegmentChangeFetcher;
-import org.apache.http.impl.client.CloseableHttpClient;
 import org.junit.Test;
 import org.mockito.Mockito;
 
