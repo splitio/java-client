@@ -2,12 +2,8 @@ package io.split.engine.sse.client;
 
 import com.google.common.base.Strings;
 import org.apache.hc.client5.http.classic.methods.HttpGet;
-import org.apache.hc.client5.http.config.RequestConfig;
 import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
 import org.apache.hc.client5.http.impl.classic.CloseableHttpResponse;
-import org.apache.hc.client5.http.impl.classic.HttpClients;
-import org.apache.hc.client5.http.impl.io.PoolingHttpClientConnectionManager;
-import org.apache.hc.core5.util.Timeout;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -50,6 +46,7 @@ public class SSEClient {
     private final Function<StatusMessage, Void> _statusCallback;
     private final AtomicReference<ConnectionState> _state = new AtomicReference<>(ConnectionState.CLOSED);
     private final AtomicReference<CloseableHttpResponse> _ongoingResponse = new AtomicReference<>();
+    private final AtomicReference<HttpGet> _ongoingRequest = new AtomicReference<>();
 
     public SSEClient(Function<RawEvent, Void> eventCallback,
                      Function<StatusMessage, Void> statusCallback,
@@ -91,6 +88,7 @@ public class SSEClient {
         if (_state.compareAndSet(ConnectionState.OPEN, ConnectionState.CLOSED)) {
             if (_ongoingResponse.get() != null) {
                 try {
+                    _ongoingRequest.get().abort();
                     _ongoingResponse.get().close();
                 } catch (IOException e) {
                     _log.debug(String.format("Error closing SSEClient: %s", e.getMessage()));
@@ -145,10 +143,11 @@ public class SSEClient {
     }
 
     private boolean establishConnection(URI uri, CountDownLatch signal) {
-        HttpGet request = new HttpGet(uri);
+
+        _ongoingRequest.set(new HttpGet(uri));
 
         try {
-            _ongoingResponse.set(_client.execute(request));
+            _ongoingResponse.set(_client.execute(_ongoingRequest.get()));
             if (_ongoingResponse.get().getCode() != 200) {
                 return false;
             }
