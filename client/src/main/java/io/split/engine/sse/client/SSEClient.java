@@ -1,6 +1,7 @@
 package io.split.engine.sse.client;
 
 import com.google.common.base.Strings;
+import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import org.apache.hc.client5.http.classic.methods.HttpGet;
 import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
 import org.apache.hc.client5.http.impl.classic.CloseableHttpResponse;
@@ -15,6 +16,8 @@ import java.io.InputStreamReader;
 import java.net.SocketException;
 import java.net.URI;
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Function;
@@ -41,6 +44,10 @@ public class SSEClient {
     private final static long CONNECT_TIMEOUT = 30000;
     private static final Logger _log = LoggerFactory.getLogger(SSEClient.class);
 
+    private final ExecutorService _connectionExecutor = Executors.newSingleThreadExecutor(new ThreadFactoryBuilder()
+            .setDaemon(true)
+            .setNameFormat("SPLIT-SSEConnection-%d")
+            .build());
     private final CloseableHttpClient _client;
     private final Function<RawEvent, Void> _eventCallback;
     private final Function<StatusMessage, Void> _statusCallback;
@@ -65,13 +72,11 @@ public class SSEClient {
         _statusCallback.apply(StatusMessage.INITIALIZATION_IN_PROGRESS);
 
         CountDownLatch signal = new CountDownLatch(1);
-        Thread thread = new Thread(() -> connectAndLoop(uri, signal));
-        thread.setDaemon(true);
-        thread.start();
+        _connectionExecutor.submit(() -> connectAndLoop(uri, signal));
         try {
             if (!signal.await(CONNECT_TIMEOUT, TimeUnit.SECONDS)) {
                 return false;
-            };
+            }
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
             _log.debug(e.getMessage());
