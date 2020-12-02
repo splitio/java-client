@@ -1,5 +1,9 @@
 CHANGES
 
+4.1.3 (Dec 2, 2020)
+- Fix Issue when closing SSE Connection
+- Updated log-level for some messages
+
 4.1.2 (Nov 25, 2020)
 - Updated junit from 4.12 to 4.13.1
 - Updated HttpClient from 4.5.2 to 5.0.3
