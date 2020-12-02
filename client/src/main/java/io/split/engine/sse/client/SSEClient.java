@@ -65,7 +65,7 @@ public class SSEClient {
 
     public synchronized boolean open(URI uri) {
         if (isOpen()) {
-            _log.debug("SSEClient already open.");
+            _log.info("SSEClient already open.");
             return false;
         }
 
@@ -79,7 +79,7 @@ public class SSEClient {
             }
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
-            _log.debug(e.getMessage());
+            _log.info(e.getMessage());
             return false;
         }
         return isOpen();
@@ -96,7 +96,7 @@ public class SSEClient {
                     _ongoingRequest.get().abort();
                     _ongoingResponse.get().close();
                 } catch (IOException e) {
-                    _log.debug(String.format("Error closing SSEClient: %s", e.getMessage()));
+                    _log.info(String.format("Error closing SSEClient: %s", e.getMessage()));
                 }
             }
         }
@@ -127,7 +127,7 @@ public class SSEClient {
                     _statusCallback.apply(StatusMessage.RETRYABLE_ERROR);
                     return;
                 } catch (IOException exc) { // Other type of connection error
-                    _log.debug(exc.getMessage());
+                    _log.info(String.format("SSE connection ended abruptly: %s. Retying", exc.getMessage()));
                     _statusCallback.apply(StatusMessage.RETRYABLE_ERROR);
                     return;
                 }
@@ -159,7 +159,7 @@ public class SSEClient {
             _state.set(ConnectionState.OPEN);
             _statusCallback.apply(StatusMessage.CONNECTED);
         } catch (IOException exc) {
-            _log.debug(String.format("Error establishConnection: %s", exc));
+            _log.error(String.format("Error establishConnection: %s", exc));
             return false;
         } finally {
             signal.countDown();

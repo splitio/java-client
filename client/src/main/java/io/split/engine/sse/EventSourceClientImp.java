@@ -65,7 +65,7 @@ public class EventSourceClientImp implements EventSourceClient {
         try {
             return _sseClient.open(buildUri(channelList, token));
         } catch (URISyntaxException e) {
-            _log.debug("Error building Streaming URI: " + e.getMessage());
+            _log.error("Error building Streaming URI: " + e.getMessage());
             return false;
         }
     }
@@ -73,7 +73,7 @@ public class EventSourceClientImp implements EventSourceClient {
     @Override
     public void stop() {
         if (!_sseClient.isOpen()) {
-            _log.debug("Event Source Client is closed.");
+            _log.info("Event Source Client is closed.");
             return;
         }
         _sseClient.close();
