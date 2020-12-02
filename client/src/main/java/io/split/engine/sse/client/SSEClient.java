@@ -1,13 +1,10 @@
 package io.split.engine.sse.client;
 
 import com.google.common.base.Strings;
+import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import org.apache.hc.client5.http.classic.methods.HttpGet;
-import org.apache.hc.client5.http.config.RequestConfig;
 import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
 import org.apache.hc.client5.http.impl.classic.CloseableHttpResponse;
-import org.apache.hc.client5.http.impl.classic.HttpClients;
-import org.apache.hc.client5.http.impl.io.PoolingHttpClientConnectionManager;
-import org.apache.hc.core5.util.Timeout;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -19,6 +16,8 @@ import java.io.InputStreamReader;
 import java.net.SocketException;
 import java.net.URI;
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Function;
@@ -45,11 +44,16 @@ public class SSEClient {
     private final static long CONNECT_TIMEOUT = 30000;
     private static final Logger _log = LoggerFactory.getLogger(SSEClient.class);
 
+    private final ExecutorService _connectionExecutor = Executors.newSingleThreadExecutor(new ThreadFactoryBuilder()
+            .setDaemon(true)
+            .setNameFormat("SPLIT-SSEConnection-%d")
+            .build());
     private final CloseableHttpClient _client;
     private final Function<RawEvent, Void> _eventCallback;
     private final Function<StatusMessage, Void> _statusCallback;
     private final AtomicReference<ConnectionState> _state = new AtomicReference<>(ConnectionState.CLOSED);
     private final AtomicReference<CloseableHttpResponse> _ongoingResponse = new AtomicReference<>();
+    private final AtomicReference<HttpGet> _ongoingRequest = new AtomicReference<>();
 
     public SSEClient(Function<RawEvent, Void> eventCallback,
                      Function<StatusMessage, Void> statusCallback,
@@ -61,23 +65,21 @@ public class SSEClient {
 
     public synchronized boolean open(URI uri) {
         if (isOpen()) {
-            _log.debug("SSEClient already open.");
+            _log.info("SSEClient already open.");
             return false;
         }
 
         _statusCallback.apply(StatusMessage.INITIALIZATION_IN_PROGRESS);
 
         CountDownLatch signal = new CountDownLatch(1);
-        Thread thread = new Thread(() -> connectAndLoop(uri, signal));
-        thread.setDaemon(true);
-        thread.start();
+        _connectionExecutor.submit(() -> connectAndLoop(uri, signal));
         try {
             if (!signal.await(CONNECT_TIMEOUT, TimeUnit.SECONDS)) {
                 return false;
-            };
+            }
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
-            _log.debug(e.getMessage());
+            _log.info(e.getMessage());
             return false;
         }
         return isOpen();
@@ -91,9 +93,10 @@ public class SSEClient {
         if (_state.compareAndSet(ConnectionState.OPEN, ConnectionState.CLOSED)) {
             if (_ongoingResponse.get() != null) {
                 try {
+                    _ongoingRequest.get().abort();
                     _ongoingResponse.get().close();
                 } catch (IOException e) {
-                    _log.debug(String.format("Error closing SSEClient: %s", e.getMessage()));
+                    _log.info(String.format("Error closing SSEClient: %s", e.getMessage()));
                 }
             }
         }
@@ -124,7 +127,7 @@ public class SSEClient {
                     _statusCallback.apply(StatusMessage.RETRYABLE_ERROR);
                     return;
                 } catch (IOException exc) { // Other type of connection error
-                    _log.debug(exc.getMessage());
+                    _log.info(String.format("SSE connection ended abruptly: %s. Retying", exc.getMessage()));
                     _statusCallback.apply(StatusMessage.RETRYABLE_ERROR);
                     return;
                 }
@@ -145,17 +148,18 @@ public class SSEClient {
     }
 
     private boolean establishConnection(URI uri, CountDownLatch signal) {
-        HttpGet request = new HttpGet(uri);
+
+        _ongoingRequest.set(new HttpGet(uri));
 
         try {
-            _ongoingResponse.set(_client.execute(request));
+            _ongoingResponse.set(_client.execute(_ongoingRequest.get()));
             if (_ongoingResponse.get().getCode() != 200) {
                 return false;
             }
             _state.set(ConnectionState.OPEN);
             _statusCallback.apply(StatusMessage.CONNECTED);
         } catch (IOException exc) {
-            _log.debug(String.format("Error establishConnection: %s", exc));
+            _log.error(String.format("Error establishConnection: %s", exc));
             return false;
         } finally {
             signal.countDown();
