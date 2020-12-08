@@ -4,12 +4,12 @@ import com.google.common.annotations.VisibleForTesting;
 import io.split.client.api.Key;
 import io.split.client.api.SplitResult;
 import io.split.client.dtos.Event;
-import io.split.client.dtos.TreatmentLabelAndChangeNumber;
 import io.split.client.exceptions.ChangeNumberExceptionWrapper;
 import io.split.client.impressions.Impression;
 import io.split.client.impressions.ImpressionsManager;
 import io.split.engine.evaluator.Evaluator;
 import io.split.engine.SDKReadinessGates;
+import io.split.engine.evaluator.EvaluatorImp;
 import io.split.engine.experiments.SplitFetcher;
 import io.split.engine.metrics.Metrics;
 import io.split.grammar.Treatments;
@@ -315,7 +315,7 @@ public final class SplitClientImpl implements SplitClient {
 
             long start = System.currentTimeMillis();
 
-            TreatmentLabelAndChangeNumber result = getTreatmentResultWithoutImpressions(matchingKey, bucketingKey, split, attributes);
+            EvaluatorImp.TreatmentLabelAndChangeNumber result = getTreatmentResultWithoutImpressions(matchingKey, bucketingKey, split, attributes);
 
             recordStats(
                     matchingKey,
@@ -350,15 +350,15 @@ public final class SplitClientImpl implements SplitClient {
         }
     }
 
-    private TreatmentLabelAndChangeNumber getTreatmentResultWithoutImpressions(String matchingKey, String bucketingKey, String split, Map<String, Object> attributes) {
-        TreatmentLabelAndChangeNumber result;
+    private EvaluatorImp.TreatmentLabelAndChangeNumber getTreatmentResultWithoutImpressions(String matchingKey, String bucketingKey, String split, Map<String, Object> attributes) {
+        EvaluatorImp.TreatmentLabelAndChangeNumber result;
         try {
             result = _evaluator.evaluateFeature(matchingKey, bucketingKey, split, attributes, this);
         } catch (ChangeNumberExceptionWrapper e) {
-            result = new TreatmentLabelAndChangeNumber(Treatments.CONTROL, EXCEPTION, e.changeNumber());
+            result = new EvaluatorImp.TreatmentLabelAndChangeNumber(Treatments.CONTROL, EXCEPTION, e.changeNumber());
             _log.error("Exception", e.wrappedException());
         } catch (Exception e) {
-            result = new TreatmentLabelAndChangeNumber(Treatments.CONTROL, EXCEPTION);
+            result = new EvaluatorImp.TreatmentLabelAndChangeNumber(Treatments.CONTROL, EXCEPTION);
             _log.error("Exception", e);
         }
 

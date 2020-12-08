@@ -6,7 +6,6 @@ import io.split.client.SplitClientImpl;
 import io.split.client.SplitFactory;
 import io.split.client.dtos.ConditionType;
 import io.split.client.dtos.Partition;
-import io.split.client.dtos.TreatmentLabelAndChangeNumber;
 import io.split.client.exceptions.ChangeNumberExceptionWrapper;
 import io.split.client.impressions.ImpressionsManager;
 import io.split.engine.SDKReadinessGates;
@@ -61,7 +60,7 @@ public class EvaluatorTest {
     public void evaluateWhenSplitNameDoesNotExistReturnControl() throws ChangeNumberExceptionWrapper {
         Mockito.when(_splitFetcher.fetch(SplitName)).thenReturn(null);
 
-        TreatmentLabelAndChangeNumber result = _evaluator.evaluateFeature(MatchingKey, BucketingKey, SplitName, null, _splitClient);
+        EvaluatorImp.TreatmentLabelAndChangeNumber result = _evaluator.evaluateFeature(MatchingKey, BucketingKey, SplitName, null, _splitClient);
 
         assertEquals("control", result.treatment);
         assertEquals("definition not found", result.label);
@@ -72,7 +71,7 @@ public class EvaluatorTest {
         ParsedSplit split = ParsedSplit.createParsedSplitForTests(SplitName, 0, true, DefaultTreatmentValue, _conditions, TrafficTypeValue, ChangeNumber, 2);
         Mockito.when(_splitFetcher.fetch(SplitName)).thenReturn(split);
 
-        TreatmentLabelAndChangeNumber result = _evaluator.evaluateFeature(MatchingKey, BucketingKey, SplitName, null, _splitClient);
+        EvaluatorImp.TreatmentLabelAndChangeNumber result = _evaluator.evaluateFeature(MatchingKey, BucketingKey, SplitName, null, _splitClient);
 
         assertEquals(DefaultTreatmentValue, result.treatment);
         assertEquals("killed", result.label);
@@ -84,7 +83,7 @@ public class EvaluatorTest {
         ParsedSplit split = ParsedSplit.createParsedSplitForTests(SplitName, 0, false, DefaultTreatmentValue, _conditions, TrafficTypeValue, ChangeNumber, 2);
         Mockito.when(_splitFetcher.fetch(SplitName)).thenReturn(split);
 
-        TreatmentLabelAndChangeNumber result = _evaluator.evaluateFeature(MatchingKey, BucketingKey, SplitName, null, _splitClient);
+        EvaluatorImp.TreatmentLabelAndChangeNumber result = _evaluator.evaluateFeature(MatchingKey, BucketingKey, SplitName, null, _splitClient);
 
         assertEquals(DefaultTreatmentValue, result.treatment);
         assertEquals("default rule", result.label);
@@ -105,7 +104,7 @@ public class EvaluatorTest {
         Mockito.when(_splitFetcher.fetch(SplitName)).thenReturn(split);
         Mockito.when(condition.matcher().match(MatchingKey, BucketingKey, null, _splitClient)).thenReturn(true);
 
-        TreatmentLabelAndChangeNumber result = _evaluator.evaluateFeature(MatchingKey, BucketingKey, SplitName, null, _splitClient);
+        EvaluatorImp.TreatmentLabelAndChangeNumber result = _evaluator.evaluateFeature(MatchingKey, BucketingKey, SplitName, null, _splitClient);
 
         assertEquals(DefaultTreatmentValue, result.treatment);
         assertEquals("not in split", result.label);
@@ -126,7 +125,7 @@ public class EvaluatorTest {
         Mockito.when(_splitFetcher.fetch(SplitName)).thenReturn(split);
         Mockito.when(condition.matcher().match(MatchingKey, BucketingKey, null, _splitClient)).thenReturn(true);
 
-        TreatmentLabelAndChangeNumber result = _evaluator.evaluateFeature(MatchingKey, BucketingKey, SplitName, null, _splitClient);
+        EvaluatorImp.TreatmentLabelAndChangeNumber result = _evaluator.evaluateFeature(MatchingKey, BucketingKey, SplitName, null, _splitClient);
 
         assertEquals(TreatmentValue, result.treatment);
         assertEquals(TestLabelValue, result.label);
@@ -147,7 +146,7 @@ public class EvaluatorTest {
         Mockito.when(_splitFetcher.fetch(SplitName)).thenReturn(split);
         Mockito.when(condition.matcher().match(MatchingKey, BucketingKey, null, _splitClient)).thenReturn(true);
 
-        TreatmentLabelAndChangeNumber result = _evaluator.evaluateFeature(MatchingKey, BucketingKey, SplitName, null, _splitClient);
+        EvaluatorImp.TreatmentLabelAndChangeNumber result = _evaluator.evaluateFeature(MatchingKey, BucketingKey, SplitName, null, _splitClient);
 
         assertEquals(TreatmentValue, result.treatment);
         assertEquals("test whitelist label", result.label);

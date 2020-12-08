@@ -2,7 +2,6 @@ package io.split.engine.evaluator;
 
 import io.split.client.SplitClientImpl;
 import io.split.client.dtos.ConditionType;
-import io.split.client.dtos.TreatmentLabelAndChangeNumber;
 import io.split.client.exceptions.ChangeNumberExceptionWrapper;
 import io.split.engine.SDKReadinessGates;
 import io.split.engine.experiments.ParsedCondition;
@@ -14,6 +13,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.Map;
+
+import static com.google.common.base.Preconditions.checkNotNull;
 
 public class EvaluatorImp implements Evaluator {
     private static final String NOT_IN_SPLIT = "not in split";
@@ -28,8 +29,8 @@ public class EvaluatorImp implements Evaluator {
 
     public EvaluatorImp(SDKReadinessGates gates,
                         SplitFetcher splitFetcher) {
-        _gates = gates;
-        _splitFetcher = splitFetcher;
+        _gates = checkNotNull(gates);
+        _splitFetcher = checkNotNull(splitFetcher);
     }
 
     @Override
@@ -102,6 +103,28 @@ public class EvaluatorImp implements Evaluator {
             return new TreatmentLabelAndChangeNumber(parsedSplit.defaultTreatment(), DEFAULT_RULE, parsedSplit.changeNumber(), config);
         } catch (Exception e) {
             throw new ChangeNumberExceptionWrapper(e, parsedSplit.changeNumber());
+        }
+    }
+
+    public static final class TreatmentLabelAndChangeNumber {
+        public final String treatment;
+        public final String label;
+        public final Long changeNumber;
+        public final String configurations;
+
+        public TreatmentLabelAndChangeNumber(String treatment, String label) {
+            this(treatment, label, null, null);
+        }
+
+        public TreatmentLabelAndChangeNumber(String treatment, String label, Long changeNumber) {
+            this(treatment, label, changeNumber, null);
+        }
+
+        public TreatmentLabelAndChangeNumber(String treatment, String label, Long changeNumber, String configurations) {
+            this.treatment = treatment;
+            this.label = label;
+            this.changeNumber = changeNumber;
+            this.configurations = configurations;
         }
     }
 }
