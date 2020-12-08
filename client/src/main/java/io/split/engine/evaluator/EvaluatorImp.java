@@ -1,6 +1,5 @@
 package io.split.engine.evaluator;
 
-import io.split.client.SplitClient;
 import io.split.client.SplitClientImpl;
 import io.split.client.dtos.ConditionType;
 import io.split.client.dtos.TreatmentLabelAndChangeNumber;
@@ -34,7 +33,7 @@ public class EvaluatorImp implements Evaluator {
     }
 
     @Override
-    public TreatmentLabelAndChangeNumber evaluateFeature(String matchingKey, String bucketingKey, String split, Map<String, Object> attributes, SplitClient splitClient) throws ChangeNumberExceptionWrapper {
+    public TreatmentLabelAndChangeNumber evaluateFeature(String matchingKey, String bucketingKey, String split, Map<String, Object> attributes, SplitClientImpl splitClient) throws ChangeNumberExceptionWrapper {
         ParsedSplit parsedSplit = _splitFetcher.fetch(split);
 
         if (parsedSplit == null) {
@@ -46,7 +45,7 @@ public class EvaluatorImp implements Evaluator {
             return new TreatmentLabelAndChangeNumber(Treatments.CONTROL, DEFINITION_NOT_FOUND);
         }
 
-        return getTreatment(matchingKey, bucketingKey, parsedSplit, attributes, (SplitClientImpl)splitClient);
+        return getTreatment(matchingKey, bucketingKey, parsedSplit, attributes, splitClient);
     }
 
     /**
