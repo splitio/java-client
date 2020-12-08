@@ -1,6 +1,5 @@
 package io.split.engine.evaluator;
 
-import io.split.client.SplitClientImpl;
 import io.split.client.dtos.ConditionType;
 import io.split.client.exceptions.ChangeNumberExceptionWrapper;
 import io.split.engine.SDKReadinessGates;
@@ -21,6 +20,7 @@ public class EvaluatorImp implements Evaluator {
     private static final String DEFAULT_RULE = "default rule";
     private static final String KILLED = "killed";
     private static final String DEFINITION_NOT_FOUND = "definition not found";
+    private static final String EXCEPTION = "exception";
 
     private static final Logger _log = LoggerFactory.getLogger(EvaluatorImp.class);
 
@@ -34,19 +34,28 @@ public class EvaluatorImp implements Evaluator {
     }
 
     @Override
-    public TreatmentLabelAndChangeNumber evaluateFeature(String matchingKey, String bucketingKey, String split, Map<String, Object> attributes, SplitClientImpl splitClient) throws ChangeNumberExceptionWrapper {
-        ParsedSplit parsedSplit = _splitFetcher.fetch(split);
+    public TreatmentLabelAndChangeNumber evaluateFeature(String matchingKey, String bucketingKey, String split, Map<String, Object> attributes) {
+        try {
+            ParsedSplit parsedSplit = _splitFetcher.fetch(split);
 
-        if (parsedSplit == null) {
-            if (_gates.isSDKReadyNow()) {
-                _log.warn(
-                        "getTreatment: you passed \"" + split + "\" that does not exist in this environment, " +
-                                "please double check what Splits exist in the web console.");
+            if (parsedSplit == null) {
+                if (_gates.isSDKReadyNow()) {
+                    _log.warn(
+                            "getTreatment: you passed \"" + split + "\" that does not exist in this environment, " +
+                                    "please double check what Splits exist in the web console.");
+                }
+                return new TreatmentLabelAndChangeNumber(Treatments.CONTROL, DEFINITION_NOT_FOUND);
             }
-            return new TreatmentLabelAndChangeNumber(Treatments.CONTROL, DEFINITION_NOT_FOUND);
-        }
 
-        return getTreatment(matchingKey, bucketingKey, parsedSplit, attributes, splitClient);
+            return getTreatment(matchingKey, bucketingKey, parsedSplit, attributes);
+        }
+        catch (ChangeNumberExceptionWrapper e) {
+            _log.error("Evaluator Exception", e.wrappedException());
+            return new EvaluatorImp.TreatmentLabelAndChangeNumber(Treatments.CONTROL, EXCEPTION, e.changeNumber());
+        } catch (Exception e) {
+            _log.error("Evaluator Exception", e);
+            return new EvaluatorImp.TreatmentLabelAndChangeNumber(Treatments.CONTROL, EXCEPTION);
+        }
     }
 
     /**
@@ -57,7 +66,7 @@ public class EvaluatorImp implements Evaluator {
      * @return
      * @throws ChangeNumberExceptionWrapper
      */
-    private TreatmentLabelAndChangeNumber getTreatment(String matchingKey, String bucketingKey, ParsedSplit parsedSplit, Map<String, Object> attributes, SplitClientImpl splitClient) throws ChangeNumberExceptionWrapper {
+    private TreatmentLabelAndChangeNumber getTreatment(String matchingKey, String bucketingKey, ParsedSplit parsedSplit, Map<String, Object> attributes) throws ChangeNumberExceptionWrapper {
         try {
             if (parsedSplit.killed()) {
                 String config = parsedSplit.configurations() != null ? parsedSplit.configurations().get(parsedSplit.defaultTreatment()) : null;
@@ -92,7 +101,7 @@ public class EvaluatorImp implements Evaluator {
                     inRollout = true;
                 }
 
-                if (parsedCondition.matcher().match(matchingKey, bucketingKey, attributes, splitClient)) {
+                if (parsedCondition.matcher().match(matchingKey, bucketingKey, attributes, this)) {
                     String treatment = Splitter.getTreatment(bk, parsedSplit.seed(), parsedCondition.partitions(), parsedSplit.algo());
                     String config = parsedSplit.configurations() != null ? parsedSplit.configurations().get(treatment) : null;
                     return new TreatmentLabelAndChangeNumber(treatment, parsedCondition.label(), parsedSplit.changeNumber(), config);

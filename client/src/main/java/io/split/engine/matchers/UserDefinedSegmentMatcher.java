@@ -1,6 +1,6 @@
 package io.split.engine.matchers;
 
-import io.split.client.SplitClientImpl;
+import io.split.engine.evaluator.Evaluator;
 import io.split.engine.segments.Segment;
 
 import java.util.Map;
@@ -27,7 +27,7 @@ public class UserDefinedSegmentMatcher implements Matcher {
 
 
     @Override
-    public boolean match(Object matchValue, String bucketingKey, Map<String, Object> attributes, SplitClientImpl splitClient) {
+    public boolean match(Object matchValue, String bucketingKey, Map<String, Object> attributes, Evaluator evaluator) {
         if (!(matchValue instanceof String)) {
             return false;
         }

@@ -4,6 +4,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
 import io.split.client.SplitClientImpl;
 import io.split.client.dtos.MatcherCombiner;
+import io.split.engine.evaluator.Evaluator;
 
 import java.util.List;
 import java.util.Map;
@@ -38,24 +39,24 @@ public class CombiningMatcher {
         checkArgument(_delegates.size() > 0);
     }
 
-    public boolean match(String key, String bucketingKey, Map<String, Object> attributes, SplitClientImpl splitClient) {
+    public boolean match(String key, String bucketingKey, Map<String, Object> attributes, Evaluator evaluator) {
         if (_delegates.isEmpty()) {
             return false;
         }
 
         switch (_combiner) {
             case AND:
-                return and(key, bucketingKey, attributes, splitClient);
+                return and(key, bucketingKey, attributes, evaluator);
             default:
                 throw new IllegalArgumentException("Unknown combiner: " + _combiner);
         }
 
     }
 
-    private boolean and(String key, String bucketingKey, Map<String, Object> attributes, SplitClientImpl splitClient) {
+    private boolean and(String key, String bucketingKey, Map<String, Object> attributes, Evaluator evaluator) {
         boolean result = true;
         for (AttributeMatcher delegate : _delegates) {
-            result &= (delegate.match(key, bucketingKey, attributes, splitClient));
+            result &= (delegate.match(key, bucketingKey, attributes, evaluator));
         }
         return result;
     }

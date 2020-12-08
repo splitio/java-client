@@ -1,6 +1,6 @@
 package io.split.engine.matchers.strings;
 
-import io.split.client.SplitClientImpl;
+import io.split.engine.evaluator.Evaluator;
 import io.split.engine.matchers.Matcher;
 
 import java.util.Collection;
@@ -22,7 +22,7 @@ public class WhitelistMatcher implements Matcher {
     }
 
     @Override
-    public boolean match(Object matchValue, String bucketingKey, Map<String, Object> attributes, SplitClientImpl splitClient) {
+    public boolean match(Object matchValue, String bucketingKey, Map<String, Object> attributes, Evaluator evaluator) {
         return _whitelist.contains(matchValue);
     }
 
