@@ -27,14 +27,14 @@ import java.util.Map;
 import static org.junit.Assert.assertEquals;
 
 public class EvaluatorTest {
-    private static final String _matchingKey = "test";
-    private static final String _bucketingKey = "test";
-    private static final String _splitName = "split_name_test";
-    private static final Long _changeNumber = 123123L;
-    private static final String _defaultTreatmentValue = "defaultTreatment";
-    private static final String _testLabelValue = "test label";
-    private static final String _trafficTypeValue = "tt";
-    private static final String _treatmentValue = "treatment_test";
+    private static final String MatchingKey = "test";
+    private static final String BucketingKey = "test";
+    private static final String SplitName = "split_name_test";
+    private static final Long ChangeNumber = 123123L;
+    private static final String DefaultTreatmentValue = "defaultTreatment";
+    private static final String TestLabelValue = "test label";
+    private static final String TrafficTypeValue = "tt";
+    private static final String TreatmentValue = "treatment_test";
 
     private SplitFetcher _splitFetcher;
     private Evaluator _evaluator;
@@ -59,9 +59,9 @@ public class EvaluatorTest {
 
     @Test
     public void evaluateWhenSplitNameDoesNotExistReturnControl() throws ChangeNumberExceptionWrapper {
-        Mockito.when(_splitFetcher.fetch(_splitName)).thenReturn(null);
+        Mockito.when(_splitFetcher.fetch(SplitName)).thenReturn(null);
 
-        TreatmentLabelAndChangeNumber result = _evaluator.evaluateFeature(_matchingKey, _bucketingKey, _splitName, null, _splitClient);
+        TreatmentLabelAndChangeNumber result = _evaluator.evaluateFeature(MatchingKey, BucketingKey, SplitName, null, _splitClient);
 
         assertEquals("control", result.treatment);
         assertEquals("definition not found", result.label);
@@ -69,89 +69,89 @@ public class EvaluatorTest {
 
     @Test
     public void evaluateWhenSplitIsKilledReturnDefaultTreatment() throws ChangeNumberExceptionWrapper {
-        ParsedSplit split = ParsedSplit.createParsedSplitForTests(_splitName, 0, true, _defaultTreatmentValue, _conditions, _trafficTypeValue, _changeNumber, 2);
-        Mockito.when(_splitFetcher.fetch(_splitName)).thenReturn(split);
+        ParsedSplit split = ParsedSplit.createParsedSplitForTests(SplitName, 0, true, DefaultTreatmentValue, _conditions, TrafficTypeValue, ChangeNumber, 2);
+        Mockito.when(_splitFetcher.fetch(SplitName)).thenReturn(split);
 
-        TreatmentLabelAndChangeNumber result = _evaluator.evaluateFeature(_matchingKey, _bucketingKey, _splitName, null, _splitClient);
+        TreatmentLabelAndChangeNumber result = _evaluator.evaluateFeature(MatchingKey, BucketingKey, SplitName, null, _splitClient);
 
-        assertEquals(_defaultTreatmentValue, result.treatment);
+        assertEquals(DefaultTreatmentValue, result.treatment);
         assertEquals("killed", result.label);
-        assertEquals(_changeNumber, result.changeNumber);
+        assertEquals(ChangeNumber, result.changeNumber);
     }
 
     @Test
     public void evaluateWithoutConditionsReturnDefaultTreatment() throws ChangeNumberExceptionWrapper {
-        ParsedSplit split = ParsedSplit.createParsedSplitForTests(_splitName, 0, false, _defaultTreatmentValue, _conditions, _trafficTypeValue, _changeNumber, 2);
-        Mockito.when(_splitFetcher.fetch(_splitName)).thenReturn(split);
+        ParsedSplit split = ParsedSplit.createParsedSplitForTests(SplitName, 0, false, DefaultTreatmentValue, _conditions, TrafficTypeValue, ChangeNumber, 2);
+        Mockito.when(_splitFetcher.fetch(SplitName)).thenReturn(split);
 
-        TreatmentLabelAndChangeNumber result = _evaluator.evaluateFeature(_matchingKey, _bucketingKey, _splitName, null, _splitClient);
+        TreatmentLabelAndChangeNumber result = _evaluator.evaluateFeature(MatchingKey, BucketingKey, SplitName, null, _splitClient);
 
-        assertEquals(_defaultTreatmentValue, result.treatment);
+        assertEquals(DefaultTreatmentValue, result.treatment);
         assertEquals("default rule", result.label);
-        assertEquals(_changeNumber, result.changeNumber);
+        assertEquals(ChangeNumber, result.changeNumber);
     }
 
     @Test
     public void evaluateWithRollOutConditionBucketIsBiggerTrafficAllocationReturnDefaultTreatment() throws ChangeNumberExceptionWrapper {
         Partition partition = new Partition();
-        partition.treatment = _treatmentValue;
+        partition.treatment = TreatmentValue;
         partition.size = 100;
         _partitions.add(partition);
-        ParsedCondition condition = new ParsedCondition(ConditionType.ROLLOUT, _matcher,_partitions, _testLabelValue);
+        ParsedCondition condition = new ParsedCondition(ConditionType.ROLLOUT, _matcher,_partitions, TestLabelValue);
         _conditions.add(condition);
 
-        ParsedSplit split = new ParsedSplit(_splitName, 0, false, _defaultTreatmentValue, _conditions, _trafficTypeValue, _changeNumber, 10, 12, 2, _configurations);
+        ParsedSplit split = new ParsedSplit(SplitName, 0, false, DefaultTreatmentValue, _conditions, TrafficTypeValue, ChangeNumber, 10, 12, 2, _configurations);
 
-        Mockito.when(_splitFetcher.fetch(_splitName)).thenReturn(split);
-        Mockito.when(condition.matcher().match(_matchingKey, _bucketingKey, null, _splitClient)).thenReturn(true);
+        Mockito.when(_splitFetcher.fetch(SplitName)).thenReturn(split);
+        Mockito.when(condition.matcher().match(MatchingKey, BucketingKey, null, _splitClient)).thenReturn(true);
 
-        TreatmentLabelAndChangeNumber result = _evaluator.evaluateFeature(_matchingKey, _bucketingKey, _splitName, null, _splitClient);
+        TreatmentLabelAndChangeNumber result = _evaluator.evaluateFeature(MatchingKey, BucketingKey, SplitName, null, _splitClient);
 
-        assertEquals(_defaultTreatmentValue, result.treatment);
+        assertEquals(DefaultTreatmentValue, result.treatment);
         assertEquals("not in split", result.label);
-        assertEquals(_changeNumber, result.changeNumber);
+        assertEquals(ChangeNumber, result.changeNumber);
     }
 
     @Test
     public void evaluateWithRollOutConditionTrafficAllocationIsBiggerBucketReturnTreatment() throws ChangeNumberExceptionWrapper {
         Partition partition = new Partition();
-        partition.treatment = _treatmentValue;
+        partition.treatment = TreatmentValue;
         partition.size = 100;
         _partitions.add(partition);
-        ParsedCondition condition = new ParsedCondition(ConditionType.ROLLOUT, _matcher, _partitions, _testLabelValue);
+        ParsedCondition condition = new ParsedCondition(ConditionType.ROLLOUT, _matcher, _partitions, TestLabelValue);
         _conditions.add(condition);
 
-        ParsedSplit split = new ParsedSplit(_splitName, 0, false, _defaultTreatmentValue, _conditions, _trafficTypeValue, _changeNumber, 60, 18, 2, _configurations);
+        ParsedSplit split = new ParsedSplit(SplitName, 0, false, DefaultTreatmentValue, _conditions, TrafficTypeValue, ChangeNumber, 60, 18, 2, _configurations);
 
-        Mockito.when(_splitFetcher.fetch(_splitName)).thenReturn(split);
-        Mockito.when(condition.matcher().match(_matchingKey, _bucketingKey, null, _splitClient)).thenReturn(true);
+        Mockito.when(_splitFetcher.fetch(SplitName)).thenReturn(split);
+        Mockito.when(condition.matcher().match(MatchingKey, BucketingKey, null, _splitClient)).thenReturn(true);
 
-        TreatmentLabelAndChangeNumber result = _evaluator.evaluateFeature(_matchingKey, _bucketingKey, _splitName, null, _splitClient);
+        TreatmentLabelAndChangeNumber result = _evaluator.evaluateFeature(MatchingKey, BucketingKey, SplitName, null, _splitClient);
 
-        assertEquals(_treatmentValue, result.treatment);
-        assertEquals(_testLabelValue, result.label);
-        assertEquals(_changeNumber, result.changeNumber);
+        assertEquals(TreatmentValue, result.treatment);
+        assertEquals(TestLabelValue, result.label);
+        assertEquals(ChangeNumber, result.changeNumber);
     }
 
     @Test
     public void evaluateWithWhitelistConditionReturnTreatment() throws ChangeNumberExceptionWrapper {
         Partition partition = new Partition();
-        partition.treatment = _treatmentValue;
+        partition.treatment = TreatmentValue;
         partition.size = 100;
         _partitions.add(partition);
         ParsedCondition condition = new ParsedCondition(ConditionType.WHITELIST, _matcher, _partitions, "test whitelist label");
         _conditions.add(condition);
 
-        ParsedSplit split = new ParsedSplit(_splitName, 0, false, _defaultTreatmentValue, _conditions, _trafficTypeValue, _changeNumber, 60, 18, 2, _configurations);
+        ParsedSplit split = new ParsedSplit(SplitName, 0, false, DefaultTreatmentValue, _conditions, TrafficTypeValue, ChangeNumber, 60, 18, 2, _configurations);
 
-        Mockito.when(_splitFetcher.fetch(_splitName)).thenReturn(split);
-        Mockito.when(condition.matcher().match(_matchingKey, _bucketingKey, null, _splitClient)).thenReturn(true);
+        Mockito.when(_splitFetcher.fetch(SplitName)).thenReturn(split);
+        Mockito.when(condition.matcher().match(MatchingKey, BucketingKey, null, _splitClient)).thenReturn(true);
 
-        TreatmentLabelAndChangeNumber result = _evaluator.evaluateFeature(_matchingKey, _bucketingKey, _splitName, null, _splitClient);
+        TreatmentLabelAndChangeNumber result = _evaluator.evaluateFeature(MatchingKey, BucketingKey, SplitName, null, _splitClient);
 
-        assertEquals(_treatmentValue, result.treatment);
+        assertEquals(TreatmentValue, result.treatment);
         assertEquals("test whitelist label", result.label);
-        assertEquals(_changeNumber, result.changeNumber);
+        assertEquals(ChangeNumber, result.changeNumber);
     }
 
     private SplitClientImpl getSplitClient(SplitFetcher splitFetcher, SDKReadinessGates gates, Evaluator evaluator) {
