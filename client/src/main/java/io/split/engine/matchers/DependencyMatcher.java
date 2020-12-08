@@ -1,9 +1,10 @@
 package io.split.engine.matchers;
 
-import io.split.client.SplitClientImpl;
+import io.split.engine.evaluator.Evaluator;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 /**
  * Supports the logic: if user is in split "feature" treatments ["on","off"]
@@ -18,7 +19,7 @@ public class DependencyMatcher implements Matcher {
     }
 
     @Override
-    public boolean match(Object matchValue, String bucketingKey, Map<String, Object> attributes, SplitClientImpl splitClient) {
+    public boolean match(Object matchValue, String bucketingKey, Map<String, Object> attributes, Evaluator evaluator) {
         if (matchValue == null) {
             return false;
         }
@@ -27,16 +28,7 @@ public class DependencyMatcher implements Matcher {
             return false;
         }
 
-        String result = splitClient.getTreatmentWithoutImpressions(
-                (String) matchValue,
-                bucketingKey,
-                _split,
-                attributes
-        );
-
-//        if(Treatments.isControl(result)) {
-//            throw new ParentIsControlException();
-//        }
+        String result = evaluator.evaluateFeature((String) matchValue, bucketingKey, _split, attributes).treatment;
 
         return _treatments.contains(result);
     }
@@ -58,8 +50,8 @@ public class DependencyMatcher implements Matcher {
 
         DependencyMatcher that = (DependencyMatcher) o;
 
-        if (_split != null ? !_split.equals(that._split) : that._split != null) return false;
-        return _treatments != null ? _treatments.equals(that._treatments) : that._treatments == null;
+        if (!Objects.equals(_split, that._split)) return false;
+        return Objects.equals(_treatments, that._treatments);
     }
 
     @Override

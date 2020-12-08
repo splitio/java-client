@@ -1,10 +1,8 @@
 package io.split.client;
 
-import com.google.common.annotations.VisibleForTesting;
 import io.split.client.api.Key;
 import io.split.client.api.SplitResult;
 import io.split.client.dtos.Event;
-import io.split.client.exceptions.ChangeNumberExceptionWrapper;
 import io.split.client.impressions.Impression;
 import io.split.client.impressions.ImpressionsManager;
 import io.split.engine.evaluator.Evaluator;
@@ -34,7 +32,6 @@ public final class SplitClientImpl implements SplitClient {
     public static final SplitResult SPLIT_RESULT_CONTROL = new SplitResult(Treatments.CONTROL, null);
 
     private static final String GET_TREATMENT_LABEL = "sdk.getTreatment";
-    private static final String EXCEPTION = "exception";
 
     private static final Logger _log = LoggerFactory.getLogger(SplitClientImpl.class);
 
@@ -315,7 +312,7 @@ public final class SplitClientImpl implements SplitClient {
 
             long start = System.currentTimeMillis();
 
-            EvaluatorImp.TreatmentLabelAndChangeNumber result = getTreatmentResultWithoutImpressions(matchingKey, bucketingKey, split, attributes);
+            EvaluatorImp.TreatmentLabelAndChangeNumber result = _evaluator.evaluateFeature(matchingKey, bucketingKey, split, attributes);
 
             recordStats(
                     matchingKey,
@@ -350,21 +347,6 @@ public final class SplitClientImpl implements SplitClient {
         }
     }
 
-    private EvaluatorImp.TreatmentLabelAndChangeNumber getTreatmentResultWithoutImpressions(String matchingKey, String bucketingKey, String split, Map<String, Object> attributes) {
-        EvaluatorImp.TreatmentLabelAndChangeNumber result;
-        try {
-            result = _evaluator.evaluateFeature(matchingKey, bucketingKey, split, attributes, this);
-        } catch (ChangeNumberExceptionWrapper e) {
-            result = new EvaluatorImp.TreatmentLabelAndChangeNumber(Treatments.CONTROL, EXCEPTION, e.changeNumber());
-            _log.error("Exception", e.wrappedException());
-        } catch (Exception e) {
-            result = new EvaluatorImp.TreatmentLabelAndChangeNumber(Treatments.CONTROL, EXCEPTION);
-            _log.error("Exception", e);
-        }
-
-        return result;
-    }
-
     private Event createEvent(String key, String trafficType, String eventType) {
         Event event = new Event();
         event.eventTypeId = eventType;
@@ -372,10 +354,5 @@ public final class SplitClientImpl implements SplitClient {
         event.key = key;
         event.timestamp = System.currentTimeMillis();
         return event;
-    }
-
-    @VisibleForTesting
-    public String getTreatmentWithoutImpressions(String matchingKey, String bucketingKey, String split, Map<String, Object> attributes) {
-        return getTreatmentResultWithoutImpressions(matchingKey, bucketingKey, split, attributes).treatment;
     }
 }
