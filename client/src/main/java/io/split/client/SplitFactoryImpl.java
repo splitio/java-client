@@ -11,11 +11,14 @@ import io.split.client.interceptors.GzipEncoderRequestInterceptor;
 import io.split.client.metrics.CachedMetrics;
 import io.split.client.metrics.FireAndForgetMetrics;
 import io.split.client.metrics.HttpMetrics;
+import io.split.engine.evaluator.Evaluator;
+import io.split.engine.evaluator.EvaluatorImp;
 import io.split.engine.SDKReadinessGates;
 import io.split.engine.common.SyncManager;
 import io.split.engine.common.SyncManagerImp;
 import io.split.engine.experiments.RefreshableSplitFetcherProvider;
 import io.split.engine.experiments.SplitChangeFetcher;
+import io.split.engine.experiments.SplitFetcher;
 import io.split.engine.experiments.SplitParser;
 import io.split.engine.segments.RefreshableSegmentFetcher;
 import io.split.engine.segments.SegmentChangeFetcher;
@@ -241,7 +244,7 @@ public class SplitFactoryImpl implements SplitFactory {
                     httpclient.close();
                     _log.info("Successful shutdown of httpclient");
                     eventClient.close();
-                    _log.info("Successful shutdown of httpclient");
+                    _log.info("Successful shutdown of eventClient");
                     new Thread(syncManager::shutdown).start();
                     _log.info("Successful shutdown of syncManager");
                 } catch (IOException e) {
@@ -260,13 +263,18 @@ public class SplitFactoryImpl implements SplitFactory {
             });
         }
 
+
+        SplitFetcher splitFetcher = splitFetcherProvider.getFetcher();
+        Evaluator evaluator = new EvaluatorImp(gates, splitFetcher);
+
         _client = new SplitClientImpl(this,
-                splitFetcherProvider.getFetcher(),
+                splitFetcher,
                 impressionsManager,
                 cachedFireAndForgetMetrics,
                 eventClient,
                 config,
-                gates);
+                gates,
+                evaluator);
         _manager = new SplitManagerImpl(splitFetcherProvider.getFetcher(), config, gates);
     }
 
