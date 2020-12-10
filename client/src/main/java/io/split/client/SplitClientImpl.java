@@ -5,10 +5,10 @@ import io.split.client.api.SplitResult;
 import io.split.client.dtos.Event;
 import io.split.client.impressions.Impression;
 import io.split.client.impressions.ImpressionsManager;
+import io.split.engine.cache.SplitCache;
 import io.split.engine.evaluator.Evaluator;
 import io.split.engine.SDKReadinessGates;
 import io.split.engine.evaluator.EvaluatorImp;
-import io.split.engine.experiments.SplitFetcher;
 import io.split.engine.metrics.Metrics;
 import io.split.grammar.Treatments;
 import org.slf4j.Logger;
@@ -36,7 +36,7 @@ public final class SplitClientImpl implements SplitClient {
     private static final Logger _log = LoggerFactory.getLogger(SplitClientImpl.class);
 
     private final SplitFactory _container;
-    private final SplitFetcher _splitFetcher;
+    private final SplitCache _splitCache;
     private final ImpressionsManager _impressionManager;
     private final Metrics _metrics;
     private final SplitClientConfig _config;
@@ -45,7 +45,7 @@ public final class SplitClientImpl implements SplitClient {
     private final Evaluator _evaluator;
 
     public SplitClientImpl(SplitFactory container,
-                           SplitFetcher splitFetcher,
+                           SplitCache splitCache,
                            ImpressionsManager impressionManager,
                            Metrics metrics,
                            EventClient eventClient,
@@ -53,7 +53,7 @@ public final class SplitClientImpl implements SplitClient {
                            SDKReadinessGates gates,
                            Evaluator evaluator) {
         _container = container;
-        _splitFetcher = checkNotNull(splitFetcher);
+        _splitCache = checkNotNull(splitCache);
         _impressionManager = checkNotNull(impressionManager);
         _metrics = metrics;
         _eventClient = eventClient;
@@ -192,7 +192,7 @@ public final class SplitClientImpl implements SplitClient {
             event.trafficTypeName = event.trafficTypeName.toLowerCase();
         }
 
-        if (!_splitFetcher.trafficTypeExists(event.trafficTypeName)) {
+        if (!_splitCache.trafficTypeExists(event.trafficTypeName)) {
             _log.warn("track: Traffic Type " + event.trafficTypeName + " does not have any corresponding Splits in this environment, " +
                     "make sure you’re tracking your events to a valid traffic type defined in the Split console.");
         }

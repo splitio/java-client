@@ -1,6 +1,5 @@
 package io.split.engine.experiments;
 
-import com.google.common.collect.Lists;
 import io.split.client.dtos.Split;
 import io.split.client.dtos.SplitChange;
 import io.split.client.dtos.Status;
@@ -8,9 +7,6 @@ import io.split.engine.SDKReadinessGates;
 import io.split.engine.cache.SplitCache;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.util.Collection;
-import java.util.List;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
@@ -65,54 +61,6 @@ public class RefreshableSplitFetcher implements SplitFetcher, Runnable {
         } catch (Throwable t) {
             _log.error("RefreshableSplitFetcher failed: " + t.getMessage());
         }
-    }
-
-    @Override
-    public long changeNumber() {
-        return _splitCache.getChangeNumber();
-    }
-
-    @Override
-    public void killSplit(String splitName, String defaultTreatment, long changeNumber) {
-        synchronized (_lock) {
-            ParsedSplit parsedSplit = _splitCache.get(splitName);
-
-            ParsedSplit updatedSplit = new ParsedSplit(parsedSplit.feature(),
-                    parsedSplit.seed(),
-                    true,
-                    defaultTreatment,
-                    parsedSplit.parsedConditions(),
-                    parsedSplit.trafficTypeName(),
-                    changeNumber,
-                    parsedSplit.trafficAllocation(),
-                    parsedSplit.trafficAllocationSeed(),
-                    parsedSplit.algo(),
-                    parsedSplit.configurations());
-
-            _splitCache.put(updatedSplit);
-        }
-    }
-
-    @Override
-    public ParsedSplit fetch(String test) {
-        return _splitCache.get(test);
-    }
-
-    public List<ParsedSplit> fetchAll() {
-        return Lists.newArrayList(_splitCache.getAll());
-    }
-
-    @Override
-    public boolean trafficTypeExists(String trafficTypeName) {
-        return _splitCache.trafficTypeExists(trafficTypeName);
-    }
-
-    public Collection<ParsedSplit> fetch() {
-        return _splitCache.getAll();
-    }
-
-    public void clear() {
-        _splitCache.clear();
     }
 
     @Override

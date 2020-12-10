@@ -10,6 +10,8 @@ import io.split.client.dtos.Event;
 import io.split.client.dtos.Partition;
 import io.split.client.impressions.Impression;
 import io.split.client.impressions.ImpressionsManager;
+import io.split.engine.cache.InMemoryCacheImp;
+import io.split.engine.cache.SplitCache;
 import io.split.engine.evaluator.Evaluator;
 import io.split.engine.evaluator.EvaluatorImp;
 import io.split.engine.SDKReadinessGates;
@@ -70,23 +72,23 @@ public class SplitClientImplTest {
         ParsedSplit parsedSplit = ParsedSplit.createParsedSplitForTests(test, 123, false, Treatments.OFF, conditions, null, 1, 1);
 
         SDKReadinessGates gates = mock(SDKReadinessGates.class);
-        SplitFetcher splitFetcher = mock(SplitFetcher.class);
-        when(splitFetcher.fetch(test)).thenReturn(parsedSplit);
+        SplitCache splitCache = mock(InMemoryCacheImp.class);
+        when(splitCache.get(test)).thenReturn(parsedSplit);
 
         SplitClientImpl client = new SplitClientImpl(
                 mock(SplitFactory.class),
-                splitFetcher,
+                splitCache,
                 new ImpressionsManager.NoOpImpressionsManager(),
                 new Metrics.NoopMetrics(),
                 NoopEventClient.create(),
                 config,
                 gates,
-                new EvaluatorImp(gates, splitFetcher)
+                new EvaluatorImp(gates, splitCache)
         );
 
         assertThat(client.getTreatment(null, "test1"), is(equalTo(Treatments.CONTROL)));
 
-        verifyZeroInteractions(splitFetcher);
+        verifyZeroInteractions(splitCache);
     }
 
     @Test
@@ -97,44 +99,44 @@ public class SplitClientImplTest {
         ParsedSplit parsedSplit = ParsedSplit.createParsedSplitForTests(test, 123, false, Treatments.OFF, conditions, null, 1, 1);
 
         SDKReadinessGates gates = mock(SDKReadinessGates.class);
-        SplitFetcher splitFetcher = mock(SplitFetcher.class);
-        when(splitFetcher.fetch(test)).thenReturn(parsedSplit);
+        SplitCache splitCache = mock(InMemoryCacheImp.class);
+        when(splitCache.get(test)).thenReturn(parsedSplit);
 
         SplitClientImpl client = new SplitClientImpl(
                 mock(SplitFactory.class),
-                splitFetcher,
+                splitCache,
                 new ImpressionsManager.NoOpImpressionsManager(),
                 new Metrics.NoopMetrics(),
                 NoopEventClient.create(),
                 config,
                 gates,
-                new EvaluatorImp(gates, splitFetcher)
+                new EvaluatorImp(gates, splitCache)
         );
 
         assertThat(client.getTreatment("adil@relateiq.com", null), is(equalTo(Treatments.CONTROL)));
 
-        verifyZeroInteractions(splitFetcher);
+        verifyZeroInteractions(splitCache);
     }
 
     @Test
     public void exceptions_result_in_control() {
         SDKReadinessGates gates = mock(SDKReadinessGates.class);
-        SplitFetcher splitFetcher = mock(SplitFetcher.class);
-        when(splitFetcher.fetch(anyString())).thenThrow(RuntimeException.class);
+        SplitCache splitCache = mock(InMemoryCacheImp.class);
+        when(splitCache.get(anyString())).thenThrow(RuntimeException.class);
 
         SplitClientImpl client = new SplitClientImpl(
                 mock(SplitFactory.class),
-                splitFetcher,
+                splitCache,
                 new ImpressionsManager.NoOpImpressionsManager(),
                 new Metrics.NoopMetrics(),
                 NoopEventClient.create(),
                 config,
                 gates,
-                new EvaluatorImp(gates, splitFetcher)
+                new EvaluatorImp(gates, splitCache)
         );
         assertThat(client.getTreatment("adil@relateiq.com", "test1"), is(equalTo(Treatments.CONTROL)));
 
-        verify(splitFetcher).fetch("test1");
+        verify(splitCache).get("test1");
     }
 
     @Test
@@ -146,18 +148,18 @@ public class SplitClientImplTest {
         ParsedSplit parsedSplit = ParsedSplit.createParsedSplitForTests(test, 123, false, Treatments.OFF, conditions, null, 1, 1);
 
         SDKReadinessGates gates = mock(SDKReadinessGates.class);
-        SplitFetcher splitFetcher = mock(SplitFetcher.class);
-        when(splitFetcher.fetch(test)).thenReturn(parsedSplit);
+        SplitCache splitCache = mock(InMemoryCacheImp.class);
+        when(splitCache.get(test)).thenReturn(parsedSplit);
 
         SplitClientImpl client = new SplitClientImpl(
                 mock(SplitFactory.class),
-                splitFetcher,
+                splitCache,
                 new ImpressionsManager.NoOpImpressionsManager(),
                 new Metrics.NoopMetrics(),
                 NoopEventClient.create(),
                 config,
                 gates,
-                new EvaluatorImp(gates, splitFetcher)
+                new EvaluatorImp(gates, splitCache)
         );
 
         int numKeys = 5;
@@ -166,7 +168,7 @@ public class SplitClientImplTest {
             assertThat(client.getTreatment(randomKey, test), is(equalTo("on")));
         }
 
-        verify(splitFetcher, times(numKeys)).fetch(test);
+        verify(splitCache, times(numKeys)).get(test);
     }
 
     /**
@@ -181,18 +183,18 @@ public class SplitClientImplTest {
         ParsedSplit parsedSplit = ParsedSplit.createParsedSplitForTests(test, 123, false, Treatments.OFF, conditions, null, 1, 1);
 
         SDKReadinessGates gates = mock(SDKReadinessGates.class);
-        SplitFetcher splitFetcher = mock(SplitFetcher.class);
-        when(splitFetcher.fetch(test)).thenReturn(parsedSplit);
+        SplitCache splitCache = mock(InMemoryCacheImp.class);
+        when(splitCache.get(test)).thenReturn(parsedSplit);
 
         SplitClientImpl client = new SplitClientImpl(
                 mock(SplitFactory.class),
-                splitFetcher,
+                splitCache,
                 new ImpressionsManager.NoOpImpressionsManager(),
                 new Metrics.NoopMetrics(),
                 NoopEventClient.create(),
                 config,
                 gates,
-                new EvaluatorImp(gates, splitFetcher)
+                new EvaluatorImp(gates, splitCache)
         );
 
 
@@ -201,7 +203,7 @@ public class SplitClientImplTest {
         assertThat(result.treatment(), is(equalTo(Treatments.ON)));
         assertThat(result.config(), is(nullValue()));
 
-        verify(splitFetcher).fetch(test);
+        verify(splitCache).get(test);
     }
 
     @Test
@@ -218,18 +220,18 @@ public class SplitClientImplTest {
         ParsedSplit parsedSplit = ParsedSplit.createParsedSplitForTests(test, 123, false, Treatments.OFF, conditions, null, 1, 1, configurations);
 
         SDKReadinessGates gates = mock(SDKReadinessGates.class);
-        SplitFetcher splitFetcher = mock(SplitFetcher.class);
-        when(splitFetcher.fetch(test)).thenReturn(parsedSplit);
+        SplitCache splitCache = mock(InMemoryCacheImp.class);
+        when(splitCache.get(test)).thenReturn(parsedSplit);
 
         SplitClientImpl client = new SplitClientImpl(
                 mock(SplitFactory.class),
-                splitFetcher,
+                splitCache,
                 new ImpressionsManager.NoOpImpressionsManager(),
                 new Metrics.NoopMetrics(),
                 NoopEventClient.create(),
                 config,
                 gates,
-                new EvaluatorImp(gates, splitFetcher)
+                new EvaluatorImp(gates, splitCache)
         );
 
         int numKeys = 5;
@@ -240,9 +242,8 @@ public class SplitClientImplTest {
         }
 
         // Times 2 because we are calling getTreatment twice. Once for getTreatment and one for getTreatmentWithConfig
-        verify(splitFetcher, times(numKeys * 2)).fetch(test);
+        verify(splitCache, times(numKeys * 2)).get(test);
     }
-
 
     @Test
     public void last_condition_is_always_default() {
@@ -253,23 +254,23 @@ public class SplitClientImplTest {
         ParsedSplit parsedSplit = ParsedSplit.createParsedSplitForTests(test, 123, false, Treatments.OFF, conditions, "user", 1, 1);
 
         SDKReadinessGates gates = mock(SDKReadinessGates.class);
-        SplitFetcher splitFetcher = mock(SplitFetcher.class);
-        when(splitFetcher.fetch(test)).thenReturn(parsedSplit);
+        SplitCache splitCache = mock(InMemoryCacheImp.class);
+        when(splitCache.get(test)).thenReturn(parsedSplit);
 
         SplitClientImpl client = new SplitClientImpl(
                 mock(SplitFactory.class),
-                splitFetcher,
+                splitCache,
                 new ImpressionsManager.NoOpImpressionsManager(),
                 new Metrics.NoopMetrics(),
                 NoopEventClient.create(),
                 config,
                 gates,
-                new EvaluatorImp(gates, splitFetcher)
+                new EvaluatorImp(gates, splitCache)
         );
 
         assertThat(client.getTreatment("pato@codigo.com", test), is(equalTo(Treatments.OFF)));
 
-        verify(splitFetcher).fetch(test);
+        verify(splitCache).get(test);
     }
 
     /**
@@ -289,25 +290,25 @@ public class SplitClientImplTest {
         ParsedSplit parsedSplit = ParsedSplit.createParsedSplitForTests(test, 123, false, Treatments.OFF, conditions, "user", 1, 1, configurations);
 
         SDKReadinessGates gates = mock(SDKReadinessGates.class);
-        SplitFetcher splitFetcher = mock(SplitFetcher.class);
-        when(splitFetcher.fetch(test)).thenReturn(parsedSplit);
+        SplitCache splitCache = mock(InMemoryCacheImp.class);
+        when(splitCache.get(test)).thenReturn(parsedSplit);
 
         SplitClientImpl client = new SplitClientImpl(
                 mock(SplitFactory.class),
-                splitFetcher,
+                splitCache,
                 new ImpressionsManager.NoOpImpressionsManager(),
                 new Metrics.NoopMetrics(),
                 NoopEventClient.create(),
                 config,
                 gates,
-                new EvaluatorImp(gates, splitFetcher)
+                new EvaluatorImp(gates, splitCache)
         );
 
         SplitResult result = client.getTreatmentWithConfig("pato@codigo.com", test);
         assertThat(result.treatment(), is(equalTo(Treatments.OFF)));
         assertThat(result.config(), is(equalTo("{\"size\" : 30}")));
 
-        verify(splitFetcher).fetch(test);
+        verify(splitCache).get(test);
     }
 
     @Test
@@ -322,25 +323,25 @@ public class SplitClientImplTest {
         ParsedSplit parsedSplit = ParsedSplit.createParsedSplitForTests(test, 123, false, Treatments.OFF, conditions, null, 1, 1);
 
         SDKReadinessGates gates = mock(SDKReadinessGates.class);
-        SplitFetcher splitFetcher = mock(SplitFetcher.class);
-        when(splitFetcher.fetch(test)).thenReturn(parsedSplit);
+        SplitCache splitCache = mock(InMemoryCacheImp.class);
+        when(splitCache.get(test)).thenReturn(parsedSplit);
 
         SplitClientImpl client = new SplitClientImpl(
                 mock(SplitFactory.class),
-                splitFetcher,
+                splitCache,
                 new ImpressionsManager.NoOpImpressionsManager(),
                 new Metrics.NoopMetrics(),
                 NoopEventClient.create(),
                 config,
                 gates,
-                new EvaluatorImp(gates, splitFetcher)
+                new EvaluatorImp(gates, splitCache)
         );
 
         assertThat(client.getTreatment("adil@codigo.com", test), is(equalTo("on")));
         assertThat(client.getTreatment("pato@codigo.com", test), is(equalTo("off")));
         assertThat(client.getTreatment("trevor@codigo.com", test), is(equalTo("on")));
 
-        verify(splitFetcher, times(3)).fetch(test);
+        verify(splitCache, times(3)).get(test);
     }
 
 
@@ -353,23 +354,23 @@ public class SplitClientImplTest {
         ParsedSplit parsedSplit = ParsedSplit.createParsedSplitForTests(test, 123, true, Treatments.OFF, conditions, "user", 1, 1);
 
         SDKReadinessGates gates = mock(SDKReadinessGates.class);
-        SplitFetcher splitFetcher = mock(SplitFetcher.class);
-        when(splitFetcher.fetch(test)).thenReturn(parsedSplit);
+        SplitCache splitCache = mock(InMemoryCacheImp.class);
+        when(splitCache.get(test)).thenReturn(parsedSplit);
 
         SplitClientImpl client = new SplitClientImpl(
                 mock(SplitFactory.class),
-                splitFetcher,
+                splitCache,
                 new ImpressionsManager.NoOpImpressionsManager(),
                 new Metrics.NoopMetrics(),
                 NoopEventClient.create(),
                 config,
                 gates,
-                new EvaluatorImp(gates, splitFetcher)
+                new EvaluatorImp(gates, splitCache)
         );
 
         assertThat(client.getTreatment("adil@codigo.com", test), is(equalTo(Treatments.OFF)));
 
-        verify(splitFetcher).fetch(test);
+        verify(splitCache).get(test);
     }
 
     /**
@@ -389,25 +390,25 @@ public class SplitClientImplTest {
         ParsedSplit parsedSplit = ParsedSplit.createParsedSplitForTests(test, 123, true, Treatments.OFF, conditions, "user", 1, 1, configurations);
 
         SDKReadinessGates gates = mock(SDKReadinessGates.class);
-        SplitFetcher splitFetcher = mock(SplitFetcher.class);
-        when(splitFetcher.fetch(test)).thenReturn(parsedSplit);
+        SplitCache splitCache = mock(InMemoryCacheImp.class);
+        when(splitCache.get(test)).thenReturn(parsedSplit);
 
         SplitClientImpl client = new SplitClientImpl(
                 mock(SplitFactory.class),
-                splitFetcher,
+                splitCache,
                 new ImpressionsManager.NoOpImpressionsManager(),
                 new Metrics.NoopMetrics(),
                 NoopEventClient.create(),
                 config,
                 gates,
-                new EvaluatorImp(gates, splitFetcher)
+                new EvaluatorImp(gates, splitCache)
         );
 
         SplitResult result = client.getTreatmentWithConfig("adil@codigo.com", test);
         assertThat(result.treatment(), is(equalTo(Treatments.OFF)));
         assertThat(result.config(), is(equalTo("{\"size\" : 30}")));
 
-        verify(splitFetcher).fetch(test);
+        verify(splitCache).get(test);
     }
 
     @Test
@@ -424,19 +425,19 @@ public class SplitClientImplTest {
         ParsedSplit dependentSplit = ParsedSplit.createParsedSplitForTests(dependent, 123, false, Treatments.OFF, dependent_conditions, null, 1, 1);
 
         SDKReadinessGates gates = mock(SDKReadinessGates.class);
-        SplitFetcher splitFetcher = mock(SplitFetcher.class);
-        when(splitFetcher.fetch(parent)).thenReturn(parentSplit);
-        when(splitFetcher.fetch(dependent)).thenReturn(dependentSplit);
+        SplitCache splitCache = mock(InMemoryCacheImp.class);
+        when(splitCache.get(parent)).thenReturn(parentSplit);
+        when(splitCache.get(dependent)).thenReturn(dependentSplit);
 
         SplitClientImpl client = new SplitClientImpl(
                 mock(SplitFactory.class),
-                splitFetcher,
+                splitCache,
                 new ImpressionsManager.NoOpImpressionsManager(),
                 new Metrics.NoopMetrics(),
                 NoopEventClient.create(),
                 config,
                 gates,
-                new EvaluatorImp(gates, splitFetcher)
+                new EvaluatorImp(gates, splitCache)
         );
 
         assertThat(client.getTreatment("key", parent), is(equalTo(Treatments.ON)));
@@ -457,19 +458,19 @@ public class SplitClientImplTest {
         ParsedSplit dependentSplit = ParsedSplit.createParsedSplitForTests(dependent, 123, false, Treatments.OFF, dependent_conditions, null, 1, 1);
 
         SDKReadinessGates gates = mock(SDKReadinessGates.class);
-        SplitFetcher splitFetcher = mock(SplitFetcher.class);
-        when(splitFetcher.fetch(parent)).thenReturn(parentSplit);
-        when(splitFetcher.fetch(dependent)).thenReturn(dependentSplit);
+        SplitCache splitCache = mock(InMemoryCacheImp.class);
+        when(splitCache.get(parent)).thenReturn(parentSplit);
+        when(splitCache.get(dependent)).thenReturn(dependentSplit);
 
         SplitClientImpl client = new SplitClientImpl(
                 mock(SplitFactory.class),
-                splitFetcher,
+                splitCache,
                 new ImpressionsManager.NoOpImpressionsManager(),
                 new Metrics.NoopMetrics(),
                 NoopEventClient.create(),
                 config,
                 gates,
-                new EvaluatorImp(gates, splitFetcher)
+                new EvaluatorImp(gates, splitCache)
         );
 
         assertThat(client.getTreatment("key", parent), is(equalTo(Treatments.ON)));
@@ -485,23 +486,21 @@ public class SplitClientImplTest {
         ParsedSplit dependentSplit = ParsedSplit.createParsedSplitForTests(dependent, 123, false, Treatments.ON, dependent_conditions, null, 1, 1);
 
         SDKReadinessGates gates = mock(SDKReadinessGates.class);
-        SplitFetcher splitFetcher = mock(SplitFetcher.class);
-        when(splitFetcher.fetch(dependent)).thenReturn(dependentSplit);
+        SplitCache splitCache = mock(InMemoryCacheImp.class);
+        when(splitCache.get(dependent)).thenReturn(dependentSplit);
 
         SplitClientImpl client = new SplitClientImpl(
                 mock(SplitFactory.class),
-                splitFetcher,
+                splitCache,
                 new ImpressionsManager.NoOpImpressionsManager(),
                 new Metrics.NoopMetrics(),
                 NoopEventClient.create(),
                 config,
                 gates,
-                new EvaluatorImp(gates, splitFetcher)
+                new EvaluatorImp(gates, splitCache)
         );
 
-//        assertThat(client.getTreatment("key", dependent), is(equalTo(Treatments.CONTROL)));
         assertThat(client.getTreatment("key", dependent), is(equalTo(Treatments.ON)));
-
     }
 
     @Test
@@ -515,18 +514,18 @@ public class SplitClientImplTest {
         ParsedSplit parsedSplit = ParsedSplit.createParsedSplitForTests(test, 123, false, Treatments.OFF, conditions, null, 1, 1);
 
         SDKReadinessGates gates = mock(SDKReadinessGates.class);
-        SplitFetcher splitFetcher = mock(SplitFetcher.class);
-        when(splitFetcher.fetch(test)).thenReturn(parsedSplit);
+        SplitCache splitCache = mock(InMemoryCacheImp.class);
+        when(splitCache.get(test)).thenReturn(parsedSplit);
 
         SplitClientImpl client = new SplitClientImpl(
                 mock(SplitFactory.class),
-                splitFetcher,
+                splitCache,
                 new ImpressionsManager.NoOpImpressionsManager(),
                 new Metrics.NoopMetrics(),
                 NoopEventClient.create(),
                 config,
                 gates,
-                new EvaluatorImp(gates, splitFetcher)
+                new EvaluatorImp(gates, splitCache)
         );
 
         assertThat(client.getTreatment("adil@codigo.com", test), is(equalTo("on")));
@@ -536,7 +535,7 @@ public class SplitClientImplTest {
         assertThat(client.getTreatment("pato@codigo.com", test, ImmutableMap.<String, Object>of("age", 10)), is(equalTo("on")));
         assertThat(client.getTreatment("pato@codigo.com", test, ImmutableMap.<String, Object>of("age", 9)), is(equalTo("off")));
 
-        verify(splitFetcher, times(5)).fetch(test);
+        verify(splitCache, times(5)).get(test);
     }
 
     @Test
@@ -549,18 +548,18 @@ public class SplitClientImplTest {
         ParsedSplit parsedSplit = ParsedSplit.createParsedSplitForTests(test, 123, false, Treatments.OFF, conditions, "user", 1, 1);
 
         SDKReadinessGates gates = mock(SDKReadinessGates.class);
-        SplitFetcher splitFetcher = mock(SplitFetcher.class);
-        when(splitFetcher.fetch(test)).thenReturn(parsedSplit);
+        SplitCache splitCache = mock(InMemoryCacheImp.class);
+        when(splitCache.get(test)).thenReturn(parsedSplit);
 
         SplitClientImpl client = new SplitClientImpl(
                 mock(SplitFactory.class),
-                splitFetcher,
+                splitCache,
                 new ImpressionsManager.NoOpImpressionsManager(),
                 new Metrics.NoopMetrics(),
                 NoopEventClient.create(),
                 config,
                 gates,
-                new EvaluatorImp(gates, splitFetcher)
+                new EvaluatorImp(gates, splitCache)
         );
 
         assertThat(client.getTreatment("adil@codigo.com", test), is(equalTo("off")));
@@ -570,7 +569,7 @@ public class SplitClientImplTest {
         assertThat(client.getTreatment("pato@codigo.com", test, ImmutableMap.<String, Object>of("age", 10)), is(equalTo("off")));
         assertThat(client.getTreatment("pato@codigo.com", test, ImmutableMap.<String, Object>of("age", 0)), is(equalTo("on")));
 
-        verify(splitFetcher, times(5)).fetch(test);
+        verify(splitCache, times(5)).get(test);
     }
 
     @Test
@@ -583,18 +582,18 @@ public class SplitClientImplTest {
         ParsedSplit parsedSplit = ParsedSplit.createParsedSplitForTests(test, 123, false, Treatments.OFF, conditions, null, 1, 1);
 
         SDKReadinessGates gates = mock(SDKReadinessGates.class);
-        SplitFetcher splitFetcher = mock(SplitFetcher.class);
-        when(splitFetcher.fetch(test)).thenReturn(parsedSplit);
+        SplitCache splitCache = mock(InMemoryCacheImp.class);
+        when(splitCache.get(test)).thenReturn(parsedSplit);
 
         SplitClientImpl client = new SplitClientImpl(
                 mock(SplitFactory.class),
-                splitFetcher,
+                splitCache,
                 new ImpressionsManager.NoOpImpressionsManager(),
                 new Metrics.NoopMetrics(),
                 NoopEventClient.create(),
                 config,
                 gates,
-                new EvaluatorImp(gates, splitFetcher)
+                new EvaluatorImp(gates, splitCache)
         );
 
         assertThat(client.getTreatment("adil@codigo.com", test), is(equalTo("off")));
@@ -606,7 +605,7 @@ public class SplitClientImplTest {
         assertThat(client.getTreatment("pato@codigo.com", test, ImmutableMap.<String, Object>of("age", 20)), is(equalTo("off")));
         assertThat(client.getTreatment("pato@codigo.com", test, ImmutableMap.<String, Object>of("age", -21)), is(equalTo("off")));
 
-        verify(splitFetcher, times(7)).fetch(test);
+        verify(splitCache, times(7)).get(test);
     }
 
 
@@ -620,18 +619,18 @@ public class SplitClientImplTest {
         ParsedSplit parsedSplit = ParsedSplit.createParsedSplitForTests(test, 123, false, Treatments.OFF, conditions, null, 1, 1);
 
         SDKReadinessGates gates = mock(SDKReadinessGates.class);
-        SplitFetcher splitFetcher = mock(SplitFetcher.class);
-        when(splitFetcher.fetch(test)).thenReturn(parsedSplit);
+        SplitCache splitCache = mock(InMemoryCacheImp.class);
+        when(splitCache.get(test)).thenReturn(parsedSplit);
 
         SplitClientImpl client = new SplitClientImpl(
                 mock(SplitFactory.class),
-                splitFetcher,
+                splitCache,
                 new ImpressionsManager.NoOpImpressionsManager(),
                 new Metrics.NoopMetrics(),
                 NoopEventClient.create(),
                 config,
                 gates,
-                new EvaluatorImp(gates, splitFetcher)
+                new EvaluatorImp(gates, splitCache)
         );
 
         assertThat(client.getTreatment("adil@codigo.com", test), is(equalTo("off")));
@@ -645,7 +644,7 @@ public class SplitClientImplTest {
         assertThat(client.getTreatment("pato@codigo.com", test, ImmutableMap.<String, Object>of("products", Lists.newArrayList("sms", "video"))), is(equalTo("on")));
         assertThat(client.getTreatment("pato@codigo.com", test, ImmutableMap.<String, Object>of("products", Lists.newArrayList("video"))), is(equalTo("on")));
 
-        verify(splitFetcher, times(9)).fetch(test);
+        verify(splitCache, times(9)).get(test);
     }
 
     @Test
@@ -661,20 +660,20 @@ public class SplitClientImplTest {
         List<ParsedCondition> conditions = Lists.newArrayList(age_equal_to_0_should_be_on);
         ParsedSplit parsedSplit = ParsedSplit.createParsedSplitForTests(test, 123, false, Treatments.OFF, conditions, null, 1, 1);
 
-        SplitFetcher splitFetcher = mock(SplitFetcher.class);
-        when(splitFetcher.fetch(test)).thenReturn(parsedSplit);
+        SplitCache splitCache = mock(InMemoryCacheImp.class);
+        when(splitCache.get(test)).thenReturn(parsedSplit);
 
         SDKReadinessGates gates = mock(SDKReadinessGates.class);
         ImpressionsManager impressionsManager = mock(ImpressionsManager.class);
         SplitClientImpl client = new SplitClientImpl(
                 mock(SplitFactory.class),
-                splitFetcher,
+                splitCache,
                 impressionsManager,
                 new Metrics.NoopMetrics(),
                 NoopEventClient.create(),
                 config,
                 gates,
-                new EvaluatorImp(gates, splitFetcher)
+                new EvaluatorImp(gates, splitCache)
         );
 
         Map<String, Object> attributes = ImmutableMap.<String, Object>of("age", -20, "acv", "1000000");
@@ -754,19 +753,19 @@ public class SplitClientImplTest {
         ParsedSplit parsedSplit = new ParsedSplit(test, 123, false, Treatments.OFF, conditions, null, 1, trafficAllocation, trafficAllocationSeed, 1, null);
 
         SDKReadinessGates gates = mock(SDKReadinessGates.class);
-        SplitFetcher splitFetcher = mock(SplitFetcher.class);
-        when(splitFetcher.fetch(test)).thenReturn(parsedSplit);
+        SplitCache splitCache = mock(InMemoryCacheImp.class);
+        when(splitCache.get(test)).thenReturn(parsedSplit);
 
         ImpressionsManager impressionsManager = mock(ImpressionsManager.class);
         SplitClientImpl client = new SplitClientImpl(
                 mock(SplitFactory.class),
-                splitFetcher,
+                splitCache,
                 impressionsManager,
                 new Metrics.NoopMetrics(),
                 NoopEventClient.create(),
                 config,
                 gates,
-                new EvaluatorImp(gates, splitFetcher)
+                new EvaluatorImp(gates, splitCache)
         );
 
         assertThat(client.getTreatment(key, test), is(equalTo(expected_treatment_on_or_off)));
@@ -800,21 +799,21 @@ public class SplitClientImplTest {
         ParsedSplit parsedSplit = new ParsedSplit(test, 123, false, Treatments.OFF, conditions, null, 1, trafficAllocation, trafficAllocationSeed, 1, configurations);
 
         SDKReadinessGates gates = mock(SDKReadinessGates.class);
-        SplitFetcher splitFetcher = mock(SplitFetcher.class);
-        when(splitFetcher.fetch(test)).thenReturn(parsedSplit);
+        SplitCache splitCache = mock(InMemoryCacheImp.class);
+        when(splitCache.get(test)).thenReturn(parsedSplit);
 
         ImpressionsManager impressionsManager = mock(ImpressionsManager.class);
 
 
         SplitClientImpl client = new SplitClientImpl(
                 mock(SplitFactory.class),
-                splitFetcher,
+                splitCache,
                 impressionsManager,
                 new Metrics.NoopMetrics(),
                 NoopEventClient.create(),
                 config,
                 gates,
-                new EvaluatorImp(gates, splitFetcher)
+                new EvaluatorImp(gates, splitCache)
         );
 
         assertThat(client.getTreatment("pato@split.io", test), is(equalTo(Treatments.OFF)));
@@ -843,18 +842,18 @@ public class SplitClientImplTest {
         ParsedSplit parsedSplit = ParsedSplit.createParsedSplitForTests(test, 123, false, Treatments.OFF, conditions, "user", 1, 1);
 
         SDKReadinessGates gates = mock(SDKReadinessGates.class);
-        SplitFetcher splitFetcher = mock(SplitFetcher.class);
-        when(splitFetcher.fetch(test)).thenReturn(parsedSplit);
+        SplitCache splitCache = mock(InMemoryCacheImp.class);
+        when(splitCache.get(test)).thenReturn(parsedSplit);
 
         SplitClientImpl client = new SplitClientImpl(
                 mock(SplitFactory.class),
-                splitFetcher,
+                splitCache,
                 new ImpressionsManager.NoOpImpressionsManager(),
                 new Metrics.NoopMetrics(),
                 NoopEventClient.create(),
                 config,
                 gates,
-                new EvaluatorImp(gates, splitFetcher)
+                new EvaluatorImp(gates, splitCache)
         );
 
         Key bad_key = new Key("adil", "aijaz");
@@ -863,7 +862,7 @@ public class SplitClientImplTest {
         assertThat(client.getTreatment(bad_key, test, Collections.<String, Object>emptyMap()), is(equalTo("off")));
         assertThat(client.getTreatment(good_key, test, Collections.<String, Object>emptyMap()), is(equalTo("on")));
 
-        verify(splitFetcher, times(2)).fetch(test);
+        verify(splitCache, times(2)).get(test);
     }
 
     @Test
@@ -880,19 +879,19 @@ public class SplitClientImplTest {
         ParsedSplit parsedSplit = ParsedSplit.createParsedSplitForTests(test, 123, false, Treatments.OFF, conditions, null, 1, 1);
 
         SDKReadinessGates gates = mock(SDKReadinessGates.class);
-        SplitFetcher splitFetcher = mock(SplitFetcher.class);
-        when(splitFetcher.fetch(test)).thenReturn(parsedSplit);
+        SplitCache splitCache = mock(InMemoryCacheImp.class);
+        when(splitCache.get(test)).thenReturn(parsedSplit);
 
         ImpressionsManager impressionsManager = mock(ImpressionsManager.class);
         SplitClientImpl client = new SplitClientImpl(
                 mock(SplitFactory.class),
-                splitFetcher,
+                splitCache,
                 impressionsManager,
                 new Metrics.NoopMetrics(),
                 NoopEventClient.create(),
                 config,
                 gates,
-                new EvaluatorImp(gates, splitFetcher)
+                new EvaluatorImp(gates, splitCache)
         );
 
         Map<String, Object> attributes = ImmutableMap.<String, Object>of("age", -20, "acv", "1000000");
@@ -916,18 +915,19 @@ public class SplitClientImplTest {
 
     @Test
     public void block_until_ready_does_not_time_when_sdk_is_ready() throws TimeoutException, InterruptedException {
-        SplitFetcher splitFetcher = mock(SplitFetcher.class);
+        SplitCache splitCache = mock(InMemoryCacheImp.class);
         SDKReadinessGates ready = mock(SDKReadinessGates.class);
         when(ready.isSDKReady(100)).thenReturn(true);
+
         SplitClientImpl client = new SplitClientImpl(
                 mock(SplitFactory.class),
-                splitFetcher,
+                splitCache,
                 mock(ImpressionsManager.class),
                 new Metrics.NoopMetrics(),
                 NoopEventClient.create(),
                 config,
                 ready,
-                new EvaluatorImp(ready, splitFetcher)
+                new EvaluatorImp(ready, splitCache)
         );
 
         client.blockUntilReady();
@@ -935,18 +935,19 @@ public class SplitClientImplTest {
 
     @Test(expected = TimeoutException.class)
     public void block_until_ready_times_when_sdk_is_not_ready() throws TimeoutException, InterruptedException {
-        SplitFetcher splitFetcher = mock(SplitFetcher.class);
+        SplitCache splitCache = mock(InMemoryCacheImp.class);
         SDKReadinessGates ready = mock(SDKReadinessGates.class);
         when(ready.isSDKReady(100)).thenReturn(false);
+
         SplitClientImpl client = new SplitClientImpl(
                 mock(SplitFactory.class),
-                splitFetcher,
+                splitCache,
                 mock(ImpressionsManager.class),
                 new Metrics.NoopMetrics(),
                 NoopEventClient.create(),
                 config,
                 ready,
-                new EvaluatorImp(ready, splitFetcher)
+                new EvaluatorImp(ready, splitCache)
         );
 
         client.blockUntilReady();
@@ -955,17 +956,17 @@ public class SplitClientImplTest {
     @Test
     public void track_with_valid_parameters() {
         SDKReadinessGates gates = mock(SDKReadinessGates.class);
-        SplitFetcher splitFetcher = mock(SplitFetcher.class);
+        SplitCache splitCache = mock(InMemoryCacheImp.class);
 
         SplitClientImpl client = new SplitClientImpl(
                 mock(SplitFactory.class),
-                splitFetcher,
+                splitCache,
                 new ImpressionsManager.NoOpImpressionsManager(),
                 new Metrics.NoopMetrics(),
                 NoopEventClient.create(),
                 config,
                 gates,
-                new EvaluatorImp(gates, splitFetcher)
+                new EvaluatorImp(gates, splitCache)
         );
 
         Assert.assertThat(client.track("validKey", "valid_traffic_type", "valid_event"),
@@ -981,17 +982,17 @@ public class SplitClientImplTest {
     @Test
     public void track_with_invalid_event_type_ids() {
         SDKReadinessGates gates = mock(SDKReadinessGates.class);
-        SplitFetcher splitFetcher = mock(SplitFetcher.class);
+        SplitCache splitCache = mock(InMemoryCacheImp.class);
 
         SplitClientImpl client = new SplitClientImpl(
                 mock(SplitFactory.class),
-                splitFetcher,
+                splitCache,
                 new ImpressionsManager.NoOpImpressionsManager(),
                 new Metrics.NoopMetrics(),
                 NoopEventClient.create(),
                 config,
                 gates,
-                new EvaluatorImp(gates, splitFetcher)
+                new EvaluatorImp(gates, splitCache)
         );
 
         Assert.assertThat(client.track("validKey", "valid_traffic_type", ""),
@@ -1012,17 +1013,17 @@ public class SplitClientImplTest {
     @Test
     public void track_with_invalid_traffic_type_names() {
         SDKReadinessGates gates = mock(SDKReadinessGates.class);
-        SplitFetcher splitFetcher = mock(SplitFetcher.class);
+        SplitCache splitCache = mock(InMemoryCacheImp.class);
 
         SplitClientImpl client = new SplitClientImpl(
                 mock(SplitFactory.class),
-                splitFetcher,
+                splitCache,
                 new ImpressionsManager.NoOpImpressionsManager(),
                 new Metrics.NoopMetrics(),
                 NoopEventClient.create(),
                 config,
                 gates,
-                new EvaluatorImp(gates, splitFetcher)
+                new EvaluatorImp(gates, splitCache)
         );
 
         Assert.assertThat(client.track("validKey", "", "valid"),
@@ -1035,17 +1036,17 @@ public class SplitClientImplTest {
     @Test
     public void track_with_invalid_keys() {
         SDKReadinessGates gates = mock(SDKReadinessGates.class);
-        SplitFetcher splitFetcher = mock(SplitFetcher.class);
+        SplitCache splitCache = mock(InMemoryCacheImp.class);
 
         SplitClientImpl client = new SplitClientImpl(
                 mock(SplitFactory.class),
-                splitFetcher,
+                splitCache,
                 new ImpressionsManager.NoOpImpressionsManager(),
                 new Metrics.NoopMetrics(),
                 NoopEventClient.create(),
                 config,
                 gates,
-                new EvaluatorImp(gates, splitFetcher)
+                new EvaluatorImp(gates, splitCache)
         );
 
         Assert.assertThat(client.track("", "valid_traffic_type", "valid"),
@@ -1062,19 +1063,19 @@ public class SplitClientImplTest {
     @Test
     public void track_with_properties() {
         SDKReadinessGates gates = mock(SDKReadinessGates.class);
-        SplitFetcher splitFetcher = mock(SplitFetcher.class);
+        SplitCache splitCache = mock(InMemoryCacheImp.class);
         EventClient eventClientMock = Mockito.mock(EventClient.class);
         Mockito.when(eventClientMock.track((Event) Mockito.any(), Mockito.anyInt())).thenReturn(true);
 
         SplitClientImpl client = new SplitClientImpl(
                 mock(SplitFactory.class),
-                splitFetcher,
+                splitCache,
                 new ImpressionsManager.NoOpImpressionsManager(),
                 new Metrics.NoopMetrics(),
                 eventClientMock,
                 config,
                 gates,
-                new EvaluatorImp(gates, splitFetcher)
+                new EvaluatorImp(gates, splitCache)
         );
 
         HashMap<String, Object> properties = new HashMap<>();
@@ -1134,8 +1135,6 @@ public class SplitClientImplTest {
         Assert.assertThat(captured.properties.size(), org.hamcrest.Matchers.is(1));
         Assert.assertThat((Integer) captured.properties.get("ok_property"), org.hamcrest.Matchers.is(123));
 
-
-
         properties.clear();
         Mockito.reset(eventClientMock);
         Mockito.when(eventClientMock.track((Event) Mockito.any(), Mockito.anyInt())).thenReturn(true);
@@ -1167,7 +1166,6 @@ public class SplitClientImplTest {
         Assert.assertThat(client.track("key1", "user", "purchase", properties), org.hamcrest.Matchers.is(false));
     }
 
-
     @Test
     public void getTreatment_with_invalid_keys() {
         String test = "split";
@@ -1177,21 +1175,19 @@ public class SplitClientImplTest {
         ParsedSplit parsedSplit = ParsedSplit.createParsedSplitForTests(test, 123, false, Treatments.OFF, conditions, null, 1, 1);
 
         SDKReadinessGates gates = mock(SDKReadinessGates.class);
-        SplitFetcher splitFetcher = mock(SplitFetcher.class);
-        when(splitFetcher.fetch(test)).thenReturn(parsedSplit);
-
+        SplitCache splitCache = mock(InMemoryCacheImp.class);
+        when(splitCache.get(test)).thenReturn(parsedSplit);
 
         SplitClientImpl client = new SplitClientImpl(
                 mock(SplitFactory.class),
-                splitFetcher,
+                splitCache,
                 new ImpressionsManager.NoOpImpressionsManager(),
                 new Metrics.NoopMetrics(),
                 NoopEventClient.create(),
                 config,
                 gates,
-                new EvaluatorImp(gates, splitFetcher)
+                new EvaluatorImp(gates, splitCache)
         );
-
 
         Assert.assertThat(client.getTreatment("valid", "split"),
                 org.hamcrest.Matchers.is(org.hamcrest.Matchers.not(Treatments.CONTROL)));
@@ -1248,8 +1244,8 @@ public class SplitClientImplTest {
         ParsedSplit parsedSplit = ParsedSplit.createParsedSplitForTests(test, 123, false, Treatments.OFF, conditions, null, 1, 1);
 
         SDKReadinessGates gates = mock(SDKReadinessGates.class);
-        SplitFetcher splitFetcher = mock(SplitFetcher.class);
-        when(splitFetcher.fetch(test)).thenReturn(parsedSplit);
+        SplitCache splitCache = mock(InMemoryCacheImp.class);
+        when(splitCache.get(test)).thenReturn(parsedSplit);
 
         SplitFactory mockFactory = new SplitFactory() {
             private boolean destroyed = false;
@@ -1269,13 +1265,13 @@ public class SplitClientImplTest {
 
         SplitClientImpl client = new SplitClientImpl(
                 mockFactory,
-                splitFetcher,
+                splitCache,
                 new ImpressionsManager.NoOpImpressionsManager(),
                 new Metrics.NoopMetrics(),
                 NoopEventClient.create(),
                 config,
                 gates,
-                new EvaluatorImp(gates, splitFetcher)
+                new EvaluatorImp(gates, splitCache)
         );
 
         Assert.assertThat(client.getTreatment("valid", "split"),

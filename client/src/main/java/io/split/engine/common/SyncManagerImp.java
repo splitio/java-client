@@ -2,7 +2,9 @@ package io.split.engine.common;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
-import io.split.engine.experiments.RefreshableSplitFetcherProvider;
+import io.split.engine.cache.SplitCache;
+import io.split.engine.experiments.RefreshableSplitFetcher;
+import io.split.engine.experiments.RefreshableSplitFetcherTask;
 import io.split.engine.segments.RefreshableSegmentFetcher;
 import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
 import org.slf4j.Logger;
@@ -44,15 +46,17 @@ public class SyncManagerImp implements SyncManager {
     }
 
     public static SyncManagerImp build(boolean streamingEnabledConfig,
-                                        RefreshableSplitFetcherProvider refreshableSplitFetcherProvider,
+                                        RefreshableSplitFetcherTask refreshableSplitFetcherTask,
+                                        RefreshableSplitFetcher splitFetcher,
                                         RefreshableSegmentFetcher segmentFetcher,
+                                        SplitCache splitCache,
                                         String authUrl,
                                         CloseableHttpClient httpClient,
                                         String streamingServiceUrl,
                                         int authRetryBackOffBase,
                                        CloseableHttpClient sseHttpClient) {
         LinkedBlockingQueue<PushManager.Status> pushMessages = new LinkedBlockingQueue<>();
-        Synchronizer synchronizer = new SynchronizerImp(refreshableSplitFetcherProvider, segmentFetcher);
+        Synchronizer synchronizer = new SynchronizerImp(refreshableSplitFetcherTask, splitFetcher, segmentFetcher, splitCache);
         PushManager pushManager = PushManagerImp.build(synchronizer, streamingServiceUrl, authUrl, httpClient, authRetryBackOffBase, pushMessages, sseHttpClient);
         return new SyncManagerImp(streamingEnabledConfig, synchronizer, pushManager, pushMessages);
     }

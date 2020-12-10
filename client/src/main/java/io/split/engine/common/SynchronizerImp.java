@@ -1,8 +1,10 @@
 package io.split.engine.common;
 
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
+
+import io.split.engine.cache.SplitCache;
 import io.split.engine.experiments.RefreshableSplitFetcher;
-import io.split.engine.experiments.RefreshableSplitFetcherProvider;
+import io.split.engine.experiments.RefreshableSplitFetcherTask;
 import io.split.engine.segments.RefreshableSegmentFetcher;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -17,16 +19,20 @@ import static com.google.common.base.Preconditions.checkNotNull;
 public class SynchronizerImp implements Synchronizer {
     private static final Logger _log = LoggerFactory.getLogger(Synchronizer.class);
 
-    private final RefreshableSplitFetcherProvider _refreshableSplitFetcherProvider;
+    private final RefreshableSplitFetcherTask _refreshableSplitFetcherTask;
     private final RefreshableSplitFetcher _splitFetcher;
     private final RefreshableSegmentFetcher _segmentFetcher;
     private final ScheduledExecutorService _syncAllScheduledExecutorService;
+    private final SplitCache _splitCache;
 
-    public SynchronizerImp(RefreshableSplitFetcherProvider refreshableSplitFetcherProvider,
-                           RefreshableSegmentFetcher segmentFetcher) {
-        _refreshableSplitFetcherProvider = checkNotNull(refreshableSplitFetcherProvider);
-        _splitFetcher = checkNotNull(_refreshableSplitFetcherProvider.getFetcher());
+    public SynchronizerImp(RefreshableSplitFetcherTask refreshableSplitTask,
+                           RefreshableSplitFetcher splitFetcher,
+                           RefreshableSegmentFetcher segmentFetcher,
+                           SplitCache splitCache) {
+        _refreshableSplitFetcherTask = checkNotNull(refreshableSplitTask);
+        _splitFetcher = checkNotNull(splitFetcher);
         _segmentFetcher = checkNotNull(segmentFetcher);
+        _splitCache = checkNotNull(splitCache);
 
         ThreadFactory splitsThreadFactory = new ThreadFactoryBuilder()
                 .setDaemon(true)
@@ -46,28 +52,28 @@ public class SynchronizerImp implements Synchronizer {
     @Override
     public void startPeriodicFetching() {
         _log.debug("Starting Periodic Fetching ...");
-        _refreshableSplitFetcherProvider.startPeriodicFetching();
+        _refreshableSplitFetcherTask.startPeriodicFetching();
         _segmentFetcher.startPeriodicFetching();
     }
 
     @Override
     public void stopPeriodicFetching() {
         _log.debug("Stop Periodic Fetching ...");
-        _refreshableSplitFetcherProvider.stop();
+        _refreshableSplitFetcherTask.stop();
         _segmentFetcher.stop();
     }
 
     @Override
     public void refreshSplits(long targetChangeNumber) {
-        if (targetChangeNumber > _splitFetcher.changeNumber()) {
+        if (targetChangeNumber > _splitCache.getChangeNumber()) {
             _splitFetcher.forceRefresh();
         }
     }
 
     @Override
     public void localKillSplit(String splitName, String defaultTreatment, long newChangeNumber) {
-        if (newChangeNumber > _splitFetcher.changeNumber()) {
-            _splitFetcher.killSplit(splitName, defaultTreatment, newChangeNumber);
+        if (newChangeNumber > _splitCache.getChangeNumber()) {
+            _splitCache.kill(splitName, defaultTreatment, newChangeNumber);
             refreshSplits(newChangeNumber);
         }
     }

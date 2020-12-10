@@ -3,6 +3,7 @@ package io.split.engine.evaluator;
 import io.split.client.dtos.ConditionType;
 import io.split.client.exceptions.ChangeNumberExceptionWrapper;
 import io.split.engine.SDKReadinessGates;
+import io.split.engine.cache.SplitCache;
 import io.split.engine.experiments.ParsedCondition;
 import io.split.engine.experiments.ParsedSplit;
 import io.split.engine.experiments.SplitFetcher;
@@ -25,18 +26,18 @@ public class EvaluatorImp implements Evaluator {
     private static final Logger _log = LoggerFactory.getLogger(EvaluatorImp.class);
 
     private final SDKReadinessGates _gates;
-    private final SplitFetcher _splitFetcher;
+    private final SplitCache _splitCache;
 
     public EvaluatorImp(SDKReadinessGates gates,
-                        SplitFetcher splitFetcher) {
+                        SplitCache splitCache) {
         _gates = checkNotNull(gates);
-        _splitFetcher = checkNotNull(splitFetcher);
+        _splitCache = checkNotNull(splitCache);
     }
 
     @Override
     public TreatmentLabelAndChangeNumber evaluateFeature(String matchingKey, String bucketingKey, String split, Map<String, Object> attributes) {
         try {
-            ParsedSplit parsedSplit = _splitFetcher.fetch(split);
+            ParsedSplit parsedSplit = _splitCache.get(split);
 
             if (parsedSplit == null) {
                 if (_gates.isSDKReadyNow()) {

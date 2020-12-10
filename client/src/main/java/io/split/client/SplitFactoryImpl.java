@@ -18,9 +18,9 @@ import io.split.engine.evaluator.EvaluatorImp;
 import io.split.engine.SDKReadinessGates;
 import io.split.engine.common.SyncManager;
 import io.split.engine.common.SyncManagerImp;
-import io.split.engine.experiments.RefreshableSplitFetcherProvider;
+import io.split.engine.experiments.RefreshableSplitFetcher;
+import io.split.engine.experiments.RefreshableSplitFetcherTask;
 import io.split.engine.experiments.SplitChangeFetcher;
-import io.split.engine.experiments.SplitFetcher;
 import io.split.engine.experiments.SplitParser;
 import io.split.engine.segments.RefreshableSegmentFetcher;
 import io.split.engine.segments.SegmentChangeFetcher;
@@ -203,7 +203,9 @@ public class SplitFactoryImpl implements SplitFactory {
         SplitChangeFetcher splitChangeFetcher = HttpSplitChangeFetcher.create(httpclient, rootTarget, uncachedFireAndForget);
 
         final SplitCache cache = new InMemoryCacheImp();
-        final RefreshableSplitFetcherProvider splitFetcherProvider = new RefreshableSplitFetcherProvider(splitChangeFetcher, splitParser, findPollingPeriod(RANDOM, config.featuresRefreshRate()), gates, cache);
+        final SplitCache splitCache = new InMemoryCacheImp(-1);
+        final RefreshableSplitFetcher splitFetcher = new RefreshableSplitFetcher(splitChangeFetcher, splitParser, gates, splitCache);
+        final RefreshableSplitFetcherTask splitFetcherTask = new RefreshableSplitFetcherTask(splitFetcher, splitCache, findPollingPeriod(RANDOM, config.featuresRefreshRate()));
 
 
         List<ImpressionListener> impressionListeners = new ArrayList<>();
@@ -227,7 +229,7 @@ public class SplitFactoryImpl implements SplitFactory {
         final EventClient eventClient = EventClientImpl.create(httpclient, eventsRootTarget, config.eventsQueueSize(), config.eventFlushIntervalInMillis(), config.waitBeforeShutdown());
 
         // SyncManager
-        final SyncManager syncManager = SyncManagerImp.build(config.streamingEnabled(), splitFetcherProvider, segmentFetcher, config.authServiceURL(), httpclient, config.streamingServiceURL(), config.authRetryBackoffBase(), buildSSEdHttpClient(config));
+        final SyncManager syncManager = SyncManagerImp.build(config.streamingEnabled(), splitFetcherTask, splitFetcher, segmentFetcher, splitCache, config.authServiceURL(), httpclient, config.streamingServiceURL(), config.authRetryBackoffBase(), buildSSEdHttpClient(config));
         syncManager.start();
 
         destroyer = new Runnable() {
@@ -236,7 +238,7 @@ public class SplitFactoryImpl implements SplitFactory {
                 try {
                     segmentFetcher.close();
                     _log.info("Successful shutdown of segment fetchers");
-                    splitFetcherProvider.close();
+                    splitFetcherTask.close();
                     _log.info("Successful shutdown of splits");
                     impressionsManager.close();
                     _log.info("Successful shutdown of impressions manager");
@@ -266,19 +268,17 @@ public class SplitFactoryImpl implements SplitFactory {
             });
         }
 
-
-        SplitFetcher splitFetcher = splitFetcherProvider.getFetcher();
-        Evaluator evaluator = new EvaluatorImp(gates, splitFetcher);
+        final Evaluator evaluator = new EvaluatorImp(gates, splitCache);
 
         _client = new SplitClientImpl(this,
-                splitFetcher,
+                splitCache,
                 impressionsManager,
                 cachedFireAndForgetMetrics,
                 eventClient,
                 config,
                 gates,
                 evaluator);
-        _manager = new SplitManagerImpl(splitFetcherProvider.getFetcher(), config, gates);
+        _manager = new SplitManagerImpl(splitCache, config, gates);
     }
 
     private static int findPollingPeriod(Random rand, int max) {
