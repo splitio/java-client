@@ -1,11 +1,6 @@
 package io.split.engine.experiments;
 
-import com.google.common.collect.ConcurrentHashMultiset;
 import com.google.common.collect.Lists;
-import com.google.common.collect.Maps;
-import com.google.common.collect.Multiset;
-import com.google.common.collect.Multisets;
-import com.google.common.collect.Sets;
 import io.split.client.dtos.Split;
 import io.split.client.dtos.SplitChange;
 import io.split.client.dtos.Status;
@@ -16,8 +11,6 @@ import org.slf4j.LoggerFactory;
 
 import java.util.Collection;
 import java.util.List;
-import java.util.Map;
-import java.util.Set;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
@@ -45,7 +38,6 @@ public class RefreshableSplitFetcher implements SplitFetcher, Runnable {
      * The count is used to maintain how many splits are using a traffic type, so when
      * an ARCHIVED split is received, we know if we need to remove a traffic type from the multiset.
      */
-    Multiset<String> _concurrentTrafficTypeNameSet = ConcurrentHashMultiset.create();
 
     public RefreshableSplitFetcher(SplitChangeFetcher splitChangeFetcher, SplitParser parser, SDKReadinessGates gates, SplitCache splitCache) {
         _splitChangeFetcher = checkNotNull(splitChangeFetcher);
@@ -111,11 +103,8 @@ public class RefreshableSplitFetcher implements SplitFetcher, Runnable {
     }
 
     @Override
-    public Set<String> fetchKnownTrafficTypes() {
-        // We return the "keys" of the multiset that have a count greater than 0
-        // If the multiset has [{"user",2}.{"account",0}], elementSet only returns
-        // ["user"] (it ignores "account")
-        return Sets.newHashSet(_concurrentTrafficTypeNameSet.elementSet());
+    public boolean trafficTypeExists(String trafficTypeName) {
+        return _splitCache.trafficTypeExists(trafficTypeName);
     }
 
     public Collection<ParsedSplit> fetch() {
@@ -124,7 +113,6 @@ public class RefreshableSplitFetcher implements SplitFetcher, Runnable {
 
     public void clear() {
         _splitCache.clear();
-        _concurrentTrafficTypeNameSet.clear();
     }
 
     @Override
@@ -180,11 +168,6 @@ public class RefreshableSplitFetcher implements SplitFetcher, Runnable {
                 return;
             }
 
-            Set<String> toRemove = Sets.newHashSet();
-            Map<String, ParsedSplit> toAdd = Maps.newHashMap();
-            List<String> trafficTypeNamesToRemove = Lists.newArrayList();
-            List<String> trafficTypeNamesToAdd = Lists.newArrayList();
-
             for (Split split : change.splits) {
                 if (Thread.currentThread().isInterrupted()) {
                     throw new InterruptedException();
@@ -192,24 +175,19 @@ public class RefreshableSplitFetcher implements SplitFetcher, Runnable {
 
                 if (split.status != Status.ACTIVE) {
                     // archive.
-                    toRemove.add(split.name);
-                    if (split.trafficTypeName != null) {
-                        trafficTypeNamesToRemove.add(split.trafficTypeName);
-                    }
+                    _splitCache.remove(split.name);
                     continue;
                 }
 
                 ParsedSplit parsedSplit = _parser.parse(split);
                 if (parsedSplit == null) {
                     _log.info("We could not parse the experiment definition for: " + split.name + " so we are removing it completely to be careful");
-                    toRemove.add(split.name);
-                    if (split.trafficTypeName != null) {
-                        trafficTypeNamesToRemove.add(split.trafficTypeName);
-                    }
+
+                    _splitCache.remove(split.name);
+                    _log.debug("Deleted feature: " + split.name);
+
                     continue;
                 }
-
-                toAdd.put(split.name, parsedSplit);
 
                 // If the split already exists, this is either an update, or the split has been
                 // deleted and recreated (possibly with a different traffic type).
@@ -218,30 +196,12 @@ public class RefreshableSplitFetcher implements SplitFetcher, Runnable {
                 // To handle both cases, we simply delete the old one if the split is present.
                 // The new one is always increased.
                 ParsedSplit current = _splitCache.get(split.name);
-                if (current != null && current.trafficTypeName() != null) {
-                    trafficTypeNamesToRemove.add(current.trafficTypeName());
+                if (current != null) {
+                    _splitCache.remove(split.name);
                 }
 
-                if (split.trafficTypeName != null) {
-                    trafficTypeNamesToAdd.add(split.trafficTypeName);
-                }
-            }
-
-            _splitCache.putAll(toAdd);
-            _concurrentTrafficTypeNameSet.addAll(trafficTypeNamesToAdd);
-            //removeAll does not work here, since it wont remove all the occurrences, just one
-            Multisets.removeOccurrences(_concurrentTrafficTypeNameSet, trafficTypeNamesToRemove);
-
-            for (String remove : toRemove) {
-                _splitCache.remove(remove);
-            }
-
-            if (!toAdd.isEmpty()) {
-                _log.debug("Updated features: " + toAdd.keySet());
-            }
-
-            if (!toRemove.isEmpty()) {
-                _log.debug("Deleted features: " + toRemove);
+                _splitCache.put(parsedSplit);
+                _log.debug("Updated feature: " + parsedSplit.feature());
             }
 
             _splitCache.setChangeNumber(change.till);

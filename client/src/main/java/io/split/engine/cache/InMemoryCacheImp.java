@@ -1,6 +1,9 @@
 package io.split.engine.cache;
 
+import com.google.common.collect.ConcurrentHashMultiset;
 import com.google.common.collect.Maps;
+import com.google.common.collect.Multiset;
+import com.google.common.collect.Sets;
 import io.split.engine.experiments.ParsedSplit;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -8,7 +11,7 @@ import org.slf4j.LoggerFactory;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
-import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.atomic.AtomicLong;
 
@@ -17,26 +20,36 @@ public class InMemoryCacheImp implements SplitCache {
     private static final Logger _log = LoggerFactory.getLogger(InMemoryCacheImp.class);
 
     private final ConcurrentMap<String, ParsedSplit> _concurrentMap;
+    private final Multiset<String> _concurrentTrafficTypeNameSet;
+
     private AtomicLong _changeNumber;
+
+    public InMemoryCacheImp() {
+        this(-1);
+    }
 
     public InMemoryCacheImp(long startingChangeNumber) {
         _concurrentMap = Maps.newConcurrentMap();
         _changeNumber = new AtomicLong(startingChangeNumber);
+        _concurrentTrafficTypeNameSet = ConcurrentHashMultiset.create();
     }
 
     @Override
     public void put(ParsedSplit split) {
         _concurrentMap.put(split.feature(), split);
-    }
 
-    @Override
-    public void putAll(Map<String, ParsedSplit> splits) {
-        _concurrentMap.putAll(splits);
+        if (split.trafficTypeName() != null) {
+            _concurrentTrafficTypeNameSet.add(split.trafficTypeName());
+        }
     }
 
     @Override
     public boolean remove(String name) {
         ParsedSplit removed = _concurrentMap.remove(name);
+
+        if (removed != null && removed.trafficTypeName() != null) {
+            _concurrentTrafficTypeNameSet.remove(removed.trafficTypeName());
+        }
 
         return removed != null;
     }
@@ -81,12 +94,15 @@ public class InMemoryCacheImp implements SplitCache {
     }
 
     @Override
-    public boolean trafficTypeExists(String trafficType) {
-        return false;
+    public boolean trafficTypeExists(String trafficTypeName) {
+        // If the multiset has [{"user",2}.{"account",0}], elementSet only returns
+        // ["user"] (it ignores "account")
+        return Sets.newHashSet(_concurrentTrafficTypeNameSet.elementSet()).contains(trafficTypeName);
     }
 
     @Override
     public void clear() {
         _concurrentMap.clear();
+        _concurrentTrafficTypeNameSet.clear();
     }
 }
