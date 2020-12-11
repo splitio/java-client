@@ -177,7 +177,6 @@ public class SplitFactoryImpl implements SplitFactory {
 
         }
 
-
         final CloseableHttpClient httpclient = buildHttpClient(apiToken, config);
 
         URI rootTarget = URI.create(config.endpoint());
@@ -207,7 +206,6 @@ public class SplitFactoryImpl implements SplitFactory {
         final RefreshableSplitFetcher splitFetcher = new RefreshableSplitFetcher(splitChangeFetcher, splitParser, gates, splitCache);
         final RefreshableSplitFetcherTask splitFetcherTask = new RefreshableSplitFetcherTask(splitFetcher, splitCache, findPollingPeriod(RANDOM, config.featuresRefreshRate()));
 
-
         List<ImpressionListener> impressionListeners = new ArrayList<>();
         // Setup integrations
         if (config.integrationsConfig() != null) {
@@ -231,6 +229,9 @@ public class SplitFactoryImpl implements SplitFactory {
         // SyncManager
         final SyncManager syncManager = SyncManagerImp.build(config.streamingEnabled(), splitFetcherTask, splitFetcher, segmentFetcher, splitCache, config.authServiceURL(), httpclient, config.streamingServiceURL(), config.authRetryBackoffBase(), buildSSEdHttpClient(config));
         syncManager.start();
+
+        // Evaluator
+        final Evaluator evaluator = new EvaluatorImp(gates, splitCache);
 
         destroyer = new Runnable() {
             public void run() {
@@ -267,8 +268,6 @@ public class SplitFactoryImpl implements SplitFactory {
                 }
             });
         }
-
-        final Evaluator evaluator = new EvaluatorImp(gates, splitCache);
 
         _client = new SplitClientImpl(this,
                 splitCache,
