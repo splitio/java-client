@@ -11,6 +11,8 @@ import io.split.client.interceptors.GzipEncoderRequestInterceptor;
 import io.split.client.metrics.CachedMetrics;
 import io.split.client.metrics.FireAndForgetMetrics;
 import io.split.client.metrics.HttpMetrics;
+import io.split.engine.cache.InMemoryCacheImp;
+import io.split.engine.cache.SplitCache;
 import io.split.engine.evaluator.Evaluator;
 import io.split.engine.evaluator.EvaluatorImp;
 import io.split.engine.SDKReadinessGates;
@@ -200,7 +202,8 @@ public class SplitFactoryImpl implements SplitFactory {
         // Feature Changes
         SplitChangeFetcher splitChangeFetcher = HttpSplitChangeFetcher.create(httpclient, rootTarget, uncachedFireAndForget);
 
-        final RefreshableSplitFetcherProvider splitFetcherProvider = new RefreshableSplitFetcherProvider(splitChangeFetcher, splitParser, findPollingPeriod(RANDOM, config.featuresRefreshRate()), gates);
+        final SplitCache cache = new InMemoryCacheImp();
+        final RefreshableSplitFetcherProvider splitFetcherProvider = new RefreshableSplitFetcherProvider(splitChangeFetcher, splitParser, findPollingPeriod(RANDOM, config.featuresRefreshRate()), gates, cache);
 
 
         List<ImpressionListener> impressionListeners = new ArrayList<>();

@@ -192,7 +192,7 @@ public final class SplitClientImpl implements SplitClient {
             event.trafficTypeName = event.trafficTypeName.toLowerCase();
         }
 
-        if (!_splitFetcher.fetchKnownTrafficTypes().contains(event.trafficTypeName)) {
+        if (!_splitFetcher.trafficTypeExists(event.trafficTypeName)) {
             _log.warn("track: Traffic Type " + event.trafficTypeName + " does not have any corresponding Splits in this environment, " +
                     "make sure you’re tracking your events to a valid traffic type defined in the Split console.");
         }
