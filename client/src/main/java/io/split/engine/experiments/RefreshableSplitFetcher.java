@@ -137,7 +137,7 @@ public class RefreshableSplitFetcher implements SplitFetcher, Runnable {
         }
     }
 
-    public void runWithoutExceptionHandling() throws InterruptedException {
+    private void runWithoutExceptionHandling() throws InterruptedException {
         SplitChange change = _splitChangeFetcher.fetch(_splitCache.getChangeNumber());
 
         if (change == null) {

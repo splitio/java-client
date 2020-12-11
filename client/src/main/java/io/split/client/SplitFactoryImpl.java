@@ -202,7 +202,7 @@ public class SplitFactoryImpl implements SplitFactory {
         // Feature Changes
         SplitChangeFetcher splitChangeFetcher = HttpSplitChangeFetcher.create(httpclient, rootTarget, uncachedFireAndForget);
 
-        final SplitCache cache = new InMemoryCacheImp(-1);
+        final SplitCache cache = new InMemoryCacheImp();
         final RefreshableSplitFetcherProvider splitFetcherProvider = new RefreshableSplitFetcherProvider(splitChangeFetcher, splitParser, findPollingPeriod(RANDOM, config.featuresRefreshRate()), gates, cache);
 
 
