@@ -1,6 +1,6 @@
 package io.split.client;
 
-import io.split.engine.inputValidation.ApiKeyValidator;
+import io.split.inputValidation.ApiKeyValidator;
 import io.split.grammar.Treatments;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

@@ -9,10 +9,7 @@ import io.split.cache.SplitCache;
 import io.split.engine.evaluator.Evaluator;
 import io.split.engine.SDKReadinessGates;
 import io.split.engine.evaluator.EvaluatorImp;
-import io.split.engine.inputValidation.EventsValidator;
-import io.split.engine.inputValidation.KeyValidator;
-import io.split.engine.inputValidation.SplitNameValidator;
-import io.split.engine.inputValidation.TrafficTypeValidator;
+import io.split.inputValidation.*;
 import io.split.engine.metrics.Metrics;
 import io.split.grammar.Treatments;
 import org.slf4j.Logger;
@@ -148,7 +145,7 @@ public final class SplitClientImpl implements SplitClient {
         }
 
         // Traffic Type validations
-        TrafficTypeValidator.TrafficTypeResult trafficTypeResult = TrafficTypeValidator.isValid(event.trafficTypeName, _splitCache, "track");
+        InputValidationResult trafficTypeResult = TrafficTypeValidator.isValid(event.trafficTypeName, _splitCache, "track");
         if (!trafficTypeResult.getSuccess()) {
             return false;
         }
@@ -190,7 +187,7 @@ public final class SplitClientImpl implements SplitClient {
                 return SPLIT_RESULT_CONTROL;
             }
 
-            SplitNameValidator.SplitNameResult splitNameResult = SplitNameValidator.isValid(split, method);
+            InputValidationResult splitNameResult = SplitNameValidator.isValid(split, method);
             if (!splitNameResult.getSuccess()) {
                 return SPLIT_RESULT_CONTROL;
             }

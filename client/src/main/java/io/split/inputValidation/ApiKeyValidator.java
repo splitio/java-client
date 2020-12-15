@@ -1,4 +1,4 @@
-package io.split.engine.inputValidation;
+package io.split.inputValidation;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

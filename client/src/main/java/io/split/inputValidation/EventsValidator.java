@@ -1,4 +1,4 @@
-package io.split.engine.inputValidation;
+package io.split.inputValidation;
 
 import io.split.client.dtos.Event;
 import org.slf4j.Logger;
@@ -25,6 +25,10 @@ public class EventsValidator {
 
         Map<String, Object> result = new HashMap<>();
         for (Map.Entry<String, Object> entry : properties.entrySet()) {
+            if (entry.getKey() == null || entry.getKey().isEmpty()) {
+              continue;
+            }
+
             size += entry.getKey().length();
             Object value = entry.getValue();
 

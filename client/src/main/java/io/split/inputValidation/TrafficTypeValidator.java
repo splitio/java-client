@@ -1,4 +1,4 @@
-package io.split.engine.inputValidation;
+package io.split.inputValidation;
 
 import io.split.engine.cache.SplitCache;
 import org.slf4j.Logger;
@@ -7,15 +7,15 @@ import org.slf4j.LoggerFactory;
 public class TrafficTypeValidator {
     private static final Logger _log = LoggerFactory.getLogger(TrafficTypeValidator.class);
 
-    public static TrafficTypeResult isValid(String trafficTypeName, SplitCache splitCache, String method) {
+    public static InputValidationResult isValid(String trafficTypeName, SplitCache splitCache, String method) {
         if (trafficTypeName == null) {
             _log.error(String.format("%s: you passed a null trafficTypeName, trafficTypeName must be a non-empty string", method));
-            return new TrafficTypeResult(false);
+            return new InputValidationResult(false);
         }
 
         if (trafficTypeName.isEmpty()) {
             _log.error(String.format("%s: you passed an empty trafficTypeName, trafficTypeName must be a non-empty string", method));
-            return new TrafficTypeResult(false);
+            return new InputValidationResult(false);
         }
 
         if (!trafficTypeName.equals(trafficTypeName.toLowerCase())) {
@@ -28,29 +28,6 @@ public class TrafficTypeValidator {
                     "make sure you’re tracking your events to a valid traffic type defined in the Split console.", method, trafficTypeName));
         }
 
-        return new TrafficTypeResult(true, trafficTypeName);
-    }
-
-    public static class TrafficTypeResult {
-        private final boolean _success;
-        private final String _value;
-
-        public TrafficTypeResult(boolean success, String value) {
-            _success = success;
-            _value = value;
-        }
-
-        public TrafficTypeResult(boolean success) {
-            _success = success;
-            _value = null;
-        }
-
-        public boolean getSuccess() {
-            return _success;
-        }
-
-        public String getValue() {
-            return _value;
-        }
+        return new InputValidationResult(true, trafficTypeName);
     }
 }
