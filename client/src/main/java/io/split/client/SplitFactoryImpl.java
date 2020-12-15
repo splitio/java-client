@@ -69,90 +69,6 @@ public class SplitFactoryImpl implements SplitFactory {
     private final String _apiToken;
     private boolean isTerminated = false;
 
-    private static CloseableHttpClient buildHttpClient(String apiToken, SplitClientConfig config) {
-
-        SSLConnectionSocketFactory sslSocketFactory = SSLConnectionSocketFactoryBuilder.create()
-                .setSslContext(SSLContexts.createSystemDefault())
-                .setTlsVersions(TLS.V_1_1, TLS.V_1_2)
-                .build();
-
-        RequestConfig requestConfig = RequestConfig.custom()
-                .setConnectTimeout(Timeout.ofMilliseconds(config.connectionTimeout()))
-                .setCookieSpec(StandardCookieSpec.STRICT)
-                .build();
-
-        PoolingHttpClientConnectionManager cm = PoolingHttpClientConnectionManagerBuilder.create()
-                .setSSLSocketFactory(sslSocketFactory)
-                .setDefaultSocketConfig(SocketConfig.custom()
-                        .setSoTimeout(Timeout.ofMilliseconds(config.readTimeout()))
-                        .build())
-                .build();
-        cm.setMaxTotal(20);
-        cm.setDefaultMaxPerRoute(20);
-
-        HttpClientBuilder httpClientbuilder = HttpClients.custom()
-                .setConnectionManager(cm)
-                .setDefaultRequestConfig(requestConfig)
-                .addRequestInterceptorLast(AddSplitHeadersFilter.instance(apiToken, config.ipAddressEnabled()))
-                .addRequestInterceptorLast(new GzipEncoderRequestInterceptor())
-                .addResponseInterceptorLast((new GzipDecoderResponseInterceptor()));
-
-        // Set up proxy is it exists
-        if (config.proxy() != null) {
-            httpClientbuilder = setupProxy(httpClientbuilder, config);
-        }
-
-        return httpClientbuilder.build();
-    }
-
-    private static CloseableHttpClient buildSSEdHttpClient(SplitClientConfig config) {
-        RequestConfig requestConfig = RequestConfig.custom()
-                .setConnectTimeout(Timeout.ofMilliseconds(SSE_CONNECT_TIMEOUT))
-                .build();
-
-        SSLConnectionSocketFactory sslSocketFactory = SSLConnectionSocketFactoryBuilder.create()
-                .setSslContext(SSLContexts.createSystemDefault())
-                .setTlsVersions(TLS.V_1_1, TLS.V_1_2)
-                .build();
-
-        PoolingHttpClientConnectionManager cm = PoolingHttpClientConnectionManagerBuilder.create()
-                .setSSLSocketFactory(sslSocketFactory)
-                .setDefaultSocketConfig(SocketConfig.custom()
-                        .setSoTimeout(Timeout.ofMilliseconds(SSE_SOCKET_TIMEOUT))
-                        .build())
-                .build();
-        cm.setMaxTotal(1);
-        cm.setDefaultMaxPerRoute(1);
-
-        HttpClientBuilder httpClientbuilder = HttpClients.custom()
-                .setConnectionManager(cm)
-                .setDefaultRequestConfig(requestConfig);
-
-        // Set up proxy is it exists
-        if (config.proxy() != null) {
-            httpClientbuilder = setupProxy(httpClientbuilder, config);
-        }
-
-        return httpClientbuilder.build();
-    }
-
-    private static HttpClientBuilder setupProxy(HttpClientBuilder httpClientbuilder, SplitClientConfig config) {
-        _log.info("Initializing Split SDK with proxy settings");
-        DefaultProxyRoutePlanner routePlanner = new DefaultProxyRoutePlanner(config.proxy());
-        httpClientbuilder.setRoutePlanner(routePlanner);
-
-        if (config.proxyUsername() != null && config.proxyPassword() != null) {
-            _log.debug("Proxy setup using credentials");
-            BasicCredentialsProvider credsProvider = new BasicCredentialsProvider();
-            AuthScope siteScope = new AuthScope(config.proxy().getHostName(), config.proxy().getPort());
-            Credentials siteCreds = new UsernamePasswordCredentials(config.proxyUsername(), config.proxyPassword().toCharArray());
-            credsProvider.setCredentials(siteScope, siteCreds);
-            httpClientbuilder.setDefaultCredentialsProvider(credsProvider);
-        }
-
-        return  httpClientbuilder;
-    }
-
     public SplitFactoryImpl(String apiToken, SplitClientConfig config) throws URISyntaxException {
         _apiToken = apiToken;
 
@@ -194,7 +110,6 @@ public class SplitFactoryImpl implements SplitFactory {
                 findPollingPeriod(RANDOM, config.segmentsRefreshRate()),
                 config.numThreadsForSegmentFetch(),
                 gates);
-
 
         SplitParser splitParser = new SplitParser(segmentFetcher);
 
@@ -279,19 +194,17 @@ public class SplitFactoryImpl implements SplitFactory {
         _manager = new SplitManagerImpl(splitCache, config, gates);
     }
 
-    private static int findPollingPeriod(Random rand, int max) {
-        int min = max / 2;
-        return rand.nextInt((max - min) + 1) + min;
-    }
-
+    @Override
     public SplitClient client() {
         return _client;
     }
 
+    @Override
     public SplitManager manager() {
         return _manager;
     }
 
+    @Override
     public void destroy() {
         synchronized (SplitFactoryImpl.class) {
             if (!isTerminated) {
@@ -305,5 +218,94 @@ public class SplitFactoryImpl implements SplitFactory {
     @Override
     public boolean isDestroyed() {
         return isTerminated;
+    }
+
+    private static CloseableHttpClient buildHttpClient(String apiToken, SplitClientConfig config) {
+
+        SSLConnectionSocketFactory sslSocketFactory = SSLConnectionSocketFactoryBuilder.create()
+                .setSslContext(SSLContexts.createSystemDefault())
+                .setTlsVersions(TLS.V_1_1, TLS.V_1_2)
+                .build();
+
+        RequestConfig requestConfig = RequestConfig.custom()
+                .setConnectTimeout(Timeout.ofMilliseconds(config.connectionTimeout()))
+                .setCookieSpec(StandardCookieSpec.STRICT)
+                .build();
+
+        PoolingHttpClientConnectionManager cm = PoolingHttpClientConnectionManagerBuilder.create()
+                .setSSLSocketFactory(sslSocketFactory)
+                .setDefaultSocketConfig(SocketConfig.custom()
+                        .setSoTimeout(Timeout.ofMilliseconds(config.readTimeout()))
+                        .build())
+                .build();
+        cm.setMaxTotal(20);
+        cm.setDefaultMaxPerRoute(20);
+
+        HttpClientBuilder httpClientbuilder = HttpClients.custom()
+                .setConnectionManager(cm)
+                .setDefaultRequestConfig(requestConfig)
+                .addRequestInterceptorLast(AddSplitHeadersFilter.instance(apiToken, config.ipAddressEnabled()))
+                .addRequestInterceptorLast(new GzipEncoderRequestInterceptor())
+                .addResponseInterceptorLast((new GzipDecoderResponseInterceptor()));
+
+        // Set up proxy is it exists
+        if (config.proxy() != null) {
+            httpClientbuilder = setupProxy(httpClientbuilder, config);
+        }
+
+        return httpClientbuilder.build();
+    }
+
+    private static CloseableHttpClient buildSSEdHttpClient(SplitClientConfig config) {
+        RequestConfig requestConfig = RequestConfig.custom()
+                .setConnectTimeout(Timeout.ofMilliseconds(SSE_CONNECT_TIMEOUT))
+                .build();
+
+        SSLConnectionSocketFactory sslSocketFactory = SSLConnectionSocketFactoryBuilder.create()
+                .setSslContext(SSLContexts.createSystemDefault())
+                .setTlsVersions(TLS.V_1_1, TLS.V_1_2)
+                .build();
+
+        PoolingHttpClientConnectionManager cm = PoolingHttpClientConnectionManagerBuilder.create()
+                .setSSLSocketFactory(sslSocketFactory)
+                .setDefaultSocketConfig(SocketConfig.custom()
+                        .setSoTimeout(Timeout.ofMilliseconds(SSE_SOCKET_TIMEOUT))
+                        .build())
+                .build();
+        cm.setMaxTotal(1);
+        cm.setDefaultMaxPerRoute(1);
+
+        HttpClientBuilder httpClientbuilder = HttpClients.custom()
+                .setConnectionManager(cm)
+                .setDefaultRequestConfig(requestConfig);
+
+        // Set up proxy is it exists
+        if (config.proxy() != null) {
+            httpClientbuilder = setupProxy(httpClientbuilder, config);
+        }
+
+        return httpClientbuilder.build();
+    }
+
+    private static HttpClientBuilder setupProxy(HttpClientBuilder httpClientbuilder, SplitClientConfig config) {
+        _log.info("Initializing Split SDK with proxy settings");
+        DefaultProxyRoutePlanner routePlanner = new DefaultProxyRoutePlanner(config.proxy());
+        httpClientbuilder.setRoutePlanner(routePlanner);
+
+        if (config.proxyUsername() != null && config.proxyPassword() != null) {
+            _log.debug("Proxy setup using credentials");
+            BasicCredentialsProvider credsProvider = new BasicCredentialsProvider();
+            AuthScope siteScope = new AuthScope(config.proxy().getHostName(), config.proxy().getPort());
+            Credentials siteCreds = new UsernamePasswordCredentials(config.proxyUsername(), config.proxyPassword().toCharArray());
+            credsProvider.setCredentials(siteScope, siteCreds);
+            httpClientbuilder.setDefaultCredentialsProvider(credsProvider);
+        }
+
+        return  httpClientbuilder;
+    }
+
+    private static int findPollingPeriod(Random rand, int max) {
+        int min = max / 2;
+        return rand.nextInt((max - min) + 1) + min;
     }
 }
