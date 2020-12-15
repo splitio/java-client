@@ -2,13 +2,11 @@ package io.split.client;
 
 import com.google.common.collect.Lists;
 import io.split.client.api.SplitView;
-import io.split.client.dtos.Split;
 import io.split.engine.ConditionsTestUtil;
 import io.split.engine.SDKReadinessGates;
-import io.split.engine.cache.SplitCache;
+import io.split.cache.SplitCache;
 import io.split.engine.experiments.ParsedCondition;
 import io.split.engine.experiments.ParsedSplit;
-import io.split.engine.experiments.SplitFetcher;
 import io.split.engine.matchers.AllKeysMatcher;
 import io.split.engine.matchers.CombiningMatcher;
 import io.split.grammar.Treatments;

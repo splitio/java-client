@@ -1,7 +1,7 @@
 package io.split.client.jmx;
 
 import io.split.client.SplitClient;
-import io.split.engine.cache.SplitCache;
+import io.split.cache.SplitCache;
 import io.split.engine.experiments.SplitFetcher;
 import io.split.engine.segments.SegmentFetcher;
 import org.slf4j.Logger;

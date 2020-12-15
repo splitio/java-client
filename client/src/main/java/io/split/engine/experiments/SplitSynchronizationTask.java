@@ -1,7 +1,7 @@
 package io.split.engine.experiments;
 
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
-import io.split.engine.cache.SplitCache;
+import io.split.cache.SplitCache;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -24,10 +24,10 @@ import static com.google.common.base.Preconditions.checkNotNull;
  *
  * @author adil
  */
-public class RefreshableSplitFetcherTask implements Closeable {
-    private static final Logger _log = LoggerFactory.getLogger(RefreshableSplitFetcherTask.class);
+public class SplitSynchronizationTask implements Closeable {
+    private static final Logger _log = LoggerFactory.getLogger(SplitSynchronizationTask.class);
 
-    private final AtomicReference<RefreshableSplitFetcher> _splitFetcher = new AtomicReference<RefreshableSplitFetcher>();
+    private final AtomicReference<SplitFetcherImp> _splitFetcher = new AtomicReference<SplitFetcherImp>();
     private final AtomicReference<SplitCache> _splitCache = new AtomicReference<SplitCache>();
     private final AtomicReference<ScheduledExecutorService> _executorService = new AtomicReference<>();
     private final AtomicLong _refreshEveryNSeconds;
@@ -36,7 +36,7 @@ public class RefreshableSplitFetcherTask implements Closeable {
 
     private ScheduledFuture<?> _scheduledFuture;
 
-    public RefreshableSplitFetcherTask(RefreshableSplitFetcher splitFetcher, SplitCache splitCache, long refreshEveryNSeconds) {
+    public SplitSynchronizationTask(SplitFetcherImp splitFetcher, SplitCache splitCache, long refreshEveryNSeconds) {
         _splitFetcher.set(checkNotNull(splitFetcher));
         _splitCache.set(checkNotNull(splitCache));
         checkArgument(refreshEveryNSeconds >= 0L);

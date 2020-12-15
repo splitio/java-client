@@ -4,7 +4,7 @@ import com.google.common.base.Preconditions;
 import io.split.client.api.SplitView;
 import io.split.client.dtos.Partition;
 import io.split.engine.SDKReadinessGates;
-import io.split.engine.cache.SplitCache;
+import io.split.cache.SplitCache;
 import io.split.engine.experiments.ParsedCondition;
 import io.split.engine.experiments.ParsedSplit;
 import org.slf4j.Logger;

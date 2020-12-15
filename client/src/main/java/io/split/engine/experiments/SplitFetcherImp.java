@@ -4,7 +4,7 @@ import io.split.client.dtos.Split;
 import io.split.client.dtos.SplitChange;
 import io.split.client.dtos.Status;
 import io.split.engine.SDKReadinessGates;
-import io.split.engine.cache.SplitCache;
+import io.split.cache.SplitCache;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -15,9 +15,9 @@ import static com.google.common.base.Preconditions.checkNotNull;
  *
  * @author adil
  */
-public class RefreshableSplitFetcher implements SplitFetcher, Runnable {
+public class SplitFetcherImp implements SplitFetcher, Runnable {
 
-    private static final Logger _log = LoggerFactory.getLogger(RefreshableSplitFetcher.class);
+    private static final Logger _log = LoggerFactory.getLogger(SplitFetcherImp.class);
 
     private final SplitParser _parser;
     private final SplitChangeFetcher _splitChangeFetcher;
@@ -35,7 +35,7 @@ public class RefreshableSplitFetcher implements SplitFetcher, Runnable {
      * an ARCHIVED split is received, we know if we need to remove a traffic type from the multiset.
      */
 
-    public RefreshableSplitFetcher(SplitChangeFetcher splitChangeFetcher, SplitParser parser, SDKReadinessGates gates, SplitCache splitCache) {
+    public SplitFetcherImp(SplitChangeFetcher splitChangeFetcher, SplitParser parser, SDKReadinessGates gates, SplitCache splitCache) {
         _splitChangeFetcher = checkNotNull(splitChangeFetcher);
         _parser = checkNotNull(parser);
         _gates = checkNotNull(gates);
