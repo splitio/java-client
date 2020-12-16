@@ -230,7 +230,7 @@ public class SplitFactoryImpl implements SplitFactory {
         syncManager.start();
 
         // Evaluator
-        final Evaluator evaluator = new EvaluatorImp(gates, splitCache);
+        final Evaluator evaluator = new EvaluatorImp(splitCache);
 
         destroyer = new Runnable() {
             public void run() {

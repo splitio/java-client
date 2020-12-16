@@ -83,7 +83,7 @@ public class SplitClientImplTest {
                 NoopEventClient.create(),
                 config,
                 gates,
-                new EvaluatorImp(gates, splitCache)
+                new EvaluatorImp(splitCache)
         );
 
         assertThat(client.getTreatment(null, "test1"), is(equalTo(Treatments.CONTROL)));
@@ -110,7 +110,7 @@ public class SplitClientImplTest {
                 NoopEventClient.create(),
                 config,
                 gates,
-                new EvaluatorImp(gates, splitCache)
+                new EvaluatorImp(splitCache)
         );
 
         assertThat(client.getTreatment("adil@relateiq.com", null), is(equalTo(Treatments.CONTROL)));
@@ -132,7 +132,7 @@ public class SplitClientImplTest {
                 NoopEventClient.create(),
                 config,
                 gates,
-                new EvaluatorImp(gates, splitCache)
+                new EvaluatorImp(splitCache)
         );
         assertThat(client.getTreatment("adil@relateiq.com", "test1"), is(equalTo(Treatments.CONTROL)));
 
@@ -159,7 +159,7 @@ public class SplitClientImplTest {
                 NoopEventClient.create(),
                 config,
                 gates,
-                new EvaluatorImp(gates, splitCache)
+                new EvaluatorImp(splitCache)
         );
 
         int numKeys = 5;
@@ -194,7 +194,7 @@ public class SplitClientImplTest {
                 NoopEventClient.create(),
                 config,
                 gates,
-                new EvaluatorImp(gates, splitCache)
+                new EvaluatorImp(splitCache)
         );
 
 
@@ -231,7 +231,7 @@ public class SplitClientImplTest {
                 NoopEventClient.create(),
                 config,
                 gates,
-                new EvaluatorImp(gates, splitCache)
+                new EvaluatorImp(splitCache)
         );
 
         int numKeys = 5;
@@ -265,7 +265,7 @@ public class SplitClientImplTest {
                 NoopEventClient.create(),
                 config,
                 gates,
-                new EvaluatorImp(gates, splitCache)
+                new EvaluatorImp(splitCache)
         );
 
         assertThat(client.getTreatment("pato@codigo.com", test), is(equalTo(Treatments.OFF)));
@@ -301,7 +301,7 @@ public class SplitClientImplTest {
                 NoopEventClient.create(),
                 config,
                 gates,
-                new EvaluatorImp(gates, splitCache)
+                new EvaluatorImp(splitCache)
         );
 
         SplitResult result = client.getTreatmentWithConfig("pato@codigo.com", test);
@@ -334,7 +334,7 @@ public class SplitClientImplTest {
                 NoopEventClient.create(),
                 config,
                 gates,
-                new EvaluatorImp(gates, splitCache)
+                new EvaluatorImp(splitCache)
         );
 
         assertThat(client.getTreatment("adil@codigo.com", test), is(equalTo("on")));
@@ -365,7 +365,7 @@ public class SplitClientImplTest {
                 NoopEventClient.create(),
                 config,
                 gates,
-                new EvaluatorImp(gates, splitCache)
+                new EvaluatorImp(splitCache)
         );
 
         assertThat(client.getTreatment("adil@codigo.com", test), is(equalTo(Treatments.OFF)));
@@ -401,7 +401,7 @@ public class SplitClientImplTest {
                 NoopEventClient.create(),
                 config,
                 gates,
-                new EvaluatorImp(gates, splitCache)
+                new EvaluatorImp(splitCache)
         );
 
         SplitResult result = client.getTreatmentWithConfig("adil@codigo.com", test);
@@ -437,7 +437,7 @@ public class SplitClientImplTest {
                 NoopEventClient.create(),
                 config,
                 gates,
-                new EvaluatorImp(gates, splitCache)
+                new EvaluatorImp(splitCache)
         );
 
         assertThat(client.getTreatment("key", parent), is(equalTo(Treatments.ON)));
@@ -470,7 +470,7 @@ public class SplitClientImplTest {
                 NoopEventClient.create(),
                 config,
                 gates,
-                new EvaluatorImp(gates, splitCache)
+                new EvaluatorImp(splitCache)
         );
 
         assertThat(client.getTreatment("key", parent), is(equalTo(Treatments.ON)));
@@ -497,7 +497,7 @@ public class SplitClientImplTest {
                 NoopEventClient.create(),
                 config,
                 gates,
-                new EvaluatorImp(gates, splitCache)
+                new EvaluatorImp(splitCache)
         );
 
         assertThat(client.getTreatment("key", dependent), is(equalTo(Treatments.ON)));
@@ -525,7 +525,7 @@ public class SplitClientImplTest {
                 NoopEventClient.create(),
                 config,
                 gates,
-                new EvaluatorImp(gates, splitCache)
+                new EvaluatorImp(splitCache)
         );
 
         assertThat(client.getTreatment("adil@codigo.com", test), is(equalTo("on")));
@@ -559,7 +559,7 @@ public class SplitClientImplTest {
                 NoopEventClient.create(),
                 config,
                 gates,
-                new EvaluatorImp(gates, splitCache)
+                new EvaluatorImp(splitCache)
         );
 
         assertThat(client.getTreatment("adil@codigo.com", test), is(equalTo("off")));
@@ -593,7 +593,7 @@ public class SplitClientImplTest {
                 NoopEventClient.create(),
                 config,
                 gates,
-                new EvaluatorImp(gates, splitCache)
+                new EvaluatorImp(splitCache)
         );
 
         assertThat(client.getTreatment("adil@codigo.com", test), is(equalTo("off")));
@@ -630,7 +630,7 @@ public class SplitClientImplTest {
                 NoopEventClient.create(),
                 config,
                 gates,
-                new EvaluatorImp(gates, splitCache)
+                new EvaluatorImp(splitCache)
         );
 
         assertThat(client.getTreatment("adil@codigo.com", test), is(equalTo("off")));
@@ -673,7 +673,7 @@ public class SplitClientImplTest {
                 NoopEventClient.create(),
                 config,
                 gates,
-                new EvaluatorImp(gates, splitCache)
+                new EvaluatorImp(splitCache)
         );
 
         Map<String, Object> attributes = ImmutableMap.<String, Object>of("age", -20, "acv", "1000000");
@@ -765,7 +765,7 @@ public class SplitClientImplTest {
                 NoopEventClient.create(),
                 config,
                 gates,
-                new EvaluatorImp(gates, splitCache)
+                new EvaluatorImp(splitCache)
         );
 
         assertThat(client.getTreatment(key, test), is(equalTo(expected_treatment_on_or_off)));
@@ -813,7 +813,7 @@ public class SplitClientImplTest {
                 NoopEventClient.create(),
                 config,
                 gates,
-                new EvaluatorImp(gates, splitCache)
+                new EvaluatorImp(splitCache)
         );
 
         assertThat(client.getTreatment("pato@split.io", test), is(equalTo(Treatments.OFF)));
@@ -853,7 +853,7 @@ public class SplitClientImplTest {
                 NoopEventClient.create(),
                 config,
                 gates,
-                new EvaluatorImp(gates, splitCache)
+                new EvaluatorImp(splitCache)
         );
 
         Key bad_key = new Key("adil", "aijaz");
@@ -891,7 +891,7 @@ public class SplitClientImplTest {
                 NoopEventClient.create(),
                 config,
                 gates,
-                new EvaluatorImp(gates, splitCache)
+                new EvaluatorImp(splitCache)
         );
 
         Map<String, Object> attributes = ImmutableMap.<String, Object>of("age", -20, "acv", "1000000");
@@ -927,7 +927,7 @@ public class SplitClientImplTest {
                 NoopEventClient.create(),
                 config,
                 ready,
-                new EvaluatorImp(ready, splitCache)
+                new EvaluatorImp(splitCache)
         );
 
         client.blockUntilReady();
@@ -947,7 +947,7 @@ public class SplitClientImplTest {
                 NoopEventClient.create(),
                 config,
                 ready,
-                new EvaluatorImp(ready, splitCache)
+                new EvaluatorImp(splitCache)
         );
 
         client.blockUntilReady();
@@ -966,7 +966,7 @@ public class SplitClientImplTest {
                 NoopEventClient.create(),
                 config,
                 gates,
-                new EvaluatorImp(gates, splitCache)
+                new EvaluatorImp(splitCache)
         );
 
         Assert.assertThat(client.track("validKey", "valid_traffic_type", "valid_event"),
@@ -992,7 +992,7 @@ public class SplitClientImplTest {
                 NoopEventClient.create(),
                 config,
                 gates,
-                new EvaluatorImp(gates, splitCache)
+                new EvaluatorImp(splitCache)
         );
 
         Assert.assertThat(client.track("validKey", "valid_traffic_type", ""),
@@ -1023,7 +1023,7 @@ public class SplitClientImplTest {
                 NoopEventClient.create(),
                 config,
                 gates,
-                new EvaluatorImp(gates, splitCache)
+                new EvaluatorImp(splitCache)
         );
 
         Assert.assertThat(client.track("validKey", "", "valid"),
@@ -1046,7 +1046,7 @@ public class SplitClientImplTest {
                 NoopEventClient.create(),
                 config,
                 gates,
-                new EvaluatorImp(gates, splitCache)
+                new EvaluatorImp(splitCache)
         );
 
         Assert.assertThat(client.track("", "valid_traffic_type", "valid"),
@@ -1075,7 +1075,7 @@ public class SplitClientImplTest {
                 eventClientMock,
                 config,
                 gates,
-                new EvaluatorImp(gates, splitCache)
+                new EvaluatorImp(splitCache)
         );
 
         HashMap<String, Object> properties = new HashMap<>();
@@ -1186,7 +1186,7 @@ public class SplitClientImplTest {
                 NoopEventClient.create(),
                 config,
                 gates,
-                new EvaluatorImp(gates, splitCache)
+                new EvaluatorImp(splitCache)
         );
 
         Assert.assertThat(client.getTreatment("valid", "split"),
@@ -1271,7 +1271,7 @@ public class SplitClientImplTest {
                 NoopEventClient.create(),
                 config,
                 gates,
-                new EvaluatorImp(gates, splitCache)
+                new EvaluatorImp(splitCache)
         );
 
         Assert.assertThat(client.getTreatment("valid", "split"),

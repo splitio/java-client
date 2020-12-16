@@ -2,11 +2,9 @@ package io.split.engine.evaluator;
 
 import io.split.client.dtos.ConditionType;
 import io.split.client.exceptions.ChangeNumberExceptionWrapper;
-import io.split.engine.SDKReadinessGates;
 import io.split.engine.cache.SplitCache;
 import io.split.engine.experiments.ParsedCondition;
 import io.split.engine.experiments.ParsedSplit;
-import io.split.engine.experiments.SplitFetcher;
 import io.split.engine.splitter.Splitter;
 import io.split.grammar.Treatments;
 import org.slf4j.Logger;
@@ -25,12 +23,9 @@ public class EvaluatorImp implements Evaluator {
 
     private static final Logger _log = LoggerFactory.getLogger(EvaluatorImp.class);
 
-    private final SDKReadinessGates _gates;
     private final SplitCache _splitCache;
 
-    public EvaluatorImp(SDKReadinessGates gates,
-                        SplitCache splitCache) {
-        _gates = checkNotNull(gates);
+    public EvaluatorImp(SplitCache splitCache) {
         _splitCache = checkNotNull(splitCache);
     }
 
@@ -40,11 +35,6 @@ public class EvaluatorImp implements Evaluator {
             ParsedSplit parsedSplit = _splitCache.get(split);
 
             if (parsedSplit == null) {
-                if (_gates.isSDKReadyNow()) {
-                    _log.warn(
-                            "getTreatment: you passed \"" + split + "\" that does not exist in this environment, " +
-                                    "please double check what Splits exist in the web console.");
-                }
                 return new TreatmentLabelAndChangeNumber(Treatments.CONTROL, DEFINITION_NOT_FOUND);
             }
 

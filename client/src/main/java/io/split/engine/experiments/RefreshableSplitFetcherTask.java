@@ -83,7 +83,7 @@ public class RefreshableSplitFetcherTask implements Closeable {
             _splitCache.get().clear();
         }
 
-        _running.set(false);
+        stop();
 
         ScheduledExecutorService scheduledExecutorService = _executorService.get();
         if (scheduledExecutorService.isShutdown()) {

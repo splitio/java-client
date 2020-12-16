@@ -39,7 +39,7 @@ public class EvaluatorTest {
     public void before() {
         SDKReadinessGates gates = Mockito.mock(SDKReadinessGates.class);
         _splitCache = Mockito.mock(SplitCache.class);
-        _evaluator = new EvaluatorImp(gates, _splitCache);
+        _evaluator = new EvaluatorImp(_splitCache);
         _matcher = Mockito.mock(CombiningMatcher.class);
 
         _configurations = new HashMap<>();

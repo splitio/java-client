@@ -32,6 +32,7 @@ public final class SplitClientImpl implements SplitClient {
     public static final SplitResult SPLIT_RESULT_CONTROL = new SplitResult(Treatments.CONTROL, null);
 
     private static final String GET_TREATMENT_LABEL = "sdk.getTreatment";
+    private static final String DEFINITION_NOT_FOUND = "definition not found";
 
     private static final Logger _log = LoggerFactory.getLogger(SplitClientImpl.class);
 
@@ -313,6 +314,12 @@ public final class SplitClientImpl implements SplitClient {
             long start = System.currentTimeMillis();
 
             EvaluatorImp.TreatmentLabelAndChangeNumber result = _evaluator.evaluateFeature(matchingKey, bucketingKey, split, attributes);
+
+            if (result.treatment.equals(Treatments.CONTROL) && result.label.equals(DEFINITION_NOT_FOUND) && _gates.isSDKReadyNow()) {
+                _log.warn(
+                        "getTreatment: you passed \"" + split + "\" that does not exist in this environment, " +
+                                "please double check what Splits exist in the web console.");
+            }
 
             recordStats(
                     matchingKey,
