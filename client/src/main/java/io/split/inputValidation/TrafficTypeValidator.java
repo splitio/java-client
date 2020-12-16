@@ -1,6 +1,6 @@
 package io.split.inputValidation;
 
-import io.split.engine.cache.SplitCache;
+import io.split.cache.SplitCache;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
