@@ -9,8 +9,8 @@ import io.split.client.dtos.SplitChange;
 import io.split.client.dtos.Status;
 import io.split.engine.ConditionsTestUtil;
 import io.split.engine.SDKReadinessGates;
-import io.split.engine.cache.InMemoryCacheImp;
-import io.split.engine.cache.SplitCache;
+import io.split.cache.InMemoryCacheImp;
+import io.split.cache.SplitCache;
 import io.split.engine.matchers.AllKeysMatcher;
 import io.split.engine.matchers.CombiningMatcher;
 import io.split.engine.segments.NoChangeSegmentChangeFetcher;
@@ -24,7 +24,6 @@ import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.Executors;
@@ -62,26 +61,25 @@ public class RefreshableSplitFetcherTest {
 
         SDKReadinessGates gates = new SDKReadinessGates();
         SplitCache cache = new InMemoryCacheImp(startingChangeNumber);
-
-        RefreshableSplitFetcher fetcher = new RefreshableSplitFetcher(splitChangeFetcher, new SplitParser(segmentFetcher), gates, cache);
+        SplitFetcherImp fetcher = new SplitFetcherImp(splitChangeFetcher, new SplitParser(segmentFetcher), gates, cache);
 
         // execute the fetcher for a little bit.
         executeWaitAndTerminate(fetcher, 1, 3, TimeUnit.SECONDS);
 
         assertThat(splitChangeFetcher.lastAdded(), is(greaterThan(startingChangeNumber)));
-        assertThat(fetcher.changeNumber(), is(equalTo(splitChangeFetcher.lastAdded())));
+        assertThat(cache.getChangeNumber(), is(equalTo(splitChangeFetcher.lastAdded())));
 
         // all previous splits have been removed since they are dead
-        for (long i = startingChangeNumber; i < fetcher.changeNumber(); i++) {
-            assertThat("Asking for " + i + " " + fetcher.fetchAll(), fetcher.fetch("" + i), is(not(nullValue())));
-            assertThat(fetcher.fetch("" + i).killed(), is(true));
+        for (long i = startingChangeNumber; i < cache.getChangeNumber(); i++) {
+            assertThat("Asking for " + i + " " + cache.getAll(), cache.get("" + i), is(not(nullValue())));
+            assertThat(cache.get("" + i).killed(), is(true));
         }
 
         ParsedCondition expectedParsedCondition = ParsedCondition.createParsedConditionForTests(CombiningMatcher.of(new AllKeysMatcher()), Lists.newArrayList(ConditionsTestUtil.partition("on", 10)));
         List<ParsedCondition> expectedListOfMatcherAndSplits = Lists.newArrayList(expectedParsedCondition);
-        ParsedSplit expected = ParsedSplit.createParsedSplitForTests("" + fetcher.changeNumber(), (int) fetcher.changeNumber(), false, Treatments.OFF, expectedListOfMatcherAndSplits, null, fetcher.changeNumber(), 1);
+        ParsedSplit expected = ParsedSplit.createParsedSplitForTests("" + cache.getChangeNumber(), (int) cache.getChangeNumber(), false, Treatments.OFF, expectedListOfMatcherAndSplits, null, cache.getChangeNumber(), 1);
 
-        ParsedSplit actual = fetcher.fetch("" + fetcher.changeNumber());
+        ParsedSplit actual = cache.get("" + cache.getChangeNumber());
 
         assertThat(actual, is(equalTo(expected)));
         assertThat(gates.areSplitsReady(0), is(equalTo(true)));
@@ -133,14 +131,14 @@ public class RefreshableSplitFetcherTest {
         when(splitChangeFetcher.fetch(1L)).thenReturn(noReturn);
 
         SplitCache cache = new InMemoryCacheImp(-1);
-        RefreshableSplitFetcher fetcher = new RefreshableSplitFetcher(splitChangeFetcher, new SplitParser(segmentFetcher), new SDKReadinessGates(), cache);
+        SplitFetcherImp fetcher = new SplitFetcherImp(splitChangeFetcher, new SplitParser(segmentFetcher), new SDKReadinessGates(), cache);
 
         // execute the fetcher for a little bit.
         executeWaitAndTerminate(fetcher, 1, 5, TimeUnit.SECONDS);
 
-        assertThat(fetcher.changeNumber(), is(equalTo(1L)));
+        assertThat(cache.getChangeNumber(), is(equalTo(1L)));
         // verify that the fetcher return null
-        assertThat(fetcher.fetch("-1"), is(nullValue()));
+        assertThat(cache.get("-1"), is(nullValue()));
     }
 
     @Test
@@ -152,12 +150,12 @@ public class RefreshableSplitFetcherTest {
         SplitChangeFetcher splitChangeFetcher = mock(SplitChangeFetcher.class);
         when(splitChangeFetcher.fetch(-1L)).thenThrow(new RuntimeException());
 
-        RefreshableSplitFetcher fetcher = new RefreshableSplitFetcher(splitChangeFetcher, new SplitParser(segmentFetcher), gates, cache);
+        SplitFetcherImp fetcher = new SplitFetcherImp(splitChangeFetcher, new SplitParser(segmentFetcher), gates, cache);
 
         // execute the fetcher for a little bit.
         executeWaitAndTerminate(fetcher, 1, 5, TimeUnit.SECONDS);
 
-        assertThat(fetcher.changeNumber(), is(equalTo(-1L)));
+        assertThat(cache.getChangeNumber(), is(equalTo(-1L)));
         assertThat(gates.areSplitsReady(0), is(equalTo(false)));
     }
 
@@ -191,49 +189,23 @@ public class RefreshableSplitFetcherTest {
         SegmentChangeFetcher segmentChangeFetcher = new NoChangeSegmentChangeFetcher();
         SegmentFetcher segmentFetcher = new RefreshableSegmentFetcher(segmentChangeFetcher, 1,10, gates);
         segmentFetcher.startPeriodicFetching();
-        RefreshableSplitFetcher fetcher = new RefreshableSplitFetcher(experimentChangeFetcher, new SplitParser(segmentFetcher), gates, cache);
+        SplitFetcherImp fetcher = new SplitFetcherImp(experimentChangeFetcher, new SplitParser(segmentFetcher), gates, cache);
 
         // execute the fetcher for a little bit.
         executeWaitAndTerminate(fetcher, 1, 5, TimeUnit.SECONDS);
 
         assertThat(experimentChangeFetcher.lastAdded(), is(greaterThan(startingChangeNumber)));
-        assertThat(fetcher.changeNumber(), is(equalTo(experimentChangeFetcher.lastAdded())));
+        assertThat(cache.getChangeNumber(), is(equalTo(experimentChangeFetcher.lastAdded())));
 
         // all previous splits have been removed since they are dead
-        for (long i = startingChangeNumber; i < fetcher.changeNumber(); i++) {
-            assertThat("Asking for " + i + " " + fetcher.fetchAll(), fetcher.fetch("" + i), is(not(nullValue())));
-            assertThat(fetcher.fetch("" + i).killed(), is(true));
+        for (long i = startingChangeNumber; i < cache.getChangeNumber(); i++) {
+            assertThat("Asking for " + i + " " + cache.getAll(), cache.get("" + i), is(not(nullValue())));
+            assertThat(cache.get("" + i).killed(), is(true));
         }
 
         assertThat(gates.areSplitsReady(0), is(equalTo(true)));
         assertThat(gates.isSegmentRegistered(segmentName), is(equalTo(true)));
         assertThat(gates.areSegmentsReady(100), is(equalTo(true)));
         assertThat(gates.isSDKReady(0), is(equalTo(true)));
-    }
-
-    @Test
-    public void trafficTypesExist() {
-        SplitChangeFetcherWithTrafficTypeNames changeFetcher = new SplitChangeFetcherWithTrafficTypeNames();
-        SDKReadinessGates gates = new SDKReadinessGates();
-        SplitCache cache = new InMemoryCacheImp(-1);
-
-        SegmentChangeFetcher segmentChangeFetcher = new NoChangeSegmentChangeFetcher();
-        SegmentFetcher segmentFetcher = new RefreshableSegmentFetcher(segmentChangeFetcher, 1,10, gates);
-        RefreshableSplitFetcher fetcher = new RefreshableSplitFetcher(changeFetcher, new SplitParser(segmentFetcher), gates, cache);
-
-        cache.put(ParsedSplit.createParsedSplitForTests("splitName_1", 0, false, "default_treatment", new ArrayList<>(), "tt", 123, 2));
-        cache.put(ParsedSplit.createParsedSplitForTests("splitName_2", 0, false, "default_treatment", new ArrayList<>(), "tt", 123, 2));
-        cache.put(ParsedSplit.createParsedSplitForTests("splitName_3", 0, false, "default_treatment", new ArrayList<>(), "tt_2", 123, 2));
-        cache.put(ParsedSplit.createParsedSplitForTests("splitName_4", 0, false, "default_treatment", new ArrayList<>(), "tt_3", 123, 2));
-
-        assertTrue(fetcher.trafficTypeExists("tt_2"));
-        assertTrue(fetcher.trafficTypeExists("tt"));
-        assertFalse(fetcher.trafficTypeExists("tt_5"));
-
-        cache.remove("splitName_2");
-        assertTrue(fetcher.trafficTypeExists("tt"));
-
-        cache.remove("splitName_1");
-        assertFalse(fetcher.trafficTypeExists("tt"));
     }
 }
