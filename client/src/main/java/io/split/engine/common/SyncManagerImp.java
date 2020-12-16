@@ -2,9 +2,9 @@ package io.split.engine.common;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
-import io.split.engine.cache.SplitCache;
-import io.split.engine.experiments.RefreshableSplitFetcher;
-import io.split.engine.experiments.RefreshableSplitFetcherTask;
+import io.split.cache.SplitCache;
+import io.split.engine.experiments.SplitFetcherImp;
+import io.split.engine.experiments.SplitSynchronizationTask;
 import io.split.engine.segments.RefreshableSegmentFetcher;
 import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
 import org.slf4j.Logger;
@@ -46,8 +46,8 @@ public class SyncManagerImp implements SyncManager {
     }
 
     public static SyncManagerImp build(boolean streamingEnabledConfig,
-                                        RefreshableSplitFetcherTask refreshableSplitFetcherTask,
-                                        RefreshableSplitFetcher splitFetcher,
+                                        SplitSynchronizationTask splitSynchronizationTask,
+                                        SplitFetcherImp splitFetcher,
                                         RefreshableSegmentFetcher segmentFetcher,
                                         SplitCache splitCache,
                                         String authUrl,
@@ -56,7 +56,7 @@ public class SyncManagerImp implements SyncManager {
                                         int authRetryBackOffBase,
                                        CloseableHttpClient sseHttpClient) {
         LinkedBlockingQueue<PushManager.Status> pushMessages = new LinkedBlockingQueue<>();
-        Synchronizer synchronizer = new SynchronizerImp(refreshableSplitFetcherTask, splitFetcher, segmentFetcher, splitCache);
+        Synchronizer synchronizer = new SynchronizerImp(splitSynchronizationTask, splitFetcher, segmentFetcher, splitCache);
         PushManager pushManager = PushManagerImp.build(synchronizer, streamingServiceUrl, authUrl, httpClient, authRetryBackOffBase, pushMessages, sseHttpClient);
         return new SyncManagerImp(streamingEnabledConfig, synchronizer, pushManager, pushMessages);
     }

@@ -9,8 +9,8 @@ import io.split.client.dtos.SplitChange;
 import io.split.client.dtos.Status;
 import io.split.engine.ConditionsTestUtil;
 import io.split.engine.SDKReadinessGates;
-import io.split.engine.cache.InMemoryCacheImp;
-import io.split.engine.cache.SplitCache;
+import io.split.cache.InMemoryCacheImp;
+import io.split.cache.SplitCache;
 import io.split.engine.matchers.AllKeysMatcher;
 import io.split.engine.matchers.CombiningMatcher;
 import io.split.engine.segments.NoChangeSegmentChangeFetcher;
@@ -61,7 +61,7 @@ public class RefreshableSplitFetcherTest {
 
         SDKReadinessGates gates = new SDKReadinessGates();
         SplitCache cache = new InMemoryCacheImp(startingChangeNumber);
-        RefreshableSplitFetcher fetcher = new RefreshableSplitFetcher(splitChangeFetcher, new SplitParser(segmentFetcher), gates, cache);
+        SplitFetcherImp fetcher = new SplitFetcherImp(splitChangeFetcher, new SplitParser(segmentFetcher), gates, cache);
 
         // execute the fetcher for a little bit.
         executeWaitAndTerminate(fetcher, 1, 3, TimeUnit.SECONDS);
@@ -131,7 +131,7 @@ public class RefreshableSplitFetcherTest {
         when(splitChangeFetcher.fetch(1L)).thenReturn(noReturn);
 
         SplitCache cache = new InMemoryCacheImp(-1);
-        RefreshableSplitFetcher fetcher = new RefreshableSplitFetcher(splitChangeFetcher, new SplitParser(segmentFetcher), new SDKReadinessGates(), cache);
+        SplitFetcherImp fetcher = new SplitFetcherImp(splitChangeFetcher, new SplitParser(segmentFetcher), new SDKReadinessGates(), cache);
 
         // execute the fetcher for a little bit.
         executeWaitAndTerminate(fetcher, 1, 5, TimeUnit.SECONDS);
@@ -150,7 +150,7 @@ public class RefreshableSplitFetcherTest {
         SplitChangeFetcher splitChangeFetcher = mock(SplitChangeFetcher.class);
         when(splitChangeFetcher.fetch(-1L)).thenThrow(new RuntimeException());
 
-        RefreshableSplitFetcher fetcher = new RefreshableSplitFetcher(splitChangeFetcher, new SplitParser(segmentFetcher), gates, cache);
+        SplitFetcherImp fetcher = new SplitFetcherImp(splitChangeFetcher, new SplitParser(segmentFetcher), gates, cache);
 
         // execute the fetcher for a little bit.
         executeWaitAndTerminate(fetcher, 1, 5, TimeUnit.SECONDS);
@@ -189,7 +189,7 @@ public class RefreshableSplitFetcherTest {
         SegmentChangeFetcher segmentChangeFetcher = new NoChangeSegmentChangeFetcher();
         SegmentFetcher segmentFetcher = new RefreshableSegmentFetcher(segmentChangeFetcher, 1,10, gates);
         segmentFetcher.startPeriodicFetching();
-        RefreshableSplitFetcher fetcher = new RefreshableSplitFetcher(experimentChangeFetcher, new SplitParser(segmentFetcher), gates, cache);
+        SplitFetcherImp fetcher = new SplitFetcherImp(experimentChangeFetcher, new SplitParser(segmentFetcher), gates, cache);
 
         // execute the fetcher for a little bit.
         executeWaitAndTerminate(fetcher, 1, 5, TimeUnit.SECONDS);

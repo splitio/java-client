@@ -11,15 +11,15 @@ import io.split.client.interceptors.GzipEncoderRequestInterceptor;
 import io.split.client.metrics.CachedMetrics;
 import io.split.client.metrics.FireAndForgetMetrics;
 import io.split.client.metrics.HttpMetrics;
-import io.split.engine.cache.InMemoryCacheImp;
-import io.split.engine.cache.SplitCache;
+import io.split.cache.InMemoryCacheImp;
+import io.split.cache.SplitCache;
 import io.split.engine.evaluator.Evaluator;
 import io.split.engine.evaluator.EvaluatorImp;
 import io.split.engine.SDKReadinessGates;
 import io.split.engine.common.SyncManager;
 import io.split.engine.common.SyncManagerImp;
-import io.split.engine.experiments.RefreshableSplitFetcher;
-import io.split.engine.experiments.RefreshableSplitFetcherTask;
+import io.split.engine.experiments.SplitFetcherImp;
+import io.split.engine.experiments.SplitSynchronizationTask;
 import io.split.engine.experiments.SplitChangeFetcher;
 import io.split.engine.experiments.SplitParser;
 import io.split.engine.segments.RefreshableSegmentFetcher;
@@ -202,8 +202,8 @@ public class SplitFactoryImpl implements SplitFactory {
         SplitChangeFetcher splitChangeFetcher = HttpSplitChangeFetcher.create(httpclient, rootTarget, uncachedFireAndForget);
 
         final SplitCache splitCache = new InMemoryCacheImp();
-        final RefreshableSplitFetcher splitFetcher = new RefreshableSplitFetcher(splitChangeFetcher, splitParser, gates, splitCache);
-        final RefreshableSplitFetcherTask splitFetcherTask = new RefreshableSplitFetcherTask(splitFetcher, splitCache, findPollingPeriod(RANDOM, config.featuresRefreshRate()));
+        final SplitFetcherImp splitFetcher = new SplitFetcherImp(splitChangeFetcher, splitParser, gates, splitCache);
+        final SplitSynchronizationTask splitSynchronizationTask = new SplitSynchronizationTask(splitFetcher, splitCache, findPollingPeriod(RANDOM, config.featuresRefreshRate()));
 
         List<ImpressionListener> impressionListeners = new ArrayList<>();
         // Setup integrations
@@ -226,7 +226,7 @@ public class SplitFactoryImpl implements SplitFactory {
         final EventClient eventClient = EventClientImpl.create(httpclient, eventsRootTarget, config.eventsQueueSize(), config.eventFlushIntervalInMillis(), config.waitBeforeShutdown());
 
         // SyncManager
-        final SyncManager syncManager = SyncManagerImp.build(config.streamingEnabled(), splitFetcherTask, splitFetcher, segmentFetcher, splitCache, config.authServiceURL(), httpclient, config.streamingServiceURL(), config.authRetryBackoffBase(), buildSSEdHttpClient(config));
+        final SyncManager syncManager = SyncManagerImp.build(config.streamingEnabled(), splitSynchronizationTask, splitFetcher, segmentFetcher, splitCache, config.authServiceURL(), httpclient, config.streamingServiceURL(), config.authRetryBackoffBase(), buildSSEdHttpClient(config));
         syncManager.start();
 
         // Evaluator
@@ -238,7 +238,7 @@ public class SplitFactoryImpl implements SplitFactory {
                 try {
                     segmentFetcher.close();
                     _log.info("Successful shutdown of segment fetchers");
-                    splitFetcherTask.close();
+                    splitSynchronizationTask.close();
                     _log.info("Successful shutdown of splits");
                     impressionsManager.close();
                     _log.info("Successful shutdown of impressions manager");

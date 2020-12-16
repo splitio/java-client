@@ -5,7 +5,7 @@ import io.split.client.api.SplitResult;
 import io.split.client.dtos.Event;
 import io.split.client.impressions.Impression;
 import io.split.client.impressions.ImpressionsManager;
-import io.split.engine.cache.SplitCache;
+import io.split.cache.SplitCache;
 import io.split.engine.evaluator.Evaluator;
 import io.split.engine.SDKReadinessGates;
 import io.split.engine.evaluator.EvaluatorImp;

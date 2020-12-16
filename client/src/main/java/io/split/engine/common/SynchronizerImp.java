@@ -2,9 +2,9 @@ package io.split.engine.common;
 
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 
-import io.split.engine.cache.SplitCache;
-import io.split.engine.experiments.RefreshableSplitFetcher;
-import io.split.engine.experiments.RefreshableSplitFetcherTask;
+import io.split.cache.SplitCache;
+import io.split.engine.experiments.SplitFetcherImp;
+import io.split.engine.experiments.SplitSynchronizationTask;
 import io.split.engine.segments.RefreshableSegmentFetcher;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -19,17 +19,17 @@ import static com.google.common.base.Preconditions.checkNotNull;
 public class SynchronizerImp implements Synchronizer {
     private static final Logger _log = LoggerFactory.getLogger(Synchronizer.class);
 
-    private final RefreshableSplitFetcherTask _refreshableSplitFetcherTask;
-    private final RefreshableSplitFetcher _splitFetcher;
+    private final SplitSynchronizationTask _splitSynchronizationTask;
+    private final SplitFetcherImp _splitFetcher;
     private final RefreshableSegmentFetcher _segmentFetcher;
     private final ScheduledExecutorService _syncAllScheduledExecutorService;
     private final SplitCache _splitCache;
 
-    public SynchronizerImp(RefreshableSplitFetcherTask refreshableSplitTask,
-                           RefreshableSplitFetcher splitFetcher,
+    public SynchronizerImp(SplitSynchronizationTask splitSynchronizationTask,
+                           SplitFetcherImp splitFetcher,
                            RefreshableSegmentFetcher segmentFetcher,
                            SplitCache splitCache) {
-        _refreshableSplitFetcherTask = checkNotNull(refreshableSplitTask);
+        _splitSynchronizationTask = checkNotNull(splitSynchronizationTask);
         _splitFetcher = checkNotNull(splitFetcher);
         _segmentFetcher = checkNotNull(segmentFetcher);
         _splitCache = checkNotNull(splitCache);
@@ -52,14 +52,14 @@ public class SynchronizerImp implements Synchronizer {
     @Override
     public void startPeriodicFetching() {
         _log.debug("Starting Periodic Fetching ...");
-        _refreshableSplitFetcherTask.startPeriodicFetching();
+        _splitSynchronizationTask.startPeriodicFetching();
         _segmentFetcher.startPeriodicFetching();
     }
 
     @Override
     public void stopPeriodicFetching() {
         _log.debug("Stop Periodic Fetching ...");
-        _refreshableSplitFetcherTask.stop();
+        _splitSynchronizationTask.stop();
         _segmentFetcher.stop();
     }
 

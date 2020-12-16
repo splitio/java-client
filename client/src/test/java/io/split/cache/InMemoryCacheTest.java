@@ -1,4 +1,4 @@
-package io.split.engine.cache;
+package io.split.cache;
 
 import io.split.engine.experiments.ParsedSplit;
 import org.junit.Assert;

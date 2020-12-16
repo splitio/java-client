@@ -1,4 +1,4 @@
-package io.split.engine.cache;
+package io.split.cache;
 
 import com.google.common.collect.ConcurrentHashMultiset;
 import com.google.common.collect.Maps;
