@@ -36,8 +36,8 @@ import static com.google.common.base.Preconditions.checkNotNull;
 public final class SplitClientImpl implements SplitClient {
     public static final SplitResult SPLIT_RESULT_CONTROL = new SplitResult(Treatments.CONTROL, null);
 
-    private static final String GET_TREATMENT_LABEL = "sdk.getTreatment";
-    private static final String GET_TREATMENT_WITH_CONFIG_LABEL = "sdk.getTreatmentWithConfig";
+    private static final String METRIC_GET_TREATMENT = "sdk.getTreatment";
+    private static final String METRIC_GET_TREATMENT_WITH_CONFIG = "sdk.getTreatmentWithConfig";
 
     private static final Logger _log = LoggerFactory.getLogger(SplitClientImpl.class);
 
@@ -75,27 +75,27 @@ public final class SplitClientImpl implements SplitClient {
 
     @Override
     public String getTreatment(String key, String split, Map<String, Object> attributes) {
-        return getTreatmentWithConfigInternal(GET_TREATMENT_LABEL, key, null, split, attributes, "getTreatment").treatment();
+        return getTreatmentWithConfigInternal(METRIC_GET_TREATMENT, key, null, split, attributes, "getTreatment").treatment();
     }
 
     @Override
     public String getTreatment(Key key, String split, Map<String, Object> attributes) {
-        return getTreatmentWithConfigInternal(GET_TREATMENT_LABEL, key.matchingKey(), key.bucketingKey(), split, attributes, "getTreatment").treatment();
+        return getTreatmentWithConfigInternal(METRIC_GET_TREATMENT, key.matchingKey(), key.bucketingKey(), split, attributes, "getTreatment").treatment();
     }
 
     @Override
     public SplitResult getTreatmentWithConfig(String key, String split) {
-        return getTreatmentWithConfigInternal(GET_TREATMENT_WITH_CONFIG_LABEL, key, null, split, Collections.<String, Object>emptyMap(), "getTreatmentWithConfig");
+        return getTreatmentWithConfigInternal(METRIC_GET_TREATMENT_WITH_CONFIG, key, null, split, Collections.<String, Object>emptyMap(), "getTreatmentWithConfig");
     }
 
     @Override
     public SplitResult getTreatmentWithConfig(String key, String split, Map<String, Object> attributes) {
-        return getTreatmentWithConfigInternal(GET_TREATMENT_WITH_CONFIG_LABEL, key, null, split, attributes, "getTreatmentWithConfig");
+        return getTreatmentWithConfigInternal(METRIC_GET_TREATMENT_WITH_CONFIG, key, null, split, attributes, "getTreatmentWithConfig");
     }
 
     @Override
     public SplitResult getTreatmentWithConfig(Key key, String split, Map<String, Object> attributes) {
-        return getTreatmentWithConfigInternal(GET_TREATMENT_WITH_CONFIG_LABEL, key.matchingKey(), key.bucketingKey(), split, attributes, "getTreatmentWithConfig");
+        return getTreatmentWithConfigInternal(METRIC_GET_TREATMENT_WITH_CONFIG, key.matchingKey(), key.bucketingKey(), split, attributes, "getTreatmentWithConfig");
     }
 
     @Override
