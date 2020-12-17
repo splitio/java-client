@@ -15,11 +15,7 @@ import java.util.Map;
 import static com.google.common.base.Preconditions.checkNotNull;
 
 public class EvaluatorImp implements Evaluator {
-    private static final String NOT_IN_SPLIT = "not in split";
-    private static final String DEFAULT_RULE = "default rule";
-    private static final String KILLED = "killed";
-    private static final String DEFINITION_NOT_FOUND = "definition not found";
-    private static final String EXCEPTION = "exception";
+
 
     private static final Logger _log = LoggerFactory.getLogger(EvaluatorImp.class);
 
@@ -35,17 +31,17 @@ public class EvaluatorImp implements Evaluator {
             ParsedSplit parsedSplit = _splitCache.get(split);
 
             if (parsedSplit == null) {
-                return new TreatmentLabelAndChangeNumber(Treatments.CONTROL, DEFINITION_NOT_FOUND);
+                return new TreatmentLabelAndChangeNumber(Treatments.CONTROL, Labels.DEFINITION_NOT_FOUND);
             }
 
             return getTreatment(matchingKey, bucketingKey, parsedSplit, attributes);
         }
         catch (ChangeNumberExceptionWrapper e) {
             _log.error("Evaluator Exception", e.wrappedException());
-            return new EvaluatorImp.TreatmentLabelAndChangeNumber(Treatments.CONTROL, EXCEPTION, e.changeNumber());
+            return new EvaluatorImp.TreatmentLabelAndChangeNumber(Treatments.CONTROL, Labels.EXCEPTION, e.changeNumber());
         } catch (Exception e) {
             _log.error("Evaluator Exception", e);
-            return new EvaluatorImp.TreatmentLabelAndChangeNumber(Treatments.CONTROL, EXCEPTION);
+            return new EvaluatorImp.TreatmentLabelAndChangeNumber(Treatments.CONTROL, Labels.EXCEPTION);
         }
     }
 
@@ -61,7 +57,7 @@ public class EvaluatorImp implements Evaluator {
         try {
             if (parsedSplit.killed()) {
                 String config = parsedSplit.configurations() != null ? parsedSplit.configurations().get(parsedSplit.defaultTreatment()) : null;
-                return new TreatmentLabelAndChangeNumber(parsedSplit.defaultTreatment(), KILLED, parsedSplit.changeNumber(), config);
+                return new TreatmentLabelAndChangeNumber(parsedSplit.defaultTreatment(), Labels.KILLED, parsedSplit.changeNumber(), config);
             }
 
             /*
@@ -85,7 +81,7 @@ public class EvaluatorImp implements Evaluator {
                         if (bucket > parsedSplit.trafficAllocation()) {
                             // out of split
                             String config = parsedSplit.configurations() != null ? parsedSplit.configurations().get(parsedSplit.defaultTreatment()) : null;
-                            return new TreatmentLabelAndChangeNumber(parsedSplit.defaultTreatment(), NOT_IN_SPLIT, parsedSplit.changeNumber(), config);
+                            return new TreatmentLabelAndChangeNumber(parsedSplit.defaultTreatment(), Labels.NOT_IN_SPLIT, parsedSplit.changeNumber(), config);
                         }
 
                     }
@@ -100,7 +96,7 @@ public class EvaluatorImp implements Evaluator {
             }
 
             String config = parsedSplit.configurations() != null ? parsedSplit.configurations().get(parsedSplit.defaultTreatment()) : null;
-            return new TreatmentLabelAndChangeNumber(parsedSplit.defaultTreatment(), DEFAULT_RULE, parsedSplit.changeNumber(), config);
+            return new TreatmentLabelAndChangeNumber(parsedSplit.defaultTreatment(), Labels.DEFAULT_RULE, parsedSplit.changeNumber(), config);
         } catch (Exception e) {
             throw new ChangeNumberExceptionWrapper(e, parsedSplit.changeNumber());
         }

@@ -9,9 +9,15 @@ import io.split.cache.SplitCache;
 import io.split.engine.evaluator.Evaluator;
 import io.split.engine.SDKReadinessGates;
 import io.split.engine.evaluator.EvaluatorImp;
-import io.split.inputValidation.*;
+import io.split.engine.evaluator.Labels;
+
 import io.split.engine.metrics.Metrics;
 import io.split.grammar.Treatments;
+import io.split.inputValidation.EventsValidator;
+import io.split.inputValidation.InputValidationResult;
+import io.split.inputValidation.KeyValidator;
+import io.split.inputValidation.SplitNameValidator;
+import io.split.inputValidation.TrafficTypeValidator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -31,7 +37,7 @@ public final class SplitClientImpl implements SplitClient {
     public static final SplitResult SPLIT_RESULT_CONTROL = new SplitResult(Treatments.CONTROL, null);
 
     private static final String GET_TREATMENT_LABEL = "sdk.getTreatment";
-    private static final String DEFINITION_NOT_FOUND = "definition not found";
+    private static final String GET_TREATMENT_WITH_CONFIG_LABEL = "sdk.getTreatmentWithConfig";
 
     private static final Logger _log = LoggerFactory.getLogger(SplitClientImpl.class);
 
@@ -79,17 +85,17 @@ public final class SplitClientImpl implements SplitClient {
 
     @Override
     public SplitResult getTreatmentWithConfig(String key, String split) {
-        return getTreatmentWithConfigInternal(GET_TREATMENT_LABEL, key, null, split, Collections.<String, Object>emptyMap(), "getTreatmentWithConfig");
+        return getTreatmentWithConfigInternal(GET_TREATMENT_WITH_CONFIG_LABEL, key, null, split, Collections.<String, Object>emptyMap(), "getTreatmentWithConfig");
     }
 
     @Override
     public SplitResult getTreatmentWithConfig(String key, String split, Map<String, Object> attributes) {
-        return getTreatmentWithConfigInternal(GET_TREATMENT_LABEL, key, null, split, attributes, "getTreatmentWithConfig");
+        return getTreatmentWithConfigInternal(GET_TREATMENT_WITH_CONFIG_LABEL, key, null, split, attributes, "getTreatmentWithConfig");
     }
 
     @Override
     public SplitResult getTreatmentWithConfig(Key key, String split, Map<String, Object> attributes) {
-        return getTreatmentWithConfigInternal(GET_TREATMENT_LABEL, key.matchingKey(), key.bucketingKey(), split, attributes, "getTreatmentWithConfig");
+        return getTreatmentWithConfigInternal(GET_TREATMENT_WITH_CONFIG_LABEL, key.matchingKey(), key.bucketingKey(), split, attributes, "getTreatmentWithConfig");
     }
 
     @Override
@@ -197,7 +203,7 @@ public final class SplitClientImpl implements SplitClient {
 
             EvaluatorImp.TreatmentLabelAndChangeNumber result = _evaluator.evaluateFeature(matchingKey, bucketingKey, split, attributes);
 
-            if (result.treatment.equals(Treatments.CONTROL) && result.label.equals(DEFINITION_NOT_FOUND) && _gates.isSDKReadyNow()) {
+            if (result.treatment.equals(Treatments.CONTROL) && result.label.equals(Labels.DEFINITION_NOT_FOUND) && _gates.isSDKReadyNow()) {
                 _log.warn(
                         "getTreatment: you passed \"" + split + "\" that does not exist in this environment, " +
                                 "please double check what Splits exist in the web console.");
