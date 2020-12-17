@@ -4,18 +4,20 @@ import io.split.cache.SplitCache;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.Optional;
+
 public class TrafficTypeValidator {
     private static final Logger _log = LoggerFactory.getLogger(TrafficTypeValidator.class);
 
-    public static InputValidationResult isValid(String trafficTypeName, SplitCache splitCache, String method) {
+    public static Optional<String> isValid(String trafficTypeName, SplitCache splitCache, String method) {
         if (trafficTypeName == null) {
             _log.error(String.format("%s: you passed a null trafficTypeName, trafficTypeName must be a non-empty string", method));
-            return new InputValidationResult(false);
+            return Optional.empty();
         }
 
         if (trafficTypeName.isEmpty()) {
             _log.error(String.format("%s: you passed an empty trafficTypeName, trafficTypeName must be a non-empty string", method));
-            return new InputValidationResult(false);
+            return Optional.empty();
         }
 
         if (!trafficTypeName.equals(trafficTypeName.toLowerCase())) {
@@ -28,6 +30,6 @@ public class TrafficTypeValidator {
                     "make sure you’re tracking your events to a valid traffic type defined in the Split console.", method, trafficTypeName));
         }
 
-        return new InputValidationResult(true, trafficTypeName);
+        return Optional.of(trafficTypeName);
     }
 }

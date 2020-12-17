@@ -14,7 +14,6 @@ import io.split.engine.evaluator.Labels;
 import io.split.engine.metrics.Metrics;
 import io.split.grammar.Treatments;
 import io.split.inputValidation.EventsValidator;
-import io.split.inputValidation.InputValidationResult;
 import io.split.inputValidation.KeyValidator;
 import io.split.inputValidation.SplitNameValidator;
 import io.split.inputValidation.TrafficTypeValidator;
@@ -24,6 +23,7 @@ import org.slf4j.LoggerFactory;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
 import java.util.concurrent.TimeoutException;
 
 import static com.google.common.base.Preconditions.checkNotNull;
@@ -151,11 +151,11 @@ public final class SplitClientImpl implements SplitClient {
         }
 
         // Traffic Type validations
-        InputValidationResult trafficTypeResult = TrafficTypeValidator.isValid(event.trafficTypeName, _splitCache, "track");
-        if (!trafficTypeResult.getSuccess()) {
+        Optional<String> trafficTypeResult = TrafficTypeValidator.isValid(event.trafficTypeName, _splitCache, "track");
+        if (!trafficTypeResult.isPresent()) {
             return false;
         }
-        event.trafficTypeName = trafficTypeResult.getValue();
+        event.trafficTypeName = trafficTypeResult.get();
 
         // EventType validations
         if (!EventsValidator.typeIsValid(event.eventTypeId, "track")) {
@@ -193,11 +193,11 @@ public final class SplitClientImpl implements SplitClient {
                 return SPLIT_RESULT_CONTROL;
             }
 
-            InputValidationResult splitNameResult = SplitNameValidator.isValid(split, method);
-            if (!splitNameResult.getSuccess()) {
+            Optional<String> splitNameResult = SplitNameValidator.isValid(split, method);
+            if (!splitNameResult.isPresent()) {
                 return SPLIT_RESULT_CONTROL;
             }
-            split = splitNameResult.getValue();
+            split = splitNameResult.get();
 
             long start = System.currentTimeMillis();
 
