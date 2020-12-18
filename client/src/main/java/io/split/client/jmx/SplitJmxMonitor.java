@@ -1,9 +1,12 @@
 package io.split.client.jmx;
 
+import io.split.cache.SegmentCache;
 import io.split.client.SplitClient;
 import io.split.cache.SplitCache;
 import io.split.engine.experiments.SplitFetcher;
 import io.split.engine.segments.SegmentFetcher;
+import io.split.engine.segments.SegmentFetcherImpMauro;
+import io.split.engine.segments.SegmentSynchronizationTaskMauro;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -19,13 +22,16 @@ public class SplitJmxMonitor implements SplitJmxMonitorMBean {
     private final SplitClient _client;
     private final SplitFetcher _featureFetcher;
     private final SplitCache _splitCache;
-    private final SegmentFetcher _segmentFetcher;
+    //private final SegmentFetcher _segmentFetcher;
+    private final SegmentSynchronizationTaskMauro _segmentSynchronizationTaskMauro;
+    private SegmentCache _segmentCache;
 
-    public SplitJmxMonitor(SplitClient splitClient, SplitFetcher featureFetcher, SplitCache splitCache, SegmentFetcher segmentFetcher) {
+    public SplitJmxMonitor(SplitClient splitClient, SplitFetcher featureFetcher, SplitCache splitCache, SegmentFetcher segmentFetcher, SegmentSynchronizationTaskMauro segmentSynchronizationTaskMauro) {
         _client = checkNotNull(splitClient);
         _featureFetcher = checkNotNull(featureFetcher);
         _splitCache = checkNotNull(splitCache);
-        _segmentFetcher = checkNotNull(segmentFetcher);
+        //_segmentFetcher = checkNotNull(segmentFetcher);
+        _segmentSynchronizationTaskMauro = segmentSynchronizationTaskMauro;
     }
 
     @Override
@@ -37,7 +43,10 @@ public class SplitJmxMonitor implements SplitJmxMonitorMBean {
 
     @Override
     public boolean forceSyncSegment(String segmentName) {
-        _segmentFetcher.segment(segmentName).forceRefresh();
+        //_segmentFetcher.segment(segmentName).forceRefresh();
+        SegmentFetcherImpMauro fetcher = _segmentSynchronizationTaskMauro.getFetcher(segmentName);
+        fetcher.fetch();
+
         _log.info("Segment " + segmentName + " successfully refreshed via JMX");
         return true;
     }
@@ -54,6 +63,7 @@ public class SplitJmxMonitor implements SplitJmxMonitorMBean {
 
     @Override
     public boolean isKeyInSegment(String key, String segmentName) {
-        return _segmentFetcher.segment(segmentName).contains(key);
+        return _segmentCache.isInSegment(segmentName, key);
+        //return _segmentFetcher.segment(segmentName).contains(key);
     }
 }
