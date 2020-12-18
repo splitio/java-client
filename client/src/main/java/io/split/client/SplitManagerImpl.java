@@ -4,17 +4,19 @@ import com.google.common.base.Preconditions;
 import io.split.client.api.SplitView;
 import io.split.client.dtos.Partition;
 import io.split.engine.SDKReadinessGates;
+import io.split.cache.SplitCache;
 import io.split.engine.experiments.ParsedCondition;
 import io.split.engine.experiments.ParsedSplit;
-import io.split.engine.experiments.SplitFetcher;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+
 import java.util.concurrent.TimeoutException;
 
 /**
@@ -24,23 +26,23 @@ public class SplitManagerImpl implements SplitManager {
 
     private static final Logger _log = LoggerFactory.getLogger(SplitManagerImpl.class);
 
-    private final SplitFetcher _splitFetcher;
+    private final SplitCache _splitCache;
     private final SplitClientConfig _config;
     private final SDKReadinessGates _gates;
 
 
-    public SplitManagerImpl(SplitFetcher splitFetcher,
+    public SplitManagerImpl(SplitCache splitCache,
                             SplitClientConfig config,
                             SDKReadinessGates gates) {
         _config = Preconditions.checkNotNull(config);
-        _splitFetcher  = Preconditions.checkNotNull(splitFetcher);
+        _splitCache  = Preconditions.checkNotNull(splitCache);
         _gates = Preconditions.checkNotNull(gates);
     }
 
     @Override
     public List<SplitView> splits() {
         List<SplitView> result = new ArrayList<>();
-        List<ParsedSplit> parsedSplits = _splitFetcher.fetchAll();
+        Collection<ParsedSplit> parsedSplits = _splitCache.getAll();
         for (ParsedSplit split : parsedSplits) {
             result.add(toSplitView(split));
         }
@@ -57,7 +59,7 @@ public class SplitManagerImpl implements SplitManager {
             _log.error("split: you passed an empty split name, split name must be a non-empty string");
             return null;
         }
-        ParsedSplit parsedSplit = _splitFetcher.fetch(featureName);
+        ParsedSplit parsedSplit = _splitCache.get(featureName);
         if (parsedSplit == null) {
             if (_gates.isSDKReadyNow()) {
                 _log.warn("split: you passed \"" + featureName + "\" that does not exist in this environment, " +
@@ -71,7 +73,7 @@ public class SplitManagerImpl implements SplitManager {
     @Override
     public List<String> splitNames() {
         List<String> result = new ArrayList<>();
-        List<ParsedSplit> parsedSplits = _splitFetcher.fetchAll();
+        Collection<ParsedSplit> parsedSplits = _splitCache.getAll();
         for (ParsedSplit split : parsedSplits) {
             result.add(split.feature());
         }

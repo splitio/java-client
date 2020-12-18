@@ -1,4 +1,4 @@
-package io.split.engine.cache;
+package io.split.cache;
 
 import com.google.common.collect.ConcurrentHashMultiset;
 import com.google.common.collect.Maps;
@@ -11,7 +11,6 @@ import org.slf4j.LoggerFactory;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
-import java.util.Set;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.atomic.AtomicLong;
 
@@ -98,6 +97,25 @@ public class InMemoryCacheImp implements SplitCache {
         // If the multiset has [{"user",2}.{"account",0}], elementSet only returns
         // ["user"] (it ignores "account")
         return Sets.newHashSet(_concurrentTrafficTypeNameSet.elementSet()).contains(trafficTypeName);
+    }
+
+    @Override
+    public void kill(String splitName, String defaultTreatment, long changeNumber) {
+        ParsedSplit parsedSplit = _concurrentMap.get(splitName);
+
+        ParsedSplit updatedSplit = new ParsedSplit(parsedSplit.feature(),
+                parsedSplit.seed(),
+                true,
+                defaultTreatment,
+                parsedSplit.parsedConditions(),
+                parsedSplit.trafficTypeName(),
+                changeNumber,
+                parsedSplit.trafficAllocation(),
+                parsedSplit.trafficAllocationSeed(),
+                parsedSplit.algo(),
+                parsedSplit.configurations());
+
+        _concurrentMap.put(splitName, updatedSplit);
     }
 
     @Override

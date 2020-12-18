@@ -1,8 +1,7 @@
 package io.split.engine.experiments;
 
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
-import io.split.engine.SDKReadinessGates;
-import io.split.engine.cache.SplitCache;
+import io.split.cache.SplitCache;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -25,29 +24,23 @@ import static com.google.common.base.Preconditions.checkNotNull;
  *
  * @author adil
  */
-public class RefreshableSplitFetcherProvider implements Closeable {
-    private static final Logger _log = LoggerFactory.getLogger(RefreshableSplitFetcherProvider.class);
+public class SplitSynchronizationTask implements Closeable {
+    private static final Logger _log = LoggerFactory.getLogger(SplitSynchronizationTask.class);
 
-    private final AtomicReference<RefreshableSplitFetcher> _splitFetcher = new AtomicReference<RefreshableSplitFetcher>();
+    private final AtomicReference<SplitFetcherImp> _splitFetcher = new AtomicReference<SplitFetcherImp>();
+    private final AtomicReference<SplitCache> _splitCache = new AtomicReference<SplitCache>();
     private final AtomicReference<ScheduledExecutorService> _executorService = new AtomicReference<>();
-    private final SplitParser _splitParser;
-    private final SplitChangeFetcher _splitChangeFetcher;
     private final AtomicLong _refreshEveryNSeconds;
-    private final SDKReadinessGates _gates;
     private final ScheduledExecutorService _scheduledExecutorService;
-    private final Object _lock = new Object();
     private final AtomicBoolean _running;
-    private final SplitCache _splitCache;
 
     private ScheduledFuture<?> _scheduledFuture;
 
-    public RefreshableSplitFetcherProvider(SplitChangeFetcher splitChangeFetcher, SplitParser splitParser, long refreshEveryNSeconds, SDKReadinessGates sdkBuildBlocker, SplitCache splitCache) {
-        _splitChangeFetcher = checkNotNull(splitChangeFetcher);
-        _splitParser = checkNotNull(splitParser);
+    public SplitSynchronizationTask(SplitFetcherImp splitFetcher, SplitCache splitCache, long refreshEveryNSeconds) {
+        _splitFetcher.set(checkNotNull(splitFetcher));
+        _splitCache.set(checkNotNull(splitCache));
         checkArgument(refreshEveryNSeconds >= 0L);
         _refreshEveryNSeconds = new AtomicLong(refreshEveryNSeconds);
-        _gates = checkNotNull(sdkBuildBlocker);
-        _splitCache = checkNotNull(splitCache);
 
         ThreadFactory threadFactory = new ThreadFactoryBuilder()
                 .setDaemon(true)
@@ -60,25 +53,6 @@ public class RefreshableSplitFetcherProvider implements Closeable {
         _running = new AtomicBoolean();
     }
 
-    public RefreshableSplitFetcher getFetcher() {
-        if (_splitFetcher.get() != null) {
-            return _splitFetcher.get();
-        }
-
-        // we are locking here since we wanna make sure that we create only ONE RefreshableExperimentChangeFetcher
-        synchronized (_lock) {
-            // double check
-            if (_splitFetcher.get() != null) {
-                return _splitFetcher.get();
-            }
-
-            RefreshableSplitFetcher splitFetcher = new RefreshableSplitFetcher(_splitChangeFetcher, _splitParser, _gates, _splitCache);
-
-            _splitFetcher.set(splitFetcher);
-            return splitFetcher;
-        }
-    }
-
     public void startPeriodicFetching() {
         if (_running.getAndSet(true)) {
             _log.warn("Splits PeriodicFetching is running...");
@@ -86,7 +60,7 @@ public class RefreshableSplitFetcherProvider implements Closeable {
         }
 
         _log.debug("Starting PeriodicFetching Splits ...");
-        _scheduledFuture = _scheduledExecutorService.scheduleWithFixedDelay(getFetcher(), 0L, _refreshEveryNSeconds.get(), TimeUnit.SECONDS);
+        _scheduledFuture = _scheduledExecutorService.scheduleWithFixedDelay(_splitFetcher.get(), 0L, _refreshEveryNSeconds.get(), TimeUnit.SECONDS);
     }
 
     public void stop() {
@@ -106,8 +80,10 @@ public class RefreshableSplitFetcherProvider implements Closeable {
         }
 
         if (_splitFetcher.get() != null) {
-            _splitFetcher.get().clear();
+            _splitCache.get().clear();
         }
+
+        stop();
 
         ScheduledExecutorService scheduledExecutorService = _executorService.get();
         if (scheduledExecutorService.isShutdown()) {
