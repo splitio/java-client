@@ -19,7 +19,7 @@ import io.split.engine.segments.SegmentChangeFetcher;
 import io.split.engine.segments.SegmentFetcher;
 import io.split.engine.segments.StaticSegment;
 import io.split.engine.segments.StaticSegmentFetcher;
-import io.split.engine.segments.storage.SegmentCache;
+import io.split.cache.SegmentCache;
 import io.split.grammar.Treatments;
 import org.junit.Test;
 import org.mockito.Mockito;

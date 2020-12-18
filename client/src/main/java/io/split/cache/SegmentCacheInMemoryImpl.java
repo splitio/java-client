@@ -1,7 +1,6 @@
-package io.split.engine.segments.storage;
+package io.split.cache;
 
 import com.google.common.collect.Maps;
-import io.split.engine.segments.RefreshableSegment;
 import io.split.engine.segments.SegmentImplementation;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -13,7 +12,7 @@ import java.util.concurrent.ConcurrentMap;
  * InMemoryCache Implementation
  * @author lucasecheverz
  */
-public class SegmentCacheInMemoryImpl implements SegmentCache{
+public class SegmentCacheInMemoryImpl implements SegmentCache {
     private static final Logger _log = LoggerFactory.getLogger(SegmentCacheInMemoryImpl.class);
     private static final long DEFAULT_CHANGE_NUMBER = -1l;
     private final ConcurrentMap<String, SegmentImplementation> _segmentFetchers = Maps.newConcurrentMap();

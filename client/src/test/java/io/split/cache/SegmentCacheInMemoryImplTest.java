@@ -1,5 +1,6 @@
-package io.split.engine.segments.storage;
+package io.split.cache;
 
+import io.split.cache.SegmentCacheInMemoryImpl;
 import junit.framework.TestCase;
 import org.junit.Test;
 

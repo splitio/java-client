@@ -2,8 +2,7 @@ package io.split.engine.segments;
 
 import com.google.common.collect.Sets;
 import io.split.engine.SDKReadinessGates;
-import io.split.engine.segments.storage.SegmentCache;
-import io.split.engine.segments.storage.SegmentCacheInMemoryImpl;
+import io.split.cache.SegmentCache;
 import org.junit.Test;
 import org.mockito.Mockito;
 import org.slf4j.Logger;

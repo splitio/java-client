@@ -1,7 +1,7 @@
 package io.split.engine.segments;
 
 import io.split.engine.SDKReadinessGates;
-import io.split.engine.segments.storage.SegmentCache;
+import io.split.cache.SegmentCache;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mockito;

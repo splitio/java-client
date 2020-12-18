@@ -2,18 +2,11 @@ package io.split.engine.segments;
 
 import io.split.client.dtos.SegmentChange;
 import io.split.engine.SDKReadinessGates;
-import io.split.engine.segments.storage.SegmentCache;
-import io.split.engine.segments.storage.SegmentCacheInMemoryImpl;
-import org.checkerframework.checker.signedness.qual.SignednessGlb;
+import io.split.cache.SegmentCache;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
-import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.atomic.AtomicLong;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
