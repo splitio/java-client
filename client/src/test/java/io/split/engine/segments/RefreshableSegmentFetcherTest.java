@@ -1,8 +1,10 @@
 package io.split.engine.segments;
 
 import io.split.engine.SDKReadinessGates;
+import io.split.engine.segments.storage.SegmentCache;
 import org.junit.Before;
 import org.junit.Test;
+import org.mockito.Mockito;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -35,9 +37,10 @@ public class RefreshableSegmentFetcherTest {
     @Test
     public void works() {
         SDKReadinessGates gates = new SDKReadinessGates();
+        SegmentCache segmentCache = Mockito.mock(SegmentCache.class);
 
         AChangePerCallSegmentChangeFetcher segmentChangeFetcher = new AChangePerCallSegmentChangeFetcher();
-        final RefreshableSegmentFetcher fetchers = new RefreshableSegmentFetcher(segmentChangeFetcher, 1L, 1, gates);
+        final RefreshableSegmentFetcher fetchers = new RefreshableSegmentFetcher(segmentChangeFetcher, 1L, 1, gates, segmentCache);
 
 
         // create two tasks that will separately call segment and make sure

@@ -24,6 +24,8 @@ import io.split.engine.experiments.SplitFetcher;
 import io.split.engine.experiments.SplitParser;
 import io.split.engine.segments.RefreshableSegmentFetcher;
 import io.split.engine.segments.SegmentChangeFetcher;
+import io.split.engine.segments.storage.SegmentCache;
+import io.split.engine.segments.storage.SegmentCacheInMemoryImpl;
 import io.split.integrations.IntegrationsConfig;
 import org.apache.hc.client5.http.auth.AuthScope;
 import org.apache.hc.client5.http.auth.Credentials;
@@ -191,11 +193,13 @@ public class SplitFactoryImpl implements SplitFactory {
 
         // Segments
         SegmentChangeFetcher segmentChangeFetcher = HttpSegmentChangeFetcher.create(httpclient, rootTarget, uncachedFireAndForget);
+        //This segmentCache is for inMemory Storage (the only one supported by java-client for the moment
+        SegmentCache segmentCache = new SegmentCacheInMemoryImpl();
         final RefreshableSegmentFetcher segmentFetcher = new RefreshableSegmentFetcher(segmentChangeFetcher,
                 findPollingPeriod(RANDOM, config.segmentsRefreshRate()),
                 config.numThreadsForSegmentFetch(),
-                gates);
-
+                gates,
+                segmentCache);
 
         SplitParser splitParser = new SplitParser(segmentFetcher);
 

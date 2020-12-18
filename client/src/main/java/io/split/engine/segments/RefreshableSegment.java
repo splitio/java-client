@@ -2,9 +2,13 @@ package io.split.engine.segments;
 
 import io.split.client.dtos.SegmentChange;
 import io.split.engine.SDKReadinessGates;
+import io.split.engine.segments.storage.SegmentCache;
+import io.split.engine.segments.storage.SegmentCacheInMemoryImpl;
+import org.checkerframework.checker.signedness.qual.SignednessGlb;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
@@ -23,10 +27,9 @@ public class RefreshableSegment implements Runnable, Segment {
 
     private final String _segmentName;
     private final SegmentChangeFetcher _segmentChangeFetcher;
-    private final AtomicLong _changeNumber;
+    private final SegmentCache _segmentCache;
     private final SDKReadinessGates _gates;
 
-    private Set<String> _concurrentKeySet = Collections.newSetFromMap(new ConcurrentHashMap<String, Boolean>());
     private final Object _lock = new Object();
 
     @Override
@@ -36,21 +39,21 @@ public class RefreshableSegment implements Runnable, Segment {
 
     @Override
     public boolean contains(String key) {
-        return _concurrentKeySet.contains(key);
+        return _segmentCache.isInSegment(_segmentName, key);
     }
 
-    /*package private*/ Set<String> fetch() {
+    /*package private*/ /*Set<String> fetch() {
         return Collections.unmodifiableSet(_concurrentKeySet);
-    }
+    }*/
 
     @Override
     public void forceRefresh() {
         try {
             _log.debug("Force Refresh segment starting ...");
             while (true) {
-                long start = _changeNumber.get();
+                long start = _segmentCache.getChangeNumber(_segmentName);
                 runWithoutExceptionHandling();
-                long end = _changeNumber.get();
+                long end = _segmentCache.getChangeNumber(_segmentName);
 
                 if (start >= end) {
                     break;
@@ -63,23 +66,24 @@ public class RefreshableSegment implements Runnable, Segment {
 
     @Override
     public long changeNumber() {
-        return _changeNumber.get();
+        return _segmentCache.getChangeNumber(_segmentName);
     }
 
-    public static RefreshableSegment create(String segmentName, SegmentChangeFetcher segmentChangeFetcher, SDKReadinessGates gates) {
-        return new RefreshableSegment(segmentName, segmentChangeFetcher, -1L, gates);
+    public static RefreshableSegment create(String segmentName, SegmentChangeFetcher segmentChangeFetcher, SDKReadinessGates gates, SegmentCache segmentCache) {
+        return new RefreshableSegment(segmentName, segmentChangeFetcher, -1L, gates, segmentCache);
     }
 
 
-    public RefreshableSegment(String segmentName, SegmentChangeFetcher segmentChangeFetcher, long changeNumber, SDKReadinessGates gates) {
+    public RefreshableSegment(String segmentName, SegmentChangeFetcher segmentChangeFetcher, long changeNumber, SDKReadinessGates gates, SegmentCache segmentCache) {
         _segmentName = segmentName;
         _segmentChangeFetcher = segmentChangeFetcher;
-        _changeNumber = new AtomicLong(changeNumber);
+        _segmentCache = segmentCache;
         _gates = gates;
 
         checkNotNull(_segmentChangeFetcher);
         checkNotNull(_segmentName);
         checkNotNull(_gates);
+        checkNotNull(_segmentCache);
     }
 
     @Override
@@ -88,11 +92,11 @@ public class RefreshableSegment implements Runnable, Segment {
             // Do this again in case the previous call errored out.
             _gates.registerSegment(_segmentName);
             while (true) {
-                long start = _changeNumber.get();
+                long start = _segmentCache.getChangeNumber(_segmentName);
                 runWithoutExceptionHandling();
-                long end = _changeNumber.get();
+                long end = _segmentCache.getChangeNumber(_segmentName);
                 if (_log.isDebugEnabled()) {
-                    _log.debug(_segmentName + " segment fetch before: " + start + ", after: " + _changeNumber.get() + " size: " + _concurrentKeySet.size());
+                    _log.debug(_segmentName + " segment fetch before: " + start + ", after: " + _segmentCache.getChangeNumber(_segmentName) /*+ " size: " + _concurrentKeySet.size()*/);
                 }
                 if (start >= end) {
                     break;
@@ -110,19 +114,19 @@ public class RefreshableSegment implements Runnable, Segment {
     }
 
     private void runWithoutExceptionHandling() {
-        SegmentChange change = _segmentChangeFetcher.fetch(_segmentName, _changeNumber.get());
+        SegmentChange change = _segmentChangeFetcher.fetch(_segmentName, _segmentCache.getChangeNumber(_segmentName));
 
         if (change == null) {
             throw new IllegalStateException("SegmentChange was null");
         }
 
-        if (change.till == _changeNumber.get()) {
+        if (change.till == _segmentCache.getChangeNumber(_segmentName)) {
             // no change.
             return;
         }
 
-        if (change.since != _changeNumber.get()
-                || change.since < _changeNumber.get()) {
+        if (change.since != _segmentCache.getChangeNumber(_segmentName)
+                || change.since < _segmentCache.getChangeNumber(_segmentName)) {
             // some other thread may have updated the shared state. exit
             return;
         }
@@ -130,35 +134,29 @@ public class RefreshableSegment implements Runnable, Segment {
 
         if (change.added.isEmpty() && change.removed.isEmpty()) {
             // there are no changes. weird!
-            _changeNumber.set(change.till);
+            _segmentCache.setChangeNumber(_segmentName,change.till);
             return;
         }
 
         synchronized (_lock) {
             // check state one more time.
-            if (change.since != _changeNumber.get()
-                    || change.till < _changeNumber.get()) {
+            if (change.since != _segmentCache.getChangeNumber(_segmentName)
+                    || change.till < _segmentCache.getChangeNumber(_segmentName)) {
                 // some other thread may have updated the shared state. exit
                 return;
             }
-
-            for (String added : change.added) {
-                _concurrentKeySet.add(added);
-            }
+            //updateSegment(sn, toadd, tormv, chngN)
+            _segmentCache.updateSegment(_segmentName,change.added, change.removed);
 
             if (!change.added.isEmpty()) {
                 _log.info(_segmentName + " added keys: " + summarize(change.added));
-            }
-
-            for (String removed : change.removed) {
-                _concurrentKeySet.remove(removed);
             }
 
             if (!change.removed.isEmpty()) {
                 _log.info(_segmentName + " removed keys: " + summarize(change.removed));
             }
 
-            _changeNumber.set(change.till);
+            _segmentCache.setChangeNumber(_segmentName,change.till);
         }
     }
 

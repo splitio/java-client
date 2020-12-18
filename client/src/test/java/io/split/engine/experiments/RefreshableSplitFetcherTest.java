@@ -19,8 +19,10 @@ import io.split.engine.segments.SegmentChangeFetcher;
 import io.split.engine.segments.SegmentFetcher;
 import io.split.engine.segments.StaticSegment;
 import io.split.engine.segments.StaticSegmentFetcher;
+import io.split.engine.segments.storage.SegmentCache;
 import io.split.grammar.Treatments;
 import org.junit.Test;
+import org.mockito.Mockito;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -187,9 +189,10 @@ public class RefreshableSplitFetcherTest {
         AChangePerCallSplitChangeFetcher experimentChangeFetcher = new AChangePerCallSplitChangeFetcher(segmentName);
         SDKReadinessGates gates = new SDKReadinessGates();
         SplitCache cache = new InMemoryCacheImp(startingChangeNumber);
+        SegmentCache segmentCache = Mockito.mock(SegmentCache.class);
 
         SegmentChangeFetcher segmentChangeFetcher = new NoChangeSegmentChangeFetcher();
-        SegmentFetcher segmentFetcher = new RefreshableSegmentFetcher(segmentChangeFetcher, 1,10, gates);
+        SegmentFetcher segmentFetcher = new RefreshableSegmentFetcher(segmentChangeFetcher, 1,10, gates, segmentCache);
         segmentFetcher.startPeriodicFetching();
         RefreshableSplitFetcher fetcher = new RefreshableSplitFetcher(experimentChangeFetcher, new SplitParser(segmentFetcher), gates, cache);
 
@@ -216,9 +219,10 @@ public class RefreshableSplitFetcherTest {
         SplitChangeFetcherWithTrafficTypeNames changeFetcher = new SplitChangeFetcherWithTrafficTypeNames();
         SDKReadinessGates gates = new SDKReadinessGates();
         SplitCache cache = new InMemoryCacheImp(-1);
+        SegmentCache segmentCache = Mockito.mock(SegmentCache.class);
 
         SegmentChangeFetcher segmentChangeFetcher = new NoChangeSegmentChangeFetcher();
-        SegmentFetcher segmentFetcher = new RefreshableSegmentFetcher(segmentChangeFetcher, 1,10, gates);
+        SegmentFetcher segmentFetcher = new RefreshableSegmentFetcher(segmentChangeFetcher, 1,10, gates, segmentCache);
         RefreshableSplitFetcher fetcher = new RefreshableSplitFetcher(changeFetcher, new SplitParser(segmentFetcher), gates, cache);
 
         cache.put(ParsedSplit.createParsedSplitForTests("splitName_1", 0, false, "default_treatment", new ArrayList<>(), "tt", 123, 2));

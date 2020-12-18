@@ -3,6 +3,8 @@ package io.split.engine.segments;
 import com.google.common.collect.Maps;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import io.split.engine.SDKReadinessGates;
+import io.split.engine.cache.InMemoryCacheImp;
+import io.split.engine.segments.storage.SegmentCache;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -33,12 +35,14 @@ public class RefreshableSegmentFetcher implements Closeable, SegmentFetcher, Run
     private final AtomicBoolean _running;
     private final Object _lock = new Object();
     private final ConcurrentMap<String, RefreshableSegment> _segmentFetchers = Maps.newConcurrentMap();
+    private final SegmentCache _segmentCache;
     private final SDKReadinessGates _gates;
     private final ScheduledExecutorService _scheduledExecutorService;
 
     private ScheduledFuture<?> _scheduledFuture;
 
-    public RefreshableSegmentFetcher(SegmentChangeFetcher segmentChangeFetcher, long refreshEveryNSeconds, int numThreads, SDKReadinessGates gates) {
+    public RefreshableSegmentFetcher(SegmentChangeFetcher segmentChangeFetcher, long refreshEveryNSeconds, int numThreads, SDKReadinessGates gates,
+                                     SegmentCache segmentCache) {
         _segmentChangeFetcher = segmentChangeFetcher;
         checkNotNull(_segmentChangeFetcher);
 
@@ -56,6 +60,8 @@ public class RefreshableSegmentFetcher implements Closeable, SegmentFetcher, Run
         _scheduledExecutorService = Executors.newScheduledThreadPool(numThreads, threadFactory);
 
         _running = new AtomicBoolean(false);
+
+        _segmentCache = segmentCache;
     }
 
     public RefreshableSegment segment(String segmentName) {
@@ -79,7 +85,7 @@ public class RefreshableSegmentFetcher implements Closeable, SegmentFetcher, Run
                 _log.error("Unable to register segment " + segmentName);
                 // We will try again inside the RefreshableSegment.
             }
-            segment = RefreshableSegment.create(segmentName, _segmentChangeFetcher, _gates);
+            segment = RefreshableSegment.create(segmentName, _segmentChangeFetcher, _gates, _segmentCache);
 
             if (_running.get()) {
                 _scheduledExecutorService.submit(segment);
@@ -93,13 +99,7 @@ public class RefreshableSegmentFetcher implements Closeable, SegmentFetcher, Run
 
     @Override
     public long getChangeNumber(String segmentName) {
-        RefreshableSegment segment = _segmentFetchers.get(segmentName);
-
-        if (segment == null) {
-            return -1;
-        }
-
-        return segment.changeNumber();
+        return _segmentCache.getChangeNumber(segmentName);
     }
 
     @Override
