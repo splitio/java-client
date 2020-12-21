@@ -36,8 +36,8 @@ import static com.google.common.base.Preconditions.checkNotNull;
 public final class SplitClientImpl implements SplitClient {
     public static final SplitResult SPLIT_RESULT_CONTROL = new SplitResult(Treatments.CONTROL, null);
 
-    private static final String METRIC_GET_TREATMENT = "sdk.getTreatment";
-    private static final String METRIC_GET_TREATMENT_WITH_CONFIG = "sdk.getTreatmentWithConfig";
+    private static final String GET_TREATMENT = "getTreatment";
+    private static final String GET_TREATMENT_WITH_CONFIG = "getTreatmentWithConfig";
 
     private static final Logger _log = LoggerFactory.getLogger(SplitClientImpl.class);
 
@@ -75,27 +75,27 @@ public final class SplitClientImpl implements SplitClient {
 
     @Override
     public String getTreatment(String key, String split, Map<String, Object> attributes) {
-        return getTreatmentWithConfigInternal(METRIC_GET_TREATMENT, key, null, split, attributes, "getTreatment").treatment();
+        return getTreatmentWithConfigInternal(GET_TREATMENT, key, null, split, attributes).treatment();
     }
 
     @Override
     public String getTreatment(Key key, String split, Map<String, Object> attributes) {
-        return getTreatmentWithConfigInternal(METRIC_GET_TREATMENT, key.matchingKey(), key.bucketingKey(), split, attributes, "getTreatment").treatment();
+        return getTreatmentWithConfigInternal(GET_TREATMENT, key.matchingKey(), key.bucketingKey(), split, attributes).treatment();
     }
 
     @Override
     public SplitResult getTreatmentWithConfig(String key, String split) {
-        return getTreatmentWithConfigInternal(METRIC_GET_TREATMENT_WITH_CONFIG, key, null, split, Collections.<String, Object>emptyMap(), "getTreatmentWithConfig");
+        return getTreatmentWithConfigInternal(GET_TREATMENT_WITH_CONFIG, key, null, split, Collections.<String, Object>emptyMap());
     }
 
     @Override
     public SplitResult getTreatmentWithConfig(String key, String split, Map<String, Object> attributes) {
-        return getTreatmentWithConfigInternal(METRIC_GET_TREATMENT_WITH_CONFIG, key, null, split, attributes, "getTreatmentWithConfig");
+        return getTreatmentWithConfigInternal(GET_TREATMENT_WITH_CONFIG, key, null, split, attributes);
     }
 
     @Override
     public SplitResult getTreatmentWithConfig(Key key, String split, Map<String, Object> attributes) {
-        return getTreatmentWithConfigInternal(METRIC_GET_TREATMENT_WITH_CONFIG, key.matchingKey(), key.bucketingKey(), split, attributes, "getTreatmentWithConfig");
+        return getTreatmentWithConfigInternal(GET_TREATMENT_WITH_CONFIG, key.matchingKey(), key.bucketingKey(), split, attributes);
     }
 
     @Override
@@ -178,7 +178,7 @@ public final class SplitClientImpl implements SplitClient {
         return _eventClient.track(event, propertiesResult.getEventSize());
     }
 
-    private SplitResult getTreatmentWithConfigInternal(String label, String matchingKey, String bucketingKey, String split, Map<String, Object> attributes, String method) {
+    private SplitResult getTreatmentWithConfigInternal(String method, String matchingKey, String bucketingKey, String split, Map<String, Object> attributes) {
         try {
             if (_container.isDestroyed()) {
                 _log.error("Client has already been destroyed - no calls possible");
@@ -215,7 +215,7 @@ public final class SplitClientImpl implements SplitClient {
                     split,
                     start,
                     result.treatment,
-                    label,
+                    String.format("sdk.%s", method),
                     _config.labelsEnabled() ? result.label : null,
                     result.changeNumber,
                     attributes

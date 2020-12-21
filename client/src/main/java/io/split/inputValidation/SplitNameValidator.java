@@ -11,13 +11,11 @@ public class SplitNameValidator {
     public static Optional<String> isValid(String name, String method) {
         if (name == null) {
             _log.error(String.format("%s: you passed a null split name, split name must be a non-empty string", method));
-            //return new InputValidationResult(false);
             return Optional.empty();
         }
 
         if (name.isEmpty()) {
             _log.error(String.format("%s: you passed an empty split name, split name must be a non-empty string", method));
-            //return new InputValidationResult(false);
             return Optional.empty();
         }
 
@@ -27,7 +25,6 @@ public class SplitNameValidator {
             name = trimmed;
         }
 
-        //return new InputValidationResult(true, name);
         return Optional.of(name);
     }
 }
