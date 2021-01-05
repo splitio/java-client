@@ -22,11 +22,10 @@ import io.split.engine.experiments.SplitFetcherImp;
 import io.split.engine.experiments.SplitSynchronizationTask;
 import io.split.engine.experiments.SplitChangeFetcher;
 import io.split.engine.experiments.SplitParser;
-import io.split.engine.segments.RefreshableSegmentFetcher;
 import io.split.engine.segments.SegmentChangeFetcher;
 import io.split.cache.SegmentCache;
 import io.split.cache.SegmentCacheInMemoryImpl;
-import io.split.engine.segments.SegmentSynchronizationTaskMauro;
+import io.split.engine.segments.SegmentSynchronizationTaskImp;
 import io.split.integrations.IntegrationsConfig;
 import org.apache.hc.client5.http.auth.AuthScope;
 import org.apache.hc.client5.http.auth.Credentials;
@@ -111,12 +110,13 @@ public class SplitFactoryImpl implements SplitFactory {
         SegmentChangeFetcher segmentChangeFetcher = HttpSegmentChangeFetcher.create(httpclient, rootTarget, uncachedFireAndForget);
         //This segmentCache is for inMemory Storage (the only one supported by java-client for the moment
         SegmentCache segmentCache = new SegmentCacheInMemoryImpl();
-        final SegmentSynchronizationTaskMauro segmentSynchronizationTaskMauro = new SegmentSynchronizationTaskMauro(segmentChangeFetcher,
+        final SegmentSynchronizationTaskImp segmentSynchronizationTaskImp = new SegmentSynchronizationTaskImp(segmentChangeFetcher,
                 findPollingPeriod(RANDOM, config.segmentsRefreshRate()),
                 config.numThreadsForSegmentFetch(),
-                gates);
+                gates,
+                segmentCache);
 
-        SplitParser splitParser = new SplitParser(segmentFetcher);
+        SplitParser splitParser = new SplitParser(segmentSynchronizationTaskImp, segmentCache);
 
         // Feature Changes
         SplitChangeFetcher splitChangeFetcher = HttpSplitChangeFetcher.create(httpclient, rootTarget, uncachedFireAndForget);
@@ -146,7 +146,7 @@ public class SplitFactoryImpl implements SplitFactory {
         final EventClient eventClient = EventClientImpl.create(httpclient, eventsRootTarget, config.eventsQueueSize(), config.eventFlushIntervalInMillis(), config.waitBeforeShutdown());
 
         // SyncManager
-        final SyncManager syncManager = SyncManagerImp.build(config.streamingEnabled(), splitSynchronizationTask, splitFetcher, segmentSynchronizationTaskMauro, splitCache, config.authServiceURL(), httpclient, config.streamingServiceURL(), config.authRetryBackoffBase(), buildSSEdHttpClient(config), segmentCache);
+        final SyncManager syncManager = SyncManagerImp.build(config.streamingEnabled(), splitSynchronizationTask, splitFetcher, segmentSynchronizationTaskImp, splitCache, config.authServiceURL(), httpclient, config.streamingServiceURL(), config.authRetryBackoffBase(), buildSSEdHttpClient(config), segmentCache);
         syncManager.start();
 
         // Evaluator
@@ -156,7 +156,7 @@ public class SplitFactoryImpl implements SplitFactory {
             public void run() {
                 _log.info("Shutdown called for split");
                 try {
-                    segmentSynchronizationTaskMauro.close();
+                    segmentSynchronizationTaskImp.close();
                     _log.info("Successful shutdown of segment fetchers");
                     splitSynchronizationTask.close();
                     _log.info("Successful shutdown of splits");

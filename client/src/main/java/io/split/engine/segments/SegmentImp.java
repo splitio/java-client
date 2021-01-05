@@ -6,18 +6,18 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicLong;
 
-public class SegmentImpMauro {
+public class SegmentImp{
     private final String _name;
     private final AtomicLong _changeNumber;
     private Set<String> _concurrentKeySet = Collections.newSetFromMap(new ConcurrentHashMap<>());
 
-    public SegmentImpMauro(String name, long changeNumber) {
+    public SegmentImp(long changeNumber, String name) {
         _name = name;
         _changeNumber = new AtomicLong(changeNumber);
     }
 
-    public SegmentImpMauro(long changeNumber, String name, List<String> keys){
-        this(name, changeNumber);
+    public SegmentImp(long changeNumber, String name, List<String> keys){
+        this(changeNumber, name);
         _concurrentKeySet.addAll(keys);
     }
 

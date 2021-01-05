@@ -6,12 +6,13 @@ import io.split.engine.SDKReadinessGates;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
-public class SegmentFetcherImpMauro implements Runnable {
-    private static final Logger _log = LoggerFactory.getLogger(SegmentFetcherImpMauro.class);
+public class SegmentFetcherImp implements Runnable, SegmentFetcher {
+    private static final Logger _log = LoggerFactory.getLogger(SegmentFetcherImp.class);
 
     private final String _segmentName;
     private final SegmentChangeFetcher _segmentChangeFetcher;
@@ -20,7 +21,7 @@ public class SegmentFetcherImpMauro implements Runnable {
 
     private final Object _lock = new Object();
 
-    public SegmentFetcherImpMauro(String segmentName, SegmentChangeFetcher segmentChangeFetcher, SDKReadinessGates gates, SegmentCache segmentCache) {
+    public SegmentFetcherImp(String segmentName, SegmentChangeFetcher segmentChangeFetcher, SDKReadinessGates gates, SegmentCache segmentCache) {
         _segmentName = segmentName;
         _segmentChangeFetcher = segmentChangeFetcher;
         _segmentCache = segmentCache;
@@ -30,6 +31,8 @@ public class SegmentFetcherImpMauro implements Runnable {
         checkNotNull(_segmentName);
         checkNotNull(_gates);
         checkNotNull(_segmentCache);
+
+        _segmentCache.updateSegment(segmentName, new ArrayList<>(), new ArrayList<>());
     }
 
     @Override
@@ -37,6 +40,7 @@ public class SegmentFetcherImpMauro implements Runnable {
         fetch();
     }
 
+    @Override
     public void fetch() {
         try {
             // Do this again in case the previous call errored out.
@@ -129,4 +133,6 @@ public class SegmentFetcherImpMauro implements Runnable {
 
         return bldr.toString();
     }
+
+
 }

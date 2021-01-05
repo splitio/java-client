@@ -5,8 +5,8 @@ import io.split.client.SplitClient;
 import io.split.cache.SplitCache;
 import io.split.engine.experiments.SplitFetcher;
 import io.split.engine.segments.SegmentFetcher;
-import io.split.engine.segments.SegmentFetcherImpMauro;
-import io.split.engine.segments.SegmentSynchronizationTaskMauro;
+import io.split.engine.segments.SegmentFetcherImp;
+import io.split.engine.segments.SegmentSynchronizationTaskImp;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -23,15 +23,15 @@ public class SplitJmxMonitor implements SplitJmxMonitorMBean {
     private final SplitFetcher _featureFetcher;
     private final SplitCache _splitCache;
     //private final SegmentFetcher _segmentFetcher;
-    private final SegmentSynchronizationTaskMauro _segmentSynchronizationTaskMauro;
+    private final SegmentSynchronizationTaskImp _segmentSynchronizationTaskImp;
     private SegmentCache _segmentCache;
 
-    public SplitJmxMonitor(SplitClient splitClient, SplitFetcher featureFetcher, SplitCache splitCache, SegmentFetcher segmentFetcher, SegmentSynchronizationTaskMauro segmentSynchronizationTaskMauro) {
+    public SplitJmxMonitor(SplitClient splitClient, SplitFetcher featureFetcher, SplitCache splitCache, SegmentFetcher segmentFetcher, SegmentSynchronizationTaskImp segmentSynchronizationTaskImp) {
         _client = checkNotNull(splitClient);
         _featureFetcher = checkNotNull(featureFetcher);
         _splitCache = checkNotNull(splitCache);
         //_segmentFetcher = checkNotNull(segmentFetcher);
-        _segmentSynchronizationTaskMauro = segmentSynchronizationTaskMauro;
+        _segmentSynchronizationTaskImp = segmentSynchronizationTaskImp;
     }
 
     @Override
@@ -43,8 +43,7 @@ public class SplitJmxMonitor implements SplitJmxMonitorMBean {
 
     @Override
     public boolean forceSyncSegment(String segmentName) {
-        //_segmentFetcher.segment(segmentName).forceRefresh();
-        SegmentFetcherImpMauro fetcher = _segmentSynchronizationTaskMauro.getFetcher(segmentName);
+        SegmentFetcher fetcher = _segmentSynchronizationTaskImp.getFetcher(segmentName);
         fetcher.fetch();
 
         _log.info("Segment " + segmentName + " successfully refreshed via JMX");

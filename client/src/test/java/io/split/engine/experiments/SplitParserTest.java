@@ -3,6 +3,8 @@ package io.split.engine.experiments;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
+import io.split.cache.SegmentCache;
+import io.split.cache.SegmentCacheInMemoryImpl;
 import io.split.client.dtos.Condition;
 import io.split.client.dtos.DataType;
 import io.split.client.dtos.Matcher;
@@ -27,6 +29,7 @@ import io.split.engine.matchers.strings.ContainsAnyOfMatcher;
 import io.split.engine.matchers.strings.EndsWithAnyOfMatcher;
 import io.split.engine.matchers.strings.StartsWithAnyOfMatcher;
 import io.split.engine.segments.SegmentFetcher;
+import io.split.engine.segments.SegmentSynchronizationTask;
 import io.split.engine.segments.StaticSegment;
 import io.split.engine.segments.StaticSegmentFetcher;
 import io.split.grammar.Treatments;
@@ -50,6 +53,9 @@ import static org.junit.Assert.assertThat;
  */
 public class SplitParserTest {
 
+    public static final String EMPLOYEES = "employees";
+    public static final String SALES_PEOPLE = "salespeople";
+
     @Test
     public void works() {
 
@@ -60,9 +66,10 @@ public class SplitParserTest {
         fetcherMap.put(employees.segmentName(), employees);
         fetcherMap.put(salespeople.segmentName(), salespeople);
 
-        SegmentFetcher segmentFetcher = new StaticSegmentFetcher(fetcherMap);
+        SegmentSynchronizationTask segmentFetcher = new StaticSegmentFetcher(fetcherMap);
+        SegmentCache segmentCache = new SegmentCacheInMemoryImpl();
 
-        SplitParser parser = new SplitParser(segmentFetcher);
+        SplitParser parser = new SplitParser(segmentFetcher, segmentCache);
 
 
         Matcher employeesMatcher = ConditionsTestUtil.userDefinedSegmentMatcher(employees.segmentName(), false);
@@ -78,8 +85,8 @@ public class SplitParserTest {
 
         ParsedSplit actual = parser.parse(split);
 
-        AttributeMatcher employeesMatcherLogic = AttributeMatcher.vanilla(new UserDefinedSegmentMatcher(employees));
-        AttributeMatcher notSalesPeopleMatcherLogic = new AttributeMatcher(null, new UserDefinedSegmentMatcher(salespeople), true);
+        AttributeMatcher employeesMatcherLogic = AttributeMatcher.vanilla(new UserDefinedSegmentMatcher(segmentCache, EMPLOYEES));
+        AttributeMatcher notSalesPeopleMatcherLogic = new AttributeMatcher(null, new UserDefinedSegmentMatcher(segmentCache,SALES_PEOPLE), true);
         CombiningMatcher combiningMatcher = new CombiningMatcher(MatcherCombiner.AND, Lists.newArrayList(employeesMatcherLogic, notSalesPeopleMatcherLogic));
         ParsedCondition parsedCondition = ParsedCondition.createParsedConditionForTests(combiningMatcher, partitions);
         List<ParsedCondition> listOfMatcherAndSplits = Lists.newArrayList(parsedCondition);
@@ -99,9 +106,10 @@ public class SplitParserTest {
         fetcherMap.put(employees.segmentName(), employees);
         fetcherMap.put(salespeople.segmentName(), salespeople);
 
-        SegmentFetcher segmentFetcher = new StaticSegmentFetcher(fetcherMap);
+        SegmentSynchronizationTask segmentFetcher = new StaticSegmentFetcher(fetcherMap);
+        SegmentCache segmentCache = new SegmentCacheInMemoryImpl();
 
-        SplitParser parser = new SplitParser(segmentFetcher);
+        SplitParser parser = new SplitParser(segmentFetcher, segmentCache);
 
 
         Matcher employeesMatcher = ConditionsTestUtil.userDefinedSegmentMatcher(employees.segmentName(), false);
@@ -120,8 +128,8 @@ public class SplitParserTest {
 
         ParsedSplit actual = parser.parse(split);
 
-        AttributeMatcher employeesMatcherLogic = AttributeMatcher.vanilla(new UserDefinedSegmentMatcher(employees));
-        AttributeMatcher notSalesPeopleMatcherLogic = new AttributeMatcher(null, new UserDefinedSegmentMatcher(salespeople), true);
+        AttributeMatcher employeesMatcherLogic = AttributeMatcher.vanilla(new UserDefinedSegmentMatcher(segmentCache, EMPLOYEES));
+        AttributeMatcher notSalesPeopleMatcherLogic = new AttributeMatcher(null, new UserDefinedSegmentMatcher(segmentCache,SALES_PEOPLE), true);
         CombiningMatcher combiningMatcher = new CombiningMatcher(MatcherCombiner.AND, Lists.newArrayList(employeesMatcherLogic, notSalesPeopleMatcherLogic));
         ParsedCondition parsedCondition = ParsedCondition.createParsedConditionForTests(combiningMatcher, partitions);
         List<ParsedCondition> listOfMatcherAndSplits = Lists.newArrayList(parsedCondition);
@@ -142,9 +150,10 @@ public class SplitParserTest {
         fetcherMap.put(employees.segmentName(), employees);
         fetcherMap.put(salespeople.segmentName(), salespeople);
 
-        SegmentFetcher segmentFetcher = new StaticSegmentFetcher(fetcherMap);
+        SegmentSynchronizationTask segmentFetcher = new StaticSegmentFetcher(fetcherMap);
+        SegmentCache segmentCache = new SegmentCacheInMemoryImpl();
 
-        SplitParser parser = new SplitParser(segmentFetcher);
+        SplitParser parser = new SplitParser(segmentFetcher, segmentCache);
 
         Matcher employeesMatcher = ConditionsTestUtil.userDefinedSegmentMatcher(employees.segmentName(), false);
 
@@ -162,8 +171,8 @@ public class SplitParserTest {
 
         ParsedSplit actual = parser.parse(split);
 
-        ParsedCondition parsedCondition1 = ParsedCondition.createParsedConditionForTests(CombiningMatcher.of(new UserDefinedSegmentMatcher(employees)), fullyRollout);
-        ParsedCondition parsedCondition2 = ParsedCondition.createParsedConditionForTests(CombiningMatcher.of(new UserDefinedSegmentMatcher(salespeople)), turnOff);
+        ParsedCondition parsedCondition1 = ParsedCondition.createParsedConditionForTests(CombiningMatcher.of(new UserDefinedSegmentMatcher(segmentCache, EMPLOYEES)), fullyRollout);
+        ParsedCondition parsedCondition2 = ParsedCondition.createParsedConditionForTests(CombiningMatcher.of(new UserDefinedSegmentMatcher(segmentCache, EMPLOYEES)), turnOff);
         List<ParsedCondition> listOfParsedConditions = Lists.newArrayList(parsedCondition1, parsedCondition2);
 
         ParsedSplit expected = ParsedSplit.createParsedSplitForTests("first.name", 123, false, Treatments.OFF, listOfParsedConditions, "user", 1, 1);
@@ -176,8 +185,11 @@ public class SplitParserTest {
 
         StaticSegment employees = new StaticSegment("employees", Sets.newHashSet("adil", "pato", "trevor"));
 
-        SegmentFetcher segmentFetcher = new StaticSegmentFetcher(Maps.<String, StaticSegment>newHashMap());
-        SplitParser parser = new SplitParser(segmentFetcher);
+        Map<String, StaticSegment> fetcherMap = Maps.newHashMap();
+        SegmentSynchronizationTask segmentFetcher = new StaticSegmentFetcher(fetcherMap);
+        SegmentCache segmentCache = new SegmentCacheInMemoryImpl();
+
+        SplitParser parser = new SplitParser(segmentFetcher, segmentCache);
 
         Matcher employeesMatcher = ConditionsTestUtil.userDefinedSegmentMatcher(employees.segmentName(), false);
 
@@ -204,9 +216,11 @@ public class SplitParserTest {
         fetcherMap.put(employees.segmentName(), employees);
         fetcherMap.put(salespeople.segmentName(), salespeople);
 
-        SegmentFetcher segmentFetcher = new StaticSegmentFetcher(fetcherMap);
 
-        SplitParser parser = new SplitParser(segmentFetcher);
+        SegmentSynchronizationTask segmentFetcher = new StaticSegmentFetcher(fetcherMap);
+        SegmentCache segmentCache = new SegmentCacheInMemoryImpl();
+
+        SplitParser parser = new SplitParser(segmentFetcher, segmentCache);
 
         Matcher employeesMatcher = ConditionsTestUtil.userDefinedSegmentMatcher("user", "name", employees.segmentName(), false);
 
@@ -226,7 +240,7 @@ public class SplitParserTest {
 
         ParsedSplit actual = parser.parse(split);
 
-        AttributeMatcher employeesMatcherLogic = new AttributeMatcher("name", new UserDefinedSegmentMatcher(employees), false);
+        AttributeMatcher employeesMatcherLogic = new AttributeMatcher("name", new UserDefinedSegmentMatcher(segmentCache, EMPLOYEES), false);
         AttributeMatcher creationDateNotOlderThanAPointLogic = new AttributeMatcher("creation_date", new GreaterThanOrEqualToMatcher(1457386741L, DataType.DATETIME), true);
         CombiningMatcher combiningMatcher = new CombiningMatcher(MatcherCombiner.AND, Lists.newArrayList(employeesMatcherLogic, creationDateNotOlderThanAPointLogic));
         ParsedCondition parsedCondition = ParsedCondition.createParsedConditionForTests(combiningMatcher, partitions);
@@ -243,9 +257,10 @@ public class SplitParserTest {
 
         Map<String, StaticSegment> fetcherMap = Maps.newHashMap();
 
-        SegmentFetcher segmentFetcher = new StaticSegmentFetcher(fetcherMap);
+        SegmentSynchronizationTask segmentFetcher = new StaticSegmentFetcher(fetcherMap);
+        SegmentCache segmentCache = new SegmentCacheInMemoryImpl();
 
-        SplitParser parser = new SplitParser(segmentFetcher);
+        SplitParser parser = new SplitParser(segmentFetcher, segmentCache);
 
         Matcher ageLessThan10 = ConditionsTestUtil.numericMatcher("user", "age", MatcherType.LESS_THAN_OR_EQUAL_TO, DataType.NUMBER, 10L, false);
 
@@ -275,9 +290,10 @@ public class SplitParserTest {
 
         Map<String, StaticSegment> fetcherMap = Maps.newHashMap();
 
-        SegmentFetcher segmentFetcher = new StaticSegmentFetcher(fetcherMap);
+        SegmentSynchronizationTask segmentFetcher = new StaticSegmentFetcher(fetcherMap);
+        SegmentCache segmentCache = new SegmentCacheInMemoryImpl();
 
-        SplitParser parser = new SplitParser(segmentFetcher);
+        SplitParser parser = new SplitParser(segmentFetcher, segmentCache);
 
         Matcher ageLessThan10 = ConditionsTestUtil.numericMatcher("user", "age", MatcherType.EQUAL_TO, DataType.NUMBER, 10L, true);
 
@@ -306,9 +322,10 @@ public class SplitParserTest {
 
         Map<String, StaticSegment> fetcherMap = Maps.newHashMap();
 
-        SegmentFetcher segmentFetcher = new StaticSegmentFetcher(fetcherMap);
+        SegmentSynchronizationTask segmentFetcher = new StaticSegmentFetcher(fetcherMap);
+        SegmentCache segmentCache = new SegmentCacheInMemoryImpl();
 
-        SplitParser parser = new SplitParser(segmentFetcher);
+        SplitParser parser = new SplitParser(segmentFetcher, segmentCache);
 
         Matcher equalToNegative10 = ConditionsTestUtil.numericMatcher("user", "age", MatcherType.EQUAL_TO, DataType.NUMBER, -10L, false);
 
@@ -335,8 +352,11 @@ public class SplitParserTest {
     @Test
     public void between() {
 
-        SegmentFetcher segmentFetcher = new StaticSegmentFetcher(Collections.<String, StaticSegment>emptyMap());
-        SplitParser parser = new SplitParser(segmentFetcher);
+        Map<String, StaticSegment> fetcherMap = Maps.newHashMap();
+        SegmentSynchronizationTask segmentFetcher = new StaticSegmentFetcher(fetcherMap);
+        SegmentCache segmentCache = new SegmentCacheInMemoryImpl();
+
+        SplitParser parser = new SplitParser(segmentFetcher, segmentCache);
 
         Matcher ageBetween10And11 = ConditionsTestUtil.betweenMatcher("user",
                 "age",
@@ -501,8 +521,11 @@ public class SplitParserTest {
 
     public void set_matcher_test(Condition c, io.split.engine.matchers.Matcher m) {
 
-        SegmentFetcher segmentFetcher = new StaticSegmentFetcher(Collections.<String, StaticSegment>emptyMap());
-        SplitParser parser = new SplitParser(segmentFetcher);
+        Map<String, StaticSegment> fetcherMap = Maps.newHashMap();
+        SegmentSynchronizationTask segmentFetcher = new StaticSegmentFetcher(fetcherMap);
+        SegmentCache segmentCache = new SegmentCacheInMemoryImpl();
+
+        SplitParser parser = new SplitParser(segmentFetcher, segmentCache);
 
         ArrayList<String> set = Lists.<String>newArrayList("sms", "voice");
 

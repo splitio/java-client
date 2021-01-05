@@ -15,21 +15,21 @@ import java.util.concurrent.atomic.AtomicLong;
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
 
-public class SegmentSynchronizationTaskMauro implements Runnable {
-    private static final Logger _log = LoggerFactory.getLogger(SegmentSynchronizationTaskMauro.class);
+public class SegmentSynchronizationTaskImp implements SegmentSynchronizationTask {
+    private static final Logger _log = LoggerFactory.getLogger(SegmentSynchronizationTaskImp.class);
 
     private final SegmentChangeFetcher _segmentChangeFetcher;
     private final AtomicLong _refreshEveryNSeconds;
     private final AtomicBoolean _running;
     private final Object _lock = new Object();
-    private final ConcurrentMap<String, SegmentFetcherImpMauro> _segmentFetchers = Maps.newConcurrentMap();
+    private final ConcurrentMap<String, SegmentFetcherImp> _segmentFetchers = Maps.newConcurrentMap();
     private final SegmentCache _segmentCache;
     private final SDKReadinessGates _gates;
     private final ScheduledExecutorService _scheduledExecutorService;
 
     private ScheduledFuture<?> _scheduledFuture;
 
-    public SegmentSynchronizationTaskMauro(SegmentChangeFetcher segmentChangeFetcher, long refreshEveryNSeconds, int numThreads, SDKReadinessGates gates, SegmentCache segmentCache) {
+    public SegmentSynchronizationTaskImp(SegmentChangeFetcher segmentChangeFetcher, long refreshEveryNSeconds, int numThreads, SDKReadinessGates gates, SegmentCache segmentCache) {
         _segmentChangeFetcher = segmentChangeFetcher;
         checkNotNull(_segmentChangeFetcher);
 
@@ -53,8 +53,8 @@ public class SegmentSynchronizationTaskMauro implements Runnable {
 
     @Override
     public void run() {
-        for (ConcurrentMap.Entry<String, SegmentFetcherImpMauro> entry : _segmentFetchers.entrySet()) {
-            SegmentFetcherImpMauro fetcher = entry.getValue();
+        for (ConcurrentMap.Entry<String, SegmentFetcherImp> entry : _segmentFetchers.entrySet()) {
+            SegmentFetcherImp fetcher = entry.getValue();
 
             if (fetcher == null) {
                 continue;
@@ -64,8 +64,9 @@ public class SegmentSynchronizationTaskMauro implements Runnable {
         }
     }
 
+    @Override
     public void initializeSegment(String segmentName) {
-        SegmentFetcherImpMauro segment = _segmentFetchers.get(segmentName);
+        SegmentFetcherImp segment = _segmentFetchers.get(segmentName);
         if (segment != null) {
             return;
         }
@@ -85,7 +86,7 @@ public class SegmentSynchronizationTaskMauro implements Runnable {
                 _log.error("Unable to register segment " + segmentName);
             }
 
-            segment = new SegmentFetcherImpMauro(segmentName, _segmentChangeFetcher, _gates, _segmentCache);
+            segment = new SegmentFetcherImp(segmentName, _segmentChangeFetcher, _gates, _segmentCache);
 
             if (_running.get()) {
                 _scheduledExecutorService.submit(segment);
@@ -95,12 +96,14 @@ public class SegmentSynchronizationTaskMauro implements Runnable {
         }
     }
 
-    public SegmentFetcherImpMauro getFetcher(String segmentName) {
+    @Override
+    public SegmentFetcher getFetcher(String segmentName) {
         initializeSegment(segmentName);
 
         return _segmentFetchers.get(segmentName);
     }
 
+    @Override
     public void startPeriodicFetching() {
         if (_running.getAndSet(true)) {
             _log.warn("Segments PeriodicFetching is running...");
@@ -111,6 +114,7 @@ public class SegmentSynchronizationTaskMauro implements Runnable {
         _scheduledFuture = _scheduledExecutorService.scheduleWithFixedDelay(this, 0L, _refreshEveryNSeconds.get(), TimeUnit.SECONDS);
     }
 
+    @Override
     public void stop() {
         if (!_running.getAndSet(false) || _scheduledFuture == null) {
             _log.warn("Segments PeriodicFetching not running...");

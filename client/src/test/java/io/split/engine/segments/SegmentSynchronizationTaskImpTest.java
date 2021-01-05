@@ -18,20 +18,20 @@ import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.assertThat;
 
 /**
- * Tests for RefreshableSegmentFetchers
+ * Tests for SegmentSynchronizationTaskImp
  *
- * @author adil
+ * @author adil+
  */
-public class RefreshableSegmentFetcherTest {
-    private static final Logger _log = LoggerFactory.getLogger(RefreshableSegmentFetcherTest.class);
+public class SegmentSynchronizationTaskImpTest {
+    private static final Logger _log = LoggerFactory.getLogger(SegmentSynchronizationTaskImpTest.class);
 
-    private AtomicReference<RefreshableSegment> fetcher1 = null;
-    private AtomicReference<RefreshableSegment> fetcher2 = null;
+    private AtomicReference<SegmentFetcher> fetcher1 = null;
+    private AtomicReference<SegmentFetcher> fetcher2 = null;
 
     @Before
     public void beforeMethod() {
-        fetcher1 = new AtomicReference<RefreshableSegment>(null);
-        fetcher2 = new AtomicReference<RefreshableSegment>(null);
+        fetcher1 = new AtomicReference<SegmentFetcher>(null);
+        fetcher2 = new AtomicReference<SegmentFetcher>(null);
     }
 
     @Test
@@ -40,7 +40,7 @@ public class RefreshableSegmentFetcherTest {
         SegmentCache segmentCache = Mockito.mock(SegmentCache.class);
 
         AChangePerCallSegmentChangeFetcher segmentChangeFetcher = new AChangePerCallSegmentChangeFetcher();
-        final RefreshableSegmentFetcher fetchers = new RefreshableSegmentFetcher(segmentChangeFetcher, 1L, 1, gates, segmentCache);
+        final SegmentSynchronizationTaskImp fetchers = new SegmentSynchronizationTaskImp(segmentChangeFetcher, 1L, 1, gates, segmentCache);
 
 
         // create two tasks that will separately call segment and make sure
@@ -49,14 +49,14 @@ public class RefreshableSegmentFetcherTest {
         executorService.execute(new Runnable() {
             @Override
             public void run() {
-                fetcher1.set(fetchers.segment("foo"));
+                fetcher1.set(fetchers.getFetcher("foo"));
             }
         });
 
         executorService.execute(new Runnable() {
             @Override
             public void run() {
-                fetcher2.set(fetchers.segment("foo"));
+                fetcher2.set(fetchers.getFetcher("foo"));
             }
         });
 

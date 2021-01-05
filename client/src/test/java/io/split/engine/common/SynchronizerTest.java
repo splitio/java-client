@@ -1,28 +1,32 @@
 package io.split.engine.common;
 
+import io.split.cache.SegmentCache;
 import io.split.cache.SplitCache;
 import io.split.engine.experiments.SplitFetcherImp;
 import io.split.engine.experiments.SplitSynchronizationTask;
-import io.split.engine.segments.RefreshableSegmentFetcher;
+import io.split.engine.segments.SegmentSynchronizationTask;
 import org.junit.Before;
 import org.junit.Test;
+import org.mockito.Mock;
 import org.mockito.Mockito;
 
 public class SynchronizerTest {
     private SplitSynchronizationTask _refreshableSplitFetcherTask;
-    private RefreshableSegmentFetcher _segmentFetcher;
+    private SegmentSynchronizationTask _segmentFetcher;
     private SplitFetcherImp _splitFetcher;
     private SplitCache _splitCache;
     private Synchronizer _synchronizer;
+    private SegmentCache _segmentCache;
 
     @Before
     public void beforeMethod() {
         _refreshableSplitFetcherTask = Mockito.mock(SplitSynchronizationTask.class);
-        _segmentFetcher = Mockito.mock(RefreshableSegmentFetcher.class);
+        _segmentFetcher = Mockito.mock(SegmentSynchronizationTask.class);
         _splitFetcher = Mockito.mock(SplitFetcherImp.class);
         _splitCache = Mockito.mock(SplitCache.class);
+        _segmentCache = Mockito.mock(SegmentCache.class);
 
-        _synchronizer = new SynchronizerImp(_refreshableSplitFetcherTask, _splitFetcher, _segmentFetcher, _splitCache);
+        _synchronizer = new SynchronizerImp(_refreshableSplitFetcherTask, _splitFetcher, _segmentFetcher, _splitCache, _segmentCache);
     }
 
     @Test
@@ -31,7 +35,7 @@ public class SynchronizerTest {
 
         Thread.sleep(100);
         Mockito.verify(_splitFetcher, Mockito.times(1)).run();
-        Mockito.verify(_segmentFetcher, Mockito.times(1)).forceRefreshAll();
+        Mockito.verify(_segmentFetcher, Mockito.times(1)).run();
     }
 
     @Test
