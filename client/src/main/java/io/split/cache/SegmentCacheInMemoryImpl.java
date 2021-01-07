@@ -17,8 +17,6 @@ public class SegmentCacheInMemoryImpl implements SegmentCache {
     private static final long DEFAULT_CHANGE_NUMBER = -1l;
     private final ConcurrentMap<String, SegmentImp> _segments = Maps.newConcurrentMap();
 
-    public SegmentCacheInMemoryImpl(){};
-
     @Override
     public void updateSegment(String segmentName, List<String> toAdd, List<String> toRemove) {
         if(_segments.get(segmentName) == null){
@@ -30,11 +28,12 @@ public class SegmentCacheInMemoryImpl implements SegmentCache {
 
     @Override
     public boolean isInSegment(String segmentName, String key) {
-        if(_segments.get(segmentName) == null){
-            _log.error("Segment " + segmentName + "Not founded.");
+        SegmentImp segmentImp = _segments.get(segmentName);
+        if(segmentImp == null){
+            _log.error("Segment " + segmentName + "Not found.");
             return false;
         }
-        return _segments.get(segmentName).contains(key);
+        return segmentImp.contains(key);
     }
 
     @Override
@@ -43,17 +42,18 @@ public class SegmentCacheInMemoryImpl implements SegmentCache {
             _segments.get(segmentName).setChangeNumber(changeNumber);
         }
         else{
-            _log.error("Segment " + segmentName + "Not founded.");
+            _log.error("Segment " + segmentName + "Not found.");
         }
     }
 
     @Override
     public long getChangeNumber(String segmentName) {
-        if(_segments.get(segmentName) == null){
-            _log.error("Segment " + segmentName + "Not founded.");
+        SegmentImp segmentImp = _segments.get(segmentName);
+        if(segmentImp == null){
+            _log.error("Segment " + segmentName + "Not found.");
             return DEFAULT_CHANGE_NUMBER;
         }
-        return _segments.get(segmentName).getChangeNumber();
+        return segmentImp.getChangeNumber();
     }
 
     @Override

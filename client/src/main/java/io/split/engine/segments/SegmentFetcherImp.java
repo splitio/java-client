@@ -40,22 +40,23 @@ public class SegmentFetcherImp implements Runnable, SegmentFetcher {
         fetch();
     }
 
+    public void forceRefresh(){
+        try {
+            callLoopRun(false);
+        } catch (Throwable t) {
+            _log.error("RefreshableSegmentFetcher failed: " + t.getMessage());
+            if (_log.isDebugEnabled()) {
+                _log.debug("Reason:", t);
+            }
+        }
+    }
+
     @Override
     public void fetch() {
         try {
             // Do this again in case the previous call errored out.
             _gates.registerSegment(_segmentName);
-            while (true) {
-                long start = _segmentCache.getChangeNumber(_segmentName);
-                runWithoutExceptionHandling();
-                long end = _segmentCache.getChangeNumber(_segmentName);
-                if (_log.isDebugEnabled()) {
-                    _log.debug(_segmentName + " segment fetch before: " + start + ", after: " + _segmentCache.getChangeNumber(_segmentName) /*+ " size: " + _concurrentKeySet.size()*/);
-                }
-                if (start >= end) {
-                    break;
-                }
-            }
+           callLoopRun(true);
 
             _gates.segmentIsReady(_segmentName);
 
@@ -134,5 +135,17 @@ public class SegmentFetcherImp implements Runnable, SegmentFetcher {
         return bldr.toString();
     }
 
-
+    private void callLoopRun(boolean isFetch){
+        while (true) {
+            long start = _segmentCache.getChangeNumber(_segmentName);
+            runWithoutExceptionHandling();
+            long end = _segmentCache.getChangeNumber(_segmentName);
+            if (isFetch && _log.isDebugEnabled()) {
+                _log.debug(_segmentName + " segment fetch before: " + start + ", after: " + _segmentCache.getChangeNumber(_segmentName) /*+ " size: " + _concurrentKeySet.size()*/);
+            }
+            if (start >= end) {
+                break;
+            }
+        }
+    }
 }

@@ -10,7 +10,7 @@ import java.util.Map;
  *
  * @author adil
  */
-public class StaticSegmentFetcher implements SegmentFetcher, SegmentSynchronizationTask {
+public class StaticSegmentFetcher implements SegmentSynchronizationTask {
 
     private final ImmutableMap<String, StaticSegment> _staticSegmentFetchers;
 
@@ -18,7 +18,7 @@ public class StaticSegmentFetcher implements SegmentFetcher, SegmentSynchronizat
         _staticSegmentFetchers = ImmutableMap.copyOf(staticSegmentFetchers);
     }
 
-    @Override
+
     public void fetch(){};
 
     public Segment segment(String segmentName) {

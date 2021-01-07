@@ -7,15 +7,21 @@ import io.split.engine.SDKReadinessGates;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.Closeable;
 import java.util.List;
-import java.util.concurrent.*;
+import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledFuture;
+import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicLong;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
 
-public class SegmentSynchronizationTaskImp implements SegmentSynchronizationTask {
+public class SegmentSynchronizationTaskImp implements SegmentSynchronizationTask, Closeable {
     private static final Logger _log = LoggerFactory.getLogger(SegmentSynchronizationTaskImp.class);
 
     private final SegmentChangeFetcher _segmentChangeFetcher;
@@ -30,14 +36,12 @@ public class SegmentSynchronizationTaskImp implements SegmentSynchronizationTask
     private ScheduledFuture<?> _scheduledFuture;
 
     public SegmentSynchronizationTaskImp(SegmentChangeFetcher segmentChangeFetcher, long refreshEveryNSeconds, int numThreads, SDKReadinessGates gates, SegmentCache segmentCache) {
-        _segmentChangeFetcher = segmentChangeFetcher;
-        checkNotNull(_segmentChangeFetcher);
+        _segmentChangeFetcher = checkNotNull(segmentChangeFetcher);
 
         checkArgument(refreshEveryNSeconds >= 0L);
         _refreshEveryNSeconds = new AtomicLong(refreshEveryNSeconds);
 
-        _gates = gates;
-        checkNotNull(_gates);
+        _gates = checkNotNull(gates);
 
         ThreadFactory threadFactory = new ThreadFactoryBuilder()
                 .setDaemon(true)
@@ -48,7 +52,7 @@ public class SegmentSynchronizationTaskImp implements SegmentSynchronizationTask
 
         _running = new AtomicBoolean(false);
 
-        _segmentCache = segmentCache;
+        _segmentCache = checkNotNull(segmentCache);
     }
 
     @Override
@@ -125,6 +129,7 @@ public class SegmentSynchronizationTaskImp implements SegmentSynchronizationTask
         _log.debug("Stopped PeriodicFetching Segments ...");
     }
 
+    @Override
     public void close() {
         if (_scheduledExecutorService == null || _scheduledExecutorService.isShutdown()) {
             return;

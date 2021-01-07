@@ -1,47 +1,48 @@
 package io.split.engine.experiments;
 
 import com.google.common.collect.Lists;
+import io.split.cache.InMemoryCacheImp;
+import io.split.cache.SegmentCache;
 import io.split.cache.SegmentCacheInMemoryImpl;
-import io.split.client.dtos.Condition;
+import io.split.cache.SplitCache;
 import io.split.client.dtos.Matcher;
 import io.split.client.dtos.MatcherGroup;
 import io.split.client.dtos.Split;
-import io.split.client.dtos.SplitChange;
 import io.split.client.dtos.Status;
+import io.split.client.dtos.Condition;
+import io.split.client.dtos.SplitChange;
 import io.split.engine.ConditionsTestUtil;
 import io.split.engine.SDKReadinessGates;
-import io.split.cache.InMemoryCacheImp;
-import io.split.cache.SplitCache;
 import io.split.engine.matchers.AllKeysMatcher;
 import io.split.engine.matchers.CombiningMatcher;
-import io.split.engine.segments.*;
-import io.split.cache.SegmentCache;
+import io.split.engine.segments.NoChangeSegmentChangeFetcher;
+import io.split.engine.segments.SegmentChangeFetcher;
+import io.split.engine.segments.SegmentSynchronizationTask;
+import io.split.engine.segments.SegmentSynchronizationTaskImp;
 import io.split.grammar.Treatments;
 import org.junit.Test;
-import org.mockito.Mockito;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
-import static org.hamcrest.Matchers.equalTo;
-import static org.hamcrest.Matchers.greaterThan;
 import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.not;
+import static org.hamcrest.Matchers.greaterThan;
 import static org.hamcrest.Matchers.nullValue;
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 /**
  * Created by adilaijaz on 5/11/15.
  */
-public class RefreshableSplitFetcherTest {
-    private static final Logger _log = LoggerFactory.getLogger(RefreshableSplitFetcherTest.class);
+public class SplitFetcherTest {
+    private static final Logger _log = LoggerFactory.getLogger(SplitFetcherTest.class);
 
     @Test
     public void works_when_we_start_without_any_state() throws InterruptedException {
