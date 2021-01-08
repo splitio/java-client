@@ -4,7 +4,7 @@ import com.google.common.annotations.VisibleForTesting;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import io.split.cache.SegmentCache;
 import io.split.cache.SplitCache;
-import io.split.engine.experiments.SplitFetcherImp;
+import io.split.engine.experiments.SplitFetcher;
 import io.split.engine.experiments.SplitSynchronizationTask;
 import io.split.engine.segments.SegmentSynchronizationTaskImp;
 import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
@@ -48,7 +48,7 @@ public class SyncManagerImp implements SyncManager {
 
     public static SyncManagerImp build(boolean streamingEnabledConfig,
                                        SplitSynchronizationTask splitSynchronizationTask,
-                                       SplitFetcherImp splitFetcher,
+                                       SplitFetcher splitFetcher,
                                        SegmentSynchronizationTaskImp segmentSynchronizationTaskImp,
                                        SplitCache splitCache,
                                        String authUrl,

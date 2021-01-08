@@ -27,7 +27,7 @@ import static com.google.common.base.Preconditions.checkNotNull;
 public class SplitSynchronizationTask implements Closeable {
     private static final Logger _log = LoggerFactory.getLogger(SplitSynchronizationTask.class);
 
-    private final AtomicReference<SplitFetcherImp> _splitFetcher = new AtomicReference<SplitFetcherImp>();
+    private final AtomicReference<SplitFetcher> _splitFetcher = new AtomicReference<>();
     private final AtomicReference<SplitCache> _splitCache = new AtomicReference<SplitCache>();
     private final AtomicReference<ScheduledExecutorService> _executorService = new AtomicReference<>();
     private final AtomicLong _refreshEveryNSeconds;
@@ -36,7 +36,7 @@ public class SplitSynchronizationTask implements Closeable {
 
     private ScheduledFuture<?> _scheduledFuture;
 
-    public SplitSynchronizationTask(SplitFetcherImp splitFetcher, SplitCache splitCache, long refreshEveryNSeconds) {
+    public SplitSynchronizationTask(SplitFetcher splitFetcher, SplitCache splitCache, long refreshEveryNSeconds) {
         _splitFetcher.set(checkNotNull(splitFetcher));
         _splitCache.set(checkNotNull(splitCache));
         checkArgument(refreshEveryNSeconds >= 0L);
