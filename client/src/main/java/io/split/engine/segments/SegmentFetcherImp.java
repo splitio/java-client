@@ -22,15 +22,10 @@ public class SegmentFetcherImp implements Runnable, SegmentFetcher {
     private final Object _lock = new Object();
 
     public SegmentFetcherImp(String segmentName, SegmentChangeFetcher segmentChangeFetcher, SDKReadinessGates gates, SegmentCache segmentCache) {
-        _segmentName = segmentName;
-        _segmentChangeFetcher = segmentChangeFetcher;
-        _segmentCache = segmentCache;
-        _gates = gates;
-
-        checkNotNull(_segmentChangeFetcher);
-        checkNotNull(_segmentName);
-        checkNotNull(_gates);
-        checkNotNull(_segmentCache);
+        _segmentName = checkNotNull(segmentName);
+        _segmentChangeFetcher = checkNotNull(segmentChangeFetcher);
+        _segmentCache = checkNotNull(segmentCache);
+        _gates = checkNotNull(gates);
 
         _segmentCache.updateSegment(segmentName, new ArrayList<>(), new ArrayList<>());
     }
