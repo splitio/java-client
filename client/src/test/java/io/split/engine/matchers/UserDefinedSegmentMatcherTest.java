@@ -3,8 +3,6 @@ package io.split.engine.matchers;
 import com.google.common.collect.Sets;
 import io.split.cache.SegmentCache;
 import io.split.cache.SegmentCacheInMemoryImpl;
-import io.split.engine.segments.Segment;
-import io.split.engine.segments.StaticSegment;
 import org.junit.Test;
 
 import java.util.ArrayList;

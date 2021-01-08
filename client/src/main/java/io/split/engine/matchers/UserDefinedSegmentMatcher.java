@@ -2,7 +2,6 @@ package io.split.engine.matchers;
 
 import io.split.cache.SegmentCache;
 import io.split.engine.evaluator.Evaluator;
-import io.split.engine.segments.Segment;
 
 import java.util.Map;
 

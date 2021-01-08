@@ -43,7 +43,7 @@ public class SplitJmxMonitor implements SplitJmxMonitorMBean {
     public boolean forceSyncSegment(String segmentName) {
         SegmentFetcher fetcher = _segmentSynchronizationTask.getFetcher(segmentName);
         try{
-            fetcher.forceRefresh();
+            fetcher.fetch();
         }
         //We are sure this will never happen because getFetcher firts initiate the segment. This try/catch is for safe only.
         catch (NullPointerException np){

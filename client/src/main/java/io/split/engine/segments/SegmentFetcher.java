@@ -8,9 +8,4 @@ public interface SegmentFetcher {
      * fetch
      */
     void fetch();
-
-    /**
-     * forceRefresh
-     */
-    void forceRefresh();
 }

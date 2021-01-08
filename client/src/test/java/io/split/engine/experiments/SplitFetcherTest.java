@@ -5,25 +5,21 @@ import io.split.cache.InMemoryCacheImp;
 import io.split.cache.SegmentCache;
 import io.split.cache.SegmentCacheInMemoryImpl;
 import io.split.cache.SplitCache;
-import io.split.client.dtos.Matcher;
-import io.split.client.dtos.MatcherGroup;
-import io.split.client.dtos.Split;
-import io.split.client.dtos.Status;
-import io.split.client.dtos.Condition;
-import io.split.client.dtos.SplitChange;
+import io.split.client.dtos.*;
 import io.split.engine.ConditionsTestUtil;
 import io.split.engine.SDKReadinessGates;
 import io.split.engine.matchers.AllKeysMatcher;
 import io.split.engine.matchers.CombiningMatcher;
-import io.split.engine.segments.NoChangeSegmentChangeFetcher;
 import io.split.engine.segments.SegmentChangeFetcher;
 import io.split.engine.segments.SegmentSynchronizationTask;
 import io.split.engine.segments.SegmentSynchronizationTaskImp;
 import io.split.grammar.Treatments;
 import org.junit.Test;
+import org.mockito.Mockito;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
@@ -35,6 +31,8 @@ import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.greaterThan;
 import static org.hamcrest.Matchers.nullValue;
 import static org.junit.Assert.assertThat;
+import static org.mockito.Matchers.anyLong;
+import static org.mockito.Matchers.anyString;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -58,7 +56,7 @@ public class SplitFetcherTest {
         AChangePerCallSplitChangeFetcher splitChangeFetcher = new AChangePerCallSplitChangeFetcher();
         SDKReadinessGates gates = new SDKReadinessGates();
         SegmentCache segmentCache = new SegmentCacheInMemoryImpl();
-        SegmentChangeFetcher segmentChangeFetcher = new NoChangeSegmentChangeFetcher();
+        SegmentChangeFetcher segmentChangeFetcher = Mockito.mock(SegmentChangeFetcher.class);
         SegmentSynchronizationTask segmentSynchronizationTask = new SegmentSynchronizationTaskImp(segmentChangeFetcher,1,10, gates, segmentCache);
         SplitCache cache = new InMemoryCacheImp(startingChangeNumber);
         SplitFetcherImp fetcher = new SplitFetcherImp(splitChangeFetcher, new SplitParser(segmentSynchronizationTask, segmentCache), gates, cache);
@@ -131,7 +129,7 @@ public class SplitFetcherTest {
 
         SegmentCache segmentCache = new SegmentCacheInMemoryImpl();
 
-        SegmentChangeFetcher segmentChangeFetcher = new NoChangeSegmentChangeFetcher();
+        SegmentChangeFetcher segmentChangeFetcher = mock(SegmentChangeFetcher.class);
         SegmentSynchronizationTask segmentSynchronizationTask = new SegmentSynchronizationTaskImp(segmentChangeFetcher, 1,10, gates, segmentCache);
         segmentSynchronizationTask.startPeriodicFetching();
         SplitCache cache = new InMemoryCacheImp(-1);
@@ -154,7 +152,7 @@ public class SplitFetcherTest {
         when(splitChangeFetcher.fetch(-1L)).thenThrow(new RuntimeException());
         SegmentCache segmentCache = new SegmentCacheInMemoryImpl();
 
-        SegmentChangeFetcher segmentChangeFetcher = new NoChangeSegmentChangeFetcher();
+        SegmentChangeFetcher segmentChangeFetcher = mock(SegmentChangeFetcher.class);
         SegmentSynchronizationTask segmentSynchronizationTask = new SegmentSynchronizationTaskImp(segmentChangeFetcher, 1,10, gates, segmentCache);
         segmentSynchronizationTask.startPeriodicFetching();
         SplitFetcherImp fetcher = new SplitFetcherImp(splitChangeFetcher, new SplitParser(segmentSynchronizationTask, segmentCache), gates, cache);
@@ -194,7 +192,9 @@ public class SplitFetcherTest {
         SplitCache cache = new InMemoryCacheImp(startingChangeNumber);
         SegmentCache segmentCache = new SegmentCacheInMemoryImpl();
 
-        SegmentChangeFetcher segmentChangeFetcher = new NoChangeSegmentChangeFetcher();
+        SegmentChangeFetcher segmentChangeFetcher = mock(SegmentChangeFetcher.class);
+        SegmentChange segmentChange = getSegmentChange(0L, 0L, segmentName);
+        when(segmentChangeFetcher.fetch(anyString(), anyLong())).thenReturn(segmentChange);
         SegmentSynchronizationTask segmentSynchronizationTask = new SegmentSynchronizationTaskImp(segmentChangeFetcher, 1,10, gates, segmentCache);
         segmentSynchronizationTask.startPeriodicFetching();
         SplitFetcherImp fetcher = new SplitFetcherImp(experimentChangeFetcher, new SplitParser(segmentSynchronizationTask, segmentCache), gates, cache);
@@ -215,5 +215,15 @@ public class SplitFetcherTest {
         assertThat(gates.isSegmentRegistered(segmentName), is(equalTo(true)));
         assertThat(gates.areSegmentsReady(100), is(equalTo(true)));
         assertThat(gates.isSDKReady(0), is(equalTo(true)));
+    }
+
+    private SegmentChange getSegmentChange(long since, long till, String segmentName){
+        SegmentChange segmentChange = new SegmentChange();
+        segmentChange.name = segmentName;
+        segmentChange.since = since;
+        segmentChange.till = till;
+        segmentChange.added = new ArrayList<>();
+        segmentChange.removed = new ArrayList<>();
+        return  segmentChange;
     }
 }

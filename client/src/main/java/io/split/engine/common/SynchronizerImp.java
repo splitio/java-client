@@ -90,7 +90,7 @@ public class SynchronizerImp implements Synchronizer {
         if (changeNumber > _segmentCache.getChangeNumber(segmentName)) {
             SegmentFetcher fetcher = _segmentSynchronizationTaskImp.getFetcher(segmentName);
             try{
-                fetcher.forceRefresh();
+                fetcher.fetch();
             }
             //We are sure this will never happen because getFetcher firts initiate the segment. This try/catch is for safe only.
             catch (NullPointerException np){

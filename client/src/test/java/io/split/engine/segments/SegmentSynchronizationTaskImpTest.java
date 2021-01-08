@@ -39,7 +39,7 @@ public class SegmentSynchronizationTaskImpTest {
         SDKReadinessGates gates = new SDKReadinessGates();
         SegmentCache segmentCache = Mockito.mock(SegmentCache.class);
 
-        AChangePerCallSegmentChangeFetcher segmentChangeFetcher = new AChangePerCallSegmentChangeFetcher();
+        SegmentChangeFetcher segmentChangeFetcher = Mockito.mock(SegmentChangeFetcher.class);
         final SegmentSynchronizationTaskImp fetchers = new SegmentSynchronizationTaskImp(segmentChangeFetcher, 1L, 1, gates, segmentCache);
 
 

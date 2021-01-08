@@ -127,14 +127,14 @@ public class SegmentFetcherImpTest {
     @Test(expected = NullPointerException.class)
     public void does_not_work_if_segment_name_is_null() {
         SegmentCache segmentCache = Mockito.mock(SegmentCache.class);
-        AChangePerCallSegmentChangeFetcher segmentChangeFetcher = new AChangePerCallSegmentChangeFetcher();
+        SegmentChangeFetcher segmentChangeFetcher = Mockito.mock(SegmentChangeFetcher.class);
         SegmentFetcher fetcher = new SegmentFetcherImp(null, segmentChangeFetcher, new SDKReadinessGates(), segmentCache);
     }
 
     @Test(expected = NullPointerException.class)
     public void does_not_work_if_sdk_readiness_gates_are_null() {
         SegmentCache segmentCache = Mockito.mock(SegmentCache.class);
-        AChangePerCallSegmentChangeFetcher segmentChangeFetcher = new AChangePerCallSegmentChangeFetcher();
+        SegmentChangeFetcher segmentChangeFetcher = Mockito.mock(SegmentChangeFetcher.class);
         SegmentFetcher fetcher = new SegmentFetcherImp(SEGMENT_NAME, segmentChangeFetcher, null, segmentCache);
     }
 

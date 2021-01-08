@@ -37,12 +37,13 @@ public class SegmentFetcherImp implements Runnable, SegmentFetcher {
 
     @Override
     public void run() {
-        fetch();
-    }
-
-    public void forceRefresh(){
         try {
-            callLoopRun(false);
+            // Do this again in case the previous call errored out.
+            _gates.registerSegment(_segmentName);
+            callLoopRun(true);
+
+            _gates.segmentIsReady(_segmentName);
+
         } catch (Throwable t) {
             _log.error("RefreshableSegmentFetcher failed: " + t.getMessage());
             if (_log.isDebugEnabled()) {
@@ -52,14 +53,9 @@ public class SegmentFetcherImp implements Runnable, SegmentFetcher {
     }
 
     @Override
-    public void fetch() {
+    public void fetch(){
         try {
-            // Do this again in case the previous call errored out.
-            _gates.registerSegment(_segmentName);
-           callLoopRun(true);
-
-            _gates.segmentIsReady(_segmentName);
-
+            callLoopRun(false);
         } catch (Throwable t) {
             _log.error("RefreshableSegmentFetcher failed: " + t.getMessage());
             if (_log.isDebugEnabled()) {

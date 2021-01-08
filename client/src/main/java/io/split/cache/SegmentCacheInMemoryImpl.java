@@ -38,12 +38,11 @@ public class SegmentCacheInMemoryImpl implements SegmentCache {
 
     @Override
     public void setChangeNumber(String segmentName, long changeNumber) {
-        if(_segments.get(segmentName) != null){
-            _segments.get(segmentName).setChangeNumber(changeNumber);
-        }
-        else{
+        if(_segments.get(segmentName) == null){
             _log.error("Segment " + segmentName + "Not found.");
+            return ;
         }
+        _segments.get(segmentName).setChangeNumber(changeNumber);
     }
 
     @Override
