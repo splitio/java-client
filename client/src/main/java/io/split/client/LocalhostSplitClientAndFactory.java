@@ -25,8 +25,11 @@ public final class LocalhostSplitClientAndFactory implements SplitClient {
     private LocalhostSplitClient _splitClient;
 
     public LocalhostSplitClientAndFactory(LocalhostSplitFactory container, LocalhostSplitClient client) {
-        _factory = checkNotNull(container);
-        _splitClient = checkNotNull(client);
+        _factory = container;
+        _splitClient = client;
+
+        checkNotNull(_factory);
+        checkNotNull(_splitClient);
     }
 
     @Override

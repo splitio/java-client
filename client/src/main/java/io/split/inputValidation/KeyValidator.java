@@ -6,7 +6,7 @@ import org.slf4j.LoggerFactory;
 public class KeyValidator {
     private static final Logger _log = LoggerFactory.getLogger(KeyValidator.class);
 
-    public static boolean isValid(String key, String propertyName, String method) {
+    public static boolean isValid(String key, String propertyName, int maxStringLength, String method) {
         if (key == null) {
             _log.error(String.format("%s: you passed a null %s, %s must be a non-empty string", method, propertyName, propertyName));
             return false;
@@ -14,14 +14,6 @@ public class KeyValidator {
 
         if (key.isEmpty()) {
             _log.error(String.format("%s: you passed an empty %s, %s must be a non-empty string", method, propertyName, propertyName));
-            return false;
-        }
-
-        return true;
-    }
-
-    public static boolean isValid(String key, String propertyName, int maxStringLength, String method) {
-        if (!isValid(key, propertyName, method)) {
             return false;
         }
 
