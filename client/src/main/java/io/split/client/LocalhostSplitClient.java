@@ -3,10 +3,13 @@ package io.split.client;
 import io.split.client.api.Key;
 import io.split.client.api.SplitResult;
 import io.split.grammar.Treatments;
+import io.split.inputValidation.KeyValidator;
+import io.split.inputValidation.SplitNameValidator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.Map;
+import java.util.Optional;
 import java.util.concurrent.TimeoutException;
 
 import static com.google.common.base.Preconditions.checkNotNull;
@@ -60,43 +63,6 @@ public final class LocalhostSplitClient implements SplitClient {
         return getTreatmentAndConfigInternal(key.matchingKey(), split, attributes);
     }
 
-    private SplitResult getTreatmentAndConfigInternal(String key, String split) {
-        return getTreatmentAndConfigInternal(key, split, null);
-    }
-
-    private SplitResult getTreatmentAndConfigInternal(String key, String split, Map<String, Object> attributes) {
-        if (key == null || split == null) {
-            return SPLIT_RESULT_CONTROL;
-        }
-
-        SplitAndKey override = SplitAndKey.of(split, key);
-        if (_map.containsKey(override)) {
-            return toSplitResult(_map.get(override));
-        }
-
-        SplitAndKey splitDefaultTreatment = SplitAndKey.of(split);
-
-        LocalhostSplit localhostSplit = _map.get(splitDefaultTreatment);
-
-        if (localhostSplit == null) {
-            return SPLIT_RESULT_CONTROL;
-        }
-
-        return toSplitResult(localhostSplit);
-    }
-
-    private SplitResult toSplitResult(LocalhostSplit localhostSplit) {
-        return new SplitResult(localhostSplit.treatment,localhostSplit.config);
-    }
-
-    public void updateFeatureToTreatmentMap(Map<SplitAndKey, LocalhostSplit> map) {
-        if (map  == null) {
-            _log.warn("A null map was passed as an update. Ignoring this update.");
-            return;
-        }
-        _map = map;
-    }
-
     @Override
     public void destroy() {
         _map.clear();
@@ -127,4 +93,50 @@ public final class LocalhostSplitClient implements SplitClient {
         // LocalhostSplitClient is always ready
     }
 
+    public void updateFeatureToTreatmentMap(Map<SplitAndKey, LocalhostSplit> map) {
+        if (map  == null) {
+            _log.warn("A null map was passed as an update. Ignoring this update.");
+            return;
+        }
+        _map = map;
+    }
+
+    private SplitResult getTreatmentAndConfigInternal(String key, String split, Map<String, Object> attributes) {
+        boolean keyIsValid = KeyValidator.isValid(key, "matchingKey", "getTreatment");
+
+        if (!keyIsValid) {
+            return SPLIT_RESULT_CONTROL;
+        }
+
+        Optional<String> splitName = SplitNameValidator.isValid(split, "getTreatment");
+
+        if (!splitName.isPresent()) {
+            return SPLIT_RESULT_CONTROL;
+        }
+
+        split = splitName.get();
+
+        SplitAndKey override = SplitAndKey.of(split, key);
+        if (_map.containsKey(override)) {
+            return toSplitResult(_map.get(override));
+        }
+
+        SplitAndKey splitDefaultTreatment = SplitAndKey.of(split);
+
+        LocalhostSplit localhostSplit = _map.get(splitDefaultTreatment);
+
+        if (localhostSplit == null) {
+            return SPLIT_RESULT_CONTROL;
+        }
+
+        return toSplitResult(localhostSplit);
+    }
+
+    private SplitResult toSplitResult(LocalhostSplit localhostSplit) {
+        return new SplitResult(localhostSplit.treatment,localhostSplit.config);
+    }
+
+    private SplitResult getTreatmentAndConfigInternal(String key, String split) {
+        return getTreatmentAndConfigInternal(key, split, null);
+    }
 }
