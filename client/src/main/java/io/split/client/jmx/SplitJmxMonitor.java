@@ -24,7 +24,7 @@ public class SplitJmxMonitor implements SplitJmxMonitorMBean {
     private final SegmentSynchronizationTask _segmentSynchronizationTask;
     private SegmentCache _segmentCache;
 
-    public SplitJmxMonitor(SplitClient splitClient, SplitFetcher featureFetcher, SplitCache splitCache, SegmentFetcher segmentFetcher, SegmentSynchronizationTask segmentSynchronizationTask, SegmentCache segmentCache) {
+    public SplitJmxMonitor(SplitClient splitClient, SplitFetcher featureFetcher, SplitCache splitCache, SegmentSynchronizationTask segmentSynchronizationTask, SegmentCache segmentCache) {
         _client = checkNotNull(splitClient);
         _featureFetcher = checkNotNull(featureFetcher);
         _splitCache = checkNotNull(splitCache);

@@ -7,7 +7,6 @@ import io.split.engine.experiments.SplitSynchronizationTask;
 import io.split.engine.segments.SegmentSynchronizationTask;
 import org.junit.Before;
 import org.junit.Test;
-import org.mockito.Mock;
 import org.mockito.Mockito;
 
 public class SynchronizerTest {
@@ -16,7 +15,6 @@ public class SynchronizerTest {
     private SplitFetcherImp _splitFetcher;
     private SplitCache _splitCache;
     private Synchronizer _synchronizer;
-    private SegmentCache _segmentCache;
 
     @Before
     public void beforeMethod() {
@@ -24,7 +22,7 @@ public class SynchronizerTest {
         _segmentFetcher = Mockito.mock(SegmentSynchronizationTask.class);
         _splitFetcher = Mockito.mock(SplitFetcherImp.class);
         _splitCache = Mockito.mock(SplitCache.class);
-        _segmentCache = Mockito.mock(SegmentCache.class);
+        SegmentCache _segmentCache = Mockito.mock(SegmentCache.class);
 
         _synchronizer = new SynchronizerImp(_refreshableSplitFetcherTask, _splitFetcher, _segmentFetcher, _splitCache, _segmentCache);
     }

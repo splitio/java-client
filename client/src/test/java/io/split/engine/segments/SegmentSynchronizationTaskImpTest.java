@@ -30,8 +30,8 @@ public class SegmentSynchronizationTaskImpTest {
 
     @Before
     public void beforeMethod() {
-        fetcher1 = new AtomicReference<SegmentFetcher>(null);
-        fetcher2 = new AtomicReference<SegmentFetcher>(null);
+        fetcher1 = new AtomicReference<>(null);
+        fetcher2 = new AtomicReference<>(null);
     }
 
     @Test

@@ -1,15 +1,12 @@
 package io.split.engine.common;
 
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
-
 import io.split.cache.SegmentCache;
 import io.split.cache.SplitCache;
 import io.split.engine.experiments.SplitFetcherImp;
 import io.split.engine.experiments.SplitSynchronizationTask;
 import io.split.engine.segments.SegmentFetcher;
-import io.split.engine.segments.SegmentFetcherImp;
 import io.split.engine.segments.SegmentSynchronizationTask;
-import io.split.engine.segments.SegmentSynchronizationTaskImp;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

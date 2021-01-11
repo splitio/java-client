@@ -9,6 +9,7 @@ import org.slf4j.LoggerFactory;
 
 import java.io.Closeable;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
@@ -57,7 +58,7 @@ public class SegmentSynchronizationTaskImp implements SegmentSynchronizationTask
 
     @Override
     public void run() {
-        for (ConcurrentMap.Entry<String, SegmentFetcherImp> entry : _segmentFetchers.entrySet()) {
+        for (Map.Entry<String, SegmentFetcherImp> entry : _segmentFetchers.entrySet()) {
             SegmentFetcherImp fetcher = entry.getValue();
 
             if (fetcher == null) {
