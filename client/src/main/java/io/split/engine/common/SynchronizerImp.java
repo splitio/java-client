@@ -1,11 +1,12 @@
 package io.split.engine.common;
 
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
-
+import io.split.cache.SegmentCache;
 import io.split.cache.SplitCache;
 import io.split.engine.experiments.SplitFetcherImp;
 import io.split.engine.experiments.SplitSynchronizationTask;
-import io.split.engine.segments.RefreshableSegmentFetcher;
+import io.split.engine.segments.SegmentFetcher;
+import io.split.engine.segments.SegmentSynchronizationTask;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -21,18 +22,21 @@ public class SynchronizerImp implements Synchronizer {
 
     private final SplitSynchronizationTask _splitSynchronizationTask;
     private final SplitFetcherImp _splitFetcher;
-    private final RefreshableSegmentFetcher _segmentFetcher;
+    private final SegmentSynchronizationTask _segmentSynchronizationTaskImp;
     private final ScheduledExecutorService _syncAllScheduledExecutorService;
     private final SplitCache _splitCache;
+    private final SegmentCache _segmentCache;
 
     public SynchronizerImp(SplitSynchronizationTask splitSynchronizationTask,
                            SplitFetcherImp splitFetcher,
-                           RefreshableSegmentFetcher segmentFetcher,
-                           SplitCache splitCache) {
+                           SegmentSynchronizationTask segmentSynchronizationTaskImp,
+                           SplitCache splitCache,
+                           SegmentCache segmentCache) {
         _splitSynchronizationTask = checkNotNull(splitSynchronizationTask);
         _splitFetcher = checkNotNull(splitFetcher);
-        _segmentFetcher = checkNotNull(segmentFetcher);
+        _segmentSynchronizationTaskImp = checkNotNull(segmentSynchronizationTaskImp);
         _splitCache = checkNotNull(splitCache);
+        _segmentCache = checkNotNull(segmentCache);
 
         ThreadFactory splitsThreadFactory = new ThreadFactoryBuilder()
                 .setDaemon(true)
@@ -45,7 +49,7 @@ public class SynchronizerImp implements Synchronizer {
     public void syncAll() {
         _syncAllScheduledExecutorService.schedule(() -> {
             _splitFetcher.run();
-            _segmentFetcher.forceRefreshAll();
+            _segmentSynchronizationTaskImp.run();
         }, 0, TimeUnit.SECONDS);
     }
 
@@ -53,14 +57,14 @@ public class SynchronizerImp implements Synchronizer {
     public void startPeriodicFetching() {
         _log.debug("Starting Periodic Fetching ...");
         _splitSynchronizationTask.startPeriodicFetching();
-        _segmentFetcher.startPeriodicFetching();
+        _segmentSynchronizationTaskImp.startPeriodicFetching();
     }
 
     @Override
     public void stopPeriodicFetching() {
         _log.debug("Stop Periodic Fetching ...");
         _splitSynchronizationTask.stop();
-        _segmentFetcher.stop();
+        _segmentSynchronizationTaskImp.stop();
     }
 
     @Override
@@ -80,8 +84,15 @@ public class SynchronizerImp implements Synchronizer {
 
     @Override
     public void refreshSegment(String segmentName, long changeNumber) {
-        if (changeNumber > _segmentFetcher.getChangeNumber(segmentName)) {
-            _segmentFetcher.forceRefresh(segmentName);
+        if (changeNumber > _segmentCache.getChangeNumber(segmentName)) {
+            SegmentFetcher fetcher = _segmentSynchronizationTaskImp.getFetcher(segmentName);
+            try{
+                fetcher.fetch();
+            }
+            //We are sure this will never happen because getFetcher firts initiate the segment. This try/catch is for safe only.
+            catch (NullPointerException np){
+                throw new NullPointerException();
+            }
         }
     }
 }
