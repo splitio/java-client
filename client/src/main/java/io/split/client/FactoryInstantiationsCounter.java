@@ -1,29 +1,30 @@
 package io.split.client;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ConcurrentHashMultiset;
 import com.google.common.collect.Multiset;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class FactoryInstantiationsService {
+public class FactoryInstantiationsCounter {
 
-    private static final Logger _log = LoggerFactory.getLogger(FactoryInstantiationsService.class);
-    private static volatile FactoryInstantiationsService _factoryInstantiationsService;
+    private static final Logger _log = LoggerFactory.getLogger(FactoryInstantiationsCounter.class);
+    private static volatile FactoryInstantiationsCounter _factoryInstantiationsCounter;
     private static final Multiset<String> USED_API_TOKENS = ConcurrentHashMultiset.create();
 
 
-    private FactoryInstantiationsService() {}
+    private FactoryInstantiationsCounter() {}
 
-    public static FactoryInstantiationsService getFactoryInstantiationsServiceInstance() {
-        if(_factoryInstantiationsService == null) {
-            synchronized (FactoryInstantiationsService.class) {
-                if (_factoryInstantiationsService == null) {
-                    _factoryInstantiationsService = new FactoryInstantiationsService();
+    public static FactoryInstantiationsCounter getFactoryInstantiationsServiceInstance() {
+        if(_factoryInstantiationsCounter == null) {
+            synchronized (FactoryInstantiationsCounter.class) {
+                if (_factoryInstantiationsCounter == null) {
+                    _factoryInstantiationsCounter = new FactoryInstantiationsCounter();
                 }
             }
         }
 
-        return _factoryInstantiationsService;
+        return _factoryInstantiationsCounter;
     }
 
     public void addToken(String apiToken) {
@@ -52,7 +53,18 @@ public class FactoryInstantiationsService {
      * @param apiToken
      * @return
      */
-    public boolean isTokenPresent(String apiToken){
+    @VisibleForTesting
+    boolean isTokenPresent(String apiToken) {
         return USED_API_TOKENS.contains(apiToken);
+    }
+
+    /**
+     * Just for test
+     * @param apiToken
+     * @return
+     */
+    @VisibleForTesting
+    int getCount(String apiToken) {
+        return USED_API_TOKENS.count(apiToken);
     }
 }

@@ -1,7 +1,5 @@
 package io.split.client;
 
-import com.google.common.collect.ConcurrentHashMultiset;
-import com.google.common.collect.Multiset;
 import io.split.client.impressions.AsynchronousImpressionListener;
 import io.split.client.impressions.ImpressionListener;
 import io.split.client.impressions.ImpressionsManagerImpl;
@@ -62,7 +60,6 @@ public class SplitFactoryImpl implements SplitFactory {
     private final static long SSE_CONNECT_TIMEOUT = 30000;
     private final static long SSE_SOCKET_TIMEOUT = 70000;
 
-    private static final Multiset<String> USED_API_TOKENS = ConcurrentHashMultiset.create();
     private static Random RANDOM = new Random();
 
     private final SplitClient _client;
@@ -70,11 +67,12 @@ public class SplitFactoryImpl implements SplitFactory {
     private final Runnable destroyer;
     private final String _apiToken;
     private boolean isTerminated = false;
+    private final FactoryInstantiationsCounter _factoryInstantiationsCounter;
 
     public SplitFactoryImpl(String apiToken, SplitClientConfig config) throws URISyntaxException {
         _apiToken = apiToken;
-
-        FactoryInstantiationsService.getFactoryInstantiationsServiceInstance().addToken(apiToken);
+        _factoryInstantiationsCounter = FactoryInstantiationsCounter.getFactoryInstantiationsServiceInstance();
+        _factoryInstantiationsCounter.addToken(apiToken);
 
         if (config.blockUntilReady() == -1) {
             //BlockUntilReady not been set
@@ -202,7 +200,8 @@ public class SplitFactoryImpl implements SplitFactory {
         synchronized (SplitFactoryImpl.class) {
             if (!isTerminated) {
                 destroyer.run();
-                FactoryInstantiationsService.getFactoryInstantiationsServiceInstance().removeToken(_apiToken);
+                _factoryInstantiationsCounter.removeToken(_apiToken);
+                int i = FactoryInstantiationsCounter.getFactoryInstantiationsServiceInstance().getCount(_apiToken);
                 isTerminated = true;
             }
         }
