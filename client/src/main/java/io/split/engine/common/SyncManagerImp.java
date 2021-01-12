@@ -2,10 +2,11 @@ package io.split.engine.common;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
+import io.split.cache.SegmentCache;
 import io.split.cache.SplitCache;
 import io.split.engine.experiments.SplitFetcherImp;
 import io.split.engine.experiments.SplitSynchronizationTask;
-import io.split.engine.segments.RefreshableSegmentFetcher;
+import io.split.engine.segments.SegmentSynchronizationTaskImp;
 import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -46,17 +47,18 @@ public class SyncManagerImp implements SyncManager {
     }
 
     public static SyncManagerImp build(boolean streamingEnabledConfig,
-                                        SplitSynchronizationTask splitSynchronizationTask,
-                                        SplitFetcherImp splitFetcher,
-                                        RefreshableSegmentFetcher segmentFetcher,
-                                        SplitCache splitCache,
-                                        String authUrl,
-                                        CloseableHttpClient httpClient,
-                                        String streamingServiceUrl,
-                                        int authRetryBackOffBase,
-                                       CloseableHttpClient sseHttpClient) {
+                                       SplitSynchronizationTask splitSynchronizationTask,
+                                       SplitFetcherImp splitFetcher,
+                                       SegmentSynchronizationTaskImp segmentSynchronizationTaskImp,
+                                       SplitCache splitCache,
+                                       String authUrl,
+                                       CloseableHttpClient httpClient,
+                                       String streamingServiceUrl,
+                                       int authRetryBackOffBase,
+                                       CloseableHttpClient sseHttpClient,
+                                       SegmentCache segmentCache) {
         LinkedBlockingQueue<PushManager.Status> pushMessages = new LinkedBlockingQueue<>();
-        Synchronizer synchronizer = new SynchronizerImp(splitSynchronizationTask, splitFetcher, segmentFetcher, splitCache);
+        Synchronizer synchronizer = new SynchronizerImp(splitSynchronizationTask, splitFetcher, segmentSynchronizationTaskImp, splitCache, segmentCache);
         PushManager pushManager = PushManagerImp.build(synchronizer, streamingServiceUrl, authUrl, httpClient, authRetryBackOffBase, pushMessages, sseHttpClient);
         return new SyncManagerImp(streamingEnabledConfig, synchronizer, pushManager, pushMessages);
     }
