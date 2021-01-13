@@ -11,7 +11,6 @@ public class ApiKeyCounter {
     private static final Logger _log = LoggerFactory.getLogger(ApiKeyCounter.class);
     private static final Multiset<String> USED_API_KEYS = ConcurrentHashMultiset.create();
 
-
     private ApiKeyCounter() {}
 
     public static ApiKeyCounter getApiKeyCounterInstance() {
