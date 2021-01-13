@@ -9,7 +9,7 @@ import org.slf4j.LoggerFactory;
 public class ApiKeyCounter {
 
     private static final Logger _log = LoggerFactory.getLogger(ApiKeyCounter.class);
-    private static volatile ApiKeyCounter _apiKeyCounter;
+    private static ApiKeyCounter _apiKeyCounter;
     private static final Multiset<String> USED_API_KEYS = ConcurrentHashMultiset.create();
 
 
