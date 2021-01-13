@@ -9,18 +9,19 @@ import org.slf4j.LoggerFactory;
 public class ApiKeyCounter {
 
     private static final Logger _log = LoggerFactory.getLogger(ApiKeyCounter.class);
-    private static ApiKeyCounter _apiKeyCounter;
     private static final Multiset<String> USED_API_KEYS = ConcurrentHashMultiset.create();
 
 
     private ApiKeyCounter() {}
 
-    public static synchronized ApiKeyCounter getApiKeyCounterInstance() {
-        if(_apiKeyCounter == null) {
-            _apiKeyCounter = new ApiKeyCounter();
-        }
+    public static ApiKeyCounter getApiKeyCounterInstance() {
+        return ApyKeyCounterHolder.INSTANCE;
+    }
 
-        return _apiKeyCounter;
+    //Inner class to provide instance of class
+    private static class ApyKeyCounterHolder
+    {
+        private static final ApiKeyCounter INSTANCE = new ApiKeyCounter();
     }
 
     public void add(String apiKey) {
