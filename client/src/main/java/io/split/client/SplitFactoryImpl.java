@@ -1,7 +1,5 @@
 package io.split.client;
 
-import com.google.common.collect.ConcurrentHashMultiset;
-import com.google.common.collect.Multiset;
 import io.split.client.impressions.AsynchronousImpressionListener;
 import io.split.client.impressions.ImpressionListener;
 import io.split.client.impressions.ImpressionsManagerImpl;
@@ -62,7 +60,6 @@ public class SplitFactoryImpl implements SplitFactory {
     private final static long SSE_CONNECT_TIMEOUT = 30000;
     private final static long SSE_SOCKET_TIMEOUT = 70000;
 
-    private static final Multiset<String> USED_API_TOKENS = ConcurrentHashMultiset.create();
     private static Random RANDOM = new Random();
 
     private final SplitClient _client;
@@ -70,23 +67,12 @@ public class SplitFactoryImpl implements SplitFactory {
     private final Runnable destroyer;
     private final String _apiToken;
     private boolean isTerminated = false;
+    private final ApiKeyCounter _apiKeyCounter;
 
     public SplitFactoryImpl(String apiToken, SplitClientConfig config) throws URISyntaxException {
         _apiToken = apiToken;
-
-        if (USED_API_TOKENS.contains(apiToken)) {
-            String message = String.format("factory instantiation: You already have %s with this API Key. " +
-                    "We recommend keeping only one instance of the factory at all times (Singleton pattern) and reusing " +
-                    "it throughout your application.",
-                    USED_API_TOKENS.count(apiToken) == 1 ? "1 factory" : String.format("%s factories", USED_API_TOKENS.count(apiToken)));
-            _log.warn(message);
-        } else if (!USED_API_TOKENS.isEmpty()) {
-            String message = "factory instantiation: You already have an instance of the Split factory. " +
-                    "Make sure you definitely want this additional instance. We recommend keeping only one instance of " +
-                    "the factory at all times (Singleton pattern) and reusing it throughout your application.“";
-            _log.warn(message);
-        }
-        USED_API_TOKENS.add(apiToken);
+        _apiKeyCounter = ApiKeyCounter.getApiKeyCounterInstance();
+        _apiKeyCounter.add(apiToken);
 
         if (config.blockUntilReady() == -1) {
             //BlockUntilReady not been set
@@ -214,7 +200,7 @@ public class SplitFactoryImpl implements SplitFactory {
         synchronized (SplitFactoryImpl.class) {
             if (!isTerminated) {
                 destroyer.run();
-                USED_API_TOKENS.remove(_apiToken);
+                _apiKeyCounter.remove(_apiToken);
                 isTerminated = true;
             }
         }
