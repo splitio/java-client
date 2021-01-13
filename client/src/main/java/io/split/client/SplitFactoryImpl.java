@@ -67,12 +67,12 @@ public class SplitFactoryImpl implements SplitFactory {
     private final Runnable destroyer;
     private final String _apiToken;
     private boolean isTerminated = false;
-    private final FactoryInstantiationsCounter _factoryInstantiationsCounter;
+    private final ApiKeyCounter _apiKeyCounter;
 
     public SplitFactoryImpl(String apiToken, SplitClientConfig config) throws URISyntaxException {
         _apiToken = apiToken;
-        _factoryInstantiationsCounter = FactoryInstantiationsCounter.getFactoryInstantiationsServiceInstance();
-        _factoryInstantiationsCounter.addToken(apiToken);
+        _apiKeyCounter = ApiKeyCounter.getApiKeyCounterInstance();
+        _apiKeyCounter.add(apiToken);
 
         if (config.blockUntilReady() == -1) {
             //BlockUntilReady not been set
@@ -200,8 +200,7 @@ public class SplitFactoryImpl implements SplitFactory {
         synchronized (SplitFactoryImpl.class) {
             if (!isTerminated) {
                 destroyer.run();
-                _factoryInstantiationsCounter.removeToken(_apiToken);
-                int i = FactoryInstantiationsCounter.getFactoryInstantiationsServiceInstance().getCount(_apiToken);
+                _apiKeyCounter.remove(_apiToken);
                 isTerminated = true;
             }
         }
