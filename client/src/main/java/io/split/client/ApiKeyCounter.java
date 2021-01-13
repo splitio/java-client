@@ -15,13 +15,9 @@ public class ApiKeyCounter {
 
     private ApiKeyCounter() {}
 
-    public static ApiKeyCounter getApiKeyCounterInstance() {
+    public static synchronized ApiKeyCounter getApiKeyCounterInstance() {
         if(_apiKeyCounter == null) {
-            synchronized (ApiKeyCounter.class) {
-                if (_apiKeyCounter == null) {
-                    _apiKeyCounter = new ApiKeyCounter();
-                }
-            }
+            _apiKeyCounter = new ApiKeyCounter();
         }
 
         return _apiKeyCounter;
