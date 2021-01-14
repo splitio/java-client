@@ -144,14 +144,6 @@ public class SplitFactoryImpl implements SplitFactory {
         _syncManager = SyncManagerImp.build(config.streamingEnabled(), _splitSynchronizationTask, _splitFetcher, _segmentSynchronizationTaskImp, _splitCache, config.authServiceURL(), _httpclient, config.streamingServiceURL(), config.authRetryBackoffBase(), buildSSEdHttpClient(config), _segmentCache);
         _syncManager.start();
 
-        // DestroyOnShutDown
-        if (config.destroyOnShutDown()) {
-            Runtime.getRuntime().addShutdownHook(new Thread(() -> {
-                // Using the full path to avoid conflicting with Thread.destroy()
-                SplitFactoryImpl.this.destroy();
-            }));
-        }
-
         // Evaluator
         _evaluator = new EvaluatorImp(_splitCache);
 
@@ -160,6 +152,14 @@ public class SplitFactoryImpl implements SplitFactory {
 
         // SplitManager
         _manager = new SplitManagerImpl(_splitCache, config, _gates);
+
+        // DestroyOnShutDown
+        if (config.destroyOnShutDown()) {
+            Runtime.getRuntime().addShutdownHook(new Thread(() -> {
+                // Using the full path to avoid conflicting with Thread.destroy()
+                SplitFactoryImpl.this.destroy();
+            }));
+        }
     }
 
     @Override
@@ -173,36 +173,31 @@ public class SplitFactoryImpl implements SplitFactory {
     }
 
     @Override
-    public void destroy() {
-        synchronized (SplitFactoryImpl.class) {
-            if (!isTerminated) {
-                Runnable destroyer = () -> {
-                    _log.info("Shutdown called for split");
-                    try {
-                        _segmentSynchronizationTaskImp.close();
-                        _log.info("Successful shutdown of segment fetchers");
-                        _splitSynchronizationTask.close();
-                        _log.info("Successful shutdown of splits");
-                        _impressionsManager.close();
-                        _log.info("Successful shutdown of impressions manager");
-                        _unCachedFireAndForget.close();
-                        _log.info("Successful shutdown of metrics 1");
-                        _cachedFireAndForgetMetrics.close();
-                        _log.info("Successful shutdown of metrics 2");
-                        _httpclient.close();
-                        _log.info("Successful shutdown of httpclient");
-                        _eventClient.close();
-                        _log.info("Successful shutdown of eventClient");
-                        _syncManager.shutdown();
-                        _log.info("Successful shutdown of syncManager");
-                    } catch (IOException e) {
-                        _log.error("We could not shutdown split", e);
-                    }
-                };
-                destroyer.run();
-                _apiKeyCounter.remove(_apiToken);
-                isTerminated = true;
+    public synchronized void destroy() {
+        if (!isTerminated) {
+            _log.info("Shutdown called for split");
+            try {
+                _segmentSynchronizationTaskImp.close();
+                _log.info("Successful shutdown of segment fetchers");
+                _splitSynchronizationTask.close();
+                _log.info("Successful shutdown of splits");
+                _impressionsManager.close();
+                _log.info("Successful shutdown of impressions manager");
+                _unCachedFireAndForget.close();
+                _log.info("Successful shutdown of metrics 1");
+                _cachedFireAndForgetMetrics.close();
+                _log.info("Successful shutdown of metrics 2");
+                _httpclient.close();
+                _log.info("Successful shutdown of httpclient");
+                _eventClient.close();
+                _log.info("Successful shutdown of eventClient");
+                _syncManager.shutdown();
+                _log.info("Successful shutdown of syncManager");
+            } catch (IOException e) {
+                _log.error("We could not shutdown split", e);
             }
+            _apiKeyCounter.remove(_apiToken);
+            isTerminated = true;
         }
     }
 
