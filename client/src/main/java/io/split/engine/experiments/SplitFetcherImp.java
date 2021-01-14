@@ -15,7 +15,7 @@ import static com.google.common.base.Preconditions.checkNotNull;
  *
  * @author adil
  */
-public class SplitFetcherImp implements SplitFetcher, Runnable {
+public class SplitFetcherImp implements SplitFetcher {
 
     private static final Logger _log = LoggerFactory.getLogger(SplitFetcherImp.class);
 

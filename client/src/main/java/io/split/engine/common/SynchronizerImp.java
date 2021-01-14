@@ -3,7 +3,7 @@ package io.split.engine.common;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import io.split.cache.SegmentCache;
 import io.split.cache.SplitCache;
-import io.split.engine.experiments.SplitFetcherImp;
+import io.split.engine.experiments.SplitFetcher;
 import io.split.engine.experiments.SplitSynchronizationTask;
 import io.split.engine.segments.SegmentFetcher;
 import io.split.engine.segments.SegmentSynchronizationTask;
@@ -21,14 +21,14 @@ public class SynchronizerImp implements Synchronizer {
     private static final Logger _log = LoggerFactory.getLogger(Synchronizer.class);
 
     private final SplitSynchronizationTask _splitSynchronizationTask;
-    private final SplitFetcherImp _splitFetcher;
+    private final SplitFetcher _splitFetcher;
     private final SegmentSynchronizationTask _segmentSynchronizationTaskImp;
     private final ScheduledExecutorService _syncAllScheduledExecutorService;
     private final SplitCache _splitCache;
     private final SegmentCache _segmentCache;
 
     public SynchronizerImp(SplitSynchronizationTask splitSynchronizationTask,
-                           SplitFetcherImp splitFetcher,
+                           SplitFetcher splitFetcher,
                            SegmentSynchronizationTask segmentSynchronizationTaskImp,
                            SplitCache splitCache,
                            SegmentCache segmentCache) {
