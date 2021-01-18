@@ -2,7 +2,6 @@ package io.split.engine.evaluator;
 
 import io.split.client.dtos.ConditionType;
 import io.split.client.dtos.Partition;
-import io.split.engine.SDKReadinessGates;
 import io.split.cache.SplitCache;
 import io.split.engine.experiments.ParsedCondition;
 import io.split.engine.experiments.ParsedSplit;
@@ -37,7 +36,6 @@ public class EvaluatorTest {
 
     @Before
     public void before() {
-        SDKReadinessGates gates = Mockito.mock(SDKReadinessGates.class);
         _splitCache = Mockito.mock(SplitCache.class);
         _evaluator = new EvaluatorImp(_splitCache);
         _matcher = Mockito.mock(CombiningMatcher.class);
