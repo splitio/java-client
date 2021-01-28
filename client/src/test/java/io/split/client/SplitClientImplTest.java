@@ -28,6 +28,7 @@ import io.split.grammar.Treatments;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.junit.Assert;
 import org.junit.Test;
+import org.junit.rules.ExpectedException;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mockito;
 
@@ -234,9 +235,10 @@ public class SplitClientImplTest {
 
         int numKeys = 5;
         for (int i = 0; i < numKeys; i++) {
+            Map<String, Object> attributes = new HashMap<>();
             String randomKey = RandomStringUtils.random(10);
             assertThat(client.getTreatment(randomKey, test), is(equalTo("on")));
-            assertThat(client.getTreatmentWithConfig(randomKey, test).config(), is(equalTo(configurations.get("on"))));
+            assertThat(client.getTreatmentWithConfig(randomKey, test, attributes).config(), is(equalTo(configurations.get("on"))));
         }
 
         // Times 2 because we are calling getTreatment twice. Once for getTreatment and one for getTreatmentWithConfig
@@ -972,7 +974,7 @@ public class SplitClientImplTest {
 
         String validEventSize = new String(new char[80]).replace('\0', 'a');
         String validKeySize = new String(new char[250]).replace('\0', 'a');
-        Assert.assertThat(client.track(validKeySize, "valid_traffic_type", validEventSize),
+        Assert.assertThat(client.track(validKeySize, "valid_traffic_type", validEventSize, 10),
                 org.hamcrest.Matchers.is(org.hamcrest.Matchers.equalTo(true)));
 
     }
@@ -1285,5 +1287,73 @@ public class SplitClientImplTest {
 
         Assert.assertThat(client.track("validKey", "valid_traffic_type", "valid_event"),
                 org.hamcrest.Matchers.is(org.hamcrest.Matchers.equalTo(false)));
+    }
+
+    @Test
+    public void worksAndHasConfigTryKetTreatmentWithKey() {
+        String test = "test1";
+
+        ParsedCondition rollOutToEveryone = ParsedCondition.createParsedConditionForTests(CombiningMatcher.of(new AllKeysMatcher()), Lists.newArrayList(partition("on", 100)));
+        List<ParsedCondition> conditions = Lists.newArrayList(rollOutToEveryone);
+
+        // Add config for only one treatment
+        Map<String, String> configurations = new HashMap<>();
+        configurations.put(Treatments.ON, "{\"size\" : 30}");
+
+        ParsedSplit parsedSplit = ParsedSplit.createParsedSplitForTests(test, 123, false, Treatments.OFF, conditions, null, 1, 1, configurations);
+
+        SDKReadinessGates gates = mock(SDKReadinessGates.class);
+        SplitCache splitCache = mock(InMemoryCacheImp.class);
+        when(splitCache.get(test)).thenReturn(parsedSplit);
+
+        SplitClientImpl client = new SplitClientImpl(
+                mock(SplitFactory.class),
+                splitCache,
+                new ImpressionsManager.NoOpImpressionsManager(),
+                new Metrics.NoopMetrics(),
+                NoopEventClient.create(),
+                config,
+                gates,
+                new EvaluatorImp(splitCache)
+        );
+
+        int numKeys = 5;
+        for (int i = 0; i < numKeys; i++) {
+            Map<String, Object> attributes = new HashMap<>();
+            String randomKey = RandomStringUtils.random(10);
+            Key key = new Key(randomKey, "BucketingKey");
+            assertThat(client.getTreatment(randomKey, test), is(equalTo("on")));
+            assertThat(client.getTreatmentWithConfig(key, test, attributes).config(), is(equalTo(configurations.get("on"))));
+        }
+
+        // Times 2 because we are calling getTreatment twice. Once for getTreatment and one for getTreatmentWithConfig
+        verify(splitCache, times(numKeys * 2)).get(test);
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void blockUntilReadyException() throws TimeoutException, InterruptedException {
+        String test = "test1";
+
+        ParsedCondition rollOutToEveryone = ParsedCondition.createParsedConditionForTests(CombiningMatcher.of(new AllKeysMatcher()), Lists.newArrayList(partition("on", 100)));
+        List<ParsedCondition> conditions = Lists.newArrayList(rollOutToEveryone);
+        ParsedSplit parsedSplit = ParsedSplit.createParsedSplitForTests(test, 123, false, Treatments.OFF, conditions, null, 1, 1);
+
+        SDKReadinessGates gates = mock(SDKReadinessGates.class);
+        SplitCache splitCache = mock(InMemoryCacheImp.class);
+        when(splitCache.get(test)).thenReturn(parsedSplit);
+
+        SplitClientConfig config = SplitClientConfig.builder().setBlockUntilReadyTimeout(-100).build();
+        SplitClientImpl client = new SplitClientImpl(
+                mock(SplitFactory.class),
+                splitCache,
+                new ImpressionsManager.NoOpImpressionsManager(),
+                new Metrics.NoopMetrics(),
+                NoopEventClient.create(),
+                config,
+                gates,
+                new EvaluatorImp(splitCache)
+        );
+
+        client.blockUntilReady();
     }
 }
