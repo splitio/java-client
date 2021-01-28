@@ -1,9 +1,9 @@
 package io.split.client.utils;
 
-import org.apache.http.client.methods.CloseableHttpResponse;
-import org.apache.http.client.methods.HttpPost;
-import org.apache.http.entity.StringEntity;
-import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.hc.client5.http.classic.methods.HttpPost;
+import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
+import org.apache.hc.client5.http.impl.classic.CloseableHttpResponse;
+import org.apache.hc.core5.http.HttpEntity;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -18,14 +18,14 @@ public class GenericClientUtil {
         CloseableHttpResponse response = null;
 
         try {
-            StringEntity entity = Utils.toJsonEntity(data);
+            HttpEntity entity = Utils.toJsonEntity(data);
 
             HttpPost request = new HttpPost(endpoint);
             request.setEntity(entity);
 
             response = client.execute(request);
 
-            int status = response.getStatusLine().getStatusCode();
+            int status = response.getCode();
 
             if (status < 200 || status >= 300) {
                 _log.info(String.format("Posting %d records returned with status: %d", data.size(), status));

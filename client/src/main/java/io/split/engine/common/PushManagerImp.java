@@ -14,7 +14,8 @@ import io.split.engine.sse.workers.SegmentsWorkerImp;
 import io.split.engine.sse.workers.SplitsWorker;
 import io.split.engine.sse.workers.SplitsWorkerImp;
 import io.split.engine.sse.workers.Worker;
-import org.apache.http.impl.client.CloseableHttpClient;
+
+import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -64,13 +65,13 @@ public class PushManagerImp implements PushManager {
                                        String authUrl,
                                        CloseableHttpClient httpClient,
                                        int authRetryBackOffBase,
-                                       LinkedBlockingQueue<PushManager.Status> statusMessages) {
-
+                                       LinkedBlockingQueue<PushManager.Status> statusMessages,
+                                       CloseableHttpClient sseHttpClient) {
         SplitsWorker splitsWorker = new SplitsWorkerImp(synchronizer);
         Worker<SegmentQueueDto> segmentWorker = new SegmentsWorkerImp(synchronizer);
         PushStatusTracker pushStatusTracker = new PushStatusTrackerImp(statusMessages);
         return new PushManagerImp(new AuthApiClientImp(authUrl, httpClient),
-                EventSourceClientImp.build(streamingUrl, splitsWorker, segmentWorker, pushStatusTracker),
+                EventSourceClientImp.build(streamingUrl, splitsWorker, segmentWorker, pushStatusTracker, sseHttpClient),
                 splitsWorker,
                 segmentWorker,
                 new Backoff(authRetryBackOffBase),
@@ -100,7 +101,7 @@ public class PushManagerImp implements PushManager {
         _eventSourceClient.stop();
         stopWorkers();
         if (_nextTokenRefreshTask != null) {
-            _log.warn("Cancel nextTokenRefreshTask");
+            _log.debug("Cancel nextTokenRefreshTask");
             _nextTokenRefreshTask.cancel(false);
         }
     }
@@ -119,7 +120,7 @@ public class PushManagerImp implements PushManager {
             _log.debug("SSE Handler starting ...");
             return _eventSourceClient.start(channels, token);
         } catch (Exception e) {
-            _log.error("Exception in SSE Handler start: " + e.getMessage());
+            _log.debug("Exception in SSE Handler start: " + e.getMessage());
             return false;
         }
     }

@@ -1,10 +1,11 @@
 package io.split.client.interceptors;
 
 import io.split.client.SplitClientConfig;
-import org.apache.http.HttpException;
-import org.apache.http.HttpRequest;
-import org.apache.http.HttpRequestInterceptor;
-import org.apache.http.protocol.HttpContext;
+import org.apache.hc.core5.http.EntityDetails;
+import org.apache.hc.core5.http.HttpException;
+import org.apache.hc.core5.http.HttpRequest;
+import org.apache.hc.core5.http.HttpRequestInterceptor;
+import org.apache.hc.core5.http.protocol.HttpContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -57,7 +58,7 @@ public class AddSplitHeadersFilter implements HttpRequestInterceptor {
     }
 
     @Override
-    public void process(HttpRequest request, HttpContext httpContext) {
+    public void process(HttpRequest request, EntityDetails entity, HttpContext context) throws HttpException, IOException {
         request.addHeader(AUTHORIZATION_HEADER, _apiTokenBearer);
         request.addHeader(CLIENT_VERSION, SplitClientConfig.splitSdkVersion);
 
@@ -68,6 +69,5 @@ public class AddSplitHeadersFilter implements HttpRequestInterceptor {
         if (_ip != null) {
             request.addHeader(CLIENT_MACHINE_IP_HEADER, _ip);
         }
-
     }
 }

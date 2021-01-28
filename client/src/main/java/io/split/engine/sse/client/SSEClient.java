@@ -1,12 +1,10 @@
 package io.split.engine.sse.client;
 
 import com.google.common.base.Strings;
-import org.apache.http.client.config.RequestConfig;
-import org.apache.http.client.methods.CloseableHttpResponse;
-import org.apache.http.client.methods.HttpGet;
-import org.apache.http.impl.client.CloseableHttpClient;
-import org.apache.http.impl.client.HttpClients;
-import org.apache.http.impl.conn.PoolingHttpClientConnectionManager;
+import com.google.common.util.concurrent.ThreadFactoryBuilder;
+import org.apache.hc.client5.http.classic.methods.HttpGet;
+import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
+import org.apache.hc.client5.http.impl.classic.CloseableHttpResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -18,6 +16,8 @@ import java.io.InputStreamReader;
 import java.net.SocketException;
 import java.net.URI;
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Function;
@@ -41,41 +41,45 @@ public class SSEClient {
 
     private final static String SOCKET_CLOSED_MESSAGE = "Socket closed";
     private final static String KEEP_ALIVE_PAYLOAD = ":keepalive\n";
-    private final static Integer CONNECT_TIMEOUT = 30000;
-    private final static Integer SOCKET_TIMEOUT = 70000;
+    private final static long CONNECT_TIMEOUT = 30000;
     private static final Logger _log = LoggerFactory.getLogger(SSEClient.class);
 
+    private final ExecutorService _connectionExecutor = Executors.newSingleThreadExecutor(new ThreadFactoryBuilder()
+            .setDaemon(true)
+            .setNameFormat("SPLIT-SSEConnection-%d")
+            .build());
     private final CloseableHttpClient _client;
     private final Function<RawEvent, Void> _eventCallback;
     private final Function<StatusMessage, Void> _statusCallback;
     private final AtomicReference<ConnectionState> _state = new AtomicReference<>(ConnectionState.CLOSED);
     private final AtomicReference<CloseableHttpResponse> _ongoingResponse = new AtomicReference<>();
+    private final AtomicReference<HttpGet> _ongoingRequest = new AtomicReference<>();
 
-    public SSEClient(Function<RawEvent, Void> eventCallback, Function<StatusMessage, Void> statusCallback) {
-        _client = buildHttpClient();
+    public SSEClient(Function<RawEvent, Void> eventCallback,
+                     Function<StatusMessage, Void> statusCallback,
+                     CloseableHttpClient client) {
         _eventCallback = eventCallback;
         _statusCallback = statusCallback;
+        _client = client;
     }
 
     public synchronized boolean open(URI uri) {
         if (isOpen()) {
-            _log.warn("SSEClient already open.");
+            _log.info("SSEClient already open.");
             return false;
         }
 
         _statusCallback.apply(StatusMessage.INITIALIZATION_IN_PROGRESS);
 
         CountDownLatch signal = new CountDownLatch(1);
-        Thread thread = new Thread(() -> connectAndLoop(uri, signal));
-        thread.setDaemon(true);
-        thread.start();
+        _connectionExecutor.submit(() -> connectAndLoop(uri, signal));
         try {
             if (!signal.await(CONNECT_TIMEOUT, TimeUnit.SECONDS)) {
                 return false;
-            };
+            }
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
-            _log.warn(e.getMessage());
+            _log.info(e.getMessage());
             return false;
         }
         return isOpen();
@@ -89,9 +93,10 @@ public class SSEClient {
         if (_state.compareAndSet(ConnectionState.OPEN, ConnectionState.CLOSED)) {
             if (_ongoingResponse.get() != null) {
                 try {
+                    _ongoingRequest.get().abort();
                     _ongoingResponse.get().close();
                 } catch (IOException e) {
-                    _log.warn(String.format("Error closing SSEClient: %s", e.getMessage()));
+                    _log.info(String.format("Error closing SSEClient: %s", e.getMessage()));
                 }
             }
         }
@@ -113,7 +118,7 @@ public class SSEClient {
                 try {
                     handleMessage(readMessageAsString(reader));
                 } catch (SocketException exc) {
-                    _log.warn(exc.getMessage());
+                    _log.debug(exc.getMessage());
                     if (SOCKET_CLOSED_MESSAGE.equals(exc.getMessage())) { // Connection closed by us
                         _statusCallback.apply(StatusMessage.FORCED_STOP);
                         return;
@@ -122,38 +127,39 @@ public class SSEClient {
                     _statusCallback.apply(StatusMessage.RETRYABLE_ERROR);
                     return;
                 } catch (IOException exc) { // Other type of connection error
-                    _log.warn(exc.getMessage());
+                    _log.info(String.format("SSE connection ended abruptly: %s. Retying", exc.getMessage()));
                     _statusCallback.apply(StatusMessage.RETRYABLE_ERROR);
                     return;
                 }
             }
         } catch (Exception e) { // Any other error non related to the connection disables streaming altogether
-            _log.error(e.getMessage(), e);
+            _log.warn(e.getMessage(), e);
             _statusCallback.apply(StatusMessage.NONRETRYABLE_ERROR);
         } finally {
             try {
                 _ongoingResponse.get().close();
             } catch (IOException e) {
-                _log.warn(e.getMessage());
+                _log.debug(e.getMessage());
             }
 
             _state.set(ConnectionState.CLOSED);
-            _log.warn("SSEClient finished.");
+            _log.debug("SSEClient finished.");
         }
     }
 
     private boolean establishConnection(URI uri, CountDownLatch signal) {
-        HttpGet request = new HttpGet(uri);
+
+        _ongoingRequest.set(new HttpGet(uri));
 
         try {
-            _ongoingResponse.set(_client.execute(request));
-            if (_ongoingResponse.get().getStatusLine().getStatusCode() != 200) {
+            _ongoingResponse.set(_client.execute(_ongoingRequest.get()));
+            if (_ongoingResponse.get().getCode() != 200) {
                 return false;
             }
             _state.set(ConnectionState.OPEN);
             _statusCallback.apply(StatusMessage.CONNECTED);
         } catch (IOException exc) {
-            _log.warn(String.format("Error establishConnection: %s", exc));
+            _log.error(String.format("Error establishConnection: %s", exc));
             return false;
         } finally {
             signal.countDown();
@@ -173,22 +179,6 @@ public class SSEClient {
             }
             lines.append(line).append("\n");
         }
-    }
-
-    private static CloseableHttpClient buildHttpClient() {
-        RequestConfig requestConfig = RequestConfig.custom()
-                .setConnectTimeout(CONNECT_TIMEOUT)
-                .setSocketTimeout(SOCKET_TIMEOUT)
-                .build();
-
-        PoolingHttpClientConnectionManager cm = new PoolingHttpClientConnectionManager();
-        cm.setMaxTotal(1);
-        cm.setDefaultMaxPerRoute(1);
-
-        return HttpClients.custom()
-                .setConnectionManager(cm)
-                .setDefaultRequestConfig(requestConfig)
-                .build();
     }
 
     private void handleMessage(String message) {

@@ -4,18 +4,16 @@ import com.google.gson.JsonObject;
 import io.split.client.utils.Json;
 import io.split.engine.sse.dtos.AuthenticationResponse;
 import io.split.engine.sse.dtos.RawAuthResponse;
-import org.apache.http.HttpStatus;
-import org.apache.http.client.methods.CloseableHttpResponse;
-import org.apache.http.client.methods.HttpGet;
-import org.apache.http.client.utils.URIBuilder;
-import org.apache.http.impl.client.CloseableHttpClient;
-import org.apache.http.util.EntityUtils;
+import org.apache.hc.client5.http.classic.methods.HttpGet;
+import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
+import org.apache.hc.client5.http.impl.classic.CloseableHttpResponse;
+import org.apache.hc.core5.http.HttpStatus;
+import org.apache.hc.core5.http.io.entity.EntityUtils;
+import org.apache.hc.core5.net.URIBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.net.SocketTimeoutException;
 import java.net.URI;
-import java.net.UnknownHostException;
 import java.nio.charset.StandardCharsets;
 
 import static com.google.common.base.Preconditions.checkNotNull;
@@ -39,7 +37,7 @@ public class AuthApiClientImp implements AuthApiClient {
             HttpGet request = new HttpGet(uri);
 
             CloseableHttpResponse response = _httpClient.execute(request);
-            Integer statusCode = response.getStatusLine().getStatusCode();
+            Integer statusCode = response.getCode();
 
             if (statusCode == HttpStatus.SC_OK) {
                 _log.debug(String.format("Success connection to: %s", _target));
@@ -48,7 +46,7 @@ public class AuthApiClientImp implements AuthApiClient {
                 return getSuccessResponse(jsonContent);
             }
 
-            _log.warn(String.format("Problem to connect to : %s. Response status: %s", _target, statusCode));
+            _log.error(String.format("Problem to connect to : %s. Response status: %s", _target, statusCode));
             if (statusCode >= HttpStatus.SC_BAD_REQUEST && statusCode < HttpStatus.SC_INTERNAL_SERVER_ERROR) {
                 return new AuthenticationResponse(false,false);
             }

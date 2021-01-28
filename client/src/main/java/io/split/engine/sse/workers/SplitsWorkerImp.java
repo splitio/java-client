@@ -1,7 +1,6 @@
 package io.split.engine.sse.workers;
 
 import io.split.engine.common.Synchronizer;
-import io.split.engine.experiments.SplitFetcher;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
@@ -19,7 +18,7 @@ public class SplitsWorkerImp extends Worker<Long> implements SplitsWorker {
             _synchronizer.localKillSplit(splitName, defaultTreatment, changeNumber);
             _log.debug(String.format("Kill split: %s, changeNumber: %s, defaultTreatment: %s", splitName, changeNumber, defaultTreatment));
         } catch (Exception ex) {
-            _log.error(String.format("Exception on SplitWorker killSplit: %s", ex.getMessage()));
+            _log.warn(String.format("Exception on SplitWorker killSplit: %s", ex.getMessage()));
         }
     }
 
