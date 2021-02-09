@@ -77,7 +77,7 @@ public final class LocalhostSplitManager implements SplitManager {
 
     @Override
     public SplitView split(String featureName) {
-        if (!_splitAndKeyToTreatmentMap.containsKey(featureName)) {
+        if (!_splitToTreatmentsMap.containsKey(featureName)) {
             return null;
         }
 

@@ -1,9 +1,12 @@
 package io.split.client;
 
 import com.google.common.collect.Maps;
+import io.split.cache.InMemoryCacheImp;
+import io.split.cache.SplitCache;
 import io.split.grammar.Treatments;
 import org.junit.Test;
 
+import java.net.URISyntaxException;
 import java.util.Map;
 
 import static org.hamcrest.Matchers.equalTo;
@@ -19,13 +22,14 @@ import static org.junit.Assert.assertThat;
 public class LocalhostSplitClientTest {
 
     @Test
-    public void defaultsWork() {
+    public void defaultsWork() throws URISyntaxException {
         Map<SplitAndKey, LocalhostSplit> map = Maps.newHashMap();
         map.put(SplitAndKey.of("onboarding"), LocalhostSplit.of("on"));
         map.put(SplitAndKey.of("test"), LocalhostSplit.of("a"));
         map.put(SplitAndKey.of("onboarding"), LocalhostSplit.of("off")); // overwrite
 
-        LocalhostSplitClient client = new LocalhostSplitClient(map);
+        SplitCache splitCache = new InMemoryCacheImp();
+        LocalhostSplitClient client = new LocalhostSplitClient(map, splitCache);
 
         assertThat(client.getTreatment(null, "foo"), is(equalTo(Treatments.CONTROL)));
         assertThat(client.getTreatment("user1", "foo"), is(equalTo(Treatments.CONTROL)));
@@ -38,13 +42,14 @@ public class LocalhostSplitClientTest {
     }
 
     @Test
-    public void overrides_work() {
+    public void overrides_work() throws URISyntaxException {
         Map<SplitAndKey, LocalhostSplit> map = Maps.newHashMap();
         map.put(SplitAndKey.of("onboarding"), LocalhostSplit.of("on"));
         map.put(SplitAndKey.of("onboarding", "user1"), LocalhostSplit.of("off"));
         map.put(SplitAndKey.of("onboarding", "user2"), LocalhostSplit.of("off"));
 
-        LocalhostSplitClient client = new LocalhostSplitClient(map);
+        SplitCache splitCache = new InMemoryCacheImp();
+        LocalhostSplitClient client = new LocalhostSplitClient(map, splitCache);
 
         assertThat(client.getTreatment("user1", "onboarding"), is(equalTo("off")));
         assertThat(client.getTreatment("user2", "onboarding"), is(equalTo("off")));
@@ -54,12 +59,13 @@ public class LocalhostSplitClientTest {
     }
 
     @Test
-    public void if_only_overrides_exist() {
+    public void if_only_overrides_exist() throws URISyntaxException {
         Map<SplitAndKey, LocalhostSplit> map = Maps.newHashMap();
         map.put(SplitAndKey.of("onboarding", "user1"), LocalhostSplit.of("off"));
         map.put(SplitAndKey.of("onboarding", "user2"), LocalhostSplit.of("off"));
 
-        LocalhostSplitClient client = new LocalhostSplitClient(map);
+        SplitCache splitCache = new InMemoryCacheImp();
+        LocalhostSplitClient client = new LocalhostSplitClient(map, splitCache);
 
         assertThat(client.getTreatment("user1", "onboarding"), is(equalTo("off")));
         assertThat(client.getTreatment("user2", "onboarding"), is(equalTo("off")));
@@ -67,13 +73,14 @@ public class LocalhostSplitClientTest {
     }
 
     @Test
-    public void attributes_work() {
+    public void attributes_work() throws URISyntaxException {
         Map<SplitAndKey, LocalhostSplit> map = Maps.newHashMap();
         map.put(SplitAndKey.of("onboarding"), LocalhostSplit.of("on"));
         map.put(SplitAndKey.of("onboarding", "user1"), LocalhostSplit.of("off"));
         map.put(SplitAndKey.of("onboarding", "user2"), LocalhostSplit.of("off"));
 
-        LocalhostSplitClient client = new LocalhostSplitClient(map);
+        SplitCache splitCache = new InMemoryCacheImp();
+        LocalhostSplitClient client = new LocalhostSplitClient(map, splitCache);
 
         Map<String, Object> attributes = Maps.newHashMap();
         attributes.put("age", 24);
@@ -84,13 +91,14 @@ public class LocalhostSplitClientTest {
     }
 
     @Test
-    public void update_works() {
+    public void update_works() throws URISyntaxException {
         Map<SplitAndKey, LocalhostSplit> map = Maps.newHashMap();
         map.put(SplitAndKey.of("onboarding"), LocalhostSplit.of("on"));
         map.put(SplitAndKey.of("onboarding", "user1"), LocalhostSplit.of("off"));
         map.put(SplitAndKey.of("onboarding", "user2"), LocalhostSplit.of("off"));
 
-        LocalhostSplitClient client = new LocalhostSplitClient(map);
+        SplitCache splitCache = new InMemoryCacheImp();
+        LocalhostSplitClient client = new LocalhostSplitClient(map, splitCache);
 
         assertThat(client.getTreatment("user1", "onboarding"), is(equalTo("off")));
         assertThat(client.getTreatment("user2", "onboarding"), is(equalTo("off")));

@@ -12,6 +12,7 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.StringWriter;
+import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -43,7 +44,7 @@ public class LocalhostSplitFactoryYamlTest {
     public TemporaryFolder folder = new TemporaryFolder();
 
     @Test
-    public void works() throws IOException {
+    public void works() throws IOException, URISyntaxException {
         File file = folder.newFile(SplitClientConfig.LOCALHOST_DEFAULT_FILE);
 
         List<Map<String, Object>> allSplits = new ArrayList();

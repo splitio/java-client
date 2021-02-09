@@ -52,7 +52,7 @@ public class SplitFactoryBuilder {
      *
      * @throws IOException if there were problems reading the override file from disk.
      */
-    public static SplitFactory local() throws IOException {
+    public static SplitFactory local() throws IOException, URISyntaxException {
         return LocalhostSplitFactory.createLocalhostSplitFactory(SplitClientConfig.builder().build());
     }
 
@@ -62,7 +62,7 @@ public class SplitFactoryBuilder {
      * @return config Split config file
      * @throws IOException if there were problems reading the override file from disk.
      */
-    public static SplitFactory local(SplitClientConfig config) throws IOException {
+    public static SplitFactory local(SplitClientConfig config) throws IOException, URISyntaxException {
         return LocalhostSplitFactory.createLocalhostSplitFactory(config);
     }
 

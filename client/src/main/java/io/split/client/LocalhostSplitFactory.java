@@ -1,9 +1,12 @@
 package io.split.client;
 
+import io.split.cache.InMemoryCacheImp;
+import io.split.cache.SplitCache;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
+import java.net.URISyntaxException;
 import java.util.Map;
 
 /**
@@ -27,12 +30,12 @@ public final class LocalhostSplitFactory implements SplitFactory {
     private final LocalhostSplitManager _manager;
     private final AbstractLocalhostSplitFile _splitFile;
 
-    public static LocalhostSplitFactory createLocalhostSplitFactory(SplitClientConfig config) throws IOException {
+    public static LocalhostSplitFactory createLocalhostSplitFactory(SplitClientConfig config) throws IOException, URISyntaxException {
         String directory = System.getProperty("user.home");
         return new LocalhostSplitFactory(directory, config.splitFile());
     }
 
-    public LocalhostSplitFactory(String directory, String file) throws IOException {
+    public LocalhostSplitFactory(String directory, String file) throws IOException, URISyntaxException {
 
         if (file != null && !file.isEmpty() && (file.endsWith(".yaml") || file.endsWith(".yml"))) {
             _splitFile = new YamlLocalhostSplitFile(this, "", file);
@@ -44,7 +47,8 @@ public final class LocalhostSplitFactory implements SplitFactory {
         }
 
         Map<SplitAndKey, LocalhostSplit> splitAndKeyToTreatment = _splitFile.readOnSplits();
-        _client = new LocalhostSplitClientAndFactory(this, new LocalhostSplitClient(splitAndKeyToTreatment));
+        SplitCache splitCache = new InMemoryCacheImp();
+        _client = new LocalhostSplitClientAndFactory(this, new LocalhostSplitClient(splitAndKeyToTreatment, splitCache));
         _manager = LocalhostSplitManager.of(splitAndKeyToTreatment);
 
         _splitFile.registerWatcher();
