@@ -37,7 +37,7 @@ public class SSEClientTest {
                 s -> { System.out.println(s); return null; }, httpClient);
         sse.open(uri);
         Thread.sleep(5000);
-        sse.close();
+        sse.close(true);
         Thread.sleep(100000);
     }
 }

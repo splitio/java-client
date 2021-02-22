@@ -59,7 +59,7 @@ public class EventSourceClientImp implements EventSourceClient {
     @Override
     public boolean start(String channelList, String token) {
         if (_sseClient.isOpen()) {
-            _sseClient.close();
+            _sseClient.close(false);
         }
 
         try {
@@ -76,7 +76,7 @@ public class EventSourceClientImp implements EventSourceClient {
             _log.info("Event Source Client is closed.");
             return;
         }
-        _sseClient.close();
+        _sseClient.close(true);
     }
 
     private URI buildUri(String channelList, String token) throws URISyntaxException {

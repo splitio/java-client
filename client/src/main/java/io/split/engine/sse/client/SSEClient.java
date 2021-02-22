@@ -54,6 +54,7 @@ public class SSEClient {
     private final AtomicReference<ConnectionState> _state = new AtomicReference<>(ConnectionState.CLOSED);
     private final AtomicReference<CloseableHttpResponse> _ongoingResponse = new AtomicReference<>();
     private final AtomicReference<HttpGet> _ongoingRequest = new AtomicReference<>();
+    private boolean _forcedStop = false;
 
     public SSEClient(Function<RawEvent, Void> eventCallback,
                      Function<StatusMessage, Void> statusCallback,
@@ -89,14 +90,17 @@ public class SSEClient {
         return (ConnectionState.OPEN.equals(_state.get()));
     }
 
-    public synchronized void close() {
+    public synchronized void close(boolean forceStop) {
+        _forcedStop = forceStop;
         if (_state.compareAndSet(ConnectionState.OPEN, ConnectionState.CLOSED)) {
             if (_ongoingResponse.get() != null) {
                 try {
                     _ongoingRequest.get().abort();
                     _ongoingResponse.get().close();
                 } catch (IOException e) {
-                    _log.info(String.format("Error closing SSEClient: %s", e.getMessage()));
+                    if(!forceStop) {
+                        _log.info(String.format("Error closing SSEClient: %s", e.getMessage()));
+                    }
                 }
             }
         }
@@ -127,7 +131,9 @@ public class SSEClient {
                     _statusCallback.apply(StatusMessage.RETRYABLE_ERROR);
                     return;
                 } catch (IOException exc) { // Other type of connection error
-                    _log.info(String.format("SSE connection ended abruptly: %s. Retying", exc.getMessage()));
+                    if(!_forcedStop) {
+                        _log.info(String.format("SSE connection ended abruptly: %s. Retying", exc.getMessage()));
+                    }
                     _statusCallback.apply(StatusMessage.RETRYABLE_ERROR);
                     return;
                 }
@@ -144,6 +150,7 @@ public class SSEClient {
 
             _state.set(ConnectionState.CLOSED);
             _log.debug("SSEClient finished.");
+            _forcedStop=false;
         }
     }
 
