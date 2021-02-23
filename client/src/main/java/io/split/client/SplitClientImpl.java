@@ -32,7 +32,7 @@ import static com.google.common.base.Preconditions.checkNotNull;
  *
  * @author adil
  */
-public class SplitClientImpl implements SplitClient {
+public final class SplitClientImpl implements SplitClient {
     public static final SplitResult SPLIT_RESULT_CONTROL = new SplitResult(Treatments.CONTROL, null);
 
     private static final String GET_TREATMENT = "getTreatment";

@@ -2,11 +2,14 @@ package io.split.client;
 
 import io.split.cache.InMemoryCacheImp;
 import io.split.cache.SplitCache;
+import io.split.client.impressions.ImpressionsManager;
+import io.split.engine.SDKReadinessGates;
+import io.split.engine.evaluator.EvaluatorImp;
+import io.split.engine.metrics.Metrics;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
-import java.net.URISyntaxException;
 import java.util.Map;
 
 /**
@@ -26,16 +29,17 @@ public final class LocalhostSplitFactory implements SplitFactory {
     static final String FILENAME = ".split";
     static final String LOCALHOST = "localhost";
 
-    private final LocalhostSplitClientAndFactory _client;
+    private final SplitClient _client;
     private final LocalhostSplitManager _manager;
     private final AbstractLocalhostSplitFile _splitFile;
+    private final CacheUpdaterService _cachCacheUpdaterService;
 
-    public static LocalhostSplitFactory createLocalhostSplitFactory(SplitClientConfig config) throws IOException, URISyntaxException {
+    public static LocalhostSplitFactory createLocalhostSplitFactory(SplitClientConfig config) throws IOException {
         String directory = System.getProperty("user.home");
         return new LocalhostSplitFactory(directory, config.splitFile());
     }
 
-    public LocalhostSplitFactory(String directory, String file) throws IOException, URISyntaxException {
+    public LocalhostSplitFactory(String directory, String file) throws IOException {
 
         if (file != null && !file.isEmpty() && (file.endsWith(".yaml") || file.endsWith(".yml"))) {
             _splitFile = new YamlLocalhostSplitFile(this, "", file);
@@ -48,7 +52,14 @@ public final class LocalhostSplitFactory implements SplitFactory {
 
         Map<SplitAndKey, LocalhostSplit> splitAndKeyToTreatment = _splitFile.readOnSplits();
         SplitCache splitCache = new InMemoryCacheImp();
-        _client = new LocalhostSplitClientAndFactory(this, new LocalhostSplitClient(splitAndKeyToTreatment, splitCache));
+        SDKReadinessGates sdkReadinessGates = new SDKReadinessGates();
+
+        sdkReadinessGates.splitsAreReady();
+        _cachCacheUpdaterService = new CacheUpdaterService(splitCache);
+        _cachCacheUpdaterService.updateCache(splitAndKeyToTreatment);
+        _client = new SplitClientImpl(this, splitCache,
+                new ImpressionsManager.NoOpImpressionsManager(),  new Metrics.NoopMetrics(), new NoopEventClient(),
+                SplitClientConfig.builder().setBlockUntilReadyTimeout(1).build(), sdkReadinessGates, new EvaluatorImp(splitCache));
         _manager = LocalhostSplitManager.of(splitAndKeyToTreatment);
 
         _splitFile.registerWatcher();
@@ -77,7 +88,7 @@ public final class LocalhostSplitFactory implements SplitFactory {
     }
 
     public void updateFeatureToTreatmentMap(Map<SplitAndKey, LocalhostSplit> featureToTreatmentMap) {
-        _client.updateFeatureToTreatmentMap(featureToTreatmentMap);
+        _cachCacheUpdaterService.updateCache(featureToTreatmentMap);
         _manager.updateFeatureToTreatmentMap(featureToTreatmentMap);
     }
 }

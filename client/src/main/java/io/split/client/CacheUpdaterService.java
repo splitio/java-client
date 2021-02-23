@@ -5,71 +5,31 @@ import io.split.cache.SplitCache;
 import io.split.client.dtos.ConditionType;
 import io.split.client.dtos.MatcherCombiner;
 import io.split.client.dtos.Partition;
-import io.split.client.impressions.ImpressionsManager;
-import io.split.engine.SDKReadinessGates;
-import io.split.engine.evaluator.EvaluatorImp;
 import io.split.engine.experiments.ParsedCondition;
 import io.split.engine.experiments.ParsedSplit;
 import io.split.engine.matchers.AllKeysMatcher;
 import io.split.engine.matchers.AttributeMatcher;
 import io.split.engine.matchers.CombiningMatcher;
 import io.split.engine.matchers.strings.WhitelistMatcher;
-import io.split.engine.metrics.Metrics;
 import io.split.grammar.Treatments;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
-import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Comparator;
-import java.util.concurrent.TimeoutException;
 import java.util.stream.Collectors;
 
-import static com.google.common.base.Preconditions.checkNotNull;
+public final  class CacheUpdaterService {
 
-/**
- * An implementation of SplitClient that considers all partitions
- * passed in the constructor to be 100% on for all users, and
- * any other split to be 100% off for all users. This implementation
- * is useful for using Codigo in localhost environment.
- *
- * @author adil
- */
-public final class LocalhostSplitClient extends SplitClientImpl {
-    private static final Logger _log = LoggerFactory.getLogger(LocalhostSplitClient.class);
     private static String LOCALHOST = "localhost";
+    private SplitCache _splitCache;
 
-    public LocalhostSplitClient(Map<SplitAndKey, LocalhostSplit> map, SplitCache splitCache) throws URISyntaxException {
-        super(new SplitFactoryImpl(LOCALHOST, SplitClientConfig.builder().build()), splitCache,
-                new ImpressionsManager.NoOpImpressionsManager(),  new Metrics.NoopMetrics(), new NoopEventClient(),
-                SplitClientConfig.builder().build(), new SDKReadinessGates(), new EvaluatorImp(splitCache));
-
-        checkNotNull(map, "map must not be null");
-        updateCache(map);
+    public CacheUpdaterService(SplitCache splitCache) {
+        _splitCache = splitCache;
     }
 
-    @Override
-    public void destroy() {
-        _splitCache.clear();
-    }
-
-    @Override
-    public void blockUntilReady() throws TimeoutException, InterruptedException {
-        // LocalhostSplitClient is always ready
-    }
-
-    public void updateFeatureToTreatmentMap(Map<SplitAndKey, LocalhostSplit> map) {
-        if (map  == null) {
-            _log.warn("A null map was passed as an update. Ignoring this update.");
-            return;
-        }
-        updateCache(map);
-    }
-
-    private void updateCache(Map<SplitAndKey, LocalhostSplit> map) {
+    public void updateCache(Map<SplitAndKey, LocalhostSplit> map) {
         _splitCache.clear();
         for (Map.Entry<SplitAndKey,LocalhostSplit> entrySplit : map.entrySet()) {
             SplitAndKey splitAndKey = entrySplit.getKey();
@@ -126,4 +86,5 @@ public final class LocalhostSplitClient extends SplitClientImpl {
 
         return parsedCondition;
     }
+
 }
