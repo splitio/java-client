@@ -41,7 +41,7 @@ public final class SplitClientImpl implements SplitClient {
     private static final Logger _log = LoggerFactory.getLogger(SplitClientImpl.class);
 
     private final SplitFactory _container;
-    protected final SplitCache _splitCache;
+    private final SplitCache _splitCache;
     private final ImpressionsManager _impressionManager;
     private final Metrics _metrics;
     private final SplitClientConfig _config;
