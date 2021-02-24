@@ -45,7 +45,7 @@ public final  class CacheUpdaterService {
             }
             configurations.put(localhostSplit.treatment, localhostSplit.config);
 
-            split = new ParsedSplit(splitName, 0, false, treatment,conditions, LOCALHOST, 0, 100, 0, 0,            configurations);
+            split = new ParsedSplit(splitName, 0, false, treatment,conditions, LOCALHOST, 0, 100, 0, 0, configurations);
             _splitCache.put(split);
         }
     }

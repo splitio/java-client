@@ -32,7 +32,7 @@ public final class LocalhostSplitFactory implements SplitFactory {
     private final SplitClient _client;
     private final LocalhostSplitManager _manager;
     private final AbstractLocalhostSplitFile _splitFile;
-    private final CacheUpdaterService _cachCacheUpdaterService;
+    private final CacheUpdaterService _cacheUpdaterService;
 
     public static LocalhostSplitFactory createLocalhostSplitFactory(SplitClientConfig config) throws IOException {
         String directory = System.getProperty("user.home");
@@ -55,8 +55,8 @@ public final class LocalhostSplitFactory implements SplitFactory {
         SDKReadinessGates sdkReadinessGates = new SDKReadinessGates();
 
         sdkReadinessGates.splitsAreReady();
-        _cachCacheUpdaterService = new CacheUpdaterService(splitCache);
-        _cachCacheUpdaterService.updateCache(splitAndKeyToTreatment);
+        _cacheUpdaterService = new CacheUpdaterService(splitCache);
+        _cacheUpdaterService.updateCache(splitAndKeyToTreatment);
         _client = new SplitClientImpl(this, splitCache,
                 new ImpressionsManager.NoOpImpressionsManager(),  new Metrics.NoopMetrics(), new NoopEventClient(),
                 SplitClientConfig.builder().setBlockUntilReadyTimeout(1).build(), sdkReadinessGates, new EvaluatorImp(splitCache));
@@ -88,7 +88,7 @@ public final class LocalhostSplitFactory implements SplitFactory {
     }
 
     public void updateFeatureToTreatmentMap(Map<SplitAndKey, LocalhostSplit> featureToTreatmentMap) {
-        _cachCacheUpdaterService.updateCache(featureToTreatmentMap);
+        _cacheUpdaterService.updateCache(featureToTreatmentMap);
         _manager.updateFeatureToTreatmentMap(featureToTreatmentMap);
     }
 }
