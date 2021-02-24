@@ -1,16 +1,15 @@
 package io.split.client;
 
+import io.split.cache.SplitCache;
 import io.split.client.api.Key;
 import io.split.client.api.SplitResult;
 import io.split.client.dtos.Event;
 import io.split.client.impressions.Impression;
 import io.split.client.impressions.ImpressionsManager;
-import io.split.cache.SplitCache;
-import io.split.engine.evaluator.Evaluator;
 import io.split.engine.SDKReadinessGates;
+import io.split.engine.evaluator.Evaluator;
 import io.split.engine.evaluator.EvaluatorImp;
 import io.split.engine.evaluator.Labels;
-
 import io.split.engine.metrics.Metrics;
 import io.split.grammar.Treatments;
 import io.split.inputValidation.EventsValidator;

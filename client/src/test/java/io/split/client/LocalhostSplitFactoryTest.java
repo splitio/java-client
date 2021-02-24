@@ -10,6 +10,7 @@ import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.net.URISyntaxException;
 import java.util.Map;
 
 import static org.hamcrest.Matchers.equalTo;
@@ -27,7 +28,7 @@ public class LocalhostSplitFactoryTest {
     public TemporaryFolder folder = new TemporaryFolder();
 
     @Test
-    public void works() throws IOException {
+    public void works() throws IOException, URISyntaxException {
         File file = folder.newFile(LocalhostSplitFactory.FILENAME);
 
         Map<SplitAndKey, LocalhostSplit> map = Maps.newHashMap();
