@@ -11,4 +11,5 @@ public interface PushStatusTracker {
     void handleIncomingAblyError(ErrorNotification notification);
     void handleSseStatus(SSEClient.StatusMessage newStatus);
     void forcePushDisable();
+    void notifyStreamingReady();
 }

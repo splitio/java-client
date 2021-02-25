@@ -39,7 +39,7 @@ public class PushStatusTrackerImp implements PushStatusTracker {
             case CONNECTED:
                 if (_sseStatus.compareAndSet(SSEClient.StatusMessage.INITIALIZATION_IN_PROGRESS, SSEClient.StatusMessage.CONNECTED)
                     || _sseStatus.compareAndSet(SSEClient.StatusMessage.RETRYABLE_ERROR, SSEClient.StatusMessage.CONNECTED)) {
-                    _statusMessages.offer(PushManager.Status.STREAMING_READY);
+                    //_statusMessages.offer(PushManager.Status.STREAMING_READY); //desactivar TODO
                 }
                 break;
             case RETRYABLE_ERROR:
@@ -128,5 +128,10 @@ public class PushStatusTrackerImp implements PushStatusTracker {
         _sseStatus.set(SSEClient.StatusMessage.INITIALIZATION_IN_PROGRESS);
         _backendStatus.set(ControlType.STREAMING_DISABLED);
         _statusMessages.offer(PushManager.Status.STREAMING_OFF);
+    }
+
+    @Override
+    public void notifyStreamingReady() {
+        _statusMessages.offer(PushManager.Status.STREAMING_READY);
     }
 }

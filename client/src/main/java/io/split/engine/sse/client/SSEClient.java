@@ -43,7 +43,6 @@ public class SSEClient {
     private final static String KEEP_ALIVE_PAYLOAD = ":keepalive\n";
     private final static long CONNECT_TIMEOUT = 30000;
     private static final Logger _log = LoggerFactory.getLogger(SSEClient.class);
-    private static final String CONNECTION_OK = "OK";
 
     private final ExecutorService _connectionExecutor = Executors.newSingleThreadExecutor(new ThreadFactoryBuilder()
             .setDaemon(true)
@@ -154,8 +153,7 @@ public class SSEClient {
 
         try {
             _ongoingResponse.set(_client.execute(_ongoingRequest.get()));
-            if (_ongoingResponse.get().getCode() != 200 ||
-                    (_ongoingResponse.get().getCode() == 200 && !CONNECTION_OK.equals(_ongoingResponse.get().getReasonPhrase()))) {
+            if (_ongoingResponse.get().getCode() != 200) {
                 return false;
             }
             _state.set(ConnectionState.OPEN);
