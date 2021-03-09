@@ -114,6 +114,7 @@ public class PushStatusTrackerImp implements PushStatusTracker {
         }
         if (notification.getCode() >= 40140 && notification.getCode() <= 40149) {
             _statusMessages.offer(PushManager.Status.STREAMING_BACKOFF);
+            return;
         }
         if (notification.getCode() >= 40000 && notification.getCode() <= 49999) {
             _statusMessages.offer(PushManager.Status.STREAMING_OFF);
@@ -133,5 +134,10 @@ public class PushStatusTrackerImp implements PushStatusTracker {
     @Override
     public void notifyStreamingReady() {
         _statusMessages.offer(PushManager.Status.STREAMING_READY);
+    }
+
+    @Override
+    public void forceRetryableError() {
+        _statusMessages.offer(PushManager.Status.STREAMING_BACKOFF);
     }
 }

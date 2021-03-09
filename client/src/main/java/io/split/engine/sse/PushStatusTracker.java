@@ -12,4 +12,5 @@ public interface PushStatusTracker {
     void handleSseStatus(SSEClient.StatusMessage newStatus);
     void forcePushDisable();
     void notifyStreamingReady();
+    void forceRetryableError();
 }

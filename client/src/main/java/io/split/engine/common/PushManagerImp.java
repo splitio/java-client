@@ -32,25 +32,23 @@ public class PushManagerImp implements PushManager {
 
     private final AuthApiClient _authApiClient;
     private final EventSourceClient _eventSourceClient;
-    private final Backoff _backoff;
     private final SplitsWorker _splitsWorker;
     private final Worker<SegmentQueueDto> _segmentWorker;
     private final PushStatusTracker _pushStatusTracker;
 
     private Future<?> _nextTokenRefreshTask;
     private final ScheduledExecutorService _scheduledExecutorService;
+    private long _expirationTime;
 
     @VisibleForTesting
     /* package private */ PushManagerImp(AuthApiClient authApiClient,
                                              EventSourceClient eventSourceClient,
                                              SplitsWorker splitsWorker,
                                              Worker<SegmentQueueDto> segmentWorker,
-                                             Backoff backoff,
                                              PushStatusTracker pushStatusTracker) {
 
         _authApiClient = checkNotNull(authApiClient);
         _eventSourceClient = checkNotNull(eventSourceClient);
-        _backoff = checkNotNull(backoff);
         _splitsWorker = splitsWorker;
         _segmentWorker = segmentWorker;
         _pushStatusTracker = pushStatusTracker;
@@ -74,7 +72,6 @@ public class PushManagerImp implements PushManager {
                 EventSourceClientImp.build(streamingUrl, splitsWorker, segmentWorker, pushStatusTracker, sseHttpClient),
                 splitsWorker,
                 segmentWorker,
-                new Backoff(authRetryBackOffBase),
                 pushStatusTracker);
     }
 
@@ -83,14 +80,13 @@ public class PushManagerImp implements PushManager {
         AuthenticationResponse response = _authApiClient.Authenticate();
         _log.debug(String.format("Auth service response pushEnabled: %s", response.isPushEnabled()));
         if (response.isPushEnabled() && startSse(response.getToken(), response.getChannels())) {
-            scheduleConnectionReset(response.getExpiration());
-            _backoff.reset();
+            _expirationTime = response.getExpiration();
             return;
         }
 
         stop();
         if (response.isRetry()) {
-            scheduleConnectionReset(_backoff.interval());
+            _pushStatusTracker.forceRetryableError();//retriable error
         } else {
             _pushStatusTracker.forcePushDisable();
         }
@@ -106,13 +102,15 @@ public class PushManagerImp implements PushManager {
         }
     }
 
-    private void scheduleConnectionReset(long time) {
-        _log.debug(String.format("scheduleNextTokenRefresh in %s SECONDS", time));
+    @Override
+    public synchronized void scheduleConnectionReset() {
+        _expirationTime = 120l;
+        _log.debug(String.format("scheduleNextTokenRefresh in %s SECONDS", _expirationTime));
         _nextTokenRefreshTask = _scheduledExecutorService.schedule(() -> {
             _log.debug("Starting scheduleNextTokenRefresh ...");
             stop();
             start();
-        }, time, TimeUnit.SECONDS);
+        }, _expirationTime, TimeUnit.SECONDS);
     }
 
     private boolean startSse(String token, String channels) {

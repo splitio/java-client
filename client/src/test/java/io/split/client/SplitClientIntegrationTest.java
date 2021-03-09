@@ -13,6 +13,7 @@ import org.junit.Test;
 import javax.ws.rs.sse.OutboundSseEvent;
 import java.io.IOException;
 import java.net.URISyntaxException;
+import java.util.Date;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
@@ -376,7 +377,7 @@ public class SplitClientIntegrationTest {
         SplitClient client3 = factory3.client();
         client3.blockUntilReady();
 
-        SplitClientConfig config4 = buildSplitClientConfig("disabled", splitServer.getUrl(), sseServer4.getPort(), true, 50);
+        SplitClientConfig config4 = buildSplitClientConfig("disabled", splitServer.getUrl(), sseServer4.getPort(), true, 100);
         SplitFactory factory4 = SplitFactoryBuilder.build("fake-api-token-4", config4);
         SplitClient client4 = factory4.client();
         client4.blockUntilReady();
@@ -393,16 +394,28 @@ public class SplitClientIntegrationTest {
         String result4 = client4.getTreatment("admin", "push_test");
         Assert.assertEquals("on_whitelist", result4);
 
+
+        OutboundSseEvent sseEventInitial = new OutboundEvent
+                .Builder()
+                .comment("initializing")
+                .id("fakeid")
+                .build();
         OutboundSseEvent sseEventSplitUpdate = new OutboundEvent
                 .Builder()
                 .name("message")
                 .data("{\"id\":\"22\",\"clientId\":\"22\",\"timestamp\":1592590436082,\"encoding\":\"json\",\"channel\":\"xxxx_xxxx_splits\",\"data\":\"{\\\"type\\\":\\\"SPLIT_UPDATE\\\",\\\"changeNumber\\\":1585948850111}\"}")
                 .build();
+        eventQueue1.push(sseEventInitial);
+        eventQueue2.push(sseEventInitial);
+        eventQueue3.push(sseEventInitial);
+        eventQueue4.push(sseEventInitial);
+
         eventQueue1.push(sseEventSplitUpdate);
 
         Awaitility.await()
                 .atMost(50L, TimeUnit.SECONDS)
                 .until(() -> "split_killed".equals(client1.getTreatment("admin", "push_test")));
+
 
         Awaitility.await()
                 .atMost(50L, TimeUnit.SECONDS)
@@ -427,12 +440,13 @@ public class SplitClientIntegrationTest {
                 .until(() -> "on_whitelist".equals(client2.getTreatment("admin", "push_test")));
 
         Awaitility.await()
-                .atMost(50L, TimeUnit.SECONDS)
+                .atMost(100L, TimeUnit.SECONDS)
                 .until(() -> "split_killed".equals(client3.getTreatment("admin", "push_test")));
 
         Awaitility.await()
                 .atMost(50L, TimeUnit.SECONDS)
                 .until(() -> "on_whitelist".equals(client4.getTreatment("admin", "push_test")));
+
 
         client1.destroy();
         client2.destroy();
@@ -486,17 +500,28 @@ public class SplitClientIntegrationTest {
         splitServer.start();
         sseServer.start();
 
-        SplitClientConfig config = buildSplitClientConfig("enabled", splitServer.getUrl(), sseServer.getPort(), true, 50);
+        SplitClientConfig config = buildSplitClientConfig("enabled", splitServer.getUrl(), sseServer.getPort(), true, 100);
         SplitFactory factory = SplitFactoryBuilder.build("fake-api-token-1", config);
         SplitClient client = factory.client();
         client.blockUntilReady();
 
+        OutboundSseEvent sseEventInitial = new OutboundEvent
+                .Builder()
+                .comment("initializing")
+                .id("fakeid")
+                .name("message")
+                .data("{\"id\":\"222\",\"timestamp\":1588254668328,\"encoding\":\"json\",\"channel\":\"[?occupancy=metrics.publishers]control_pri\",\"data\":\"{\\\"metrics\\\":{\\\"publishers\\\":2}}\",\"name\":\"[meta]occupancy\"}")
+                .build();
+
+        eventQueue.push(sseEventInitial);
+
         String result = client.getTreatment("admin", "push_test");
         Assert.assertEquals("on_whitelist", result);
+        Thread.sleep(1000);
         eventQueue.push(SSEMockServer.CONNECTION_CLOSED_BY_REMOTE_HOST);
         Thread.sleep(1000);
         result = client.getTreatment("admin", "push_test");
-        //Assert.assertNotEquals("on_whitelist", result);
+        Assert.assertNotEquals("on_whitelist", result);
     }
 
     @Test
@@ -508,10 +533,18 @@ public class SplitClientIntegrationTest {
         splitServer.start();
         sseServer.start();
 
-        SplitClientConfig config = buildSplitClientConfig("enabled", splitServer.getUrl(), sseServer.getPort(), true, 50);
+        SplitClientConfig config = buildSplitClientConfig("enabled", splitServer.getUrl(), sseServer.getPort(), true, 5);
         SplitFactory factory = SplitFactoryBuilder.build("fake-api-token-1", config);
         SplitClient client = factory.client();
         client.blockUntilReady();
+
+        OutboundSseEvent sseEventInitial = new OutboundEvent
+                .Builder()
+                .comment("initializing")
+                .id("fakeid")
+                .build();
+
+        eventQueue.push(sseEventInitial);
 
         String result = client.getTreatment("admin", "push_test");
         Assert.assertEquals("on_whitelist", result);
@@ -519,7 +552,7 @@ public class SplitClientIntegrationTest {
         sseServer.stop();
         Thread.sleep(1000);
         result = client.getTreatment("admin", "push_test");
-        //Assert.assertNotEquals("on_whitelist", result);
+        Assert.assertNotEquals("on_whitelist", result);
     }
 
     private SSEMockServer buildSSEMockServer(SSEMockServer.SseEventQueue eventQueue) {

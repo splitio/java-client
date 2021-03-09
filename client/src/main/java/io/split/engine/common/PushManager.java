@@ -13,4 +13,5 @@ public interface PushManager {
     void stop();
     void startWorkers();
     void stopWorkers();
+    void scheduleConnectionReset();
 }
