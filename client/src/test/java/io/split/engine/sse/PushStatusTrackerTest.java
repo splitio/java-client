@@ -37,7 +37,7 @@ public class PushStatusTrackerTest {
     @Test
     public void HandleControlEventStreamingResumedShouldNotNotifyEvent() {
         LinkedBlockingQueue<PushManager.Status> messages = new LinkedBlockingQueue<>();
-        OccupancyNotification occupancyNotification = buildOccupancyNotification(0);
+        OccupancyNotification occupancyNotification = buildOccupancyNotification(0, null);
         ControlNotification controlNotification = buildControlNotification(ControlType.STREAMING_RESUMED);
 
         PushStatusTracker pushStatusTracker = new PushStatusTrackerImp(messages);
@@ -65,7 +65,7 @@ public class PushStatusTrackerTest {
     @Test
     public void HandleOccupancyEventWithPublishersFirstTimeShouldNotNotifyEvent() {
         LinkedBlockingQueue<PushManager.Status> messages = new LinkedBlockingQueue<>();
-        OccupancyNotification occupancyNotification = buildOccupancyNotification(2);
+        OccupancyNotification occupancyNotification = buildOccupancyNotification(2, null);
 
         PushStatusTracker pushStatusTracker = new PushStatusTrackerImp(messages);
         pushStatusTracker.handleIncomingOccupancyEvent(occupancyNotification);
@@ -76,8 +76,23 @@ public class PushStatusTrackerTest {
     public void HandleOccupancyEventWithPublishersAndWithStreamingDisabledShouldNotifyEvent() throws InterruptedException {
         LinkedBlockingQueue<PushManager.Status> messages = new LinkedBlockingQueue<>();
         PushStatusTracker pushStatusTracker = new PushStatusTrackerImp(messages);
-        pushStatusTracker.handleIncomingOccupancyEvent(buildOccupancyNotification(0));
-        pushStatusTracker.handleIncomingOccupancyEvent(buildOccupancyNotification(2));
+        pushStatusTracker.handleIncomingOccupancyEvent(buildOccupancyNotification(0, null));
+        pushStatusTracker.handleIncomingOccupancyEvent(buildOccupancyNotification(2, null));
+
+        assertThat(messages.size(), is(equalTo(2)));
+        PushManager.Status m1 = messages.take();
+        assertThat(m1, is(equalTo(PushManager.Status.STREAMING_DOWN)));
+
+        PushManager.Status m2 = messages.take();
+        assertThat(m2, is(equalTo(PushManager.Status.STREAMING_READY)));
+    }
+
+    @Test
+    public void HandleOccupancyEventWithDifferentChannelsPublishersShouldNotifyEvent() throws InterruptedException {
+        LinkedBlockingQueue<PushManager.Status> messages = new LinkedBlockingQueue<>();
+        PushStatusTracker pushStatusTracker = new PushStatusTrackerImp(messages);
+        pushStatusTracker.handleIncomingOccupancyEvent(buildOccupancyNotification(0, "control_pri"));
+        pushStatusTracker.handleIncomingOccupancyEvent(buildOccupancyNotification(2, "control_sec"));
 
         assertThat(messages.size(), is(equalTo(2)));
         PushManager.Status m1 = messages.take();
@@ -88,14 +103,14 @@ public class PushStatusTrackerTest {
     }
 
     private ControlNotification buildControlNotification(ControlType controlType) {
-        return new ControlNotification(buildGenericData(controlType, IncomingNotification.Type.CONTROL,null));
+        return new ControlNotification(buildGenericData(controlType, IncomingNotification.Type.CONTROL,null, null));
     }
 
-    private OccupancyNotification buildOccupancyNotification(int publishers) {
-        return new OccupancyNotification(buildGenericData(null, IncomingNotification.Type.OCCUPANCY, publishers));
+    private OccupancyNotification buildOccupancyNotification(int publishers, String channel) {
+        return new OccupancyNotification(buildGenericData(null, IncomingNotification.Type.OCCUPANCY, publishers, channel));
     }
 
-    private GenericNotificationData buildGenericData(ControlType controlType, IncomingNotification.Type type, Integer publishers) {
+    private GenericNotificationData buildGenericData(ControlType controlType, IncomingNotification.Type type, Integer publishers, String channel) {
         return new GenericNotificationData(
                 null,
                 null,
@@ -104,6 +119,6 @@ public class PushStatusTrackerTest {
                 publishers != null ? new OccupancyMetrics(publishers) : null,
                 null,
                 type,
-                "channel-test");
+                channel == null ? "channel-test" : channel);
     }
 }
