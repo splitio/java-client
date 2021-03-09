@@ -1,59 +1,54 @@
 package io.split.engine.common;
 
-import io.split.engine.experiments.RefreshableSplitFetcher;
-import io.split.engine.experiments.RefreshableSplitFetcherProvider;
-import io.split.engine.segments.RefreshableSegmentFetcher;
+import io.split.cache.SegmentCache;
+import io.split.cache.SplitCache;
+import io.split.engine.experiments.SplitFetcherImp;
+import io.split.engine.experiments.SplitSynchronizationTask;
+import io.split.engine.segments.SegmentSynchronizationTask;
+import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mockito;
 
 public class SynchronizerTest {
+    private SplitSynchronizationTask _refreshableSplitFetcherTask;
+    private SegmentSynchronizationTask _segmentFetcher;
+    private SplitFetcherImp _splitFetcher;
+    private SplitCache _splitCache;
+    private Synchronizer _synchronizer;
+
+    @Before
+    public void beforeMethod() {
+        _refreshableSplitFetcherTask = Mockito.mock(SplitSynchronizationTask.class);
+        _segmentFetcher = Mockito.mock(SegmentSynchronizationTask.class);
+        _splitFetcher = Mockito.mock(SplitFetcherImp.class);
+        _splitCache = Mockito.mock(SplitCache.class);
+        SegmentCache _segmentCache = Mockito.mock(SegmentCache.class);
+
+        _synchronizer = new SynchronizerImp(_refreshableSplitFetcherTask, _splitFetcher, _segmentFetcher, _splitCache, _segmentCache);
+    }
 
     @Test
     public void syncAll() throws InterruptedException {
-        RefreshableSplitFetcherProvider refreshableSplitFetcherProvider = Mockito.mock(RefreshableSplitFetcherProvider.class);
-        RefreshableSegmentFetcher segmentFetcher = Mockito.mock(RefreshableSegmentFetcher.class);
-        RefreshableSplitFetcher splitFetcher = Mockito.mock(RefreshableSplitFetcher.class);
-
-        Mockito.when(refreshableSplitFetcherProvider.getFetcher())
-                .thenReturn(splitFetcher);
-
-        Synchronizer synchronizer = new SynchronizerImp(refreshableSplitFetcherProvider, segmentFetcher);
-        synchronizer.syncAll();
+        _synchronizer.syncAll();
 
         Thread.sleep(100);
-        Mockito.verify(splitFetcher, Mockito.times(1)).run();
-        Mockito.verify(segmentFetcher, Mockito.times(1)).forceRefreshAll();
+        Mockito.verify(_splitFetcher, Mockito.times(1)).run();
+        Mockito.verify(_segmentFetcher, Mockito.times(1)).run();
     }
 
     @Test
     public void startPeriodicFetching() {
-        RefreshableSplitFetcherProvider refreshableSplitFetcherProvider = Mockito.mock(RefreshableSplitFetcherProvider.class);
-        RefreshableSegmentFetcher segmentFetcher = Mockito.mock(RefreshableSegmentFetcher.class);
-        RefreshableSplitFetcher splitFetcher = Mockito.mock(RefreshableSplitFetcher.class);
+        _synchronizer.startPeriodicFetching();
 
-        Mockito.when(refreshableSplitFetcherProvider.getFetcher())
-                .thenReturn(splitFetcher);
-
-        Synchronizer synchronizer = new SynchronizerImp(refreshableSplitFetcherProvider, segmentFetcher);
-        synchronizer.startPeriodicFetching();
-
-        Mockito.verify(refreshableSplitFetcherProvider, Mockito.times(1)).startPeriodicFetching();
-        Mockito.verify(segmentFetcher, Mockito.times(1)).startPeriodicFetching();
+        Mockito.verify(_refreshableSplitFetcherTask, Mockito.times(1)).startPeriodicFetching();
+        Mockito.verify(_segmentFetcher, Mockito.times(1)).startPeriodicFetching();
     }
 
     @Test
     public void stopPeriodicFetching() {
-        RefreshableSplitFetcherProvider refreshableSplitFetcherProvider = Mockito.mock(RefreshableSplitFetcherProvider.class);
-        RefreshableSegmentFetcher segmentFetcher = Mockito.mock(RefreshableSegmentFetcher.class);
-        RefreshableSplitFetcher splitFetcher = Mockito.mock(RefreshableSplitFetcher.class);
+        _synchronizer.stopPeriodicFetching();
 
-        Mockito.when(refreshableSplitFetcherProvider.getFetcher())
-                .thenReturn(splitFetcher);
-
-        Synchronizer synchronizer = new SynchronizerImp(refreshableSplitFetcherProvider, segmentFetcher);
-        synchronizer.stopPeriodicFetching();
-
-        Mockito.verify(refreshableSplitFetcherProvider, Mockito.times(1)).stop();
-        Mockito.verify(segmentFetcher, Mockito.times(1)).stop();
+        Mockito.verify(_refreshableSplitFetcherTask, Mockito.times(1)).stop();
+        Mockito.verify(_segmentFetcher, Mockito.times(1)).stop();
     }
 }

@@ -1,7 +1,5 @@
 package io.split.client;
 
-import com.google.common.collect.ConcurrentHashMultiset;
-import com.google.common.collect.Multiset;
 import io.split.client.impressions.AsynchronousImpressionListener;
 import io.split.client.impressions.ImpressionListener;
 import io.split.client.impressions.ImpressionsManagerImpl;
@@ -11,14 +9,22 @@ import io.split.client.interceptors.GzipEncoderRequestInterceptor;
 import io.split.client.metrics.CachedMetrics;
 import io.split.client.metrics.FireAndForgetMetrics;
 import io.split.client.metrics.HttpMetrics;
+import io.split.cache.InMemoryCacheImp;
+import io.split.cache.SplitCache;
+import io.split.engine.evaluator.Evaluator;
+import io.split.engine.evaluator.EvaluatorImp;
 import io.split.engine.SDKReadinessGates;
 import io.split.engine.common.SyncManager;
 import io.split.engine.common.SyncManagerImp;
-import io.split.engine.experiments.RefreshableSplitFetcherProvider;
 import io.split.engine.experiments.SplitChangeFetcher;
+import io.split.engine.experiments.SplitFetcher;
+import io.split.engine.experiments.SplitFetcherImp;
 import io.split.engine.experiments.SplitParser;
-import io.split.engine.segments.RefreshableSegmentFetcher;
+import io.split.engine.experiments.SplitSynchronizationTask;
 import io.split.engine.segments.SegmentChangeFetcher;
+import io.split.cache.SegmentCache;
+import io.split.cache.SegmentCacheInMemoryImpl;
+import io.split.engine.segments.SegmentSynchronizationTaskImp;
 import io.split.integrations.IntegrationsConfig;
 import org.apache.hc.client5.http.auth.AuthScope;
 import org.apache.hc.client5.http.auth.Credentials;
@@ -55,14 +61,150 @@ public class SplitFactoryImpl implements SplitFactory {
     private final static long SSE_CONNECT_TIMEOUT = 30000;
     private final static long SSE_SOCKET_TIMEOUT = 70000;
 
-    private static final Multiset<String> USED_API_TOKENS = ConcurrentHashMultiset.create();
     private static Random RANDOM = new Random();
 
+    private final URI _rootTarget;
+    private final URI _eventsRootTarget;
+    private final CloseableHttpClient _httpclient;
+    private final SDKReadinessGates _gates;
+    private final HttpMetrics _httpMetrics;
+    private final FireAndForgetMetrics _unCachedFireAndForget;
+    private final SegmentSynchronizationTaskImp _segmentSynchronizationTaskImp;
+    private final SplitFetcher _splitFetcher;
+    private final SplitSynchronizationTask _splitSynchronizationTask;
+    private final ImpressionsManagerImpl _impressionsManager;
+    private final FireAndForgetMetrics _cachedFireAndForgetMetrics;
+    private final EventClient _eventClient;
+    private final SyncManager _syncManager;
+    private final Evaluator _evaluator;
+    private final String _apiToken;
+
+    // Caches
+    private final SegmentCache _segmentCache;
+    private final SplitCache _splitCache;
+
+    // Client and Manager
     private final SplitClient _client;
     private final SplitManager _manager;
-    private final Runnable destroyer;
-    private final String _apiToken;
+
     private boolean isTerminated = false;
+    private final ApiKeyCounter _apiKeyCounter;
+
+    public SplitFactoryImpl(String apiToken, SplitClientConfig config) throws URISyntaxException {
+        _apiToken = apiToken;
+        _apiKeyCounter = ApiKeyCounter.getApiKeyCounterInstance();
+        _apiKeyCounter.add(apiToken);
+
+        if (config.blockUntilReady() == -1) {
+            //BlockUntilReady not been set
+            _log.warn("no setBlockUntilReadyTimeout parameter has been set - incorrect control treatments could be logged” " +
+                    "if no ready config has been set when building factory");
+
+        }
+
+        // SDKReadinessGates
+        _gates = new SDKReadinessGates();
+
+        // HttpClient
+        _httpclient = buildHttpClient(apiToken, config);
+
+        // Roots
+        _rootTarget = URI.create(config.endpoint());
+        _eventsRootTarget = URI.create(config.eventsEndpoint());
+
+        // HttpMetrics
+        _httpMetrics = HttpMetrics.create(_httpclient, _eventsRootTarget);
+
+        // Cache Initialisations
+        _segmentCache = new SegmentCacheInMemoryImpl();
+        _splitCache = new InMemoryCacheImp();
+
+        // Metrics
+        _unCachedFireAndForget = FireAndForgetMetrics.instance(_httpMetrics, 2, 1000);
+
+        // Segments
+        _segmentSynchronizationTaskImp = buildSegments(config);
+
+        // SplitFetcher
+        _splitFetcher = buildSplitFetcher();
+
+        // SplitSynchronizationTask
+        _splitSynchronizationTask = new SplitSynchronizationTask(_splitFetcher, _splitCache, findPollingPeriod(RANDOM, config.featuresRefreshRate()));
+
+        // Impressions
+        _impressionsManager = buildImpressionsManager(config);
+
+        // CachedFireAndForgetMetrics
+        _cachedFireAndForgetMetrics = buildCachedFireAndForgetMetrics(config);
+
+        // EventClient
+        _eventClient = EventClientImpl.create(_httpclient, _eventsRootTarget, config.eventsQueueSize(), config.eventFlushIntervalInMillis(), config.waitBeforeShutdown());
+
+        // SyncManager
+        _syncManager = SyncManagerImp.build(config.streamingEnabled(), _splitSynchronizationTask, _splitFetcher, _segmentSynchronizationTaskImp, _splitCache, config.authServiceURL(), _httpclient, config.streamingServiceURL(), config.authRetryBackoffBase(), buildSSEdHttpClient(config), _segmentCache);
+        _syncManager.start();
+
+        // Evaluator
+        _evaluator = new EvaluatorImp(_splitCache);
+
+        // SplitClient
+        _client = new SplitClientImpl(this, _splitCache, _impressionsManager, _cachedFireAndForgetMetrics, _eventClient, config, _gates, _evaluator);
+
+        // SplitManager
+        _manager = new SplitManagerImpl(_splitCache, config, _gates);
+
+        // DestroyOnShutDown
+        if (config.destroyOnShutDown()) {
+            Runtime.getRuntime().addShutdownHook(new Thread(() -> {
+                // Using the full path to avoid conflicting with Thread.destroy()
+                SplitFactoryImpl.this.destroy();
+            }));
+        }
+    }
+
+    @Override
+    public SplitClient client() {
+        return _client;
+    }
+
+    @Override
+    public SplitManager manager() {
+        return _manager;
+    }
+
+    @Override
+    public synchronized void destroy() {
+        if (!isTerminated) {
+            _log.info("Shutdown called for split");
+            try {
+                _segmentSynchronizationTaskImp.close();
+                _log.info("Successful shutdown of segment fetchers");
+                _splitSynchronizationTask.close();
+                _log.info("Successful shutdown of splits");
+                _impressionsManager.close();
+                _log.info("Successful shutdown of impressions manager");
+                _unCachedFireAndForget.close();
+                _log.info("Successful shutdown of metrics 1");
+                _cachedFireAndForgetMetrics.close();
+                _log.info("Successful shutdown of metrics 2");
+                _httpclient.close();
+                _log.info("Successful shutdown of httpclient");
+                _eventClient.close();
+                _log.info("Successful shutdown of eventClient");
+                _syncManager.shutdown();
+                _log.info("Successful shutdown of syncManager");
+            } catch (IOException e) {
+                _log.error("We could not shutdown split", e);
+            }
+            _apiKeyCounter.remove(_apiToken);
+            isTerminated = true;
+        }
+    }
+
+    @Override
+    public boolean isDestroyed() {
+        return isTerminated;
+    }
 
     private static CloseableHttpClient buildHttpClient(String apiToken, SplitClientConfig config) {
 
@@ -148,60 +290,30 @@ public class SplitFactoryImpl implements SplitFactory {
         return  httpClientbuilder;
     }
 
-    public SplitFactoryImpl(String apiToken, SplitClientConfig config) throws URISyntaxException {
-        _apiToken = apiToken;
+    private static int findPollingPeriod(Random rand, int max) {
+        int min = max / 2;
+        return rand.nextInt((max - min) + 1) + min;
+    }
 
-        if (USED_API_TOKENS.contains(apiToken)) {
-            String message = String.format("factory instantiation: You already have %s with this API Key. " +
-                    "We recommend keeping only one instance of the factory at all times (Singleton pattern) and reusing " +
-                    "it throughout your application.",
-                    USED_API_TOKENS.count(apiToken) == 1 ? "1 factory" : String.format("%s factories", USED_API_TOKENS.count(apiToken)));
-            _log.warn(message);
-        } else if (!USED_API_TOKENS.isEmpty()) {
-            String message = "factory instantiation: You already have an instance of the Split factory. " +
-                    "Make sure you definitely want this additional instance. We recommend keeping only one instance of " +
-                    "the factory at all times (Singleton pattern) and reusing it throughout your application.“";
-            _log.warn(message);
-        }
-        USED_API_TOKENS.add(apiToken);
+    private SegmentSynchronizationTaskImp buildSegments(SplitClientConfig config) throws URISyntaxException {
+        SegmentChangeFetcher segmentChangeFetcher = HttpSegmentChangeFetcher.create(_httpclient, _rootTarget, _unCachedFireAndForget);
 
-        if (config.blockUntilReady() == -1) {
-            //BlockUntilReady not been set
-            _log.warn("no setBlockUntilReadyTimeout parameter has been set - incorrect control treatments could be logged” " +
-                    "if no ready config has been set when building factory");
-
-        }
-
-
-        final CloseableHttpClient httpclient = buildHttpClient(apiToken, config);
-
-        URI rootTarget = URI.create(config.endpoint());
-        URI eventsRootTarget = URI.create(config.eventsEndpoint());
-
-        // Metrics
-        HttpMetrics httpMetrics = HttpMetrics.create(httpclient, eventsRootTarget);
-        final FireAndForgetMetrics uncachedFireAndForget = FireAndForgetMetrics.instance(httpMetrics, 2, 1000);
-
-        SDKReadinessGates gates = new SDKReadinessGates();
-
-        // Segments
-        SegmentChangeFetcher segmentChangeFetcher = HttpSegmentChangeFetcher.create(httpclient, rootTarget, uncachedFireAndForget);
-        final RefreshableSegmentFetcher segmentFetcher = new RefreshableSegmentFetcher(segmentChangeFetcher,
+        return new SegmentSynchronizationTaskImp(segmentChangeFetcher,
                 findPollingPeriod(RANDOM, config.segmentsRefreshRate()),
                 config.numThreadsForSegmentFetch(),
-                gates);
+                _gates,
+                _segmentCache);
+    }
 
+    private SplitFetcher buildSplitFetcher() throws URISyntaxException {
+        SplitChangeFetcher splitChangeFetcher = HttpSplitChangeFetcher.create(_httpclient, _rootTarget, _unCachedFireAndForget);
+        SplitParser splitParser = new SplitParser(_segmentSynchronizationTaskImp, _segmentCache);
 
-        SplitParser splitParser = new SplitParser(segmentFetcher);
+        return new SplitFetcherImp(splitChangeFetcher, splitParser, _gates, _splitCache);
+    }
 
-        // Feature Changes
-        SplitChangeFetcher splitChangeFetcher = HttpSplitChangeFetcher.create(httpclient, rootTarget, uncachedFireAndForget);
-
-        final RefreshableSplitFetcherProvider splitFetcherProvider = new RefreshableSplitFetcherProvider(splitChangeFetcher, splitParser, findPollingPeriod(RANDOM, config.featuresRefreshRate()), gates);
-
-
+    private ImpressionsManagerImpl buildImpressionsManager(SplitClientConfig config) throws URISyntaxException {
         List<ImpressionListener> impressionListeners = new ArrayList<>();
-        // Setup integrations
         if (config.integrationsConfig() != null) {
             config.integrationsConfig().getImpressionsListeners(IntegrationsConfig.Execution.ASYNC).stream()
                     .map(l -> AsynchronousImpressionListener.build(l.listener(), l.queueSize()))
@@ -212,89 +324,12 @@ public class SplitFactoryImpl implements SplitFactory {
                     .collect(Collectors.toCollection(() -> impressionListeners));
         }
 
-        // Impressions
-        final ImpressionsManagerImpl impressionsManager = ImpressionsManagerImpl.instance(httpclient, config, impressionListeners);
-
-        CachedMetrics cachedMetrics = new CachedMetrics(httpMetrics, TimeUnit.SECONDS.toMillis(config.metricsRefreshRate()));
-        final FireAndForgetMetrics cachedFireAndForgetMetrics = FireAndForgetMetrics.instance(cachedMetrics, 2, 1000);
-
-        final EventClient eventClient = EventClientImpl.create(httpclient, eventsRootTarget, config.eventsQueueSize(), config.eventFlushIntervalInMillis(), config.waitBeforeShutdown());
-
-        // SyncManager
-        final SyncManager syncManager = SyncManagerImp.build(config.streamingEnabled(), splitFetcherProvider, segmentFetcher, config.authServiceURL(), httpclient, config.streamingServiceURL(), config.authRetryBackoffBase(), buildSSEdHttpClient(config));
-        syncManager.start();
-
-        destroyer = new Runnable() {
-            public void run() {
-                _log.info("Shutdown called for split");
-                try {
-                    segmentFetcher.close();
-                    _log.info("Successful shutdown of segment fetchers");
-                    splitFetcherProvider.close();
-                    _log.info("Successful shutdown of splits");
-                    impressionsManager.close();
-                    _log.info("Successful shutdown of impressions manager");
-                    uncachedFireAndForget.close();
-                    _log.info("Successful shutdown of metrics 1");
-                    cachedFireAndForgetMetrics.close();
-                    _log.info("Successful shutdown of metrics 2");
-                    httpclient.close();
-                    _log.info("Successful shutdown of httpclient");
-                    eventClient.close();
-                    _log.info("Successful shutdown of httpclient");
-                    new Thread(syncManager::shutdown).start();
-                    _log.info("Successful shutdown of syncManager");
-                } catch (IOException e) {
-                    _log.error("We could not shutdown split", e);
-                }
-            }
-        };
-
-        if (config.destroyOnShutDown()) {
-            Runtime.getRuntime().addShutdownHook(new Thread() {
-                @Override
-                public void run() {
-                    // Using the full path to avoid conflicting with Thread.destroy()
-                    SplitFactoryImpl.this.destroy();
-                }
-            });
-        }
-
-        _client = new SplitClientImpl(this,
-                splitFetcherProvider.getFetcher(),
-                impressionsManager,
-                cachedFireAndForgetMetrics,
-                eventClient,
-                config,
-                gates);
-        _manager = new SplitManagerImpl(splitFetcherProvider.getFetcher(), config, gates);
+        return ImpressionsManagerImpl.instance(_httpclient, config, impressionListeners);
     }
 
-    private static int findPollingPeriod(Random rand, int max) {
-        int min = max / 2;
-        return rand.nextInt((max - min) + 1) + min;
-    }
+    private FireAndForgetMetrics buildCachedFireAndForgetMetrics(SplitClientConfig config) {
+        CachedMetrics cachedMetrics = new CachedMetrics(_httpMetrics, TimeUnit.SECONDS.toMillis(config.metricsRefreshRate()));
 
-    public SplitClient client() {
-        return _client;
-    }
-
-    public SplitManager manager() {
-        return _manager;
-    }
-
-    public void destroy() {
-        synchronized (SplitFactoryImpl.class) {
-            if (!isTerminated) {
-                destroyer.run();
-                USED_API_TOKENS.remove(_apiToken);
-                isTerminated = true;
-            }
-        }
-    }
-
-    @Override
-    public boolean isDestroyed() {
-        return isTerminated;
+        return FireAndForgetMetrics.instance(cachedMetrics, 2, 1000);
     }
 }

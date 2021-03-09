@@ -1,6 +1,7 @@
 package io.split.engine.experiments;
 
 import com.google.common.collect.Lists;
+import io.split.cache.SegmentCache;
 import io.split.client.dtos.Condition;
 import io.split.client.dtos.Matcher;
 import io.split.client.dtos.MatcherGroup;
@@ -26,8 +27,7 @@ import io.split.engine.matchers.strings.EndsWithAnyOfMatcher;
 import io.split.engine.matchers.strings.RegularExpressionMatcher;
 import io.split.engine.matchers.strings.StartsWithAnyOfMatcher;
 import io.split.engine.matchers.strings.WhitelistMatcher;
-import io.split.engine.segments.Segment;
-import io.split.engine.segments.SegmentFetcher;
+import io.split.engine.segments.SegmentSynchronizationTask;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -46,11 +46,13 @@ public final class SplitParser {
     public static final int CONDITIONS_UPPER_LIMIT = 50;
     private static final Logger _log = LoggerFactory.getLogger(SplitParser.class);
 
-    private SegmentFetcher _segmentFetcher;
+    private final SegmentSynchronizationTask _segmentSynchronizationTask;
+    private final SegmentCache _segmentCache;
 
-    public SplitParser(SegmentFetcher segmentFetcher) {
-        _segmentFetcher = segmentFetcher;
-        checkNotNull(_segmentFetcher);
+    public SplitParser(SegmentSynchronizationTask segmentSynchronizationTaskImp,
+                       SegmentCache segmentCache) {
+        _segmentSynchronizationTask = checkNotNull(segmentSynchronizationTaskImp);
+        _segmentCache = checkNotNull(segmentCache);
     }
 
     public ParsedSplit parse(Split split) {
@@ -106,8 +108,9 @@ public final class SplitParser {
                 break;
             case IN_SEGMENT:
                 checkNotNull(matcher.userDefinedSegmentMatcherData);
-                Segment segment = _segmentFetcher.segment(matcher.userDefinedSegmentMatcherData.segmentName);
-                delegate = new UserDefinedSegmentMatcher(segment);
+                String segmentName = matcher.userDefinedSegmentMatcherData.segmentName;
+                _segmentSynchronizationTask.initializeSegment(segmentName);
+                delegate = new UserDefinedSegmentMatcher(_segmentCache, segmentName);
                 break;
             case WHITELIST:
                 checkNotNull(matcher.whitelistMatcherData);
