@@ -1,10 +1,14 @@
 package io.split.engine.matchers;
 
 import com.google.common.collect.Lists;
-import com.google.common.collect.Sets;
+import io.split.cache.SegmentCache;
+import io.split.cache.SegmentCacheInMemoryImpl;
 import io.split.engine.matchers.strings.WhitelistMatcher;
-import io.split.engine.segments.StaticSegment;
 import org.junit.Test;
+
+import java.util.ArrayList;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertThat;
@@ -26,7 +30,9 @@ public class NegatableMatcherTest {
 
     @Test
     public void works_segment() {
-        UserDefinedSegmentMatcher delegate = new UserDefinedSegmentMatcher(new StaticSegment("foo", Sets.newHashSet("a", "b")));
+        SegmentCache segmentCache = new SegmentCacheInMemoryImpl();
+        segmentCache.updateSegment("foo", Stream.of("a","b").collect(Collectors.toList()), new ArrayList<>());
+        UserDefinedSegmentMatcher delegate = new UserDefinedSegmentMatcher(segmentCache, "foo");
         AttributeMatcher.NegatableMatcher matcher = new AttributeMatcher.NegatableMatcher(delegate, true);
 
         test(matcher, "a", false);

@@ -131,11 +131,9 @@ public class SSEClient {
                     _statusCallback.apply(StatusMessage.RETRYABLE_ERROR);
                     return;
                 } catch (IOException exc) { // Other type of connection error
-                    if(!_forcedStop.get()) {
-                        _log.debug(String.format("SSE connection ended abruptly: %s. Retying", exc.getMessage()));
-                        _statusCallback.apply(StatusMessage.RETRYABLE_ERROR);
-                        return;
-                    }
+                    _log.info(String.format("SSE connection ended abruptly: %s. Retrying", exc.getMessage()));
+                    _statusCallback.apply(StatusMessage.RETRYABLE_ERROR);
+                    return;
                 }
             }
         } catch (Exception e) { // Any other error non related to the connection disables streaming altogether

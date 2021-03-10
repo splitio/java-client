@@ -5,6 +5,7 @@ import io.split.grammar.Treatments;
 import org.junit.Test;
 
 import java.io.IOException;
+import java.net.URISyntaxException;
 import java.util.Map;
 
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -20,7 +21,7 @@ import static org.hamcrest.core.IsEqual.equalTo;
 public class LocalhostSplitFactoryYamlSampleTest {
 
     @Test
-    public void works() throws IOException {
+    public void works() throws IOException, URISyntaxException {
 
         String file = getClass().getClassLoader().getResource(SplitClientConfig.LOCALHOST_DEFAULT_FILE).getFile();
 

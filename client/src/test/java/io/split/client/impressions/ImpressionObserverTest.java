@@ -1,7 +1,6 @@
 package io.split.client.impressions;
 
 import com.google.common.base.Strings;
-import io.split.client.dtos.KeyImpression;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
