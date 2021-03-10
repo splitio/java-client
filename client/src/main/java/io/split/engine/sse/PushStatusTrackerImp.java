@@ -144,6 +144,7 @@ public class PushStatusTrackerImp implements PushStatusTracker {
     @Override
     public void forceRetryableError() {
         _statusMessages.offer(PushManager.Status.STREAMING_BACKOFF);
+    }
         
     private boolean isPublishers() {
         for(Integer publisher : regions.values()) {

@@ -62,7 +62,6 @@ public class PushManagerImp implements PushManager {
                                        String streamingUrl,
                                        String authUrl,
                                        CloseableHttpClient httpClient,
-                                       int authRetryBackOffBase,
                                        LinkedBlockingQueue<PushManager.Status> statusMessages,
                                        CloseableHttpClient sseHttpClient) {
         SplitsWorker splitsWorker = new SplitsWorkerImp(synchronizer);
@@ -104,7 +103,6 @@ public class PushManagerImp implements PushManager {
 
     @Override
     public synchronized void scheduleConnectionReset() {
-        _expirationTime = 120l;
         _log.debug(String.format("scheduleNextTokenRefresh in %s SECONDS", _expirationTime));
         _nextTokenRefreshTask = _scheduledExecutorService.schedule(() -> {
             _log.debug("Starting scheduleNextTokenRefresh ...");
