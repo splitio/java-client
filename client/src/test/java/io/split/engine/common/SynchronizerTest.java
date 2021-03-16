@@ -32,8 +32,8 @@ public class SynchronizerTest {
         _synchronizer.syncAll();
 
         Thread.sleep(100);
-        Mockito.verify(_splitFetcher, Mockito.times(1)).run();
-        Mockito.verify(_segmentFetcher, Mockito.times(1)).run();
+        Mockito.verify(_splitFetcher, Mockito.times(1)).fetchAll(true);
+        Mockito.verify(_segmentFetcher, Mockito.times(1)).fetchAll(true);
     }
 
     @Test

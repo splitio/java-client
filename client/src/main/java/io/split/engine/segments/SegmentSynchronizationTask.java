@@ -23,4 +23,10 @@ public interface SegmentSynchronizationTask extends Runnable {
      * stops the thread
      */
     void stop();
+
+    /**
+     * fetch every Segment
+     * @param addCacheHeader
+     */
+    void fetchAll(boolean addCacheHeader);
 }

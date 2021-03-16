@@ -43,12 +43,12 @@ public class SplitFetcherImp implements SplitFetcher {
     }
 
     @Override
-    public void forceRefresh() {
+    public void forceRefresh(boolean addCacheHeader) {
         _log.debug("Force Refresh splits starting ...");
         try {
             while (true) {
                 long start = _splitCache.getChangeNumber();
-                runWithoutExceptionHandling();
+                runWithoutExceptionHandling(addCacheHeader);
                 long end = _splitCache.getChangeNumber();
 
                 if (start >= end) {
@@ -65,28 +65,11 @@ public class SplitFetcherImp implements SplitFetcher {
 
     @Override
     public void run() {
-        _log.debug("Fetch splits starting ...");
-        long start = _splitCache.getChangeNumber();
-        try {
-            runWithoutExceptionHandling();
-            _gates.splitsAreReady();
-        } catch (InterruptedException e) {
-            _log.warn("Interrupting split fetcher task");
-            Thread.currentThread().interrupt();
-        } catch (Throwable t) {
-            _log.error("RefreshableSplitFetcher failed: " + t.getMessage());
-            if (_log.isDebugEnabled()) {
-                _log.debug("Reason:", t);
-            }
-        } finally {
-            if (_log.isDebugEnabled()) {
-                _log.debug("split fetch before: " + start + ", after: " + _splitCache.getChangeNumber());
-            }
-        }
+        this.fetchAll(false);
     }
 
-    private void runWithoutExceptionHandling() throws InterruptedException {
-        SplitChange change = _splitChangeFetcher.fetch(_splitCache.getChangeNumber());
+    private void runWithoutExceptionHandling(boolean addCacheHeader) throws InterruptedException {
+        SplitChange change = _splitChangeFetcher.fetch(_splitCache.getChangeNumber(), addCacheHeader);
 
         if (change == null) {
             throw new IllegalStateException("SplitChange was null");
@@ -153,6 +136,27 @@ public class SplitFetcherImp implements SplitFetcher {
             }
 
             _splitCache.setChangeNumber(change.till);
+        }
+    }
+    @Override
+    public void fetchAll(boolean addCacheHeader) {
+        _log.debug("Fetch splits starting ...");
+        long start = _splitCache.getChangeNumber();
+        try {
+            runWithoutExceptionHandling(addCacheHeader);
+            _gates.splitsAreReady();
+        } catch (InterruptedException e) {
+            _log.warn("Interrupting split fetcher task");
+            Thread.currentThread().interrupt();
+        } catch (Throwable t) {
+            _log.error("RefreshableSplitFetcher failed: " + t.getMessage());
+            if (_log.isDebugEnabled()) {
+                _log.debug("Reason:", t);
+            }
+        } finally {
+            if (_log.isDebugEnabled()) {
+                _log.debug("split fetch before: " + start + ", after: " + _splitCache.getChangeNumber());
+            }
         }
     }
 }

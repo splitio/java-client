@@ -29,7 +29,7 @@ public class SegmentSynchronizationTaskImp implements SegmentSynchronizationTask
     private final AtomicLong _refreshEveryNSeconds;
     private final AtomicBoolean _running;
     private final Object _lock = new Object();
-    private final ConcurrentMap<String, SegmentFetcherImp> _segmentFetchers = Maps.newConcurrentMap();
+    private final ConcurrentMap<String, SegmentFetcher> _segmentFetchers = Maps.newConcurrentMap();
     private final SegmentCache _segmentCache;
     private final SDKReadinessGates _gates;
     private final ScheduledExecutorService _scheduledExecutorService;
@@ -58,20 +58,12 @@ public class SegmentSynchronizationTaskImp implements SegmentSynchronizationTask
 
     @Override
     public void run() {
-        for (Map.Entry<String, SegmentFetcherImp> entry : _segmentFetchers.entrySet()) {
-            SegmentFetcherImp fetcher = entry.getValue();
-
-            if (fetcher == null) {
-                continue;
-            }
-
-            _scheduledExecutorService.submit(fetcher);
-        }
+        this.fetchAll(false);
     }
 
     @Override
     public void initializeSegment(String segmentName) {
-        SegmentFetcherImp segment = _segmentFetchers.get(segmentName);
+        SegmentFetcher segment = _segmentFetchers.get(segmentName);
         if (segment != null) {
             return;
         }
@@ -94,7 +86,7 @@ public class SegmentSynchronizationTaskImp implements SegmentSynchronizationTask
             segment = new SegmentFetcherImp(segmentName, _segmentChangeFetcher, _gates, _segmentCache);
 
             if (_running.get()) {
-                _scheduledExecutorService.submit(segment);
+                _scheduledExecutorService.submit(segment::fetchAll);
             }
 
             _segmentFetchers.putIfAbsent(segmentName, segment);
@@ -146,6 +138,23 @@ public class SegmentSynchronizationTaskImp implements SegmentSynchronizationTask
             // reset the interrupt.
             _log.error("Shutdown of SegmentFetchers was interrupted");
             Thread.currentThread().interrupt();
+        }
+    }
+
+    @Override
+    public void fetchAll(boolean addCacheHeader) {
+        for (Map.Entry<String, SegmentFetcher> entry : _segmentFetchers.entrySet()) {
+            SegmentFetcher fetcher = entry.getValue();
+
+            if (fetcher == null) {
+                continue;
+            }
+
+            if(addCacheHeader) {
+                _scheduledExecutorService.submit(fetcher::runWhitCacheHeader);
+                break;
+            }
+            _scheduledExecutorService.submit(fetcher::fetchAll);
         }
     }
 }
