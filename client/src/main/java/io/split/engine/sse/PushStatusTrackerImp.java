@@ -41,8 +41,7 @@ public class PushStatusTrackerImp implements PushStatusTracker {
         switch(newStatus) {
             case CONNECTED:
                 if (_sseStatus.compareAndSet(SSEClient.StatusMessage.INITIALIZATION_IN_PROGRESS, SSEClient.StatusMessage.CONNECTED)
-                    || _sseStatus.compareAndSet(SSEClient.StatusMessage.RETRYABLE_ERROR, SSEClient.StatusMessage.CONNECTED)) {
-                    //_statusMessages.offer(PushManager.Status.STREAMING_READY); //desactivar TODO
+                        || _sseStatus.compareAndSet(SSEClient.StatusMessage.RETRYABLE_ERROR, SSEClient.StatusMessage.CONNECTED)) {
                 }
                 break;
             case RETRYABLE_ERROR:

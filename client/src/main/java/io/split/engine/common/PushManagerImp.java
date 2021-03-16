@@ -24,6 +24,7 @@ import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicLong;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
@@ -38,7 +39,7 @@ public class PushManagerImp implements PushManager {
 
     private Future<?> _nextTokenRefreshTask;
     private final ScheduledExecutorService _scheduledExecutorService;
-    private long _expirationTime;
+    private AtomicLong _expirationTime;
 
     @VisibleForTesting
     /* package private */ PushManagerImp(AuthApiClient authApiClient,
@@ -52,6 +53,7 @@ public class PushManagerImp implements PushManager {
         _splitsWorker = splitsWorker;
         _segmentWorker = segmentWorker;
         _pushStatusTracker = pushStatusTracker;
+        _expirationTime = new AtomicLong();
         _scheduledExecutorService = Executors.newSingleThreadScheduledExecutor(new ThreadFactoryBuilder()
                 .setDaemon(true)
                 .setNameFormat("Split-SSERefreshToken-%d")
@@ -79,7 +81,7 @@ public class PushManagerImp implements PushManager {
         AuthenticationResponse response = _authApiClient.Authenticate();
         _log.debug(String.format("Auth service response pushEnabled: %s", response.isPushEnabled()));
         if (response.isPushEnabled() && startSse(response.getToken(), response.getChannels())) {
-            _expirationTime = response.getExpiration();
+            _expirationTime.set(response.getExpiration());
             return;
         }
 
@@ -108,7 +110,7 @@ public class PushManagerImp implements PushManager {
             _log.debug("Starting scheduleNextTokenRefresh ...");
             stop();
             start();
-        }, _expirationTime, TimeUnit.SECONDS);
+        }, _expirationTime.get(), TimeUnit.SECONDS);
     }
 
     private boolean startSse(String token, String channels) {

@@ -21,6 +21,7 @@ import static com.google.common.base.Preconditions.checkNotNull;
 public class EventSourceClientImp implements EventSourceClient {
     private static final Logger _log = LoggerFactory.getLogger(EventSourceClient.class);
     private static final String ERROR = "error";
+    private static final String MESSAGE = "message";
 
     private final String _baseStreamingUrl;
     private final NotificationParser _notificationParser;
@@ -101,7 +102,7 @@ public class EventSourceClientImp implements EventSourceClient {
             if (payload.length() > 0) {
                 _log.debug(String.format("Payload received: %s", payload));
                 switch (type) {
-                    case "message":
+                    case MESSAGE:
                         _notificationProcessor.process(_notificationParser.parseMessage(payload));
                         break;
                     case ERROR:

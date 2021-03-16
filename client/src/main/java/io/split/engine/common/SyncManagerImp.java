@@ -122,6 +122,7 @@ public class SyncManagerImp implements SyncManager {
                         _pushManager.stopWorkers();
                         _pushManager.stop();
                         Thread.sleep(howLong);
+                        _incomingPushStatus.clear();
                         _pushManager.start();
                         break;
                     case STREAMING_OFF:
