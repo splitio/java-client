@@ -152,7 +152,7 @@ public class SegmentSynchronizationTaskImp implements SegmentSynchronizationTask
 
             if(addCacheHeader) {
                 _scheduledExecutorService.submit(fetcher::runWhitCacheHeader);
-                break;
+                continue;
             }
             _scheduledExecutorService.submit(fetcher::fetchAll);
         }
