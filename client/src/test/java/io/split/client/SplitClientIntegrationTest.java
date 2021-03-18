@@ -399,6 +399,8 @@ public class SplitClientIntegrationTest {
                 .Builder()
                 .comment("initializing")
                 .id("fakeid")
+                .name("message")
+                .data("{\"id\":\"222\",\"timestamp\":1588254668328,\"encoding\":\"json\",\"channel\":\"[?occupancy=metrics.publishers]control_pri\",\"data\":\"{\\\"metrics\\\":{\\\"publishers\\\":2}}\",\"name\":\"[meta]occupancy\"}")
                 .build();
         OutboundSseEvent sseEventSplitUpdate = new OutboundEvent
                 .Builder()
