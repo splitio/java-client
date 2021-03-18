@@ -28,7 +28,7 @@ public class PushStatusTrackerImp implements PushStatusTracker {
         _statusMessages = statusMessages;
     }
 
-    public synchronized void reset() {
+    private synchronized void reset() {
         _publishersOnline.set(true);
         _sseStatus.set(SSEClient.StatusMessage.INITIALIZATION_IN_PROGRESS);
         _backendStatus.set(ControlType.STREAMING_RESUMED);
@@ -39,11 +39,12 @@ public class PushStatusTrackerImp implements PushStatusTracker {
         _log.debug(String.format("Current status: %s. New status: %s", _sseStatus.get().toString(), newStatus.toString()));
 
         switch(newStatus) {
-            case CONNECTED:
-                if (_sseStatus.compareAndSet(SSEClient.StatusMessage.INITIALIZATION_IN_PROGRESS, SSEClient.StatusMessage.CONNECTED)
-                    || _sseStatus.compareAndSet(SSEClient.StatusMessage.RETRYABLE_ERROR, SSEClient.StatusMessage.CONNECTED)) {
+            case FIRST_EVENT:
+                if (SSEClient.StatusMessage.CONNECTED.equals(_sseStatus.get())) {
                     _statusMessages.offer(PushManager.Status.STREAMING_READY);
                 }
+            case CONNECTED:
+                _sseStatus.compareAndSet(SSEClient.StatusMessage.INITIALIZATION_IN_PROGRESS, SSEClient.StatusMessage.CONNECTED);
                 break;
             case RETRYABLE_ERROR:
                 if (_sseStatus.compareAndSet(SSEClient.StatusMessage.CONNECTED, SSEClient.StatusMessage.RETRYABLE_ERROR)) {
@@ -135,7 +136,7 @@ public class PushStatusTrackerImp implements PushStatusTracker {
         _backendStatus.set(ControlType.STREAMING_DISABLED);
         _statusMessages.offer(PushManager.Status.STREAMING_OFF);
     }
-
+        
     private boolean isPublishers() {
         for(Integer publisher : regions.values()) {
             if (publisher > 0) {

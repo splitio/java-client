@@ -14,17 +14,21 @@ import org.slf4j.LoggerFactory;
 
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
 public class EventSourceClientImp implements EventSourceClient {
     private static final Logger _log = LoggerFactory.getLogger(EventSourceClient.class);
+    private static final String ERROR = "error";
+    private static final String MESSAGE = "message";
 
     private final String _baseStreamingUrl;
     private final NotificationParser _notificationParser;
     private final NotificationProcessor _notificationProcessor;
     private final SSEClient _sseClient;
     private final PushStatusTracker _pushStatusTracker;
+    private final AtomicBoolean _firstEvent;
 
     @VisibleForTesting
     /* package private */ EventSourceClientImp(String baseStreamingUrl,
@@ -41,7 +45,7 @@ public class EventSourceClientImp implements EventSourceClient {
                 inboundEvent -> { onMessage(inboundEvent); return null; },
                 status -> { _pushStatusTracker.handleSseStatus(status); return null; },
                 sseHttpClient);
-
+        _firstEvent = new AtomicBoolean();
     }
 
     public static EventSourceClientImp build(String baseStreamingUrl,
@@ -63,6 +67,7 @@ public class EventSourceClientImp implements EventSourceClient {
         }
 
         try {
+            _firstEvent.set(false);
             return _sseClient.open(buildUri(channelList, token));
         } catch (URISyntaxException e) {
             _log.error("Error building Streaming URI: " + e.getMessage());
@@ -91,13 +96,16 @@ public class EventSourceClientImp implements EventSourceClient {
         try {
             String type = event.event();
             String payload = event.data();
+            if(_firstEvent.compareAndSet(false, true) && !ERROR.equals(type)){
+                _pushStatusTracker.handleSseStatus(SSEClient.StatusMessage.FIRST_EVENT);
+            }
             if (payload.length() > 0) {
                 _log.debug(String.format("Payload received: %s", payload));
                 switch (type) {
-                    case "message":
+                    case MESSAGE:
                         _notificationProcessor.process(_notificationParser.parseMessage(payload));
                         break;
-                    case "error":
+                    case ERROR:
                         _pushStatusTracker.handleIncomingAblyError(_notificationParser.parseError(payload));
                         break;
                     default:
