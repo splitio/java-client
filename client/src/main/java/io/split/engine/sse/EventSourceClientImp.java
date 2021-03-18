@@ -97,7 +97,7 @@ public class EventSourceClientImp implements EventSourceClient {
             String type = event.event();
             String payload = event.data();
             if(_firstEvent.compareAndSet(false, true) && !ERROR.equals(type)){
-                _pushStatusTracker.notifyStreamingReady();
+                _pushStatusTracker.handleSseStatus(SSEClient.StatusMessage.FIRST_EVENT);
             }
             if (payload.length() > 0) {
                 _log.debug(String.format("Payload received: %s", payload));

@@ -4,6 +4,7 @@ import io.split.engine.sse.AuthApiClient;
 import io.split.engine.sse.EventSourceClient;
 import io.split.engine.sse.PushStatusTracker;
 import io.split.engine.sse.PushStatusTrackerImp;
+import io.split.engine.sse.client.SSEClient;
 import io.split.engine.sse.dtos.AuthenticationResponse;
 import io.split.engine.sse.workers.SegmentsWorkerImp;
 import io.split.engine.sse.workers.SplitsWorker;
@@ -55,7 +56,7 @@ public class PushManagerTest {
 
         Thread.sleep(1500);
 
-        Mockito.verify(_pushStatusTracker, Mockito.times(0)).forceRetryableError();
+        Mockito.verify(_pushStatusTracker, Mockito.times(0)).handleSseStatus(SSEClient.StatusMessage.RETRYABLE_ERROR);
         Mockito.verify(_pushStatusTracker, Mockito.times(0)).forcePushDisable();
     }
 
@@ -98,6 +99,6 @@ public class PushManagerTest {
         Mockito.verify(_eventSourceClient, Mockito.times(1)).stop();
 
         Thread.sleep(1500);
-        Mockito.verify(_pushStatusTracker, Mockito.times(1)).forceRetryableError();
+        Mockito.verify(_pushStatusTracker, Mockito.times(1)).handleSseStatus(SSEClient.StatusMessage.RETRYABLE_ERROR);
     }
 }

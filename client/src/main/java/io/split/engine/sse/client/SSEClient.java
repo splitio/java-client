@@ -32,7 +32,8 @@ public class SSEClient {
         RETRYABLE_ERROR,
         NONRETRYABLE_ERROR,
         INITIALIZATION_IN_PROGRESS,
-        FORCED_STOP
+        FORCED_STOP,
+        FIRST_EVENT
     }
 
     private enum ConnectionState {

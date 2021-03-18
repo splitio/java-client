@@ -8,6 +8,7 @@ import io.split.engine.sse.EventSourceClient;
 import io.split.engine.sse.EventSourceClientImp;
 import io.split.engine.sse.PushStatusTracker;
 import io.split.engine.sse.PushStatusTrackerImp;
+import io.split.engine.sse.client.SSEClient;
 import io.split.engine.sse.dtos.AuthenticationResponse;
 import io.split.engine.sse.dtos.SegmentQueueDto;
 import io.split.engine.sse.workers.SegmentsWorkerImp;
@@ -87,7 +88,7 @@ public class PushManagerImp implements PushManager {
 
         stop();
         if (response.isRetry()) {
-            _pushStatusTracker.forceRetryableError();//retriable error
+            _pushStatusTracker.handleSseStatus(SSEClient.StatusMessage.RETRYABLE_ERROR);
         } else {
             _pushStatusTracker.forcePushDisable();
         }
