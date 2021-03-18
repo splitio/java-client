@@ -412,6 +412,7 @@ public class SplitClientIntegrationTest {
         eventQueue3.push(sseEventInitial);
         eventQueue4.push(sseEventInitial);
 
+        Thread.sleep(1000);
         eventQueue1.push(sseEventSplitUpdate);
 
         Awaitility.await()
