@@ -51,13 +51,13 @@ public class SegmentFetcherImpTest {
 
         SegmentChangeFetcher segmentChangeFetcher = Mockito.mock(SegmentChangeFetcher.class);
         SegmentChange segmentChange = getSegmentChange(-1L, 10L);
-        Mockito.when(segmentChangeFetcher.fetch(Mockito.anyString(), Mockito.anyLong())).thenReturn(segmentChange);
+        Mockito.when(segmentChangeFetcher.fetch(Mockito.anyString(), Mockito.anyLong(), Mockito.anyBoolean())).thenReturn(segmentChange);
 
         SegmentFetcherImp fetcher = new SegmentFetcherImp(SEGMENT_NAME, segmentChangeFetcher, gates, segmentCache);
 
         // execute the fetcher for a little bit.
         ScheduledExecutorService scheduledExecutorService = Executors.newSingleThreadScheduledExecutor();
-        scheduledExecutorService.scheduleWithFixedDelay(fetcher, 0L, 100, TimeUnit.MICROSECONDS);
+        scheduledExecutorService.scheduleWithFixedDelay(fetcher::fetchAll, 0L, 100, TimeUnit.MICROSECONDS);
         Thread.currentThread().sleep(5 * 100);
 
         scheduledExecutorService.shutdown();
@@ -92,13 +92,13 @@ public class SegmentFetcherImpTest {
         SegmentChangeFetcher segmentChangeFetcher = Mockito.mock(SegmentChangeFetcher.class);
         SegmentChange segmentChange = getSegmentChange(-1L, -1L);
         
-        Mockito.when(segmentChangeFetcher.fetch(SEGMENT_NAME, -1L)).thenReturn(segmentChange);
-        Mockito.when(segmentChangeFetcher.fetch(SEGMENT_NAME, 0L)).thenReturn(segmentChange);
-        SegmentFetcherImp fetcher = new SegmentFetcherImp(segmentName, segmentChangeFetcher, gates, segmentCache);
+        Mockito.when(segmentChangeFetcher.fetch(SEGMENT_NAME, -1L, false)).thenReturn(segmentChange);
+        Mockito.when(segmentChangeFetcher.fetch(SEGMENT_NAME, 0L, false)).thenReturn(segmentChange);
+        SegmentFetcher fetcher = new SegmentFetcherImp(segmentName, segmentChangeFetcher, gates, segmentCache);
 
         // execute the fetcher for a little bit.
         ScheduledExecutorService scheduledExecutorService = Executors.newSingleThreadScheduledExecutor();
-        scheduledExecutorService.scheduleWithFixedDelay(fetcher, 0L, Integer.MAX_VALUE, TimeUnit.SECONDS);
+        scheduledExecutorService.scheduleWithFixedDelay(fetcher::fetchAll, 0L, Integer.MAX_VALUE, TimeUnit.SECONDS);
         Thread.currentThread().sleep(5 * 100);
 
         scheduledExecutorService.shutdown();
@@ -112,7 +112,7 @@ public class SegmentFetcherImpTest {
             // reset the interrupt.
             Thread.currentThread().interrupt();
         }
-        Mockito.verify(segmentChangeFetcher, Mockito.times(2)).fetch(Mockito.anyString(), Mockito.anyLong());
+        Mockito.verify(segmentChangeFetcher, Mockito.times(2)).fetch(Mockito.anyString(), Mockito.anyLong(), Mockito.anyBoolean());
         assertThat(gates.areSegmentsReady(10), is(true));
 
     }

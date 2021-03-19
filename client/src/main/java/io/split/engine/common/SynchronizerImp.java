@@ -48,8 +48,8 @@ public class SynchronizerImp implements Synchronizer {
     @Override
     public void syncAll() {
         _syncAllScheduledExecutorService.schedule(() -> {
-            _splitFetcher.run();
-            _segmentSynchronizationTaskImp.run();
+            _splitFetcher.fetchAll(true);
+            _segmentSynchronizationTaskImp.fetchAll(true);
         }, 0, TimeUnit.SECONDS);
     }
 
@@ -70,7 +70,7 @@ public class SynchronizerImp implements Synchronizer {
     @Override
     public void refreshSplits(long targetChangeNumber) {
         if (targetChangeNumber > _splitCache.getChangeNumber()) {
-            _splitFetcher.forceRefresh();
+            _splitFetcher.forceRefresh(true);
         }
     }
 
@@ -87,7 +87,7 @@ public class SynchronizerImp implements Synchronizer {
         if (changeNumber > _segmentCache.getChangeNumber(segmentName)) {
             SegmentFetcher fetcher = _segmentSynchronizationTaskImp.getFetcher(segmentName);
             try{
-                fetcher.fetch();
+                fetcher.fetch(true);
             }
             //We are sure this will never happen because getFetcher firts initiate the segment. This try/catch is for safe only.
             catch (NullPointerException np){

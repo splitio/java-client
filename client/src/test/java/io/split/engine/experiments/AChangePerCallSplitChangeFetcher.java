@@ -31,7 +31,7 @@ public class AChangePerCallSplitChangeFetcher implements SplitChangeFetcher {
 
 
     @Override
-    public SplitChange fetch(long since) {
+    public SplitChange fetch(long since, boolean addCacheHeader) {
         long latestChangeNumber = since + 1;
         Condition condition = null;
 

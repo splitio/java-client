@@ -25,5 +25,5 @@ public interface SegmentChangeFetcher {
      * @return SegmentChange
      * @throws java.lang.RuntimeException if there was a problem fetching segment changes
      */
-    SegmentChange fetch(String segmentName, long changesSinceThisChangeNumber);
+    SegmentChange fetch(String segmentName, long changesSinceThisChangeNumber, boolean addCacheHeader);
 }

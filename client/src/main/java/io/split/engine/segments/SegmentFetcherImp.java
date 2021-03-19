@@ -11,7 +11,7 @@ import java.util.List;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
-public class SegmentFetcherImp implements Runnable, SegmentFetcher {
+public class SegmentFetcherImp implements SegmentFetcher {
     private static final Logger _log = LoggerFactory.getLogger(SegmentFetcherImp.class);
 
     private final String _segmentName;
@@ -31,14 +31,9 @@ public class SegmentFetcherImp implements Runnable, SegmentFetcher {
     }
 
     @Override
-    public void run() {
+    public void fetch(boolean addCacheHeader){
         try {
-            // Do this again in case the previous call errored out.
-            _gates.registerSegment(_segmentName);
-            callLoopRun(true);
-
-            _gates.segmentIsReady(_segmentName);
-
+            callLoopRun(false, addCacheHeader);
         } catch (Throwable t) {
             _log.error("RefreshableSegmentFetcher failed: " + t.getMessage());
             if (_log.isDebugEnabled()) {
@@ -47,20 +42,8 @@ public class SegmentFetcherImp implements Runnable, SegmentFetcher {
         }
     }
 
-    @Override
-    public void fetch(){
-        try {
-            callLoopRun(false);
-        } catch (Throwable t) {
-            _log.error("RefreshableSegmentFetcher failed: " + t.getMessage());
-            if (_log.isDebugEnabled()) {
-                _log.debug("Reason:", t);
-            }
-        }
-    }
-
-    private void runWithoutExceptionHandling() {
-        SegmentChange change = _segmentChangeFetcher.fetch(_segmentName, _segmentCache.getChangeNumber(_segmentName));
+    private void runWithoutExceptionHandling(boolean addCacheHeader) {
+        SegmentChange change = _segmentChangeFetcher.fetch(_segmentName, _segmentCache.getChangeNumber(_segmentName), addCacheHeader);
 
         if (change == null) {
             throw new IllegalStateException("SegmentChange was null");
@@ -126,10 +109,10 @@ public class SegmentFetcherImp implements Runnable, SegmentFetcher {
         return bldr.toString();
     }
 
-    private void callLoopRun(boolean isFetch){
+    private void callLoopRun(boolean isFetch, boolean addCacheHeader){
         while (true) {
             long start = _segmentCache.getChangeNumber(_segmentName);
-            runWithoutExceptionHandling();
+            runWithoutExceptionHandling(addCacheHeader);
             long end = _segmentCache.getChangeNumber(_segmentName);
             if (isFetch && _log.isDebugEnabled()) {
                 _log.debug(_segmentName + " segment fetch before: " + start + ", after: " + _segmentCache.getChangeNumber(_segmentName) /*+ " size: " + _concurrentKeySet.size()*/);
@@ -139,4 +122,36 @@ public class SegmentFetcherImp implements Runnable, SegmentFetcher {
             }
         }
     }
+
+    @Override
+    public void runWhitCacheHeader(){
+        this.fetchAndUpdate(true);
+    }
+
+    /**
+     * Calls callLoopRun and after fetchs segment.
+     * @param addCacheHeader indicates if CacheHeader is required
+     */
+    private void fetchAndUpdate(boolean addCacheHeader) {
+        try {
+            // Do this again in case the previous call errored out.
+            _gates.registerSegment(_segmentName);
+            callLoopRun(true, addCacheHeader);
+
+            _gates.segmentIsReady(_segmentName);
+
+        } catch (Throwable t) {
+            _log.error("RefreshableSegmentFetcher failed: " + t.getMessage());
+            if (_log.isDebugEnabled()) {
+                _log.debug("Reason:", t);
+            }
+        }
+    }
+
+    @Override
+    public void fetchAll() {
+        this.fetchAndUpdate(false);
+    }
+
+
 }
