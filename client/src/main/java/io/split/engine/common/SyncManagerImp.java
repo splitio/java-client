@@ -2,8 +2,11 @@ package io.split.engine.common;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
-import io.split.engine.experiments.RefreshableSplitFetcherProvider;
-import io.split.engine.segments.RefreshableSegmentFetcher;
+import io.split.cache.SegmentCache;
+import io.split.cache.SplitCache;
+import io.split.engine.experiments.SplitFetcher;
+import io.split.engine.experiments.SplitSynchronizationTask;
+import io.split.engine.segments.SegmentSynchronizationTaskImp;
 import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -26,12 +29,14 @@ public class SyncManagerImp implements SyncManager {
     private final LinkedBlockingQueue<PushManager.Status> _incomingPushStatus;
     private final ExecutorService _executorService;
     private Future<?> _pushStatusMonitorTask;
+    private Backoff _backoff;
 
     @VisibleForTesting
     /* package private */ SyncManagerImp(boolean streamingEnabledConfig,
                                          Synchronizer synchronizer,
                                          PushManager pushManager,
-                                         LinkedBlockingQueue<PushManager.Status> pushMessages) {
+                                         LinkedBlockingQueue<PushManager.Status> pushMessages,
+                                         int authRetryBackOffBase) {
         _streamingEnabledConfig = new AtomicBoolean(streamingEnabledConfig);
         _synchronizer = checkNotNull(synchronizer);
         _pushManager = checkNotNull(pushManager);
@@ -41,20 +46,24 @@ public class SyncManagerImp implements SyncManager {
                 .setNameFormat("SPLIT-PushStatusMonitor-%d")
                 .setDaemon(true)
                 .build());
+        _backoff = new Backoff(authRetryBackOffBase);
     }
 
     public static SyncManagerImp build(boolean streamingEnabledConfig,
-                                        RefreshableSplitFetcherProvider refreshableSplitFetcherProvider,
-                                        RefreshableSegmentFetcher segmentFetcher,
-                                        String authUrl,
-                                        CloseableHttpClient httpClient,
-                                        String streamingServiceUrl,
-                                        int authRetryBackOffBase,
-                                       CloseableHttpClient sseHttpClient) {
+                                       SplitSynchronizationTask splitSynchronizationTask,
+                                       SplitFetcher splitFetcher,
+                                       SegmentSynchronizationTaskImp segmentSynchronizationTaskImp,
+                                       SplitCache splitCache,
+                                       String authUrl,
+                                       CloseableHttpClient httpClient,
+                                       String streamingServiceUrl,
+                                       int authRetryBackOffBase,
+                                       CloseableHttpClient sseHttpClient,
+                                       SegmentCache segmentCache) {
         LinkedBlockingQueue<PushManager.Status> pushMessages = new LinkedBlockingQueue<>();
-        Synchronizer synchronizer = new SynchronizerImp(refreshableSplitFetcherProvider, segmentFetcher);
-        PushManager pushManager = PushManagerImp.build(synchronizer, streamingServiceUrl, authUrl, httpClient, authRetryBackOffBase, pushMessages, sseHttpClient);
-        return new SyncManagerImp(streamingEnabledConfig, synchronizer, pushManager, pushMessages);
+        Synchronizer synchronizer = new SynchronizerImp(splitSynchronizationTask, splitFetcher, segmentSynchronizationTaskImp, splitCache, segmentCache);
+        PushManager pushManager = PushManagerImp.build(synchronizer, streamingServiceUrl, authUrl, httpClient, pushMessages, sseHttpClient);
+        return new SyncManagerImp(streamingEnabledConfig, synchronizer, pushManager, pushMessages, authRetryBackOffBase);
     }
 
     @Override
@@ -99,14 +108,21 @@ public class SyncManagerImp implements SyncManager {
                         _synchronizer.stopPeriodicFetching();
                         _synchronizer.syncAll();
                         _pushManager.startWorkers();
+                        _pushManager.scheduleConnectionReset();
+                        _backoff.reset();
                         break;
                     case STREAMING_DOWN:
                         _pushManager.stopWorkers();
                         _synchronizer.startPeriodicFetching();
                         break;
                     case STREAMING_BACKOFF:
+                        long howLong = _backoff.interval() * 1000;
+                        _log.error(String.format("Retryable error in streaming subsystem. Switching to polling and retrying in %d seconds", howLong/1000));
                         _synchronizer.startPeriodicFetching();
                         _pushManager.stopWorkers();
+                        _pushManager.stop();
+                        Thread.sleep(howLong);
+                        _incomingPushStatus.clear();
                         _pushManager.start();
                         break;
                     case STREAMING_OFF:

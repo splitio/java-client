@@ -19,6 +19,7 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Function;
 
@@ -31,7 +32,8 @@ public class SSEClient {
         RETRYABLE_ERROR,
         NONRETRYABLE_ERROR,
         INITIALIZATION_IN_PROGRESS,
-        FORCED_STOP
+        FORCED_STOP,
+        FIRST_EVENT
     }
 
     private enum ConnectionState {
@@ -54,6 +56,7 @@ public class SSEClient {
     private final AtomicReference<ConnectionState> _state = new AtomicReference<>(ConnectionState.CLOSED);
     private final AtomicReference<CloseableHttpResponse> _ongoingResponse = new AtomicReference<>();
     private final AtomicReference<HttpGet> _ongoingRequest = new AtomicReference<>();
+    private AtomicBoolean _forcedStop;
 
     public SSEClient(Function<RawEvent, Void> eventCallback,
                      Function<StatusMessage, Void> statusCallback,
@@ -61,6 +64,7 @@ public class SSEClient {
         _eventCallback = eventCallback;
         _statusCallback = statusCallback;
         _client = client;
+        _forcedStop = new AtomicBoolean();
     }
 
     public synchronized boolean open(URI uri) {
@@ -90,13 +94,14 @@ public class SSEClient {
     }
 
     public synchronized void close() {
+        _forcedStop.set(true);
         if (_state.compareAndSet(ConnectionState.OPEN, ConnectionState.CLOSED)) {
             if (_ongoingResponse.get() != null) {
                 try {
                     _ongoingRequest.get().abort();
                     _ongoingResponse.get().close();
                 } catch (IOException e) {
-                    _log.info(String.format("Error closing SSEClient: %s", e.getMessage()));
+                    _log.debug(String.format("SSEClient close forced: %s", e.getMessage()));
                 }
             }
         }
@@ -127,9 +132,11 @@ public class SSEClient {
                     _statusCallback.apply(StatusMessage.RETRYABLE_ERROR);
                     return;
                 } catch (IOException exc) { // Other type of connection error
-                    _log.info(String.format("SSE connection ended abruptly: %s. Retying", exc.getMessage()));
-                    _statusCallback.apply(StatusMessage.RETRYABLE_ERROR);
-                    return;
+                    if(!_forcedStop.get()) {
+                        _log.debug(String.format("SSE connection ended abruptly: %s. Retying", exc.getMessage()));
+                        _statusCallback.apply(StatusMessage.RETRYABLE_ERROR);
+                        return;
+                    }
                 }
             }
         } catch (Exception e) { // Any other error non related to the connection disables streaming altogether
@@ -144,6 +151,7 @@ public class SSEClient {
 
             _state.set(ConnectionState.CLOSED);
             _log.debug("SSEClient finished.");
+            _forcedStop.set(false);
         }
     }
 

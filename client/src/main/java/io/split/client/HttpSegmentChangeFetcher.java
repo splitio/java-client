@@ -28,6 +28,8 @@ public final class HttpSegmentChangeFetcher implements SegmentChangeFetcher {
 
     private static final String SINCE = "since";
     private static final String PREFIX = "segmentChangeFetcher";
+    private static final String NAME_CACHE = "Cache-Control";
+    private static final String VALUE_CACHE = "no-cache";
 
     private final CloseableHttpClient _client;
     private final URI _target;
@@ -49,7 +51,7 @@ public final class HttpSegmentChangeFetcher implements SegmentChangeFetcher {
     }
 
     @Override
-    public SegmentChange fetch(String segmentName, long since) {
+    public SegmentChange fetch(String segmentName, long since, boolean addCacheHeader) {
         long start = System.currentTimeMillis();
 
         CloseableHttpResponse response = null;
@@ -58,6 +60,9 @@ public final class HttpSegmentChangeFetcher implements SegmentChangeFetcher {
             String path = _target.getPath() + "/" + segmentName;
             URI uri = new URIBuilder(_target).setPath(path).addParameter(SINCE, "" + since).build();
             HttpGet request = new HttpGet(uri);
+            if(addCacheHeader) {
+                request.setHeader(NAME_CACHE, VALUE_CACHE);
+            }
             response = _client.execute(request);
 
             int statusCode = response.getCode();

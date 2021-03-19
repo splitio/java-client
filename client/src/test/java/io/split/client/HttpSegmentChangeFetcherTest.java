@@ -61,7 +61,7 @@ public class HttpSegmentChangeFetcherTest {
         Metrics.NoopMetrics metrics = new Metrics.NoopMetrics();
         HttpSegmentChangeFetcher fetcher = HttpSegmentChangeFetcher.create(httpClientMock, rootTarget, metrics);
 
-        SegmentChange change = fetcher.fetch("some_segment", 1234567);
+        SegmentChange change = fetcher.fetch("some_segment", 1234567, true);
 
         Assert.assertNotNull(change);
         Assert.assertEquals(1, change.added.size());

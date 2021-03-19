@@ -4,7 +4,6 @@ import io.split.engine.sse.PushStatusTracker;
 import io.split.engine.sse.NotificationProcessor;
 
 public class OccupancyNotification extends IncomingNotification implements StatusNotification {
-    private static final String CONTROL_PRI_CHANNEL = "control_pri";
     private final OccupancyMetrics metrics;
 
     public OccupancyNotification(GenericNotificationData genericNotificationData) {
@@ -23,9 +22,7 @@ public class OccupancyNotification extends IncomingNotification implements Statu
 
     @Override
     public void handlerStatus(PushStatusTracker notificationManagerKeeper) {
-        if (CONTROL_PRI_CHANNEL.equals(getChannel())) {
-            notificationManagerKeeper.handleIncomingOccupancyEvent(this);
-        }
+        notificationManagerKeeper.handleIncomingOccupancyEvent(this);
     }
 
     @Override

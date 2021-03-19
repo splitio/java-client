@@ -1,17 +1,11 @@
 package io.split.engine.experiments;
 
 import com.google.common.collect.Lists;
-import com.google.common.collect.Maps;
-import com.google.common.collect.Sets;
-import io.split.client.dtos.Condition;
-import io.split.client.dtos.DataType;
-import io.split.client.dtos.Matcher;
-import io.split.client.dtos.MatcherCombiner;
-import io.split.client.dtos.MatcherType;
-import io.split.client.dtos.Partition;
-import io.split.client.dtos.Split;
-import io.split.client.dtos.Status;
+import io.split.cache.SegmentCache;
+import io.split.cache.SegmentCacheInMemoryImpl;
+import io.split.client.dtos.*;
 import io.split.engine.ConditionsTestUtil;
+import io.split.engine.SDKReadinessGates;
 import io.split.engine.matchers.AttributeMatcher;
 import io.split.engine.matchers.BetweenMatcher;
 import io.split.engine.matchers.CombiningMatcher;
@@ -26,17 +20,19 @@ import io.split.engine.matchers.collections.PartOfSetMatcher;
 import io.split.engine.matchers.strings.ContainsAnyOfMatcher;
 import io.split.engine.matchers.strings.EndsWithAnyOfMatcher;
 import io.split.engine.matchers.strings.StartsWithAnyOfMatcher;
-import io.split.engine.segments.SegmentFetcher;
-import io.split.engine.segments.StaticSegment;
-import io.split.engine.segments.StaticSegmentFetcher;
+import io.split.engine.segments.SegmentChangeFetcher;
+import io.split.engine.segments.SegmentSynchronizationTask;
+import io.split.engine.segments.SegmentSynchronizationTaskImp;
 import io.split.grammar.Treatments;
 import org.junit.Test;
+import org.mockito.Mockito;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.is;
@@ -50,23 +46,26 @@ import static org.junit.Assert.assertThat;
  */
 public class SplitParserTest {
 
+    public static final String EMPLOYEES = "employees";
+    public static final String SALES_PEOPLE = "salespeople";
+
     @Test
     public void works() {
+        SDKReadinessGates gates = new SDKReadinessGates();
+        SegmentCache segmentCache = new SegmentCacheInMemoryImpl();
+        segmentCache.updateSegment(EMPLOYEES, Stream.of("adil", "pato", "trevor").collect(Collectors.toList()), new ArrayList<>());
+        segmentCache.updateSegment(SALES_PEOPLE, Stream.of("kunal").collect(Collectors.toList()), new ArrayList<>());
+        SegmentChangeFetcher segmentChangeFetcher = Mockito.mock(SegmentChangeFetcher.class);
+        SegmentChange segmentChangeEmployee = getSegmentChange(-1L, -1L, EMPLOYEES);
+        SegmentChange segmentChangeSalesPeople = getSegmentChange(-1L, -1L, SALES_PEOPLE);
+        Mockito.when(segmentChangeFetcher.fetch(Mockito.anyString(), Mockito.anyLong(), Mockito.anyBoolean())).thenReturn(segmentChangeEmployee).thenReturn(segmentChangeSalesPeople);
 
-        StaticSegment employees = new StaticSegment("employees", Sets.newHashSet("adil", "pato", "trevor"));
-        StaticSegment salespeople = new StaticSegment("salespeople", Sets.newHashSet("kunal"));
-
-        Map<String, StaticSegment> fetcherMap = Maps.newHashMap();
-        fetcherMap.put(employees.segmentName(), employees);
-        fetcherMap.put(salespeople.segmentName(), salespeople);
-
-        SegmentFetcher segmentFetcher = new StaticSegmentFetcher(fetcherMap);
-
-        SplitParser parser = new SplitParser(segmentFetcher);
+        SegmentSynchronizationTask segmentFetcher = new SegmentSynchronizationTaskImp(segmentChangeFetcher,1L, 1, gates, segmentCache);
+        SplitParser parser = new SplitParser(segmentFetcher, segmentCache);
 
 
-        Matcher employeesMatcher = ConditionsTestUtil.userDefinedSegmentMatcher(employees.segmentName(), false);
-        Matcher notSalespeople = ConditionsTestUtil.userDefinedSegmentMatcher(salespeople.segmentName(), true);
+        Matcher employeesMatcher = ConditionsTestUtil.userDefinedSegmentMatcher(EMPLOYEES, false);
+        Matcher notSalespeople = ConditionsTestUtil.userDefinedSegmentMatcher(SALES_PEOPLE, true);
 
         List<Partition> partitions = Lists.newArrayList(ConditionsTestUtil.partition("on", 100));
 
@@ -78,8 +77,8 @@ public class SplitParserTest {
 
         ParsedSplit actual = parser.parse(split);
 
-        AttributeMatcher employeesMatcherLogic = AttributeMatcher.vanilla(new UserDefinedSegmentMatcher(employees));
-        AttributeMatcher notSalesPeopleMatcherLogic = new AttributeMatcher(null, new UserDefinedSegmentMatcher(salespeople), true);
+        AttributeMatcher employeesMatcherLogic = AttributeMatcher.vanilla(new UserDefinedSegmentMatcher(segmentCache, EMPLOYEES));
+        AttributeMatcher notSalesPeopleMatcherLogic = new AttributeMatcher(null, new UserDefinedSegmentMatcher(segmentCache,SALES_PEOPLE), true);
         CombiningMatcher combiningMatcher = new CombiningMatcher(MatcherCombiner.AND, Lists.newArrayList(employeesMatcherLogic, notSalesPeopleMatcherLogic));
         ParsedCondition parsedCondition = ParsedCondition.createParsedConditionForTests(combiningMatcher, partitions);
         List<ParsedCondition> listOfMatcherAndSplits = Lists.newArrayList(parsedCondition);
@@ -91,21 +90,22 @@ public class SplitParserTest {
 
     @Test
     public void worksWithConfig() {
+        SDKReadinessGates gates = new SDKReadinessGates();
+        SegmentCache segmentCache = new SegmentCacheInMemoryImpl();
+        segmentCache.updateSegment(EMPLOYEES, Stream.of("adil", "pato", "trevor").collect(Collectors.toList()), new ArrayList<>());
+        segmentCache.updateSegment(SALES_PEOPLE, Stream.of("kunal").collect(Collectors.toList()), new ArrayList<>());
+        SegmentChangeFetcher segmentChangeFetcher = Mockito.mock(SegmentChangeFetcher.class);
+        SegmentChange segmentChangeEmployee = getSegmentChange(-1L, -1L, EMPLOYEES);
+        SegmentChange segmentChangeSalesPeople = getSegmentChange(-1L, -1L, SALES_PEOPLE);
+        Mockito.when(segmentChangeFetcher.fetch(Mockito.anyString(), Mockito.anyLong(), Mockito.anyBoolean())).thenReturn(segmentChangeEmployee).thenReturn(segmentChangeSalesPeople);
 
-        StaticSegment employees = new StaticSegment("employees", Sets.newHashSet("adil", "pato", "trevor"));
-        StaticSegment salespeople = new StaticSegment("salespeople", Sets.newHashSet("kunal"));
+        SegmentSynchronizationTask segmentFetcher = new SegmentSynchronizationTaskImp(segmentChangeFetcher,1L, 1, gates, segmentCache);
 
-        Map<String, StaticSegment> fetcherMap = Maps.newHashMap();
-        fetcherMap.put(employees.segmentName(), employees);
-        fetcherMap.put(salespeople.segmentName(), salespeople);
-
-        SegmentFetcher segmentFetcher = new StaticSegmentFetcher(fetcherMap);
-
-        SplitParser parser = new SplitParser(segmentFetcher);
+        SplitParser parser = new SplitParser(segmentFetcher, segmentCache);
 
 
-        Matcher employeesMatcher = ConditionsTestUtil.userDefinedSegmentMatcher(employees.segmentName(), false);
-        Matcher notSalespeople = ConditionsTestUtil.userDefinedSegmentMatcher(salespeople.segmentName(), true);
+        Matcher employeesMatcher = ConditionsTestUtil.userDefinedSegmentMatcher(EMPLOYEES, false);
+        Matcher notSalespeople = ConditionsTestUtil.userDefinedSegmentMatcher(SALES_PEOPLE, true);
 
         List<Partition> partitions = Lists.newArrayList(ConditionsTestUtil.partition("on", 100));
 
@@ -120,8 +120,8 @@ public class SplitParserTest {
 
         ParsedSplit actual = parser.parse(split);
 
-        AttributeMatcher employeesMatcherLogic = AttributeMatcher.vanilla(new UserDefinedSegmentMatcher(employees));
-        AttributeMatcher notSalesPeopleMatcherLogic = new AttributeMatcher(null, new UserDefinedSegmentMatcher(salespeople), true);
+        AttributeMatcher employeesMatcherLogic = AttributeMatcher.vanilla(new UserDefinedSegmentMatcher(segmentCache, EMPLOYEES));
+        AttributeMatcher notSalesPeopleMatcherLogic = new AttributeMatcher(null, new UserDefinedSegmentMatcher(segmentCache,SALES_PEOPLE), true);
         CombiningMatcher combiningMatcher = new CombiningMatcher(MatcherCombiner.AND, Lists.newArrayList(employeesMatcherLogic, notSalesPeopleMatcherLogic));
         ParsedCondition parsedCondition = ParsedCondition.createParsedConditionForTests(combiningMatcher, partitions);
         List<ParsedCondition> listOfMatcherAndSplits = Lists.newArrayList(parsedCondition);
@@ -134,21 +134,22 @@ public class SplitParserTest {
 
     @Test
     public void works_for_two_conditions() {
+        SDKReadinessGates gates = new SDKReadinessGates();
+        SegmentCache segmentCache = new SegmentCacheInMemoryImpl();
+        segmentCache.updateSegment(EMPLOYEES, Stream.of("adil", "pato", "trevor").collect(Collectors.toList()), new ArrayList<>());
+        segmentCache.updateSegment(SALES_PEOPLE, Stream.of("kunal").collect(Collectors.toList()), new ArrayList<>());
+        SegmentChangeFetcher segmentChangeFetcher = Mockito.mock(SegmentChangeFetcher.class);
+        SegmentChange segmentChangeEmployee = getSegmentChange(-1L, -1L, EMPLOYEES);
+        SegmentChange segmentChangeSalesPeople = getSegmentChange(-1L, -1L, SALES_PEOPLE);
+        Mockito.when(segmentChangeFetcher.fetch(Mockito.anyString(), Mockito.anyLong(), Mockito.anyBoolean())).thenReturn(segmentChangeEmployee).thenReturn(segmentChangeSalesPeople);
 
-        StaticSegment employees = new StaticSegment("employees", Sets.newHashSet("adil", "pato", "trevor"));
-        StaticSegment salespeople = new StaticSegment("salespeople", Sets.newHashSet("kunal"));
+        SegmentSynchronizationTask segmentFetcher = new SegmentSynchronizationTaskImp(segmentChangeFetcher,1L, 1, gates, segmentCache);
 
-        Map<String, StaticSegment> fetcherMap = Maps.newHashMap();
-        fetcherMap.put(employees.segmentName(), employees);
-        fetcherMap.put(salespeople.segmentName(), salespeople);
+        SplitParser parser = new SplitParser(segmentFetcher, segmentCache);
 
-        SegmentFetcher segmentFetcher = new StaticSegmentFetcher(fetcherMap);
+        Matcher employeesMatcher = ConditionsTestUtil.userDefinedSegmentMatcher(EMPLOYEES, false);
 
-        SplitParser parser = new SplitParser(segmentFetcher);
-
-        Matcher employeesMatcher = ConditionsTestUtil.userDefinedSegmentMatcher(employees.segmentName(), false);
-
-        Matcher salespeopleMatcher = ConditionsTestUtil.userDefinedSegmentMatcher(salespeople.segmentName(), false);
+        Matcher salespeopleMatcher = ConditionsTestUtil.userDefinedSegmentMatcher(SALES_PEOPLE, false);
 
         List<Partition> fullyRollout = Lists.newArrayList(ConditionsTestUtil.partition("on", 100));
         List<Partition> turnOff = Lists.newArrayList(ConditionsTestUtil.partition(Treatments.CONTROL, 100));
@@ -162,8 +163,8 @@ public class SplitParserTest {
 
         ParsedSplit actual = parser.parse(split);
 
-        ParsedCondition parsedCondition1 = ParsedCondition.createParsedConditionForTests(CombiningMatcher.of(new UserDefinedSegmentMatcher(employees)), fullyRollout);
-        ParsedCondition parsedCondition2 = ParsedCondition.createParsedConditionForTests(CombiningMatcher.of(new UserDefinedSegmentMatcher(salespeople)), turnOff);
+        ParsedCondition parsedCondition1 = ParsedCondition.createParsedConditionForTests(CombiningMatcher.of(new UserDefinedSegmentMatcher(segmentCache, EMPLOYEES)), fullyRollout);
+        ParsedCondition parsedCondition2 = ParsedCondition.createParsedConditionForTests(CombiningMatcher.of(new UserDefinedSegmentMatcher(segmentCache, EMPLOYEES)), turnOff);
         List<ParsedCondition> listOfParsedConditions = Lists.newArrayList(parsedCondition1, parsedCondition2);
 
         ParsedSplit expected = ParsedSplit.createParsedSplitForTests("first.name", 123, false, Treatments.OFF, listOfParsedConditions, "user", 1, 1);
@@ -173,13 +174,19 @@ public class SplitParserTest {
 
     @Test
     public void fails_for_long_conditions() {
+        SDKReadinessGates gates = new SDKReadinessGates();
+        SegmentCache segmentCache = new SegmentCacheInMemoryImpl();
+        segmentCache.updateSegment(EMPLOYEES, Stream.of("adil", "pato", "trevor").collect(Collectors.toList()), new ArrayList<>());
+        segmentCache.updateSegment(SALES_PEOPLE, Stream.of("kunal").collect(Collectors.toList()), new ArrayList<>());
+        SegmentChangeFetcher segmentChangeFetcher = Mockito.mock(SegmentChangeFetcher.class);
+        SegmentChange segmentChangeEmployee = getSegmentChange(-1L, -1L, EMPLOYEES);
+        Mockito.when(segmentChangeFetcher.fetch(Mockito.anyString(), Mockito.anyLong(), Mockito.anyBoolean())).thenReturn(segmentChangeEmployee);
 
-        StaticSegment employees = new StaticSegment("employees", Sets.newHashSet("adil", "pato", "trevor"));
+        SegmentSynchronizationTask segmentFetcher = new SegmentSynchronizationTaskImp(segmentChangeFetcher,1L, 1, gates, segmentCache);
 
-        SegmentFetcher segmentFetcher = new StaticSegmentFetcher(Maps.<String, StaticSegment>newHashMap());
-        SplitParser parser = new SplitParser(segmentFetcher);
+        SplitParser parser = new SplitParser(segmentFetcher, segmentCache);
 
-        Matcher employeesMatcher = ConditionsTestUtil.userDefinedSegmentMatcher(employees.segmentName(), false);
+        Matcher employeesMatcher = ConditionsTestUtil.userDefinedSegmentMatcher(EMPLOYEES, false);
 
         List<Condition> conditions = Lists.newArrayList();
         List<Partition> p1 = Lists.newArrayList(ConditionsTestUtil.partition("on", 100));
@@ -196,19 +203,20 @@ public class SplitParserTest {
 
     @Test
     public void works_with_attributes() {
+        SDKReadinessGates gates = new SDKReadinessGates();
+        SegmentCache segmentCache = new SegmentCacheInMemoryImpl();
+        segmentCache.updateSegment(EMPLOYEES, Stream.of("adil", "pato", "trevor").collect(Collectors.toList()), new ArrayList<>());
+        segmentCache.updateSegment(SALES_PEOPLE, Stream.of("kunal").collect(Collectors.toList()), new ArrayList<>());
+        SegmentChangeFetcher segmentChangeFetcher = Mockito.mock(SegmentChangeFetcher.class);
+        SegmentChange segmentChangeEmployee = getSegmentChange(-1L, -1L, EMPLOYEES);
+        SegmentChange segmentChangeSalesPeople = getSegmentChange(-1L, -1L, SALES_PEOPLE);
+        Mockito.when(segmentChangeFetcher.fetch(Mockito.anyString(), Mockito.anyLong(), Mockito.anyBoolean())).thenReturn(segmentChangeEmployee).thenReturn(segmentChangeSalesPeople);
 
-        StaticSegment employees = new StaticSegment("employees", Sets.newHashSet("adil", "pato", "trevor"));
-        StaticSegment salespeople = new StaticSegment("salespeople", Sets.newHashSet("kunal"));
+        SegmentSynchronizationTask segmentFetcher = new SegmentSynchronizationTaskImp(segmentChangeFetcher,1L, 1, gates, segmentCache);
 
-        Map<String, StaticSegment> fetcherMap = Maps.newHashMap();
-        fetcherMap.put(employees.segmentName(), employees);
-        fetcherMap.put(salespeople.segmentName(), salespeople);
+        SplitParser parser = new SplitParser(segmentFetcher, segmentCache);
 
-        SegmentFetcher segmentFetcher = new StaticSegmentFetcher(fetcherMap);
-
-        SplitParser parser = new SplitParser(segmentFetcher);
-
-        Matcher employeesMatcher = ConditionsTestUtil.userDefinedSegmentMatcher("user", "name", employees.segmentName(), false);
+        Matcher employeesMatcher = ConditionsTestUtil.userDefinedSegmentMatcher("user", "name", EMPLOYEES, false);
 
         Matcher creationDateNotOlderThanAPoint = ConditionsTestUtil.numericMatcher("user", "creation_date",
                 MatcherType.GREATER_THAN_OR_EQUAL_TO,
@@ -226,7 +234,7 @@ public class SplitParserTest {
 
         ParsedSplit actual = parser.parse(split);
 
-        AttributeMatcher employeesMatcherLogic = new AttributeMatcher("name", new UserDefinedSegmentMatcher(employees), false);
+        AttributeMatcher employeesMatcherLogic = new AttributeMatcher("name", new UserDefinedSegmentMatcher(segmentCache, EMPLOYEES), false);
         AttributeMatcher creationDateNotOlderThanAPointLogic = new AttributeMatcher("creation_date", new GreaterThanOrEqualToMatcher(1457386741L, DataType.DATETIME), true);
         CombiningMatcher combiningMatcher = new CombiningMatcher(MatcherCombiner.AND, Lists.newArrayList(employeesMatcherLogic, creationDateNotOlderThanAPointLogic));
         ParsedCondition parsedCondition = ParsedCondition.createParsedConditionForTests(combiningMatcher, partitions);
@@ -241,11 +249,18 @@ public class SplitParserTest {
     public void less_than_or_equal_to() {
 
 
-        Map<String, StaticSegment> fetcherMap = Maps.newHashMap();
+//        SegmentSynchronizationTask segmentFetcher = new SegmentSynchronizationTaskImp(fetcherMap);
+//        SegmentCache segmentCache = new SegmentCacheInMemoryImpl();
+        SDKReadinessGates gates = new SDKReadinessGates();
+        SegmentCache segmentCache = new SegmentCacheInMemoryImpl();
+        SegmentChangeFetcher segmentChangeFetcher = Mockito.mock(SegmentChangeFetcher.class);
+        SegmentChange segmentChangeEmployee = getSegmentChange(-1L, -1L, EMPLOYEES);
+        SegmentChange segmentChangeSalesPeople = getSegmentChange(-1L, -1L, SALES_PEOPLE);
+        Mockito.when(segmentChangeFetcher.fetch(Mockito.anyString(), Mockito.anyLong(), Mockito.anyBoolean())).thenReturn(segmentChangeEmployee).thenReturn(segmentChangeSalesPeople);
 
-        SegmentFetcher segmentFetcher = new StaticSegmentFetcher(fetcherMap);
+        SegmentSynchronizationTask segmentFetcher = new SegmentSynchronizationTaskImp(segmentChangeFetcher,1L, 1, gates, segmentCache);
 
-        SplitParser parser = new SplitParser(segmentFetcher);
+        SplitParser parser = new SplitParser(segmentFetcher, segmentCache);
 
         Matcher ageLessThan10 = ConditionsTestUtil.numericMatcher("user", "age", MatcherType.LESS_THAN_OR_EQUAL_TO, DataType.NUMBER, 10L, false);
 
@@ -273,11 +288,19 @@ public class SplitParserTest {
     @Test
     public void equal_to() {
 
-        Map<String, StaticSegment> fetcherMap = Maps.newHashMap();
+//        SegmentSynchronizationTask segmentFetcher = new SegmentSynchronizationTaskImp(fetcherMap);
+//        SegmentCache segmentCache = new SegmentCacheInMemoryImpl();
+        SDKReadinessGates gates = new SDKReadinessGates();
+        SegmentCache segmentCache = new SegmentCacheInMemoryImpl();
+        SegmentChangeFetcher segmentChangeFetcher = Mockito.mock(SegmentChangeFetcher.class);
+        SegmentChange segmentChangeEmployee = getSegmentChange(-1L, -1L, EMPLOYEES);
+        SegmentChange segmentChangeSalesPeople = getSegmentChange(-1L, -1L, SALES_PEOPLE);
+        Mockito.when(segmentChangeFetcher.fetch(Mockito.anyString(), Mockito.anyLong(), Mockito.anyBoolean())).thenReturn(segmentChangeEmployee).thenReturn(segmentChangeSalesPeople);
 
-        SegmentFetcher segmentFetcher = new StaticSegmentFetcher(fetcherMap);
+        SegmentSynchronizationTask segmentFetcher = new SegmentSynchronizationTaskImp(segmentChangeFetcher,1L, 1, gates, segmentCache);
 
-        SplitParser parser = new SplitParser(segmentFetcher);
+
+        SplitParser parser = new SplitParser(segmentFetcher, segmentCache);
 
         Matcher ageLessThan10 = ConditionsTestUtil.numericMatcher("user", "age", MatcherType.EQUAL_TO, DataType.NUMBER, 10L, true);
 
@@ -304,11 +327,19 @@ public class SplitParserTest {
     @Test
     public void equal_to_negative_number() {
 
-        Map<String, StaticSegment> fetcherMap = Maps.newHashMap();
+//        SegmentSynchronizationTask segmentFetcher = new SegmentSynchronizationTaskImp(fetcherMap);
+//        SegmentCache segmentCache = new SegmentCacheInMemoryImpl();
+        SDKReadinessGates gates = new SDKReadinessGates();
+        SegmentCache segmentCache = new SegmentCacheInMemoryImpl();
+        SegmentChangeFetcher segmentChangeFetcher = Mockito.mock(SegmentChangeFetcher.class);
+        SegmentChange segmentChangeEmployee = getSegmentChange(-1L, -1L, EMPLOYEES);
+        SegmentChange segmentChangeSalesPeople = getSegmentChange(-1L, -1L, SALES_PEOPLE);
+        Mockito.when(segmentChangeFetcher.fetch(Mockito.anyString(), Mockito.anyLong(), Mockito.anyBoolean())).thenReturn(segmentChangeEmployee).thenReturn(segmentChangeSalesPeople);
 
-        SegmentFetcher segmentFetcher = new StaticSegmentFetcher(fetcherMap);
+        SegmentSynchronizationTask segmentFetcher = new SegmentSynchronizationTaskImp(segmentChangeFetcher,1L, 1, gates, segmentCache);
 
-        SplitParser parser = new SplitParser(segmentFetcher);
+
+        SplitParser parser = new SplitParser(segmentFetcher, segmentCache);
 
         Matcher equalToNegative10 = ConditionsTestUtil.numericMatcher("user", "age", MatcherType.EQUAL_TO, DataType.NUMBER, -10L, false);
 
@@ -335,8 +366,19 @@ public class SplitParserTest {
     @Test
     public void between() {
 
-        SegmentFetcher segmentFetcher = new StaticSegmentFetcher(Collections.<String, StaticSegment>emptyMap());
-        SplitParser parser = new SplitParser(segmentFetcher);
+//        SegmentSynchronizationTask segmentFetcher = new SegmentSynchronizationTaskImp(fetcherMap);
+//        SegmentCache segmentCache = new SegmentCacheInMemoryImpl();
+        SDKReadinessGates gates = new SDKReadinessGates();
+        SegmentCache segmentCache = new SegmentCacheInMemoryImpl();
+        SegmentChangeFetcher segmentChangeFetcher = Mockito.mock(SegmentChangeFetcher.class);
+        SegmentChange segmentChangeEmployee = getSegmentChange(-1L, -1L, EMPLOYEES);
+        SegmentChange segmentChangeSalesPeople = getSegmentChange(-1L, -1L, SALES_PEOPLE);
+        Mockito.when(segmentChangeFetcher.fetch(Mockito.anyString(), Mockito.anyLong(), Mockito.anyBoolean())).thenReturn(segmentChangeEmployee).thenReturn(segmentChangeSalesPeople);
+
+        SegmentSynchronizationTask segmentFetcher = new SegmentSynchronizationTaskImp(segmentChangeFetcher,1L, 1, gates, segmentCache);
+
+
+        SplitParser parser = new SplitParser(segmentFetcher, segmentCache);
 
         Matcher ageBetween10And11 = ConditionsTestUtil.betweenMatcher("user",
                 "age",
@@ -501,8 +543,18 @@ public class SplitParserTest {
 
     public void set_matcher_test(Condition c, io.split.engine.matchers.Matcher m) {
 
-        SegmentFetcher segmentFetcher = new StaticSegmentFetcher(Collections.<String, StaticSegment>emptyMap());
-        SplitParser parser = new SplitParser(segmentFetcher);
+//        SegmentSynchronizationTask segmentFetcher = new SegmentSynchronizationTaskImp(fetcherMap);
+//        SegmentCache segmentCache = new SegmentCacheInMemoryImpl();
+        SDKReadinessGates gates = new SDKReadinessGates();
+        SegmentCache segmentCache = new SegmentCacheInMemoryImpl();
+        SegmentChangeFetcher segmentChangeFetcher = Mockito.mock(SegmentChangeFetcher.class);
+        SegmentChange segmentChangeEmployee = getSegmentChange(-1L, -1L, EMPLOYEES);
+        SegmentChange segmentChangeSalesPeople = getSegmentChange(-1L, -1L, SALES_PEOPLE);
+        Mockito.when(segmentChangeFetcher.fetch(Mockito.anyString(), Mockito.anyLong(), Mockito.anyBoolean())).thenReturn(segmentChangeEmployee).thenReturn(segmentChangeSalesPeople);
+
+        SegmentSynchronizationTask segmentFetcher = new SegmentSynchronizationTaskImp(segmentChangeFetcher,1L, 1, gates, segmentCache);
+
+        SplitParser parser = new SplitParser(segmentFetcher, segmentCache);
 
         ArrayList<String> set = Lists.<String>newArrayList("sms", "voice");
 
@@ -543,6 +595,16 @@ public class SplitParserTest {
         split.algo = 1;
         split.configurations = configurations;
         return split;
+    }
+
+    private SegmentChange getSegmentChange(long since, long till, String segmentName){
+        SegmentChange segmentChange = new SegmentChange();
+        segmentChange.name = segmentName;
+        segmentChange.since = since;
+        segmentChange.till = till;
+        segmentChange.added = new ArrayList<>();
+        segmentChange.removed = new ArrayList<>();
+        return  segmentChange;
     }
 
 }

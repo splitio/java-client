@@ -1,5 +1,6 @@
 package io.split.client;
 
+import io.split.inputValidation.ApiKeyValidator;
 import io.split.grammar.Treatments;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -36,12 +37,7 @@ public class SplitFactoryBuilder {
      *                                               there were problems reading the override file from disk.
      */
     public static synchronized SplitFactory build(String apiToken, SplitClientConfig config) throws IOException, URISyntaxException {
-        if (apiToken == null) {
-            _log.error("factory instantiation: you passed a null apiToken, apiToken must be a non-empty string");
-        }
-        if (apiToken.isEmpty()) {
-            _log.error("factory instantiation: you passed and empty apiToken, apiToken be a non-empty string");
-        }
+        ApiKeyValidator.validate(apiToken);
 
         if (LocalhostSplitFactory.LOCALHOST.equals(apiToken)) {
             return LocalhostSplitFactory.createLocalhostSplitFactory(config);
@@ -56,7 +52,7 @@ public class SplitFactoryBuilder {
      *
      * @throws IOException if there were problems reading the override file from disk.
      */
-    public static SplitFactory local() throws IOException {
+    public static SplitFactory local() throws IOException, URISyntaxException {
         return LocalhostSplitFactory.createLocalhostSplitFactory(SplitClientConfig.builder().build());
     }
 
@@ -66,7 +62,7 @@ public class SplitFactoryBuilder {
      * @return config Split config file
      * @throws IOException if there were problems reading the override file from disk.
      */
-    public static SplitFactory local(SplitClientConfig config) throws IOException {
+    public static SplitFactory local(SplitClientConfig config) throws IOException, URISyntaxException {
         return LocalhostSplitFactory.createLocalhostSplitFactory(config);
     }
 

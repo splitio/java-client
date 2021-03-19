@@ -28,6 +28,8 @@ public final class HttpSplitChangeFetcher implements SplitChangeFetcher {
 
     private static final String SINCE = "since";
     private static final String PREFIX = "splitChangeFetcher";
+    private static final String NAME_CACHE = "Cache-Control";
+    private static final String VALUE_CACHE = "no-cache";
 
     private final CloseableHttpClient _client;
     private final URI _target;
@@ -49,7 +51,7 @@ public final class HttpSplitChangeFetcher implements SplitChangeFetcher {
     }
 
     @Override
-    public SplitChange fetch(long since) {
+    public SplitChange fetch(long since, boolean addCacheHeader) {
 
         long start = System.currentTimeMillis();
 
@@ -59,6 +61,9 @@ public final class HttpSplitChangeFetcher implements SplitChangeFetcher {
             URI uri = new URIBuilder(_target).addParameter(SINCE, "" + since).build();
 
             HttpGet request = new HttpGet(uri);
+            if(addCacheHeader) {
+                request.setHeader(NAME_CACHE, VALUE_CACHE);
+            }
             response = _client.execute(request);
 
             int statusCode = response.getCode();

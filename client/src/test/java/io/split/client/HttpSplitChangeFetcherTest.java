@@ -63,7 +63,7 @@ public class HttpSplitChangeFetcherTest {
         Metrics.NoopMetrics metrics = new Metrics.NoopMetrics();
         HttpSplitChangeFetcher fetcher = HttpSplitChangeFetcher.create(httpClientMock, rootTarget, metrics);
 
-        SplitChange change = fetcher.fetch(1234567);
+        SplitChange change = fetcher.fetch(1234567, true);
 
         Assert.assertNotNull(change);
         Assert.assertEquals(1, change.splits.size());
