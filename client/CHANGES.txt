@@ -1,5 +1,11 @@
 CHANGES
 
+4.1.4 (Mar 19, 2021)
+- Updated: Internal cache structure refactor.
+- Updated: Streaming revamp with several bugfixes and improved log messages.
+- Added: Cache-Control header for on-demand requests to sdk-server.
+- Updated: Localhost Client revamp & bugfix for missing splits.
+
 4.1.2 (Nov 25, 2020)
 - Updated junit from 4.12 to 4.13.1
 - Updated HttpClient from 4.5.2 to 5.0.3
