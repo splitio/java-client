@@ -58,7 +58,7 @@ public final class LocalhostSplitFactory implements SplitFactory {
         _cacheUpdaterService = new CacheUpdaterService(splitCache);
         _cacheUpdaterService.updateCache(splitAndKeyToTreatment);
         _client = new SplitClientImpl(this, splitCache,
-                new ImpressionsManager.NoOpImpressionsManager(),  new Metrics.NoopMetrics(), new NoopEventClient(),
+                new ImpressionsManager.NoOpImpressionsManager(), new NoopEventClient(),
                 SplitClientConfig.builder().setBlockUntilReadyTimeout(1).build(), sdkReadinessGates, new EvaluatorImp(splitCache));
         _manager = LocalhostSplitManager.of(splitAndKeyToTreatment);
 

@@ -6,8 +6,6 @@ import io.split.client.impressions.ImpressionsManagerImpl;
 import io.split.client.interceptors.AddSplitHeadersFilter;
 import io.split.client.interceptors.GzipDecoderResponseInterceptor;
 import io.split.client.interceptors.GzipEncoderRequestInterceptor;
-import io.split.client.metrics.CachedMetrics;
-import io.split.client.metrics.FireAndForgetMetrics;
 import io.split.client.metrics.HttpMetrics;
 import io.split.cache.InMemoryCacheImp;
 import io.split.cache.SplitCache;
@@ -68,12 +66,10 @@ public class SplitFactoryImpl implements SplitFactory {
     private final CloseableHttpClient _httpclient;
     private final SDKReadinessGates _gates;
     private final HttpMetrics _httpMetrics;
-    private final FireAndForgetMetrics _unCachedFireAndForget;
     private final SegmentSynchronizationTaskImp _segmentSynchronizationTaskImp;
     private final SplitFetcher _splitFetcher;
     private final SplitSynchronizationTask _splitSynchronizationTask;
     private final ImpressionsManagerImpl _impressionsManager;
-    private final FireAndForgetMetrics _cachedFireAndForgetMetrics;
     private final EventClient _eventClient;
     private final SyncManager _syncManager;
     private final Evaluator _evaluator;
@@ -119,9 +115,6 @@ public class SplitFactoryImpl implements SplitFactory {
         _segmentCache = new SegmentCacheInMemoryImpl();
         _splitCache = new InMemoryCacheImp();
 
-        // Metrics
-        _unCachedFireAndForget = FireAndForgetMetrics.instance(_httpMetrics, 2, 1000);
-
         // Segments
         _segmentSynchronizationTaskImp = buildSegments(config);
 
@@ -134,8 +127,6 @@ public class SplitFactoryImpl implements SplitFactory {
         // Impressions
         _impressionsManager = buildImpressionsManager(config);
 
-        // CachedFireAndForgetMetrics
-        _cachedFireAndForgetMetrics = buildCachedFireAndForgetMetrics(config);
 
         // EventClient
         _eventClient = EventClientImpl.create(_httpclient, _eventsRootTarget, config.eventsQueueSize(), config.eventFlushIntervalInMillis(), config.waitBeforeShutdown());
@@ -148,7 +139,7 @@ public class SplitFactoryImpl implements SplitFactory {
         _evaluator = new EvaluatorImp(_splitCache);
 
         // SplitClient
-        _client = new SplitClientImpl(this, _splitCache, _impressionsManager, _cachedFireAndForgetMetrics, _eventClient, config, _gates, _evaluator);
+        _client = new SplitClientImpl(this, _splitCache, _impressionsManager, _eventClient, config, _gates, _evaluator);
 
         // SplitManager
         _manager = new SplitManagerImpl(_splitCache, config, _gates);
@@ -183,10 +174,6 @@ public class SplitFactoryImpl implements SplitFactory {
                 _log.info("Successful shutdown of splits");
                 _impressionsManager.close();
                 _log.info("Successful shutdown of impressions manager");
-                _unCachedFireAndForget.close();
-                _log.info("Successful shutdown of metrics 1");
-                _cachedFireAndForgetMetrics.close();
-                _log.info("Successful shutdown of metrics 2");
                 _httpclient.close();
                 _log.info("Successful shutdown of httpclient");
                 _eventClient.close();
@@ -296,7 +283,7 @@ public class SplitFactoryImpl implements SplitFactory {
     }
 
     private SegmentSynchronizationTaskImp buildSegments(SplitClientConfig config) throws URISyntaxException {
-        SegmentChangeFetcher segmentChangeFetcher = HttpSegmentChangeFetcher.create(_httpclient, _rootTarget, _unCachedFireAndForget);
+        SegmentChangeFetcher segmentChangeFetcher = HttpSegmentChangeFetcher.create(_httpclient, _rootTarget);
 
         return new SegmentSynchronizationTaskImp(segmentChangeFetcher,
                 findPollingPeriod(RANDOM, config.segmentsRefreshRate()),
@@ -306,7 +293,7 @@ public class SplitFactoryImpl implements SplitFactory {
     }
 
     private SplitFetcher buildSplitFetcher() throws URISyntaxException {
-        SplitChangeFetcher splitChangeFetcher = HttpSplitChangeFetcher.create(_httpclient, _rootTarget, _unCachedFireAndForget);
+        SplitChangeFetcher splitChangeFetcher = HttpSplitChangeFetcher.create(_httpclient, _rootTarget);
         SplitParser splitParser = new SplitParser(_segmentSynchronizationTaskImp, _segmentCache);
 
         return new SplitFetcherImp(splitChangeFetcher, splitParser, _gates, _splitCache);
@@ -327,9 +314,4 @@ public class SplitFactoryImpl implements SplitFactory {
         return ImpressionsManagerImpl.instance(_httpclient, config, impressionListeners);
     }
 
-    private FireAndForgetMetrics buildCachedFireAndForgetMetrics(SplitClientConfig config) {
-        CachedMetrics cachedMetrics = new CachedMetrics(_httpMetrics, TimeUnit.SECONDS.toMillis(config.metricsRefreshRate()));
-
-        return FireAndForgetMetrics.instance(cachedMetrics, 2, 1000);
-    }
 }

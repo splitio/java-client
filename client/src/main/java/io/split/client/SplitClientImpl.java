@@ -43,7 +43,6 @@ public final class SplitClientImpl implements SplitClient {
     private final SplitFactory _container;
     private final SplitCache _splitCache;
     private final ImpressionsManager _impressionManager;
-    private final Metrics _metrics;
     private final SplitClientConfig _config;
     private final EventClient _eventClient;
     private final SDKReadinessGates _gates;
@@ -52,7 +51,6 @@ public final class SplitClientImpl implements SplitClient {
     public SplitClientImpl(SplitFactory container,
                            SplitCache splitCache,
                            ImpressionsManager impressionManager,
-                           Metrics metrics,
                            EventClient eventClient,
                            SplitClientConfig config,
                            SDKReadinessGates gates,
@@ -60,7 +58,6 @@ public final class SplitClientImpl implements SplitClient {
         _container = container;
         _splitCache = checkNotNull(splitCache);
         _impressionManager = checkNotNull(impressionManager);
-        _metrics = metrics;
         _eventClient = eventClient;
         _config = config;
         _gates = checkNotNull(gates);
@@ -235,7 +232,6 @@ public final class SplitClientImpl implements SplitClient {
                              String operation, String label, Long changeNumber, Map<String, Object> attributes) {
         try {
             _impressionManager.track(new Impression(matchingKey, bucketingKey, split, result, System.currentTimeMillis(), label, changeNumber, attributes));
-            _metrics.time(operation, System.currentTimeMillis() - start);
         } catch (Throwable t) {
             _log.error("Exception", t);
         }
