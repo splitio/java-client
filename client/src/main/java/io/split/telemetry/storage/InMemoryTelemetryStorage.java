@@ -1,6 +1,7 @@
 package io.split.telemetry.storage;
 
 import com.google.common.collect.Maps;
+import io.split.telemetry.utils.BucketCalculator;
 import io.split.telemetry.domain.*;
 import io.split.telemetry.domain.enums.*;
 
@@ -10,10 +11,11 @@ import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.atomic.AtomicLong;
 
 public class InMemoryTelemetryStorage implements  TelemetryStorage{
+    public static final int MAX_LATENCY_BUCKET_COUNT = 23;
 
     //Latencies
-    private final ConcurrentMap<MethodEnum, List<Long>> _methodLatencies = Maps.newConcurrentMap();
-    private final ConcurrentMap<HTTPLatenciesEnum, List<Long>> _httpLatencies = Maps.newConcurrentMap();
+    private final ConcurrentMap<MethodEnum, AtomicLongArray> _methodLatencies = Maps.newConcurrentMap();
+    private final ConcurrentMap<HTTPLatenciesEnum, AtomicLongArray> _httpLatencies = Maps.newConcurrentMap();
 
     //Counters
     private final ConcurrentMap<MethodEnum, AtomicLong> _exceptionsCounters = Maps.newConcurrentMap();
@@ -37,37 +39,39 @@ public class InMemoryTelemetryStorage implements  TelemetryStorage{
     private final Object _tagsLock = new Object();
     private final List<String> _tags = new ArrayList<>();
 
-    public InMemoryTelemetryStorage() {
+    public InMemoryTelemetryStorage() throws Exception {
         initMethodLatencies();
         initHttpLatencies();
         initHttpErrors();
-    }
-
-    @Override
-    public void recordConfigData() {
-        // No-Op. Config Data will be sent directly to Split Servers. No need to store.
+        initMethodCounters();
+        initFactoryCounters();
+        initImpressionDataCounters();
+        initPushCounters();
+        initSdkRecords();
+        initLastSynchronizationRecords();
+        initEventDataRecords();
     }
 
     @Override
     public long getBURTimeouts() {
-        long burTimeouts = _factoryCounters.getOrDefault(FactoryCountersEnum.BUR_TIMEOUTS, new AtomicLong()).get();
+        long burTimeouts = _factoryCounters.get(FactoryCountersEnum.BUR_TIMEOUTS).get();
         return burTimeouts;
     }
 
     @Override
     public long getNonReadyUsages() {
-        long nonReadyUsages = _factoryCounters.getOrDefault(FactoryCountersEnum.NON_READY_USAGES, new AtomicLong()).get();
+        long nonReadyUsages = _factoryCounters.get(FactoryCountersEnum.NON_READY_USAGES).get();
         return nonReadyUsages;
     }
 
     @Override
-    public MethodExceptions popExceptions() {
+    public MethodExceptions popExceptions() throws Exception {
         MethodExceptions exceptions = new MethodExceptions();
-        exceptions.set_treatment(_exceptionsCounters.getOrDefault(MethodEnum.TREATMENT, new AtomicLong()).get());
-        exceptions.set_treatments(_exceptionsCounters.getOrDefault(MethodEnum.TREATMENTS, new AtomicLong()).get());
-        exceptions.set_treatmentWithConfig(_exceptionsCounters.getOrDefault(MethodEnum.TREATMENT_WITH_CONFIG, new AtomicLong()).get());
-        exceptions.set_treatmentsWithConfig(_exceptionsCounters.getOrDefault(MethodEnum.TREATMENTS_WITH_CONFIG, new AtomicLong()).get());
-        exceptions.set_track(_exceptionsCounters.getOrDefault(MethodEnum.TRACK, new AtomicLong()).get());
+        exceptions.set_treatment(_exceptionsCounters.get(MethodEnum.TREATMENT).get());
+        exceptions.set_treatments(_exceptionsCounters.get(MethodEnum.TREATMENTS).get());
+        exceptions.set_treatmentWithConfig(_exceptionsCounters.get(MethodEnum.TREATMENT_WITH_CONFIG).get());
+        exceptions.set_treatmentsWithConfig(_exceptionsCounters.get(MethodEnum.TREATMENTS_WITH_CONFIG).get());
+        exceptions.set_track(_exceptionsCounters.get(MethodEnum.TRACK).get());
 
         _exceptionsCounters.clear();
         initMethodLatencies();
@@ -78,61 +82,60 @@ public class InMemoryTelemetryStorage implements  TelemetryStorage{
     @Override
     public MethodLatencies popLatencies() {
         MethodLatencies latencies = new MethodLatencies();
-        latencies.set_treatment(_methodLatencies.get(MethodEnum.TREATMENT));
-        latencies.set_treatments(_methodLatencies.get(MethodEnum.TREATMENTS));
-        latencies.set_treatmentWithConfig(_methodLatencies.get(MethodEnum.TREATMENT_WITH_CONFIG));
-        latencies.set_treatmentsWithConfig(_methodLatencies.get(MethodEnum.TREATMENTS_WITH_CONFIG));
-        latencies.set_track(_methodLatencies.get(MethodEnum.TRACK));
+        latencies.set_treatment(_methodLatencies.get(MethodEnum.TREATMENT).fetchAndClearAll());
+        latencies.set_treatments(_methodLatencies.get(MethodEnum.TREATMENTS).fetchAndClearAll());
+        latencies.set_treatmentWithConfig(_methodLatencies.get(MethodEnum.TREATMENT_WITH_CONFIG).fetchAndClearAll());
+        latencies.set_treatmentsWithConfig(_methodLatencies.get(MethodEnum.TREATMENTS_WITH_CONFIG).fetchAndClearAll());
+        latencies.set_track(_methodLatencies.get(MethodEnum.TRACK).fetchAndClearAll());
 
         _methodLatencies.clear();
-        initMethodLatencies();
+        initMethodCounters();
 
         return latencies;
     }
 
     @Override
     public void recordNonReadyUsage() {
-        _factoryCounters.putIfAbsent(FactoryCountersEnum.NON_READY_USAGES, new AtomicLong(0));
         _factoryCounters.get(FactoryCountersEnum.NON_READY_USAGES).incrementAndGet();
 
     }
 
     @Override
     public void recordBURTimeout() {
-        _factoryCounters.putIfAbsent(FactoryCountersEnum.BUR_TIMEOUTS, new AtomicLong(0));
         _factoryCounters.get(FactoryCountersEnum.BUR_TIMEOUTS).incrementAndGet();
     }
 
     @Override
     public void recordLatency(String method, int latency) {
-        _methodLatencies.get(method).add(Long.valueOf(latency));
+        int bucket = BucketCalculator.getBucketForLatencyMillis(latency);
+        _methodLatencies.get(method).increment(bucket);
     }
 
     @Override
     public void recordException(MethodEnum method) {
-        _exceptionsCounters.putIfAbsent(method, new AtomicLong(0));
         _exceptionsCounters.get(method).incrementAndGet();
     }
 
     @Override
     public long getImpressionsStats(ImpressionsDataTypeEnum data) {
-        return _impressionsDataRecords.getOrDefault(data, new AtomicLong()).get();
+        return _impressionsDataRecords.get(data).get();
     }
 
     @Override
     public long getEventStats(EventsDataRecordsEnum type) {
-        return _eventsDataRecords.getOrDefault(type, new AtomicLong()).get();
+        return _eventsDataRecords.get(type).get();
     }
 
     @Override
     public LastSynchronization getLastSynchronization() {
         LastSynchronization lastSynchronization = new LastSynchronization();
-        lastSynchronization.set_splits(_lastSynchronizationRecords.getOrDefault(LastSynchronizationRecordsEnum.SPLITS, new AtomicLong()).get());
-        lastSynchronization.set_segments(_lastSynchronizationRecords.getOrDefault(LastSynchronizationRecordsEnum.SEGMENTS, new AtomicLong()).get());
-        lastSynchronization.set_impressions(_lastSynchronizationRecords.getOrDefault(LastSynchronizationRecordsEnum.IMPRESSIONS, new AtomicLong()).get());
-        lastSynchronization.set_events(_lastSynchronizationRecords.getOrDefault(LastSynchronizationRecordsEnum.EVENTS, new AtomicLong()).get());
-        lastSynchronization.set_telemetry(_lastSynchronizationRecords.getOrDefault(LastSynchronizationRecordsEnum.TELEMETRY, new AtomicLong()).get());
-        lastSynchronization.set_token(_lastSynchronizationRecords.getOrDefault(LastSynchronizationRecordsEnum.TOKEN, new AtomicLong()).get());
+        lastSynchronization.set_splits(_lastSynchronizationRecords.get(LastSynchronizationRecordsEnum.SPLITS).get());
+        lastSynchronization.set_segments(_lastSynchronizationRecords.get(LastSynchronizationRecordsEnum.SEGMENTS).get());
+        lastSynchronization.set_impressions(_lastSynchronizationRecords.get(LastSynchronizationRecordsEnum.IMPRESSIONS).get());
+        lastSynchronization.set_impressionsCount(_lastSynchronizationRecords.get(LastSynchronizationRecordsEnum.IMPRESSIONS_COUNT).get());
+        lastSynchronization.set_events(_lastSynchronizationRecords.get(LastSynchronizationRecordsEnum.EVENTS).get());
+        lastSynchronization.set_telemetry(_lastSynchronizationRecords.get(LastSynchronizationRecordsEnum.TELEMETRY).get());
+        lastSynchronization.set_token(_lastSynchronizationRecords.get(LastSynchronizationRecordsEnum.TOKEN).get());
 
         return lastSynchronization;
     }
@@ -143,6 +146,7 @@ public class InMemoryTelemetryStorage implements  TelemetryStorage{
         errors.set_splits(_httpErrors.get(ResourceEnum.SPLIT_SYNC));
         errors.set_segments(_httpErrors.get(ResourceEnum.SEGMENT_SYNC));
         errors.set_impressions(_httpErrors.get(ResourceEnum.IMPRESSION_SYNC));
+        errors.set_impressionsCount(_httpErrors.get(ResourceEnum.IMPRESSION_COUNT_SYNC));
         errors.set_events(_httpErrors.get(ResourceEnum.EVENT_SYNC));
         errors.set_telemetry(_httpErrors.get(ResourceEnum.TELEMETRY_SYNC));
         errors.set_token(_httpErrors.get(ResourceEnum.TOKEN_SYNC));
@@ -154,14 +158,15 @@ public class InMemoryTelemetryStorage implements  TelemetryStorage{
     }
 
     @Override
-    public HTTPLatencies popHTTPLatencies() {
+    public HTTPLatencies popHTTPLatencies() throws Exception {
         HTTPLatencies latencies = new HTTPLatencies();
-        latencies.set_splits(_httpLatencies.get(HTTPLatenciesEnum.SPLITS));
-        latencies.set_segments(_httpLatencies.get(HTTPLatenciesEnum.SEGMENTS));
-        latencies.set_impressions(_httpLatencies.get(HTTPLatenciesEnum.IMPRESSIONS));
-        latencies.set_events(_httpLatencies.get(HTTPLatenciesEnum.EVENTS));
-        latencies.set_telemetry(_httpLatencies.get(HTTPLatenciesEnum.TELEMETRY));
-        latencies.set_token(_httpLatencies.get(HTTPLatenciesEnum.TOKEN));
+        latencies.set_splits(_httpLatencies.get(HTTPLatenciesEnum.SPLITS).fetchAndClearAll());
+        latencies.set_segments(_httpLatencies.get(HTTPLatenciesEnum.SEGMENTS).fetchAndClearAll());
+        latencies.set_impressions(_httpLatencies.get(HTTPLatenciesEnum.IMPRESSIONS).fetchAndClearAll());
+        latencies.set_impressionsCount(_httpLatencies.get(HTTPLatenciesEnum.IMPRESSIONS_COUNT).fetchAndClearAll());
+        latencies.set_events(_httpLatencies.get(HTTPLatenciesEnum.EVENTS).fetchAndClearAll());
+        latencies.set_telemetry(_httpLatencies.get(HTTPLatenciesEnum.TELEMETRY).fetchAndClearAll());
+        latencies.set_token(_httpLatencies.get(HTTPLatenciesEnum.TOKEN).fetchAndClearAll());
 
         _httpLatencies.clear();
         initHttpLatencies();
@@ -171,7 +176,7 @@ public class InMemoryTelemetryStorage implements  TelemetryStorage{
 
     @Override
     public long popAuthRejections() {
-        long authRejections = _pushCounters.getOrDefault(PushCountersEnum.AUTH_REJECTIONS, new AtomicLong()).get();
+        long authRejections = _pushCounters.get(PushCountersEnum.AUTH_REJECTIONS).get();
 
         _pushCounters.replace(PushCountersEnum.AUTH_REJECTIONS, new AtomicLong());
 
@@ -180,7 +185,7 @@ public class InMemoryTelemetryStorage implements  TelemetryStorage{
 
     @Override
     public long popTokenRefreshes() {
-        long tokenRefreshes = _pushCounters.getOrDefault(PushCountersEnum.TOKEN_REFRESHES, new AtomicLong()).get();
+        long tokenRefreshes = _pushCounters.get(PushCountersEnum.TOKEN_REFRESHES).get();
 
         _pushCounters.replace(PushCountersEnum.TOKEN_REFRESHES, new AtomicLong());
 
@@ -211,7 +216,7 @@ public class InMemoryTelemetryStorage implements  TelemetryStorage{
 
     @Override
     public long getSessionLength() {
-        return _sdkRecords.getOrDefault(SdkRecordsEnum.SESSION, new AtomicLong()).get();
+        return _sdkRecords.get(SdkRecordsEnum.SESSION).get();
     }
 
     @Override
@@ -223,19 +228,17 @@ public class InMemoryTelemetryStorage implements  TelemetryStorage{
 
     @Override
     public void recordImpressionStats(ImpressionsDataTypeEnum dataType, long count) {
-        _impressionsDataRecords.putIfAbsent(dataType, new AtomicLong());
         _impressionsDataRecords.get(dataType).incrementAndGet();
     }
 
     @Override
     public void recordEventStats(EventsDataRecordsEnum dataType, long count) {
-        _eventsDataRecords.putIfAbsent(dataType, new AtomicLong());
         _eventsDataRecords.get(dataType).incrementAndGet();
     }
 
     @Override
     public void recordSuccessfulSync(LastSynchronizationRecordsEnum resource, long time) {
-        _lastSynchronizationRecords.putIfAbsent(resource, new AtomicLong(time));
+        _lastSynchronizationRecords.replace(resource, new AtomicLong(time));
 
     }
 
@@ -248,20 +251,19 @@ public class InMemoryTelemetryStorage implements  TelemetryStorage{
 
     @Override
     public void recordSyncLatency(String resource, long latency) {
-        _httpLatencies.get(resource).add(latency);
+        int bucket = BucketCalculator.getBucketForLatencyMillis(latency);
+        _httpLatencies.get(resource).increment(bucket);
 
     }
 
     @Override
     public void recordAuthRejections() {
-        _pushCounters.putIfAbsent(PushCountersEnum.AUTH_REJECTIONS, new AtomicLong(0));
         _pushCounters.get(PushCountersEnum.AUTH_REJECTIONS).incrementAndGet();
 
     }
 
     @Override
     public void recordTokenRefreshes() {
-        _pushCounters.putIfAbsent(PushCountersEnum.TOKEN_REFRESHES, new AtomicLong(0));
         _pushCounters.get(PushCountersEnum.TOKEN_REFRESHES).incrementAndGet();
 
     }
@@ -275,32 +277,78 @@ public class InMemoryTelemetryStorage implements  TelemetryStorage{
 
     @Override
     public void recordSessionLength(long sessionLength) {
-        _sdkRecords.putIfAbsent(SdkRecordsEnum.SESSION, new AtomicLong(sessionLength));
+        _sdkRecords.replace(SdkRecordsEnum.SESSION, new AtomicLong(sessionLength));
     }
 
-    private void initMethodLatencies() {
-        _methodLatencies.put(MethodEnum.TREATMENT, new ArrayList<>());
-        _methodLatencies.put(MethodEnum.TREATMENTS, new ArrayList<>());
-        _methodLatencies.put(MethodEnum.TREATMENT_WITH_CONFIG, new ArrayList<>());
-        _methodLatencies.put(MethodEnum.TREATMENTS_WITH_CONFIG, new ArrayList<>());
-        _methodLatencies.put(MethodEnum.TRACK, new ArrayList<>());
+    private void initMethodLatencies() throws Exception {
+        _methodLatencies.put(MethodEnum.TREATMENT, new AtomicLongArray(MAX_LATENCY_BUCKET_COUNT));
+        _methodLatencies.put(MethodEnum.TREATMENTS, new AtomicLongArray(MAX_LATENCY_BUCKET_COUNT));
+        _methodLatencies.put(MethodEnum.TREATMENT_WITH_CONFIG, new AtomicLongArray(MAX_LATENCY_BUCKET_COUNT));
+        _methodLatencies.put(MethodEnum.TREATMENTS_WITH_CONFIG, new AtomicLongArray(MAX_LATENCY_BUCKET_COUNT));
+        _methodLatencies.put(MethodEnum.TRACK, new AtomicLongArray(MAX_LATENCY_BUCKET_COUNT));
     }
 
-    private void initHttpLatencies() {
-        _httpLatencies.put(HTTPLatenciesEnum.SPLITS, new ArrayList<>());
-        _httpLatencies.put(HTTPLatenciesEnum.SEGMENTS, new ArrayList<>());
-        _httpLatencies.put(HTTPLatenciesEnum.IMPRESSIONS, new ArrayList<>());
-        _httpLatencies.put(HTTPLatenciesEnum.EVENTS, new ArrayList<>());
-        _httpLatencies.put(HTTPLatenciesEnum.TELEMETRY, new ArrayList<>());
-        _httpLatencies.put(HTTPLatenciesEnum.TOKEN, new ArrayList<>());
+    private void initHttpLatencies() throws Exception {
+        _httpLatencies.put(HTTPLatenciesEnum.SPLITS, new AtomicLongArray(MAX_LATENCY_BUCKET_COUNT));
+        _httpLatencies.put(HTTPLatenciesEnum.SEGMENTS, new AtomicLongArray(MAX_LATENCY_BUCKET_COUNT));
+        _httpLatencies.put(HTTPLatenciesEnum.IMPRESSIONS, new AtomicLongArray(MAX_LATENCY_BUCKET_COUNT));
+        _httpLatencies.put(HTTPLatenciesEnum.IMPRESSIONS_COUNT, new AtomicLongArray(MAX_LATENCY_BUCKET_COUNT));
+        _httpLatencies.put(HTTPLatenciesEnum.EVENTS, new AtomicLongArray(MAX_LATENCY_BUCKET_COUNT));
+        _httpLatencies.put(HTTPLatenciesEnum.TELEMETRY, new AtomicLongArray(MAX_LATENCY_BUCKET_COUNT));
+        _httpLatencies.put(HTTPLatenciesEnum.TOKEN, new AtomicLongArray(MAX_LATENCY_BUCKET_COUNT));
     }
 
     private void initHttpErrors() {
         _httpErrors.put(ResourceEnum.SPLIT_SYNC, Maps.newConcurrentMap());
         _httpErrors.put(ResourceEnum.SEGMENT_SYNC, Maps.newConcurrentMap());
         _httpErrors.put(ResourceEnum.IMPRESSION_SYNC, Maps.newConcurrentMap());
+        _httpErrors.put(ResourceEnum.IMPRESSION_COUNT_SYNC, Maps.newConcurrentMap());
         _httpErrors.put(ResourceEnum.EVENT_SYNC, Maps.newConcurrentMap());
         _httpErrors.put(ResourceEnum.TELEMETRY_SYNC, Maps.newConcurrentMap());
         _httpErrors.put(ResourceEnum.TOKEN_SYNC, Maps.newConcurrentMap());
+    }
+
+
+
+    private void initMethodCounters() {
+        _exceptionsCounters.put(MethodEnum.TREATMENT, new AtomicLong());
+        _exceptionsCounters.put(MethodEnum.TREATMENTS, new AtomicLong());
+        _exceptionsCounters.put(MethodEnum.TREATMENT_WITH_CONFIG, new AtomicLong());
+        _exceptionsCounters.put(MethodEnum.TREATMENTS_WITH_CONFIG, new AtomicLong());
+        _exceptionsCounters.put(MethodEnum.TRACK, new AtomicLong());
+    }
+
+    private void initFactoryCounters() {
+        _factoryCounters.put(FactoryCountersEnum.BUR_TIMEOUTS, new AtomicLong());
+        _factoryCounters.put(FactoryCountersEnum.NON_READY_USAGES, new AtomicLong());
+    }
+
+    private void initImpressionDataCounters() {
+        _impressionsDataRecords.put(ImpressionsDataTypeEnum.IMPRESSIONS_DEDUPED, new AtomicLong());
+        _impressionsDataRecords.put(ImpressionsDataTypeEnum.IMPRESSIONS_DROPPED, new AtomicLong());
+        _impressionsDataRecords.put(ImpressionsDataTypeEnum.IMPRESSIONS_QUEUED, new AtomicLong());
+    }
+
+    private void initPushCounters() {
+        _pushCounters.put(PushCountersEnum.AUTH_REJECTIONS, new AtomicLong());
+        _pushCounters.put(PushCountersEnum.TOKEN_REFRESHES, new AtomicLong());
+    }
+
+    private void initSdkRecords() {
+        _sdkRecords.put(SdkRecordsEnum.SESSION, new AtomicLong());
+    }
+
+    private void initLastSynchronizationRecords() {
+        _lastSynchronizationRecords.put(LastSynchronizationRecordsEnum.SPLITS, new AtomicLong());
+        _lastSynchronizationRecords.put(LastSynchronizationRecordsEnum.SEGMENTS, new AtomicLong());
+        _lastSynchronizationRecords.put(LastSynchronizationRecordsEnum.EVENTS, new AtomicLong());
+        _lastSynchronizationRecords.put(LastSynchronizationRecordsEnum.IMPRESSIONS, new AtomicLong());
+        _lastSynchronizationRecords.put(LastSynchronizationRecordsEnum.IMPRESSIONS_COUNT, new AtomicLong());
+        _lastSynchronizationRecords.put(LastSynchronizationRecordsEnum.TOKEN, new AtomicLong());
+    }
+
+    private void initEventDataRecords() {
+        _eventsDataRecords.put(EventsDataRecordsEnum.EVENTS_DROPPED, new AtomicLong());
+        _eventsDataRecords.put(EventsDataRecordsEnum.EVENTS_QUEUED, new AtomicLong());
     }
 }

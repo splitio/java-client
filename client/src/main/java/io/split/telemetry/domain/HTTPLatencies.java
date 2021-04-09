@@ -4,12 +4,12 @@ import com.google.gson.annotations.SerializedName;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.ConcurrentHashMap;
 
 public class HTTPLatencies {
     /* package private */ static final String FIELD_SPLIT = "sp";
     /* package private */ static final String FIELD_SEGMENTS = "se";
     /* package private */ static final String FIELD_IMPRESSIONS = "im";
+    /* package private */ static final String FIELD_IMPRESSIONS_COUNT = "ic";
     /* package private */ static final String FIELD_EVENTS = "ev";
     /* package private */ static final String FIELD_TOKEN = "to";
     /* package private */ static final String FIELD_TELEMETRY = "te";
@@ -20,6 +20,8 @@ public class HTTPLatencies {
     private List<Long>_segments;
     @SerializedName(FIELD_IMPRESSIONS)
     private List<Long> _impressions;
+    @SerializedName(FIELD_IMPRESSIONS_COUNT)
+    private List<Long> _impressionsCount;
     @SerializedName(FIELD_EVENTS)
     private List<Long> _events;
     @SerializedName(FIELD_TOKEN)
@@ -31,6 +33,7 @@ public class HTTPLatencies {
         _splits = new ArrayList<>();
         _segments = new ArrayList<>();
         _impressions = new ArrayList<>();
+        _impressionsCount = new ArrayList<>();
         _events = new ArrayList<>();
         _token = new ArrayList<>();
         _telemetry = new ArrayList<>();
@@ -82,5 +85,13 @@ public class HTTPLatencies {
 
     public void set_telemetry(List<Long> _telemetry) {
         this._telemetry = _telemetry;
+    }
+
+    public List<Long> get_impressionsCount() {
+        return _impressionsCount;
+    }
+
+    public void set_impressionsCount(List<Long> _impressionsCount) {
+        this._impressionsCount = _impressionsCount;
     }
 }

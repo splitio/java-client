@@ -4,6 +4,7 @@ public enum LastSynchronizationRecordsEnum {
     SPLITS,
     SEGMENTS,
     IMPRESSIONS,
+    IMPRESSIONS_COUNT,
     EVENTS,
     TOKEN,
     TELEMETRY

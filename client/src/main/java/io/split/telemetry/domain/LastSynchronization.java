@@ -6,6 +6,7 @@ public class LastSynchronization {
     /* package private */ static final String FIELD_SPLIT = "sp";
     /* package private */ static final String FIELD_SEGMENTS = "se";
     /* package private */ static final String FIELD_IMPRESSIONS = "im";
+    /* package private */ static final String FIELD_IMPRESSIONS_COUNT = "ic";
     /* package private */ static final String FIELD_EVENTS = "ev";
     /* package private */ static final String FIELD_TOKEN = "to";
     /* package private */ static final String FIELD_TELEMETRY = "te";
@@ -16,6 +17,8 @@ public class LastSynchronization {
     private long _segments;
     @SerializedName(FIELD_IMPRESSIONS)
     private long _impressions;
+    @SerializedName(FIELD_IMPRESSIONS_COUNT)
+    private long _impressionsCount;
     @SerializedName(FIELD_EVENTS)
     private long _events;
     @SerializedName(FIELD_TOKEN)
@@ -69,5 +72,13 @@ public class LastSynchronization {
 
     public void set_telemetry(long _telemetry) {
         this._telemetry = _telemetry;
+    }
+
+    public long get_impressionsCount() {
+        return _impressionsCount;
+    }
+
+    public void set_impressionsCount(long _impressionsCount) {
+        this._impressionsCount = _impressionsCount;
     }
 }

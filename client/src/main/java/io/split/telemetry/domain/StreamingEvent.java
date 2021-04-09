@@ -3,16 +3,16 @@ package io.split.telemetry.domain;
 import com.google.gson.annotations.SerializedName;
 
 public class StreamingEvent {
-    /* package private */ static final String FIELD_TYPE = "sp";
-    /* package private */ static final String FIELD_DATA = "se";
-    /* package private */ static final String FIELD_TIMESTAMP = "im";
+    /* package private */ static final String FIELD_TYPE = "e";
+    /* package private */ static final String FIELD_DATA = "d";
+    /* package private */ static final String FIELD_TIMESTAMP = "t";
 
     @SerializedName(FIELD_TYPE)
     private int _type;
     @SerializedName(FIELD_DATA)
     private long _data;
     @SerializedName(FIELD_TIMESTAMP)
-    private long timestamp;
+    private long _timestamp;
 
     public int get_type() {
         return _type;
@@ -31,10 +31,10 @@ public class StreamingEvent {
     }
 
     public long getTimestamp() {
-        return timestamp;
+        return _timestamp;
     }
 
     public void setTimestamp(long timestamp) {
-        this.timestamp = timestamp;
+        this._timestamp = timestamp;
     }
 }

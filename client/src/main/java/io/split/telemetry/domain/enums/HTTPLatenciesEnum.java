@@ -4,6 +4,7 @@ public enum HTTPLatenciesEnum {
     SPLITS,
     SEGMENTS,
     IMPRESSIONS,
+    IMPRESSIONS_COUNT,
     EVENTS,
     TELEMETRY,
     TOKEN
