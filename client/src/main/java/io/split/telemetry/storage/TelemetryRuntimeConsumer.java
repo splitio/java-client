@@ -20,5 +20,4 @@ public interface TelemetryRuntimeConsumer {
     List<StreamingEvent> popStreamingEvents();
     List<String> popTags();
     long getSessionLength();
-
 }

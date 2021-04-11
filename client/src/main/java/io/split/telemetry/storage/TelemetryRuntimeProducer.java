@@ -1,10 +1,7 @@
 package io.split.telemetry.storage;
 
 import io.split.telemetry.domain.StreamingEvent;
-import io.split.telemetry.domain.enums.EventsDataRecordsEnum;
-import io.split.telemetry.domain.enums.ImpressionsDataTypeEnum;
-import io.split.telemetry.domain.enums.LastSynchronizationRecordsEnum;
-import io.split.telemetry.domain.enums.ResourceEnum;
+import io.split.telemetry.domain.enums.*;
 
 public interface TelemetryRuntimeProducer {
     void addTag(String tag);
@@ -12,7 +9,7 @@ public interface TelemetryRuntimeProducer {
     void recordEventStats(EventsDataRecordsEnum dataType, long count);
     void recordSuccessfulSync(LastSynchronizationRecordsEnum resource, long time);
     void recordSyncError(ResourceEnum resource, int status);
-    void recordSyncLatency(String resource, long latency);
+    void recordSyncLatency(HTTPLatenciesEnum resource, long latency);
     void recordAuthRejections();
     void recordTokenRefreshes();
     void recordStreamingEvents(StreamingEvent streamingEvent);

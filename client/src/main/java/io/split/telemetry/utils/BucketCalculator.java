@@ -42,8 +42,8 @@ public class BucketCalculator {
 
     static final long MAX_LATENCY = 7481828;
 
-    public static int getBucketForLatencyMillis(long latency) {
-        long micros = latency * 1000;
+    public static int getBucketForLatency(long latency) {
+        long micros = latency / 1000; //Convert to milliseconds
         if (micros > MAX_LATENCY) {
             return BUCKETS.length - 1;
         }

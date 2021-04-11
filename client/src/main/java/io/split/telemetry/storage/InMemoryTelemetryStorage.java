@@ -9,6 +9,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.atomic.AtomicLong;
+import java.util.stream.Collectors;
 
 public class InMemoryTelemetryStorage implements  TelemetryStorage{
     public static final int MAX_LATENCY_BUCKET_COUNT = 23;
@@ -54,14 +55,12 @@ public class InMemoryTelemetryStorage implements  TelemetryStorage{
 
     @Override
     public long getBURTimeouts() {
-        long burTimeouts = _factoryCounters.get(FactoryCountersEnum.BUR_TIMEOUTS).get();
-        return burTimeouts;
+        return _factoryCounters.get(FactoryCountersEnum.BUR_TIMEOUTS).get();
     }
 
     @Override
     public long getNonReadyUsages() {
-        long nonReadyUsages = _factoryCounters.get(FactoryCountersEnum.NON_READY_USAGES).get();
-        return nonReadyUsages;
+        return _factoryCounters.get(FactoryCountersEnum.NON_READY_USAGES).get();
     }
 
     @Override
@@ -74,13 +73,13 @@ public class InMemoryTelemetryStorage implements  TelemetryStorage{
         exceptions.set_track(_exceptionsCounters.get(MethodEnum.TRACK).get());
 
         _exceptionsCounters.clear();
-        initMethodLatencies();
+        initMethodCounters();
 
         return exceptions;
     }
 
     @Override
-    public MethodLatencies popLatencies() {
+    public MethodLatencies popLatencies() throws Exception {
         MethodLatencies latencies = new MethodLatencies();
         latencies.set_treatment(_methodLatencies.get(MethodEnum.TREATMENT).fetchAndClearAll());
         latencies.set_treatments(_methodLatencies.get(MethodEnum.TREATMENTS).fetchAndClearAll());
@@ -89,7 +88,7 @@ public class InMemoryTelemetryStorage implements  TelemetryStorage{
         latencies.set_track(_methodLatencies.get(MethodEnum.TRACK).fetchAndClearAll());
 
         _methodLatencies.clear();
-        initMethodCounters();
+        initMethodLatencies();
 
         return latencies;
     }
@@ -97,7 +96,6 @@ public class InMemoryTelemetryStorage implements  TelemetryStorage{
     @Override
     public void recordNonReadyUsage() {
         _factoryCounters.get(FactoryCountersEnum.NON_READY_USAGES).incrementAndGet();
-
     }
 
     @Override
@@ -106,8 +104,8 @@ public class InMemoryTelemetryStorage implements  TelemetryStorage{
     }
 
     @Override
-    public void recordLatency(String method, int latency) {
-        int bucket = BucketCalculator.getBucketForLatencyMillis(latency);
+    public void recordLatency(MethodEnum method, long latency) {
+        int bucket = BucketCalculator.getBucketForLatency(latency);
         _methodLatencies.get(method).increment(bucket);
     }
 
@@ -117,13 +115,13 @@ public class InMemoryTelemetryStorage implements  TelemetryStorage{
     }
 
     @Override
-    public long getImpressionsStats(ImpressionsDataTypeEnum data) {
-        return _impressionsDataRecords.get(data).get();
+    public long getImpressionsStats(ImpressionsDataTypeEnum dataType) {
+        return _impressionsDataRecords.get(dataType).get();
     }
 
     @Override
-    public long getEventStats(EventsDataRecordsEnum type) {
-        return _eventsDataRecords.get(type).get();
+    public long getEventStats(EventsDataRecordsEnum dataType) {
+        return _eventsDataRecords.get(dataType).get();
     }
 
     @Override
@@ -195,7 +193,7 @@ public class InMemoryTelemetryStorage implements  TelemetryStorage{
     @Override
     public List<StreamingEvent> popStreamingEvents() {
         synchronized (_streamingEventsLock) {
-            List<StreamingEvent> streamingEvents = _streamingEvents;
+            List<StreamingEvent> streamingEvents = _streamingEvents.stream().collect(Collectors.toList());
 
             _streamingEvents.clear();
 
@@ -206,7 +204,7 @@ public class InMemoryTelemetryStorage implements  TelemetryStorage{
     @Override
     public List<String> popTags() {
         synchronized (_tagsLock) {
-            List<String> tags = _tags;
+            List<String> tags = _tags.stream().collect(Collectors.toList());
 
             _tags.clear();
 
@@ -228,30 +226,29 @@ public class InMemoryTelemetryStorage implements  TelemetryStorage{
 
     @Override
     public void recordImpressionStats(ImpressionsDataTypeEnum dataType, long count) {
-        _impressionsDataRecords.get(dataType).incrementAndGet();
+        _impressionsDataRecords.get(dataType).addAndGet(count);
     }
 
     @Override
     public void recordEventStats(EventsDataRecordsEnum dataType, long count) {
-        _eventsDataRecords.get(dataType).incrementAndGet();
+        _eventsDataRecords.get(dataType).addAndGet(count);
     }
 
     @Override
     public void recordSuccessfulSync(LastSynchronizationRecordsEnum resource, long time) {
         _lastSynchronizationRecords.replace(resource, new AtomicLong(time));
-
     }
 
     @Override
     public void recordSyncError(ResourceEnum resource, int status) {
         ConcurrentMap<Long, Long> errors = _httpErrors.get(resource);
         errors.putIfAbsent(Long.valueOf(status), 0l);
-        errors.replace(Long.valueOf(status), errors.get(status) + 1);
+        errors.replace(Long.valueOf(status), errors.get(Long.valueOf(status)) + 1);
     }
 
     @Override
-    public void recordSyncLatency(String resource, long latency) {
-        int bucket = BucketCalculator.getBucketForLatencyMillis(latency);
+    public void recordSyncLatency(HTTPLatenciesEnum resource, long latency) {
+        int bucket = BucketCalculator.getBucketForLatency(latency);
         _httpLatencies.get(resource).increment(bucket);
 
     }
@@ -259,13 +256,11 @@ public class InMemoryTelemetryStorage implements  TelemetryStorage{
     @Override
     public void recordAuthRejections() {
         _pushCounters.get(PushCountersEnum.AUTH_REJECTIONS).incrementAndGet();
-
     }
 
     @Override
     public void recordTokenRefreshes() {
         _pushCounters.get(PushCountersEnum.TOKEN_REFRESHES).incrementAndGet();
-
     }
 
     @Override
@@ -308,8 +303,6 @@ public class InMemoryTelemetryStorage implements  TelemetryStorage{
         _httpErrors.put(ResourceEnum.TOKEN_SYNC, Maps.newConcurrentMap());
     }
 
-
-
     private void initMethodCounters() {
         _exceptionsCounters.put(MethodEnum.TREATMENT, new AtomicLong());
         _exceptionsCounters.put(MethodEnum.TREATMENTS, new AtomicLong());
@@ -345,6 +338,7 @@ public class InMemoryTelemetryStorage implements  TelemetryStorage{
         _lastSynchronizationRecords.put(LastSynchronizationRecordsEnum.IMPRESSIONS, new AtomicLong());
         _lastSynchronizationRecords.put(LastSynchronizationRecordsEnum.IMPRESSIONS_COUNT, new AtomicLong());
         _lastSynchronizationRecords.put(LastSynchronizationRecordsEnum.TOKEN, new AtomicLong());
+        _lastSynchronizationRecords.put(LastSynchronizationRecordsEnum.TELEMETRY, new AtomicLong());
     }
 
     private void initEventDataRecords() {

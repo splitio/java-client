@@ -5,5 +5,5 @@ import io.split.telemetry.domain.MethodLatencies;
 
 public interface TelemetryEvaluationConsumer {
     MethodExceptions popExceptions() throws Exception;
-    MethodLatencies popLatencies();
+    MethodLatencies popLatencies() throws Exception;
 }
