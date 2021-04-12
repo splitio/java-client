@@ -44,7 +44,7 @@ public class InMemoryTelemetryStorage implements  TelemetryStorage{
         initMethodLatencies();
         initHttpLatencies();
         initHttpErrors();
-        initMethodCounters();
+        initMethodExceptions();
         initFactoryCounters();
         initImpressionDataCounters();
         initPushCounters();
@@ -73,7 +73,7 @@ public class InMemoryTelemetryStorage implements  TelemetryStorage{
         exceptions.set_track(_exceptionsCounters.get(MethodEnum.TRACK).get());
 
         _exceptionsCounters.clear();
-        initMethodCounters();
+        initMethodExceptions();
 
         return exceptions;
     }
@@ -102,6 +102,7 @@ public class InMemoryTelemetryStorage implements  TelemetryStorage{
     public void recordBURTimeout() {
         _factoryCounters.get(FactoryCountersEnum.BUR_TIMEOUTS).incrementAndGet();
     }
+
 
     @Override
     public void recordLatency(MethodEnum method, long latency) {
@@ -303,7 +304,7 @@ public class InMemoryTelemetryStorage implements  TelemetryStorage{
         _httpErrors.put(ResourceEnum.TOKEN_SYNC, Maps.newConcurrentMap());
     }
 
-    private void initMethodCounters() {
+    private void initMethodExceptions() {
         _exceptionsCounters.put(MethodEnum.TREATMENT, new AtomicLong());
         _exceptionsCounters.put(MethodEnum.TREATMENTS, new AtomicLong());
         _exceptionsCounters.put(MethodEnum.TREATMENT_WITH_CONFIG, new AtomicLong());
