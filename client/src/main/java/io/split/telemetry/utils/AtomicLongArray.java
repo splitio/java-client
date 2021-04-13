@@ -1,7 +1,6 @@
-package io.split.telemetry.domain;
+package io.split.telemetry.utils;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.stream.IntStream;
@@ -10,7 +9,7 @@ public class AtomicLongArray {
     private AtomicLong[] array;
 
     public AtomicLongArray(int size) throws Exception {
-        if(size == 0) {
+        if(size <= 0) {
             throw new Exception("Invalid array size");
         }
         array = new AtomicLong[size];

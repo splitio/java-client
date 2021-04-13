@@ -42,4 +42,10 @@ public interface SegmentCache {
      * clear all segments
      */
     void clear();
+
+    /**
+     * return every segment
+     * @return
+     */
+    List<String> getAll();
 }
