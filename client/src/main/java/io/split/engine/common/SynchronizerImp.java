@@ -19,6 +19,7 @@ import static com.google.common.base.Preconditions.checkNotNull;
 
 public class SynchronizerImp implements Synchronizer {
     private static final Logger _log = LoggerFactory.getLogger(Synchronizer.class);
+    private static final int RETRIES_NUMBER = 10;
 
     private final SplitSynchronizationTask _splitSynchronizationTask;
     private final SplitFetcher _splitFetcher;
@@ -69,8 +70,10 @@ public class SynchronizerImp implements Synchronizer {
 
     @Override
     public void refreshSplits(long targetChangeNumber) {
-        if (targetChangeNumber > _splitCache.getChangeNumber()) {
+        int retries = 1;
+        while(targetChangeNumber > _splitCache.getChangeNumber() && retries <= RETRIES_NUMBER) {
             _splitFetcher.forceRefresh(true);
+            retries++;
         }
     }
 
@@ -84,7 +87,8 @@ public class SynchronizerImp implements Synchronizer {
 
     @Override
     public void refreshSegment(String segmentName, long changeNumber) {
-        if (changeNumber > _segmentCache.getChangeNumber(segmentName)) {
+        int retries = 1;
+        while(changeNumber > _segmentCache.getChangeNumber(segmentName) && retries <= RETRIES_NUMBER) {
             SegmentFetcher fetcher = _segmentSynchronizationTaskImp.getFetcher(segmentName);
             try{
                 fetcher.fetch(true);
@@ -93,6 +97,7 @@ public class SynchronizerImp implements Synchronizer {
             catch (NullPointerException np){
                 throw new NullPointerException();
             }
+            retries++;
         }
     }
 }
