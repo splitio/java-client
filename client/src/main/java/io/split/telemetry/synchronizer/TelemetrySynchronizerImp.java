@@ -52,14 +52,14 @@ public class TelemetrySynchronizerImp implements TelemetrySynchronizer{
         stats.set_impressionsQueued(_teleTelemetryStorageConsumer.getImpressionsStats(ImpressionsDataTypeEnum.IMPRESSIONS_QUEUED));
         stats.set_impressionsDeduped(_teleTelemetryStorageConsumer.getImpressionsStats(ImpressionsDataTypeEnum.IMPRESSIONS_DEDUPED));
         stats.set_impressionsDropped(_teleTelemetryStorageConsumer.getImpressionsStats(ImpressionsDataTypeEnum.IMPRESSIONS_DROPPED));
-        stats.set_splitCount(_splitCache.getAll().stream().count()); //TODO
-        stats.set_segmentCount(1l);//TODO
-        stats.set_segmentKeyCount(1l);//TODO
+        stats.set_splitCount(_splitCache.getAll().stream().count());
+        stats.set_segmentCount(_segmentCache.getAll().stream().count());
+        stats.set_segmentKeyCount(_segmentCache.getAllKeys().stream().count());
         stats.set_sessionLengthMs(_teleTelemetryStorageConsumer.getSessionLength());
         stats.set_eventsQueued(_teleTelemetryStorageConsumer.getEventStats(EventsDataRecordsEnum.EVENTS_QUEUED));
         stats.set_eventsDropped(_teleTelemetryStorageConsumer.getEventStats(EventsDataRecordsEnum.EVENTS_DROPPED));
         stats.set_streamingEvents(_teleTelemetryStorageConsumer.popStreamingEvents());
-        stats.set_tags(_teleTelemetryStorageConsumer.popTags();
+        stats.set_tags(_teleTelemetryStorageConsumer.popTags());
         return null;
     }
 }
