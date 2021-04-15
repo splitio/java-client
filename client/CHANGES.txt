@@ -1,5 +1,8 @@
 CHANGES
 
+4.1.6 (Apr 15, 2021)
+-Updated log level and message in some messages.
+
 4.1.5 (Apr 6, 2021)
 -Updated: Streaming retry fix.
 
