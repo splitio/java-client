@@ -103,7 +103,7 @@ public class SegmentSynchronizationTaskImp implements SegmentSynchronizationTask
     @Override
     public void startPeriodicFetching() {
         if (_running.getAndSet(true)) {
-            _log.warn("Segments PeriodicFetching is running...");
+            _log.debug("Segments PeriodicFetching is running...");
             return;
         }
 
@@ -114,7 +114,7 @@ public class SegmentSynchronizationTaskImp implements SegmentSynchronizationTask
     @Override
     public void stop() {
         if (!_running.getAndSet(false) || _scheduledFuture == null) {
-            _log.warn("Segments PeriodicFetching not running...");
+            _log.debug("Segments PeriodicFetching not running...");
             return;
         }
 
