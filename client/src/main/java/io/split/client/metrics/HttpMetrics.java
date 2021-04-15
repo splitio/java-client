@@ -50,7 +50,7 @@ public class HttpMetrics implements Metrics, DTOMetrics {
         try {
             post(_timeTarget, dto);
         } catch (Throwable t) {
-            _log.warn("Exception when posting metric" + dto, t);
+            _log.warn("Exception when posting metric " + dto, t);
         }
         ;
 
@@ -61,7 +61,7 @@ public class HttpMetrics implements Metrics, DTOMetrics {
         try {
             post(_counterTarget, dto);
         } catch (Throwable t) {
-            _log.warn("Exception when posting metric" + dto, t);
+            _log.warn("Exception when posting metric " + dto, t);
         }
 
     }
@@ -85,9 +85,9 @@ public class HttpMetrics implements Metrics, DTOMetrics {
             }
 
         } catch (Throwable t) {
-            _log.warn("Exception when posting metrics:" + t.getMessage());
+            _log.warn("Exception when posting metrics: " + t.getMessage());
             if (_log.isDebugEnabled()) {
-                _log.debug("Reason:", t);
+                _log.debug("Reason: ", t);
             }
         } finally {
             Utils.forceClose(response);
