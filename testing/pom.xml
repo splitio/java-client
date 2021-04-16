@@ -13,6 +13,7 @@
     <packaging>jar</packaging>
     <name>Java Client For Testing</name>
     <description>Testing suite for Java SDK for Split</description>
+
     <dependencies>
         <dependency>
             <groupId>io.split.client</groupId>
@@ -22,6 +23,7 @@
         <dependency>
             <groupId>junit</groupId>
             <artifactId>junit</artifactId>
+            <scope>provided</scope>
         </dependency>
     </dependencies>
 </project>
