@@ -27,20 +27,20 @@ public class SynchronizerImp implements Synchronizer {
     private final ScheduledExecutorService _syncAllScheduledExecutorService;
     private final SplitCache _splitCache;
     private final SegmentCache _segmentCache;
-    private final int _streamingRetryDelay;
+    private final int _onDemandFetchRetryDelayMs;
 
     public SynchronizerImp(SplitSynchronizationTask splitSynchronizationTask,
                            SplitFetcher splitFetcher,
                            SegmentSynchronizationTask segmentSynchronizationTaskImp,
                            SplitCache splitCache,
                            SegmentCache segmentCache,
-                           int streamingRetryDelay) {
+                           int onDemandFetchRetryDelayMs) {
         _splitSynchronizationTask = checkNotNull(splitSynchronizationTask);
         _splitFetcher = checkNotNull(splitFetcher);
         _segmentSynchronizationTaskImp = checkNotNull(segmentSynchronizationTaskImp);
         _splitCache = checkNotNull(splitCache);
         _segmentCache = checkNotNull(segmentCache);
-        _streamingRetryDelay = checkNotNull(streamingRetryDelay);
+        _onDemandFetchRetryDelayMs = checkNotNull(onDemandFetchRetryDelayMs);
 
         ThreadFactory splitsThreadFactory = new ThreadFactoryBuilder()
                 .setDaemon(true)
@@ -73,14 +73,23 @@ public class SynchronizerImp implements Synchronizer {
 
     @Override
     public void refreshSplits(long targetChangeNumber) {
-        int retries = 1;
-        while(targetChangeNumber > _splitCache.getChangeNumber() && retries <= RETRIES_NUMBER) {
-            checkNumberAttepmt(retries);
+        int retries = RETRIES_NUMBER;
+        while(true) {
+            retries--;
             _splitFetcher.forceRefresh(true);
-            retries++;
-        }
-        if(retries > 1) {
-            _log.debug("Refresh completed in %s attempts.", retries);
+            if (targetChangeNumber <= _splitCache.getChangeNumber()) {
+                _log.debug("Refresh completed in %s attempts.", RETRIES_NUMBER - retries);
+                return;
+            } else if (retries <= 0) {
+                _log.warn("No changes fetched after %s attempts.", RETRIES_NUMBER);
+                return;
+            }
+            try {
+                Thread.sleep(_onDemandFetchRetryDelayMs);
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+                _log.debug("Error trying to sleep current Thread.");
+            }
         }
     }
 
@@ -105,16 +114,6 @@ public class SynchronizerImp implements Synchronizer {
                 throw new NullPointerException();
             }
             retries++;
-        }
-    }
-
-    private void checkNumberAttepmt(int retry) {
-        if(retry > 1) {
-            try {
-                Thread.sleep(_streamingRetryDelay);
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
         }
     }
 }

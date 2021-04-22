@@ -46,7 +46,7 @@ public class SplitClientConfig {
     private final int _streamingReconnectBackoffBase;
     private final String _authServiceURL;
     private final String _streamingServiceURL;
-    private final int _streamingRetryDelay;
+    private final int _onDemandFetchRetryDelayMs;
 
     // Proxy configs
     private final HttpHost _proxy;
@@ -91,7 +91,7 @@ public class SplitClientConfig {
                               int streamingReconnectBackoffBase,
                               String authServiceURL,
                               String streamingServiceURL,
-                              int streamingRetryDelay) {
+                              int onDemandFetchRetryDelayMs) {
         _endpoint = endpoint;
         _eventsEndpoint = eventsEndpoint;
         _featuresRefreshRate = pollForFeatureChangesEveryNSeconds;
@@ -122,7 +122,7 @@ public class SplitClientConfig {
         _streamingReconnectBackoffBase = streamingReconnectBackoffBase;
         _authServiceURL = authServiceURL;
         _streamingServiceURL = streamingServiceURL;
-        _streamingRetryDelay = streamingRetryDelay;
+        _onDemandFetchRetryDelayMs = onDemandFetchRetryDelayMs;
 
         Properties props = new Properties();
         try {
@@ -251,7 +251,7 @@ public class SplitClientConfig {
         return _streamingServiceURL;
     }
 
-    public int streamingRetryDelay() {return _streamingRetryDelay;}
+    public int streamingRetryDelay() {return _onDemandFetchRetryDelayMs;}
 
     public static final class Builder {
 
@@ -288,7 +288,7 @@ public class SplitClientConfig {
         private int _streamingReconnectBackoffBase = 1;
         private String _authServiceURL = "https://auth.split.io/api/auth";
         private String _streamingServiceURL = "https://streaming.split.io/sse";
-        private int _streamingRetryDelay = 50;
+        private int _onDemandFetchRetryDelayMs = 50;
 
         public Builder() {
         }
@@ -682,11 +682,11 @@ public class SplitClientConfig {
 
         /**
          * Set Streaming retry delay.
-         * @param streamingRetryDelay
+         * @param onDemandFetchRetryDelayMs
          * @return
          */
-        public Builder streamingRetryDelay(int streamingRetryDelay) {
-            _streamingRetryDelay = streamingRetryDelay;
+        public Builder streamingRetryDelay(int onDemandFetchRetryDelayMs) {
+            _onDemandFetchRetryDelayMs = onDemandFetchRetryDelayMs;
             return this;
         }
 
@@ -760,7 +760,7 @@ public class SplitClientConfig {
                 throw new IllegalArgumentException("streamingServiceURL must not be null");
             }
 
-            if(_streamingRetryDelay <= 0) {
+            if(_onDemandFetchRetryDelayMs <= 0) {
                 throw new IllegalStateException("streamingRetryDelay must be > 0");
             }
 
@@ -795,7 +795,7 @@ public class SplitClientConfig {
                     _streamingReconnectBackoffBase,
                     _authServiceURL,
                     _streamingServiceURL,
-                    _streamingRetryDelay);
+                    _onDemandFetchRetryDelayMs);
         }
     }
 }
