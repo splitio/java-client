@@ -1,5 +1,8 @@
 CHANGES
 
+4.1.7 (Apr 22, 2021)
+-Updated: added delay on fetch retry.
+
 4.1.6 (Apr 15, 2021)
 -Updated log level and message in some messages.
 
