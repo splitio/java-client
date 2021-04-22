@@ -27,17 +27,20 @@ public class SynchronizerImp implements Synchronizer {
     private final ScheduledExecutorService _syncAllScheduledExecutorService;
     private final SplitCache _splitCache;
     private final SegmentCache _segmentCache;
+    private final int _streamingRetryDelay;
 
     public SynchronizerImp(SplitSynchronizationTask splitSynchronizationTask,
                            SplitFetcher splitFetcher,
                            SegmentSynchronizationTask segmentSynchronizationTaskImp,
                            SplitCache splitCache,
-                           SegmentCache segmentCache) {
+                           SegmentCache segmentCache,
+                           int streamingRetryDelay) {
         _splitSynchronizationTask = checkNotNull(splitSynchronizationTask);
         _splitFetcher = checkNotNull(splitFetcher);
         _segmentSynchronizationTaskImp = checkNotNull(segmentSynchronizationTaskImp);
         _splitCache = checkNotNull(splitCache);
         _segmentCache = checkNotNull(segmentCache);
+        _streamingRetryDelay = checkNotNull(streamingRetryDelay);
 
         ThreadFactory splitsThreadFactory = new ThreadFactoryBuilder()
                 .setDaemon(true)
@@ -72,8 +75,12 @@ public class SynchronizerImp implements Synchronizer {
     public void refreshSplits(long targetChangeNumber) {
         int retries = 1;
         while(targetChangeNumber > _splitCache.getChangeNumber() && retries <= RETRIES_NUMBER) {
+            checkNumberAttepmt(retries);
             _splitFetcher.forceRefresh(true);
             retries++;
+        }
+        if(retries > 1) {
+            _log.debug("Refresh completed in %s attempts.", retries);
         }
     }
 
@@ -98,6 +105,16 @@ public class SynchronizerImp implements Synchronizer {
                 throw new NullPointerException();
             }
             retries++;
+        }
+    }
+
+    private void checkNumberAttepmt(int retry) {
+        if(retry > 1) {
+            try {
+                Thread.sleep(_streamingRetryDelay);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
         }
     }
 }
