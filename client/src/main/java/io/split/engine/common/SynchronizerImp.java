@@ -74,7 +74,7 @@ public class SynchronizerImp implements Synchronizer {
     @Override
     public void refreshSplits(long targetChangeNumber) {
         int retries = RETRIES_NUMBER;
-        while(true) {
+        while(targetChangeNumber > _splitCache.getChangeNumber()) {
             retries--;
             _splitFetcher.forceRefresh(true);
             if (targetChangeNumber <= _splitCache.getChangeNumber()) {
