@@ -3,6 +3,7 @@ package io.split.client;
 import io.split.TestHelper;
 import io.split.client.dtos.Split;
 import io.split.client.dtos.SplitChange;
+import io.split.engine.common.FetchOptions;
 import io.split.engine.metrics.Metrics;
 import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
 import org.apache.hc.client5.http.impl.classic.HttpClients;
@@ -63,7 +64,7 @@ public class HttpSplitChangeFetcherTest {
         Metrics.NoopMetrics metrics = new Metrics.NoopMetrics();
         HttpSplitChangeFetcher fetcher = HttpSplitChangeFetcher.create(httpClientMock, rootTarget, metrics);
 
-        SplitChange change = fetcher.fetch(1234567, true);
+        SplitChange change = fetcher.fetch(1234567, new FetchOptions.Builder().cacheControlHeaders(true).build());
 
         Assert.assertNotNull(change);
         Assert.assertEquals(1, change.splits.size());

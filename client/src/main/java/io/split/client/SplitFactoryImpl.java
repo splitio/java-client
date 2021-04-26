@@ -207,7 +207,6 @@ public class SplitFactoryImpl implements SplitFactory {
     }
 
     private static CloseableHttpClient buildHttpClient(String apiToken, SplitClientConfig config) {
-
         SSLConnectionSocketFactory sslSocketFactory = SSLConnectionSocketFactoryBuilder.create()
                 .setSslContext(SSLContexts.createSystemDefault())
                 .setTlsVersions(TLS.V_1_1, TLS.V_1_2)

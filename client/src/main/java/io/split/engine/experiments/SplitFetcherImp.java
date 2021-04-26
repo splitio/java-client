@@ -5,6 +5,7 @@ import io.split.client.dtos.SplitChange;
 import io.split.client.dtos.Status;
 import io.split.engine.SDKReadinessGates;
 import io.split.cache.SplitCache;
+import io.split.engine.common.FetchOptions;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -43,12 +44,12 @@ public class SplitFetcherImp implements SplitFetcher {
     }
 
     @Override
-    public void forceRefresh(boolean addCacheHeader) {
+    public void forceRefresh(FetchOptions options) {
         _log.debug("Force Refresh splits starting ...");
         try {
             while (true) {
                 long start = _splitCache.getChangeNumber();
-                runWithoutExceptionHandling(addCacheHeader);
+                runWithoutExceptionHandling(options);
                 long end = _splitCache.getChangeNumber();
 
                 if (start >= end) {
@@ -65,11 +66,11 @@ public class SplitFetcherImp implements SplitFetcher {
 
     @Override
     public void run() {
-        this.fetchAll(false);
+        this.fetchAll(new FetchOptions.Builder().cacheControlHeaders(false).build());
     }
 
-    private void runWithoutExceptionHandling(boolean addCacheHeader) throws InterruptedException {
-        SplitChange change = _splitChangeFetcher.fetch(_splitCache.getChangeNumber(), addCacheHeader);
+    private void runWithoutExceptionHandling(FetchOptions options) throws InterruptedException {
+        SplitChange change = _splitChangeFetcher.fetch(_splitCache.getChangeNumber(), options);
 
         if (change == null) {
             throw new IllegalStateException("SplitChange was null");
@@ -139,11 +140,11 @@ public class SplitFetcherImp implements SplitFetcher {
         }
     }
     @Override
-    public void fetchAll(boolean addCacheHeader) {
+    public void fetchAll(FetchOptions options) {
         _log.debug("Fetch splits starting ...");
         long start = _splitCache.getChangeNumber();
         try {
-            runWithoutExceptionHandling(addCacheHeader);
+            runWithoutExceptionHandling(options);
             _gates.splitsAreReady();
         } catch (InterruptedException e) {
             _log.warn("Interrupting split fetcher task");

@@ -1,6 +1,8 @@
 package io.split.engine.common;
 
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 import io.split.cache.SegmentCache;
 import io.split.cache.SplitCache;
 import io.split.engine.experiments.SplitFetcher;
@@ -10,6 +12,9 @@ import io.split.engine.segments.SegmentSynchronizationTask;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ThreadFactory;
@@ -21,6 +26,7 @@ public class SynchronizerImp implements Synchronizer {
     private static final Logger _log = LoggerFactory.getLogger(Synchronizer.class);
     private static final int RETRIES_NUMBER = 10;
 
+    private final boolean _cdnResponseHeadersLogging = true;
     private final SplitSynchronizationTask _splitSynchronizationTask;
     private final SplitFetcher _splitFetcher;
     private final SegmentSynchronizationTask _segmentSynchronizationTaskImp;
@@ -28,6 +34,7 @@ public class SynchronizerImp implements Synchronizer {
     private final SplitCache _splitCache;
     private final SegmentCache _segmentCache;
     private final int _onDemandFetchRetryDelayMs;
+    private final Gson gson = new GsonBuilder().create();
 
     public SynchronizerImp(SplitSynchronizationTask splitSynchronizationTask,
                            SplitFetcher splitFetcher,
@@ -52,7 +59,7 @@ public class SynchronizerImp implements Synchronizer {
     @Override
     public void syncAll() {
         _syncAllScheduledExecutorService.schedule(() -> {
-            _splitFetcher.fetchAll(true);
+            _splitFetcher.fetchAll(new FetchOptions.Builder().cacheControlHeaders(true).build());
             _segmentSynchronizationTaskImp.fetchAll(true);
         }, 0, TimeUnit.SECONDS);
     }
@@ -74,14 +81,28 @@ public class SynchronizerImp implements Synchronizer {
     @Override
     public void refreshSplits(long targetChangeNumber) {
         int retries = RETRIES_NUMBER;
-        while(targetChangeNumber > _splitCache.getChangeNumber()) {
+        if (targetChangeNumber <= _splitCache.getChangeNumber()) {
+            return;
+        }
+
+        FastlyHeadersCaptor captor = new FastlyHeadersCaptor();
+        FetchOptions opts = new FetchOptions.Builder()
+                .cacheControlHeaders(true)
+                .fastlyDebugHeader(_cdnResponseHeadersLogging)
+                .responseHeadersCallback(_cdnResponseHeadersLogging ? captor::handle : null)
+                .build();
+
+        while(true) {
             retries--;
-            _splitFetcher.forceRefresh(true);
+            _splitFetcher.forceRefresh(opts);
             if (targetChangeNumber <= _splitCache.getChangeNumber()) {
                 _log.debug("Refresh completed in %s attempts.", RETRIES_NUMBER - retries);
                 return;
             } else if (retries <= 0) {
                 _log.warn("No changes fetched after %s attempts.", RETRIES_NUMBER);
+                if (_cdnResponseHeadersLogging) {
+                    _log.debug("CDN Debug headers: ", gson.toJson(captor.get()));
+                }
                 return;
             }
             try {
