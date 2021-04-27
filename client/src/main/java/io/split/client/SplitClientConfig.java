@@ -256,6 +256,9 @@ public class SplitClientConfig {
 
     public int streamingRetryDelay() {return _onDemandFetchRetryDelayMs;}
 
+    public boolean cdnDebugLogging() { return _cdnDebugLogging; }
+
+
     public static final class Builder {
 
         private String _endpoint = "https://sdk.split.io";

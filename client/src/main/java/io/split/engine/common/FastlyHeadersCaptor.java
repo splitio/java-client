@@ -5,7 +5,7 @@ import java.util.stream.Collectors;
 
 public class FastlyHeadersCaptor {
 
-    public static Set<String> FIELDS_TO_CAPTURE = new HashSet<>(Arrays.asList(
+    private static final Set<String> HEADERS_TO_CAPTURE = new HashSet<>(Arrays.asList(
             "Fastly-Debug-Path",
             "Fastly-Debug-TTL",
             "Fastly-Debug-Digest",
@@ -24,7 +24,7 @@ public class FastlyHeadersCaptor {
 
     public Void handle(Map<String, String> responseHeaders) {
         _headers.add(responseHeaders.entrySet().stream()
-                .filter(e -> FIELDS_TO_CAPTURE.contains(e.getKey()))
+                .filter(e -> HEADERS_TO_CAPTURE.contains(e.getKey()))
                 .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue)));
         return null;
     }

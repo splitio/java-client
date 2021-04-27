@@ -12,9 +12,6 @@ import io.split.engine.segments.SegmentSynchronizationTask;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ThreadFactory;
@@ -23,10 +20,10 @@ import java.util.concurrent.TimeUnit;
 import static com.google.common.base.Preconditions.checkNotNull;
 
 public class SynchronizerImp implements Synchronizer {
-    private static final Logger _log = LoggerFactory.getLogger(Synchronizer.class);
-    private static final int RETRIES_NUMBER = 10;
 
-    private final boolean _cdnResponseHeadersLogging = true;
+    private static final int MAX_ATTEMPTS = 10;
+
+    private static final Logger _log = LoggerFactory.getLogger(Synchronizer.class);
     private final SplitSynchronizationTask _splitSynchronizationTask;
     private final SplitFetcher _splitFetcher;
     private final SegmentSynchronizationTask _segmentSynchronizationTaskImp;
@@ -34,6 +31,7 @@ public class SynchronizerImp implements Synchronizer {
     private final SplitCache _splitCache;
     private final SegmentCache _segmentCache;
     private final int _onDemandFetchRetryDelayMs;
+    private final boolean _cdnResponseHeadersLogging;
     private final Gson gson = new GsonBuilder().create();
 
     public SynchronizerImp(SplitSynchronizationTask splitSynchronizationTask,
@@ -41,13 +39,15 @@ public class SynchronizerImp implements Synchronizer {
                            SegmentSynchronizationTask segmentSynchronizationTaskImp,
                            SplitCache splitCache,
                            SegmentCache segmentCache,
-                           int onDemandFetchRetryDelayMs) {
+                           int onDemandFetchRetryDelayMs,
+                           boolean cdnResponseHeadersLogging) {
         _splitSynchronizationTask = checkNotNull(splitSynchronizationTask);
         _splitFetcher = checkNotNull(splitFetcher);
         _segmentSynchronizationTaskImp = checkNotNull(segmentSynchronizationTaskImp);
         _splitCache = checkNotNull(splitCache);
         _segmentCache = checkNotNull(segmentCache);
         _onDemandFetchRetryDelayMs = checkNotNull(onDemandFetchRetryDelayMs);
+        _cdnResponseHeadersLogging = cdnResponseHeadersLogging;
 
         ThreadFactory splitsThreadFactory = new ThreadFactoryBuilder()
                 .setDaemon(true)
@@ -80,7 +80,7 @@ public class SynchronizerImp implements Synchronizer {
 
     @Override
     public void refreshSplits(long targetChangeNumber) {
-        int retries = RETRIES_NUMBER;
+
         if (targetChangeNumber <= _splitCache.getChangeNumber()) {
             return;
         }
@@ -92,18 +92,16 @@ public class SynchronizerImp implements Synchronizer {
                 .responseHeadersCallback(_cdnResponseHeadersLogging ? captor::handle : null)
                 .build();
 
+        int remainingAttempts = MAX_ATTEMPTS;
         while(true) {
-            retries--;
+            remainingAttempts--;
             _splitFetcher.forceRefresh(opts);
             if (targetChangeNumber <= _splitCache.getChangeNumber()) {
-                _log.debug("Refresh completed in %s attempts.", RETRIES_NUMBER - retries);
-                return;
-            } else if (retries <= 0) {
-                _log.warn("No changes fetched after %s attempts.", RETRIES_NUMBER);
-                if (_cdnResponseHeadersLogging) {
-                    _log.debug("CDN Debug headers: ", gson.toJson(captor.get()));
-                }
-                return;
+                _log.debug(String.format("Refresh completed in %s attempts.", MAX_ATTEMPTS - remainingAttempts));
+                break;
+            } else if (remainingAttempts <= 0) {
+                _log.info(String.format("No changes fetched after %s attempts.", MAX_ATTEMPTS));
+                break;
             }
             try {
                 Thread.sleep(_onDemandFetchRetryDelayMs);
@@ -111,6 +109,10 @@ public class SynchronizerImp implements Synchronizer {
                 Thread.currentThread().interrupt();
                 _log.debug("Error trying to sleep current Thread.");
             }
+        }
+
+        if (_cdnResponseHeadersLogging && remainingAttempts <= (MAX_ATTEMPTS / 2)) {
+            _log.info(String.format("CDN Debug headers: %s", gson.toJson(captor.get())));
         }
     }
 
@@ -125,7 +127,7 @@ public class SynchronizerImp implements Synchronizer {
     @Override
     public void refreshSegment(String segmentName, long changeNumber) {
         int retries = 1;
-        while(changeNumber > _segmentCache.getChangeNumber(segmentName) && retries <= RETRIES_NUMBER) {
+        while(changeNumber > _segmentCache.getChangeNumber(segmentName) && retries <= MAX_ATTEMPTS) {
             SegmentFetcher fetcher = _segmentSynchronizationTaskImp.getFetcher(segmentName);
             try{
                 fetcher.fetch(true);

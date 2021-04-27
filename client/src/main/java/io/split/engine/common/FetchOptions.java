@@ -1,5 +1,8 @@
 package io.split.engine.common;
 
+import io.split.engine.matchers.AttributeMatcher;
+import org.checkerframework.checker.units.qual.A;
+
 import java.util.Map;
 import java.util.Objects;
 import java.util.function.Function;
@@ -53,6 +56,18 @@ public class FetchOptions {
         _cacheControlHeaders = cacheControlHeaders;
         _responseHeadersCallback = responseHeadersCallback;
         _fastlyDebugHeader = fastlyDebugHeader;
+    }
+
+    public boolean equals(Object obj) {
+        if (null == obj) return false;
+        if (this == obj) return true;
+        if (!(obj instanceof FetchOptions)) return false;
+
+        FetchOptions other = (FetchOptions) obj;
+
+        return Objects.equals(_cacheControlHeaders, other._cacheControlHeaders)
+                && Objects.equals(_fastlyDebugHeader, other._fastlyDebugHeader)
+                && Objects.equals(_responseHeadersCallback, other._responseHeadersCallback);
     }
 
     private final boolean _cacheControlHeaders;

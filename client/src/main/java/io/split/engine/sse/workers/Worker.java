@@ -25,6 +25,7 @@ public abstract class Worker<T> implements Runnable {
             _log.debug(String.format("%s Worker starting ...", _workerName));
             _queue.clear();
             _thread = new Thread( this);
+            _thread.setName(String.format("%s-worker", _workerName));
             _thread.start();
         } else {
             _log.debug(String.format("%s Worker already running.", _workerName));
