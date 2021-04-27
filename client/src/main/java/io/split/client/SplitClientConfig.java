@@ -53,6 +53,7 @@ public class SplitClientConfig {
     private final String _streamingServiceURL;
     private final String _telemetryURL;
     private final int _telemetryRefreshRate;
+    private final int _onDemandFetchRetryDelayMs;
 
     // Proxy configs
     private final HttpHost _proxy;
@@ -99,6 +100,7 @@ public class SplitClientConfig {
                               String streamingServiceURL,
                               String telemetryURL,
                               int telemetryRefreshRate) {
+                              int onDemandFetchRetryDelayMs) {
         _endpoint = endpoint;
         _eventsEndpoint = eventsEndpoint;
         _featuresRefreshRate = pollForFeatureChangesEveryNSeconds;
@@ -131,6 +133,7 @@ public class SplitClientConfig {
         _streamingServiceURL = streamingServiceURL;
         _telemetryURL = telemetryURL;
         _telemetryRefreshRate = telemetryRefreshRate;
+        _onDemandFetchRetryDelayMs = onDemandFetchRetryDelayMs;
 
         Properties props = new Properties();
         try {
@@ -266,6 +269,7 @@ public class SplitClientConfig {
     public int get_telemetryRefreshRate() {
         return _telemetryRefreshRate;
     }
+    public int streamingRetryDelay() {return _onDemandFetchRetryDelayMs;}
 
     public static final class Builder {
 
@@ -304,6 +308,9 @@ public class SplitClientConfig {
         private String _streamingServiceURL = STREAMING_ENDPOINT;
         private String _telemetryURl = TELEMETRY_ENDPOINT;
         private int _telemetryRefreshRate = 60;
+        private String _authServiceURL = "https://auth.split.io/api/auth";
+        private String _streamingServiceURL = "https://streaming.split.io/sse";
+        private int _onDemandFetchRetryDelayMs = 50;
 
         public Builder() {
         }
@@ -713,6 +720,12 @@ public class SplitClientConfig {
          */
         public Builder telemetryBuilder(int telemetryRefreshRate) {
             _telemetryRefreshRate = telemetryRefreshRate;
+         * Set Streaming retry delay.
+         * @param onDemandFetchRetryDelayMs
+         * @return
+         */
+        public Builder streamingRetryDelay(int onDemandFetchRetryDelayMs) {
+            _onDemandFetchRetryDelayMs = onDemandFetchRetryDelayMs;
             return this;
         }
 
@@ -788,6 +801,8 @@ public class SplitClientConfig {
 
             if (_telemetryURl == null) {
                 throw new IllegalArgumentException("telemetryURl must not be null");
+            if(_onDemandFetchRetryDelayMs <= 0) {
+                throw new IllegalStateException("streamingRetryDelay must be > 0");
             }
 
             return new SplitClientConfig(
@@ -823,6 +838,7 @@ public class SplitClientConfig {
                     _streamingServiceURL,
                     _telemetryURl,
                     _telemetryRefreshRate);
+                    _onDemandFetchRetryDelayMs);
         }
     }
 }
