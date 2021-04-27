@@ -59,9 +59,10 @@ public class SyncManagerImp implements SyncManager {
                                        String streamingServiceUrl,
                                        int authRetryBackOffBase,
                                        CloseableHttpClient sseHttpClient,
-                                       SegmentCache segmentCache) {
+                                       SegmentCache segmentCache,
+                                       int streamingRetryDelay) {
         LinkedBlockingQueue<PushManager.Status> pushMessages = new LinkedBlockingQueue<>();
-        Synchronizer synchronizer = new SynchronizerImp(splitSynchronizationTask, splitFetcher, segmentSynchronizationTaskImp, splitCache, segmentCache);
+        Synchronizer synchronizer = new SynchronizerImp(splitSynchronizationTask, splitFetcher, segmentSynchronizationTaskImp, splitCache, segmentCache, streamingRetryDelay);
         PushManager pushManager = PushManagerImp.build(synchronizer, streamingServiceUrl, authUrl, httpClient, pushMessages, sseHttpClient);
         return new SyncManagerImp(streamingEnabledConfig, synchronizer, pushManager, pushMessages, authRetryBackOffBase);
     }

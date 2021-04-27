@@ -41,4 +41,8 @@ public class SegmentImp{
     public boolean contains(String key) {
         return _concurrentKeySet.contains(key);
     }
+
+    public Set<String> getKeys() {
+        return _concurrentKeySet;
+    }
 }

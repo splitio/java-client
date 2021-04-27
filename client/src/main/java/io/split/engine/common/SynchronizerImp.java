@@ -19,6 +19,7 @@ import static com.google.common.base.Preconditions.checkNotNull;
 
 public class SynchronizerImp implements Synchronizer {
     private static final Logger _log = LoggerFactory.getLogger(Synchronizer.class);
+    private static final int RETRIES_NUMBER = 10;
 
     private final SplitSynchronizationTask _splitSynchronizationTask;
     private final SplitFetcher _splitFetcher;
@@ -26,17 +27,20 @@ public class SynchronizerImp implements Synchronizer {
     private final ScheduledExecutorService _syncAllScheduledExecutorService;
     private final SplitCache _splitCache;
     private final SegmentCache _segmentCache;
+    private final int _onDemandFetchRetryDelayMs;
 
     public SynchronizerImp(SplitSynchronizationTask splitSynchronizationTask,
                            SplitFetcher splitFetcher,
                            SegmentSynchronizationTask segmentSynchronizationTaskImp,
                            SplitCache splitCache,
-                           SegmentCache segmentCache) {
+                           SegmentCache segmentCache,
+                           int onDemandFetchRetryDelayMs) {
         _splitSynchronizationTask = checkNotNull(splitSynchronizationTask);
         _splitFetcher = checkNotNull(splitFetcher);
         _segmentSynchronizationTaskImp = checkNotNull(segmentSynchronizationTaskImp);
         _splitCache = checkNotNull(splitCache);
         _segmentCache = checkNotNull(segmentCache);
+        _onDemandFetchRetryDelayMs = checkNotNull(onDemandFetchRetryDelayMs);
 
         ThreadFactory splitsThreadFactory = new ThreadFactoryBuilder()
                 .setDaemon(true)
@@ -69,8 +73,23 @@ public class SynchronizerImp implements Synchronizer {
 
     @Override
     public void refreshSplits(long targetChangeNumber) {
-        if (targetChangeNumber > _splitCache.getChangeNumber()) {
+        int retries = RETRIES_NUMBER;
+        while(targetChangeNumber > _splitCache.getChangeNumber()) {
+            retries--;
             _splitFetcher.forceRefresh(true);
+            if (targetChangeNumber <= _splitCache.getChangeNumber()) {
+                _log.debug("Refresh completed in %s attempts.", RETRIES_NUMBER - retries);
+                return;
+            } else if (retries <= 0) {
+                _log.warn("No changes fetched after %s attempts.", RETRIES_NUMBER);
+                return;
+            }
+            try {
+                Thread.sleep(_onDemandFetchRetryDelayMs);
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+                _log.debug("Error trying to sleep current Thread.");
+            }
         }
     }
 
@@ -84,7 +103,8 @@ public class SynchronizerImp implements Synchronizer {
 
     @Override
     public void refreshSegment(String segmentName, long changeNumber) {
-        if (changeNumber > _segmentCache.getChangeNumber(segmentName)) {
+        int retries = 1;
+        while(changeNumber > _segmentCache.getChangeNumber(segmentName) && retries <= RETRIES_NUMBER) {
             SegmentFetcher fetcher = _segmentSynchronizationTaskImp.getFetcher(segmentName);
             try{
                 fetcher.fetch(true);
@@ -93,6 +113,7 @@ public class SynchronizerImp implements Synchronizer {
             catch (NullPointerException np){
                 throw new NullPointerException();
             }
+            retries++;
         }
     }
 }
