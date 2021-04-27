@@ -99,7 +99,7 @@ public class SplitClientConfig {
                               String authServiceURL,
                               String streamingServiceURL,
                               String telemetryURL,
-                              int telemetryRefreshRate) {
+                              int telemetryRefreshRate,
                               int onDemandFetchRetryDelayMs) {
         _endpoint = endpoint;
         _eventsEndpoint = eventsEndpoint;
@@ -308,8 +308,6 @@ public class SplitClientConfig {
         private String _streamingServiceURL = STREAMING_ENDPOINT;
         private String _telemetryURl = TELEMETRY_ENDPOINT;
         private int _telemetryRefreshRate = 60;
-        private String _authServiceURL = "https://auth.split.io/api/auth";
-        private String _streamingServiceURL = "https://streaming.split.io/sse";
         private int _onDemandFetchRetryDelayMs = 50;
 
         public Builder() {
@@ -718,14 +716,8 @@ public class SplitClientConfig {
          * @param telemetryRefreshRate
          * @return this builder
          */
-        public Builder telemetryBuilder(int telemetryRefreshRate) {
+        public Builder telemetryRefreshRate(int telemetryRefreshRate) {
             _telemetryRefreshRate = telemetryRefreshRate;
-         * Set Streaming retry delay.
-         * @param onDemandFetchRetryDelayMs
-         * @return
-         */
-        public Builder streamingRetryDelay(int onDemandFetchRetryDelayMs) {
-            _onDemandFetchRetryDelayMs = onDemandFetchRetryDelayMs;
             return this;
         }
 
@@ -801,44 +793,46 @@ public class SplitClientConfig {
 
             if (_telemetryURl == null) {
                 throw new IllegalArgumentException("telemetryURl must not be null");
-            if(_onDemandFetchRetryDelayMs <= 0) {
+            }
+
+            if (_onDemandFetchRetryDelayMs <= 0) {
                 throw new IllegalStateException("streamingRetryDelay must be > 0");
             }
 
-            return new SplitClientConfig(
-                    _endpoint,
-                    _eventsEndpoint,
-                    _featuresRefreshRate,
-                    _segmentsRefreshRate,
-                    _impressionsRefreshRate,
-                    _impressionsQueueSize,
-                    _impressionsMode,
-                    _metricsRefreshRate,
-                    _connectionTimeout,
-                    _readTimeout,
-                    _numThreadsForSegmentFetch,
-                    _ready,
-                    _debugEnabled,
-                    _labelsEnabled,
-                    _ipAddressEnabled,
-                    _waitBeforeShutdown,
-                    proxy(),
-                    _proxyUsername,
-                    _proxyPassword,
-                    _eventsQueueSize,
-                    _eventFlushIntervalInMillis,
-                    _maxStringLength,
-                    _destroyOnShutDown,
-                    _splitFile,
-                    _integrationsConfig,
-                    _streamingEnabled,
-                    _authRetryBackoffBase,
-                    _streamingReconnectBackoffBase,
-                    _authServiceURL,
-                    _streamingServiceURL,
-                    _telemetryURl,
-                    _telemetryRefreshRate);
-                    _onDemandFetchRetryDelayMs);
-        }
+                return new SplitClientConfig(
+                        _endpoint,
+                        _eventsEndpoint,
+                        _featuresRefreshRate,
+                        _segmentsRefreshRate,
+                        _impressionsRefreshRate,
+                        _impressionsQueueSize,
+                        _impressionsMode,
+                        _metricsRefreshRate,
+                        _connectionTimeout,
+                        _readTimeout,
+                        _numThreadsForSegmentFetch,
+                        _ready,
+                        _debugEnabled,
+                        _labelsEnabled,
+                        _ipAddressEnabled,
+                        _waitBeforeShutdown,
+                        proxy(),
+                        _proxyUsername,
+                        _proxyPassword,
+                        _eventsQueueSize,
+                        _eventFlushIntervalInMillis,
+                        _maxStringLength,
+                        _destroyOnShutDown,
+                        _splitFile,
+                        _integrationsConfig,
+                        _streamingEnabled,
+                        _authRetryBackoffBase,
+                        _streamingReconnectBackoffBase,
+                        _authServiceURL,
+                        _streamingServiceURL,
+                        _telemetryURl,
+                        _telemetryRefreshRate,
+                        _onDemandFetchRetryDelayMs);
+            }
     }
 }
