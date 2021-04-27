@@ -295,7 +295,7 @@ public class SplitClientConfig {
         private String _authServiceURL = "https://auth.split.io/api/auth";
         private String _streamingServiceURL = "https://streaming.split.io/sse";
         private int _onDemandFetchRetryDelayMs = 50;
-        private boolean _cdnDebugLogging = false;
+        private boolean _cdnDebugLogging = true;
 
         public Builder() {
         }
