@@ -26,7 +26,7 @@ public class SynchronizerTest {
         _splitCache = Mockito.mock(SplitCache.class);
         _segmentCache = Mockito.mock(SegmentCache.class);
 
-        _synchronizer = new SynchronizerImp(_refreshableSplitFetcherTask, _splitFetcher, _segmentFetcher, _splitCache, _segmentCache, 50);
+        _synchronizer = new SynchronizerImp(_refreshableSplitFetcherTask, _splitFetcher, _segmentFetcher, _splitCache, _segmentCache, 50, false);
     }
 
     @Test
@@ -34,7 +34,7 @@ public class SynchronizerTest {
         _synchronizer.syncAll();
 
         Thread.sleep(100);
-        Mockito.verify(_splitFetcher, Mockito.times(1)).fetchAll(true);
+        Mockito.verify(_splitFetcher, Mockito.times(1)).fetchAll(new FetchOptions.Builder().cacheControlHeaders(true).build());
         Mockito.verify(_segmentFetcher, Mockito.times(1)).fetchAll(true);
     }
 

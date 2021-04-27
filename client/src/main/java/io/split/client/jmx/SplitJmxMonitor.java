@@ -3,6 +3,7 @@ package io.split.client.jmx;
 import io.split.cache.SegmentCache;
 import io.split.cache.SplitCache;
 import io.split.client.SplitClient;
+import io.split.engine.common.FetchOptions;
 import io.split.engine.experiments.SplitFetcher;
 import io.split.engine.segments.SegmentFetcher;
 import io.split.engine.segments.SegmentSynchronizationTask;
@@ -34,7 +35,7 @@ public class SplitJmxMonitor implements SplitJmxMonitorMBean {
 
     @Override
     public boolean forceSyncFeatures() {
-        _featureFetcher.forceRefresh(true);
+        _featureFetcher.forceRefresh(new FetchOptions.Builder().cacheControlHeaders(true).build());
         _log.info("Features successfully refreshed via JMX");
         return true;
     }

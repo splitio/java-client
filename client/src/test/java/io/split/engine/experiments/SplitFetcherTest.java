@@ -8,6 +8,7 @@ import io.split.cache.SplitCache;
 import io.split.client.dtos.*;
 import io.split.engine.ConditionsTestUtil;
 import io.split.engine.SDKReadinessGates;
+import io.split.engine.common.FetchOptions;
 import io.split.engine.matchers.AllKeysMatcher;
 import io.split.engine.matchers.CombiningMatcher;
 import io.split.engine.segments.SegmentChangeFetcher;
@@ -16,6 +17,7 @@ import io.split.engine.segments.SegmentSynchronizationTaskImp;
 import io.split.grammar.Treatments;
 import org.junit.Test;
 import org.mockito.Mockito;
+import org.mockito.internal.matchers.Any;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -122,9 +124,9 @@ public class SplitFetcherTest {
         noReturn.till = 1L;
 
         SplitChangeFetcher splitChangeFetcher = mock(SplitChangeFetcher.class);
-        when(splitChangeFetcher.fetch(-1L, false)).thenReturn(validReturn);
-        when(splitChangeFetcher.fetch(0L, false)).thenReturn(invalidReturn);
-        when(splitChangeFetcher.fetch(1L, false)).thenReturn(noReturn);
+        when(splitChangeFetcher.fetch(Mockito.eq(-1L), Mockito.any())).thenReturn(validReturn);
+        when(splitChangeFetcher.fetch(Mockito.eq(0L), Mockito.any())).thenReturn(invalidReturn);
+        when(splitChangeFetcher.fetch(Mockito.eq(1L), Mockito.any())).thenReturn(noReturn);
 
         SegmentCache segmentCache = new SegmentCacheInMemoryImpl();
 
@@ -148,7 +150,7 @@ public class SplitFetcherTest {
         SplitCache cache = new InMemoryCacheImp(-1);
 
         SplitChangeFetcher splitChangeFetcher = mock(SplitChangeFetcher.class);
-        when(splitChangeFetcher.fetch(-1L, false)).thenThrow(new RuntimeException());
+        when(splitChangeFetcher.fetch(-1L, new FetchOptions.Builder().build())).thenThrow(new RuntimeException());
         SegmentCache segmentCache = new SegmentCacheInMemoryImpl();
 
         SegmentChangeFetcher segmentChangeFetcher = mock(SegmentChangeFetcher.class);

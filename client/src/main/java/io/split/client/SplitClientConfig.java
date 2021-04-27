@@ -47,6 +47,7 @@ public class SplitClientConfig {
     private final String _authServiceURL;
     private final String _streamingServiceURL;
     private final int _onDemandFetchRetryDelayMs;
+    private final boolean _cdnDebugLogging;
 
     // Proxy configs
     private final HttpHost _proxy;
@@ -91,7 +92,8 @@ public class SplitClientConfig {
                               int streamingReconnectBackoffBase,
                               String authServiceURL,
                               String streamingServiceURL,
-                              int onDemandFetchRetryDelayMs) {
+                              int onDemandFetchRetryDelayMs,
+                              boolean cdnDebugLogging) {
         _endpoint = endpoint;
         _eventsEndpoint = eventsEndpoint;
         _featuresRefreshRate = pollForFeatureChangesEveryNSeconds;
@@ -123,6 +125,7 @@ public class SplitClientConfig {
         _authServiceURL = authServiceURL;
         _streamingServiceURL = streamingServiceURL;
         _onDemandFetchRetryDelayMs = onDemandFetchRetryDelayMs;
+        _cdnDebugLogging = cdnDebugLogging;
 
         Properties props = new Properties();
         try {
@@ -253,6 +256,9 @@ public class SplitClientConfig {
 
     public int streamingRetryDelay() {return _onDemandFetchRetryDelayMs;}
 
+    public boolean cdnDebugLogging() { return _cdnDebugLogging; }
+
+
     public static final class Builder {
 
         private String _endpoint = "https://sdk.split.io";
@@ -289,6 +295,7 @@ public class SplitClientConfig {
         private String _authServiceURL = "https://auth.split.io/api/auth";
         private String _streamingServiceURL = "https://streaming.split.io/sse";
         private int _onDemandFetchRetryDelayMs = 50;
+        private boolean _cdnDebugLogging = true;
 
         public Builder() {
         }
@@ -690,6 +697,16 @@ public class SplitClientConfig {
             return this;
         }
 
+        /**
+         * Enable logging response headers for requests made to our CDN.
+         * @param cdnDebugLogging
+         * @return
+         */
+        public Builder cdnDebugLogging(boolean cdnDebugLogging) {
+            _cdnDebugLogging = cdnDebugLogging;
+            return this;
+        }
+
         public SplitClientConfig build() {
             if (_featuresRefreshRate < 5 ) {
                 throw new IllegalArgumentException("featuresRefreshRate must be >= 5: " + _featuresRefreshRate);
@@ -795,7 +812,8 @@ public class SplitClientConfig {
                     _streamingReconnectBackoffBase,
                     _authServiceURL,
                     _streamingServiceURL,
-                    _onDemandFetchRetryDelayMs);
+                    _onDemandFetchRetryDelayMs,
+                    _cdnDebugLogging);
         }
     }
 }

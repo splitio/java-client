@@ -60,9 +60,10 @@ public class SyncManagerImp implements SyncManager {
                                        int authRetryBackOffBase,
                                        CloseableHttpClient sseHttpClient,
                                        SegmentCache segmentCache,
-                                       int streamingRetryDelay) {
+                                       int streamingRetryDelay,
+                                       boolean cdnDebugLogging) {
         LinkedBlockingQueue<PushManager.Status> pushMessages = new LinkedBlockingQueue<>();
-        Synchronizer synchronizer = new SynchronizerImp(splitSynchronizationTask, splitFetcher, segmentSynchronizationTaskImp, splitCache, segmentCache, streamingRetryDelay);
+        Synchronizer synchronizer = new SynchronizerImp(splitSynchronizationTask, splitFetcher, segmentSynchronizationTaskImp, splitCache, segmentCache, streamingRetryDelay, cdnDebugLogging);
         PushManager pushManager = PushManagerImp.build(synchronizer, streamingServiceUrl, authUrl, httpClient, pushMessages, sseHttpClient);
         return new SyncManagerImp(streamingEnabledConfig, synchronizer, pushManager, pushMessages, authRetryBackOffBase);
     }
@@ -111,14 +112,16 @@ public class SyncManagerImp implements SyncManager {
                         _pushManager.startWorkers();
                         _pushManager.scheduleConnectionReset();
                         _backoff.reset();
+                        _log.info("Streaming up and running.");
                         break;
                     case STREAMING_DOWN:
+                        _log.info("Streaming service temporarily unavailable, working in polling mode.");
                         _pushManager.stopWorkers();
                         _synchronizer.startPeriodicFetching();
                         break;
                     case STREAMING_BACKOFF:
                         long howLong = _backoff.interval() * 1000;
-                        _log.error(String.format("Retryable error in streaming subsystem. Switching to polling and retrying in %d seconds", howLong/1000));
+                        _log.info(String.format("Retryable error in streaming subsystem. Switching to polling and retrying in %d seconds", howLong/1000));
                         _synchronizer.startPeriodicFetching();
                         _pushManager.stopWorkers();
                         _pushManager.stop();
@@ -127,6 +130,7 @@ public class SyncManagerImp implements SyncManager {
                         _pushManager.start();
                         break;
                     case STREAMING_OFF:
+                        _log.info("Unrecoverable error in streaming subsystem. SDK will work in polling-mode and will not retry an SSE connection.");
                         _pushManager.stop();
                         _synchronizer.startPeriodicFetching();
                         if (null != _pushStatusMonitorTask) {

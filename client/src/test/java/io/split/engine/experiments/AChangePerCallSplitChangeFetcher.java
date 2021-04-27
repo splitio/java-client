@@ -7,6 +7,7 @@ import io.split.client.dtos.Split;
 import io.split.client.dtos.SplitChange;
 import io.split.client.dtos.Status;
 import io.split.engine.ConditionsTestUtil;
+import io.split.engine.common.FetchOptions;
 import io.split.grammar.Treatments;
 
 import java.util.concurrent.atomic.AtomicLong;
@@ -31,7 +32,7 @@ public class AChangePerCallSplitChangeFetcher implements SplitChangeFetcher {
 
 
     @Override
-    public SplitChange fetch(long since, boolean addCacheHeader) {
+    public SplitChange fetch(long since, FetchOptions options) {
         long latestChangeNumber = since + 1;
         Condition condition = null;
 

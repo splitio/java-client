@@ -129,7 +129,9 @@ public class SplitFactoryImpl implements SplitFactory {
         _splitFetcher = buildSplitFetcher();
 
         // SplitSynchronizationTask
-        _splitSynchronizationTask = new SplitSynchronizationTask(_splitFetcher, _splitCache, findPollingPeriod(RANDOM, config.featuresRefreshRate()));
+        _splitSynchronizationTask = new SplitSynchronizationTask(_splitFetcher,
+                _splitCache,
+                findPollingPeriod(RANDOM, config.featuresRefreshRate()));
 
         // Impressions
         _impressionsManager = buildImpressionsManager(config);
@@ -138,27 +140,52 @@ public class SplitFactoryImpl implements SplitFactory {
         _cachedFireAndForgetMetrics = buildCachedFireAndForgetMetrics(config);
 
         // EventClient
-        _eventClient = EventClientImpl.create(_httpclient, _eventsRootTarget, config.eventsQueueSize(), config.eventFlushIntervalInMillis(), config.waitBeforeShutdown());
+        _eventClient = EventClientImpl.create(_httpclient,
+                _eventsRootTarget,
+                config.eventsQueueSize(),
+                config.eventFlushIntervalInMillis(),
+                config.waitBeforeShutdown());
 
         // SyncManager
-        _syncManager = SyncManagerImp.build(config.streamingEnabled(), _splitSynchronizationTask, _splitFetcher, _segmentSynchronizationTaskImp, _splitCache, config.authServiceURL(), _httpclient, config.streamingServiceURL(), config.authRetryBackoffBase(), buildSSEdHttpClient(config), _segmentCache, config.streamingRetryDelay());
+        _syncManager = SyncManagerImp.build(config.streamingEnabled(),
+                _splitSynchronizationTask,
+                _splitFetcher,
+                _segmentSynchronizationTaskImp,
+                _splitCache,
+                config.authServiceURL(),
+                _httpclient,
+                config.streamingServiceURL(),
+                config.authRetryBackoffBase(),
+                buildSSEdHttpClient(config),
+                _segmentCache,
+                config.streamingRetryDelay(),
+                config.cdnDebugLogging());
         _syncManager.start();
 
         // Evaluator
         _evaluator = new EvaluatorImp(_splitCache);
 
         // SplitClient
-        _client = new SplitClientImpl(this, _splitCache, _impressionsManager, _cachedFireAndForgetMetrics, _eventClient, config, _gates, _evaluator);
+        _client = new SplitClientImpl(this,
+                _splitCache,
+                _impressionsManager,
+                _cachedFireAndForgetMetrics,
+                _eventClient,
+                config,
+                _gates,
+                _evaluator);
 
         // SplitManager
         _manager = new SplitManagerImpl(_splitCache, config, _gates);
 
         // DestroyOnShutDown
         if (config.destroyOnShutDown()) {
-            Runtime.getRuntime().addShutdownHook(new Thread(() -> {
+            Thread shutdown = new Thread(() -> {
                 // Using the full path to avoid conflicting with Thread.destroy()
                 SplitFactoryImpl.this.destroy();
-            }));
+            });
+            shutdown.setName("split-destroy-worker");
+            Runtime.getRuntime().addShutdownHook(shutdown);
         }
     }
 
@@ -207,7 +234,6 @@ public class SplitFactoryImpl implements SplitFactory {
     }
 
     private static CloseableHttpClient buildHttpClient(String apiToken, SplitClientConfig config) {
-
         SSLConnectionSocketFactory sslSocketFactory = SSLConnectionSocketFactoryBuilder.create()
                 .setSslContext(SSLContexts.createSystemDefault())
                 .setTlsVersions(TLS.V_1_1, TLS.V_1_2)
