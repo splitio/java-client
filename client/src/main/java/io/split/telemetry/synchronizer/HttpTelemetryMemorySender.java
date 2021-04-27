@@ -1,11 +1,11 @@
 package io.split.telemetry.synchronizer;
 
-import io.split.client.SplitClientConfig;
+import com.google.common.annotations.VisibleForTesting;
 import io.split.client.impressions.HttpImpressionsSender;
 import io.split.client.utils.Utils;
 import io.split.telemetry.domain.Config;
 import io.split.telemetry.domain.Stats;
-import io.split.telemetry.utils.HttpPost;
+import io.split.service.HttpPostImp;
 import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -13,7 +13,7 @@ import org.slf4j.LoggerFactory;
 import java.net.URI;
 import java.net.URISyntaxException;
 
-public class HttpTelemetryMemorySender extends HttpPost {
+public class HttpTelemetryMemorySender extends HttpPostImp {
 
     private static final String CONFIG_ENDPOINT_PATH = "metrics/config";
     private static final String STATS_ENDPOINT_PATH = "metrics/usage";
@@ -32,7 +32,8 @@ public class HttpTelemetryMemorySender extends HttpPost {
         );
     }
 
-    private HttpTelemetryMemorySender(CloseableHttpClient client,  URI impressionConfigTarget, URI impressionStatsTarget) {
+    @VisibleForTesting
+    HttpTelemetryMemorySender(CloseableHttpClient client, URI impressionConfigTarget, URI impressionStatsTarget) {
         super(client);
         _impressionConfigTarget = impressionConfigTarget;
         _impressionStatsTarget = impressionStatsTarget;

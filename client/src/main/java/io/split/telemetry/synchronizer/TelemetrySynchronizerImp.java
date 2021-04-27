@@ -19,6 +19,7 @@ import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -78,8 +79,11 @@ public class TelemetrySynchronizerImp implements TelemetrySynchronizer{
         Config config = new Config();
         Rates rates = new Rates();
         URLOverrides urlOverrides = new URLOverrides();
-        List<IntegrationsConfig.ImpressionListenerWithMeta> impressionsListeners = splitClientConfig.integrationsConfig().getImpressionsListeners(IntegrationsConfig.Execution.ASYNC);
-        impressionsListeners.addAll(splitClientConfig.integrationsConfig().getImpressionsListeners(IntegrationsConfig.Execution.SYNC));
+        List<IntegrationsConfig.ImpressionListenerWithMeta> impressionsListeners = new ArrayList<>();
+        if(splitClientConfig.integrationsConfig() != null) {
+            impressionsListeners.addAll(splitClientConfig.integrationsConfig().getImpressionsListeners(IntegrationsConfig.Execution.ASYNC));
+            impressionsListeners.addAll(splitClientConfig.integrationsConfig().getImpressionsListeners(IntegrationsConfig.Execution.SYNC));
+        }
         List<String> impressions = getImpressions(impressionsListeners);
 
         rates.set_telemetry(splitClientConfig.get_telemetryRefreshRate());
