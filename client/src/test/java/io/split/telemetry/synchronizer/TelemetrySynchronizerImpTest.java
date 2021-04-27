@@ -13,6 +13,7 @@ import org.apache.hc.client5.http.classic.methods.HttpOptions;
 import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
 import org.apache.hc.client5.http.impl.classic.CloseableHttpResponse;
 import org.apache.hc.core5.http.ClassicHttpRequest;
+import org.apache.hc.core5.http.HttpStatus;
 import org.junit.Test;
 import org.mockito.Mock;
 import org.mockito.Mockito;
@@ -30,7 +31,7 @@ public class TelemetrySynchronizerImpTest{
 
     @Test
     public void testSynchronizeConfig() throws URISyntaxException, NoSuchMethodException, IOException, IllegalAccessException, InvocationTargetException {
-        CloseableHttpClient httpClient = TestHelper.mockHttpClient("", 200);
+        CloseableHttpClient httpClient = TestHelper.mockHttpClient(TELEMETRY_ENDPOINT, HttpStatus.SC_OK);
         TelemetrySynchronizer telemetrySynchronizer = getTelemetrySynchronizer(httpClient);
         SplitClientConfig splitClientConfig = SplitClientConfig.builder().build();
 
@@ -41,7 +42,7 @@ public class TelemetrySynchronizerImpTest{
 
     @Test
     public void testSynchronizeStats() throws Exception {
-        CloseableHttpClient httpClient = TestHelper.mockHttpClient("", 200);
+        CloseableHttpClient httpClient = TestHelper.mockHttpClient(TELEMETRY_ENDPOINT, HttpStatus.SC_OK);
         TelemetrySynchronizer telemetrySynchronizer = getTelemetrySynchronizer(httpClient);
 
         telemetrySynchronizer.synchronizeStats();

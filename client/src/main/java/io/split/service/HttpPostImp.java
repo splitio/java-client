@@ -4,6 +4,7 @@ import io.split.client.utils.Utils;
 import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
 import org.apache.hc.client5.http.impl.classic.CloseableHttpResponse;
 import org.apache.hc.core5.http.HttpEntity;
+import org.apache.hc.core5.http.HttpStatus;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.hc.client5.http.classic.methods.HttpPost;
@@ -11,8 +12,6 @@ import org.apache.hc.client5.http.classic.methods.HttpPost;
 import java.net.URI;
 
 public class HttpPostImp {
-    private static final int STATUS_OKEY = 200;
-    private static final int STATUS_MIN = 300;
     private static final Logger _logger = LoggerFactory.getLogger(HttpPostImp.class);
     private CloseableHttpClient _client;
 
@@ -32,7 +31,7 @@ public class HttpPostImp {
 
             int status = response.getCode();
 
-            if (status < STATUS_OKEY || status >= STATUS_MIN) {
+            if (status < HttpStatus.SC_OK || status >= HttpStatus.SC_MULTIPLE_CHOICES) {
                 _logger.warn("Response status was: " + status);
             }
 
