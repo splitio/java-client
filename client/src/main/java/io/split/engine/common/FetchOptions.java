@@ -58,6 +58,7 @@ public class FetchOptions {
         _fastlyDebugHeader = fastlyDebugHeader;
     }
 
+    @Override
     public boolean equals(Object obj) {
         if (null == obj) return false;
         if (this == obj) return true;
@@ -68,6 +69,11 @@ public class FetchOptions {
         return Objects.equals(_cacheControlHeaders, other._cacheControlHeaders)
                 && Objects.equals(_fastlyDebugHeader, other._fastlyDebugHeader)
                 && Objects.equals(_responseHeadersCallback, other._responseHeadersCallback);
+    }
+
+    @Override
+    public int hashCode() {
+        return com.google.common.base.Objects.hashCode(_cacheControlHeaders, _fastlyDebugHeader, _responseHeadersCallback);
     }
 
     private final boolean _cacheControlHeaders;
