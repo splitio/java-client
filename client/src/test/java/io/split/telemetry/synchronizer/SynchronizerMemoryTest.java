@@ -1,21 +1,15 @@
 package io.split.telemetry.synchronizer;
 
 import io.split.TestHelper;
-import io.split.cache.InMemoryCacheImp;
 import io.split.cache.SegmentCache;
 import io.split.cache.SegmentCacheInMemoryImpl;
 import io.split.cache.SplitCache;
 import io.split.client.SplitClientConfig;
-import io.split.service.HttpPostImp;
 import io.split.telemetry.storage.InMemoryTelemetryStorage;
 import io.split.telemetry.storage.TelemetryStorageConsumer;
-import org.apache.hc.client5.http.classic.methods.HttpOptions;
 import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
-import org.apache.hc.client5.http.impl.classic.CloseableHttpResponse;
-import org.apache.hc.core5.http.ClassicHttpRequest;
 import org.apache.hc.core5.http.HttpStatus;
 import org.junit.Test;
-import org.mockito.Mock;
 import org.mockito.Mockito;
 
 import java.io.IOException;
@@ -25,7 +19,7 @@ import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.HashMap;
 
-public class TelemetrySynchronizerImpTest{
+public class SynchronizerMemoryTest {
 
     public static final String TELEMETRY_ENDPOINT = "https://telemetry.split.io/api/v1";
 
@@ -53,7 +47,7 @@ public class TelemetrySynchronizerImpTest{
         TelemetryStorageConsumer consumer = Mockito.mock(InMemoryTelemetryStorage.class);
         SplitCache splitCache = Mockito.mock(SplitCache.class);
         SegmentCache segmentCache = Mockito.mock(SegmentCacheInMemoryImpl.class);
-        TelemetrySynchronizer telemetrySynchronizer = new TelemetrySynchronizerImp(httpClient, URI.create(TELEMETRY_ENDPOINT), consumer, splitCache, segmentCache);
+        TelemetrySynchronizer telemetrySynchronizer = new SynchronizerMemory(httpClient, URI.create(TELEMETRY_ENDPOINT), consumer, splitCache, segmentCache);
         return telemetrySynchronizer;
     }
 

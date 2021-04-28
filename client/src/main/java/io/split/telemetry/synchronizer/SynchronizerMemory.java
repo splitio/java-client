@@ -19,12 +19,10 @@ import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 
-public class TelemetrySynchronizerImp implements TelemetrySynchronizer{
+public class SynchronizerMemory implements TelemetrySynchronizer{
 
     private static final int OPERATION_MODE = 0;
     private static  final String STORAGE = "memory";
@@ -34,8 +32,8 @@ public class TelemetrySynchronizerImp implements TelemetrySynchronizer{
     private SplitCache _splitCache;
     private SegmentCache _segmentCache;
 
-    public TelemetrySynchronizerImp(CloseableHttpClient client, URI telemetryRootEndpoint, TelemetryStorageConsumer telemetryStorageConsumer, SplitCache splitCache,
-            SegmentCache segmentCache) throws URISyntaxException {
+    public SynchronizerMemory(CloseableHttpClient client, URI telemetryRootEndpoint, TelemetryStorageConsumer telemetryStorageConsumer, SplitCache splitCache,
+                              SegmentCache segmentCache) throws URISyntaxException {
         _httpHttpTelemetryMemorySender = HttpTelemetryMemorySender.create(client, telemetryRootEndpoint);
         _teleTelemetryStorageConsumer = telemetryStorageConsumer;
         _splitCache = splitCache;
