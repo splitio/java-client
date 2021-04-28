@@ -34,4 +34,13 @@ public class TelemetrySyncTask {
             }
         },0l,  _telemetryRefreshRate, TimeUnit.SECONDS);
     }
+
+    protected void stopScheduledTask() {
+        try {
+            _telemetrySynchronizer.synchronizeStats();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        _telemetrySyncScheduledExecutorService.shutdown();
+    }
 }
