@@ -146,8 +146,6 @@ public class SegmentSynchronizationTaskImp implements SegmentSynchronizationTask
 
     @Override
     public void fetchAll(boolean addCacheHeader) {
-        ArrayList<Future<?>> futures = new ArrayList<>();
-
         for (Map.Entry<String, SegmentFetcher> entry : _segmentFetchers.entrySet()) {
             SegmentFetcher fetcher = entry.getValue();
 
@@ -156,11 +154,11 @@ public class SegmentSynchronizationTaskImp implements SegmentSynchronizationTask
             }
 
             if(addCacheHeader) {
-                futures.add(_scheduledExecutorService.submit(fetcher::runWhitCacheHeader));
+                _scheduledExecutorService.submit(fetcher::runWhitCacheHeader);
                 continue;
             }
 
-            futures.add(_scheduledExecutorService.submit(fetcher::fetchAll));
+            _scheduledExecutorService.submit(fetcher::fetchAll);
         }
     }
 
