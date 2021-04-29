@@ -22,7 +22,7 @@ public class SyncManagerTest {
         SyncManagerImp syncManager = new SyncManagerImp(false, _synchronizer, _pushManager, new LinkedBlockingQueue<>(), BACKOFF_BASE);
         syncManager.start();
         Mockito.verify(_synchronizer, Mockito.times(1)).startPeriodicFetching();
-        Mockito.verify(_synchronizer, Mockito.times(0)).syncAll();
+        Mockito.verify(_synchronizer, Mockito.times(1)).syncAll();
         Mockito.verify(_pushManager, Mockito.times(0)).start();
     }
 

@@ -3,6 +3,7 @@ package io.split.engine.common;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import io.split.cache.SegmentCache;
 import io.split.cache.SplitCache;
+import io.split.engine.SDKReadinessGates;
 import io.split.engine.experiments.SplitFetcher;
 import io.split.engine.experiments.SplitSynchronizationTask;
 import io.split.engine.segments.SegmentFetcher;
@@ -10,6 +11,7 @@ import io.split.engine.segments.SegmentSynchronizationTask;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.ArrayList;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ThreadFactory;
@@ -28,19 +30,22 @@ public class SynchronizerImp implements Synchronizer {
     private final SplitCache _splitCache;
     private final SegmentCache _segmentCache;
     private final int _onDemandFetchRetryDelayMs;
+    private final SDKReadinessGates _gates;
 
     public SynchronizerImp(SplitSynchronizationTask splitSynchronizationTask,
                            SplitFetcher splitFetcher,
                            SegmentSynchronizationTask segmentSynchronizationTaskImp,
                            SplitCache splitCache,
                            SegmentCache segmentCache,
-                           int onDemandFetchRetryDelayMs) {
+                           int onDemandFetchRetryDelayMs,
+                           SDKReadinessGates gates) {
         _splitSynchronizationTask = checkNotNull(splitSynchronizationTask);
         _splitFetcher = checkNotNull(splitFetcher);
         _segmentSynchronizationTaskImp = checkNotNull(segmentSynchronizationTaskImp);
         _splitCache = checkNotNull(splitCache);
         _segmentCache = checkNotNull(segmentCache);
         _onDemandFetchRetryDelayMs = checkNotNull(onDemandFetchRetryDelayMs);
+        _gates = checkNotNull(gates);
 
         ThreadFactory splitsThreadFactory = new ThreadFactoryBuilder()
                 .setDaemon(true)
@@ -53,7 +58,8 @@ public class SynchronizerImp implements Synchronizer {
     public void syncAll() {
         _syncAllScheduledExecutorService.schedule(() -> {
             _splitFetcher.fetchAll(true);
-            _segmentSynchronizationTaskImp.fetchAll(true);
+            _segmentSynchronizationTaskImp.fetchAllSynchronous();
+            _gates.sdkInternalReady();
         }, 0, TimeUnit.SECONDS);
     }
 

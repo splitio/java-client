@@ -16,8 +16,8 @@ public class SDKReadinessGates {
     private static final Logger _log = LoggerFactory.getLogger(SDKReadinessGates.class);
 
     private final CountDownLatch _splitsAreReady = new CountDownLatch(1);
+    private final CountDownLatch _internalReady = new CountDownLatch(1);
     private final ConcurrentMap<String, CountDownLatch> _segmentsAreReady = new ConcurrentHashMap<>();
-
 
     /**
      * Returns true if the SDK is ready. The SDK is ready when:
@@ -45,7 +45,11 @@ public class SDKReadinessGates {
 
         timeLeft = end - System.currentTimeMillis();
 
-        return areSegmentsReady(timeLeft);
+        boolean ready = areSegmentsReady(timeLeft);
+
+        if (ready) sdkInternalReady();
+
+        return  ready;
     }
 
     public boolean isSDKReadyNow() {
@@ -165,5 +169,21 @@ public class SDKReadinessGates {
      */
     public boolean areSplitsReady(long milliseconds) throws InterruptedException {
         return _splitsAreReady.await(milliseconds, TimeUnit.MILLISECONDS);
+    }
+
+    public void sdkInternalReady() {
+        if (_internalReady.getCount() == 0) {
+            return;
+        }
+
+        _internalReady.countDown();
+    }
+
+    public void waitUntilInternalReady() throws InterruptedException {
+        if (_internalReady.getCount() == 0) {
+            return;
+        }
+
+        _internalReady.await();
     }
 }

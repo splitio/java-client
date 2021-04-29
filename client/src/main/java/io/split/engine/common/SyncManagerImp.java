@@ -4,6 +4,7 @@ import com.google.common.annotations.VisibleForTesting;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import io.split.cache.SegmentCache;
 import io.split.cache.SplitCache;
+import io.split.engine.SDKReadinessGates;
 import io.split.engine.experiments.SplitFetcher;
 import io.split.engine.experiments.SplitSynchronizationTask;
 import io.split.engine.segments.SegmentSynchronizationTaskImp;
@@ -60,15 +61,18 @@ public class SyncManagerImp implements SyncManager {
                                        int authRetryBackOffBase,
                                        CloseableHttpClient sseHttpClient,
                                        SegmentCache segmentCache,
-                                       int streamingRetryDelay) {
+                                       int streamingRetryDelay,
+                                       SDKReadinessGates gates) {
         LinkedBlockingQueue<PushManager.Status> pushMessages = new LinkedBlockingQueue<>();
-        Synchronizer synchronizer = new SynchronizerImp(splitSynchronizationTask, splitFetcher, segmentSynchronizationTaskImp, splitCache, segmentCache, streamingRetryDelay);
+        Synchronizer synchronizer = new SynchronizerImp(splitSynchronizationTask, splitFetcher, segmentSynchronizationTaskImp, splitCache, segmentCache, streamingRetryDelay, gates);
         PushManager pushManager = PushManagerImp.build(synchronizer, streamingServiceUrl, authUrl, httpClient, pushMessages, sseHttpClient);
         return new SyncManagerImp(streamingEnabledConfig, synchronizer, pushManager, pushMessages, authRetryBackOffBase);
     }
 
     @Override
     public void start() {
+        _synchronizer.syncAll();
+
         if (_streamingEnabledConfig.get()) {
             startStreamingMode();
         } else {
@@ -85,12 +89,10 @@ public class SyncManagerImp implements SyncManager {
 
     private void startStreamingMode() {
         _log.debug("Starting in streaming mode ...");
-        _synchronizer.syncAll();
         if (null == _pushStatusMonitorTask) {
             _pushStatusMonitorTask = _executorService.submit(this::incomingPushStatusHandler);
         }
         _pushManager.start();
-
     }
 
     private void startPollingMode() {

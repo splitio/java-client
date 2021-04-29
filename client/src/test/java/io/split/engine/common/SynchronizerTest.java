@@ -2,6 +2,7 @@ package io.split.engine.common;
 
 import io.split.cache.SegmentCache;
 import io.split.cache.SplitCache;
+import io.split.engine.SDKReadinessGates;
 import io.split.engine.experiments.SplitFetcherImp;
 import io.split.engine.experiments.SplitSynchronizationTask;
 import io.split.engine.segments.SegmentFetcher;
@@ -17,6 +18,7 @@ public class SynchronizerTest {
     private SplitCache _splitCache;
     private Synchronizer _synchronizer;
     private SegmentCache _segmentCache;
+    private SDKReadinessGates _gates;
 
     @Before
     public void beforeMethod() {
@@ -25,8 +27,9 @@ public class SynchronizerTest {
         _splitFetcher = Mockito.mock(SplitFetcherImp.class);
         _splitCache = Mockito.mock(SplitCache.class);
         _segmentCache = Mockito.mock(SegmentCache.class);
+        _gates = Mockito.mock(SDKReadinessGates.class);
 
-        _synchronizer = new SynchronizerImp(_refreshableSplitFetcherTask, _splitFetcher, _segmentFetcher, _splitCache, _segmentCache, 50);
+        _synchronizer = new SynchronizerImp(_refreshableSplitFetcherTask, _splitFetcher, _segmentFetcher, _splitCache, _segmentCache, 50, _gates);
     }
 
     @Test
@@ -35,7 +38,8 @@ public class SynchronizerTest {
 
         Thread.sleep(100);
         Mockito.verify(_splitFetcher, Mockito.times(1)).fetchAll(true);
-        Mockito.verify(_segmentFetcher, Mockito.times(1)).fetchAll(true);
+        Mockito.verify(_segmentFetcher, Mockito.times(1)).fetchAllSynchronous();
+        Mockito.verify(_gates, Mockito.times(1)).sdkInternalReady();
     }
 
     @Test

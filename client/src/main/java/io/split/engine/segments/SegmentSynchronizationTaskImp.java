@@ -8,16 +8,13 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.Closeable;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.ConcurrentMap;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.ScheduledFuture;
-import java.util.concurrent.ThreadFactory;
+import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicLong;
-import java.util.concurrent.Executors;
-import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
@@ -58,6 +55,12 @@ public class SegmentSynchronizationTaskImp implements SegmentSynchronizationTask
 
     @Override
     public void run() {
+        try {
+            _gates.waitUntilInternalReady();
+        } catch (InterruptedException ex) {
+            _log.debug(ex.getMessage());
+        }
+
         this.fetchAll(false);
     }
 
@@ -143,6 +146,8 @@ public class SegmentSynchronizationTaskImp implements SegmentSynchronizationTask
 
     @Override
     public void fetchAll(boolean addCacheHeader) {
+        ArrayList<Future<?>> futures = new ArrayList<>();
+
         for (Map.Entry<String, SegmentFetcher> entry : _segmentFetchers.entrySet()) {
             SegmentFetcher fetcher = entry.getValue();
 
@@ -151,10 +156,25 @@ public class SegmentSynchronizationTaskImp implements SegmentSynchronizationTask
             }
 
             if(addCacheHeader) {
-                _scheduledExecutorService.submit(fetcher::runWhitCacheHeader);
+                futures.add(_scheduledExecutorService.submit(fetcher::runWhitCacheHeader));
                 continue;
             }
-            _scheduledExecutorService.submit(fetcher::fetchAll);
+
+            futures.add(_scheduledExecutorService.submit(fetcher::fetchAll));
         }
+    }
+
+    @Override
+    public void fetchAllSynchronous() {
+        _segmentFetchers
+                .entrySet()
+                .stream().map(e -> _scheduledExecutorService.submit(e.getValue()::runWhitCacheHeader))
+                .collect(Collectors.toList())
+                .stream().forEach(future -> {
+                    try {
+                        future.get();
+                    } catch (Exception ex) {
+                        _log.error(ex.getMessage());
+                    }});
     }
 }
