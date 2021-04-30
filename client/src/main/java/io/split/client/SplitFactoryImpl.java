@@ -48,9 +48,7 @@ import org.slf4j.LoggerFactory;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Random;
+import java.util.*;
 import java.util.stream.Collectors;
 
 public class SplitFactoryImpl implements SplitFactory {
@@ -130,7 +128,7 @@ public class SplitFactoryImpl implements SplitFactory {
         _eventClient = EventClientImpl.create(_httpclient, _eventsRootTarget, config.eventsQueueSize(), config.eventFlushIntervalInMillis(), config.waitBeforeShutdown());
 
         // SyncManager
-        _syncManager = SyncManagerImp.build(config.streamingEnabled(), _splitSynchronizationTask, _splitFetcher, _segmentSynchronizationTaskImp, _splitCache, config.authServiceURL(), _httpclient, config.streamingServiceURL(), config.authRetryBackoffBase(), buildSSEdHttpClient(config), _segmentCache, config.streamingRetryDelay(), _gates);
+        _syncManager = SyncManagerImp.build(config.streamingEnabled(), _splitSynchronizationTask, _splitFetcher, _segmentSynchronizationTaskImp, _splitCache, config.authServiceURL(), _httpclient, config.streamingServiceURL(), config.authRetryBackoffBase(), buildSSEdHttpClient(apiToken, config), _segmentCache, config.streamingRetryDelay(), _gates);
         _syncManager.start();
 
         // Evaluator
@@ -215,7 +213,7 @@ public class SplitFactoryImpl implements SplitFactory {
         HttpClientBuilder httpClientbuilder = HttpClients.custom()
                 .setConnectionManager(cm)
                 .setDefaultRequestConfig(requestConfig)
-                .addRequestInterceptorLast(AddSplitHeadersFilter.instance(apiToken, config.ipAddressEnabled()))
+                .addRequestInterceptorLast(AddSplitHeadersFilter.instance(apiToken, config.ipAddressEnabled(), false))
                 .addRequestInterceptorLast(new GzipEncoderRequestInterceptor())
                 .addResponseInterceptorLast((new GzipDecoderResponseInterceptor()));
 
@@ -227,7 +225,7 @@ public class SplitFactoryImpl implements SplitFactory {
         return httpClientbuilder.build();
     }
 
-    private static CloseableHttpClient buildSSEdHttpClient(SplitClientConfig config) {
+    private static CloseableHttpClient buildSSEdHttpClient(String apiToken, SplitClientConfig config) {
         RequestConfig requestConfig = RequestConfig.custom()
                 .setConnectTimeout(Timeout.ofMilliseconds(SSE_CONNECT_TIMEOUT))
                 .build();
@@ -248,7 +246,8 @@ public class SplitFactoryImpl implements SplitFactory {
 
         HttpClientBuilder httpClientbuilder = HttpClients.custom()
                 .setConnectionManager(cm)
-                .setDefaultRequestConfig(requestConfig);
+                .setDefaultRequestConfig(requestConfig)
+                .addRequestInterceptorLast(AddSplitHeadersFilter.instance(apiToken, config.ipAddressEnabled(), true));
 
         // Set up proxy is it exists
         if (config.proxy() != null) {
@@ -311,5 +310,4 @@ public class SplitFactoryImpl implements SplitFactory {
 
         return ImpressionsManagerImpl.instance(_httpclient, config, impressionListeners);
     }
-
 }

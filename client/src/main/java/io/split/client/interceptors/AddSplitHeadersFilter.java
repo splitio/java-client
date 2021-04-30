@@ -25,14 +25,16 @@ public class AddSplitHeadersFilter implements HttpRequestInterceptor {
     static final String CLIENT_MACHINE_NAME_HEADER = "SplitSDKMachineName";
     static final String CLIENT_MACHINE_IP_HEADER = "SplitSDKMachineIP";
     static final String CLIENT_VERSION = "SplitSDKVersion";
+    static final String CLIENT_KEY = "SplitSDKClientKey";
 
     private final String _apiTokenBearer;
     private final String _hostname;
     private final String _ip;
+    private final String _clientKey;
 
-    public static AddSplitHeadersFilter instance(String apiToken, boolean ipAddressEnabled) {
+    public static AddSplitHeadersFilter instance(String apiToken, boolean ipAddressEnabled, boolean externalClient) {
         if (!ipAddressEnabled) {
-            return new AddSplitHeadersFilter(apiToken, null, null);
+            return new AddSplitHeadersFilter(apiToken, null, null, externalClient);
         }
 
         String hostname = null;
@@ -46,20 +48,30 @@ public class AddSplitHeadersFilter implements HttpRequestInterceptor {
             _log.error("Could not resolve InetAddress", e);
         }
 
-        return new AddSplitHeadersFilter(apiToken, hostname, ip);
+        return new AddSplitHeadersFilter(apiToken, hostname, ip, externalClient);
     }
 
-    private AddSplitHeadersFilter(String apiToken, String hostname, String ip) {
+    private AddSplitHeadersFilter(String apiToken, String hostname, String ip, boolean externalClient) {
         checkNotNull(apiToken);
 
-        _apiTokenBearer = "Bearer " + apiToken;
+        if (externalClient) {
+            _apiTokenBearer = null;
+            _clientKey = apiToken.substring(apiToken.length() - 4);
+        } else {
+            _apiTokenBearer = "Bearer " + apiToken;
+            _clientKey = null;
+        }
+
         _hostname = hostname;
         _ip = ip;
     }
 
     @Override
-    public void process(HttpRequest request, EntityDetails entity, HttpContext context) throws HttpException, IOException {
-        request.addHeader(AUTHORIZATION_HEADER, _apiTokenBearer);
+    public void process(HttpRequest request, EntityDetails entity, HttpContext context) {
+        if (_apiTokenBearer != null) {
+            request.addHeader(AUTHORIZATION_HEADER, _apiTokenBearer);
+        }
+
         request.addHeader(CLIENT_VERSION, SplitClientConfig.splitSdkVersion);
 
         if (_hostname != null) {
@@ -68,6 +80,10 @@ public class AddSplitHeadersFilter implements HttpRequestInterceptor {
 
         if (_ip != null) {
             request.addHeader(CLIENT_MACHINE_IP_HEADER, _ip);
+        }
+
+        if (_clientKey != null) {
+            request.addHeader(CLIENT_KEY, _clientKey);
         }
     }
 }

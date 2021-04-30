@@ -15,6 +15,8 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.SocketException;
 import java.net.URI;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -156,7 +158,6 @@ public class SSEClient {
     }
 
     private boolean establishConnection(URI uri, CountDownLatch signal) {
-
         _ongoingRequest.set(new HttpGet(uri));
 
         try {
