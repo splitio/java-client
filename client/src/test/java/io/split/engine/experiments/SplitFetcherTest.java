@@ -54,7 +54,6 @@ public class SplitFetcherTest {
     private void works(long startingChangeNumber) throws InterruptedException {
         AChangePerCallSplitChangeFetcher splitChangeFetcher = new AChangePerCallSplitChangeFetcher();
         SDKReadinessGates gates = new SDKReadinessGates();
-        gates.sdkInternalReady();
         SegmentCache segmentCache = new SegmentCacheInMemoryImpl();
         SegmentChangeFetcher segmentChangeFetcher = Mockito.mock(SegmentChangeFetcher.class);
         SegmentSynchronizationTask segmentSynchronizationTask = new SegmentSynchronizationTaskImp(segmentChangeFetcher,1,10, gates, segmentCache);
@@ -86,7 +85,6 @@ public class SplitFetcherTest {
     @Test
     public void when_parser_fails_we_remove_the_experiment() throws InterruptedException {
         SDKReadinessGates gates = new SDKReadinessGates();
-        gates.sdkInternalReady();
         Split validSplit = new Split();
         validSplit.status = Status.ACTIVE;
         validSplit.seed = (int) -1;
@@ -147,7 +145,6 @@ public class SplitFetcherTest {
     @Test
     public void if_there_is_a_problem_talking_to_split_change_count_down_latch_is_not_decremented() throws Exception {
         SDKReadinessGates gates = new SDKReadinessGates();
-        gates.sdkInternalReady();
         SplitCache cache = new InMemoryCacheImp(-1);
 
         SplitChangeFetcher splitChangeFetcher = mock(SplitChangeFetcher.class);
@@ -191,7 +188,6 @@ public class SplitFetcherTest {
         String segmentName = "foosegment";
         AChangePerCallSplitChangeFetcher experimentChangeFetcher = new AChangePerCallSplitChangeFetcher(segmentName);
         SDKReadinessGates gates = new SDKReadinessGates();
-        gates.sdkInternalReady();
         SplitCache cache = new InMemoryCacheImp(startingChangeNumber);
         SegmentCache segmentCache = new SegmentCacheInMemoryImpl();
 
