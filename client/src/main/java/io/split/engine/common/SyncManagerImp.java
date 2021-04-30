@@ -12,10 +12,7 @@ import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
-import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import static com.google.common.base.Preconditions.checkNotNull;
@@ -29,6 +26,8 @@ public class SyncManagerImp implements SyncManager {
     private final AtomicBoolean _shutdown;
     private final LinkedBlockingQueue<PushManager.Status> _incomingPushStatus;
     private final ExecutorService _executorService;
+    private final ExecutorService _pollingExecutorService;
+    private final SDKReadinessGates _gates;
     private Future<?> _pushStatusMonitorTask;
     private Backoff _backoff;
 
@@ -37,7 +36,8 @@ public class SyncManagerImp implements SyncManager {
                                          Synchronizer synchronizer,
                                          PushManager pushManager,
                                          LinkedBlockingQueue<PushManager.Status> pushMessages,
-                                         int authRetryBackOffBase) {
+                                         int authRetryBackOffBase,
+                                         SDKReadinessGates gates) {
         _streamingEnabledConfig = new AtomicBoolean(streamingEnabledConfig);
         _synchronizer = checkNotNull(synchronizer);
         _pushManager = checkNotNull(pushManager);
@@ -47,7 +47,12 @@ public class SyncManagerImp implements SyncManager {
                 .setNameFormat("SPLIT-PushStatusMonitor-%d")
                 .setDaemon(true)
                 .build());
+        _pollingExecutorService = Executors.newSingleThreadExecutor(new ThreadFactoryBuilder()
+                .setNameFormat("SPLIT-PollingMode-%d")
+                .setDaemon(true)
+                .build());
         _backoff = new Backoff(authRetryBackOffBase);
+        _gates = checkNotNull(gates);
     }
 
     public static SyncManagerImp build(boolean streamingEnabledConfig,
@@ -66,7 +71,7 @@ public class SyncManagerImp implements SyncManager {
         LinkedBlockingQueue<PushManager.Status> pushMessages = new LinkedBlockingQueue<>();
         Synchronizer synchronizer = new SynchronizerImp(splitSynchronizationTask, splitFetcher, segmentSynchronizationTaskImp, splitCache, segmentCache, streamingRetryDelay, gates);
         PushManager pushManager = PushManagerImp.build(synchronizer, streamingServiceUrl, authUrl, httpClient, pushMessages, sseHttpClient);
-        return new SyncManagerImp(streamingEnabledConfig, synchronizer, pushManager, pushMessages, authRetryBackOffBase);
+        return new SyncManagerImp(streamingEnabledConfig, synchronizer, pushManager, pushMessages, authRetryBackOffBase, gates);
     }
 
     @Override
@@ -76,7 +81,7 @@ public class SyncManagerImp implements SyncManager {
         if (_streamingEnabledConfig.get()) {
             startStreamingMode();
         } else {
-            startPollingMode();
+            _pollingExecutorService.submit(this::startPollingMode);
         }
     }
 
@@ -96,6 +101,12 @@ public class SyncManagerImp implements SyncManager {
     }
 
     private void startPollingMode() {
+        try {
+            _gates.waitUntilInternalReady();
+        } catch (InterruptedException ex) {
+            _log.debug(ex.getMessage());
+        }
+
         _log.debug("Starting in polling mode ...");
         _synchronizer.startPeriodicFetching();
     }

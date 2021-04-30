@@ -45,11 +45,7 @@ public class SDKReadinessGates {
 
         timeLeft = end - System.currentTimeMillis();
 
-        boolean ready = areSegmentsReady(timeLeft);
-
-        if (ready) sdkInternalReady();
-
-        return  ready;
+        return areSegmentsReady(timeLeft);
     }
 
     public boolean isSDKReadyNow() {
@@ -172,18 +168,10 @@ public class SDKReadinessGates {
     }
 
     public void sdkInternalReady() {
-        if (_internalReady.getCount() == 0) {
-            return;
-        }
-
         _internalReady.countDown();
     }
 
     public void waitUntilInternalReady() throws InterruptedException {
-        if (_internalReady.getCount() == 0) {
-            return;
-        }
-
         _internalReady.await();
     }
 }

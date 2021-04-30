@@ -65,12 +65,6 @@ public class SplitFetcherImp implements SplitFetcher {
 
     @Override
     public void run() {
-        try {
-            _gates.waitUntilInternalReady();
-        } catch (InterruptedException ex) {
-            _log.debug(ex.getMessage());
-        }
-
         this.fetchAll(false);
     }
 

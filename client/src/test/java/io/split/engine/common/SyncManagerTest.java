@@ -1,5 +1,6 @@
 package io.split.engine.common;
 
+import io.split.engine.SDKReadinessGates;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mockito;
@@ -10,17 +11,21 @@ public class SyncManagerTest {
     private static final int BACKOFF_BASE = 1;
     private Synchronizer _synchronizer;
     private PushManager _pushManager;
+    private SDKReadinessGates _gates;
 
     @Before
     public void setUp() {
         _synchronizer = Mockito.mock(Synchronizer.class);
         _pushManager = Mockito.mock(PushManager.class);
+        _gates = Mockito.mock(SDKReadinessGates.class);
     }
 
     @Test
-    public void startWithStreamingFalseShouldStartPolling() {
-        SyncManagerImp syncManager = new SyncManagerImp(false, _synchronizer, _pushManager, new LinkedBlockingQueue<>(), BACKOFF_BASE);
+    public void startWithStreamingFalseShouldStartPolling() throws InterruptedException {
+        _gates.sdkInternalReady();
+        SyncManagerImp syncManager = new SyncManagerImp(false, _synchronizer, _pushManager, new LinkedBlockingQueue<>(), BACKOFF_BASE, _gates);
         syncManager.start();
+        Thread.sleep(1000);
         Mockito.verify(_synchronizer, Mockito.times(1)).startPeriodicFetching();
         Mockito.verify(_synchronizer, Mockito.times(1)).syncAll();
         Mockito.verify(_pushManager, Mockito.times(0)).start();
@@ -28,7 +33,7 @@ public class SyncManagerTest {
 
     @Test
     public void startWithStreamingTrueShouldStartSyncAll() {
-        SyncManager sm = new SyncManagerImp(true, _synchronizer, _pushManager, new LinkedBlockingQueue<>(), BACKOFF_BASE);
+        SyncManager sm = new SyncManagerImp(true, _synchronizer, _pushManager, new LinkedBlockingQueue<>(), BACKOFF_BASE, _gates);
         sm.start();
         Mockito.verify(_synchronizer, Mockito.times(0)).startPeriodicFetching();
         Mockito.verify(_synchronizer, Mockito.times(1)).syncAll();
@@ -38,7 +43,7 @@ public class SyncManagerTest {
     @Test
     public void onStreamingAvailable() throws InterruptedException {
         LinkedBlockingQueue<PushManager.Status> messsages = new LinkedBlockingQueue<>();
-        SyncManagerImp syncManager = new SyncManagerImp(true, _synchronizer, _pushManager, messsages, BACKOFF_BASE);
+        SyncManagerImp syncManager = new SyncManagerImp(true, _synchronizer, _pushManager, messsages, BACKOFF_BASE, _gates);
         Thread t = new Thread(syncManager::incomingPushStatusHandler);
         t.start();
         messsages.offer(PushManager.Status.STREAMING_READY);
@@ -52,7 +57,7 @@ public class SyncManagerTest {
     @Test
     public void onStreamingDisabled() throws InterruptedException {
         LinkedBlockingQueue<PushManager.Status> messsages = new LinkedBlockingQueue<>();
-        SyncManagerImp syncManager = new SyncManagerImp(true, _synchronizer, _pushManager, messsages, BACKOFF_BASE);
+        SyncManagerImp syncManager = new SyncManagerImp(true, _synchronizer, _pushManager, messsages, BACKOFF_BASE, _gates);
         Thread t = new Thread(syncManager::incomingPushStatusHandler);
         t.start();
         messsages.offer(PushManager.Status.STREAMING_DOWN);
@@ -66,7 +71,7 @@ public class SyncManagerTest {
     @Test
     public void onStreamingShutdown() throws InterruptedException {
         LinkedBlockingQueue<PushManager.Status> messsages = new LinkedBlockingQueue<>();
-        SyncManagerImp syncManager = new SyncManagerImp(true, _synchronizer, _pushManager, messsages, BACKOFF_BASE);
+        SyncManagerImp syncManager = new SyncManagerImp(true, _synchronizer, _pushManager, messsages, BACKOFF_BASE, _gates);
         Thread t = new Thread(syncManager::incomingPushStatusHandler);
         t.start();
         messsages.offer(PushManager.Status.STREAMING_OFF);
@@ -78,7 +83,7 @@ public class SyncManagerTest {
     @Test
     public void onConnected() throws InterruptedException {
         LinkedBlockingQueue<PushManager.Status> messsages = new LinkedBlockingQueue<>();
-        SyncManagerImp syncManager = new SyncManagerImp(true, _synchronizer, _pushManager, messsages, BACKOFF_BASE);
+        SyncManagerImp syncManager = new SyncManagerImp(true, _synchronizer, _pushManager, messsages, BACKOFF_BASE, _gates);
         Thread t = new Thread(syncManager::incomingPushStatusHandler);
         t.start();
         messsages.offer(PushManager.Status.STREAMING_READY);
@@ -91,7 +96,7 @@ public class SyncManagerTest {
     @Test
     public void onDisconnect() throws InterruptedException {
         LinkedBlockingQueue<PushManager.Status> messsages = new LinkedBlockingQueue<>();
-        SyncManagerImp syncManager = new SyncManagerImp(true, _synchronizer, _pushManager, messsages, BACKOFF_BASE);
+        SyncManagerImp syncManager = new SyncManagerImp(true, _synchronizer, _pushManager, messsages, BACKOFF_BASE, _gates);
         Thread t = new Thread(syncManager::incomingPushStatusHandler);
         t.start();
         messsages.offer(PushManager.Status.STREAMING_OFF);
@@ -103,7 +108,7 @@ public class SyncManagerTest {
     @Test
     public void onDisconnectAndReconnect() throws InterruptedException { // Check with mauro. reconnect should call pushManager.start again, right?
         LinkedBlockingQueue<PushManager.Status> messsages = new LinkedBlockingQueue<>();
-        SyncManagerImp syncManager = new SyncManagerImp(true, _synchronizer, _pushManager, messsages, BACKOFF_BASE);
+        SyncManagerImp syncManager = new SyncManagerImp(true, _synchronizer, _pushManager, messsages, BACKOFF_BASE, _gates);
         syncManager.start();
         messsages.offer(PushManager.Status.STREAMING_BACKOFF);
         Thread.sleep(1200);
