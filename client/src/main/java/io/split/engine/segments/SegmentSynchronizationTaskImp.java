@@ -57,6 +57,7 @@ public class SegmentSynchronizationTaskImp implements SegmentSynchronizationTask
     public void run() {
         try {
             _gates.waitUntilInternalReady();
+            _running.set(true);
         } catch (InterruptedException ex) {
             _log.debug(ex.getMessage());
         }
@@ -105,7 +106,7 @@ public class SegmentSynchronizationTaskImp implements SegmentSynchronizationTask
 
     @Override
     public void startPeriodicFetching() {
-        if (_running.getAndSet(true)) {
+        if (_running.get()) {
             _log.debug("Segments PeriodicFetching is running...");
             return;
         }
