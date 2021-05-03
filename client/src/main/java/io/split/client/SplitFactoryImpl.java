@@ -3,9 +3,11 @@ package io.split.client;
 import io.split.client.impressions.AsynchronousImpressionListener;
 import io.split.client.impressions.ImpressionListener;
 import io.split.client.impressions.ImpressionsManagerImpl;
-import io.split.client.interceptors.AddSplitHeadersFilter;
+import io.split.client.interceptors.AuthorizationInterceptorFilter;
+import io.split.client.interceptors.ClientKeyInterceptorFilter;
 import io.split.client.interceptors.GzipDecoderResponseInterceptor;
 import io.split.client.interceptors.GzipEncoderRequestInterceptor;
+import io.split.client.interceptors.SdkMetadataInterceptorFilter;
 import io.split.client.metrics.HttpMetrics;
 import io.split.cache.InMemoryCacheImp;
 import io.split.cache.SplitCache;
@@ -216,7 +218,8 @@ public class SplitFactoryImpl implements SplitFactory {
         HttpClientBuilder httpClientbuilder = HttpClients.custom()
                 .setConnectionManager(cm)
                 .setDefaultRequestConfig(requestConfig)
-                .addRequestInterceptorLast(AddSplitHeadersFilter.instance(apiToken, config.ipAddressEnabled(), false))
+                .addRequestInterceptorLast(AuthorizationInterceptorFilter.instance(apiToken))
+                .addRequestInterceptorLast(SdkMetadataInterceptorFilter.instance(config.ipAddressEnabled(), SplitClientConfig.splitSdkVersion))
                 .addRequestInterceptorLast(new GzipEncoderRequestInterceptor())
                 .addResponseInterceptorLast((new GzipDecoderResponseInterceptor()));
 
@@ -250,7 +253,8 @@ public class SplitFactoryImpl implements SplitFactory {
         HttpClientBuilder httpClientbuilder = HttpClients.custom()
                 .setConnectionManager(cm)
                 .setDefaultRequestConfig(requestConfig)
-                .addRequestInterceptorLast(AddSplitHeadersFilter.instance(apiToken, config.ipAddressEnabled(), true));
+                .addRequestInterceptorLast(SdkMetadataInterceptorFilter.instance(config.ipAddressEnabled(), SplitClientConfig.splitSdkVersion))
+                .addRequestInterceptorLast(ClientKeyInterceptorFilter.instance(apiToken));
 
         // Set up proxy is it exists
         if (config.proxy() != null) {
