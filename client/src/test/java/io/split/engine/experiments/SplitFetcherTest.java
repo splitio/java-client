@@ -132,7 +132,7 @@ public class SplitFetcherTest {
         SegmentSynchronizationTask segmentSynchronizationTask = new SegmentSynchronizationTaskImp(segmentChangeFetcher, 1,10, gates, segmentCache);
         segmentSynchronizationTask.startPeriodicFetching();
         SplitCache cache = new InMemoryCacheImp(-1);
-        SplitFetcherImp fetcher = new SplitFetcherImp(splitChangeFetcher, new SplitParser(segmentSynchronizationTask, segmentCache), new SDKReadinessGates(), cache);
+        SplitFetcherImp fetcher = new SplitFetcherImp(splitChangeFetcher, new SplitParser(segmentSynchronizationTask, segmentCache), gates, cache);
 
         // execute the fetcher for a little bit.
         executeWaitAndTerminate(fetcher, 1, 5, TimeUnit.SECONDS);

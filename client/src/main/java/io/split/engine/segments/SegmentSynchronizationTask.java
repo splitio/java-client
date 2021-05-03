@@ -29,4 +29,9 @@ public interface SegmentSynchronizationTask extends Runnable {
      * @param addCacheHeader
      */
     void fetchAll(boolean addCacheHeader);
+
+    /**
+     * fetch every Segment Synchronous
+     */
+    void fetchAllSynchronous();
 }

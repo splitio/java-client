@@ -11,13 +11,14 @@ import java.io.Closeable;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.ThreadFactory;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicLong;
-import java.util.concurrent.Executors;
-import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
@@ -102,7 +103,7 @@ public class SegmentSynchronizationTaskImp implements SegmentSynchronizationTask
 
     @Override
     public void startPeriodicFetching() {
-        if (_running.getAndSet(true)) {
+        if (_running.getAndSet(true) ) {
             _log.debug("Segments PeriodicFetching is running...");
             return;
         }
@@ -154,7 +155,22 @@ public class SegmentSynchronizationTaskImp implements SegmentSynchronizationTask
                 _scheduledExecutorService.submit(fetcher::runWhitCacheHeader);
                 continue;
             }
+
             _scheduledExecutorService.submit(fetcher::fetchAll);
         }
+    }
+
+    @Override
+    public void fetchAllSynchronous() {
+        _segmentFetchers
+                .entrySet()
+                .stream().map(e -> _scheduledExecutorService.submit(e.getValue()::runWhitCacheHeader))
+                .collect(Collectors.toList())
+                .stream().forEach(future -> {
+                    try {
+                        future.get();
+                    } catch (Exception ex) {
+                        _log.error(ex.getMessage());
+                    }});
     }
 }

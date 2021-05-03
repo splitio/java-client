@@ -152,6 +152,4 @@ public class SegmentFetcherImp implements SegmentFetcher {
     public void fetchAll() {
         this.fetchAndUpdate(false);
     }
-
-
 }
