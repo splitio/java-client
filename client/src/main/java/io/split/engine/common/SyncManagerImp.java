@@ -4,6 +4,7 @@ import com.google.common.annotations.VisibleForTesting;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import io.split.cache.SegmentCache;
 import io.split.cache.SplitCache;
+import io.split.engine.SDKReadinessGates;
 import io.split.engine.experiments.SplitFetcher;
 import io.split.engine.experiments.SplitSynchronizationTask;
 import io.split.engine.segments.SegmentSynchronizationTaskImp;
@@ -28,6 +29,8 @@ public class SyncManagerImp implements SyncManager {
     private final AtomicBoolean _shutdown;
     private final LinkedBlockingQueue<PushManager.Status> _incomingPushStatus;
     private final ExecutorService _executorService;
+    private final ExecutorService _pollingExecutorService;
+    private final SDKReadinessGates _gates;
     private Future<?> _pushStatusMonitorTask;
     private Backoff _backoff;
 
@@ -36,7 +39,8 @@ public class SyncManagerImp implements SyncManager {
                                          Synchronizer synchronizer,
                                          PushManager pushManager,
                                          LinkedBlockingQueue<PushManager.Status> pushMessages,
-                                         int authRetryBackOffBase) {
+                                         int authRetryBackOffBase,
+                                         SDKReadinessGates gates) {
         _streamingEnabledConfig = new AtomicBoolean(streamingEnabledConfig);
         _synchronizer = checkNotNull(synchronizer);
         _pushManager = checkNotNull(pushManager);
@@ -46,7 +50,12 @@ public class SyncManagerImp implements SyncManager {
                 .setNameFormat("SPLIT-PushStatusMonitor-%d")
                 .setDaemon(true)
                 .build());
+        _pollingExecutorService = Executors.newSingleThreadExecutor(new ThreadFactoryBuilder()
+                .setNameFormat("SPLIT-PollingMode-%d")
+                .setDaemon(true)
+                .build());
         _backoff = new Backoff(authRetryBackOffBase);
+        _gates = checkNotNull(gates);
     }
 
     public static SyncManagerImp build(boolean streamingEnabledConfig,
@@ -60,19 +69,22 @@ public class SyncManagerImp implements SyncManager {
                                        int authRetryBackOffBase,
                                        CloseableHttpClient sseHttpClient,
                                        SegmentCache segmentCache,
-                                       int streamingRetryDelay) {
+                                       int streamingRetryDelay,
+                                       SDKReadinessGates gates) {
         LinkedBlockingQueue<PushManager.Status> pushMessages = new LinkedBlockingQueue<>();
-        Synchronizer synchronizer = new SynchronizerImp(splitSynchronizationTask, splitFetcher, segmentSynchronizationTaskImp, splitCache, segmentCache, streamingRetryDelay);
+        Synchronizer synchronizer = new SynchronizerImp(splitSynchronizationTask, splitFetcher, segmentSynchronizationTaskImp, splitCache, segmentCache, streamingRetryDelay, gates);
         PushManager pushManager = PushManagerImp.build(synchronizer, streamingServiceUrl, authUrl, httpClient, pushMessages, sseHttpClient);
-        return new SyncManagerImp(streamingEnabledConfig, synchronizer, pushManager, pushMessages, authRetryBackOffBase);
+        return new SyncManagerImp(streamingEnabledConfig, synchronizer, pushManager, pushMessages, authRetryBackOffBase, gates);
     }
 
     @Override
     public void start() {
+        _synchronizer.syncAll();
+
         if (_streamingEnabledConfig.get()) {
             startStreamingMode();
         } else {
-            startPollingMode();
+            _pollingExecutorService.submit(this::startPollingMode);
         }
     }
 
@@ -85,15 +97,19 @@ public class SyncManagerImp implements SyncManager {
 
     private void startStreamingMode() {
         _log.debug("Starting in streaming mode ...");
-        _synchronizer.syncAll();
         if (null == _pushStatusMonitorTask) {
             _pushStatusMonitorTask = _executorService.submit(this::incomingPushStatusHandler);
         }
         _pushManager.start();
-
     }
 
     private void startPollingMode() {
+        try {
+            _gates.waitUntilInternalReady();
+        } catch (InterruptedException ex) {
+            _log.debug(ex.getMessage());
+        }
+
         _log.debug("Starting in polling mode ...");
         _synchronizer.startPeriodicFetching();
     }
