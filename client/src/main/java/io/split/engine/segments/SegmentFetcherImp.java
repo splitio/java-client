@@ -3,6 +3,8 @@ package io.split.engine.segments;
 import io.split.cache.SegmentCache;
 import io.split.client.dtos.SegmentChange;
 import io.split.engine.SDKReadinessGates;
+import io.split.telemetry.domain.enums.LastSynchronizationRecordsEnum;
+import io.split.telemetry.storage.TelemetryRuntimeProducer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -18,14 +20,16 @@ public class SegmentFetcherImp implements SegmentFetcher {
     private final SegmentChangeFetcher _segmentChangeFetcher;
     private final SegmentCache _segmentCache;
     private final SDKReadinessGates _gates;
+    private final TelemetryRuntimeProducer _telemetryRuntimeProducer;
 
     private final Object _lock = new Object();
 
-    public SegmentFetcherImp(String segmentName, SegmentChangeFetcher segmentChangeFetcher, SDKReadinessGates gates, SegmentCache segmentCache) {
+    public SegmentFetcherImp(String segmentName, SegmentChangeFetcher segmentChangeFetcher, SDKReadinessGates gates, SegmentCache segmentCache, TelemetryRuntimeProducer telemetryRuntimeProducer) {
         _segmentName = checkNotNull(segmentName);
         _segmentChangeFetcher = checkNotNull(segmentChangeFetcher);
         _segmentCache = checkNotNull(segmentCache);
         _gates = checkNotNull(gates);
+        _telemetryRuntimeProducer = checkNotNull(telemetryRuntimeProducer);
 
         _segmentCache.updateSegment(segmentName, new ArrayList<>(), new ArrayList<>());
     }
@@ -43,6 +47,7 @@ public class SegmentFetcherImp implements SegmentFetcher {
     }
 
     private void runWithoutExceptionHandling(boolean addCacheHeader) {
+        long initTime = System.currentTimeMillis();
         SegmentChange change = _segmentChangeFetcher.fetch(_segmentName, _segmentCache.getChangeNumber(_segmentName), addCacheHeader);
 
         if (change == null) {
@@ -86,6 +91,8 @@ public class SegmentFetcherImp implements SegmentFetcher {
             }
 
             _segmentCache.setChangeNumber(_segmentName,change.till);
+            long endTime = System.currentTimeMillis();
+            _telemetryRuntimeProducer.recordSuccessfulSync(LastSynchronizationRecordsEnum.SEGMENTS, endTime-initTime);
         }
     }
 

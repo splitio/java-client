@@ -24,6 +24,11 @@ import io.split.cache.SegmentCache;
 import io.split.cache.SegmentCacheInMemoryImpl;
 import io.split.engine.segments.SegmentSynchronizationTaskImp;
 import io.split.integrations.IntegrationsConfig;
+import io.split.telemetry.storage.InMemoryTelemetryStorage;
+import io.split.telemetry.storage.TelemetryStorage;
+import io.split.telemetry.synchronizer.SynchronizerMemory;
+import io.split.telemetry.synchronizer.TelemetrySyncTask;
+import io.split.telemetry.synchronizer.TelemetrySynchronizer;
 import org.apache.hc.client5.http.auth.AuthScope;
 import org.apache.hc.client5.http.auth.Credentials;
 import org.apache.hc.client5.http.auth.UsernamePasswordCredentials;
@@ -85,11 +90,18 @@ public class SplitFactoryImpl implements SplitFactory {
 
     private boolean isTerminated = false;
     private final ApiKeyCounter _apiKeyCounter;
+    private final TelemetryStorage _telemetryStorage;
+    private final TelemetrySynchronizer _telemetrySynchronizer;
+    private final TelemetrySyncTask _telemetrySyncTask;
+    private final long _startTime;
 
-    public SplitFactoryImpl(String apiToken, SplitClientConfig config) throws URISyntaxException {
+    public SplitFactoryImpl(String apiToken, SplitClientConfig config) throws Exception {
+        _startTime = System.currentTimeMillis();
         _apiToken = apiToken;
         _apiKeyCounter = ApiKeyCounter.getApiKeyCounterInstance();
         _apiKeyCounter.add(apiToken);
+
+        _telemetryStorage = new InMemoryTelemetryStorage();
 
         if (config.blockUntilReady() == -1) {
             //BlockUntilReady not been set
@@ -114,6 +126,8 @@ public class SplitFactoryImpl implements SplitFactory {
         // Cache Initialisations
         _segmentCache = new SegmentCacheInMemoryImpl();
         _splitCache = new InMemoryCacheImp();
+        _telemetrySynchronizer = new SynchronizerMemory(_httpclient, URI.create(config.get_telemetryURL()), _telemetryStorage, _splitCache, _segmentCache);
+        _telemetrySyncTask = new TelemetrySyncTask(config.get_telemetryRefreshRate(), _telemetrySynchronizer);
 
         // Segments
         _segmentSynchronizationTaskImp = buildSegments(config);
@@ -180,6 +194,9 @@ public class SplitFactoryImpl implements SplitFactory {
                 _log.info("Successful shutdown of eventClient");
                 _syncManager.shutdown();
                 _log.info("Successful shutdown of syncManager");
+                long endSession = System.currentTimeMillis();
+                _telemetryStorage.recordSessionLength(endSession - _startTime);
+                _telemetrySyncTask.stopScheduledTask();
             } catch (IOException e) {
                 _log.error("We could not shutdown split", e);
             }

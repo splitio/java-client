@@ -22,6 +22,11 @@ public class TelemetrySyncTask {
         _telemetrySynchronizer = telemetrySynchronizer; //TODO
         _telemetryRefreshRate = telemetryRefreshRate;
         _telemetrySyncScheduledExecutorService = Executors.newSingleThreadScheduledExecutor(telemetrySyncThreadFactory);
+        try {
+            this.startScheduledTask();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
     @VisibleForTesting
@@ -35,7 +40,7 @@ public class TelemetrySyncTask {
         },0l,  _telemetryRefreshRate, TimeUnit.SECONDS);
     }
 
-    protected void stopScheduledTask() {
+    public void stopScheduledTask() {
         try {
             _telemetrySynchronizer.synchronizeStats();
         } catch (Exception e) {

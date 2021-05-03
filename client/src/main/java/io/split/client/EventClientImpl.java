@@ -4,6 +4,9 @@ import com.google.common.annotations.VisibleForTesting;
 import io.split.client.dtos.Event;
 import io.split.client.utils.GenericClientUtil;
 import io.split.client.utils.Utils;
+import io.split.telemetry.domain.enums.LastSynchronizationRecordsEnum;
+import io.split.telemetry.storage.TelemetryEvaluationProducer;
+import io.split.telemetry.storage.TelemetryRuntimeProducer;
 import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -23,6 +26,7 @@ import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
 import static java.lang.Thread.MIN_PRIORITY;
+import static com.google.common.base.Preconditions.checkNotNull;
 
 /**
  * Responsible for sending events added via .track() to Split collection services
@@ -45,6 +49,7 @@ public class EventClientImpl implements EventClient {
     private final CloseableHttpClient _httpclient;
     private final URI _target;
     private final int _waitBeforeShutdown;
+    private final TelemetryRuntimeProducer telemetryRuntimeProducer;
 
     ThreadFactory eventClientThreadFactory(final String name) {
         return new ThreadFactory() {
@@ -62,17 +67,18 @@ public class EventClientImpl implements EventClient {
     }
 
 
-    public static EventClientImpl create(CloseableHttpClient httpclient, URI eventsRootTarget, int maxQueueSize, long flushIntervalMillis, int waitBeforeShutdown) throws URISyntaxException {
+    public static EventClientImpl create(CloseableHttpClient httpclient, URI eventsRootTarget, int maxQueueSize, long flushIntervalMillis, int waitBeforeShutdown, TelemetryEvaluationProducer telemetryEvaluationProducer) throws URISyntaxException {
         return new EventClientImpl(new LinkedBlockingQueue<WrappedEvent>(),
                 httpclient,
                 Utils.appendPath(eventsRootTarget, "api/events/bulk"),
                 maxQueueSize,
                 flushIntervalMillis,
-                waitBeforeShutdown);
+                waitBeforeShutdown,
+                telemetryEvaluationProducer);
     }
 
     EventClientImpl(BlockingQueue<WrappedEvent> eventQueue, CloseableHttpClient httpclient, URI target, int maxQueueSize,
-                    long flushIntervalMillis, int waitBeforeShutdown) throws URISyntaxException {
+                    long flushIntervalMillis, int waitBeforeShutdown, TelemetryEvaluationProducer telemetryEvaluationProducer) throws URISyntaxException {
 
         _httpclient = httpclient;
 
@@ -83,6 +89,7 @@ public class EventClientImpl implements EventClient {
 
         _maxQueueSize = maxQueueSize;
         _flushIntervalMillis = flushIntervalMillis;
+        telemetryRuntimeProducer = checkNotNull(telemetryEvaluationProducer);
 
         _senderExecutor = new ThreadPoolExecutor(
                 1,
@@ -169,7 +176,7 @@ public class EventClientImpl implements EventClient {
 
                         continue;
                     }
-
+                    long initTime = System.currentTimeMillis();
                     if (events.size() >= _maxQueueSize ||  accumulated >= MAX_SIZE_BYTES || event == CENTINEL) {
 
                         // Send over the network
@@ -183,6 +190,8 @@ public class EventClientImpl implements EventClient {
                         // Clear the queue of events for the next batch.
                         events = new ArrayList<>();
                         accumulated = 0;
+                        long endTime = System.currentTimeMillis();
+                        telemetryRuntimeProducer.recordSuccessfulSync(LastSynchronizationRecordsEnum.EVENTS, endTime-initTime);
                     }
                 }
             } catch (InterruptedException e) {

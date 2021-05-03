@@ -1,6 +1,8 @@
 package io.split.client.impressions;
 
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
+import io.split.telemetry.domain.enums.LastSynchronizationRecordsEnum;
+import io.split.telemetry.storage.TelemetryRuntimeProducer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -9,6 +11,8 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
+
+import static com.google.common.base.Preconditions.checkNotNull;
 
 /**
  * A wrapper around an ImpressionListener provided by the customer. The purpose
@@ -23,8 +27,9 @@ public class AsynchronousImpressionListener implements ImpressionListener {
 
     private final ImpressionListener _delegate;
     private final ExecutorService _executor;
+    private final TelemetryRuntimeProducer _telemetryRuntimeProducer;
 
-    public static AsynchronousImpressionListener build(ImpressionListener delegate, int capacity) {
+    public static AsynchronousImpressionListener build(ImpressionListener delegate, int capacity, TelemetryRuntimeProducer telemetryRuntimeProducer) {
         ThreadFactory threadFactory = new ThreadFactoryBuilder()
                 .setDaemon(true)
                 .setNameFormat("impression-listener-wrapper-%d")
@@ -32,24 +37,28 @@ public class AsynchronousImpressionListener implements ImpressionListener {
 
         ExecutorService executor = new ThreadPoolExecutor(2, 2, 0L, TimeUnit.MILLISECONDS, new ArrayBlockingQueue<Runnable>(capacity), threadFactory);
 
-        return new AsynchronousImpressionListener(delegate, executor);
+        return new AsynchronousImpressionListener(delegate, executor, telemetryRuntimeProducer);
     }
 
-    public AsynchronousImpressionListener(ImpressionListener delegate, ExecutorService executor) {
+    public AsynchronousImpressionListener(ImpressionListener delegate, ExecutorService executor, TelemetryRuntimeProducer telemetryRuntimeProducer) {
         _delegate = delegate;
         _executor = executor;
+        _telemetryRuntimeProducer = checkNotNull(telemetryRuntimeProducer);
     }
 
 
     @Override
     public void log(final Impression impression) {
         try {
+            long initTime = System.currentTimeMillis();
             _executor.execute(new Runnable() {
                 @Override
                 public void run() {
                     _delegate.log(impression);
                 }
             });
+            long endTime = System.currentTimeMillis();
+            _telemetryRuntimeProducer.recordSuccessfulSync(LastSynchronizationRecordsEnum.IMPRESSIONS, endTime - initTime);
         }
         catch (Exception e) {
             _log.warn("Unable to send impression to impression listener", e);

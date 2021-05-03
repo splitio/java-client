@@ -10,12 +10,13 @@ import io.split.engine.SDKReadinessGates;
 import io.split.engine.evaluator.Evaluator;
 import io.split.engine.evaluator.EvaluatorImp;
 import io.split.engine.evaluator.Labels;
-import io.split.engine.metrics.Metrics;
 import io.split.grammar.Treatments;
 import io.split.inputValidation.EventsValidator;
 import io.split.inputValidation.KeyValidator;
 import io.split.inputValidation.SplitNameValidator;
 import io.split.inputValidation.TrafficTypeValidator;
+import io.split.telemetry.domain.enums.MethodEnum;
+import io.split.telemetry.storage.TelemetryEvaluationProducer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -47,6 +48,7 @@ public final class SplitClientImpl implements SplitClient {
     private final EventClient _eventClient;
     private final SDKReadinessGates _gates;
     private final Evaluator _evaluator;
+    private final TelemetryEvaluationProducer _telemetryEvaluationProducer;
 
     public SplitClientImpl(SplitFactory container,
                            SplitCache splitCache,
@@ -54,7 +56,8 @@ public final class SplitClientImpl implements SplitClient {
                            EventClient eventClient,
                            SplitClientConfig config,
                            SDKReadinessGates gates,
-                           Evaluator evaluator) {
+                           Evaluator evaluator,
+                           TelemetryEvaluationProducer telemetryEvaluationProducer) {
         _container = container;
         _splitCache = checkNotNull(splitCache);
         _impressionManager = checkNotNull(impressionManager);
@@ -62,6 +65,7 @@ public final class SplitClientImpl implements SplitClient {
         _config = config;
         _gates = checkNotNull(gates);
         _evaluator = checkNotNull(evaluator);
+        _telemetryEvaluationProducer = checkNotNull(telemetryEvaluationProducer);
     }
 
     @Override
@@ -71,27 +75,27 @@ public final class SplitClientImpl implements SplitClient {
 
     @Override
     public String getTreatment(String key, String split, Map<String, Object> attributes) {
-        return getTreatmentWithConfigInternal(GET_TREATMENT, key, null, split, attributes).treatment();
+        return getTreatmentWithConfigInternal(GET_TREATMENT, key, null, split, attributes, MethodEnum.TREATMENT).treatment();
     }
 
     @Override
     public String getTreatment(Key key, String split, Map<String, Object> attributes) {
-        return getTreatmentWithConfigInternal(GET_TREATMENT, key.matchingKey(), key.bucketingKey(), split, attributes).treatment();
+        return getTreatmentWithConfigInternal(GET_TREATMENT, key.matchingKey(), key.bucketingKey(), split, attributes, MethodEnum.TREATMENT).treatment();
     }
 
     @Override
     public SplitResult getTreatmentWithConfig(String key, String split) {
-        return getTreatmentWithConfigInternal(GET_TREATMENT_WITH_CONFIG, key, null, split, Collections.<String, Object>emptyMap());
+        return getTreatmentWithConfigInternal(GET_TREATMENT_WITH_CONFIG, key, null, split, Collections.<String, Object>emptyMap(), MethodEnum.TREATMENT_WITH_CONFIG);
     }
 
     @Override
     public SplitResult getTreatmentWithConfig(String key, String split, Map<String, Object> attributes) {
-        return getTreatmentWithConfigInternal(GET_TREATMENT_WITH_CONFIG, key, null, split, attributes);
+        return getTreatmentWithConfigInternal(GET_TREATMENT_WITH_CONFIG, key, null, split, attributes, MethodEnum.TREATMENT_WITH_CONFIG);
     }
 
     @Override
     public SplitResult getTreatmentWithConfig(Key key, String split, Map<String, Object> attributes) {
-        return getTreatmentWithConfigInternal(GET_TREATMENT_WITH_CONFIG, key.matchingKey(), key.bucketingKey(), split, attributes);
+        return getTreatmentWithConfigInternal(GET_TREATMENT_WITH_CONFIG, key.matchingKey(), key.bucketingKey(), split, attributes, MethodEnum.TREATMENT_WITH_CONFIG);
     }
 
     @Override
@@ -174,9 +178,11 @@ public final class SplitClientImpl implements SplitClient {
         return _eventClient.track(event, propertiesResult.getEventSize());
     }
 
-    private SplitResult getTreatmentWithConfigInternal(String method, String matchingKey, String bucketingKey, String split, Map<String, Object> attributes) {
+    private SplitResult getTreatmentWithConfigInternal(String method, String matchingKey, String bucketingKey, String split, Map<String, Object> attributes, MethodEnum methodEnum) {
+        long initTime = System.currentTimeMillis();
         try {
             if (_container.isDestroyed()) {
+                _telemetryEvaluationProducer.recordException(methodEnum);
                 _log.error("Client has already been destroyed - no calls possible");
                 return SPLIT_RESULT_CONTROL;
             }
@@ -216,10 +222,12 @@ public final class SplitClientImpl implements SplitClient {
                     result.changeNumber,
                     attributes
             );
-
+            long endTime = System.currentTimeMillis();
+            _telemetryEvaluationProducer.recordLatency(methodEnum, endTime-initTime);
             return new SplitResult(result.treatment, result.configurations);
         } catch (Exception e) {
             try {
+                _telemetryEvaluationProducer.recordException(methodEnum);
                 _log.error("CatchAll Exception", e);
             } catch (Exception e1) {
                 // ignore
