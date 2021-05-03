@@ -2,14 +2,12 @@ package io.split.client.interceptors;
 
 import io.split.client.SplitClientConfig;
 import org.apache.hc.core5.http.EntityDetails;
-import org.apache.hc.core5.http.HttpException;
 import org.apache.hc.core5.http.HttpRequest;
 import org.apache.hc.core5.http.HttpRequestInterceptor;
 import org.apache.hc.core5.http.protocol.HttpContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.IOException;
 import java.net.InetAddress;
 
 import static com.google.common.base.Preconditions.checkNotNull;
