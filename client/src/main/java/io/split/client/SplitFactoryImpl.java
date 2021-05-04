@@ -3,9 +3,11 @@ package io.split.client;
 import io.split.client.impressions.AsynchronousImpressionListener;
 import io.split.client.impressions.ImpressionListener;
 import io.split.client.impressions.ImpressionsManagerImpl;
-import io.split.client.interceptors.AddSplitHeadersFilter;
+import io.split.client.interceptors.AuthorizationInterceptorFilter;
+import io.split.client.interceptors.ClientKeyInterceptorFilter;
 import io.split.client.interceptors.GzipDecoderResponseInterceptor;
 import io.split.client.interceptors.GzipEncoderRequestInterceptor;
+import io.split.client.interceptors.SdkMetadataInterceptorFilter;
 import io.split.client.metrics.HttpMetrics;
 import io.split.cache.InMemoryCacheImp;
 import io.split.cache.SplitCache;
@@ -48,6 +50,7 @@ import org.slf4j.LoggerFactory;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
@@ -130,7 +133,7 @@ public class SplitFactoryImpl implements SplitFactory {
         _eventClient = EventClientImpl.create(_httpclient, _eventsRootTarget, config.eventsQueueSize(), config.eventFlushIntervalInMillis(), config.waitBeforeShutdown());
 
         // SyncManager
-        _syncManager = SyncManagerImp.build(config.streamingEnabled(), _splitSynchronizationTask, _splitFetcher, _segmentSynchronizationTaskImp, _splitCache, config.authServiceURL(), _httpclient, config.streamingServiceURL(), config.authRetryBackoffBase(), buildSSEdHttpClient(config), _segmentCache, config.streamingRetryDelay(), _gates);
+        _syncManager = SyncManagerImp.build(config.streamingEnabled(), _splitSynchronizationTask, _splitFetcher, _segmentSynchronizationTaskImp, _splitCache, config.authServiceURL(), _httpclient, config.streamingServiceURL(), config.authRetryBackoffBase(), buildSSEdHttpClient(apiToken, config), _segmentCache, config.streamingRetryDelay(), _gates);
         _syncManager.start();
 
         // Evaluator
@@ -215,7 +218,8 @@ public class SplitFactoryImpl implements SplitFactory {
         HttpClientBuilder httpClientbuilder = HttpClients.custom()
                 .setConnectionManager(cm)
                 .setDefaultRequestConfig(requestConfig)
-                .addRequestInterceptorLast(AddSplitHeadersFilter.instance(apiToken, config.ipAddressEnabled()))
+                .addRequestInterceptorLast(AuthorizationInterceptorFilter.instance(apiToken))
+                .addRequestInterceptorLast(SdkMetadataInterceptorFilter.instance(config.ipAddressEnabled(), SplitClientConfig.splitSdkVersion))
                 .addRequestInterceptorLast(new GzipEncoderRequestInterceptor())
                 .addResponseInterceptorLast((new GzipDecoderResponseInterceptor()));
 
@@ -227,7 +231,7 @@ public class SplitFactoryImpl implements SplitFactory {
         return httpClientbuilder.build();
     }
 
-    private static CloseableHttpClient buildSSEdHttpClient(SplitClientConfig config) {
+    private static CloseableHttpClient buildSSEdHttpClient(String apiToken, SplitClientConfig config) {
         RequestConfig requestConfig = RequestConfig.custom()
                 .setConnectTimeout(Timeout.ofMilliseconds(SSE_CONNECT_TIMEOUT))
                 .build();
@@ -248,7 +252,9 @@ public class SplitFactoryImpl implements SplitFactory {
 
         HttpClientBuilder httpClientbuilder = HttpClients.custom()
                 .setConnectionManager(cm)
-                .setDefaultRequestConfig(requestConfig);
+                .setDefaultRequestConfig(requestConfig)
+                .addRequestInterceptorLast(SdkMetadataInterceptorFilter.instance(config.ipAddressEnabled(), SplitClientConfig.splitSdkVersion))
+                .addRequestInterceptorLast(ClientKeyInterceptorFilter.instance(apiToken));
 
         // Set up proxy is it exists
         if (config.proxy() != null) {
@@ -311,5 +317,4 @@ public class SplitFactoryImpl implements SplitFactory {
 
         return ImpressionsManagerImpl.instance(_httpclient, config, impressionListeners);
     }
-
 }
