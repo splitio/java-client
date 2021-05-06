@@ -3,12 +3,15 @@ package io.split.client;
 import io.split.SSEMockServer;
 import io.split.SplitMockServer;
 import io.split.client.api.SplitView;
+import io.split.telemetry.storage.InMemoryTelemetryStorage;
+import io.split.telemetry.storage.TelemetryStorage;
 import org.awaitility.Awaitility;
 import org.glassfish.grizzly.utils.Pair;
 import org.glassfish.jersey.media.sse.OutboundEvent;
 import org.junit.Assert;
 import org.junit.Ignore;
 import org.junit.Test;
+import org.mockito.Mockito;
 
 import javax.ws.rs.sse.OutboundSseEvent;
 import java.io.IOException;
@@ -20,9 +23,11 @@ import java.util.concurrent.TimeoutException;
 
 public class SplitClientIntegrationTest {
     // TODO: review this test.
+    private static final TelemetryStorage TELEMETRY_STORAGE = Mockito.mock(InMemoryTelemetryStorage.class);
+
     @Test
     @Ignore
-    public void getTreatmentWithStreamingEnabled() throws IOException, TimeoutException, InterruptedException, URISyntaxException {
+    public void getTreatmentWithStreamingEnabled() throws Exception {
         SplitMockServer splitServer = new SplitMockServer();
         SSEMockServer.SseEventQueue eventQueue = new SSEMockServer.SseEventQueue();
         SSEMockServer sseServer = buildSSEMockServer(eventQueue);
@@ -111,7 +116,7 @@ public class SplitClientIntegrationTest {
     }
 
     @Test
-    public void getTreatmentWithStreamingEnabledAndAuthDisabled() throws IOException, TimeoutException, InterruptedException, URISyntaxException {
+    public void getTreatmentWithStreamingEnabledAndAuthDisabled() throws Exception {
         SplitMockServer splitServer = new SplitMockServer();
         splitServer.start();
 
@@ -134,7 +139,7 @@ public class SplitClientIntegrationTest {
     }
 
     @Test
-    public void getTreatmentWithStreamingDisabled() throws IOException, TimeoutException, InterruptedException, URISyntaxException {
+    public void getTreatmentWithStreamingDisabled() throws Exception {
         SplitMockServer splitServer = new SplitMockServer();
         splitServer.start();
 
@@ -162,7 +167,7 @@ public class SplitClientIntegrationTest {
     }
 
     @Test
-    public void managerSplitsWithStreamingEnabled() throws IOException, TimeoutException, InterruptedException, URISyntaxException {
+    public void managerSplitsWithStreamingEnabled() throws Exception {
         SplitMockServer splitServer = new SplitMockServer();
         SSEMockServer.SseEventQueue eventQueue = new SSEMockServer.SseEventQueue();
         SSEMockServer sseServer = buildSSEMockServer(eventQueue);
@@ -197,7 +202,7 @@ public class SplitClientIntegrationTest {
     }
 
     @Test
-    public void splitClientOccupancyNotifications() throws IOException, TimeoutException, InterruptedException, URISyntaxException {
+    public void splitClientOccupancyNotifications() throws Exception {
         SplitMockServer splitServer = new SplitMockServer();
         SSEMockServer.SseEventQueue eventQueue = new SSEMockServer.SseEventQueue();
         SSEMockServer sseServer = buildSSEMockServer(eventQueue);
@@ -259,7 +264,7 @@ public class SplitClientIntegrationTest {
     }
 
     @Test
-    public void splitClientControlNotifications() throws IOException, TimeoutException, InterruptedException, URISyntaxException {
+    public void splitClientControlNotifications() throws Exception {
         SplitMockServer splitServer = new SplitMockServer();
         SSEMockServer.SseEventQueue eventQueue = new SSEMockServer.SseEventQueue();
         SSEMockServer sseServer = buildSSEMockServer(eventQueue);
@@ -341,7 +346,7 @@ public class SplitClientIntegrationTest {
     }
 
     @Test
-    public void splitClientMultiFactory() throws IOException, TimeoutException, InterruptedException, URISyntaxException {
+    public void splitClientMultiFactory() throws Exception {
         SplitMockServer splitServer = new SplitMockServer();
 
         SSEMockServer.SseEventQueue eventQueue1 = new SSEMockServer.SseEventQueue();
@@ -465,7 +470,7 @@ public class SplitClientIntegrationTest {
     // TODO: review this test.
     @Test
     @Ignore
-    public void keepAlive() throws IOException, TimeoutException, InterruptedException, URISyntaxException {
+    public void keepAlive() throws Exception {
         SplitMockServer splitServer = new SplitMockServer();
         SSEMockServer.SseEventQueue eventQueue = new SSEMockServer.SseEventQueue();
         SSEMockServer sseServer = buildSSEMockServer(eventQueue);
@@ -495,7 +500,7 @@ public class SplitClientIntegrationTest {
     }
 
     @Test
-    public void testConnectionClosedByRemoteHostIsProperlyHandled() throws IOException, TimeoutException, InterruptedException, URISyntaxException {
+    public void testConnectionClosedByRemoteHostIsProperlyHandled() throws Exception {
         SplitMockServer splitServer = new SplitMockServer();
         SSEMockServer.SseEventQueue eventQueue = new SSEMockServer.SseEventQueue();
         SSEMockServer sseServer = buildSSEMockServer(eventQueue);
@@ -528,7 +533,7 @@ public class SplitClientIntegrationTest {
     }
 
     @Test
-    public void testConnectionClosedIsProperlyHandled() throws IOException, TimeoutException, InterruptedException, URISyntaxException {
+    public void testConnectionClosedIsProperlyHandled() throws Exception {
         SplitMockServer splitServer = new SplitMockServer();
         SSEMockServer.SseEventQueue eventQueue = new SSEMockServer.SseEventQueue();
         SSEMockServer sseServer = buildSSEMockServer(eventQueue);

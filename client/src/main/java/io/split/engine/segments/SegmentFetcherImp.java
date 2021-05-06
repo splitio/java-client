@@ -3,6 +3,7 @@ package io.split.engine.segments;
 import io.split.cache.SegmentCache;
 import io.split.client.dtos.SegmentChange;
 import io.split.engine.SDKReadinessGates;
+import io.split.telemetry.domain.enums.HTTPLatenciesEnum;
 import io.split.telemetry.domain.enums.LastSynchronizationRecordsEnum;
 import io.split.telemetry.storage.TelemetryRuntimeProducer;
 import org.slf4j.Logger;
@@ -91,8 +92,7 @@ public class SegmentFetcherImp implements SegmentFetcher {
             }
 
             _segmentCache.setChangeNumber(_segmentName,change.till);
-            long endTime = System.currentTimeMillis();
-            _telemetryRuntimeProducer.recordSuccessfulSync(LastSynchronizationRecordsEnum.SEGMENTS, endTime-initTime);
+            _telemetryRuntimeProducer.recordSuccessfulSync(LastSynchronizationRecordsEnum.SEGMENTS, System.currentTimeMillis());
         }
     }
 

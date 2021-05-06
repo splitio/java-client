@@ -5,6 +5,7 @@ import io.split.client.dtos.SplitChange;
 import io.split.client.dtos.Status;
 import io.split.engine.SDKReadinessGates;
 import io.split.cache.SplitCache;
+import io.split.telemetry.domain.enums.HTTPLatenciesEnum;
 import io.split.telemetry.domain.enums.LastSynchronizationRecordsEnum;
 import io.split.telemetry.storage.TelemetryRuntimeProducer;
 import org.slf4j.Logger;
@@ -141,8 +142,7 @@ public class SplitFetcherImp implements SplitFetcher {
             }
 
             _splitCache.setChangeNumber(change.till);
-            long endtime = System.currentTimeMillis();
-            _telemetryRuntimeProducer.recordSuccessfulSync(LastSynchronizationRecordsEnum.SPLITS, endtime-initTime);
+            _telemetryRuntimeProducer.recordSuccessfulSync(LastSynchronizationRecordsEnum.SPLITS, System.currentTimeMillis());
         }
     }
     @Override

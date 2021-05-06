@@ -2,6 +2,8 @@ package io.split.engine.segments;
 
 import io.split.engine.SDKReadinessGates;
 import io.split.cache.SegmentCache;
+import io.split.telemetry.storage.InMemoryTelemetryStorage;
+import io.split.telemetry.storage.TelemetryStorage;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mockito;
@@ -24,6 +26,7 @@ import static org.junit.Assert.assertThat;
  */
 public class SegmentSynchronizationTaskImpTest {
     private static final Logger _log = LoggerFactory.getLogger(SegmentSynchronizationTaskImpTest.class);
+    private static final TelemetryStorage TELEMETRY_STORAGE = Mockito.mock(InMemoryTelemetryStorage.class);
 
     private AtomicReference<SegmentFetcher> fetcher1 = null;
     private AtomicReference<SegmentFetcher> fetcher2 = null;
@@ -40,7 +43,7 @@ public class SegmentSynchronizationTaskImpTest {
         SegmentCache segmentCache = Mockito.mock(SegmentCache.class);
 
         SegmentChangeFetcher segmentChangeFetcher = Mockito.mock(SegmentChangeFetcher.class);
-        final SegmentSynchronizationTaskImp fetchers = new SegmentSynchronizationTaskImp(segmentChangeFetcher, 1L, 1, gates, segmentCache);
+        final SegmentSynchronizationTaskImp fetchers = new SegmentSynchronizationTaskImp(segmentChangeFetcher, 1L, 1, gates, segmentCache, TELEMETRY_STORAGE);
 
 
         // create two tasks that will separately call segment and make sure

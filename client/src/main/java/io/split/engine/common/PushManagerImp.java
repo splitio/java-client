@@ -16,6 +16,7 @@ import io.split.engine.sse.workers.SplitsWorker;
 import io.split.engine.sse.workers.SplitsWorkerImp;
 import io.split.engine.sse.workers.Worker;
 
+import io.split.telemetry.storage.TelemetryRuntimeProducer;
 import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -66,11 +67,12 @@ public class PushManagerImp implements PushManager {
                                        String authUrl,
                                        CloseableHttpClient httpClient,
                                        LinkedBlockingQueue<PushManager.Status> statusMessages,
-                                       CloseableHttpClient sseHttpClient) {
+                                       CloseableHttpClient sseHttpClient,
+                                       TelemetryRuntimeProducer telemetryRuntimeProducer) {
         SplitsWorker splitsWorker = new SplitsWorkerImp(synchronizer);
         Worker<SegmentQueueDto> segmentWorker = new SegmentsWorkerImp(synchronizer);
         PushStatusTracker pushStatusTracker = new PushStatusTrackerImp(statusMessages);
-        return new PushManagerImp(new AuthApiClientImp(authUrl, httpClient),
+        return new PushManagerImp(new AuthApiClientImp(authUrl, httpClient, telemetryRuntimeProducer),
                 EventSourceClientImp.build(streamingUrl, splitsWorker, segmentWorker, pushStatusTracker, sseHttpClient),
                 splitsWorker,
                 segmentWorker,

@@ -27,9 +27,8 @@ public class AsynchronousImpressionListener implements ImpressionListener {
 
     private final ImpressionListener _delegate;
     private final ExecutorService _executor;
-    private final TelemetryRuntimeProducer _telemetryRuntimeProducer;
 
-    public static AsynchronousImpressionListener build(ImpressionListener delegate, int capacity, TelemetryRuntimeProducer telemetryRuntimeProducer) {
+    public static AsynchronousImpressionListener build(ImpressionListener delegate, int capacity) {
         ThreadFactory threadFactory = new ThreadFactoryBuilder()
                 .setDaemon(true)
                 .setNameFormat("impression-listener-wrapper-%d")
@@ -37,13 +36,12 @@ public class AsynchronousImpressionListener implements ImpressionListener {
 
         ExecutorService executor = new ThreadPoolExecutor(2, 2, 0L, TimeUnit.MILLISECONDS, new ArrayBlockingQueue<Runnable>(capacity), threadFactory);
 
-        return new AsynchronousImpressionListener(delegate, executor, telemetryRuntimeProducer);
+        return new AsynchronousImpressionListener(delegate, executor);
     }
 
-    public AsynchronousImpressionListener(ImpressionListener delegate, ExecutorService executor, TelemetryRuntimeProducer telemetryRuntimeProducer) {
+    public AsynchronousImpressionListener(ImpressionListener delegate, ExecutorService executor) {
         _delegate = delegate;
         _executor = executor;
-        _telemetryRuntimeProducer = checkNotNull(telemetryRuntimeProducer);
     }
 
 
@@ -58,7 +56,6 @@ public class AsynchronousImpressionListener implements ImpressionListener {
                 }
             });
             long endTime = System.currentTimeMillis();
-            _telemetryRuntimeProducer.recordSuccessfulSync(LastSynchronizationRecordsEnum.IMPRESSIONS, endTime - initTime);
         }
         catch (Exception e) {
             _log.warn("Unable to send impression to impression listener", e);

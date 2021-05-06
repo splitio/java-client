@@ -5,6 +5,10 @@ import io.split.client.dtos.ImpressionCount;
 import io.split.client.dtos.TestImpressions;
 import io.split.client.utils.Utils;
 
+import io.split.telemetry.domain.enums.HTTPLatenciesEnum;
+import io.split.telemetry.domain.enums.LastSynchronizationRecordsEnum;
+import io.split.telemetry.domain.enums.ResourceEnum;
+import io.split.telemetry.storage.TelemetryRuntimeProducer;
 import org.apache.hc.client5.http.classic.methods.HttpPost;
 import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
 import org.apache.hc.client5.http.impl.classic.CloseableHttpResponse;
@@ -17,6 +21,8 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.HashMap;
 import java.util.List;
+
+import static com.google.common.base.Preconditions.checkNotNull;
 
 /**
  * Created by patricioe on 6/20/16.
@@ -33,26 +39,29 @@ public class HttpImpressionsSender implements ImpressionsSender {
     private final URI _impressionBulkTarget;
     private final URI _impressionCountTarget;
     private final ImpressionsManager.Mode _mode;
+    private final TelemetryRuntimeProducer _telemetryRuntimeProducer;
 
-    public static HttpImpressionsSender create(CloseableHttpClient client, URI eventsRootEndpoint, ImpressionsManager.Mode mode) throws URISyntaxException {
+    public static HttpImpressionsSender create(CloseableHttpClient client, URI eventsRootEndpoint, ImpressionsManager.Mode mode, TelemetryRuntimeProducer telemetryRuntimeProducer) throws URISyntaxException {
         return new HttpImpressionsSender(client,
                 Utils.appendPath(eventsRootEndpoint, BULK_ENDPOINT_PATH),
                 Utils.appendPath(eventsRootEndpoint, COUNT_ENDPOINT_PATH),
-                mode);
+                mode,
+                telemetryRuntimeProducer);
     }
 
-    private HttpImpressionsSender(CloseableHttpClient client, URI impressionBulkTarget, URI impressionCountTarget, ImpressionsManager.Mode mode) {
+    private HttpImpressionsSender(CloseableHttpClient client, URI impressionBulkTarget, URI impressionCountTarget, ImpressionsManager.Mode mode, TelemetryRuntimeProducer telemetryRuntimeProducer) {
         _client = client;
         _mode = mode;
         _impressionBulkTarget = impressionBulkTarget;
         _impressionCountTarget = impressionCountTarget;
+        _telemetryRuntimeProducer = checkNotNull(telemetryRuntimeProducer);
     }
 
     @Override
     public void postImpressionsBulk(List<TestImpressions> impressions) {
 
         CloseableHttpResponse response = null;
-
+        long initTime = System.currentTimeMillis();
         try {
             HttpEntity entity = Utils.toJsonEntity(impressions);
 
@@ -65,8 +74,12 @@ public class HttpImpressionsSender implements ImpressionsSender {
             int status = response.getCode();
 
             if (status < 200 || status >= 300) {
+                _telemetryRuntimeProducer.recordSyncError(ResourceEnum.IMPRESSION_SYNC, status);
                 _logger.warn("Response status was: " + status);
             }
+            long endTime = System.currentTimeMillis();
+            _telemetryRuntimeProducer.recordSyncLatency(HTTPLatenciesEnum.IMPRESSIONS, endTime - initTime);
+            _telemetryRuntimeProducer.recordSuccessfulSync(LastSynchronizationRecordsEnum.IMPRESSIONS, endTime);
 
         } catch (Throwable t) {
             _logger.warn("Exception when posting impressions" + impressions, t);
@@ -78,6 +91,7 @@ public class HttpImpressionsSender implements ImpressionsSender {
 
     @Override
     public void postCounters(HashMap<ImpressionCounter.Key, Integer> raw) {
+        long initTime = System.currentTimeMillis();
         if (_mode.equals(ImpressionsManager.Mode.DEBUG)) {
             _logger.warn("Attempted to submit counters in impressions debugging mode. Ignoring");
             return;
@@ -88,8 +102,12 @@ public class HttpImpressionsSender implements ImpressionsSender {
         try (CloseableHttpResponse response = _client.execute(request)) {
             int status = response.getCode();
             if (status < 200 || status >= 300) {
+                _telemetryRuntimeProducer.recordSyncError(ResourceEnum.IMPRESSION_COUNT_SYNC, status);
                 _logger.warn("Response status was: " + status);
             }
+            long endTime = System.currentTimeMillis();
+            _telemetryRuntimeProducer.recordSyncLatency(HTTPLatenciesEnum.IMPRESSIONS_COUNT, endTime - initTime);
+            _telemetryRuntimeProducer.recordSuccessfulSync(LastSynchronizationRecordsEnum.IMPRESSIONS_COUNT, endTime);
         } catch (IOException exc) {
             _logger.warn("Exception when posting impression counters: ", exc);
         }

@@ -15,7 +15,9 @@ import io.split.inputValidation.EventsValidator;
 import io.split.inputValidation.KeyValidator;
 import io.split.inputValidation.SplitNameValidator;
 import io.split.inputValidation.TrafficTypeValidator;
+import io.split.telemetry.domain.enums.LastSynchronizationRecordsEnum;
 import io.split.telemetry.domain.enums.MethodEnum;
+import io.split.telemetry.storage.TelemetryConfigProducer;
 import io.split.telemetry.storage.TelemetryEvaluationProducer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -49,6 +51,7 @@ public final class SplitClientImpl implements SplitClient {
     private final SDKReadinessGates _gates;
     private final Evaluator _evaluator;
     private final TelemetryEvaluationProducer _telemetryEvaluationProducer;
+    private final TelemetryConfigProducer _telemetryConfigProducer;
 
     public SplitClientImpl(SplitFactory container,
                            SplitCache splitCache,
@@ -57,7 +60,8 @@ public final class SplitClientImpl implements SplitClient {
                            SplitClientConfig config,
                            SDKReadinessGates gates,
                            Evaluator evaluator,
-                           TelemetryEvaluationProducer telemetryEvaluationProducer) {
+                           TelemetryEvaluationProducer telemetryEvaluationProducer,
+                           TelemetryConfigProducer telemetryConfigProducer) {
         _container = container;
         _splitCache = checkNotNull(splitCache);
         _impressionManager = checkNotNull(impressionManager);
@@ -66,6 +70,7 @@ public final class SplitClientImpl implements SplitClient {
         _gates = checkNotNull(gates);
         _evaluator = checkNotNull(evaluator);
         _telemetryEvaluationProducer = checkNotNull(telemetryEvaluationProducer);
+        _telemetryConfigProducer = checkNotNull(telemetryConfigProducer);
     }
 
     @Override
@@ -145,6 +150,7 @@ public final class SplitClientImpl implements SplitClient {
     }
 
     private boolean track(Event event) {
+        long initTime = System.currentTimeMillis();
         if (_container.isDestroyed()) {
             _log.error("Client has already been destroyed - no calls possible");
             return false;
@@ -174,6 +180,7 @@ public final class SplitClientImpl implements SplitClient {
         }
 
         event.properties = propertiesResult.getValue();
+        _telemetryEvaluationProducer.recordLatency(MethodEnum.TRACK, System.currentTimeMillis() - initTime);
 
         return _eventClient.track(event, propertiesResult.getEventSize());
     }
@@ -181,8 +188,11 @@ public final class SplitClientImpl implements SplitClient {
     private SplitResult getTreatmentWithConfigInternal(String method, String matchingKey, String bucketingKey, String split, Map<String, Object> attributes, MethodEnum methodEnum) {
         long initTime = System.currentTimeMillis();
         try {
+            if(!_gates.isSDKReadyNow()){
+                _log.warn(method + ": the SDK is not ready, results may be incorrect. Make sure to wait for SDK readiness before using this method");
+                _telemetryConfigProducer.recordNonReadyUsage();
+            }
             if (_container.isDestroyed()) {
-                _telemetryEvaluationProducer.recordException(methodEnum);
                 _log.error("Client has already been destroyed - no calls possible");
                 return SPLIT_RESULT_CONTROL;
             }

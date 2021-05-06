@@ -17,7 +17,7 @@ public class TelemetrySyncTask {
     public TelemetrySyncTask(int telemetryRefreshRate, TelemetrySynchronizer telemetrySynchronizer) {
         ThreadFactory telemetrySyncThreadFactory = new ThreadFactoryBuilder()
                 .setDaemon(true)
-                .setNameFormat("Telemetry-synk-%d")
+                .setNameFormat("Telemetry-sync-%d")
                 .build();
         _telemetrySynchronizer = telemetrySynchronizer; //TODO
         _telemetryRefreshRate = telemetryRefreshRate;

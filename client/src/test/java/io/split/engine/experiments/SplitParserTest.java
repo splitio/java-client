@@ -24,6 +24,8 @@ import io.split.engine.segments.SegmentChangeFetcher;
 import io.split.engine.segments.SegmentSynchronizationTask;
 import io.split.engine.segments.SegmentSynchronizationTaskImp;
 import io.split.grammar.Treatments;
+import io.split.telemetry.storage.InMemoryTelemetryStorage;
+import io.split.telemetry.storage.TelemetryStorage;
 import org.junit.Test;
 import org.mockito.Mockito;
 
@@ -48,6 +50,7 @@ public class SplitParserTest {
 
     public static final String EMPLOYEES = "employees";
     public static final String SALES_PEOPLE = "salespeople";
+    private static final TelemetryStorage TELEMETRY_STORAGE = Mockito.mock(InMemoryTelemetryStorage.class);
 
     @Test
     public void works() {
@@ -60,7 +63,7 @@ public class SplitParserTest {
         SegmentChange segmentChangeSalesPeople = getSegmentChange(-1L, -1L, SALES_PEOPLE);
         Mockito.when(segmentChangeFetcher.fetch(Mockito.anyString(), Mockito.anyLong(), Mockito.anyBoolean())).thenReturn(segmentChangeEmployee).thenReturn(segmentChangeSalesPeople);
 
-        SegmentSynchronizationTask segmentFetcher = new SegmentSynchronizationTaskImp(segmentChangeFetcher,1L, 1, gates, segmentCache);
+        SegmentSynchronizationTask segmentFetcher = new SegmentSynchronizationTaskImp(segmentChangeFetcher,1L, 1, gates, segmentCache, TELEMETRY_STORAGE);
         SplitParser parser = new SplitParser(segmentFetcher, segmentCache);
 
 
@@ -99,7 +102,7 @@ public class SplitParserTest {
         SegmentChange segmentChangeSalesPeople = getSegmentChange(-1L, -1L, SALES_PEOPLE);
         Mockito.when(segmentChangeFetcher.fetch(Mockito.anyString(), Mockito.anyLong(), Mockito.anyBoolean())).thenReturn(segmentChangeEmployee).thenReturn(segmentChangeSalesPeople);
 
-        SegmentSynchronizationTask segmentFetcher = new SegmentSynchronizationTaskImp(segmentChangeFetcher,1L, 1, gates, segmentCache);
+        SegmentSynchronizationTask segmentFetcher = new SegmentSynchronizationTaskImp(segmentChangeFetcher,1L, 1, gates, segmentCache, TELEMETRY_STORAGE);
 
         SplitParser parser = new SplitParser(segmentFetcher, segmentCache);
 
@@ -143,7 +146,7 @@ public class SplitParserTest {
         SegmentChange segmentChangeSalesPeople = getSegmentChange(-1L, -1L, SALES_PEOPLE);
         Mockito.when(segmentChangeFetcher.fetch(Mockito.anyString(), Mockito.anyLong(), Mockito.anyBoolean())).thenReturn(segmentChangeEmployee).thenReturn(segmentChangeSalesPeople);
 
-        SegmentSynchronizationTask segmentFetcher = new SegmentSynchronizationTaskImp(segmentChangeFetcher,1L, 1, gates, segmentCache);
+        SegmentSynchronizationTask segmentFetcher = new SegmentSynchronizationTaskImp(segmentChangeFetcher,1L, 1, gates, segmentCache, TELEMETRY_STORAGE);
 
         SplitParser parser = new SplitParser(segmentFetcher, segmentCache);
 
@@ -182,7 +185,7 @@ public class SplitParserTest {
         SegmentChange segmentChangeEmployee = getSegmentChange(-1L, -1L, EMPLOYEES);
         Mockito.when(segmentChangeFetcher.fetch(Mockito.anyString(), Mockito.anyLong(), Mockito.anyBoolean())).thenReturn(segmentChangeEmployee);
 
-        SegmentSynchronizationTask segmentFetcher = new SegmentSynchronizationTaskImp(segmentChangeFetcher,1L, 1, gates, segmentCache);
+        SegmentSynchronizationTask segmentFetcher = new SegmentSynchronizationTaskImp(segmentChangeFetcher,1L, 1, gates, segmentCache, TELEMETRY_STORAGE);
 
         SplitParser parser = new SplitParser(segmentFetcher, segmentCache);
 
@@ -212,7 +215,7 @@ public class SplitParserTest {
         SegmentChange segmentChangeSalesPeople = getSegmentChange(-1L, -1L, SALES_PEOPLE);
         Mockito.when(segmentChangeFetcher.fetch(Mockito.anyString(), Mockito.anyLong(), Mockito.anyBoolean())).thenReturn(segmentChangeEmployee).thenReturn(segmentChangeSalesPeople);
 
-        SegmentSynchronizationTask segmentFetcher = new SegmentSynchronizationTaskImp(segmentChangeFetcher,1L, 1, gates, segmentCache);
+        SegmentSynchronizationTask segmentFetcher = new SegmentSynchronizationTaskImp(segmentChangeFetcher,1L, 1, gates, segmentCache, TELEMETRY_STORAGE);
 
         SplitParser parser = new SplitParser(segmentFetcher, segmentCache);
 
@@ -258,7 +261,7 @@ public class SplitParserTest {
         SegmentChange segmentChangeSalesPeople = getSegmentChange(-1L, -1L, SALES_PEOPLE);
         Mockito.when(segmentChangeFetcher.fetch(Mockito.anyString(), Mockito.anyLong(), Mockito.anyBoolean())).thenReturn(segmentChangeEmployee).thenReturn(segmentChangeSalesPeople);
 
-        SegmentSynchronizationTask segmentFetcher = new SegmentSynchronizationTaskImp(segmentChangeFetcher,1L, 1, gates, segmentCache);
+        SegmentSynchronizationTask segmentFetcher = new SegmentSynchronizationTaskImp(segmentChangeFetcher,1L, 1, gates, segmentCache, TELEMETRY_STORAGE);
 
         SplitParser parser = new SplitParser(segmentFetcher, segmentCache);
 
@@ -297,7 +300,7 @@ public class SplitParserTest {
         SegmentChange segmentChangeSalesPeople = getSegmentChange(-1L, -1L, SALES_PEOPLE);
         Mockito.when(segmentChangeFetcher.fetch(Mockito.anyString(), Mockito.anyLong(), Mockito.anyBoolean())).thenReturn(segmentChangeEmployee).thenReturn(segmentChangeSalesPeople);
 
-        SegmentSynchronizationTask segmentFetcher = new SegmentSynchronizationTaskImp(segmentChangeFetcher,1L, 1, gates, segmentCache);
+        SegmentSynchronizationTask segmentFetcher = new SegmentSynchronizationTaskImp(segmentChangeFetcher,1L, 1, gates, segmentCache, TELEMETRY_STORAGE);
 
 
         SplitParser parser = new SplitParser(segmentFetcher, segmentCache);
@@ -336,7 +339,7 @@ public class SplitParserTest {
         SegmentChange segmentChangeSalesPeople = getSegmentChange(-1L, -1L, SALES_PEOPLE);
         Mockito.when(segmentChangeFetcher.fetch(Mockito.anyString(), Mockito.anyLong(), Mockito.anyBoolean())).thenReturn(segmentChangeEmployee).thenReturn(segmentChangeSalesPeople);
 
-        SegmentSynchronizationTask segmentFetcher = new SegmentSynchronizationTaskImp(segmentChangeFetcher,1L, 1, gates, segmentCache);
+        SegmentSynchronizationTask segmentFetcher = new SegmentSynchronizationTaskImp(segmentChangeFetcher,1L, 1, gates, segmentCache, TELEMETRY_STORAGE);
 
 
         SplitParser parser = new SplitParser(segmentFetcher, segmentCache);
@@ -375,7 +378,7 @@ public class SplitParserTest {
         SegmentChange segmentChangeSalesPeople = getSegmentChange(-1L, -1L, SALES_PEOPLE);
         Mockito.when(segmentChangeFetcher.fetch(Mockito.anyString(), Mockito.anyLong(), Mockito.anyBoolean())).thenReturn(segmentChangeEmployee).thenReturn(segmentChangeSalesPeople);
 
-        SegmentSynchronizationTask segmentFetcher = new SegmentSynchronizationTaskImp(segmentChangeFetcher,1L, 1, gates, segmentCache);
+        SegmentSynchronizationTask segmentFetcher = new SegmentSynchronizationTaskImp(segmentChangeFetcher,1L, 1, gates, segmentCache, TELEMETRY_STORAGE);
 
 
         SplitParser parser = new SplitParser(segmentFetcher, segmentCache);
@@ -552,7 +555,7 @@ public class SplitParserTest {
         SegmentChange segmentChangeSalesPeople = getSegmentChange(-1L, -1L, SALES_PEOPLE);
         Mockito.when(segmentChangeFetcher.fetch(Mockito.anyString(), Mockito.anyLong(), Mockito.anyBoolean())).thenReturn(segmentChangeEmployee).thenReturn(segmentChangeSalesPeople);
 
-        SegmentSynchronizationTask segmentFetcher = new SegmentSynchronizationTaskImp(segmentChangeFetcher,1L, 1, gates, segmentCache);
+        SegmentSynchronizationTask segmentFetcher = new SegmentSynchronizationTaskImp(segmentChangeFetcher,1L, 1, gates, segmentCache, TELEMETRY_STORAGE);
 
         SplitParser parser = new SplitParser(segmentFetcher, segmentCache);
 

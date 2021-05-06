@@ -4,6 +4,8 @@ import com.google.common.annotations.VisibleForTesting;
 import io.split.client.dtos.Event;
 import io.split.client.utils.GenericClientUtil;
 import io.split.client.utils.Utils;
+import io.split.telemetry.domain.enums.EventsDataRecordsEnum;
+import io.split.telemetry.domain.enums.HTTPLatenciesEnum;
 import io.split.telemetry.domain.enums.LastSynchronizationRecordsEnum;
 import io.split.telemetry.storage.TelemetryEvaluationProducer;
 import io.split.telemetry.storage.TelemetryRuntimeProducer;
@@ -49,7 +51,7 @@ public class EventClientImpl implements EventClient {
     private final CloseableHttpClient _httpclient;
     private final URI _target;
     private final int _waitBeforeShutdown;
-    private final TelemetryRuntimeProducer telemetryRuntimeProducer;
+    private final TelemetryRuntimeProducer _telemetryRuntimeProducer;
 
     ThreadFactory eventClientThreadFactory(final String name) {
         return new ThreadFactory() {
@@ -67,18 +69,18 @@ public class EventClientImpl implements EventClient {
     }
 
 
-    public static EventClientImpl create(CloseableHttpClient httpclient, URI eventsRootTarget, int maxQueueSize, long flushIntervalMillis, int waitBeforeShutdown, TelemetryEvaluationProducer telemetryEvaluationProducer) throws URISyntaxException {
+    public static EventClientImpl create(CloseableHttpClient httpclient, URI eventsRootTarget, int maxQueueSize, long flushIntervalMillis, int waitBeforeShutdown, TelemetryRuntimeProducer telemetryRuntimeProducer) throws URISyntaxException {
         return new EventClientImpl(new LinkedBlockingQueue<WrappedEvent>(),
                 httpclient,
                 Utils.appendPath(eventsRootTarget, "api/events/bulk"),
                 maxQueueSize,
                 flushIntervalMillis,
                 waitBeforeShutdown,
-                telemetryEvaluationProducer);
+                telemetryRuntimeProducer);
     }
 
     EventClientImpl(BlockingQueue<WrappedEvent> eventQueue, CloseableHttpClient httpclient, URI target, int maxQueueSize,
-                    long flushIntervalMillis, int waitBeforeShutdown, TelemetryEvaluationProducer telemetryEvaluationProducer) throws URISyntaxException {
+                    long flushIntervalMillis, int waitBeforeShutdown, TelemetryRuntimeProducer telemetryRuntimeProducer) throws URISyntaxException {
 
         _httpclient = httpclient;
 
@@ -87,9 +89,9 @@ public class EventClientImpl implements EventClient {
         _eventQueue = eventQueue;
         _waitBeforeShutdown = waitBeforeShutdown;
 
-        _maxQueueSize = maxQueueSize;
+        _maxQueueSize = 1;
         _flushIntervalMillis = flushIntervalMillis;
-        telemetryRuntimeProducer = checkNotNull(telemetryEvaluationProducer);
+        _telemetryRuntimeProducer = checkNotNull(telemetryRuntimeProducer);
 
         _senderExecutor = new ThreadPoolExecutor(
                 1,
@@ -129,9 +131,12 @@ public class EventClientImpl implements EventClient {
             if (event == null) {
                 return false;
             }
-            _eventQueue.put(new WrappedEvent(event, eventSize));
+            WrappedEvent we = new WrappedEvent(event, eventSize);
+            _eventQueue.put(we);
+            _telemetryRuntimeProducer.recordEventStats(EventsDataRecordsEnum.EVENTS_QUEUED, 1);
 
-        } catch (InterruptedException e) {
+        } catch (ClassCastException | NullPointerException | InterruptedException e) {
+            _telemetryRuntimeProducer.recordEventStats(EventsDataRecordsEnum.EVENTS_DROPPED, 1);
             _log.warn("Interruption when adding event withed while adding message %s.", event);
             return false;
         }
@@ -191,7 +196,8 @@ public class EventClientImpl implements EventClient {
                         events = new ArrayList<>();
                         accumulated = 0;
                         long endTime = System.currentTimeMillis();
-                        telemetryRuntimeProducer.recordSuccessfulSync(LastSynchronizationRecordsEnum.EVENTS, endTime-initTime);
+                        _telemetryRuntimeProducer.recordSyncLatency(HTTPLatenciesEnum.EVENTS, endTime-initTime);
+                        _telemetryRuntimeProducer.recordSuccessfulSync(LastSynchronizationRecordsEnum.EVENTS, endTime);
                     }
                 }
             } catch (InterruptedException e) {

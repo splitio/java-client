@@ -8,6 +8,7 @@ import io.split.engine.SDKReadinessGates;
 import io.split.engine.experiments.SplitFetcher;
 import io.split.engine.experiments.SplitSynchronizationTask;
 import io.split.engine.segments.SegmentSynchronizationTaskImp;
+import io.split.telemetry.storage.TelemetryRuntimeProducer;
 import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -70,10 +71,11 @@ public class SyncManagerImp implements SyncManager {
                                        CloseableHttpClient sseHttpClient,
                                        SegmentCache segmentCache,
                                        int streamingRetryDelay,
-                                       SDKReadinessGates gates) {
+                                       SDKReadinessGates gates,
+                                       TelemetryRuntimeProducer telemetryRuntimeProducer) {
         LinkedBlockingQueue<PushManager.Status> pushMessages = new LinkedBlockingQueue<>();
         Synchronizer synchronizer = new SynchronizerImp(splitSynchronizationTask, splitFetcher, segmentSynchronizationTaskImp, splitCache, segmentCache, streamingRetryDelay, gates);
-        PushManager pushManager = PushManagerImp.build(synchronizer, streamingServiceUrl, authUrl, httpClient, pushMessages, sseHttpClient);
+        PushManager pushManager = PushManagerImp.build(synchronizer, streamingServiceUrl, authUrl, httpClient, pushMessages, sseHttpClient, telemetryRuntimeProducer);
         return new SyncManagerImp(streamingEnabledConfig, synchronizer, pushManager, pushMessages, authRetryBackOffBase, gates);
     }
 

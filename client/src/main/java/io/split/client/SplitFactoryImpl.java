@@ -94,7 +94,7 @@ public class SplitFactoryImpl implements SplitFactory {
     private final TelemetrySyncTask _telemetrySyncTask;
     private final long _startTime;
 
-    public SplitFactoryImpl(String apiToken, SplitClientConfig config) throws Exception {
+    public SplitFactoryImpl(String apiToken, SplitClientConfig config) throws URISyntaxException {
         _startTime = System.currentTimeMillis();
         _apiToken = apiToken;
         _apiKeyCounter = ApiKeyCounter.getApiKeyCounterInstance();
@@ -141,20 +141,20 @@ public class SplitFactoryImpl implements SplitFactory {
         _impressionsManager = buildImpressionsManager(config);
 
         // EventClient
-        _eventClient = EventClientImpl.create(_httpclient, _eventsRootTarget, config.eventsQueueSize(), config.eventFlushIntervalInMillis(), config.waitBeforeShutdown());
+        _eventClient = EventClientImpl.create(_httpclient, _eventsRootTarget, config.eventsQueueSize(), config.eventFlushIntervalInMillis(), config.waitBeforeShutdown(), _telemetryStorage);
 
         // SyncManager
-        _syncManager = SyncManagerImp.build(config.streamingEnabled(), _splitSynchronizationTask, _splitFetcher, _segmentSynchronizationTaskImp, _splitCache, config.authServiceURL(), _httpclient, config.streamingServiceURL(), config.authRetryBackoffBase(), buildSSEdHttpClient(config), _segmentCache, config.streamingRetryDelay(), _gates);
+        _syncManager = SyncManagerImp.build(config.streamingEnabled(), _splitSynchronizationTask, _splitFetcher, _segmentSynchronizationTaskImp, _splitCache, config.authServiceURL(), _httpclient, config.streamingServiceURL(), config.authRetryBackoffBase(), buildSSEdHttpClient(config), _segmentCache, config.streamingRetryDelay(), _gates, _telemetryStorage);
         _syncManager.start();
 
         // Evaluator
         _evaluator = new EvaluatorImp(_splitCache);
 
         // SplitClient
-        _client = new SplitClientImpl(this, _splitCache, _impressionsManager, _eventClient, config, _gates, _evaluator);
+        _client = new SplitClientImpl(this, _splitCache, _impressionsManager, _eventClient, config, _gates, _evaluator, _telemetryStorage, _telemetryStorage);
 
         // SplitManager
-        _manager = new SplitManagerImpl(_splitCache, config, _gates);
+        _manager = new SplitManagerImpl(_splitCache, config, _gates, _telemetryStorage);
 
         // DestroyOnShutDown
         if (config.destroyOnShutDown()) {
@@ -298,20 +298,21 @@ public class SplitFactoryImpl implements SplitFactory {
     }
 
     private SegmentSynchronizationTaskImp buildSegments(SplitClientConfig config) throws URISyntaxException {
-        SegmentChangeFetcher segmentChangeFetcher = HttpSegmentChangeFetcher.create(_httpclient, _rootTarget);
+        SegmentChangeFetcher segmentChangeFetcher = HttpSegmentChangeFetcher.create(_httpclient, _rootTarget, _telemetryStorage);
 
         return new SegmentSynchronizationTaskImp(segmentChangeFetcher,
                 findPollingPeriod(RANDOM, config.segmentsRefreshRate()),
                 config.numThreadsForSegmentFetch(),
                 _gates,
-                _segmentCache);
+                _segmentCache,
+                _telemetryStorage);
     }
 
     private SplitFetcher buildSplitFetcher() throws URISyntaxException {
-        SplitChangeFetcher splitChangeFetcher = HttpSplitChangeFetcher.create(_httpclient, _rootTarget);
+        SplitChangeFetcher splitChangeFetcher = HttpSplitChangeFetcher.create(_httpclient, _rootTarget, _telemetryStorage);
         SplitParser splitParser = new SplitParser(_segmentSynchronizationTaskImp, _segmentCache);
 
-        return new SplitFetcherImp(splitChangeFetcher, splitParser, _gates, _splitCache);
+        return new SplitFetcherImp(splitChangeFetcher, splitParser, _gates, _splitCache, _telemetryStorage);
     }
 
     private ImpressionsManagerImpl buildImpressionsManager(SplitClientConfig config) throws URISyntaxException {
@@ -326,7 +327,7 @@ public class SplitFactoryImpl implements SplitFactory {
                     .collect(Collectors.toCollection(() -> impressionListeners));
         }
 
-        return ImpressionsManagerImpl.instance(_httpclient, config, impressionListeners);
+        return ImpressionsManagerImpl.instance(_httpclient, config, impressionListeners, _telemetryStorage);
     }
 
 }
