@@ -72,7 +72,6 @@ public class SplitFactoryImpl implements SplitFactory {
     private final URI _eventsRootTarget;
     private final CloseableHttpClient _httpclient;
     private final SDKReadinessGates _gates;
-    private final HttpMetrics _httpMetrics;
     private final SegmentSynchronizationTaskImp _segmentSynchronizationTaskImp;
     private final SplitFetcher _splitFetcher;
     private final SplitSynchronizationTask _splitSynchronizationTask;
@@ -122,9 +121,6 @@ public class SplitFactoryImpl implements SplitFactory {
         _rootTarget = URI.create(config.endpoint());
         _eventsRootTarget = URI.create(config.eventsEndpoint());
 
-        // HttpMetrics
-        _httpMetrics = HttpMetrics.create(_httpclient, _eventsRootTarget);
-
         // Cache Initialisations
         _segmentCache = new SegmentCacheInMemoryImpl();
         _splitCache = new InMemoryCacheImp();
@@ -147,7 +143,7 @@ public class SplitFactoryImpl implements SplitFactory {
         _eventClient = EventClientImpl.create(_httpclient, _eventsRootTarget, config.eventsQueueSize(), config.eventFlushIntervalInMillis(), config.waitBeforeShutdown(), _telemetryStorage);
 
         // SyncManager
-        _syncManager = SyncManagerImp.build(config.streamingEnabled(), _splitSynchronizationTask, _splitFetcher, _segmentSynchronizationTaskImp, _splitCache, config.authServiceURL(), _httpclient, config.streamingServiceURL(), config.authRetryBackoffBase(), buildSSEdHttpClient(apiToken, config), _segmentCache, config.streamingRetryDelay(), _gates, _telemetryStorage));
+        _syncManager = SyncManagerImp.build(config.streamingEnabled(), _splitSynchronizationTask, _splitFetcher, _segmentSynchronizationTaskImp, _splitCache, config.authServiceURL(), _httpclient, config.streamingServiceURL(), config.authRetryBackoffBase(), buildSSEdHttpClient(apiToken, config), _segmentCache, config.streamingRetryDelay(), _gates, _telemetryStorage);
         _syncManager.start();
 
         // Evaluator
