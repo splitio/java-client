@@ -156,7 +156,6 @@ public class SSEClient {
     }
 
     private boolean establishConnection(URI uri, CountDownLatch signal) {
-
         _ongoingRequest.set(new HttpGet(uri));
 
         try {
