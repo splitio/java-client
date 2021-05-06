@@ -13,6 +13,7 @@ import org.apache.hc.client5.http.classic.methods.HttpPost;
 import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
 import org.apache.hc.client5.http.impl.classic.CloseableHttpResponse;
 import org.apache.hc.core5.http.HttpEntity;
+import org.apache.hc.core5.http.HttpStatus;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -73,13 +74,12 @@ public class HttpImpressionsSender implements ImpressionsSender {
 
             int status = response.getCode();
 
-            if (status < 200 || status >= 300) {
+            if (status < HttpStatus.SC_OK || status >= HttpStatus.SC_MULTIPLE_CHOICES) {
                 _telemetryRuntimeProducer.recordSyncError(ResourceEnum.IMPRESSION_SYNC, status);
                 _logger.warn("Response status was: " + status);
             }
-            long endTime = System.currentTimeMillis();
-            _telemetryRuntimeProducer.recordSyncLatency(HTTPLatenciesEnum.IMPRESSIONS, endTime - initTime);
-            _telemetryRuntimeProducer.recordSuccessfulSync(LastSynchronizationRecordsEnum.IMPRESSIONS, endTime);
+            _telemetryRuntimeProducer.recordSyncLatency(HTTPLatenciesEnum.IMPRESSIONS, System.currentTimeMillis() - initTime);
+            _telemetryRuntimeProducer.recordSuccessfulSync(LastSynchronizationRecordsEnum.IMPRESSIONS, System.currentTimeMillis());
 
         } catch (Throwable t) {
             _logger.warn("Exception when posting impressions" + impressions, t);
@@ -101,13 +101,12 @@ public class HttpImpressionsSender implements ImpressionsSender {
         request.setEntity(Utils.toJsonEntity(ImpressionCount.fromImpressionCounterData(raw)));
         try (CloseableHttpResponse response = _client.execute(request)) {
             int status = response.getCode();
-            if (status < 200 || status >= 300) {
+            if (status < HttpStatus.SC_OK || status >= HttpStatus.SC_MULTIPLE_CHOICES) {
                 _telemetryRuntimeProducer.recordSyncError(ResourceEnum.IMPRESSION_COUNT_SYNC, status);
                 _logger.warn("Response status was: " + status);
             }
-            long endTime = System.currentTimeMillis();
-            _telemetryRuntimeProducer.recordSyncLatency(HTTPLatenciesEnum.IMPRESSIONS_COUNT, endTime - initTime);
-            _telemetryRuntimeProducer.recordSuccessfulSync(LastSynchronizationRecordsEnum.IMPRESSIONS_COUNT, endTime);
+            _telemetryRuntimeProducer.recordSyncLatency(HTTPLatenciesEnum.IMPRESSIONS_COUNT, System.currentTimeMillis() - initTime);
+            _telemetryRuntimeProducer.recordSuccessfulSync(LastSynchronizationRecordsEnum.IMPRESSIONS_COUNT, System.currentTimeMillis());
         } catch (IOException exc) {
             _logger.warn("Exception when posting impression counters: ", exc);
         }

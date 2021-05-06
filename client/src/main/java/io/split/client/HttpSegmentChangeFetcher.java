@@ -13,6 +13,7 @@ import io.split.telemetry.storage.TelemetryRuntimeProducer;
 import org.apache.hc.client5.http.classic.methods.HttpGet;
 import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
 import org.apache.hc.client5.http.impl.classic.CloseableHttpResponse;
+import org.apache.hc.core5.http.HttpStatus;
 import org.apache.hc.core5.http.io.entity.EntityUtils;
 import org.apache.hc.core5.net.URIBuilder;
 import org.slf4j.Logger;
@@ -67,19 +68,18 @@ public final class HttpSegmentChangeFetcher implements SegmentChangeFetcher {
 
             int statusCode = response.getCode();
 
-            if (statusCode < 200 || statusCode >= 300) {
+            if (statusCode < HttpStatus.SC_OK || statusCode >= HttpStatus.SC_MULTIPLE_CHOICES) {
                 _telemetryRuntimeProducer.recordSyncError(ResourceEnum.SEGMENT_SYNC, statusCode);
                 _log.error("Response status was: " + statusCode);
-                if (statusCode == 403) {
+                if (statusCode == HttpStatus.SC_FORBIDDEN) {
                     _log.error("factory instantiation: you passed a browser type api_key, " +
                             "please grab an api key from the Split console that is of type sdk");
                 }
                 throw new IllegalStateException("Could not retrieve segment changes for " + segmentName + "; http return code " + statusCode);
             }
 
-            long endTime = System.currentTimeMillis();
-            _telemetryRuntimeProducer.recordSyncLatency(HTTPLatenciesEnum.SEGMENTS, endTime-start);
-            _telemetryRuntimeProducer.recordSuccessfulSync(LastSynchronizationRecordsEnum.SEGMENTS, endTime);
+            _telemetryRuntimeProducer.recordSyncLatency(HTTPLatenciesEnum.SEGMENTS, System.currentTimeMillis()-start);
+            _telemetryRuntimeProducer.recordSuccessfulSync(LastSynchronizationRecordsEnum.SEGMENTS, System.currentTimeMillis());
 
             String json = EntityUtils.toString(response.getEntity(), StandardCharsets.UTF_8);
             if (_log.isDebugEnabled()) {

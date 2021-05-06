@@ -48,10 +48,9 @@ public class AuthApiClientImp implements AuthApiClient {
                 _log.debug(String.format("Success connection to: %s", _target));
 
                 String jsonContent = EntityUtils.toString(response.getEntity(), StandardCharsets.UTF_8);
-                long endTime = System.currentTimeMillis();
                 _telemetryRuntimeProducer.recordTokenRefreshes();
-                _telemetryRuntimeProducer.recordSuccessfulSync(LastSynchronizationRecordsEnum.TOKEN, endTime);
-                _telemetryRuntimeProducer.recordSyncLatency(HTTPLatenciesEnum.TOKEN, endTime-initTime);
+                _telemetryRuntimeProducer.recordSuccessfulSync(LastSynchronizationRecordsEnum.TOKEN, System.currentTimeMillis());
+                _telemetryRuntimeProducer.recordSyncLatency(HTTPLatenciesEnum.TOKEN, System.currentTimeMillis()-initTime);
                 return getSuccessResponse(jsonContent);
             }
 

@@ -13,6 +13,7 @@ import io.split.telemetry.storage.TelemetryRuntimeProducer;
 import org.apache.hc.client5.http.classic.methods.HttpGet;
 import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
 import org.apache.hc.client5.http.impl.classic.CloseableHttpResponse;
+import org.apache.hc.core5.http.HttpStatus;
 import org.apache.hc.core5.http.io.entity.EntityUtils;
 import org.apache.hc.core5.net.URIBuilder;
 import org.slf4j.Logger;
@@ -67,12 +68,11 @@ public final class HttpSplitChangeFetcher implements SplitChangeFetcher {
 
             int statusCode = response.getCode();
 
-            if (statusCode < 200 || statusCode >= 300) {
+            if (statusCode < HttpStatus.SC_OK || statusCode >= HttpStatus.SC_MULTIPLE_CHOICES) {
                 _telemetryRuntimeProducer.recordSyncError(ResourceEnum.SPLIT_SYNC, statusCode);
                 throw new IllegalStateException("Could not retrieve splitChanges; http return code " + statusCode);
             }
-            long endtime = System.currentTimeMillis();
-            _telemetryRuntimeProducer.recordSyncLatency(HTTPLatenciesEnum.SPLITS, endtime-start);
+            _telemetryRuntimeProducer.recordSyncLatency(HTTPLatenciesEnum.SPLITS, System.currentTimeMillis()-start);
 
 
             String json = EntityUtils.toString(response.getEntity(), StandardCharsets.UTF_8);

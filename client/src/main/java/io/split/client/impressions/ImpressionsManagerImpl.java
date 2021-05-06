@@ -105,7 +105,7 @@ public class ImpressionsManagerImpl implements ImpressionsManager, Closeable {
         }
 
         if (Mode.DEBUG.equals(_mode) || shouldQueueImpression(impression)) {
-            if (shouldQueueImpression(impression)) {
+            if (!shouldQueueImpression(impression)) {
                 _telemetryRuntimeProducer.recordImpressionStats(ImpressionsDataTypeEnum.IMPRESSIONS_DEDUPED, 1);
             }
             if (_storage.put(KeyImpression.fromImpression(impression))) {

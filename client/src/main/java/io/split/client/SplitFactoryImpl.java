@@ -191,8 +191,7 @@ public class SplitFactoryImpl implements SplitFactory {
                 _log.info("Successful shutdown of eventClient");
                 _syncManager.shutdown();
                 _log.info("Successful shutdown of syncManager");
-                long endSession = System.currentTimeMillis();
-                _telemetryStorage.recordSessionLength(endSession - _startTime);
+                _telemetryStorage.recordSessionLength(System.currentTimeMillis() - _startTime);
                 _telemetrySyncTask.stopScheduledTask();
             } catch (IOException e) {
                 _log.error("We could not shutdown split", e);

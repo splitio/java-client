@@ -89,7 +89,7 @@ public class EventClientImpl implements EventClient {
         _eventQueue = eventQueue;
         _waitBeforeShutdown = waitBeforeShutdown;
 
-        _maxQueueSize = 1;
+        _maxQueueSize = maxQueueSize;
         _flushIntervalMillis = flushIntervalMillis;
         _telemetryRuntimeProducer = checkNotNull(telemetryRuntimeProducer);
 
@@ -131,8 +131,7 @@ public class EventClientImpl implements EventClient {
             if (event == null) {
                 return false;
             }
-            WrappedEvent we = new WrappedEvent(event, eventSize);
-            _eventQueue.put(we);
+            _eventQueue.put(new WrappedEvent(event, eventSize));
             _telemetryRuntimeProducer.recordEventStats(EventsDataRecordsEnum.EVENTS_QUEUED, 1);
 
         } catch (ClassCastException | NullPointerException | InterruptedException e) {
@@ -195,9 +194,8 @@ public class EventClientImpl implements EventClient {
                         // Clear the queue of events for the next batch.
                         events = new ArrayList<>();
                         accumulated = 0;
-                        long endTime = System.currentTimeMillis();
-                        _telemetryRuntimeProducer.recordSyncLatency(HTTPLatenciesEnum.EVENTS, endTime-initTime);
-                        _telemetryRuntimeProducer.recordSuccessfulSync(LastSynchronizationRecordsEnum.EVENTS, endTime);
+                        _telemetryRuntimeProducer.recordSyncLatency(HTTPLatenciesEnum.EVENTS, System.currentTimeMillis()-initTime);
+                        _telemetryRuntimeProducer.recordSuccessfulSync(LastSynchronizationRecordsEnum.EVENTS, System.currentTimeMillis());
                     }
                 }
             } catch (InterruptedException e) {

@@ -232,8 +232,7 @@ public final class SplitClientImpl implements SplitClient {
                     result.changeNumber,
                     attributes
             );
-            long endTime = System.currentTimeMillis();
-            _telemetryEvaluationProducer.recordLatency(methodEnum, endTime-initTime);
+            _telemetryEvaluationProducer.recordLatency(methodEnum, System.currentTimeMillis()-initTime);
             return new SplitResult(result.treatment, result.configurations);
         } catch (Exception e) {
             try {
