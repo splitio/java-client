@@ -14,6 +14,12 @@ public class StreamingEvent {
     @SerializedName(FIELD_TIMESTAMP)
     private long _timestamp;
 
+    public StreamingEvent(int _type, long _data, long _timestamp) {
+        this._type = _type;
+        this._data = _data;
+        this._timestamp = _timestamp;
+    }
+
     public int get_type() {
         return _type;
     }

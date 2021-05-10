@@ -14,7 +14,7 @@ public interface TelemetryRuntimeConsumer {
     long getEventStats(EventsDataRecordsEnum type);
     LastSynchronization getLastSynchronization();
     HTTPErrors popHTTPErrors();
-    HTTPLatencies popHTTPLatencies() throws Exception;
+    HTTPLatencies popHTTPLatencies();
     long popAuthRejections();
     long popTokenRefreshes();
     List<StreamingEvent> popStreamingEvents();

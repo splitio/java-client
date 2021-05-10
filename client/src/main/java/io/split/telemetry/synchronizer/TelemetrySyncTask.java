@@ -19,7 +19,7 @@ public class TelemetrySyncTask {
                 .setDaemon(true)
                 .setNameFormat("Telemetry-sync-%d")
                 .build();
-        _telemetrySynchronizer = telemetrySynchronizer; //TODO
+        _telemetrySynchronizer = telemetrySynchronizer;
         _telemetryRefreshRate = telemetryRefreshRate;
         _telemetrySyncScheduledExecutorService = Executors.newSingleThreadScheduledExecutor(telemetrySyncThreadFactory);
         try {

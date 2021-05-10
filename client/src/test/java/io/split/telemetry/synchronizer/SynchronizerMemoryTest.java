@@ -6,10 +6,12 @@ import io.split.cache.SegmentCacheInMemoryImpl;
 import io.split.cache.SplitCache;
 import io.split.client.SplitClientConfig;
 import io.split.telemetry.storage.InMemoryTelemetryStorage;
+import io.split.telemetry.storage.TelemetryRuntimeProducer;
 import io.split.telemetry.storage.TelemetryStorageConsumer;
 import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
 import org.apache.hc.core5.http.HttpStatus;
 import org.junit.Test;
+import org.mockito.Mock;
 import org.mockito.Mockito;
 
 import java.io.IOException;
@@ -45,9 +47,10 @@ public class SynchronizerMemoryTest {
 
     private TelemetrySynchronizer getTelemetrySynchronizer(CloseableHttpClient httpClient) throws URISyntaxException, InvocationTargetException, NoSuchMethodException, IllegalAccessException, IOException {
         TelemetryStorageConsumer consumer = Mockito.mock(InMemoryTelemetryStorage.class);
+        TelemetryRuntimeProducer telemetryRuntimeProducer = Mockito.mock(TelemetryRuntimeProducer.class);
         SplitCache splitCache = Mockito.mock(SplitCache.class);
         SegmentCache segmentCache = Mockito.mock(SegmentCacheInMemoryImpl.class);
-        TelemetrySynchronizer telemetrySynchronizer = new SynchronizerMemory(httpClient, URI.create(TELEMETRY_ENDPOINT), consumer, splitCache, segmentCache);
+        TelemetrySynchronizer telemetrySynchronizer = new SynchronizerMemory(httpClient, URI.create(TELEMETRY_ENDPOINT), consumer, splitCache, segmentCache, telemetryRuntimeProducer);
         return telemetrySynchronizer;
     }
 

@@ -118,7 +118,7 @@ public class NoopTelemetryStorage implements TelemetryStorage{
     }
 
     @Override
-    public HTTPLatencies popHTTPLatencies() throws Exception {
+    public HTTPLatencies popHTTPLatencies(){
         return null;
     }
 

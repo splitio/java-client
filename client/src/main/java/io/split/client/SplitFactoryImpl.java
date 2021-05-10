@@ -124,7 +124,7 @@ public class SplitFactoryImpl implements SplitFactory {
         // Cache Initialisations
         _segmentCache = new SegmentCacheInMemoryImpl();
         _splitCache = new InMemoryCacheImp();
-        _telemetrySynchronizer = new SynchronizerMemory(_httpclient, URI.create(config.get_telemetryURL()), _telemetryStorage, _splitCache, _segmentCache);
+        _telemetrySynchronizer = new SynchronizerMemory(_httpclient, URI.create(config.get_telemetryURL()), _telemetryStorage, _splitCache, _segmentCache, _telemetryStorage);
         _telemetrySyncTask = new TelemetrySyncTask(config.get_telemetryRefreshRate(), _telemetrySynchronizer);
 
         // Segments
@@ -185,14 +185,14 @@ public class SplitFactoryImpl implements SplitFactory {
                 _log.info("Successful shutdown of splits");
                 _impressionsManager.close();
                 _log.info("Successful shutdown of impressions manager");
-                _httpclient.close();
-                _log.info("Successful shutdown of httpclient");
                 _eventClient.close();
                 _log.info("Successful shutdown of eventClient");
                 _syncManager.shutdown();
                 _log.info("Successful shutdown of syncManager");
                 _telemetryStorage.recordSessionLength(System.currentTimeMillis() - _startTime);
                 _telemetrySyncTask.stopScheduledTask();
+                _httpclient.close();
+                _log.info("Successful shutdown of httpclient");
             } catch (IOException e) {
                 _log.error("We could not shutdown split", e);
             }

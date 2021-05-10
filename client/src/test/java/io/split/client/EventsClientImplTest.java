@@ -8,14 +8,12 @@ import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
 import org.apache.hc.client5.http.impl.classic.HttpClients;
 import org.hamcrest.Matchers;
 import org.junit.Assert;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.mockito.Mockito;
 
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
-
 import java.util.concurrent.LinkedBlockingQueue;
 
 public class EventsClientImplTest {
@@ -54,7 +52,6 @@ public class EventsClientImplTest {
     }
 
     @Test
-    @Ignore
     public void testEventsFlushedWhenSizeLimitReached() throws URISyntaxException, InterruptedException, IOException {
         CloseableHttpClient client = Mockito.mock(CloseableHttpClient.class);
         EventClientImpl eventClient = new EventClientImpl(new LinkedBlockingQueue<EventClientImpl.WrappedEvent>(),
