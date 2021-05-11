@@ -23,14 +23,13 @@ import io.split.engine.matchers.EqualToMatcher;
 import io.split.engine.matchers.GreaterThanOrEqualToMatcher;
 import io.split.engine.matchers.collections.ContainsAnyOfSetMatcher;
 import io.split.engine.matchers.strings.WhitelistMatcher;
-import io.split.engine.metrics.Metrics;
 import io.split.grammar.Treatments;
 import io.split.telemetry.storage.InMemoryTelemetryStorage;
 import io.split.telemetry.storage.TelemetryStorage;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.junit.Assert;
+import org.junit.Before;
 import org.junit.Test;
-import org.junit.rules.ExpectedException;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mockito;
 
@@ -63,8 +62,13 @@ import static org.mockito.Mockito.when;
  */
 public class SplitClientImplTest {
 
-    private static final TelemetryStorage TELEMETRY_STORAGE = Mockito.mock(InMemoryTelemetryStorage.class);
+    private static TelemetryStorage TELEMETRY_STORAGE = Mockito.mock(InMemoryTelemetryStorage.class);
     private SplitClientConfig config = SplitClientConfig.builder().setBlockUntilReadyTimeout(100).build();
+
+    @Before
+    public void updateTelemetryStorage() {
+        TELEMETRY_STORAGE = Mockito.mock(InMemoryTelemetryStorage.class);
+    }
 
     @Test
     public void null_key_results_in_control() {
@@ -149,6 +153,7 @@ public class SplitClientImplTest {
         SDKReadinessGates gates = mock(SDKReadinessGates.class);
         SplitCache splitCache = mock(InMemoryCacheImp.class);
         when(splitCache.get(test)).thenReturn(parsedSplit);
+        when(gates.isSDKReadyNow()).thenReturn(true);
 
         SplitClientImpl client = new SplitClientImpl(
                 mock(SplitFactory.class),
@@ -167,6 +172,7 @@ public class SplitClientImplTest {
         }
 
         verify(splitCache, times(numKeys)).get(test);
+        verify(TELEMETRY_STORAGE, times(5)).recordLatency(Mockito.anyObject(), Mockito.anyLong());
     }
 
     /**
@@ -320,6 +326,7 @@ public class SplitClientImplTest {
         SDKReadinessGates gates = mock(SDKReadinessGates.class);
         SplitCache splitCache = mock(InMemoryCacheImp.class);
         when(splitCache.get(test)).thenReturn(parsedSplit);
+        when(gates.isSDKReadyNow()).thenReturn(false);
 
         SplitClientImpl client = new SplitClientImpl(
                 mock(SplitFactory.class),
@@ -336,6 +343,7 @@ public class SplitClientImplTest {
         assertThat(client.getTreatment("trevor@codigo.com", test), is(equalTo("on")));
 
         verify(splitCache, times(3)).get(test);
+        verify(TELEMETRY_STORAGE, times(3)).recordNonReadyUsage();
     }
 
 
@@ -935,7 +943,7 @@ public class SplitClientImplTest {
     public void track_with_valid_parameters() {
         SDKReadinessGates gates = mock(SDKReadinessGates.class);
         SplitCache splitCache = mock(InMemoryCacheImp.class);
-
+        when(gates.isSDKReadyNow()).thenReturn(false);
         SplitClientImpl client = new SplitClientImpl(
                 mock(SplitFactory.class),
                 splitCache,
@@ -953,6 +961,7 @@ public class SplitClientImplTest {
         String validKeySize = new String(new char[250]).replace('\0', 'a');
         Assert.assertThat(client.track(validKeySize, "valid_traffic_type", validEventSize, 10),
                 org.hamcrest.Matchers.is(org.hamcrest.Matchers.equalTo(true)));
+        verify(TELEMETRY_STORAGE, times(2)).recordLatency(Mockito.anyObject(), Mockito.anyLong());
 
     }
 

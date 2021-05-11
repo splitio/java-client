@@ -43,7 +43,7 @@ public class SplitManagerImpl implements SplitManager {
 
     @Override
     public List<SplitView> splits() {
-        if (_gates.isSDKReadyNow()) { {
+        if (!_gates.isSDKReadyNow()) { {
             _log.warn("splits: the SDK is not ready, results may be incorrect. Make sure to wait for SDK readiness before using this method");
             _telemetryConfigProducer.recordNonReadyUsage();
         }}
@@ -58,7 +58,7 @@ public class SplitManagerImpl implements SplitManager {
 
     @Override
     public SplitView split(String featureName) {
-        if (_gates.isSDKReadyNow()) { {
+        if (!_gates.isSDKReadyNow()) { {
             _log.warn("split: the SDK is not ready, results may be incorrect. Make sure to wait for SDK readiness before using this method");
             _telemetryConfigProducer.recordNonReadyUsage();
         }}
@@ -82,7 +82,7 @@ public class SplitManagerImpl implements SplitManager {
 
     @Override
     public List<String> splitNames() {
-        if (_gates.isSDKReadyNow()) { {
+        if (!_gates.isSDKReadyNow()) { {
             _log.warn("splitNames: the SDK is not ready, results may be incorrect. Make sure to wait for SDK readiness before using this method");
             _telemetryConfigProducer.recordNonReadyUsage();
         }}
