@@ -803,7 +803,7 @@ public class SplitClientConfig {
                 throw new IllegalStateException("streamingRetryDelay must be > 0");
             }
             if(_onDemandFetchMaxRetries <= 0) {
-                throw new IllegalStateException("streamingRetryDelay must be > 0");
+                throw new IllegalStateException("_onDemandFetchMaxRetries must be > 0");
             }
 
             if (_failedAttemptsBeforeLogging < 0) {
