@@ -47,6 +47,8 @@ public class SplitClientConfig {
     private final String _authServiceURL;
     private final String _streamingServiceURL;
     private final int _onDemandFetchRetryDelayMs;
+    private final int _onDemandFetchMaxRetries;
+    private final int _failedAttemptsBeforeLogging;
     private final boolean _cdnDebugLogging;
 
     // Proxy configs
@@ -93,6 +95,8 @@ public class SplitClientConfig {
                               String authServiceURL,
                               String streamingServiceURL,
                               int onDemandFetchRetryDelayMs,
+                              int onDemandFetchMaxRetries,
+                              int failedAttemptsBeforeLogging,
                               boolean cdnDebugLogging) {
         _endpoint = endpoint;
         _eventsEndpoint = eventsEndpoint;
@@ -125,6 +129,8 @@ public class SplitClientConfig {
         _authServiceURL = authServiceURL;
         _streamingServiceURL = streamingServiceURL;
         _onDemandFetchRetryDelayMs = onDemandFetchRetryDelayMs;
+        _onDemandFetchMaxRetries = onDemandFetchMaxRetries;
+        _failedAttemptsBeforeLogging = failedAttemptsBeforeLogging;
         _cdnDebugLogging = cdnDebugLogging;
 
         Properties props = new Properties();
@@ -256,6 +262,10 @@ public class SplitClientConfig {
 
     public int streamingRetryDelay() {return _onDemandFetchRetryDelayMs;}
 
+    public int streamingFetchMaxRetries() {return _onDemandFetchMaxRetries;}
+
+    public int failedAttemptsBeforeLogging() {return _failedAttemptsBeforeLogging;}
+
     public boolean cdnDebugLogging() { return _cdnDebugLogging; }
 
 
@@ -295,6 +305,8 @@ public class SplitClientConfig {
         private String _authServiceURL = "https://auth.split.io/api/auth";
         private String _streamingServiceURL = "https://streaming.split.io/sse";
         private int _onDemandFetchRetryDelayMs = 50;
+        private int _onDemandFetchMaxRetries = 10;
+        private int _failedAttemptsBeforeLogging = -1;
         private boolean _cdnDebugLogging = true;
 
         public Builder() {
@@ -697,6 +709,16 @@ public class SplitClientConfig {
             return this;
         }
 
+        public Builder streamingFetchMaxRetries(int maxRetries) {
+            _onDemandFetchMaxRetries = maxRetries;
+            return this;
+        }
+
+        public Builder failedAttemptsBeforeLoggingCDNInfo(int failedAttemptsBeforeLogging) {
+            _failedAttemptsBeforeLogging = failedAttemptsBeforeLogging;
+            return this;
+        }
+
         /**
          * Enable logging response headers for requests made to our CDN.
          * @param cdnDebugLogging
@@ -780,6 +802,13 @@ public class SplitClientConfig {
             if(_onDemandFetchRetryDelayMs <= 0) {
                 throw new IllegalStateException("streamingRetryDelay must be > 0");
             }
+            if(_onDemandFetchMaxRetries <= 0) {
+                throw new IllegalStateException("streamingRetryDelay must be > 0");
+            }
+
+            if (_failedAttemptsBeforeLogging < 0) {
+                _failedAttemptsBeforeLogging = _onDemandFetchMaxRetries / 2;
+            }
 
             return new SplitClientConfig(
                     _endpoint,
@@ -813,6 +842,8 @@ public class SplitClientConfig {
                     _authServiceURL,
                     _streamingServiceURL,
                     _onDemandFetchRetryDelayMs,
+                    _onDemandFetchMaxRetries,
+                    _failedAttemptsBeforeLogging,
                     _cdnDebugLogging);
         }
     }

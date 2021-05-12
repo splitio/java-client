@@ -26,7 +26,7 @@ public class SynchronizerTest {
         _splitCache = Mockito.mock(SplitCache.class);
         _segmentCache = Mockito.mock(SegmentCache.class);
 
-        _synchronizer = new SynchronizerImp(_refreshableSplitFetcherTask, _splitFetcher, _segmentFetcher, _splitCache, _segmentCache, 50, false);
+        _synchronizer = new SynchronizerImp(_refreshableSplitFetcherTask, _splitFetcher, _segmentFetcher, _splitCache, _segmentCache, 50, 10, 5, false);
     }
 
     @Test

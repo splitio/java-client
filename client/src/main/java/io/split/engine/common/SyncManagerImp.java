@@ -61,11 +61,32 @@ public class SyncManagerImp implements SyncManager {
                                        CloseableHttpClient sseHttpClient,
                                        SegmentCache segmentCache,
                                        int streamingRetryDelay,
+                                       int maxOnDemandFetchRetries,
+                                       int failedAttemptsBeforeLogging,
                                        boolean cdnDebugLogging) {
         LinkedBlockingQueue<PushManager.Status> pushMessages = new LinkedBlockingQueue<>();
-        Synchronizer synchronizer = new SynchronizerImp(splitSynchronizationTask, splitFetcher, segmentSynchronizationTaskImp, splitCache, segmentCache, streamingRetryDelay, cdnDebugLogging);
-        PushManager pushManager = PushManagerImp.build(synchronizer, streamingServiceUrl, authUrl, httpClient, pushMessages, sseHttpClient);
-        return new SyncManagerImp(streamingEnabledConfig, synchronizer, pushManager, pushMessages, authRetryBackOffBase);
+        Synchronizer synchronizer = new SynchronizerImp(splitSynchronizationTask,
+                                                        splitFetcher,
+                                                        segmentSynchronizationTaskImp,
+                                                        splitCache,
+                                                        segmentCache,
+                                                        streamingRetryDelay,
+                                                        maxOnDemandFetchRetries,
+                                                        failedAttemptsBeforeLogging,
+                                                        cdnDebugLogging);
+
+        PushManager pushManager = PushManagerImp.build(synchronizer,
+                                                        streamingServiceUrl,
+                                                        authUrl,
+                                                        httpClient,
+                                                        pushMessages,
+                                                        sseHttpClient);
+
+        return new SyncManagerImp(streamingEnabledConfig,
+                                  synchronizer,
+                                  pushManager,
+                                  pushMessages,
+                                  authRetryBackOffBase);
     }
 
     @Override

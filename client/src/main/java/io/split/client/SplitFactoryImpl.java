@@ -159,6 +159,8 @@ public class SplitFactoryImpl implements SplitFactory {
                 buildSSEdHttpClient(config),
                 _segmentCache,
                 config.streamingRetryDelay(),
+                config.streamingFetchMaxRetries(),
+                config.failedAttemptsBeforeLogging(),
                 config.cdnDebugLogging());
         _syncManager.start();
 
