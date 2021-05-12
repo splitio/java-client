@@ -25,7 +25,7 @@ public class SplitFactoryBuilder {
      * @throws IOException                           if the SDK was being started in 'localhost' mode, but
      *                                               there were problems reading the override file from disk.
      */
-    public static SplitFactory build(String apiToken) throws IOException, URISyntaxException {
+    public static SplitFactory build(String apiToken) throws Exception {
         return build(apiToken, SplitClientConfig.builder().build());
     }
 
@@ -36,7 +36,7 @@ public class SplitFactoryBuilder {
      * @throws java.io.IOException                   if the SDK was being started in 'localhost' mode, but
      *                                               there were problems reading the override file from disk.
      */
-    public static synchronized SplitFactory build(String apiToken, SplitClientConfig config) throws IOException, URISyntaxException {
+    public static synchronized SplitFactory build(String apiToken, SplitClientConfig config) throws Exception {
         ApiKeyValidator.validate(apiToken);
 
         if (LocalhostSplitFactory.LOCALHOST.equals(apiToken)) {
@@ -66,7 +66,7 @@ public class SplitFactoryBuilder {
         return LocalhostSplitFactory.createLocalhostSplitFactory(config);
     }
 
-    public static void main(String... args) throws IOException, InterruptedException, TimeoutException, URISyntaxException {
+    public static void main(String... args) throws Exception {
         if (args.length != 1) {
             System.out.println("Usage: <api_token>");
             System.exit(1);

@@ -15,7 +15,7 @@ public class SplitFactoryImplTest extends TestCase {
 
 
     @Test
-    public void testFactoryInstantiation() throws URISyntaxException {
+    public void testFactoryInstantiation() throws Exception {
         SplitClientConfig splitClientConfig = SplitClientConfig.builder()
                 .enableDebug()
                 .impressionsMode(ImpressionsManager.Mode.DEBUG)
@@ -23,6 +23,7 @@ public class SplitFactoryImplTest extends TestCase {
                 .endpoint(ENDPOINT,EVENTS_ENDPOINT)
                 .authServiceURL(AUTH_SERVICE)
                 .setBlockUntilReadyTimeout(10000)
+                .telemetryURL(SplitClientConfig.TELEMETRY_ENDPOINT)
                 .build();
         SplitFactoryImpl splitFactory = new SplitFactoryImpl(API_KEY, splitClientConfig);
 
@@ -31,12 +32,13 @@ public class SplitFactoryImplTest extends TestCase {
     }
 
     @Test
-    public void testFactoryInstantiationWithoutBlockUntilReady() throws URISyntaxException {
+    public void testFactoryInstantiationWithoutBlockUntilReady() throws Exception {
         SplitClientConfig splitClientConfig = SplitClientConfig.builder()
                 .enableDebug()
                 .impressionsMode(ImpressionsManager.Mode.DEBUG)
                 .impressionsRefreshRate(1)
                 .endpoint(ENDPOINT,EVENTS_ENDPOINT)
+                .telemetryURL(SplitClientConfig.TELEMETRY_ENDPOINT)
                 .authServiceURL(AUTH_SERVICE)
                 .build();
         SplitFactoryImpl splitFactory = new SplitFactoryImpl(API_KEY, splitClientConfig);
@@ -46,13 +48,14 @@ public class SplitFactoryImplTest extends TestCase {
     }
 
     @Test
-    public void testFactoryInstantiationIntegrationsConfig() throws URISyntaxException {
+    public void testFactoryInstantiationIntegrationsConfig() throws Exception {
         IntegrationsConfig integrationsConfig = new IntegrationsConfig.Builder().build();
         SplitClientConfig splitClientConfig = SplitClientConfig.builder()
                 .enableDebug()
                 .impressionsMode(ImpressionsManager.Mode.DEBUG)
                 .impressionsRefreshRate(1)
                 .endpoint(ENDPOINT,EVENTS_ENDPOINT)
+                .telemetryURL(SplitClientConfig.TELEMETRY_ENDPOINT)
                 .authServiceURL(AUTH_SERVICE)
                 .setBlockUntilReadyTimeout(1000)
                 .integrations(integrationsConfig)
@@ -64,12 +67,13 @@ public class SplitFactoryImplTest extends TestCase {
     }
 
     @Test
-    public void testFactoryInstantiationWithProxy() throws URISyntaxException {
+    public void testFactoryInstantiationWithProxy() throws Exception {
         SplitClientConfig splitClientConfig = SplitClientConfig.builder()
                 .enableDebug()
                 .impressionsMode(ImpressionsManager.Mode.DEBUG)
                 .impressionsRefreshRate(1)
                 .endpoint(ENDPOINT,EVENTS_ENDPOINT)
+                .telemetryURL(SplitClientConfig.TELEMETRY_ENDPOINT)
                 .authServiceURL(AUTH_SERVICE)
                 .setBlockUntilReadyTimeout(1000)
                 .proxyPort(6060)
@@ -84,12 +88,13 @@ public class SplitFactoryImplTest extends TestCase {
     }
 
     @Test
-    public void testFactoryDestroy() throws URISyntaxException {
+    public void testFactoryDestroy() throws Exception {
         SplitClientConfig splitClientConfig = SplitClientConfig.builder()
                 .enableDebug()
                 .impressionsMode(ImpressionsManager.Mode.DEBUG)
                 .impressionsRefreshRate(1)
                 .endpoint(ENDPOINT,EVENTS_ENDPOINT)
+                .telemetryURL(SplitClientConfig.TELEMETRY_ENDPOINT)
                 .authServiceURL(AUTH_SERVICE)
                 .setBlockUntilReadyTimeout(10000)
                 .build();

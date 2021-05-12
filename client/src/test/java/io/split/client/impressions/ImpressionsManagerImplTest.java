@@ -4,6 +4,8 @@ import io.split.client.SplitClientConfig;
 import io.split.client.dtos.KeyImpression;
 import io.split.client.dtos.TestImpressions;
 
+import io.split.telemetry.storage.InMemoryTelemetryStorage;
+import io.split.telemetry.storage.TelemetryStorage;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -27,6 +29,7 @@ import static org.mockito.Mockito.verify;
  */
 @RunWith(MockitoJUnitRunner.class)
 public class ImpressionsManagerImplTest {
+    private static final TelemetryStorage TELEMETRY_STORAGE = Mockito.mock(InMemoryTelemetryStorage.class);
 
     @Captor
     private ArgumentCaptor<List<TestImpressions>> impressionsCaptor;
@@ -45,7 +48,7 @@ public class ImpressionsManagerImplTest {
 
         ImpressionsSender senderMock = Mockito.mock(ImpressionsSender.class);
 
-        ImpressionsManagerImpl treatmentLog = ImpressionsManagerImpl.instanceForTest(null, config, senderMock, null);
+        ImpressionsManagerImpl treatmentLog = ImpressionsManagerImpl.instanceForTest(null, config, senderMock, null, TELEMETRY_STORAGE);
 
         KeyImpression ki1 = keyImpression("test1", "adil", "on", 1L, null);
         KeyImpression ki2 = keyImpression("test1", "adil", "on", 2L, 1L);
@@ -78,7 +81,7 @@ public class ImpressionsManagerImplTest {
 
         ImpressionsSender senderMock = Mockito.mock(ImpressionsSender.class);
 
-        ImpressionsManagerImpl treatmentLog = ImpressionsManagerImpl.instanceForTest(null, config, senderMock, null);
+        ImpressionsManagerImpl treatmentLog = ImpressionsManagerImpl.instanceForTest(null, config, senderMock, null, TELEMETRY_STORAGE);
 
         // These 4 unique test name will cause 4 entries but we are caping at the first 3.
         KeyImpression ki1 = keyImpression("test1", "adil", "on", 1L, null);
@@ -112,7 +115,7 @@ public class ImpressionsManagerImplTest {
 
         ImpressionsSender senderMock = Mockito.mock(ImpressionsSender.class);
 
-        ImpressionsManagerImpl treatmentLog = ImpressionsManagerImpl.instanceForTest(null, config, senderMock, null);
+        ImpressionsManagerImpl treatmentLog = ImpressionsManagerImpl.instanceForTest(null, config, senderMock, null, TELEMETRY_STORAGE);
 
         // These 4 unique test name will cause 4 entries but we are caping at the first 3.
         KeyImpression ki1 = keyImpression("test1", "adil", "on", 1L, 1L);
@@ -147,7 +150,7 @@ public class ImpressionsManagerImplTest {
                 .build();
 
         ImpressionsSender senderMock = Mockito.mock(ImpressionsSender.class);
-        ImpressionsManagerImpl treatmentLog = ImpressionsManagerImpl.instanceForTest(null, config, senderMock, null);
+        ImpressionsManagerImpl treatmentLog = ImpressionsManagerImpl.instanceForTest(null, config, senderMock, null, TELEMETRY_STORAGE);
 
         // There are no impressions to post.
 
@@ -168,7 +171,7 @@ public class ImpressionsManagerImplTest {
 
         ImpressionsSender senderMock = Mockito.mock(ImpressionsSender.class);
 
-        ImpressionsManagerImpl treatmentLog = ImpressionsManagerImpl.instanceForTest(null, config, senderMock, null);
+        ImpressionsManagerImpl treatmentLog = ImpressionsManagerImpl.instanceForTest(null, config, senderMock, null, TELEMETRY_STORAGE);
 
         // These 4 unique test name will cause 4 entries but we are caping at the first 3.
         KeyImpression ki1 = keyImpression("test1", "adil", "on", 1L, 1L);
@@ -229,7 +232,7 @@ public class ImpressionsManagerImplTest {
 
         ImpressionsSender senderMock = Mockito.mock(ImpressionsSender.class);
 
-        ImpressionsManagerImpl treatmentLog = ImpressionsManagerImpl.instanceForTest(null, config, senderMock, null);
+        ImpressionsManagerImpl treatmentLog = ImpressionsManagerImpl.instanceForTest(null, config, senderMock, null, TELEMETRY_STORAGE);
 
         // These 4 unique test name will cause 4 entries but we are caping at the first 3.
         KeyImpression ki1 = keyImpression("test1", "adil", "on", 1L, 1L);

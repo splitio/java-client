@@ -13,6 +13,7 @@ import io.split.telemetry.domain.Stats;
 import io.split.telemetry.domain.URLOverrides;
 import io.split.telemetry.domain.enums.EventsDataRecordsEnum;
 import io.split.telemetry.domain.enums.ImpressionsDataTypeEnum;
+import io.split.telemetry.storage.TelemetryRuntimeProducer;
 import io.split.telemetry.storage.TelemetryStorageConsumer;
 import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
 
@@ -33,8 +34,8 @@ public class SynchronizerMemory implements TelemetrySynchronizer{
     private SegmentCache _segmentCache;
 
     public SynchronizerMemory(CloseableHttpClient client, URI telemetryRootEndpoint, TelemetryStorageConsumer telemetryStorageConsumer, SplitCache splitCache,
-                              SegmentCache segmentCache) throws URISyntaxException {
-        _httpHttpTelemetryMemorySender = HttpTelemetryMemorySender.create(client, telemetryRootEndpoint);
+                              SegmentCache segmentCache, TelemetryRuntimeProducer telemetryRuntimeProducer) throws URISyntaxException {
+        _httpHttpTelemetryMemorySender = HttpTelemetryMemorySender.create(client, telemetryRootEndpoint, telemetryRuntimeProducer);
         _teleTelemetryStorageConsumer = telemetryStorageConsumer;
         _splitCache = splitCache;
         _segmentCache = segmentCache;

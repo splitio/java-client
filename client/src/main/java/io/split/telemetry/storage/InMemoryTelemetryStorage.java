@@ -1,10 +1,10 @@
 package io.split.telemetry.storage;
 
 import com.google.common.collect.Maps;
-import io.split.telemetry.utils.AtomicLongArray;
-import io.split.telemetry.utils.BucketCalculator;
 import io.split.telemetry.domain.*;
 import io.split.telemetry.domain.enums.*;
+import io.split.telemetry.utils.AtomicLongArray;
+import io.split.telemetry.utils.BucketCalculator;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -41,7 +41,7 @@ public class InMemoryTelemetryStorage implements  TelemetryStorage{
     private final Object _tagsLock = new Object();
     private final List<String> _tags = new ArrayList<>();
 
-    public InMemoryTelemetryStorage() throws Exception {
+    public InMemoryTelemetryStorage() {
         initMethodLatencies();
         initHttpLatencies();
         initHttpErrors();
@@ -65,7 +65,7 @@ public class InMemoryTelemetryStorage implements  TelemetryStorage{
     }
 
     @Override
-    public MethodExceptions popExceptions() throws Exception {
+    public MethodExceptions popExceptions() {
         MethodExceptions exceptions = new MethodExceptions();
         exceptions.set_treatment(_exceptionsCounters.get(MethodEnum.TREATMENT).get());
         exceptions.set_treatments(_exceptionsCounters.get(MethodEnum.TREATMENTS).get());
@@ -80,7 +80,7 @@ public class InMemoryTelemetryStorage implements  TelemetryStorage{
     }
 
     @Override
-    public MethodLatencies popLatencies() throws Exception {
+    public MethodLatencies popLatencies() {
         MethodLatencies latencies = new MethodLatencies();
         latencies.set_treatment(_methodLatencies.get(MethodEnum.TREATMENT).fetchAndClearAll());
         latencies.set_treatments(_methodLatencies.get(MethodEnum.TREATMENTS).fetchAndClearAll());
@@ -158,7 +158,7 @@ public class InMemoryTelemetryStorage implements  TelemetryStorage{
     }
 
     @Override
-    public HTTPLatencies popHTTPLatencies() throws Exception {
+    public HTTPLatencies popHTTPLatencies(){
         HTTPLatencies latencies = new HTTPLatencies();
         latencies.set_splits(_httpLatencies.get(HTTPLatenciesEnum.SPLITS).fetchAndClearAll());
         latencies.set_segments(_httpLatencies.get(HTTPLatenciesEnum.SEGMENTS).fetchAndClearAll());
@@ -277,7 +277,7 @@ public class InMemoryTelemetryStorage implements  TelemetryStorage{
         _sdkRecords.replace(SdkRecordsEnum.SESSION, new AtomicLong(sessionLength));
     }
 
-    private void initMethodLatencies() throws Exception {
+    private void initMethodLatencies() {
         _methodLatencies.put(MethodEnum.TREATMENT, new AtomicLongArray(MAX_LATENCY_BUCKET_COUNT));
         _methodLatencies.put(MethodEnum.TREATMENTS, new AtomicLongArray(MAX_LATENCY_BUCKET_COUNT));
         _methodLatencies.put(MethodEnum.TREATMENT_WITH_CONFIG, new AtomicLongArray(MAX_LATENCY_BUCKET_COUNT));
@@ -285,7 +285,7 @@ public class InMemoryTelemetryStorage implements  TelemetryStorage{
         _methodLatencies.put(MethodEnum.TRACK, new AtomicLongArray(MAX_LATENCY_BUCKET_COUNT));
     }
 
-    private void initHttpLatencies() throws Exception {
+    private void initHttpLatencies() {
         _httpLatencies.put(HTTPLatenciesEnum.SPLITS, new AtomicLongArray(MAX_LATENCY_BUCKET_COUNT));
         _httpLatencies.put(HTTPLatenciesEnum.SEGMENTS, new AtomicLongArray(MAX_LATENCY_BUCKET_COUNT));
         _httpLatencies.put(HTTPLatenciesEnum.IMPRESSIONS, new AtomicLongArray(MAX_LATENCY_BUCKET_COUNT));

@@ -4,6 +4,7 @@ import com.google.common.collect.Maps;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import io.split.cache.SegmentCache;
 import io.split.engine.SDKReadinessGates;
+import io.split.telemetry.storage.TelemetryRuntimeProducer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -34,10 +35,12 @@ public class SegmentSynchronizationTaskImp implements SegmentSynchronizationTask
     private final SegmentCache _segmentCache;
     private final SDKReadinessGates _gates;
     private final ScheduledExecutorService _scheduledExecutorService;
+    private final TelemetryRuntimeProducer _telemetryRuntimeProducer;
 
     private ScheduledFuture<?> _scheduledFuture;
 
-    public SegmentSynchronizationTaskImp(SegmentChangeFetcher segmentChangeFetcher, long refreshEveryNSeconds, int numThreads, SDKReadinessGates gates, SegmentCache segmentCache) {
+    public SegmentSynchronizationTaskImp(SegmentChangeFetcher segmentChangeFetcher, long refreshEveryNSeconds, int numThreads, SDKReadinessGates gates, SegmentCache segmentCache,
+                                         TelemetryRuntimeProducer telemetryRuntimeProducer) {
         _segmentChangeFetcher = checkNotNull(segmentChangeFetcher);
 
         checkArgument(refreshEveryNSeconds >= 0L);
@@ -55,6 +58,7 @@ public class SegmentSynchronizationTaskImp implements SegmentSynchronizationTask
         _running = new AtomicBoolean(false);
 
         _segmentCache = checkNotNull(segmentCache);
+        _telemetryRuntimeProducer = checkNotNull(telemetryRuntimeProducer);
     }
 
     @Override
@@ -84,7 +88,7 @@ public class SegmentSynchronizationTaskImp implements SegmentSynchronizationTask
                 _log.error("Unable to register segment " + segmentName);
             }
 
-            segment = new SegmentFetcherImp(segmentName, _segmentChangeFetcher, _gates, _segmentCache);
+            segment = new SegmentFetcherImp(segmentName, _segmentChangeFetcher, _gates, _segmentCache, _telemetryRuntimeProducer);
 
             if (_running.get()) {
                 _scheduledExecutorService.submit(segment::fetchAll);

@@ -8,6 +8,9 @@ import io.split.engine.SDKReadinessGates;
 import io.split.engine.experiments.SplitFetcher;
 import io.split.engine.experiments.SplitSynchronizationTask;
 import io.split.engine.segments.SegmentSynchronizationTaskImp;
+import io.split.telemetry.domain.StreamingEvent;
+import io.split.telemetry.domain.enums.StreamEventsEnum;
+import io.split.telemetry.storage.TelemetryRuntimeProducer;
 import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -22,6 +25,8 @@ import static com.google.common.base.Preconditions.checkNotNull;
 
 public class SyncManagerImp implements SyncManager {
     private static final Logger _log = LoggerFactory.getLogger(SyncManager.class);
+    private static final int STREAMING_STREAMING_EVENT = 0;
+    private static final int POLLING_STREAMING_EVENT = 1;
 
     private final AtomicBoolean _streamingEnabledConfig;
     private final Synchronizer _synchronizer;
@@ -33,6 +38,7 @@ public class SyncManagerImp implements SyncManager {
     private final SDKReadinessGates _gates;
     private Future<?> _pushStatusMonitorTask;
     private Backoff _backoff;
+    private final TelemetryRuntimeProducer _telemetryRuntimeProducer;
 
     @VisibleForTesting
     /* package private */ SyncManagerImp(boolean streamingEnabledConfig,
@@ -40,7 +46,7 @@ public class SyncManagerImp implements SyncManager {
                                          PushManager pushManager,
                                          LinkedBlockingQueue<PushManager.Status> pushMessages,
                                          int authRetryBackOffBase,
-                                         SDKReadinessGates gates) {
+                                         SDKReadinessGates gates, TelemetryRuntimeProducer telemetryRuntimeProducer) {
         _streamingEnabledConfig = new AtomicBoolean(streamingEnabledConfig);
         _synchronizer = checkNotNull(synchronizer);
         _pushManager = checkNotNull(pushManager);
@@ -56,6 +62,7 @@ public class SyncManagerImp implements SyncManager {
                 .build());
         _backoff = new Backoff(authRetryBackOffBase);
         _gates = checkNotNull(gates);
+        _telemetryRuntimeProducer = checkNotNull(telemetryRuntimeProducer);
     }
 
     public static SyncManagerImp build(boolean streamingEnabledConfig,
@@ -70,17 +77,17 @@ public class SyncManagerImp implements SyncManager {
                                        CloseableHttpClient sseHttpClient,
                                        SegmentCache segmentCache,
                                        int streamingRetryDelay,
-                                       SDKReadinessGates gates) {
+                                       SDKReadinessGates gates,
+                                       TelemetryRuntimeProducer telemetryRuntimeProducer) {
         LinkedBlockingQueue<PushManager.Status> pushMessages = new LinkedBlockingQueue<>();
         Synchronizer synchronizer = new SynchronizerImp(splitSynchronizationTask, splitFetcher, segmentSynchronizationTaskImp, splitCache, segmentCache, streamingRetryDelay, gates);
-        PushManager pushManager = PushManagerImp.build(synchronizer, streamingServiceUrl, authUrl, httpClient, pushMessages, sseHttpClient);
-        return new SyncManagerImp(streamingEnabledConfig, synchronizer, pushManager, pushMessages, authRetryBackOffBase, gates);
+        PushManager pushManager = PushManagerImp.build(synchronizer, streamingServiceUrl, authUrl, httpClient, pushMessages, sseHttpClient, telemetryRuntimeProducer);
+        return new SyncManagerImp(streamingEnabledConfig, synchronizer, pushManager, pushMessages, authRetryBackOffBase, gates, telemetryRuntimeProducer);
     }
 
     @Override
     public void start() {
         _synchronizer.syncAll();
-
         if (_streamingEnabledConfig.get()) {
             startStreamingMode();
         } else {
@@ -101,6 +108,7 @@ public class SyncManagerImp implements SyncManager {
             _pushStatusMonitorTask = _executorService.submit(this::incomingPushStatusHandler);
         }
         _pushManager.start();
+        _telemetryRuntimeProducer.recordStreamingEvents(new StreamingEvent(StreamEventsEnum.SYNC_MODE_UPDATE.get_type(), STREAMING_STREAMING_EVENT, System.currentTimeMillis()));
     }
 
     private void startPollingMode() {
@@ -112,6 +120,7 @@ public class SyncManagerImp implements SyncManager {
 
         _log.debug("Starting in polling mode ...");
         _synchronizer.startPeriodicFetching();
+        _telemetryRuntimeProducer.recordStreamingEvents(new StreamingEvent(StreamEventsEnum.SYNC_MODE_UPDATE.get_type(), POLLING_STREAMING_EVENT, System.currentTimeMillis()));
     }
 
     @VisibleForTesting

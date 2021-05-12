@@ -6,6 +6,8 @@ import io.split.engine.SDKReadinessGates;
 import io.split.cache.SplitCache;
 import io.split.engine.experiments.ParsedSplit;
 import io.split.inputValidation.SplitNameValidator;
+import io.split.telemetry.domain.enums.MethodEnum;
+import io.split.telemetry.storage.TelemetryConfigProducer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -26,18 +28,25 @@ public class SplitManagerImpl implements SplitManager {
     private final SplitCache _splitCache;
     private final SplitClientConfig _config;
     private final SDKReadinessGates _gates;
+    private final TelemetryConfigProducer _telemetryConfigProducer;
 
 
     public SplitManagerImpl(SplitCache splitCache,
                             SplitClientConfig config,
-                            SDKReadinessGates gates) {
+                            SDKReadinessGates gates,
+                            TelemetryConfigProducer telemetryConfigProducer) {
         _config = Preconditions.checkNotNull(config);
         _splitCache  = Preconditions.checkNotNull(splitCache);
         _gates = Preconditions.checkNotNull(gates);
+        _telemetryConfigProducer = telemetryConfigProducer;
     }
 
     @Override
     public List<SplitView> splits() {
+        if (!_gates.isSDKReadyNow()) { {
+            _log.warn("splits: the SDK is not ready, results may be incorrect. Make sure to wait for SDK readiness before using this method");
+            _telemetryConfigProducer.recordNonReadyUsage();
+        }}
         List<SplitView> result = new ArrayList<>();
         Collection<ParsedSplit> parsedSplits = _splitCache.getAll();
         for (ParsedSplit split : parsedSplits) {
@@ -49,6 +58,10 @@ public class SplitManagerImpl implements SplitManager {
 
     @Override
     public SplitView split(String featureName) {
+        if (!_gates.isSDKReadyNow()) { {
+            _log.warn("split: the SDK is not ready, results may be incorrect. Make sure to wait for SDK readiness before using this method");
+            _telemetryConfigProducer.recordNonReadyUsage();
+        }}
         Optional<String> result = SplitNameValidator.isValid(featureName, "split");
         if (!result.isPresent()) {
             return null;
@@ -69,6 +82,10 @@ public class SplitManagerImpl implements SplitManager {
 
     @Override
     public List<String> splitNames() {
+        if (!_gates.isSDKReadyNow()) { {
+            _log.warn("splitNames: the SDK is not ready, results may be incorrect. Make sure to wait for SDK readiness before using this method");
+            _telemetryConfigProducer.recordNonReadyUsage();
+        }}
         List<String> result = new ArrayList<>();
         Collection<ParsedSplit> parsedSplits = _splitCache.getAll();
         for (ParsedSplit split : parsedSplits) {
@@ -84,6 +101,7 @@ public class SplitManagerImpl implements SplitManager {
             throw new IllegalArgumentException("setBlockUntilReadyTimeout must be positive but in config was: " + _config.blockUntilReady());
         }
         if (!_gates.isSDKReady(_config.blockUntilReady())) {
+            _telemetryConfigProducer.recordBURTimeout();
             throw new TimeoutException("SDK was not ready in " + _config.blockUntilReady()+ " milliseconds");
         }
     }

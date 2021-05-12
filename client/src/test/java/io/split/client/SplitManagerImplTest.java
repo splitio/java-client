@@ -10,6 +10,9 @@ import io.split.engine.experiments.ParsedSplit;
 import io.split.engine.matchers.AllKeysMatcher;
 import io.split.engine.matchers.CombiningMatcher;
 import io.split.grammar.Treatments;
+import io.split.telemetry.storage.InMemoryTelemetryStorage;
+import io.split.telemetry.storage.TelemetryStorage;
+import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mockito;
 
@@ -23,13 +26,17 @@ import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.nullValue;
 import static org.junit.Assert.assertThat;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 public class SplitManagerImplTest {
 
     private SplitClientConfig config = SplitClientConfig.builder().setBlockUntilReadyTimeout(100).build();
+    private static TelemetryStorage TELEMETRY_STORAGE = Mockito.mock(InMemoryTelemetryStorage.class);
 
+    @Before
+    public void updateTelemetryStorage() {
+        TELEMETRY_STORAGE = Mockito.mock(InMemoryTelemetryStorage.class);
+    }
     @Test
     public void splitCallWithNonExistentSplit() {
         String nonExistent = "nonExistent";
@@ -38,7 +45,7 @@ public class SplitManagerImplTest {
 
         SplitManagerImpl splitManager = new SplitManagerImpl(splitCache,
                 Mockito.mock(SplitClientConfig.class),
-                Mockito.mock(SDKReadinessGates.class));
+                Mockito.mock(SDKReadinessGates.class), TELEMETRY_STORAGE);
         assertThat(splitManager.split("nonExistent"), is(nullValue()));
     }
 
@@ -52,7 +59,7 @@ public class SplitManagerImplTest {
 
         SplitManagerImpl splitManager = new SplitManagerImpl(splitCache,
                 Mockito.mock(SplitClientConfig.class),
-                Mockito.mock(SDKReadinessGates.class));
+                Mockito.mock(SDKReadinessGates.class), TELEMETRY_STORAGE);
         SplitView theOne = splitManager.split(existent);
         assertThat(theOne.name, is(equalTo(response.feature())));
         assertThat(theOne.changeNumber, is(equalTo(response.changeNumber())));
@@ -77,7 +84,7 @@ public class SplitManagerImplTest {
 
         SplitManagerImpl splitManager = new SplitManagerImpl(splitCache,
                 Mockito.mock(SplitClientConfig.class),
-                Mockito.mock(SDKReadinessGates.class));
+                Mockito.mock(SDKReadinessGates.class), TELEMETRY_STORAGE);
         SplitView theOne = splitManager.split(existent);
         assertThat(theOne.name, is(equalTo(response.feature())));
         assertThat(theOne.changeNumber, is(equalTo(response.changeNumber())));
@@ -92,23 +99,28 @@ public class SplitManagerImplTest {
     public void splitsCallWithNoSplit() {
         SplitCache splitCache = Mockito.mock(SplitCache.class);
         Mockito.when(splitCache.getAll()).thenReturn(Lists.<ParsedSplit>newArrayList());
+        SDKReadinessGates gates = Mockito.mock(SDKReadinessGates.class);
+        Mockito.when(gates.isSDKReadyNow()).thenReturn(false);
         SplitManagerImpl splitManager = new SplitManagerImpl(splitCache,
                 Mockito.mock(SplitClientConfig.class),
-                Mockito.mock(SDKReadinessGates.class));
+                gates, TELEMETRY_STORAGE);
         assertThat(splitManager.splits(), is(empty()));
+        verify(TELEMETRY_STORAGE, times(1)).recordNonReadyUsage();
     }
 
     @Test
     public void splitsCallWithSplit() {
         SplitCache splitCache = Mockito.mock(SplitCache.class);
         List<ParsedSplit> parsedSplits = Lists.newArrayList();
+        SDKReadinessGates gates = Mockito.mock(SDKReadinessGates.class);
+        Mockito.when(gates.isSDKReadyNow()).thenReturn(false);
         ParsedSplit response = ParsedSplit.createParsedSplitForTests("FeatureName", 123, true, "off", Lists.newArrayList(getTestCondition("off")), "traffic", 456L, 1);
         parsedSplits.add(response);
 
         Mockito.when(splitCache.getAll()).thenReturn(parsedSplits);
         SplitManagerImpl splitManager = new SplitManagerImpl(splitCache,
                 Mockito.mock(SplitClientConfig.class),
-                Mockito.mock(SDKReadinessGates.class));
+                gates, TELEMETRY_STORAGE);
         List<SplitView> splits = splitManager.splits();
         assertThat(splits.size(), is(equalTo(1)));
         assertThat(splits.get(0).name, is(equalTo(response.feature())));
@@ -117,16 +129,20 @@ public class SplitManagerImplTest {
         assertThat(splits.get(0).trafficType, is(equalTo(response.trafficTypeName())));
         assertThat(splits.get(0).treatments.size(), is(equalTo(1)));
         assertThat(splits.get(0).treatments.get(0), is(equalTo("off")));
+        verify(TELEMETRY_STORAGE, times(1)).recordNonReadyUsage();
     }
 
     @Test
     public void splitNamesCallWithNoSplit() {
         SplitCache splitCache = Mockito.mock(SplitCache.class);
         Mockito.when(splitCache.getAll()).thenReturn(Lists.<ParsedSplit>newArrayList());
+        SDKReadinessGates gates = Mockito.mock(SDKReadinessGates.class);
+        Mockito.when(gates.isSDKReadyNow()).thenReturn(false);
         SplitManagerImpl splitManager = new SplitManagerImpl(splitCache,
                 Mockito.mock(SplitClientConfig.class),
-                Mockito.mock(SDKReadinessGates.class));
+                gates, TELEMETRY_STORAGE);
         assertThat(splitManager.splitNames(), is(empty()));
+        verify(TELEMETRY_STORAGE, times(1)).recordNonReadyUsage();
     }
 
     @Test
@@ -139,7 +155,7 @@ public class SplitManagerImplTest {
         Mockito.when(splitCache.getAll()).thenReturn(parsedSplits);
         SplitManagerImpl splitManager = new SplitManagerImpl(splitCache,
                 Mockito.mock(SplitClientConfig.class),
-                Mockito.mock(SDKReadinessGates.class));
+                Mockito.mock(SDKReadinessGates.class), TELEMETRY_STORAGE);
         List<String> splitNames = splitManager.splitNames();
         assertThat(splitNames.size(), is(equalTo(1)));
         assertThat(splitNames.get(0), is(equalTo(response.feature())));
@@ -151,7 +167,7 @@ public class SplitManagerImplTest {
         when(ready.isSDKReady(100)).thenReturn(true);
         SplitManagerImpl splitManager = new SplitManagerImpl(mock(SplitCache.class),
                 config,
-                ready);
+                ready, TELEMETRY_STORAGE);
 
         splitManager.blockUntilReady();
     }
@@ -163,9 +179,10 @@ public class SplitManagerImplTest {
 
         SplitManagerImpl splitManager = new SplitManagerImpl(mock(SplitCache.class),
                 config,
-                ready);
+                ready, TELEMETRY_STORAGE);
 
         splitManager.blockUntilReady();
+        verify(TELEMETRY_STORAGE, times(1)).recordBURTimeout();
     }
 
     private ParsedCondition getTestCondition(String treatment) {

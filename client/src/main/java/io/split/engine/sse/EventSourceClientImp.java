@@ -7,6 +7,7 @@ import io.split.engine.sse.dtos.SegmentQueueDto;
 import io.split.engine.sse.exceptions.EventParsingException;
 import io.split.engine.sse.workers.SplitsWorker;
 import io.split.engine.sse.workers.Worker;
+import io.split.telemetry.storage.TelemetryRuntimeProducer;
 import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
 import org.apache.hc.core5.net.URIBuilder;
 import org.slf4j.Logger;
@@ -35,7 +36,8 @@ public class EventSourceClientImp implements EventSourceClient {
                                                NotificationParser notificationParser,
                                                NotificationProcessor notificationProcessor,
                                                PushStatusTracker pushStatusTracker,
-                                               CloseableHttpClient sseHttpClient) {
+                                               CloseableHttpClient sseHttpClient,
+                                               TelemetryRuntimeProducer telemetryRuntimeProducer) {
         _baseStreamingUrl = checkNotNull(baseStreamingUrl);
         _notificationParser = checkNotNull(notificationParser);
         _notificationProcessor = checkNotNull(notificationProcessor);
@@ -44,7 +46,7 @@ public class EventSourceClientImp implements EventSourceClient {
         _sseClient = new SSEClient(
                 inboundEvent -> { onMessage(inboundEvent); return null; },
                 status -> { _pushStatusTracker.handleSseStatus(status); return null; },
-                sseHttpClient);
+                sseHttpClient, telemetryRuntimeProducer);
         _firstEvent = new AtomicBoolean();
     }
 
@@ -52,12 +54,13 @@ public class EventSourceClientImp implements EventSourceClient {
                                              SplitsWorker splitsWorker,
                                              Worker<SegmentQueueDto> segmentWorker,
                                              PushStatusTracker pushStatusTracker,
-                                             CloseableHttpClient sseHttpClient) {
+                                             CloseableHttpClient sseHttpClient, TelemetryRuntimeProducer telemetryRuntimeProducer) {
         return new EventSourceClientImp(baseStreamingUrl,
                 new NotificationParserImp(),
                 NotificationProcessorImp.build(splitsWorker, segmentWorker, pushStatusTracker),
                 pushStatusTracker,
-                sseHttpClient);
+                sseHttpClient,
+                telemetryRuntimeProducer);
     }
 
     @Override

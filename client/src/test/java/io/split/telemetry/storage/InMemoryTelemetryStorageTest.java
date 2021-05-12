@@ -192,10 +192,7 @@ public class InMemoryTelemetryStorageTest{
         Assert.assertEquals(1, httpErrors.get_token().get(403l).intValue());
 
         //Streaming events
-        StreamingEvent streamingEvent = new StreamingEvent();
-        streamingEvent.set_data(290);
-        streamingEvent.set_type(1);
-        streamingEvent.setTimestamp(91218);
+        StreamingEvent streamingEvent = new StreamingEvent(1, 290, 91218);
         telemetryStorage.recordStreamingEvents(streamingEvent);
 
         List<StreamingEvent> streamingEvents = telemetryStorage.popStreamingEvents();

@@ -1,6 +1,8 @@
 package io.split.client.impressions;
 
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
+import io.split.telemetry.domain.enums.LastSynchronizationRecordsEnum;
+import io.split.telemetry.storage.TelemetryRuntimeProducer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -9,6 +11,8 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
+
+import static com.google.common.base.Preconditions.checkNotNull;
 
 /**
  * A wrapper around an ImpressionListener provided by the customer. The purpose
@@ -44,12 +48,14 @@ public class AsynchronousImpressionListener implements ImpressionListener {
     @Override
     public void log(final Impression impression) {
         try {
+            long initTime = System.currentTimeMillis();
             _executor.execute(new Runnable() {
                 @Override
                 public void run() {
                     _delegate.log(impression);
                 }
             });
+            long endTime = System.currentTimeMillis();
         }
         catch (Exception e) {
             _log.warn("Unable to send impression to impression listener", e);
