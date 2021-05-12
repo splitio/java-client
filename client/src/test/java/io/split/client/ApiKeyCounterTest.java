@@ -1,7 +1,10 @@
 package io.split.client;
 
 import junit.framework.TestCase;
+import org.junit.Assert;
 import org.junit.Test;
+
+import java.util.Map;
 
 public class ApiKeyCounterTest extends TestCase {
 
@@ -46,5 +49,18 @@ public class ApiKeyCounterTest extends TestCase {
         assertEquals(1, ApiKeyCounter.getApiKeyCounterInstance().getCount(SECOND_KEY));
         ApiKeyCounter.getApiKeyCounterInstance().remove(FIRST_KEY);
         ApiKeyCounter.getApiKeyCounterInstance().remove(SECOND_KEY);
+    }
+
+    @Test
+    public void testFactoryInstances() {
+        ApiKeyCounter.getApiKeyCounterInstance().add(FIRST_KEY);
+        ApiKeyCounter.getApiKeyCounterInstance().add(FIRST_KEY);
+        ApiKeyCounter.getApiKeyCounterInstance().add(FIRST_KEY);
+        ApiKeyCounter.getApiKeyCounterInstance().add(SECOND_KEY);
+        ApiKeyCounter.getApiKeyCounterInstance().add(SECOND_KEY);
+
+        Map<String, Long> factoryInstances = ApiKeyCounter.getApiKeyCounterInstance().getFactoryInstances();
+        Assert.assertEquals(2, factoryInstances.size());
+        Assert.assertEquals(3, factoryInstances.get(FIRST_KEY).intValue());
     }
 }

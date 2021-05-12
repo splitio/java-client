@@ -8,7 +8,6 @@ import io.split.client.interceptors.ClientKeyInterceptorFilter;
 import io.split.client.interceptors.GzipDecoderResponseInterceptor;
 import io.split.client.interceptors.GzipEncoderRequestInterceptor;
 import io.split.client.interceptors.SdkMetadataInterceptorFilter;
-import io.split.client.metrics.HttpMetrics;
 import io.split.cache.InMemoryCacheImp;
 import io.split.cache.SplitCache;
 import io.split.engine.evaluator.Evaluator;
@@ -29,6 +28,7 @@ import io.split.integrations.IntegrationsConfig;
 import io.split.telemetry.storage.InMemoryTelemetryStorage;
 import io.split.telemetry.storage.TelemetryStorage;
 import io.split.telemetry.synchronizer.SynchronizerMemory;
+import io.split.telemetry.synchronizer.TelemetryConfigInitializer;
 import io.split.telemetry.synchronizer.TelemetrySyncTask;
 import io.split.telemetry.synchronizer.TelemetrySynchronizer;
 import org.apache.hc.client5.http.auth.AuthScope;
@@ -95,6 +95,7 @@ public class SplitFactoryImpl implements SplitFactory {
     private final TelemetrySynchronizer _telemetrySynchronizer;
     private final TelemetrySyncTask _telemetrySyncTask;
     private final long _startTime;
+    private final TelemetryConfigInitializer _telemetryConfigInitializer;
 
     public SplitFactoryImpl(String apiToken, SplitClientConfig config) throws URISyntaxException {
         _startTime = System.currentTimeMillis();
@@ -126,6 +127,8 @@ public class SplitFactoryImpl implements SplitFactory {
         _splitCache = new InMemoryCacheImp();
         _telemetrySynchronizer = new SynchronizerMemory(_httpclient, URI.create(config.get_telemetryURL()), _telemetryStorage, _splitCache, _segmentCache, _telemetryStorage);
         _telemetrySyncTask = new TelemetrySyncTask(config.get_telemetryRefreshRate(), _telemetrySynchronizer);
+        _telemetryConfigInitializer = new TelemetryConfigInitializer(_telemetrySynchronizer,_gates,config);
+
 
         // Segments
         _segmentSynchronizationTaskImp = buildSegments(config);
