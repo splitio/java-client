@@ -21,8 +21,6 @@ import static com.google.common.base.Preconditions.checkNotNull;
 
 public class SynchronizerImp implements Synchronizer {
 
-    private static final int MAX_ATTEMPTS = 10;
-
     private static final Logger _log = LoggerFactory.getLogger(Synchronizer.class);
     private final SplitSynchronizationTask _splitSynchronizationTask;
     private final SplitFetcher _splitFetcher;
@@ -31,7 +29,10 @@ public class SynchronizerImp implements Synchronizer {
     private final SplitCache _splitCache;
     private final SegmentCache _segmentCache;
     private final int _onDemandFetchRetryDelayMs;
+    private final int _onDemandFetchMaxRetries;
+    private final int _failedAttemptsBeforeLogging;
     private final boolean _cdnResponseHeadersLogging;
+
     private final Gson gson = new GsonBuilder().create();
 
     public SynchronizerImp(SplitSynchronizationTask splitSynchronizationTask,
@@ -40,6 +41,8 @@ public class SynchronizerImp implements Synchronizer {
                            SplitCache splitCache,
                            SegmentCache segmentCache,
                            int onDemandFetchRetryDelayMs,
+                           int onDemandFetchMaxRetries,
+                           int failedAttemptsBeforeLogging,
                            boolean cdnResponseHeadersLogging) {
         _splitSynchronizationTask = checkNotNull(splitSynchronizationTask);
         _splitFetcher = checkNotNull(splitFetcher);
@@ -48,6 +51,8 @@ public class SynchronizerImp implements Synchronizer {
         _segmentCache = checkNotNull(segmentCache);
         _onDemandFetchRetryDelayMs = checkNotNull(onDemandFetchRetryDelayMs);
         _cdnResponseHeadersLogging = cdnResponseHeadersLogging;
+        _onDemandFetchMaxRetries = onDemandFetchMaxRetries;
+        _failedAttemptsBeforeLogging = failedAttemptsBeforeLogging;
 
         ThreadFactory splitsThreadFactory = new ThreadFactoryBuilder()
                 .setDaemon(true)
@@ -92,15 +97,15 @@ public class SynchronizerImp implements Synchronizer {
                 .responseHeadersCallback(_cdnResponseHeadersLogging ? captor::handle : null)
                 .build();
 
-        int remainingAttempts = MAX_ATTEMPTS;
+        int remainingAttempts = _onDemandFetchMaxRetries;
         while(true) {
             remainingAttempts--;
             _splitFetcher.forceRefresh(opts);
             if (targetChangeNumber <= _splitCache.getChangeNumber()) {
-                _log.debug(String.format("Refresh completed in %s attempts.", MAX_ATTEMPTS - remainingAttempts));
+                _log.debug(String.format("Refresh completed in %s attempts.", _onDemandFetchMaxRetries - remainingAttempts));
                 break;
             } else if (remainingAttempts <= 0) {
-                _log.info(String.format("No changes fetched after %s attempts.", MAX_ATTEMPTS));
+                _log.info(String.format("No changes fetched after %s attempts.", _onDemandFetchMaxRetries));
                 break;
             }
             try {
@@ -111,7 +116,8 @@ public class SynchronizerImp implements Synchronizer {
             }
         }
 
-        if (_cdnResponseHeadersLogging && remainingAttempts <= (MAX_ATTEMPTS / 2)) {
+        if (_cdnResponseHeadersLogging &&
+                (_onDemandFetchMaxRetries - remainingAttempts) > _failedAttemptsBeforeLogging) {
             _log.info(String.format("CDN Debug headers: %s", gson.toJson(captor.get())));
         }
     }
@@ -127,7 +133,7 @@ public class SynchronizerImp implements Synchronizer {
     @Override
     public void refreshSegment(String segmentName, long changeNumber) {
         int retries = 1;
-        while(changeNumber > _segmentCache.getChangeNumber(segmentName) && retries <= MAX_ATTEMPTS) {
+        while(changeNumber > _segmentCache.getChangeNumber(segmentName) && retries <= _onDemandFetchMaxRetries) {
             SegmentFetcher fetcher = _segmentSynchronizationTaskImp.getFetcher(segmentName);
             try{
                 fetcher.fetch(true);
