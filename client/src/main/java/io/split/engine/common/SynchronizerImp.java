@@ -21,7 +21,10 @@ import static com.google.common.base.Preconditions.checkNotNull;
 
 public class SynchronizerImp implements Synchronizer {
 
-    private static final long ON_DEMAND_FETCH_BACKOFF_BASE_MS = 10000; //backoff base starting at 10 seconds (!)
+    // The boxing here IS necessary, so that the constants are not inlined by the compiler
+    // and can be modified for the test (we don't want to wait that much in an UT)
+    private static final long ON_DEMAND_FETCH_BACKOFF_BASE_MS = new Long(10000); //backoff base starting at 10 seconds (!)
+    private static final long ON_DEMAND_FETCH_BACKOFF_MAX_WAIT_MS = new Long(60000); // don't sleep for more than 1 second
     private static final int ON_DEMAND_FETCH_BACKOFF_MAX_RETRIES = 10;
 
     private static final Logger _log = LoggerFactory.getLogger(Synchronizer.class);
@@ -52,7 +55,7 @@ public class SynchronizerImp implements Synchronizer {
         _segmentSynchronizationTaskImp = checkNotNull(segmentSynchronizationTaskImp);
         _splitCache = checkNotNull(splitCache);
         _segmentCache = checkNotNull(segmentCache);
-        _onDemandFetchRetryDelayMs = checkNotNull(onDemandFetchRetryDelayMs);
+        _onDemandFetchRetryDelayMs = onDemandFetchRetryDelayMs;
         _cdnResponseHeadersLogging = cdnResponseHeadersLogging;
         _onDemandFetchMaxRetries = onDemandFetchMaxRetries;
         _failedAttemptsBeforeLogging = failedAttemptsBeforeLogging;
@@ -115,7 +118,8 @@ public class SynchronizerImp implements Synchronizer {
                 return new SyncResult(false, remainingAttempts);
             }
             try {
-                Thread.sleep(nextWaitMs.apply(null));
+                long howLong = nextWaitMs.apply(null);
+                Thread.sleep(howLong);
             } catch (InterruptedException e) {
                 Thread.currentThread().interrupt();
                 _log.debug("Error trying to sleep current Thread.");
@@ -155,10 +159,10 @@ public class SynchronizerImp implements Synchronizer {
         }
 
         FetchOptions withCdnBypass = new FetchOptions.Builder(opts).cdnBypass(true).build();
-        Backoff backoff = new Backoff(ON_DEMAND_FETCH_BACKOFF_BASE_MS);
+        Backoff backoff = new Backoff(ON_DEMAND_FETCH_BACKOFF_BASE_MS, ON_DEMAND_FETCH_BACKOFF_MAX_WAIT_MS);
         SyncResult withCDNBypassed = attemptSync(targetChangeNumber, withCdnBypass,
                 (discard) -> backoff.interval(), ON_DEMAND_FETCH_BACKOFF_MAX_RETRIES);
-        
+
         if (_cdnResponseHeadersLogging) {
             logCdnHeaders(_onDemandFetchMaxRetries + ON_DEMAND_FETCH_BACKOFF_MAX_RETRIES,
                     withCDNBypassed.remainingAttempts(), captor.get());

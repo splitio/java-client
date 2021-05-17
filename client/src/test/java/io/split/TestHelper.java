@@ -26,7 +26,7 @@ public class TestHelper {
         return httpClientMock;
     }
 
-    private static CloseableHttpResponse classicResponseToCloseableMock(ClassicHttpResponse mocked) throws InvocationTargetException, IllegalAccessException, NoSuchMethodException {
+    public static CloseableHttpResponse classicResponseToCloseableMock(ClassicHttpResponse mocked) throws InvocationTargetException, IllegalAccessException, NoSuchMethodException {
         Method adaptMethod = CloseableHttpResponse.class.getDeclaredMethod("adapt", ClassicHttpResponse.class);
         adaptMethod.setAccessible(true);
         return (CloseableHttpResponse) adaptMethod.invoke(null, mocked);
