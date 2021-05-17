@@ -31,6 +31,7 @@ public final class HttpSplitChangeFetcher implements SplitChangeFetcher {
     private static final Logger _log = LoggerFactory.getLogger(HttpSplitChangeFetcher.class);
 
     private static final String SINCE = "since";
+    private static final String TILL = "till";
     private static final String PREFIX = "splitChangeFetcher";
 
     private static final String HEADER_CACHE_CONTROL_NAME = "Cache-Control";
@@ -58,6 +59,10 @@ public final class HttpSplitChangeFetcher implements SplitChangeFetcher {
         checkNotNull(_target);
     }
 
+    long makeRandomTill() {
+        return (-1)*(int)Math.floor(Math.random()*(Math.pow(2, 63)));
+    }
+
     @Override
     public SplitChange fetch(long since, FetchOptions options) {
 
@@ -66,7 +71,11 @@ public final class HttpSplitChangeFetcher implements SplitChangeFetcher {
         CloseableHttpResponse response = null;
 
         try {
-            URI uri = new URIBuilder(_target).addParameter(SINCE, "" + since).build();
+            URIBuilder uriBuilder = new URIBuilder(_target).addParameter(SINCE, "" + since);
+            if (options.cdnBypass()) {
+                uriBuilder.addParameter(TILL, "" + makeRandomTill());
+            }
+            URI uri = uriBuilder.build();
 
             HttpGet request = new HttpGet(uri);
             if(options.cacheControlHeadersEnabled()) {
