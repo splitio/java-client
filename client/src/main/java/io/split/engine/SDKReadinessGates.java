@@ -35,17 +35,7 @@ public class SDKReadinessGates {
      * @throws InterruptedException if this operation was interrupted.
      */
     public boolean isSDKReady(long milliseconds) throws InterruptedException {
-        long end = System.currentTimeMillis() + milliseconds;
-        long timeLeft = milliseconds;
-
-        boolean splits = areSplitsReady(timeLeft);
-        if (!splits) {
-            return false;
-        }
-
-        timeLeft = end - System.currentTimeMillis();
-
-        return areSegmentsReady(timeLeft);
+        return _internalReady.await(milliseconds, TimeUnit.MILLISECONDS);
     }
 
     public boolean isSDKReadyNow() {

@@ -33,5 +33,5 @@ public interface SegmentSynchronizationTask extends Runnable {
     /**
      * fetch every Segment Synchronous
      */
-    void fetchAllSynchronous();
+    boolean fetchAllSynchronous();
 }

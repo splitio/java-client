@@ -165,7 +165,8 @@ public class SegmentSynchronizationTaskImp implements SegmentSynchronizationTask
     }
 
     @Override
-    public void fetchAllSynchronous() {
+    public boolean fetchAllSynchronous() {
+        AtomicBoolean fetchAllStatus = new AtomicBoolean(true);
         _segmentFetchers
                 .entrySet()
                 .stream().map(e -> _scheduledExecutorService.submit(e.getValue()::runWhitCacheHeader))
@@ -174,7 +175,9 @@ public class SegmentSynchronizationTaskImp implements SegmentSynchronizationTask
                     try {
                         future.get();
                     } catch (Exception ex) {
+                        fetchAllStatus.set(false);
                         _log.error(ex.getMessage());
                     }});
+        return fetchAllStatus.get();
     }
 }

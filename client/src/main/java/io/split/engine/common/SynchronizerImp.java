@@ -11,10 +11,8 @@ import io.split.engine.segments.SegmentSynchronizationTask;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.ThreadFactory;
-import java.util.concurrent.TimeUnit;
+import java.util.concurrent.*;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
@@ -54,12 +52,13 @@ public class SynchronizerImp implements Synchronizer {
     }
 
     @Override
-    public void syncAll() {
-        _syncAllScheduledExecutorService.schedule(() -> {
-            _splitFetcher.fetchAll(true);
-            _segmentSynchronizationTaskImp.fetchAllSynchronous();
-            _gates.sdkInternalReady();
-        }, 0, TimeUnit.SECONDS);
+    public boolean syncAll() {
+        AtomicBoolean syncStatus = new AtomicBoolean(false);
+        if(_splitFetcher.fetchAll(true) &&
+        _segmentSynchronizationTaskImp.fetchAllSynchronous()) {
+            syncStatus.set(true);
+        }
+        return syncStatus.get();
     }
 
     @Override
