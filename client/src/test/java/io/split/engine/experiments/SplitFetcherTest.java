@@ -15,7 +15,10 @@ import io.split.engine.segments.SegmentChangeFetcher;
 import io.split.engine.segments.SegmentSynchronizationTask;
 import io.split.engine.segments.SegmentSynchronizationTaskImp;
 import io.split.grammar.Treatments;
+import org.junit.Assert;
 import org.junit.Test;
+import org.mockito.ArgumentCaptor;
+import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.internal.matchers.Any;
 import org.slf4j.Logger;
@@ -216,6 +219,50 @@ public class SplitFetcherTest {
         assertThat(gates.isSegmentRegistered(segmentName), is(equalTo(true)));
         assertThat(gates.areSegmentsReady(100), is(equalTo(true)));
         assertThat(gates.isSDKReady(0), is(equalTo(true)));
+    }
+
+    @Test
+    public void testBypassCdnClearedAfterFirstHit() {
+        SplitChangeFetcher mockFetcher = Mockito.mock(SplitChangeFetcher.class);
+        SegmentSynchronizationTask segmentSynchronizationTaskMock = Mockito.mock(SegmentSynchronizationTask.class);
+        SegmentCache segmentCacheMock = Mockito.mock(SegmentCache.class);
+        SplitParser mockParser = new SplitParser(segmentSynchronizationTaskMock, segmentCacheMock);
+        SDKReadinessGates mockGates = Mockito.mock(SDKReadinessGates.class);
+        SplitCache mockCache = new InMemoryCacheImp();
+        SplitFetcherImp fetcher = new SplitFetcherImp(mockFetcher, mockParser, mockGates, mockCache);
+
+
+        SplitChange response1 = new SplitChange();
+        response1.splits = new ArrayList<>();
+        response1.since = -1;
+        response1.till = 1;
+
+        SplitChange response2 = new SplitChange();
+        response2.splits = new ArrayList<>();
+        response2.since = 1;
+        response2.till = 1;
+
+
+        ArgumentCaptor<FetchOptions> optionsCaptor = ArgumentCaptor.forClass(FetchOptions.class);
+        ArgumentCaptor<Long> cnCaptor = ArgumentCaptor.forClass(Long.class);
+        when(mockFetcher.fetch(cnCaptor.capture(), optionsCaptor.capture())).thenReturn(response1, response2);
+
+        FetchOptions originalOptions = new FetchOptions.Builder().cdnBypass(true).build();
+        fetcher.forceRefresh(originalOptions);
+        List<Long> capturedCNs = cnCaptor.getAllValues();
+        List<FetchOptions> capturedOptions = optionsCaptor.getAllValues();
+
+        Assert.assertEquals(capturedOptions.size(), 2);
+        Assert.assertEquals(capturedCNs.size(), 2);
+
+        Assert.assertEquals(capturedCNs.get(0), Long.valueOf(-1));
+        Assert.assertEquals(capturedCNs.get(1), Long.valueOf(1));
+
+        Assert.assertTrue(capturedOptions.get(0).cdnBypass());
+        Assert.assertFalse(capturedOptions.get(1).cdnBypass());
+
+        // Ensure that the original value hasn't been modified
+        Assert.assertTrue(originalOptions.cdnBypass());
     }
 
     private SegmentChange getSegmentChange(long since, long till, String segmentName){

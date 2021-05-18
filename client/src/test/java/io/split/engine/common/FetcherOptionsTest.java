@@ -25,10 +25,12 @@ public class FetcherOptionsTest {
                 .cacheControlHeaders(true)
                 .fastlyDebugHeader(true)
                 .responseHeadersCallback(func)
+                .cdnBypass(true)
                 .build();
 
         assertEquals(options.cacheControlHeadersEnabled(), true);
         assertEquals(options.fastlyDebugHeaderEnabled(), true);
+        assertEquals(options.cdnBypass(), true);
         options.handleResponseHeaders(new HashMap<>());
         assertEquals(called[0], true);
     }

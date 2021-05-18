@@ -12,14 +12,20 @@ import io.split.engine.segments.SegmentSynchronizationTask;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.ThreadFactory;
-import java.util.concurrent.TimeUnit;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.*;
+import java.util.function.Function;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
 public class SynchronizerImp implements Synchronizer {
+
+    // The boxing here IS necessary, so that the constants are not inlined by the compiler
+    // and can be modified for the test (we don't want to wait that much in an UT)
+    private static final long ON_DEMAND_FETCH_BACKOFF_BASE_MS = new Long(10000); //backoff base starting at 10 seconds (!)
+    private static final long ON_DEMAND_FETCH_BACKOFF_MAX_WAIT_MS = new Long(60000); // don't sleep for more than 1 second
+    private static final int ON_DEMAND_FETCH_BACKOFF_MAX_RETRIES = 10;
 
     private static final Logger _log = LoggerFactory.getLogger(Synchronizer.class);
     private final SplitSynchronizationTask _splitSynchronizationTask;
@@ -49,7 +55,7 @@ public class SynchronizerImp implements Synchronizer {
         _segmentSynchronizationTaskImp = checkNotNull(segmentSynchronizationTaskImp);
         _splitCache = checkNotNull(splitCache);
         _segmentCache = checkNotNull(segmentCache);
-        _onDemandFetchRetryDelayMs = checkNotNull(onDemandFetchRetryDelayMs);
+        _onDemandFetchRetryDelayMs = onDemandFetchRetryDelayMs;
         _cdnResponseHeadersLogging = cdnResponseHeadersLogging;
         _onDemandFetchMaxRetries = onDemandFetchMaxRetries;
         _failedAttemptsBeforeLogging = failedAttemptsBeforeLogging;
@@ -83,6 +89,50 @@ public class SynchronizerImp implements Synchronizer {
         _segmentSynchronizationTaskImp.stop();
     }
 
+    private static class SyncResult {
+
+        /* package private */ SyncResult(boolean success, int remainingAttempts) {
+            _success = success;
+            _remainingAttempts =  remainingAttempts;
+        }
+
+        public boolean success() { return _success; }
+        public int remainingAttempts() { return _remainingAttempts; }
+
+        private final boolean _success;
+        private final int _remainingAttempts;
+    }
+
+    private SyncResult attemptSync(long targetChangeNumber,
+                                   FetchOptions opts,
+                                   Function<Void, Long> nextWaitMs,
+                                   int maxRetries) {
+        int remainingAttempts = maxRetries;
+        while(true) {
+            remainingAttempts--;
+            _splitFetcher.forceRefresh(opts);
+            if (targetChangeNumber <= _splitCache.getChangeNumber()) {
+                return new SyncResult(true, remainingAttempts);
+            } else if (remainingAttempts <= 0) {
+                _log.info(String.format("No changes fetched after %s attempts.", maxRetries));
+                return new SyncResult(false, remainingAttempts);
+            }
+            try {
+                long howLong = nextWaitMs.apply(null);
+                Thread.sleep(howLong);
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+                _log.debug("Error trying to sleep current Thread.");
+            }
+        }
+    }
+
+    private void logCdnHeaders(int maxRetries, int remainingAttempts, List<Map<String, String>> headers) {
+        if (maxRetries - remainingAttempts > _failedAttemptsBeforeLogging) {
+            _log.info(String.format("CDN Debug headers: %s", gson.toJson(headers)));
+        }
+    }
+
     @Override
     public void refreshSplits(long targetChangeNumber) {
 
@@ -97,28 +147,25 @@ public class SynchronizerImp implements Synchronizer {
                 .responseHeadersCallback(_cdnResponseHeadersLogging ? captor::handle : null)
                 .build();
 
-        int remainingAttempts = _onDemandFetchMaxRetries;
-        while(true) {
-            remainingAttempts--;
-            _splitFetcher.forceRefresh(opts);
-            if (targetChangeNumber <= _splitCache.getChangeNumber()) {
-                _log.debug(String.format("Refresh completed in %s attempts.", _onDemandFetchMaxRetries - remainingAttempts));
-                break;
-            } else if (remainingAttempts <= 0) {
-                _log.info(String.format("No changes fetched after %s attempts.", _onDemandFetchMaxRetries));
-                break;
+        SyncResult regularResult = attemptSync(targetChangeNumber, opts,
+                (discard) -> (long) _onDemandFetchRetryDelayMs, _onDemandFetchMaxRetries);
+
+        if (regularResult.success()) {
+            _log.debug(String.format("Refresh completed in %s attempts.", _onDemandFetchMaxRetries - regularResult.remainingAttempts()));
+            if (_cdnResponseHeadersLogging) {
+                logCdnHeaders(_onDemandFetchMaxRetries , regularResult.remainingAttempts(), captor.get());
             }
-            try {
-                Thread.sleep(_onDemandFetchRetryDelayMs);
-            } catch (InterruptedException e) {
-                Thread.currentThread().interrupt();
-                _log.debug("Error trying to sleep current Thread.");
-            }
+            return;
         }
 
-        if (_cdnResponseHeadersLogging &&
-                (_onDemandFetchMaxRetries - remainingAttempts) > _failedAttemptsBeforeLogging) {
-            _log.info(String.format("CDN Debug headers: %s", gson.toJson(captor.get())));
+        FetchOptions withCdnBypass = new FetchOptions.Builder(opts).cdnBypass(true).build();
+        Backoff backoff = new Backoff(ON_DEMAND_FETCH_BACKOFF_BASE_MS, ON_DEMAND_FETCH_BACKOFF_MAX_WAIT_MS);
+        SyncResult withCDNBypassed = attemptSync(targetChangeNumber, withCdnBypass,
+                (discard) -> backoff.interval(), ON_DEMAND_FETCH_BACKOFF_MAX_RETRIES);
+
+        if (_cdnResponseHeadersLogging) {
+            logCdnHeaders(_onDemandFetchMaxRetries + ON_DEMAND_FETCH_BACKOFF_MAX_RETRIES,
+                    withCDNBypassed.remainingAttempts(), captor.get());
         }
     }
 

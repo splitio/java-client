@@ -1,8 +1,5 @@
 package io.split.engine.common;
 
-import io.split.engine.matchers.AttributeMatcher;
-import org.checkerframework.checker.units.qual.A;
-
 import java.util.Map;
 import java.util.Objects;
 import java.util.function.Function;
@@ -10,7 +7,15 @@ import java.util.function.Function;
 public class FetchOptions {
     
     public static class Builder {
+
         public Builder() {}
+
+        public Builder(FetchOptions opts) {
+            _cdnBypass = opts._cdnBypass;
+            _cacheControlHeaders = opts._cacheControlHeaders;
+            _fastlyDebugHeader = opts._fastlyDebugHeader;
+            _responseHeadersCallback = opts._responseHeadersCallback;
+        }
 
         public Builder cacheControlHeaders(boolean on) {
             _cacheControlHeaders = on;
@@ -27,10 +32,16 @@ public class FetchOptions {
             return this;
         }
 
-        public FetchOptions build() {
-            return new FetchOptions(_cacheControlHeaders, _responseHeadersCallback, _fastlyDebugHeader);
+        public Builder cdnBypass(boolean bypass) {
+            _cdnBypass = bypass;
+            return this;
         }
 
+        public FetchOptions build() {
+            return new FetchOptions(_cacheControlHeaders, _cdnBypass, _responseHeadersCallback, _fastlyDebugHeader);
+        }
+
+        private boolean _cdnBypass = false;
         private boolean _cacheControlHeaders = false;
         private boolean _fastlyDebugHeader = false;
         private Function<Map<String, String>, Void> _responseHeadersCallback = null;
@@ -44,6 +55,8 @@ public class FetchOptions {
         return _fastlyDebugHeader;
     }
 
+    public boolean cdnBypass() { return _cdnBypass; }
+
     public void handleResponseHeaders(Map<String, String> headers) {
         if (Objects.isNull(_responseHeadersCallback) || Objects.isNull(headers)) {
             return;
@@ -51,9 +64,12 @@ public class FetchOptions {
         _responseHeadersCallback.apply(headers);
     }
 
-    private FetchOptions(boolean cacheControlHeaders, Function<Map<String, String>, Void> responseHeadersCallback,
+    private FetchOptions(boolean cacheControlHeaders,
+                         boolean cdnBypass,
+                         Function<Map<String, String>, Void> responseHeadersCallback,
                          boolean fastlyDebugHeader) {
         _cacheControlHeaders = cacheControlHeaders;
+        _cdnBypass = cdnBypass;
         _responseHeadersCallback = responseHeadersCallback;
         _fastlyDebugHeader = fastlyDebugHeader;
     }
@@ -78,5 +94,6 @@ public class FetchOptions {
 
     private final boolean _cacheControlHeaders;
     private final boolean _fastlyDebugHeader;
+    private final boolean _cdnBypass;
     private final Function<Map<String, String>, Void> _responseHeadersCallback;
 }
