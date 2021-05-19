@@ -74,6 +74,7 @@ public class ApiKeyCounterTest extends TestCase {
     @Test
     public synchronized void testFactoryInstances() {
         try {
+            ApiKeyCounter.getApiKeyCounterInstance().clearApiKeys();
             ApiKeyCounter.getApiKeyCounterInstance().add(FIRST_KEY);
             ApiKeyCounter.getApiKeyCounterInstance().add(FIRST_KEY);
             ApiKeyCounter.getApiKeyCounterInstance().add(FIRST_KEY);
@@ -83,6 +84,7 @@ public class ApiKeyCounterTest extends TestCase {
             Map<String, Long> factoryInstances = ApiKeyCounter.getApiKeyCounterInstance().getFactoryInstances();
             Assert.assertEquals(2, factoryInstances.size());
             Assert.assertEquals(3, factoryInstances.get(FIRST_KEY).intValue());
+            Assert.assertEquals(2, factoryInstances.get(SECOND_KEY).intValue());
         }
         finally {
             ApiKeyCounter.getApiKeyCounterInstance().clearApiKeys();
