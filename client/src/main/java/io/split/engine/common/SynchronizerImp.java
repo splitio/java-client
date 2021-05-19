@@ -114,7 +114,6 @@ public class SynchronizerImp implements Synchronizer {
             if (targetChangeNumber <= _splitCache.getChangeNumber()) {
                 return new SyncResult(true, remainingAttempts);
             } else if (remainingAttempts <= 0) {
-                _log.info(String.format("No changes fetched after %s attempts.", maxRetries));
                 return new SyncResult(false, remainingAttempts);
             }
             try {
@@ -150,18 +149,27 @@ public class SynchronizerImp implements Synchronizer {
         SyncResult regularResult = attemptSync(targetChangeNumber, opts,
                 (discard) -> (long) _onDemandFetchRetryDelayMs, _onDemandFetchMaxRetries);
 
+        int attempts =  _onDemandFetchMaxRetries - regularResult.remainingAttempts();
         if (regularResult.success()) {
-            _log.debug(String.format("Refresh completed in %s attempts.", _onDemandFetchMaxRetries - regularResult.remainingAttempts()));
+            _log.debug(String.format("Refresh completed in %s attempts.", attempts));
             if (_cdnResponseHeadersLogging) {
                 logCdnHeaders(_onDemandFetchMaxRetries , regularResult.remainingAttempts(), captor.get());
             }
             return;
         }
 
+        _log.info(String.format("No changes fetched after %s attempts. Will retry bypassing CDN.", attempts));
         FetchOptions withCdnBypass = new FetchOptions.Builder(opts).cdnBypass(true).build();
         Backoff backoff = new Backoff(ON_DEMAND_FETCH_BACKOFF_BASE_MS, ON_DEMAND_FETCH_BACKOFF_MAX_WAIT_MS);
         SyncResult withCDNBypassed = attemptSync(targetChangeNumber, withCdnBypass,
                 (discard) -> backoff.interval(), ON_DEMAND_FETCH_BACKOFF_MAX_RETRIES);
+
+        int withoutCDNAttempts = ON_DEMAND_FETCH_BACKOFF_MAX_RETRIES - withCDNBypassed._remainingAttempts;
+        if (withCDNBypassed.success()) {
+            _log.debug(String.format("Refresh completed bypassing the CDN in %s attempts.", attempts));
+        } else {
+            _log.debug(String.format("No changes fetched after %s attempts, even with CDN bypassed.", attempts));
+        }
 
         if (_cdnResponseHeadersLogging) {
             logCdnHeaders(_onDemandFetchMaxRetries + ON_DEMAND_FETCH_BACKOFF_MAX_RETRIES,

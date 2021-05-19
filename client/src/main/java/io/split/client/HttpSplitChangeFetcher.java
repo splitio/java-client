@@ -60,7 +60,8 @@ public final class HttpSplitChangeFetcher implements SplitChangeFetcher {
     }
 
     long makeRandomTill() {
-        return (-1)*(int)Math.floor(Math.random()*(Math.pow(2, 63)));
+
+        return (-1)*(long)Math.floor(Math.random()*(Math.pow(2, 63)));
     }
 
     @Override
