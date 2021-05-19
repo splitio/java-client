@@ -6,7 +6,6 @@ import io.split.engine.SDKReadinessGates;
 import io.split.cache.SplitCache;
 import io.split.engine.experiments.ParsedSplit;
 import io.split.inputValidation.SplitNameValidator;
-import io.split.telemetry.domain.enums.MethodEnum;
 import io.split.telemetry.storage.TelemetryConfigProducer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -43,7 +42,7 @@ public class SplitManagerImpl implements SplitManager {
 
     @Override
     public List<SplitView> splits() {
-        if (!_gates.isSDKReadyNow()) { {
+        if (!_gates.isSDKReady()) { {
             _log.warn("splits: the SDK is not ready, results may be incorrect. Make sure to wait for SDK readiness before using this method");
             _telemetryConfigProducer.recordNonReadyUsage();
         }}
@@ -58,7 +57,7 @@ public class SplitManagerImpl implements SplitManager {
 
     @Override
     public SplitView split(String featureName) {
-        if (!_gates.isSDKReadyNow()) { {
+        if (!_gates.isSDKReady()) { {
             _log.warn("split: the SDK is not ready, results may be incorrect. Make sure to wait for SDK readiness before using this method");
             _telemetryConfigProducer.recordNonReadyUsage();
         }}
@@ -70,7 +69,7 @@ public class SplitManagerImpl implements SplitManager {
 
         ParsedSplit parsedSplit = _splitCache.get(featureName);
         if (parsedSplit == null) {
-            if (_gates.isSDKReadyNow()) {
+            if (_gates.isSDKReady()) {
                 _log.warn("split: you passed \"" + featureName + "\" that does not exist in this environment, " +
                         "please double check what Splits exist in the web console.");
             }
@@ -82,7 +81,7 @@ public class SplitManagerImpl implements SplitManager {
 
     @Override
     public List<String> splitNames() {
-        if (!_gates.isSDKReadyNow()) { {
+        if (!_gates.isSDKReady()) { {
             _log.warn("splitNames: the SDK is not ready, results may be incorrect. Make sure to wait for SDK readiness before using this method");
             _telemetryConfigProducer.recordNonReadyUsage();
         }}
@@ -100,7 +99,7 @@ public class SplitManagerImpl implements SplitManager {
         if (_config.blockUntilReady() <= 0) {
             throw new IllegalArgumentException("setBlockUntilReadyTimeout must be positive but in config was: " + _config.blockUntilReady());
         }
-        if (!_gates.isSDKReady(_config.blockUntilReady())) {
+        if (!_gates.waitUntilInternalReady(_config.blockUntilReady())) {
             _telemetryConfigProducer.recordBURTimeout();
             throw new TimeoutException("SDK was not ready in " + _config.blockUntilReady()+ " milliseconds");
         }

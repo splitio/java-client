@@ -82,12 +82,6 @@ public class SegmentSynchronizationTaskImp implements SegmentSynchronizationTask
                 return;
             }
 
-            try {
-                _gates.registerSegment(segmentName);
-            } catch (InterruptedException e) {
-                _log.error("Unable to register segment " + segmentName);
-            }
-
             segment = new SegmentFetcherImp(segmentName, _segmentChangeFetcher, _gates, _segmentCache, _telemetryRuntimeProducer);
 
             if (_running.get()) {

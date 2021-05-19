@@ -162,7 +162,6 @@ public class SplitFetcherTest {
         executeWaitAndTerminate(fetcher, 1, 5, TimeUnit.SECONDS);
 
         assertThat(cache.getChangeNumber(), is(equalTo(-1L)));
-        assertThat(gates.areSplitsReady(0), is(equalTo(false)));
     }
 
     private void executeWaitAndTerminate(Runnable runnable, long frequency, long waitInBetween, TimeUnit unit) throws InterruptedException {

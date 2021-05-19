@@ -49,7 +49,6 @@ public class SegmentFetcherImpTest {
     public void works_when_there_are_no_changes() throws InterruptedException {
         long startingChangeNumber = -1L;
         SDKReadinessGates gates = new SDKReadinessGates();
-        gates.registerSegment(SEGMENT_NAME);
         SegmentCache segmentCache = new SegmentCacheInMemoryImpl();
 
         SegmentChangeFetcher segmentChangeFetcher = Mockito.mock(SegmentChangeFetcher.class);
@@ -79,14 +78,12 @@ public class SegmentFetcherImpTest {
 
         assertNotNull(segmentCache.getChangeNumber(SEGMENT_NAME));
         assertEquals(10L, segmentCache.getChangeNumber(SEGMENT_NAME));
-        assertThat(gates.areSegmentsReady(10), is(true));
 
     }
 
     private void works(long startingChangeNumber) throws InterruptedException {
         SDKReadinessGates gates = new SDKReadinessGates();
         String segmentName = SEGMENT_NAME;
-        gates.registerSegment(segmentName);
         SegmentCache segmentCache = Mockito.mock(SegmentCache.class);
         Mockito.when(segmentCache.getChangeNumber(SEGMENT_NAME)).thenReturn(-1L).thenReturn(-1L)
         .thenReturn(-1L)
@@ -116,7 +113,6 @@ public class SegmentFetcherImpTest {
             Thread.currentThread().interrupt();
         }
         Mockito.verify(segmentChangeFetcher, Mockito.times(2)).fetch(Mockito.anyString(), Mockito.anyLong(), Mockito.anyBoolean());
-        assertThat(gates.areSegmentsReady(10), is(true));
 
     }
 

@@ -142,11 +142,7 @@ public class SegmentFetcherImp implements SegmentFetcher {
     private void fetchAndUpdate(boolean addCacheHeader) {
         try {
             // Do this again in case the previous call errored out.
-            _gates.registerSegment(_segmentName);
             callLoopRun(true, addCacheHeader);
-
-            _gates.segmentIsReady(_segmentName);
-
         } catch (Throwable t) {
             _log.error("RefreshableSegmentFetcher failed: " + t.getMessage());
             if (_log.isDebugEnabled()) {

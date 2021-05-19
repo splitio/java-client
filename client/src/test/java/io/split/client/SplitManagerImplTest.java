@@ -100,7 +100,7 @@ public class SplitManagerImplTest {
         SplitCache splitCache = Mockito.mock(SplitCache.class);
         Mockito.when(splitCache.getAll()).thenReturn(Lists.<ParsedSplit>newArrayList());
         SDKReadinessGates gates = Mockito.mock(SDKReadinessGates.class);
-        Mockito.when(gates.isSDKReadyNow()).thenReturn(false);
+        Mockito.when(gates.isSDKReady()).thenReturn(false);
         SplitManagerImpl splitManager = new SplitManagerImpl(splitCache,
                 Mockito.mock(SplitClientConfig.class),
                 gates, TELEMETRY_STORAGE);
@@ -113,7 +113,7 @@ public class SplitManagerImplTest {
         SplitCache splitCache = Mockito.mock(SplitCache.class);
         List<ParsedSplit> parsedSplits = Lists.newArrayList();
         SDKReadinessGates gates = Mockito.mock(SDKReadinessGates.class);
-        Mockito.when(gates.isSDKReadyNow()).thenReturn(false);
+        Mockito.when(gates.isSDKReady()).thenReturn(false);
         ParsedSplit response = ParsedSplit.createParsedSplitForTests("FeatureName", 123, true, "off", Lists.newArrayList(getTestCondition("off")), "traffic", 456L, 1);
         parsedSplits.add(response);
 
@@ -137,7 +137,7 @@ public class SplitManagerImplTest {
         SplitCache splitCache = Mockito.mock(SplitCache.class);
         Mockito.when(splitCache.getAll()).thenReturn(Lists.<ParsedSplit>newArrayList());
         SDKReadinessGates gates = Mockito.mock(SDKReadinessGates.class);
-        Mockito.when(gates.isSDKReadyNow()).thenReturn(false);
+        Mockito.when(gates.isSDKReady()).thenReturn(false);
         SplitManagerImpl splitManager = new SplitManagerImpl(splitCache,
                 Mockito.mock(SplitClientConfig.class),
                 gates, TELEMETRY_STORAGE);
@@ -164,7 +164,7 @@ public class SplitManagerImplTest {
     @Test
     public void block_until_ready_does_not_time_when_sdk_is_ready() throws TimeoutException, InterruptedException {
         SDKReadinessGates ready = mock(SDKReadinessGates.class);
-        when(ready.isSDKReady(100)).thenReturn(true);
+        when(ready.waitUntilInternalReady(100)).thenReturn(true);
         SplitManagerImpl splitManager = new SplitManagerImpl(mock(SplitCache.class),
                 config,
                 ready, TELEMETRY_STORAGE);
@@ -175,7 +175,7 @@ public class SplitManagerImplTest {
     @Test(expected = TimeoutException.class)
     public void block_until_ready_times_when_sdk_is_not_ready() throws TimeoutException, InterruptedException {
         SDKReadinessGates ready = mock(SDKReadinessGates.class);
-        when(ready.isSDKReady(100)).thenReturn(false);
+        when(ready.waitUntilInternalReady(100)).thenReturn(false);
 
         SplitManagerImpl splitManager = new SplitManagerImpl(mock(SplitCache.class),
                 config,

@@ -153,7 +153,7 @@ public class SplitClientImplTest {
         SDKReadinessGates gates = mock(SDKReadinessGates.class);
         SplitCache splitCache = mock(InMemoryCacheImp.class);
         when(splitCache.get(test)).thenReturn(parsedSplit);
-        when(gates.isSDKReadyNow()).thenReturn(true);
+        when(gates.isSDKReady()).thenReturn(true);
 
         SplitClientImpl client = new SplitClientImpl(
                 mock(SplitFactory.class),
@@ -326,7 +326,7 @@ public class SplitClientImplTest {
         SDKReadinessGates gates = mock(SDKReadinessGates.class);
         SplitCache splitCache = mock(InMemoryCacheImp.class);
         when(splitCache.get(test)).thenReturn(parsedSplit);
-        when(gates.isSDKReadyNow()).thenReturn(false);
+        when(gates.isSDKReady()).thenReturn(false);
 
         SplitClientImpl client = new SplitClientImpl(
                 mock(SplitFactory.class),
@@ -905,7 +905,7 @@ public class SplitClientImplTest {
     public void block_until_ready_does_not_time_when_sdk_is_ready() throws TimeoutException, InterruptedException {
         SplitCache splitCache = mock(InMemoryCacheImp.class);
         SDKReadinessGates ready = mock(SDKReadinessGates.class);
-        when(ready.isSDKReady(100)).thenReturn(true);
+        when(ready.waitUntilInternalReady(100)).thenReturn(true);
 
         SplitClientImpl client = new SplitClientImpl(
                 mock(SplitFactory.class),
@@ -924,7 +924,7 @@ public class SplitClientImplTest {
     public void block_until_ready_times_when_sdk_is_not_ready() throws TimeoutException, InterruptedException {
         SplitCache splitCache = mock(InMemoryCacheImp.class);
         SDKReadinessGates ready = mock(SDKReadinessGates.class);
-        when(ready.isSDKReady(100)).thenReturn(false);
+        when(ready.waitUntilInternalReady(100)).thenReturn(false);
 
         SplitClientImpl client = new SplitClientImpl(
                 mock(SplitFactory.class),
@@ -943,7 +943,7 @@ public class SplitClientImplTest {
     public void track_with_valid_parameters() {
         SDKReadinessGates gates = mock(SDKReadinessGates.class);
         SplitCache splitCache = mock(InMemoryCacheImp.class);
-        when(gates.isSDKReadyNow()).thenReturn(false);
+        when(gates.isSDKReady()).thenReturn(false);
         SplitClientImpl client = new SplitClientImpl(
                 mock(SplitFactory.class),
                 splitCache,

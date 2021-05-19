@@ -75,8 +75,6 @@ public class SegmentSynchronizationTaskImpTest {
             Thread.currentThread().interrupt();
         }
 
-        gates.splitsAreReady();
-
         assertThat(fetcher1.get(), is(notNullValue()));
         assertThat(fetcher1.get(), is(sameInstance(fetcher2.get())));
     }

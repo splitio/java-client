@@ -145,26 +145,25 @@ public class SplitFetcherImp implements SplitFetcher {
     }
     @Override
     public boolean fetchAll(boolean addCacheHeader) {
-        boolean fetchAllStatus = true;
         _log.debug("Fetch splits starting ...");
         long start = _splitCache.getChangeNumber();
         try {
             runWithoutExceptionHandling(addCacheHeader);
         } catch (InterruptedException e) {
-            fetchAllStatus = false;
             _log.warn("Interrupting split fetcher task");
             Thread.currentThread().interrupt();
+            return false;
         } catch (Throwable t) {
-            fetchAllStatus = false;
             _log.error("RefreshableSplitFetcher failed: " + t.getMessage());
             if (_log.isDebugEnabled()) {
                 _log.debug("Reason:", t);
             }
+            return false;
         } finally {
             if (_log.isDebugEnabled()) {
                 _log.debug("split fetch before: " + start + ", after: " + _splitCache.getChangeNumber());
             }
         }
-        return fetchAllStatus;
+        return true;
     }
 }
