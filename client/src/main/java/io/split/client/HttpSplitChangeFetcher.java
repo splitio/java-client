@@ -73,8 +73,8 @@ public final class HttpSplitChangeFetcher implements SplitChangeFetcher {
 
         try {
             URIBuilder uriBuilder = new URIBuilder(_target).addParameter(SINCE, "" + since);
-            if (options.cdnBypass()) {
-                uriBuilder.addParameter(TILL, "" + makeRandomTill());
+            if (options.hasCustomCN()) {
+                uriBuilder.addParameter(TILL, "" + options.targetCN());
             }
             URI uri = uriBuilder.build();
 

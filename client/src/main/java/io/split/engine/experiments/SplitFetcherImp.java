@@ -57,7 +57,7 @@ public class SplitFetcherImp implements SplitFetcher {
                 // for the next fetches. (This will clear a local copy of the fetch options,
                 // not the original object that was passed to this method).
                 if (initialCN == start) {
-                    options = new FetchOptions.Builder(options).cdnBypass(false).build();
+                    options = new FetchOptions.Builder(options).targetChangeNumber(FetchOptions.DEFAULT_TARGET_CHANGENUMBER).build();
                 }
 
                 if (start >= end) {

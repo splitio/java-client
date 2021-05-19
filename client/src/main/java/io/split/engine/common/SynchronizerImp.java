@@ -159,16 +159,16 @@ public class SynchronizerImp implements Synchronizer {
         }
 
         _log.info(String.format("No changes fetched after %s attempts. Will retry bypassing CDN.", attempts));
-        FetchOptions withCdnBypass = new FetchOptions.Builder(opts).cdnBypass(true).build();
+        FetchOptions withCdnBypass = new FetchOptions.Builder(opts).targetChangeNumber(targetChangeNumber).build();
         Backoff backoff = new Backoff(ON_DEMAND_FETCH_BACKOFF_BASE_MS, ON_DEMAND_FETCH_BACKOFF_MAX_WAIT_MS);
         SyncResult withCDNBypassed = attemptSync(targetChangeNumber, withCdnBypass,
                 (discard) -> backoff.interval(), ON_DEMAND_FETCH_BACKOFF_MAX_RETRIES);
 
         int withoutCDNAttempts = ON_DEMAND_FETCH_BACKOFF_MAX_RETRIES - withCDNBypassed._remainingAttempts;
         if (withCDNBypassed.success()) {
-            _log.debug(String.format("Refresh completed bypassing the CDN in %s attempts.", attempts));
+            _log.debug(String.format("Refresh completed bypassing the CDN in %s attempts.", withoutCDNAttempts));
         } else {
-            _log.debug(String.format("No changes fetched after %s attempts, even with CDN bypassed.", attempts));
+            _log.debug(String.format("No changes fetched after %s attempts with CDN bypassed.", withoutCDNAttempts));
         }
 
         if (_cdnResponseHeadersLogging) {

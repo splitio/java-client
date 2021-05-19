@@ -247,7 +247,7 @@ public class SplitFetcherTest {
         ArgumentCaptor<Long> cnCaptor = ArgumentCaptor.forClass(Long.class);
         when(mockFetcher.fetch(cnCaptor.capture(), optionsCaptor.capture())).thenReturn(response1, response2);
 
-        FetchOptions originalOptions = new FetchOptions.Builder().cdnBypass(true).build();
+        FetchOptions originalOptions = new FetchOptions.Builder().targetChangeNumber(123).build();
         fetcher.forceRefresh(originalOptions);
         List<Long> capturedCNs = cnCaptor.getAllValues();
         List<FetchOptions> capturedOptions = optionsCaptor.getAllValues();
@@ -258,11 +258,11 @@ public class SplitFetcherTest {
         Assert.assertEquals(capturedCNs.get(0), Long.valueOf(-1));
         Assert.assertEquals(capturedCNs.get(1), Long.valueOf(1));
 
-        Assert.assertTrue(capturedOptions.get(0).cdnBypass());
-        Assert.assertFalse(capturedOptions.get(1).cdnBypass());
+        Assert.assertEquals(capturedOptions.get(0).targetCN(), 123);
+        Assert.assertEquals(capturedOptions.get(1).targetCN(), -1);
 
         // Ensure that the original value hasn't been modified
-        Assert.assertTrue(originalOptions.cdnBypass());
+        Assert.assertEquals(originalOptions.targetCN(), 123);
     }
 
     private SegmentChange getSegmentChange(long since, long till, String segmentName){

@@ -83,7 +83,7 @@ public class SynchronizerTest {
     }
 
     @Test
-    public void testCDNBypassIsRequestedAfterNFailures() {
+    public void testCDNBypassIsRequestedAfterNFailures() throws NoSuchFieldException, IllegalAccessException {
 
         SplitCache cache = new InMemoryCacheImp();
         Synchronizer imp = new SynchronizerImp(_refreshableSplitFetcherTask,
@@ -101,19 +101,19 @@ public class SynchronizerTest {
         Mockito.doAnswer(invocationOnMock -> {
             calls.getAndIncrement();
             switch (calls.get()) {
-                case 4: cache.setChangeNumber(1);
+                case 4: cache.setChangeNumber(123);
             }
             return null;
         }).when(_splitFetcher).forceRefresh(optionsCaptor.capture());
 
-        imp.refreshSplits(1);
+        imp.refreshSplits(123);
 
         List<FetchOptions> options = optionsCaptor.getAllValues();
         Assert.assertEquals(options.size(), 4);
-        Assert.assertFalse(options.get(0).cdnBypass());
-        Assert.assertFalse(options.get(1).cdnBypass());
-        Assert.assertFalse(options.get(2).cdnBypass());
-        Assert.assertTrue(options.get(3).cdnBypass());
+        Assert.assertFalse(options.get(0).hasCustomCN());
+        Assert.assertFalse(options.get(1).hasCustomCN());
+        Assert.assertFalse(options.get(2).hasCustomCN());
+        Assert.assertTrue(options.get(3).hasCustomCN());
     }
 
     @Test
@@ -154,20 +154,20 @@ public class SynchronizerTest {
 
         List<FetchOptions> options = optionsCaptor.getAllValues();
         Assert.assertEquals(options.size(), 13);
-        Assert.assertFalse(options.get(0).cdnBypass());
-        Assert.assertFalse(options.get(1).cdnBypass());
-        Assert.assertFalse(options.get(2).cdnBypass());
-        Assert.assertTrue(options.get(3).cdnBypass());
-        Assert.assertTrue(options.get(4).cdnBypass());
-        Assert.assertTrue(options.get(5).cdnBypass());
-        Assert.assertTrue(options.get(6).cdnBypass());
-        Assert.assertTrue(options.get(7).cdnBypass());
-        Assert.assertTrue(options.get(8).cdnBypass());
-        Assert.assertTrue(options.get(9).cdnBypass());
-        Assert.assertTrue(options.get(10).cdnBypass());
-        Assert.assertTrue(options.get(11).cdnBypass());
-        Assert.assertTrue(options.get(12).cdnBypass());
-
+        Assert.assertFalse(options.get(0).hasCustomCN());
+        Assert.assertFalse(options.get(1).hasCustomCN());
+        Assert.assertFalse(options.get(2).hasCustomCN());
+        Assert.assertTrue(options.get(3).hasCustomCN());
+        Assert.assertTrue(options.get(4).hasCustomCN());
+        Assert.assertTrue(options.get(5).hasCustomCN());
+        Assert.assertTrue(options.get(6).hasCustomCN());
+        Assert.assertTrue(options.get(7).hasCustomCN());
+        Assert.assertTrue(options.get(8).hasCustomCN());
+        Assert.assertTrue(options.get(9).hasCustomCN());
+        Assert.assertTrue(options.get(10).hasCustomCN());
+        Assert.assertTrue(options.get(11).hasCustomCN());
+        Assert.assertTrue(options.get(12).hasCustomCN());
+        
         Assert.assertEquals(calls.get(), 13);
         long minDiffExpected = 1 + 2 + 4 + 8 + 16 + 32 + 64 + 128 + 256;
         Assert.assertTrue((after - before) > minDiffExpected);

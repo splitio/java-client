@@ -108,11 +108,11 @@ public class HttpSplitChangeFetcherTest {
         Metrics.NoopMetrics metrics = new Metrics.NoopMetrics();
         HttpSplitChangeFetcher fetcher = HttpSplitChangeFetcher.create(httpClientMock, rootTarget, metrics);
 
-        fetcher.fetch(-1, new FetchOptions.Builder().cdnBypass(true).build());
+        fetcher.fetch(-1, new FetchOptions.Builder().targetChangeNumber(123).build());
         fetcher.fetch(-1, new FetchOptions.Builder().build());
         List<ClassicHttpRequest> captured = requestCaptor.getAllValues();
         Assert.assertEquals(captured.size(), 2);
-        Assert.assertTrue(captured.get(0).getUri().toString().contains("till="));
+        Assert.assertTrue(captured.get(0).getUri().toString().contains("till=123"));
         Assert.assertFalse(captured.get(1).getUri().toString().contains("till="));
     }
 
