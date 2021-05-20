@@ -173,4 +173,63 @@ public class SynchronizerTest {
         Assert.assertTrue((after - before) > minDiffExpected);
     }
 
+    @Test
+    public void testCDNBypassRequestLimitAndForSegmentsBackoff() throws NoSuchFieldException, IllegalAccessException {
+
+        SplitCache cache = new InMemoryCacheImp();
+        Synchronizer imp = new SynchronizerImp(_refreshableSplitFetcherTask,
+                _splitFetcher,
+                _segmentFetcher,
+                cache,
+                _segmentCache,
+                50,
+                3,
+                1,
+                true);
+
+        SegmentFetcher fetcher = Mockito.mock(SegmentFetcher.class);
+        when(_segmentFetcher.getFetcher("someSegment")).thenReturn(fetcher);
+
+        ArgumentCaptor<FetchOptions> optionsCaptor = ArgumentCaptor.forClass(FetchOptions.class);
+        AtomicInteger calls = new AtomicInteger();
+        Mockito.doAnswer(invocationOnMock -> {
+            calls.getAndIncrement();
+            switch (calls.get()) {
+                case 14: Assert.assertTrue(false); // should never get here
+            }
+            return null;
+        }).when(fetcher).fetch(optionsCaptor.capture());
+
+        // Before executing, we'll update the backoff via reflection, to avoid waiting minutes for the test to run.
+        Field backoffBase = SynchronizerImp.class.getDeclaredField("ON_DEMAND_FETCH_BACKOFF_BASE_MS");
+        backoffBase.setAccessible(true);
+        Field modifiersField = Field.class.getDeclaredField("modifiers");
+        modifiersField.setAccessible(true);
+        modifiersField.setInt(backoffBase, backoffBase.getModifiers() & ~Modifier.FINAL);
+        backoffBase.set(imp, 1); // 1ms
+
+        long before = System.currentTimeMillis();
+        imp.refreshSegment("someSegment",1);
+        long after = System.currentTimeMillis();
+
+        List<FetchOptions> options = optionsCaptor.getAllValues();
+        Assert.assertEquals(options.size(), 13);
+        Assert.assertFalse(options.get(0).hasCustomCN());
+        Assert.assertFalse(options.get(1).hasCustomCN());
+        Assert.assertFalse(options.get(2).hasCustomCN());
+        Assert.assertTrue(options.get(3).hasCustomCN());
+        Assert.assertTrue(options.get(4).hasCustomCN());
+        Assert.assertTrue(options.get(5).hasCustomCN());
+        Assert.assertTrue(options.get(6).hasCustomCN());
+        Assert.assertTrue(options.get(7).hasCustomCN());
+        Assert.assertTrue(options.get(8).hasCustomCN());
+        Assert.assertTrue(options.get(9).hasCustomCN());
+        Assert.assertTrue(options.get(10).hasCustomCN());
+        Assert.assertTrue(options.get(11).hasCustomCN());
+        Assert.assertTrue(options.get(12).hasCustomCN());
+
+        Assert.assertEquals(calls.get(), 13);
+        long minDiffExpected = 1 + 2 + 4 + 8 + 16 + 32 + 64 + 128 + 256;
+        Assert.assertTrue((after - before) > minDiffExpected);
+    }
 }
