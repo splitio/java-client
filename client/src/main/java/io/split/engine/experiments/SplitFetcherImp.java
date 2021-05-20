@@ -46,7 +46,7 @@ public class SplitFetcherImp implements SplitFetcher {
     @Override
     public void forceRefresh(FetchOptions options) {
         _log.debug("Force Refresh splits starting ...");
-        final long initialCN = _splitCache.getChangeNumber();
+        final long INITIAL_CN = _splitCache.getChangeNumber();
         try {
             while (true) {
                 long start = _splitCache.getChangeNumber();
@@ -56,7 +56,7 @@ public class SplitFetcherImp implements SplitFetcher {
                 // If the previous execution was the first one, clear the `cdnBypass` flag
                 // for the next fetches. (This will clear a local copy of the fetch options,
                 // not the original object that was passed to this method).
-                if (initialCN == start) {
+                if (INITIAL_CN == start) {
                     options = new FetchOptions.Builder(options).targetChangeNumber(FetchOptions.DEFAULT_TARGET_CHANGENUMBER).build();
                 }
 

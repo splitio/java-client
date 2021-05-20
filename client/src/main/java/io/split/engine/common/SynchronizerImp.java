@@ -103,10 +103,10 @@ public class SynchronizerImp implements Synchronizer {
         private final int _remainingAttempts;
     }
 
-    private SyncResult attemptSync(long targetChangeNumber,
-                                   FetchOptions opts,
-                                   Function<Void, Long> nextWaitMs,
-                                   int maxRetries) {
+    private SyncResult attemptSplitsSync(long targetChangeNumber,
+                                         FetchOptions opts,
+                                         Function<Void, Long> nextWaitMs,
+                                         int maxRetries) {
         int remainingAttempts = maxRetries;
         while(true) {
             remainingAttempts--;
@@ -126,9 +126,9 @@ public class SynchronizerImp implements Synchronizer {
         }
     }
 
-    private void logCdnHeaders(int maxRetries, int remainingAttempts, List<Map<String, String>> headers) {
+    private void logCdnHeaders(String prefix, int maxRetries, int remainingAttempts, List<Map<String, String>> headers) {
         if (maxRetries - remainingAttempts > _failedAttemptsBeforeLogging) {
-            _log.info(String.format("CDN Debug headers: %s", gson.toJson(headers)));
+            _log.info(String.format("%s: CDN Debug headers: %s", prefix, gson.toJson(headers)));
         }
     }
 
@@ -146,14 +146,14 @@ public class SynchronizerImp implements Synchronizer {
                 .responseHeadersCallback(_cdnResponseHeadersLogging ? captor::handle : null)
                 .build();
 
-        SyncResult regularResult = attemptSync(targetChangeNumber, opts,
+        SyncResult regularResult = attemptSplitsSync(targetChangeNumber, opts,
                 (discard) -> (long) _onDemandFetchRetryDelayMs, _onDemandFetchMaxRetries);
 
         int attempts =  _onDemandFetchMaxRetries - regularResult.remainingAttempts();
         if (regularResult.success()) {
             _log.debug(String.format("Refresh completed in %s attempts.", attempts));
             if (_cdnResponseHeadersLogging) {
-                logCdnHeaders(_onDemandFetchMaxRetries , regularResult.remainingAttempts(), captor.get());
+                logCdnHeaders("[splits]", _onDemandFetchMaxRetries , regularResult.remainingAttempts(), captor.get());
             }
             return;
         }
@@ -161,7 +161,7 @@ public class SynchronizerImp implements Synchronizer {
         _log.info(String.format("No changes fetched after %s attempts. Will retry bypassing CDN.", attempts));
         FetchOptions withCdnBypass = new FetchOptions.Builder(opts).targetChangeNumber(targetChangeNumber).build();
         Backoff backoff = new Backoff(ON_DEMAND_FETCH_BACKOFF_BASE_MS, ON_DEMAND_FETCH_BACKOFF_MAX_WAIT_MS);
-        SyncResult withCDNBypassed = attemptSync(targetChangeNumber, withCdnBypass,
+        SyncResult withCDNBypassed = attemptSplitsSync(targetChangeNumber, withCdnBypass,
                 (discard) -> backoff.interval(), ON_DEMAND_FETCH_BACKOFF_MAX_RETRIES);
 
         int withoutCDNAttempts = ON_DEMAND_FETCH_BACKOFF_MAX_RETRIES - withCDNBypassed._remainingAttempts;
@@ -172,7 +172,7 @@ public class SynchronizerImp implements Synchronizer {
         }
 
         if (_cdnResponseHeadersLogging) {
-            logCdnHeaders(_onDemandFetchMaxRetries + ON_DEMAND_FETCH_BACKOFF_MAX_RETRIES,
+            logCdnHeaders("[splits]", _onDemandFetchMaxRetries + ON_DEMAND_FETCH_BACKOFF_MAX_RETRIES,
                     withCDNBypassed.remainingAttempts(), captor.get());
         }
     }
@@ -185,19 +185,76 @@ public class SynchronizerImp implements Synchronizer {
         }
     }
 
+    public SyncResult attemptSegmentSync(String segmentName,
+                                         long targetChangeNumber,
+                                         FetchOptions opts,
+                                         Function<Void, Long> nextWaitMs,
+                                         int maxRetries) {
+
+        int remainingAttempts = maxRetries;
+        SegmentFetcher fetcher = _segmentSynchronizationTaskImp.getFetcher(segmentName);
+        checkNotNull(fetcher);
+
+        while(true) {
+            remainingAttempts--;
+            fetcher.fetch(opts);
+            if (targetChangeNumber <= _segmentCache.getChangeNumber(segmentName)) {
+                return new SyncResult(true, remainingAttempts);
+            } else if (remainingAttempts <= 0) {
+                return new SyncResult(false, remainingAttempts);
+            }
+            try {
+                long howLong = nextWaitMs.apply(null);
+                Thread.sleep(howLong);
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+                _log.debug("Error trying to sleep current Thread.");
+            }
+        }
+    }
+
     @Override
-    public void refreshSegment(String segmentName, long changeNumber) {
-        int retries = 1;
-        while(changeNumber > _segmentCache.getChangeNumber(segmentName) && retries <= _onDemandFetchMaxRetries) {
-            SegmentFetcher fetcher = _segmentSynchronizationTaskImp.getFetcher(segmentName);
-            try{
-                fetcher.fetch(true);
+    public void refreshSegment(String segmentName, long targetChangeNumber) {
+
+        if (targetChangeNumber <= _segmentCache.getChangeNumber(segmentName)) {
+            return;
+        }
+
+        FastlyHeadersCaptor captor = new FastlyHeadersCaptor();
+        FetchOptions opts = new FetchOptions.Builder()
+                .cacheControlHeaders(true)
+                .fastlyDebugHeader(_cdnResponseHeadersLogging)
+                .responseHeadersCallback(_cdnResponseHeadersLogging ? captor::handle : null)
+                .build();
+
+        SyncResult regularResult = attemptSegmentSync(segmentName, targetChangeNumber, opts,
+                (discard) -> (long) _onDemandFetchRetryDelayMs, _onDemandFetchMaxRetries);
+
+        int attempts =  _onDemandFetchMaxRetries - regularResult.remainingAttempts();
+        if (regularResult.success()) {
+            _log.debug(String.format("Segment %s refresh completed in %s attempts.", segmentName, attempts));
+            if (_cdnResponseHeadersLogging) {
+                logCdnHeaders(String.format("[segment/%s]", segmentName), _onDemandFetchMaxRetries , regularResult.remainingAttempts(), captor.get());
             }
-            //We are sure this will never happen because getFetcher firts initiate the segment. This try/catch is for safe only.
-            catch (NullPointerException np){
-                throw new NullPointerException();
-            }
-            retries++;
+            return;
+        }
+
+        _log.info(String.format("No changes fetched for segment %s after %s attempts. Will retry bypassing CDN.", segmentName, attempts));
+        FetchOptions withCdnBypass = new FetchOptions.Builder(opts).targetChangeNumber(targetChangeNumber).build();
+        Backoff backoff = new Backoff(ON_DEMAND_FETCH_BACKOFF_BASE_MS, ON_DEMAND_FETCH_BACKOFF_MAX_WAIT_MS);
+        SyncResult withCDNBypassed = attemptSegmentSync(segmentName, targetChangeNumber, withCdnBypass,
+                (discard) -> backoff.interval(), ON_DEMAND_FETCH_BACKOFF_MAX_RETRIES);
+
+        int withoutCDNAttempts = ON_DEMAND_FETCH_BACKOFF_MAX_RETRIES - withCDNBypassed._remainingAttempts;
+        if (withCDNBypassed.success()) {
+            _log.debug(String.format("Segment %s refresh completed bypassing the CDN in %s attempts.", segmentName, withoutCDNAttempts));
+        } else {
+            _log.debug(String.format("No changes fetched for segment %s after %s attempts with CDN bypassed.", segmentName, withoutCDNAttempts));
+        }
+
+        if (_cdnResponseHeadersLogging) {
+            logCdnHeaders(String.format("[segment/%s]", segmentName), _onDemandFetchMaxRetries + ON_DEMAND_FETCH_BACKOFF_MAX_RETRIES,
+                    withCDNBypassed.remainingAttempts(), captor.get());
         }
     }
 }

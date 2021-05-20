@@ -2,6 +2,7 @@ package io.split.client;
 
 import io.split.TestHelper;
 import io.split.client.dtos.SegmentChange;
+import io.split.engine.common.FetchOptions;
 import io.split.engine.metrics.Metrics;
 import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
 import org.apache.hc.client5.http.impl.classic.HttpClients;
@@ -61,7 +62,7 @@ public class HttpSegmentChangeFetcherTest {
         Metrics.NoopMetrics metrics = new Metrics.NoopMetrics();
         HttpSegmentChangeFetcher fetcher = HttpSegmentChangeFetcher.create(httpClientMock, rootTarget, metrics);
 
-        SegmentChange change = fetcher.fetch("some_segment", 1234567, true);
+        SegmentChange change = fetcher.fetch("some_segment", 1234567, new FetchOptions.Builder().build());
 
         Assert.assertNotNull(change);
         Assert.assertEquals(1, change.added.size());
