@@ -25,7 +25,6 @@ public class SplitFetcherImp implements SplitFetcher {
     private final SplitParser _parser;
     private final SplitChangeFetcher _splitChangeFetcher;
     private final SplitCache _splitCache;
-    private final SDKReadinessGates _gates;
     private final Object _lock = new Object();
     private final TelemetryRuntimeProducer _telemetryRuntimeProducer;
 
@@ -39,10 +38,9 @@ public class SplitFetcherImp implements SplitFetcher {
      * an ARCHIVED split is received, we know if we need to remove a traffic type from the multiset.
      */
 
-    public SplitFetcherImp(SplitChangeFetcher splitChangeFetcher, SplitParser parser, SDKReadinessGates gates, SplitCache splitCache, TelemetryRuntimeProducer telemetryRuntimeProducer) {
+    public SplitFetcherImp(SplitChangeFetcher splitChangeFetcher, SplitParser parser, SplitCache splitCache, TelemetryRuntimeProducer telemetryRuntimeProducer) {
         _splitChangeFetcher = checkNotNull(splitChangeFetcher);
         _parser = checkNotNull(parser);
-        _gates = checkNotNull(gates);
         _splitCache = checkNotNull(splitCache);
         _telemetryRuntimeProducer = checkNotNull(telemetryRuntimeProducer);
     }
@@ -146,20 +144,22 @@ public class SplitFetcherImp implements SplitFetcher {
         }
     }
     @Override
-    public void fetchAll(boolean addCacheHeader) {
+    public boolean fetchAll(boolean addCacheHeader) {
         _log.debug("Fetch splits starting ...");
         long start = _splitCache.getChangeNumber();
         try {
             runWithoutExceptionHandling(addCacheHeader);
-            _gates.splitsAreReady();
+            return true;
         } catch (InterruptedException e) {
             _log.warn("Interrupting split fetcher task");
             Thread.currentThread().interrupt();
+            return false;
         } catch (Throwable t) {
             _log.error("RefreshableSplitFetcher failed: " + t.getMessage());
             if (_log.isDebugEnabled()) {
                 _log.debug("Reason:", t);
             }
+            return false;
         } finally {
             if (_log.isDebugEnabled()) {
                 _log.debug("split fetch before: " + start + ", after: " + _splitCache.getChangeNumber());

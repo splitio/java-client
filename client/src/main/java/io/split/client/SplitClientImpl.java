@@ -15,7 +15,6 @@ import io.split.inputValidation.EventsValidator;
 import io.split.inputValidation.KeyValidator;
 import io.split.inputValidation.SplitNameValidator;
 import io.split.inputValidation.TrafficTypeValidator;
-import io.split.telemetry.domain.enums.LastSynchronizationRecordsEnum;
 import io.split.telemetry.domain.enums.MethodEnum;
 import io.split.telemetry.storage.TelemetryConfigProducer;
 import io.split.telemetry.storage.TelemetryEvaluationProducer;
@@ -138,7 +137,7 @@ public final class SplitClientImpl implements SplitClient {
         if (_config.blockUntilReady() <= 0) {
             throw new IllegalArgumentException("setBlockUntilReadyTimeout must be positive but in config was: " + _config.blockUntilReady());
         }
-        if (!_gates.isSDKReady(_config.blockUntilReady())) {
+        if (!_gates.waitUntilInternalReady(_config.blockUntilReady())) {
             throw new TimeoutException("SDK was not ready in " + _config.blockUntilReady()+ " milliseconds");
         }
         _log.debug(String.format("Split SDK ready in %d ms", (System.currentTimeMillis() - startTime)));
@@ -188,7 +187,7 @@ public final class SplitClientImpl implements SplitClient {
     private SplitResult getTreatmentWithConfigInternal(String method, String matchingKey, String bucketingKey, String split, Map<String, Object> attributes, MethodEnum methodEnum) {
         long initTime = System.currentTimeMillis();
         try {
-            if(!_gates.isSDKReadyNow()){
+            if(!_gates.isSDKReady()){
                 _log.warn(method + ": the SDK is not ready, results may be incorrect. Make sure to wait for SDK readiness before using this method");
                 _telemetryConfigProducer.recordNonReadyUsage();
             }
@@ -215,7 +214,7 @@ public final class SplitClientImpl implements SplitClient {
 
             EvaluatorImp.TreatmentLabelAndChangeNumber result = _evaluator.evaluateFeature(matchingKey, bucketingKey, split, attributes);
 
-            if (result.treatment.equals(Treatments.CONTROL) && result.label.equals(Labels.DEFINITION_NOT_FOUND) && _gates.isSDKReadyNow()) {
+            if (result.treatment.equals(Treatments.CONTROL) && result.label.equals(Labels.DEFINITION_NOT_FOUND) && _gates.isSDKReady()) {
                 _log.warn(
                         "getTreatment: you passed \"" + split + "\" that does not exist in this environment, " +
                                 "please double check what Splits exist in the web console.");

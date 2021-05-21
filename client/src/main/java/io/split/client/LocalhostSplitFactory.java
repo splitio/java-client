@@ -56,9 +56,9 @@ public final class LocalhostSplitFactory implements SplitFactory {
         SplitCache splitCache = new InMemoryCacheImp();
         SDKReadinessGates sdkReadinessGates = new SDKReadinessGates();
 
-        sdkReadinessGates.splitsAreReady();
         _cacheUpdaterService = new CacheUpdaterService(splitCache);
         _cacheUpdaterService.updateCache(splitAndKeyToTreatment);
+        sdkReadinessGates.sdkInternalReady();
         _client = new SplitClientImpl(this, splitCache,
                 new ImpressionsManager.NoOpImpressionsManager(), new NoopEventClient(),
                 SplitClientConfig.builder().setBlockUntilReadyTimeout(1).build(), sdkReadinessGates, new EvaluatorImp(splitCache), new NoopTelemetryStorage(), new NoopTelemetryStorage());

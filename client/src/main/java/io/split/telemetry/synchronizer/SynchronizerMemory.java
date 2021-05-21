@@ -32,18 +32,20 @@ public class SynchronizerMemory implements TelemetrySynchronizer{
     private TelemetryStorageConsumer _teleTelemetryStorageConsumer;
     private SplitCache _splitCache;
     private SegmentCache _segmentCache;
+    private final long _initStartTime;
 
     public SynchronizerMemory(CloseableHttpClient client, URI telemetryRootEndpoint, TelemetryStorageConsumer telemetryStorageConsumer, SplitCache splitCache,
-                              SegmentCache segmentCache, TelemetryRuntimeProducer telemetryRuntimeProducer) throws URISyntaxException {
+                              SegmentCache segmentCache, TelemetryRuntimeProducer telemetryRuntimeProducer, long initStartTime) throws URISyntaxException {
         _httpHttpTelemetryMemorySender = HttpTelemetryMemorySender.create(client, telemetryRootEndpoint, telemetryRuntimeProducer);
         _teleTelemetryStorageConsumer = telemetryStorageConsumer;
         _splitCache = splitCache;
         _segmentCache = segmentCache;
+        _initStartTime = initStartTime;
     }
 
     @Override
-    public void synchronizeConfig(SplitClientConfig config, long timeUntilReady, Map<String, Long> factoryInstances, List<String> tags) {
-        _httpHttpTelemetryMemorySender.postConfig(generateConfig(config, timeUntilReady, factoryInstances, tags));
+    public void synchronizeConfig(SplitClientConfig config, long readyTimeStamp, Map<String, Long> factoryInstances, List<String> tags) {
+        _httpHttpTelemetryMemorySender.postConfig(generateConfig(config, readyTimeStamp, factoryInstances, tags));
     }
 
     @Override
@@ -74,7 +76,7 @@ public class SynchronizerMemory implements TelemetrySynchronizer{
         return stats;
     }
 
-    private Config generateConfig(SplitClientConfig splitClientConfig, long timeUntilReady, Map<String, Long> factoryInstances, List<String> tags) {
+    private Config generateConfig(SplitClientConfig splitClientConfig, long readyTimestamp, Map<String, Long> factoryInstances, List<String> tags) {
         Config config = new Config();
         Rates rates = new Rates();
         URLOverrides urlOverrides = new URLOverrides();
@@ -110,7 +112,7 @@ public class SynchronizerMemory implements TelemetrySynchronizer{
         config.set_eventsQueueSize(splitClientConfig.eventsQueueSize());
         config.set_tags(getListMaxSize(tags));
         config.set_activeFactories(factoryInstances.size());
-        config.set_timeUntilReady(timeUntilReady);
+        config.set_timeUntilReady(readyTimestamp - _initStartTime);
         config.set_rates(rates);
         config.set_urlOverrides(urlOverrides);
         config.set_streamingEnabled(splitClientConfig.streamingEnabled());

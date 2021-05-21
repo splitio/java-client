@@ -82,12 +82,6 @@ public class SegmentSynchronizationTaskImp implements SegmentSynchronizationTask
                 return;
             }
 
-            try {
-                _gates.registerSegment(segmentName);
-            } catch (InterruptedException e) {
-                _log.error("Unable to register segment " + segmentName);
-            }
-
             segment = new SegmentFetcherImp(segmentName, _segmentChangeFetcher, _gates, _segmentCache, _telemetryRuntimeProducer);
 
             if (_running.get()) {
@@ -165,16 +159,21 @@ public class SegmentSynchronizationTaskImp implements SegmentSynchronizationTask
     }
 
     @Override
-    public void fetchAllSynchronous() {
+    public boolean fetchAllSynchronous() {
+        AtomicBoolean fetchAllStatus = new AtomicBoolean(true);
         _segmentFetchers
                 .entrySet()
                 .stream().map(e -> _scheduledExecutorService.submit(e.getValue()::runWhitCacheHeader))
                 .collect(Collectors.toList())
                 .stream().forEach(future -> {
                     try {
-                        future.get();
+                        if(!future.get()) {
+                            fetchAllStatus.set(false);
+                        };
                     } catch (Exception ex) {
+                        fetchAllStatus.set(false);
                         _log.error(ex.getMessage());
                     }});
+        return fetchAllStatus.get();
     }
 }

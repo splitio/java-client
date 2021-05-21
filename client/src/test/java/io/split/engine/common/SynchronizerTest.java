@@ -34,12 +34,13 @@ public class SynchronizerTest {
 
     @Test
     public void syncAll() throws InterruptedException {
+        Mockito.when(_splitFetcher.fetchAll(true)).thenReturn(true);
+        Mockito.when(_segmentFetcher.fetchAllSynchronous()).thenReturn(true);
         _synchronizer.syncAll();
 
-        Thread.sleep(100);
+        Thread.sleep(1000);
         Mockito.verify(_splitFetcher, Mockito.times(1)).fetchAll(true);
         Mockito.verify(_segmentFetcher, Mockito.times(1)).fetchAllSynchronous();
-        Mockito.verify(_gates, Mockito.times(1)).sdkInternalReady();
     }
 
     @Test

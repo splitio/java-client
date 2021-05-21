@@ -50,7 +50,8 @@ public class SynchronizerMemoryTest {
         TelemetryRuntimeProducer telemetryRuntimeProducer = Mockito.mock(TelemetryRuntimeProducer.class);
         SplitCache splitCache = Mockito.mock(SplitCache.class);
         SegmentCache segmentCache = Mockito.mock(SegmentCacheInMemoryImpl.class);
-        TelemetrySynchronizer telemetrySynchronizer = new SynchronizerMemory(httpClient, URI.create(TELEMETRY_ENDPOINT), consumer, splitCache, segmentCache, telemetryRuntimeProducer);
+        SplitClientConfig config = Mockito.mock(SplitClientConfig.class);
+        TelemetrySynchronizer telemetrySynchronizer = new SynchronizerMemory(httpClient, URI.create(TELEMETRY_ENDPOINT), consumer, splitCache, segmentCache, telemetryRuntimeProducer, 0l);
         return telemetrySynchronizer;
     }
 
