@@ -53,12 +53,7 @@ public class SynchronizerImp implements Synchronizer {
 
     @Override
     public boolean syncAll() {
-        AtomicBoolean syncStatus = new AtomicBoolean(false);
-        if(_splitFetcher.fetchAll(true) &&
-        _segmentSynchronizationTaskImp.fetchAllSynchronous()) {
-            syncStatus.set(true);
-        }
-        return syncStatus.get();
+        return _splitFetcher.fetchAll(true) && _segmentSynchronizationTaskImp.fetchAllSynchronous();
     }
 
     @Override

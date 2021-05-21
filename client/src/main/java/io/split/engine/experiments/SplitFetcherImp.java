@@ -149,6 +149,7 @@ public class SplitFetcherImp implements SplitFetcher {
         long start = _splitCache.getChangeNumber();
         try {
             runWithoutExceptionHandling(addCacheHeader);
+            return true;
         } catch (InterruptedException e) {
             _log.warn("Interrupting split fetcher task");
             Thread.currentThread().interrupt();
@@ -164,6 +165,5 @@ public class SplitFetcherImp implements SplitFetcher {
                 _log.debug("split fetch before: " + start + ", after: " + _splitCache.getChangeNumber());
             }
         }
-        return true;
     }
 }

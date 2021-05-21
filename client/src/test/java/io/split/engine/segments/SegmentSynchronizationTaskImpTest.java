@@ -1,16 +1,21 @@
 package io.split.engine.segments;
 
+import com.google.common.collect.Maps;
 import io.split.engine.SDKReadinessGates;
 import io.split.cache.SegmentCache;
 import io.split.telemetry.storage.InMemoryTelemetryStorage;
 import io.split.telemetry.storage.TelemetryStorage;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mockito;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.lang.reflect.Field;
+import java.lang.reflect.Modifier;
 import java.util.List;
+import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
@@ -79,5 +84,53 @@ public class SegmentSynchronizationTaskImpTest {
         assertThat(fetcher1.get(), is(sameInstance(fetcher2.get())));
     }
 
+    @Test
+    public void testFetchAllAsynchronousAndGetFalse() throws NoSuchFieldException, IllegalAccessException {
+        SDKReadinessGates gates = new SDKReadinessGates();
+        SegmentCache segmentCache = Mockito.mock(SegmentCache.class);
+        ConcurrentMap<String, SegmentFetcher> _segmentFetchers = Maps.newConcurrentMap();
 
+        SegmentChangeFetcher segmentChangeFetcher = Mockito.mock(SegmentChangeFetcher.class);
+        SegmentFetcherImp segmentFetcher = Mockito.mock(SegmentFetcherImp.class);
+        _segmentFetchers.put("SF", segmentFetcher);
+        final SegmentSynchronizationTaskImp fetchers = new SegmentSynchronizationTaskImp(segmentChangeFetcher, 1L, 1, gates, segmentCache, TELEMETRY_STORAGE);
+        Mockito.doNothing().when(segmentFetcher).callLoopRun(Mockito.anyBoolean(),Mockito.anyBoolean());
+        Mockito.when(segmentFetcher.runWhitCacheHeader()).thenReturn(false);
+        Mockito.when(segmentFetcher.fetchAndUpdate(Mockito.anyBoolean())).thenReturn(false);
+        Mockito.doNothing().when(segmentFetcher).callLoopRun(Mockito.anyBoolean(),Mockito.anyBoolean());
+
+        // Before executing, we'll update the map of segmentFecthers via reflection.
+        Field backoffBase = SegmentSynchronizationTaskImp.class.getDeclaredField("_segmentFetchers");
+        backoffBase.setAccessible(true);
+        Field modifiersField = Field.class.getDeclaredField("modifiers");
+        modifiersField.setAccessible(true);
+        modifiersField.setInt(backoffBase, backoffBase.getModifiers() & ~Modifier.FINAL);
+
+        backoffBase.set(fetchers, _segmentFetchers); // 1ms
+        fetcher1.set(segmentFetcher);
+        boolean fetch = fetchers.fetchAllSynchronous();
+        Assert.assertEquals(false, fetch);
+    }
+
+    @Test
+    public void testFetchAllAsynchronousAndGetTrue() throws NoSuchFieldException, IllegalAccessException {
+        SDKReadinessGates gates = new SDKReadinessGates();
+        SegmentCache segmentCache = Mockito.mock(SegmentCache.class);
+
+        SegmentChangeFetcher segmentChangeFetcher = Mockito.mock(SegmentChangeFetcher.class);
+        SegmentFetcherImp segmentFetcher = Mockito.mock(SegmentFetcherImp.class);
+        final SegmentSynchronizationTaskImp fetchers = new SegmentSynchronizationTaskImp(segmentChangeFetcher, 1L, 1, gates, segmentCache, TELEMETRY_STORAGE);
+
+        // Before executing, we'll update the map of segmentFecthers via reflection.
+        Field backoffBase = SegmentSynchronizationTaskImp.class.getDeclaredField("_segmentFetchers");
+        backoffBase.setAccessible(true);
+        Field modifiersField = Field.class.getDeclaredField("modifiers");
+        modifiersField.setAccessible(true);
+        modifiersField.setInt(backoffBase, backoffBase.getModifiers() & ~Modifier.FINAL);
+        Mockito.doNothing().when(segmentFetcher).callLoopRun(Mockito.anyBoolean(),Mockito.anyBoolean());
+        Mockito.when(segmentFetcher.runWhitCacheHeader()).thenReturn(true);
+        Mockito.when(segmentFetcher.fetchAndUpdate(Mockito.anyBoolean())).thenReturn(true);
+        boolean fetch = fetchers.fetchAllSynchronous();
+        Assert.assertEquals(true, fetch);
+    }
 }

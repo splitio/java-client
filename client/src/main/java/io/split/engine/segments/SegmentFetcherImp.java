@@ -1,5 +1,6 @@
 package io.split.engine.segments;
 
+import com.google.common.annotations.VisibleForTesting;
 import io.split.cache.SegmentCache;
 import io.split.client.dtos.SegmentChange;
 import io.split.engine.SDKReadinessGates;
@@ -116,7 +117,8 @@ public class SegmentFetcherImp implements SegmentFetcher {
         return bldr.toString();
     }
 
-    private void callLoopRun(boolean isFetch, boolean addCacheHeader){
+    @VisibleForTesting
+    void callLoopRun(boolean isFetch, boolean addCacheHeader){
         while (true) {
             long start = _segmentCache.getChangeNumber(_segmentName);
             runWithoutExceptionHandling(addCacheHeader);
@@ -131,23 +133,26 @@ public class SegmentFetcherImp implements SegmentFetcher {
     }
 
     @Override
-    public void runWhitCacheHeader(){
-        this.fetchAndUpdate(true);
+    public boolean runWhitCacheHeader(){
+        return this.fetchAndUpdate(true);
     }
 
     /**
      * Calls callLoopRun and after fetchs segment.
      * @param addCacheHeader indicates if CacheHeader is required
      */
-    private void fetchAndUpdate(boolean addCacheHeader) {
+    @VisibleForTesting
+    boolean fetchAndUpdate(boolean addCacheHeader) {
         try {
             // Do this again in case the previous call errored out.
             callLoopRun(true, addCacheHeader);
+            return true;
         } catch (Throwable t) {
             _log.error("RefreshableSegmentFetcher failed: " + t.getMessage());
             if (_log.isDebugEnabled()) {
                 _log.debug("Reason:", t);
             }
+            return false;
         }
     }
 

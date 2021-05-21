@@ -167,7 +167,9 @@ public class SegmentSynchronizationTaskImp implements SegmentSynchronizationTask
                 .collect(Collectors.toList())
                 .stream().forEach(future -> {
                     try {
-                        future.get();
+                        if(!future.get()) {
+                            fetchAllStatus.set(false);
+                        };
                     } catch (Exception ex) {
                         fetchAllStatus.set(false);
                         _log.error(ex.getMessage());

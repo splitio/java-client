@@ -9,7 +9,7 @@ public interface SegmentFetcher {
      */
     void fetch(boolean addCacheHeader);
 
-    void runWhitCacheHeader();
+    boolean runWhitCacheHeader();
 
     void fetchAll();
 }
