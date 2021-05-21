@@ -83,16 +83,6 @@ public class EventsClientImplTest {
     @Test
     public void testEventDropped() throws URISyntaxException, NoSuchFieldException, IllegalAccessException {
         CloseableHttpClient client = Mockito.mock(CloseableHttpClient.class);
-        Field eventDroppedConsumer = EventClientImpl.class.getDeclaredField("_consumerExecutor");
-        ExecutorService executorService = Executors.newFixedThreadPool(2);
-        eventDroppedConsumer.setAccessible(true);
-
-        Field modifiersField = Field.class.getDeclaredField("modifiers");
-        modifiersField.setAccessible(true);
-        modifiersField.setInt(eventDroppedConsumer, eventDroppedConsumer.getModifiers() & ~Modifier.FINAL);
-        executorService.execute(() -> {
-
-        });
         EventClientImpl eventClient = new EventClientImpl(new LinkedBlockingQueue<>(2),
                 client,
                 URI.create("https://kubernetesturl.com/split"),
@@ -100,7 +90,6 @@ public class EventsClientImplTest {
                 100000, // Long period so it doesn't flush by timeout expiration.
                 0, TELEMETRY_STORAGE);
         eventClient.close();
-        eventDroppedConsumer.set(eventClient, executorService); // 1ms
         for (int i = 0; i < 3; ++i) {
             Event event = new Event();
             eventClient.track(event, 1);
