@@ -100,14 +100,13 @@ public class SegmentSynchronizationTaskImpTest {
         Mockito.doNothing().when(segmentFetcher).callLoopRun(Mockito.anyBoolean(),Mockito.anyBoolean());
 
         // Before executing, we'll update the map of segmentFecthers via reflection.
-        Field backoffBase = SegmentSynchronizationTaskImp.class.getDeclaredField("_segmentFetchers");
-        backoffBase.setAccessible(true);
+        Field segmentFetchersForced = SegmentSynchronizationTaskImp.class.getDeclaredField("_segmentFetchers");
+        segmentFetchersForced.setAccessible(true);
         Field modifiersField = Field.class.getDeclaredField("modifiers");
         modifiersField.setAccessible(true);
-        modifiersField.setInt(backoffBase, backoffBase.getModifiers() & ~Modifier.FINAL);
+        modifiersField.setInt(segmentFetchersForced, segmentFetchersForced.getModifiers() & ~Modifier.FINAL);
 
-        backoffBase.set(fetchers, _segmentFetchers); // 1ms
-        fetcher1.set(segmentFetcher);
+        segmentFetchersForced.set(fetchers, _segmentFetchers); // 1ms
         boolean fetch = fetchers.fetchAllSynchronous();
         Assert.assertEquals(false, fetch);
     }
@@ -117,16 +116,18 @@ public class SegmentSynchronizationTaskImpTest {
         SDKReadinessGates gates = new SDKReadinessGates();
         SegmentCache segmentCache = Mockito.mock(SegmentCache.class);
 
+        ConcurrentMap<String, SegmentFetcher> _segmentFetchers = Maps.newConcurrentMap();
         SegmentChangeFetcher segmentChangeFetcher = Mockito.mock(SegmentChangeFetcher.class);
         SegmentFetcherImp segmentFetcher = Mockito.mock(SegmentFetcherImp.class);
         final SegmentSynchronizationTaskImp fetchers = new SegmentSynchronizationTaskImp(segmentChangeFetcher, 1L, 1, gates, segmentCache, TELEMETRY_STORAGE);
 
         // Before executing, we'll update the map of segmentFecthers via reflection.
-        Field backoffBase = SegmentSynchronizationTaskImp.class.getDeclaredField("_segmentFetchers");
-        backoffBase.setAccessible(true);
+        Field segmentFetchersForced = SegmentSynchronizationTaskImp.class.getDeclaredField("_segmentFetchers");
+        segmentFetchersForced.setAccessible(true);
         Field modifiersField = Field.class.getDeclaredField("modifiers");
         modifiersField.setAccessible(true);
-        modifiersField.setInt(backoffBase, backoffBase.getModifiers() & ~Modifier.FINAL);
+        modifiersField.setInt(segmentFetchersForced, segmentFetchersForced.getModifiers() & ~Modifier.FINAL);
+        segmentFetchersForced.set(fetchers, _segmentFetchers); // 1ms
         Mockito.doNothing().when(segmentFetcher).callLoopRun(Mockito.anyBoolean(),Mockito.anyBoolean());
         Mockito.when(segmentFetcher.runWhitCacheHeader()).thenReturn(true);
         Mockito.when(segmentFetcher.fetchAndUpdate(Mockito.anyBoolean())).thenReturn(true);

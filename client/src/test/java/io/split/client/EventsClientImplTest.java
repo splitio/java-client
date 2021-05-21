@@ -1,6 +1,8 @@
 package io.split.client;
 
 import io.split.client.dtos.Event;
+import io.split.engine.segments.SegmentSynchronizationTaskImp;
+import io.split.telemetry.domain.enums.EventsDataRecordsEnum;
 import io.split.telemetry.storage.InMemoryTelemetryStorage;
 import io.split.telemetry.storage.TelemetryStorage;
 import org.apache.hc.client5.http.classic.methods.HttpUriRequest;
@@ -12,8 +14,12 @@ import org.junit.Test;
 import org.mockito.Mockito;
 
 import java.io.IOException;
+import java.lang.reflect.Field;
+import java.lang.reflect.Modifier;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.concurrent.LinkedBlockingQueue;
 
 public class EventsClientImplTest {
@@ -73,5 +79,35 @@ public class EventsClientImplTest {
         eventClient.track(event, 1024 * 32); // 159 32kb events should be about to flush
         Thread.sleep(2000);
         Mockito.verify(client, Mockito.times(1)).execute((HttpUriRequest) Mockito.any());
+    }
+
+    @Test
+    public void testEventDropped() throws URISyntaxException, NoSuchFieldException, IllegalAccessException {
+        CloseableHttpClient client = Mockito.mock(CloseableHttpClient.class);
+        Field eventDroppedConsumer = EventClientImpl.class.getDeclaredField("_consumerExecutor");
+        ExecutorService executorService = Executors.newFixedThreadPool(2);
+        eventDroppedConsumer.setAccessible(true);
+
+        Field modifiersField = Field.class.getDeclaredField("modifiers");
+        modifiersField.setAccessible(true);
+        modifiersField.setInt(eventDroppedConsumer, eventDroppedConsumer.getModifiers() & ~Modifier.FINAL);
+        executorService.execute(() -> {
+
+        });
+        EventClientImpl eventClient = new EventClientImpl(new LinkedBlockingQueue<>(2),
+                client,
+                URI.create("https://kubernetesturl.com/split"),
+                10000, // Long queue so it doesn't flush by # of events
+                100000, // Long period so it doesn't flush by timeout expiration.
+                0, TELEMETRY_STORAGE);
+        eventClient.close();
+        eventDroppedConsumer.set(eventClient, executorService); // 1ms
+        for (int i = 0; i < 3; ++i) {
+            Event event = new Event();
+            eventClient.track(event, 1);
+        }
+
+        Mockito.verify(TELEMETRY_STORAGE, Mockito.times(2)).recordEventStats(EventsDataRecordsEnum.EVENTS_QUEUED, 1);
+        Mockito.verify(TELEMETRY_STORAGE, Mockito.times(1)).recordEventStats(EventsDataRecordsEnum.EVENTS_DROPPED, 1);
     }
 }
