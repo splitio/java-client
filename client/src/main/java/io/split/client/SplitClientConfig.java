@@ -304,10 +304,10 @@ public class SplitClientConfig {
         private int _streamingReconnectBackoffBase = 1;
         private String _authServiceURL = "https://auth.split.io/api/auth";
         private String _streamingServiceURL = "https://streaming.split.io/sse";
-        private int _onDemandFetchRetryDelayMs = 50;
-        private int _onDemandFetchMaxRetries = 10;
-        private int _failedAttemptsBeforeLogging = -1;
-        private boolean _cdnDebugLogging = true;
+        private final int _onDemandFetchRetryDelayMs = 50;
+        private final int _onDemandFetchMaxRetries = 10;
+        private final int _failedAttemptsBeforeLogging = 10;
+        private final boolean _cdnDebugLogging = true;
 
         public Builder() {
         }
@@ -699,36 +699,6 @@ public class SplitClientConfig {
             return this;
         }
 
-        /**
-         * Set Streaming retry delay.
-         * @param onDemandFetchRetryDelayMs
-         * @return
-         */
-        public Builder streamingRetryDelay(int onDemandFetchRetryDelayMs) {
-            _onDemandFetchRetryDelayMs = onDemandFetchRetryDelayMs;
-            return this;
-        }
-
-        public Builder streamingFetchMaxRetries(int maxRetries) {
-            _onDemandFetchMaxRetries = maxRetries;
-            return this;
-        }
-
-        public Builder failedAttemptsBeforeLoggingCDNInfo(int failedAttemptsBeforeLogging) {
-            _failedAttemptsBeforeLogging = failedAttemptsBeforeLogging;
-            return this;
-        }
-
-        /**
-         * Enable logging response headers for requests made to our CDN.
-         * @param cdnDebugLogging
-         * @return
-         */
-        public Builder cdnDebugLogging(boolean cdnDebugLogging) {
-            _cdnDebugLogging = cdnDebugLogging;
-            return this;
-        }
-
         public SplitClientConfig build() {
             if (_featuresRefreshRate < 5 ) {
                 throw new IllegalArgumentException("featuresRefreshRate must be >= 5: " + _featuresRefreshRate);
@@ -804,10 +774,6 @@ public class SplitClientConfig {
             }
             if(_onDemandFetchMaxRetries <= 0) {
                 throw new IllegalStateException("_onDemandFetchMaxRetries must be > 0");
-            }
-
-            if (_failedAttemptsBeforeLogging < 0) {
-                _failedAttemptsBeforeLogging = _onDemandFetchMaxRetries / 2;
             }
 
             return new SplitClientConfig(
