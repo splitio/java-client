@@ -106,7 +106,7 @@ public class SegmentSynchronizationTaskImpTest {
         modifiersField.setAccessible(true);
         modifiersField.setInt(segmentFetchersForced, segmentFetchersForced.getModifiers() & ~Modifier.FINAL);
 
-        segmentFetchersForced.set(fetchers, _segmentFetchers); // 1ms
+        segmentFetchersForced.set(fetchers, _segmentFetchers);
         boolean fetch = fetchers.fetchAllSynchronous();
         Assert.assertEquals(false, fetch);
     }
@@ -127,7 +127,7 @@ public class SegmentSynchronizationTaskImpTest {
         Field modifiersField = Field.class.getDeclaredField("modifiers");
         modifiersField.setAccessible(true);
         modifiersField.setInt(segmentFetchersForced, segmentFetchersForced.getModifiers() & ~Modifier.FINAL);
-        segmentFetchersForced.set(fetchers, _segmentFetchers); // 1ms
+        segmentFetchersForced.set(fetchers, _segmentFetchers);
         Mockito.doNothing().when(segmentFetcher).callLoopRun(Mockito.anyBoolean(),Mockito.anyBoolean());
         Mockito.when(segmentFetcher.runWhitCacheHeader()).thenReturn(true);
         Mockito.when(segmentFetcher.fetchAndUpdate(Mockito.anyBoolean())).thenReturn(true);
