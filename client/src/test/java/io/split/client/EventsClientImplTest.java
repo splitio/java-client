@@ -1,7 +1,6 @@
 package io.split.client;
 
 import io.split.client.dtos.Event;
-import io.split.engine.segments.SegmentSynchronizationTaskImp;
 import io.split.telemetry.domain.enums.EventsDataRecordsEnum;
 import io.split.telemetry.storage.InMemoryTelemetryStorage;
 import io.split.telemetry.storage.TelemetryStorage;
