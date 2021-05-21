@@ -24,8 +24,10 @@ import java.io.StringBufferInputStream;
 import java.lang.reflect.InvocationTargetException;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import static org.mockito.Mockito.when;
 
@@ -106,11 +108,11 @@ public class HttpSplitChangeFetcherTest {
         Metrics.NoopMetrics metrics = new Metrics.NoopMetrics();
         HttpSplitChangeFetcher fetcher = HttpSplitChangeFetcher.create(httpClientMock, rootTarget, metrics);
 
-        fetcher.fetch(-1, new FetchOptions.Builder().cdnBypass(true).build());
+        fetcher.fetch(-1, new FetchOptions.Builder().targetChangeNumber(123).build());
         fetcher.fetch(-1, new FetchOptions.Builder().build());
         List<ClassicHttpRequest> captured = requestCaptor.getAllValues();
         Assert.assertEquals(captured.size(), 2);
-        Assert.assertTrue(captured.get(0).getUri().toString().contains("till="));
+        Assert.assertTrue(captured.get(0).getUri().toString().contains("till=123"));
         Assert.assertFalse(captured.get(1).getUri().toString().contains("till="));
     }
 
@@ -121,10 +123,15 @@ public class HttpSplitChangeFetcherTest {
         Metrics.NoopMetrics metrics = new Metrics.NoopMetrics();
         HttpSplitChangeFetcher fetcher = HttpSplitChangeFetcher.create(httpClientMock, rootTarget, metrics);
 
+        Set<Long> seen = new HashSet<>();
         long min = (long)Math.pow(2, 63) * (-1);
-        for (long x = 0; x < 100000000; x++) {
+        final long total = 10000000;
+        for (long x = 0; x < total; x++) {
             long r = fetcher.makeRandomTill();
             Assert.assertTrue(r < 0 && r > min);
+            seen.add(r);
         }
+
+        Assert.assertTrue(seen.size() >= (total * 0.9999));
     }
 }

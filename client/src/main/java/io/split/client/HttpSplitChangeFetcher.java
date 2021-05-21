@@ -60,7 +60,8 @@ public final class HttpSplitChangeFetcher implements SplitChangeFetcher {
     }
 
     long makeRandomTill() {
-        return (-1)*(int)Math.floor(Math.random()*(Math.pow(2, 63)));
+
+        return (-1)*(long)Math.floor(Math.random()*(Math.pow(2, 63)));
     }
 
     @Override
@@ -72,8 +73,8 @@ public final class HttpSplitChangeFetcher implements SplitChangeFetcher {
 
         try {
             URIBuilder uriBuilder = new URIBuilder(_target).addParameter(SINCE, "" + since);
-            if (options.cdnBypass()) {
-                uriBuilder.addParameter(TILL, "" + makeRandomTill());
+            if (options.hasCustomCN()) {
+                uriBuilder.addParameter(TILL, "" + options.targetCN());
             }
             URI uri = uriBuilder.build();
 

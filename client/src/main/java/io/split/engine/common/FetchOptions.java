@@ -5,13 +5,15 @@ import java.util.Objects;
 import java.util.function.Function;
 
 public class FetchOptions {
-    
+
+    public static final Long DEFAULT_TARGET_CHANGENUMBER = -1L;
+
     public static class Builder {
 
         public Builder() {}
 
         public Builder(FetchOptions opts) {
-            _cdnBypass = opts._cdnBypass;
+            _targetCN = opts._targetCN;
             _cacheControlHeaders = opts._cacheControlHeaders;
             _fastlyDebugHeader = opts._fastlyDebugHeader;
             _responseHeadersCallback = opts._responseHeadersCallback;
@@ -32,16 +34,16 @@ public class FetchOptions {
             return this;
         }
 
-        public Builder cdnBypass(boolean bypass) {
-            _cdnBypass = bypass;
+        public Builder targetChangeNumber(long targetCN) {
+            _targetCN = targetCN;
             return this;
         }
 
         public FetchOptions build() {
-            return new FetchOptions(_cacheControlHeaders, _cdnBypass, _responseHeadersCallback, _fastlyDebugHeader);
+            return new FetchOptions(_cacheControlHeaders, _targetCN, _responseHeadersCallback, _fastlyDebugHeader);
         }
 
-        private boolean _cdnBypass = false;
+        private long _targetCN = DEFAULT_TARGET_CHANGENUMBER;
         private boolean _cacheControlHeaders = false;
         private boolean _fastlyDebugHeader = false;
         private Function<Map<String, String>, Void> _responseHeadersCallback = null;
@@ -55,7 +57,9 @@ public class FetchOptions {
         return _fastlyDebugHeader;
     }
 
-    public boolean cdnBypass() { return _cdnBypass; }
+    public long targetCN() { return _targetCN; }
+
+    public boolean hasCustomCN() { return _targetCN != DEFAULT_TARGET_CHANGENUMBER; }
 
     public void handleResponseHeaders(Map<String, String> headers) {
         if (Objects.isNull(_responseHeadersCallback) || Objects.isNull(headers)) {
@@ -65,11 +69,11 @@ public class FetchOptions {
     }
 
     private FetchOptions(boolean cacheControlHeaders,
-                         boolean cdnBypass,
+                         long targetCN,
                          Function<Map<String, String>, Void> responseHeadersCallback,
                          boolean fastlyDebugHeader) {
         _cacheControlHeaders = cacheControlHeaders;
-        _cdnBypass = cdnBypass;
+        _targetCN = targetCN;
         _responseHeadersCallback = responseHeadersCallback;
         _fastlyDebugHeader = fastlyDebugHeader;
     }
@@ -84,16 +88,17 @@ public class FetchOptions {
 
         return Objects.equals(_cacheControlHeaders, other._cacheControlHeaders)
                 && Objects.equals(_fastlyDebugHeader, other._fastlyDebugHeader)
-                && Objects.equals(_responseHeadersCallback, other._responseHeadersCallback);
+                && Objects.equals(_responseHeadersCallback, other._responseHeadersCallback)
+                && Objects.equals(_targetCN, other._targetCN);
     }
 
     @Override
     public int hashCode() {
-        return com.google.common.base.Objects.hashCode(_cacheControlHeaders, _fastlyDebugHeader, _responseHeadersCallback);
+        return com.google.common.base.Objects.hashCode(_cacheControlHeaders, _fastlyDebugHeader, _responseHeadersCallback, _targetCN);
     }
 
     private final boolean _cacheControlHeaders;
     private final boolean _fastlyDebugHeader;
-    private final boolean _cdnBypass;
+    private final long _targetCN;
     private final Function<Map<String, String>, Void> _responseHeadersCallback;
 }
