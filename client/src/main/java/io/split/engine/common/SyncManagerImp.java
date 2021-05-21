@@ -105,7 +105,6 @@ public class SyncManagerImp implements SyncManager {
                     Thread.currentThread().sleep(1000);
                 } catch (InterruptedException e) {
                     _log.warn("Sdk Initializer thread interrupted");
-                    e.printStackTrace();
                     Thread.currentThread().interrupt();
                 }
             }
