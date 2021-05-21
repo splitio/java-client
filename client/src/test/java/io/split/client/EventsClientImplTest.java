@@ -9,16 +9,13 @@ import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
 import org.apache.hc.client5.http.impl.classic.HttpClients;
 import org.hamcrest.Matchers;
 import org.junit.Assert;
+import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mockito;
 
 import java.io.IOException;
-import java.lang.reflect.Field;
-import java.lang.reflect.Modifier;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 import java.util.concurrent.LinkedBlockingQueue;
 
 public class EventsClientImplTest {
@@ -82,13 +79,14 @@ public class EventsClientImplTest {
 
     @Test
     public void testEventDropped() throws URISyntaxException, NoSuchFieldException, IllegalAccessException, InterruptedException {
+        TelemetryStorage telemetryStorage = Mockito.mock(InMemoryTelemetryStorage.class);
         CloseableHttpClient client = Mockito.mock(CloseableHttpClient.class);
         EventClientImpl eventClient = new EventClientImpl(new LinkedBlockingQueue<>(2),
                 client,
                 URI.create("https://kubernetesturl.com/split"),
                 10000, // Long queue so it doesn't flush by # of events
                 100000, // Long period so it doesn't flush by timeout expiration.
-                0, TELEMETRY_STORAGE);
+                0, telemetryStorage);
         eventClient.close();
         Thread.sleep(1000);
         for (int i = 0; i < 3; ++i) {
@@ -96,7 +94,7 @@ public class EventsClientImplTest {
             eventClient.track(event, 1);
         }
 
-        Mockito.verify(TELEMETRY_STORAGE, Mockito.times(2)).recordEventStats(EventsDataRecordsEnum.EVENTS_QUEUED, 1);
-        Mockito.verify(TELEMETRY_STORAGE, Mockito.times(1)).recordEventStats(EventsDataRecordsEnum.EVENTS_DROPPED, 1);
+        Mockito.verify(telemetryStorage, Mockito.times(2)).recordEventStats(EventsDataRecordsEnum.EVENTS_QUEUED, 1);
+        Mockito.verify(telemetryStorage, Mockito.times(1)).recordEventStats(EventsDataRecordsEnum.EVENTS_DROPPED, 1);
     }
 }
