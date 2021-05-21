@@ -81,7 +81,7 @@ public class EventsClientImplTest {
     }
 
     @Test
-    public void testEventDropped() throws URISyntaxException, NoSuchFieldException, IllegalAccessException {
+    public void testEventDropped() throws URISyntaxException, NoSuchFieldException, IllegalAccessException, InterruptedException {
         CloseableHttpClient client = Mockito.mock(CloseableHttpClient.class);
         EventClientImpl eventClient = new EventClientImpl(new LinkedBlockingQueue<>(2),
                 client,
@@ -90,6 +90,7 @@ public class EventsClientImplTest {
                 100000, // Long period so it doesn't flush by timeout expiration.
                 0, TELEMETRY_STORAGE);
         eventClient.close();
+        Thread.sleep(1000);
         for (int i = 0; i < 3; ++i) {
             Event event = new Event();
             eventClient.track(event, 1);
