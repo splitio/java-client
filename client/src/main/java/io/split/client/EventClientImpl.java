@@ -54,23 +54,15 @@ public class EventClientImpl implements EventClient {
     private final TelemetryRuntimeProducer _telemetryRuntimeProducer;
 
     ThreadFactory eventClientThreadFactory(final String name) {
-        return new ThreadFactory() {
-            @Override
-            public Thread newThread(final Runnable r) {
-                return new Thread(new Runnable() {
-                    @Override
-                    public void run() {
-                        Thread.currentThread().setPriority(MIN_PRIORITY);
-                        r.run();
-                    }
-                }, name);
-            }
-        };
+        return r -> new Thread(() -> {
+            Thread.currentThread().setPriority(MIN_PRIORITY);
+            r.run();
+        }, name);
     }
 
 
     public static EventClientImpl create(CloseableHttpClient httpclient, URI eventsRootTarget, int maxQueueSize, long flushIntervalMillis, int waitBeforeShutdown, TelemetryRuntimeProducer telemetryRuntimeProducer) throws URISyntaxException {
-        return new EventClientImpl(new LinkedBlockingQueue<WrappedEvent>(),
+        return new EventClientImpl(new LinkedBlockingQueue<>(maxQueueSize),
                 httpclient,
                 Utils.appendPath(eventsRootTarget, "api/events/bulk"),
                 maxQueueSize,
@@ -131,10 +123,14 @@ public class EventClientImpl implements EventClient {
             if (event == null) {
                 return false;
             }
-            _eventQueue.put(new WrappedEvent(event, eventSize));
-            _telemetryRuntimeProducer.recordEventStats(EventsDataRecordsEnum.EVENTS_QUEUED, 1);
+            if(_eventQueue.offer(new WrappedEvent(event, eventSize))) {
+                _telemetryRuntimeProducer.recordEventStats(EventsDataRecordsEnum.EVENTS_QUEUED, 1);
+            }
+            else {
+                _telemetryRuntimeProducer.recordEventStats(EventsDataRecordsEnum.EVENTS_DROPPED, 1);
+            }
 
-        } catch (ClassCastException | NullPointerException | InterruptedException e) {
+        } catch (ClassCastException | NullPointerException | IllegalArgumentException e) {
             _telemetryRuntimeProducer.recordEventStats(EventsDataRecordsEnum.EVENTS_DROPPED, 1);
             _log.warn("Interruption when adding event withed while adding message %s.", event);
             return false;
@@ -164,7 +160,7 @@ public class EventClientImpl implements EventClient {
             List<Event> events = new ArrayList<>();
             long accumulated = 0;
             try {
-                while (true) {
+                while (!Thread.currentThread().isInterrupted()) {
                     WrappedEvent data = _eventQueue.take();
                     Event event = data.event();
                     Long size = data.size();
