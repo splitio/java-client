@@ -27,7 +27,7 @@ import io.split.engine.segments.SegmentSynchronizationTaskImp;
 import io.split.integrations.IntegrationsConfig;
 import io.split.telemetry.storage.InMemoryTelemetryStorage;
 import io.split.telemetry.storage.TelemetryStorage;
-import io.split.telemetry.synchronizer.SynchronizerMemory;
+import io.split.telemetry.synchronizer.TelemetrySubmitter;
 import io.split.telemetry.synchronizer.TelemetrySyncTask;
 import io.split.telemetry.synchronizer.TelemetrySynchronizer;
 import org.apache.hc.client5.http.auth.AuthScope;
@@ -123,7 +123,7 @@ public class SplitFactoryImpl implements SplitFactory {
         // Cache Initialisations
         _segmentCache = new SegmentCacheInMemoryImpl();
         _splitCache = new InMemoryCacheImp();
-        _telemetrySynchronizer = new SynchronizerMemory(_httpclient, URI.create(config.get_telemetryURL()), _telemetryStorage, _splitCache, _segmentCache, _telemetryStorage, _startTime);
+        _telemetrySynchronizer = new TelemetrySubmitter(_httpclient, URI.create(config.get_telemetryURL()), _telemetryStorage, _splitCache, _segmentCache, _telemetryStorage, _startTime);
 
 
         // Segments

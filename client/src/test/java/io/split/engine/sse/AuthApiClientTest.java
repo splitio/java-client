@@ -8,6 +8,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
 import org.apache.hc.core5.http.HttpStatus;
 import org.junit.Assert;
+import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mockito;
 
@@ -15,7 +16,12 @@ import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 
 public class AuthApiClientTest {
-    private static final TelemetryStorage TELEMETRY_STORAGE = Mockito.mock(InMemoryTelemetryStorage.class);
+    private static TelemetryStorage TELEMETRY_STORAGE = Mockito.mock(InMemoryTelemetryStorage.class);
+
+    @Before
+    public void setUp() {
+        TELEMETRY_STORAGE = Mockito.mock(InMemoryTelemetryStorage.class);
+    }
     @Test
     public void authenticateWithPushEnabledShouldReturnSuccess() throws IOException, IllegalAccessException, NoSuchMethodException, InvocationTargetException {
         CloseableHttpClient httpClientMock = TestHelper.mockHttpClient("streaming-auth-push-enabled.json", HttpStatus.SC_OK);
@@ -28,6 +34,9 @@ public class AuthApiClientTest {
         Assert.assertFalse(result.isRetry());
         Assert.assertFalse(StringUtils.isEmpty(result.getToken()));
         Assert.assertTrue(result.getExpiration() > 0);
+        Mockito.verify(TELEMETRY_STORAGE, Mockito.times(1)).recordTokenRefreshes();
+        Mockito.verify(TELEMETRY_STORAGE, Mockito.times(1)).recordSyncLatency(Mockito.anyObject(), Mockito.anyLong());
+        Mockito.verify(TELEMETRY_STORAGE, Mockito.times(1)).recordSuccessfulSync(Mockito.anyObject(), Mockito.anyLong());
 
     }
 
@@ -95,5 +104,6 @@ public class AuthApiClientTest {
         Assert.assertTrue(StringUtils.isEmpty(result.getChannels()));
         Assert.assertTrue(StringUtils.isEmpty(result.getToken()));
         Assert.assertFalse(result.isRetry());
+        Mockito.verify(TELEMETRY_STORAGE, Mockito.times(1)).recordAuthRejections();
     }
 }
