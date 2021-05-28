@@ -127,6 +127,7 @@ public class EventClientImpl implements EventClient {
                 _telemetryRuntimeProducer.recordEventStats(EventsDataRecordsEnum.EVENTS_QUEUED, 1);
             }
             else {
+                _log.warn("Event dropped.");
                 _telemetryRuntimeProducer.recordEventStats(EventsDataRecordsEnum.EVENTS_DROPPED, 1);
             }
 

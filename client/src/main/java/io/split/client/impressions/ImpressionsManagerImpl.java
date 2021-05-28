@@ -105,14 +105,13 @@ public class ImpressionsManagerImpl implements ImpressionsManager, Closeable {
         }
 
         if (Mode.DEBUG.equals(_mode) || shouldQueueImpression(impression)) {
-            if (!shouldQueueImpression(impression)) {
-                _telemetryRuntimeProducer.recordImpressionStats(ImpressionsDataTypeEnum.IMPRESSIONS_DEDUPED, 1);
-            }
             if (_storage.put(KeyImpression.fromImpression(impression))) {
                 _telemetryRuntimeProducer.recordImpressionStats(ImpressionsDataTypeEnum.IMPRESSIONS_QUEUED, 1);
+            } else {
+                _telemetryRuntimeProducer.recordImpressionStats(ImpressionsDataTypeEnum.IMPRESSIONS_DROPPED, 1);
             }
-            else {
-                _telemetryRuntimeProducer.recordImpressionStats(ImpressionsDataTypeEnum.IMPRESSIONS_DROPPED, 1);            }
+        } else {
+            _telemetryRuntimeProducer.recordImpressionStats(ImpressionsDataTypeEnum.IMPRESSIONS_DEDUPED, 1);
         }
     }
 
