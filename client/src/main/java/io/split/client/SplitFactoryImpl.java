@@ -145,27 +145,10 @@ public class SplitFactoryImpl implements SplitFactory {
                 _eventsRootTarget,
                 config.eventsQueueSize(),
                 config.eventFlushIntervalInMillis(),
-                config.waitBeforeShutdown());
+                config.waitBeforeShutdown(),
+                _telemetryStorage);
 
         _telemetrySyncTask = new TelemetrySyncTask(config.get_telemetryRefreshRate(), _telemetrySynchronizer);
-
-        // SyncManager
-        _syncManager = SyncManagerImp.build(config.streamingEnabled(),
-                _splitSynchronizationTask,
-                _splitFetcher,
-                _segmentSynchronizationTaskImp,
-                _splitCache,
-                config.authServiceURL(),
-                _httpclient,
-                config.streamingServiceURL(),
-                config.authRetryBackoffBase(),
-                buildSSEdHttpClient(config),
-                _segmentCache,
-                config.streamingRetryDelay(),
-                config.streamingFetchMaxRetries(),
-                config.failedAttemptsBeforeLogging(),
-                config.cdnDebugLogging());
-        _syncManager.start();
 
         // Evaluator
         _evaluator = new EvaluatorImp(_splitCache);
@@ -174,7 +157,6 @@ public class SplitFactoryImpl implements SplitFactory {
         _client = new SplitClientImpl(this,
                 _splitCache,
                 _impressionsManager,
-                _cachedFireAndForgetMetrics,
                 _eventClient,
                 config,
                 _gates,
@@ -186,9 +168,21 @@ public class SplitFactoryImpl implements SplitFactory {
         _manager = new SplitManagerImpl(_splitCache, config, _gates, _telemetryStorage);
 
         // SyncManager
-        _syncManager = SyncManagerImp.build(config.streamingEnabled(), _splitSynchronizationTask, _splitFetcher, _segmentSynchronizationTaskImp, _splitCache,
-                config.authServiceURL(), _httpclient, config.streamingServiceURL(), config.authRetryBackoffBase(), buildSSEdHttpClient(apiToken, config),
-                _segmentCache, config.streamingRetryDelay(), _gates, _telemetryStorage, _telemetrySynchronizer,config);
+        _syncManager = SyncManagerImp.build(config.streamingEnabled(),
+                _splitSynchronizationTask,
+                _splitFetcher,
+                _segmentSynchronizationTaskImp,
+                _splitCache,
+                config.authServiceURL(),
+                _httpclient,
+                config.streamingServiceURL(),
+                config.authRetryBackoffBase(),
+                buildSSEdHttpClient(apiToken, config),
+                _segmentCache,
+                config.streamingRetryDelay(),
+                config.streamingFetchMaxRetries(),
+                config.failedAttemptsBeforeLogging(),
+                config.cdnDebugLogging(), _gates, _telemetryStorage, _telemetrySynchronizer,config);
         _syncManager.start();
 
         // DestroyOnShutDown

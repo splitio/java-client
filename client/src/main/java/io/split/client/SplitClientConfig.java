@@ -852,12 +852,12 @@ public class SplitClientConfig {
                     _streamingReconnectBackoffBase,
                     _authServiceURL,
                     _streamingServiceURL,
+                    _telemetryURl,
+                    _telemetryRefreshRate,
                     _onDemandFetchRetryDelayMs,
                     _onDemandFetchMaxRetries,
                     _failedAttemptsBeforeLogging,
-                    _cdnDebugLogging,
-                    _telemetryURl,
-                    _telemetryRefreshRate);
+                    _cdnDebugLogging);
         }
     }
 }

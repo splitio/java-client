@@ -32,11 +32,9 @@ public class SynchronizerImp implements Synchronizer {
     private final SplitSynchronizationTask _splitSynchronizationTask;
     private final SplitFetcher _splitFetcher;
     private final SegmentSynchronizationTask _segmentSynchronizationTaskImp;
-    private final ScheduledExecutorService _syncAllScheduledExecutorService;
     private final SplitCache _splitCache;
     private final SegmentCache _segmentCache;
     private final int _onDemandFetchRetryDelayMs;
-    private final SDKReadinessGates _gates;
     private final int _onDemandFetchMaxRetries;
     private final int _failedAttemptsBeforeLogging;
     private final boolean _cdnResponseHeadersLogging;
@@ -49,32 +47,25 @@ public class SynchronizerImp implements Synchronizer {
                            SplitCache splitCache,
                            SegmentCache segmentCache,
                            int onDemandFetchRetryDelayMs,
-                           SDKReadinessGates gates,
                            int onDemandFetchMaxRetries,
                            int failedAttemptsBeforeLogging,
-                           boolean cdnResponseHeadersLogging) {
+                           boolean cdnResponseHeadersLogging,
+                           SDKReadinessGates gates) {
         _splitSynchronizationTask = checkNotNull(splitSynchronizationTask);
         _splitFetcher = checkNotNull(splitFetcher);
         _segmentSynchronizationTaskImp = checkNotNull(segmentSynchronizationTaskImp);
         _splitCache = checkNotNull(splitCache);
         _segmentCache = checkNotNull(segmentCache);
         _onDemandFetchRetryDelayMs = checkNotNull(onDemandFetchRetryDelayMs);
-        _gates = checkNotNull(gates);
-        _onDemandFetchRetryDelayMs = onDemandFetchRetryDelayMs;
         _cdnResponseHeadersLogging = cdnResponseHeadersLogging;
         _onDemandFetchMaxRetries = onDemandFetchMaxRetries;
         _failedAttemptsBeforeLogging = failedAttemptsBeforeLogging;
 
-        ThreadFactory splitsThreadFactory = new ThreadFactoryBuilder()
-                .setDaemon(true)
-                .setNameFormat("Split-SyncAll-%d")
-                .build();
-        _syncAllScheduledExecutorService = Executors.newSingleThreadScheduledExecutor(splitsThreadFactory);
     }
 
     @Override
     public boolean syncAll() {
-        return _splitFetcher.fetchAll(true) && _segmentSynchronizationTaskImp.fetchAllSynchronous();
+        return _splitFetcher.fetchAll(new FetchOptions.Builder().cacheControlHeaders(true).build()) && _segmentSynchronizationTaskImp.fetchAllSynchronous();
     }
 
     @Override

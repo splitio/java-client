@@ -153,7 +153,7 @@ public class SplitFetcherImp implements SplitFetcher {
         }
     }
     @Override
-    public void fetchAll(FetchOptions options) {
+    public boolean fetchAll(FetchOptions options) {
         _log.debug("Fetch splits starting ...");
         long start = _splitCache.getChangeNumber();
         try {

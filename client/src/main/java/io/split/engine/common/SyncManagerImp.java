@@ -96,22 +96,23 @@ public class SyncManagerImp implements SyncManager {
                                        SplitClientConfig config) {
         LinkedBlockingQueue<PushManager.Status> pushMessages = new LinkedBlockingQueue<>();
         Synchronizer synchronizer = new SynchronizerImp(splitSynchronizationTask,
-                                                        splitFetcher,
-                                                        segmentSynchronizationTaskImp,
-                                                        splitCache,
-                                                        segmentCache,
-                                                        streamingRetryDelay,
-                                                        maxOnDemandFetchRetries,
-                                                        failedAttemptsBeforeLogging,
-                                                        cdnDebugLogging, 
-                                                        gates);
+                                        splitFetcher,
+                                        segmentSynchronizationTaskImp,
+                                        splitCache,
+                                        segmentCache,
+                                        streamingRetryDelay,
+                                        maxOnDemandFetchRetries,
+                                        failedAttemptsBeforeLogging,
+                                        cdnDebugLogging,
+                                        gates);
 
         PushManager pushManager = PushManagerImp.build(synchronizer,
                                                         streamingServiceUrl,
                                                         authUrl,
                                                         httpClient,
                                                         pushMessages,
-                                                        sseHttpClient);
+                                                        sseHttpClient,
+                                                        telemetryRuntimeProducer);
 
         return new SyncManagerImp(streamingEnabledConfig,
                                   synchronizer,

@@ -39,18 +39,18 @@ public class SynchronizerTest {
         _segmentCache = Mockito.mock(SegmentCache.class);
         _gates = Mockito.mock(SDKReadinessGates.class);
 
-        _synchronizer = new SynchronizerImp(_refreshableSplitFetcherTask, _splitFetcher, _segmentFetcher, _splitCache, _segmentCache, 50, 10, 5, false);
+        _synchronizer = new SynchronizerImp(_refreshableSplitFetcherTask, _splitFetcher, _segmentFetcher, _splitCache, _segmentCache, 50, 10, 5, false, _gates);
     }
 
     @Test
     public void syncAll() throws InterruptedException {
-        Mockito.when(_splitFetcher.fetchAll(true)).thenReturn(true);
+        Mockito.when(_splitFetcher.fetchAll(Mockito.anyObject())).thenReturn(true);
         Mockito.when(_segmentFetcher.fetchAllSynchronous()).thenReturn(true);
         _synchronizer.syncAll();
 
-        Thread.sleep(100);
-        Mockito.verify(_splitFetcher, Mockito.times(1)).fetchAll(new FetchOptions.Builder().cacheControlHeaders(true).build());
-        Mockito.verify(_segmentFetcher, Mockito.times(1)).fetchAll(true);
+        Thread.sleep(1000);
+        Mockito.verify(_splitFetcher, Mockito.times(1)).fetchAll(Mockito.anyObject());
+        Mockito.verify(_segmentFetcher, Mockito.times(1)).fetchAllSynchronous();
     }
 
     @Test
@@ -99,7 +99,8 @@ public class SynchronizerTest {
                 50,
                 3,
                 1,
-                true);
+                true,
+                Mockito.mock(SDKReadinessGates.class));
 
         ArgumentCaptor<FetchOptions> optionsCaptor = ArgumentCaptor.forClass(FetchOptions.class);
         AtomicInteger calls = new AtomicInteger();
@@ -133,7 +134,8 @@ public class SynchronizerTest {
                 50,
                 3,
                 1,
-                true);
+                true,
+                Mockito.mock(SDKReadinessGates.class));
 
         ArgumentCaptor<FetchOptions> optionsCaptor = ArgumentCaptor.forClass(FetchOptions.class);
         AtomicInteger calls = new AtomicInteger();
@@ -190,7 +192,8 @@ public class SynchronizerTest {
                 50,
                 3,
                 1,
-                true);
+                true,
+                Mockito.mock(SDKReadinessGates.class));
 
         SegmentFetcher fetcher = Mockito.mock(SegmentFetcher.class);
         when(_segmentFetcher.getFetcher("someSegment")).thenReturn(fetcher);

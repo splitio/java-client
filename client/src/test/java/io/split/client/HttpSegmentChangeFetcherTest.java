@@ -97,7 +97,7 @@ public class HttpSegmentChangeFetcherTest {
         when(httpClientMock.execute(requestCaptor.capture())).thenReturn(TestHelper.classicResponseToCloseableMock(response));
 
         Metrics.NoopMetrics metrics = new Metrics.NoopMetrics();
-        HttpSegmentChangeFetcher fetcher = HttpSegmentChangeFetcher.create(httpClientMock, rootTarget, metrics);
+        HttpSegmentChangeFetcher fetcher = HttpSegmentChangeFetcher.create(httpClientMock, rootTarget, Mockito.mock(TelemetryStorage.class));
 
         fetcher.fetch("someSegment", -1, new FetchOptions.Builder().targetChangeNumber(123).build());
         fetcher.fetch("someSegment2",-1, new FetchOptions.Builder().build());

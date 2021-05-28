@@ -94,10 +94,10 @@ public class SegmentSynchronizationTaskImpTest {
         SegmentFetcherImp segmentFetcher = Mockito.mock(SegmentFetcherImp.class);
         _segmentFetchers.put("SF", segmentFetcher);
         final SegmentSynchronizationTaskImp fetchers = new SegmentSynchronizationTaskImp(segmentChangeFetcher, 1L, 1, gates, segmentCache, TELEMETRY_STORAGE);
-        Mockito.doNothing().when(segmentFetcher).callLoopRun(Mockito.anyBoolean(),Mockito.anyBoolean());
+        Mockito.doNothing().when(segmentFetcher).callLoopRun(Mockito.anyObject());
         Mockito.when(segmentFetcher.runWhitCacheHeader()).thenReturn(false);
-        Mockito.when(segmentFetcher.fetchAndUpdate(Mockito.anyBoolean())).thenReturn(false);
-        Mockito.doNothing().when(segmentFetcher).callLoopRun(Mockito.anyBoolean(),Mockito.anyBoolean());
+        Mockito.when(segmentFetcher.fetchAndUpdate(Mockito.anyObject())).thenReturn(false);
+        Mockito.doNothing().when(segmentFetcher).callLoopRun(Mockito.anyObject());
 
         // Before executing, we'll update the map of segmentFecthers via reflection.
         Field segmentFetchersForced = SegmentSynchronizationTaskImp.class.getDeclaredField("_segmentFetchers");
@@ -128,9 +128,9 @@ public class SegmentSynchronizationTaskImpTest {
         modifiersField.setAccessible(true);
         modifiersField.setInt(segmentFetchersForced, segmentFetchersForced.getModifiers() & ~Modifier.FINAL);
         segmentFetchersForced.set(fetchers, _segmentFetchers);
-        Mockito.doNothing().when(segmentFetcher).callLoopRun(Mockito.anyBoolean(),Mockito.anyBoolean());
+        Mockito.doNothing().when(segmentFetcher).callLoopRun(Mockito.anyObject());
         Mockito.when(segmentFetcher.runWhitCacheHeader()).thenReturn(true);
-        Mockito.when(segmentFetcher.fetchAndUpdate(Mockito.anyBoolean())).thenReturn(true);
+        Mockito.when(segmentFetcher.fetchAndUpdate(Mockito.anyObject())).thenReturn(true);
         boolean fetch = fetchers.fetchAllSynchronous();
         Assert.assertEquals(true, fetch);
     }

@@ -136,7 +136,7 @@ public class SegmentFetcherImp implements SegmentFetcher {
 
     @Override
     public boolean runWhitCacheHeader(){
-        this.fetchAndUpdate(new FetchOptions.Builder().cacheControlHeaders(true).build());
+       return this.fetchAndUpdate(new FetchOptions.Builder().cacheControlHeaders(true).build());
     }
 
     /**
