@@ -4,8 +4,10 @@ import io.split.client.SplitClientConfig;
 import io.split.client.dtos.KeyImpression;
 import io.split.client.dtos.TestImpressions;
 
+import io.split.telemetry.domain.enums.ImpressionsDataTypeEnum;
 import io.split.telemetry.storage.InMemoryTelemetryStorage;
 import io.split.telemetry.storage.TelemetryStorage;
+import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -21,15 +23,19 @@ import java.util.List;
 
 import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.assertThat;
-import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.*;
 
 /**
  * Created by patricioe on 6/20/16.
  */
 @RunWith(MockitoJUnitRunner.class)
 public class ImpressionsManagerImplTest {
-    private static final TelemetryStorage TELEMETRY_STORAGE = Mockito.mock(InMemoryTelemetryStorage.class);
+    private static TelemetryStorage TELEMETRY_STORAGE = Mockito.mock(InMemoryTelemetryStorage.class);
+
+    @Before
+    public void setUp() {
+        TELEMETRY_STORAGE = Mockito.mock(InMemoryTelemetryStorage.class);
+    }
 
     @Captor
     private ArgumentCaptor<List<TestImpressions>> impressionsCaptor;
@@ -102,6 +108,7 @@ public class ImpressionsManagerImplTest {
         List<TestImpressions> captured = impressionsCaptor.getValue();
 
         assertThat(captured.size(), is(equalTo(3)));
+        Mockito.verify(TELEMETRY_STORAGE, times(1)).recordImpressionStats(ImpressionsDataTypeEnum.IMPRESSIONS_DROPPED, 1);
     }
 
     @Test
@@ -138,6 +145,8 @@ public class ImpressionsManagerImplTest {
         assertThat(captured.size(), is(equalTo(1)));
         assertThat(captured.get(0).keyImpressions.size(), is(equalTo(4)));
         assertThat(captured.get(0).keyImpressions.get(0), is(equalTo(ki1)));
+        Mockito.verify(TELEMETRY_STORAGE, times(2)).recordImpressionStats(ImpressionsDataTypeEnum.IMPRESSIONS_DEDUPED, 1);
+        Mockito.verify(TELEMETRY_STORAGE, times(4)).recordImpressionStats(ImpressionsDataTypeEnum.IMPRESSIONS_QUEUED, 1);
     }
 
     @Test

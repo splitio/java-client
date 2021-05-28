@@ -1,5 +1,6 @@
 package io.split.telemetry.synchronizer;
 
+import com.google.common.annotations.VisibleForTesting;
 import io.split.cache.SegmentCache;
 import io.split.cache.SplitCache;
 import io.split.client.SplitClientConfig;
@@ -23,7 +24,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-public class SynchronizerMemory implements TelemetrySynchronizer{
+public class TelemetrySubmitter implements TelemetrySynchronizer{
 
     private static final int OPERATION_MODE = 0;
     private static  final String STORAGE = "memory";
@@ -34,7 +35,7 @@ public class SynchronizerMemory implements TelemetrySynchronizer{
     private SegmentCache _segmentCache;
     private final long _initStartTime;
 
-    public SynchronizerMemory(CloseableHttpClient client, URI telemetryRootEndpoint, TelemetryStorageConsumer telemetryStorageConsumer, SplitCache splitCache,
+    public TelemetrySubmitter(CloseableHttpClient client, URI telemetryRootEndpoint, TelemetryStorageConsumer telemetryStorageConsumer, SplitCache splitCache,
                               SegmentCache segmentCache, TelemetryRuntimeProducer telemetryRuntimeProducer, long initStartTime) throws URISyntaxException {
         _httpHttpTelemetryMemorySender = HttpTelemetryMemorySender.create(client, telemetryRootEndpoint, telemetryRuntimeProducer);
         _teleTelemetryStorageConsumer = telemetryStorageConsumer;
@@ -53,7 +54,17 @@ public class SynchronizerMemory implements TelemetrySynchronizer{
         _httpHttpTelemetryMemorySender.postStats(generateStats());
     }
 
-    private Stats generateStats() throws Exception {
+    @Override
+    public void finalSynchronization(long splitCount, long segmentCount, long segmentKeyCount) throws Exception {
+        Stats stats = generateStats();
+        stats.set_splitCount(splitCount);
+        stats.set_segmentCount(segmentCount);
+        stats.set_segmentKeyCount(segmentKeyCount);
+        _httpHttpTelemetryMemorySender.postStats(stats);
+    }
+
+    @VisibleForTesting
+    Stats generateStats() throws Exception {
         Stats stats = new Stats();
         stats.set_lastSynchronization(_teleTelemetryStorageConsumer.getLastSynchronization());
         stats.set_methodLatencies(_teleTelemetryStorageConsumer.popLatencies());
@@ -76,7 +87,8 @@ public class SynchronizerMemory implements TelemetrySynchronizer{
         return stats;
     }
 
-    private Config generateConfig(SplitClientConfig splitClientConfig, long readyTimestamp, Map<String, Long> factoryInstances, List<String> tags) {
+    @VisibleForTesting
+    Config generateConfig(SplitClientConfig splitClientConfig, long readyTimestamp, Map<String, Long> factoryInstances, List<String> tags) {
         Config config = new Config();
         Rates rates = new Rates();
         URLOverrides urlOverrides = new URLOverrides();
@@ -93,11 +105,11 @@ public class SynchronizerMemory implements TelemetrySynchronizer{
         rates.set_segments(splitClientConfig.segmentsRefreshRate());
         rates.set_splits(splitClientConfig.featuresRefreshRate());
 
-        urlOverrides.set_auth(SplitClientConfig.AUTH_ENDPOINT.equals(splitClientConfig.authServiceURL()));
-        urlOverrides.set_stream(SplitClientConfig.STREAMING_ENDPOINT.equals(splitClientConfig.streamingServiceURL()));
-        urlOverrides.set_sdk(SplitClientConfig.SDK_ENDPOINT.equals(splitClientConfig.endpoint()));
-        urlOverrides.set_events(SplitClientConfig.EVENTS_ENDPOINT.equals(splitClientConfig.eventsEndpoint()));
-        urlOverrides.set_telemetry(SplitClientConfig.TELEMETRY_ENDPOINT.equals(splitClientConfig.get_telemetryURL()));
+        urlOverrides.set_auth(!SplitClientConfig.AUTH_ENDPOINT.equals(splitClientConfig.authServiceURL()));
+        urlOverrides.set_stream(!SplitClientConfig.STREAMING_ENDPOINT.equals(splitClientConfig.streamingServiceURL()));
+        urlOverrides.set_sdk(!SplitClientConfig.SDK_ENDPOINT.equals(splitClientConfig.endpoint()));
+        urlOverrides.set_events(!SplitClientConfig.EVENTS_ENDPOINT.equals(splitClientConfig.eventsEndpoint()));
+        urlOverrides.set_telemetry(!SplitClientConfig.TELEMETRY_ENDPOINT.equals(splitClientConfig.get_telemetryURL()));
 
         config.set_burTimeouts(_teleTelemetryStorageConsumer.getBURTimeouts());
         config.set_nonReadyUsages(_teleTelemetryStorageConsumer.getNonReadyUsages());
