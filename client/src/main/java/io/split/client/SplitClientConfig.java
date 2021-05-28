@@ -54,6 +54,9 @@ public class SplitClientConfig {
     private final String _telemetryURL;
     private final int _telemetryRefreshRate;
     private final int _onDemandFetchRetryDelayMs;
+    private final int _onDemandFetchMaxRetries;
+    private final int _failedAttemptsBeforeLogging;
+    private final boolean _cdnDebugLogging;
 
     // Proxy configs
     private final HttpHost _proxy;
@@ -100,7 +103,10 @@ public class SplitClientConfig {
                               String streamingServiceURL,
                               String telemetryURL,
                               int telemetryRefreshRate,
-                              int onDemandFetchRetryDelayMs) {
+                              int onDemandFetchRetryDelayMs,
+                              int onDemandFetchMaxRetries,
+                              int failedAttemptsBeforeLogging,
+                              boolean cdnDebugLogging) {
         _endpoint = endpoint;
         _eventsEndpoint = eventsEndpoint;
         _featuresRefreshRate = pollForFeatureChangesEveryNSeconds;
@@ -134,6 +140,9 @@ public class SplitClientConfig {
         _telemetryURL = telemetryURL;
         _telemetryRefreshRate = telemetryRefreshRate;
         _onDemandFetchRetryDelayMs = onDemandFetchRetryDelayMs;
+        _onDemandFetchMaxRetries = onDemandFetchMaxRetries;
+        _failedAttemptsBeforeLogging = failedAttemptsBeforeLogging;
+        _cdnDebugLogging = cdnDebugLogging;
 
         Properties props = new Properties();
         try {
@@ -271,6 +280,13 @@ public class SplitClientConfig {
     }
     public int streamingRetryDelay() {return _onDemandFetchRetryDelayMs;}
 
+    public int streamingFetchMaxRetries() {return _onDemandFetchMaxRetries;}
+
+    public int failedAttemptsBeforeLogging() {return _failedAttemptsBeforeLogging;}
+
+    public boolean cdnDebugLogging() { return _cdnDebugLogging; }
+
+
     public static final class Builder {
 
         private String _endpoint = SDK_ENDPOINT;
@@ -309,6 +325,9 @@ public class SplitClientConfig {
         private String _telemetryURl = TELEMETRY_ENDPOINT;
         private int _telemetryRefreshRate = 60;
         private int _onDemandFetchRetryDelayMs = 50;
+        private final int _onDemandFetchMaxRetries = 10;
+        private final int _failedAttemptsBeforeLogging = 10;
+        private final boolean _cdnDebugLogging = true;
 
         public Builder() {
         }
@@ -798,41 +817,47 @@ public class SplitClientConfig {
             if (_onDemandFetchRetryDelayMs <= 0) {
                 throw new IllegalStateException("streamingRetryDelay must be > 0");
             }
-
-                return new SplitClientConfig(
-                        _endpoint,
-                        _eventsEndpoint,
-                        _featuresRefreshRate,
-                        _segmentsRefreshRate,
-                        _impressionsRefreshRate,
-                        _impressionsQueueSize,
-                        _impressionsMode,
-                        _metricsRefreshRate,
-                        _connectionTimeout,
-                        _readTimeout,
-                        _numThreadsForSegmentFetch,
-                        _ready,
-                        _debugEnabled,
-                        _labelsEnabled,
-                        _ipAddressEnabled,
-                        _waitBeforeShutdown,
-                        proxy(),
-                        _proxyUsername,
-                        _proxyPassword,
-                        _eventsQueueSize,
-                        _eventFlushIntervalInMillis,
-                        _maxStringLength,
-                        _destroyOnShutDown,
-                        _splitFile,
-                        _integrationsConfig,
-                        _streamingEnabled,
-                        _authRetryBackoffBase,
-                        _streamingReconnectBackoffBase,
-                        _authServiceURL,
-                        _streamingServiceURL,
-                        _telemetryURl,
-                        _telemetryRefreshRate,
-                        _onDemandFetchRetryDelayMs);
+            if(_onDemandFetchMaxRetries <= 0) {
+                throw new IllegalStateException("_onDemandFetchMaxRetries must be > 0");
             }
+
+            return new SplitClientConfig(
+                    _endpoint,
+                    _eventsEndpoint,
+                    _featuresRefreshRate,
+                    _segmentsRefreshRate,
+                    _impressionsRefreshRate,
+                    _impressionsQueueSize,
+                    _impressionsMode,
+                    _metricsRefreshRate,
+                    _connectionTimeout,
+                    _readTimeout,
+                    _numThreadsForSegmentFetch,
+                    _ready,
+                    _debugEnabled,
+                    _labelsEnabled,
+                    _ipAddressEnabled,
+                    _waitBeforeShutdown,
+                    proxy(),
+                    _proxyUsername,
+                    _proxyPassword,
+                    _eventsQueueSize,
+                    _eventFlushIntervalInMillis,
+                    _maxStringLength,
+                    _destroyOnShutDown,
+                    _splitFile,
+                    _integrationsConfig,
+                    _streamingEnabled,
+                    _authRetryBackoffBase,
+                    _streamingReconnectBackoffBase,
+                    _authServiceURL,
+                    _streamingServiceURL,
+                    _onDemandFetchRetryDelayMs,
+                    _onDemandFetchMaxRetries,
+                    _failedAttemptsBeforeLogging,
+                    _cdnDebugLogging,
+                    _telemetryURl,
+                    _telemetryRefreshRate);
+        }
     }
 }

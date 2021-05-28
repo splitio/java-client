@@ -8,6 +8,7 @@ import io.split.cache.SplitCache;
 import io.split.telemetry.domain.enums.HTTPLatenciesEnum;
 import io.split.telemetry.domain.enums.LastSynchronizationRecordsEnum;
 import io.split.telemetry.storage.TelemetryRuntimeProducer;
+import io.split.engine.common.FetchOptions;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -46,13 +47,21 @@ public class SplitFetcherImp implements SplitFetcher {
     }
 
     @Override
-    public void forceRefresh(boolean addCacheHeader) {
+    public void forceRefresh(FetchOptions options) {
         _log.debug("Force Refresh splits starting ...");
+        final long INITIAL_CN = _splitCache.getChangeNumber();
         try {
             while (true) {
                 long start = _splitCache.getChangeNumber();
-                runWithoutExceptionHandling(addCacheHeader);
+                runWithoutExceptionHandling(options);
                 long end = _splitCache.getChangeNumber();
+
+                // If the previous execution was the first one, clear the `cdnBypass` flag
+                // for the next fetches. (This will clear a local copy of the fetch options,
+                // not the original object that was passed to this method).
+                if (INITIAL_CN == start) {
+                    options = new FetchOptions.Builder(options).targetChangeNumber(FetchOptions.DEFAULT_TARGET_CHANGENUMBER).build();
+                }
 
                 if (start >= end) {
                     break;
@@ -68,12 +77,12 @@ public class SplitFetcherImp implements SplitFetcher {
 
     @Override
     public void run() {
-        this.fetchAll(false);
+        this.fetchAll(new FetchOptions.Builder().cacheControlHeaders(false).build());
     }
 
-    private void runWithoutExceptionHandling(boolean addCacheHeader) throws InterruptedException {
+    private void runWithoutExceptionHandling(FetchOptions options) throws InterruptedException {
         long initTime = System.currentTimeMillis();
-        SplitChange change = _splitChangeFetcher.fetch(_splitCache.getChangeNumber(), addCacheHeader);
+        SplitChange change = _splitChangeFetcher.fetch(_splitCache.getChangeNumber(), options);
 
         if (change == null) {
             throw new IllegalStateException("SplitChange was null");
@@ -144,11 +153,11 @@ public class SplitFetcherImp implements SplitFetcher {
         }
     }
     @Override
-    public boolean fetchAll(boolean addCacheHeader) {
+    public void fetchAll(FetchOptions options) {
         _log.debug("Fetch splits starting ...");
         long start = _splitCache.getChangeNumber();
         try {
-            runWithoutExceptionHandling(addCacheHeader);
+            runWithoutExceptionHandling(options);
             return true;
         } catch (InterruptedException e) {
             _log.warn("Interrupting split fetcher task");
