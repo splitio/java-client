@@ -22,7 +22,6 @@ public class TelemetrySyncTaskTest {
         Thread.sleep(3000);
         Mockito.verify(telemetrySynchronizer, Mockito.times(2)).synchronizeStats();
         telemetrySyncTask.stopScheduledTask(1l, 1l, 1l);
-        Thread.sleep(2000);
         Mockito.verify(telemetrySynchronizer, Mockito.times(2)).synchronizeStats();
         Mockito.verify(telemetrySynchronizer, Mockito.times(1)).finalSynchronization(1l, 1l, 1l);
     }
