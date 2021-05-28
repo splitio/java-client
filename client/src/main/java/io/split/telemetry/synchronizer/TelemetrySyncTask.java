@@ -30,19 +30,19 @@ public class TelemetrySyncTask {
     }
 
     @VisibleForTesting
-    protected void startScheduledTask() throws Exception {
+    protected void startScheduledTask() {
         _telemetrySyncScheduledExecutorService.scheduleWithFixedDelay(() -> {
             try {
                 _telemetrySynchronizer.synchronizeStats();
             } catch (Exception e) {
                 e.printStackTrace();
             }
-        },0l,  _telemetryRefreshRate, TimeUnit.SECONDS);
+        },_telemetryRefreshRate,  _telemetryRefreshRate, TimeUnit.SECONDS);
     }
 
-    public void stopScheduledTask() {
+    public void stopScheduledTask(long splitCount, long segmentCount, long segmentKeyCount) {
         try {
-            _telemetrySynchronizer.synchronizeStats();
+            _telemetrySynchronizer.finalSynchronization(splitCount, segmentCount, segmentKeyCount);
         } catch (Exception e) {
             e.printStackTrace();
         }

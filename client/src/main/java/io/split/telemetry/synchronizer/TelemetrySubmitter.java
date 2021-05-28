@@ -54,6 +54,15 @@ public class TelemetrySubmitter implements TelemetrySynchronizer{
         _httpHttpTelemetryMemorySender.postStats(generateStats());
     }
 
+    @Override
+    public void finalSynchronization(long splitCount, long segmentCount, long segmentKeyCount) throws Exception {
+        Stats stats = generateStats();
+        stats.set_splitCount(splitCount);
+        stats.set_segmentCount(segmentCount);
+        stats.set_segmentKeyCount(segmentKeyCount);
+        _httpHttpTelemetryMemorySender.postStats(stats);
+    }
+
     @VisibleForTesting
     Stats generateStats() throws Exception {
         Stats stats = new Stats();

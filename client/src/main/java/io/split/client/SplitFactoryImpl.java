@@ -182,18 +182,22 @@ public class SplitFactoryImpl implements SplitFactory {
         if (!isTerminated) {
             _log.info("Shutdown called for split");
             try {
-                _segmentSynchronizationTaskImp.close();
-                _log.info("Successful shutdown of segment fetchers");
-                _splitSynchronizationTask.close();
-                _log.info("Successful shutdown of splits");
+                long splitCount = _splitCache.getAll().stream().count();
+                long segmentCount = _segmentCache.getAll().stream().count();
+                long segmentKeyCount = _segmentCache.getAllKeys().stream().count();
                 _impressionsManager.close();
                 _log.info("Successful shutdown of impressions manager");
                 _eventClient.close();
                 _log.info("Successful shutdown of eventClient");
+                _segmentSynchronizationTaskImp.close();
+                _log.info("Successful shutdown of segment fetchers");
+                _splitSynchronizationTask.close();
+                _log.info("Successful shutdown of splits");
                 _syncManager.shutdown();
                 _log.info("Successful shutdown of syncManager");
                 _telemetryStorage.recordSessionLength(System.currentTimeMillis() - _startTime);
-                _telemetrySyncTask.stopScheduledTask();
+                _telemetrySyncTask.stopScheduledTask(splitCount, segmentCount, segmentKeyCount);
+                _log.info("Successful shutdown of telemetry sync task");
                 _httpclient.close();
                 _log.info("Successful shutdown of httpclient");
             } catch (IOException e) {
