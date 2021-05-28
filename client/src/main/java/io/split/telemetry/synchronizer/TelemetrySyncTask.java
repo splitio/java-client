@@ -2,6 +2,9 @@ package io.split.telemetry.synchronizer;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
+import io.split.client.SplitManagerImpl;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
@@ -10,6 +13,7 @@ import java.util.concurrent.TimeUnit;
 
 public class TelemetrySyncTask {
 
+    private static final Logger _log = LoggerFactory.getLogger(TelemetrySyncTask.class);
     private final ScheduledExecutorService _telemetrySyncScheduledExecutorService;
     private final TelemetrySynchronizer _telemetrySynchronizer;
     private final int _telemetryRefreshRate;
@@ -44,7 +48,7 @@ public class TelemetrySyncTask {
         try {
             _telemetrySynchronizer.finalSynchronization(splitCount, segmentCount, segmentKeyCount);
         } catch (Exception e) {
-            e.printStackTrace();
+            _log.warn("Error trying to send telemetry stats.");
         }
         _telemetrySyncScheduledExecutorService.shutdown();
     }
