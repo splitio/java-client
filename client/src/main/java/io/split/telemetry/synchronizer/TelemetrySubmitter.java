@@ -78,7 +78,7 @@ public class TelemetrySubmitter implements TelemetrySynchronizer{
         stats.set_impressionsDropped(_teleTelemetryStorageConsumer.getImpressionsStats(ImpressionsDataTypeEnum.IMPRESSIONS_DROPPED));
         stats.set_splitCount(_splitCache.getAll().stream().count());
         stats.set_segmentCount(_segmentCache.getAll().stream().count());
-        stats.set_segmentKeyCount(_segmentCache.getAllKeys().stream().count());
+        stats.set_segmentKeyCount(_segmentCache.getKeyCount());
         stats.set_sessionLengthMs(_teleTelemetryStorageConsumer.getSessionLength());
         stats.set_eventsQueued(_teleTelemetryStorageConsumer.getEventStats(EventsDataRecordsEnum.EVENTS_QUEUED));
         stats.set_eventsDropped(_teleTelemetryStorageConsumer.getEventStats(EventsDataRecordsEnum.EVENTS_DROPPED));
@@ -109,7 +109,7 @@ public class TelemetrySubmitter implements TelemetrySynchronizer{
         urlOverrides.set_stream(!SplitClientConfig.STREAMING_ENDPOINT.equals(splitClientConfig.streamingServiceURL()));
         urlOverrides.set_sdk(!SplitClientConfig.SDK_ENDPOINT.equals(splitClientConfig.endpoint()));
         urlOverrides.set_events(!SplitClientConfig.EVENTS_ENDPOINT.equals(splitClientConfig.eventsEndpoint()));
-        urlOverrides.set_telemetry(!SplitClientConfig.TELEMETRY_ENDPOINT.equals(splitClientConfig.get_telemetryURL()));
+        urlOverrides.set_telemetry(!SplitClientConfig.TELEMETRY_ENDPOINT.equals(splitClientConfig.telemetryURL()));
 
         config.set_burTimeouts(_teleTelemetryStorageConsumer.getBURTimeouts());
         config.set_nonReadyUsages(_teleTelemetryStorageConsumer.getNonReadyUsages());

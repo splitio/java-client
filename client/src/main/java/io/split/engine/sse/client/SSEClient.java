@@ -48,8 +48,6 @@ public class SSEClient {
     private final static String KEEP_ALIVE_PAYLOAD = ":keepalive\n";
     private final static long CONNECT_TIMEOUT = 30000;
     private static final Logger _log = LoggerFactory.getLogger(SSEClient.class);
-    private final static int REQUESTED_CONNECTION_ERROR = 0;
-    private final static int NON_REQUESTED_CONNECTION_ERROR = 1;
 
     private final ExecutorService _connectionExecutor = Executors.newSingleThreadExecutor(new ThreadFactoryBuilder()
             .setDaemon(true)
@@ -135,27 +133,27 @@ public class SSEClient {
                     _log.debug(exc.getMessage());
                     if (SOCKET_CLOSED_MESSAGE.equals(exc.getMessage())) { // Connection closed by us
                         _statusCallback.apply(StatusMessage.FORCED_STOP);
-                        _telemetryRuntimeProducer.recordStreamingEvents(new StreamingEvent(StreamEventsEnum.SSE_CONNECTION_ERROR.get_type(), REQUESTED_CONNECTION_ERROR, System.currentTimeMillis()));
+                        _telemetryRuntimeProducer.recordStreamingEvents(new StreamingEvent(StreamEventsEnum.SSE_CONNECTION_ERROR.getType(), StreamEventsEnum.StreamEventsValues.REQUESTED_CONNECTION_ERROR.getValue(), System.currentTimeMillis()));
                         return;
                     }
                     // Connection closed by server
                     _statusCallback.apply(StatusMessage.RETRYABLE_ERROR);
-                    _telemetryRuntimeProducer.recordStreamingEvents(new StreamingEvent(StreamEventsEnum.SSE_CONNECTION_ERROR.get_type(), NON_REQUESTED_CONNECTION_ERROR, System.currentTimeMillis()));
+                    _telemetryRuntimeProducer.recordStreamingEvents(new StreamingEvent(StreamEventsEnum.SSE_CONNECTION_ERROR.getType(), StreamEventsEnum.StreamEventsValues.NON_REQUESTED_CONNECTION_ERROR.getValue(), System.currentTimeMillis()));
                     return;
                 } catch (IOException exc) { // Other type of connection error
                     if(!_forcedStop.get()) {
                         _log.debug(String.format("SSE connection ended abruptly: %s. Retying", exc.getMessage()));
-                        _telemetryRuntimeProducer.recordStreamingEvents(new StreamingEvent(StreamEventsEnum.SSE_CONNECTION_ERROR.get_type(), REQUESTED_CONNECTION_ERROR, System.currentTimeMillis()));
+                        _telemetryRuntimeProducer.recordStreamingEvents(new StreamingEvent(StreamEventsEnum.SSE_CONNECTION_ERROR.getType(), StreamEventsEnum.StreamEventsValues.REQUESTED_CONNECTION_ERROR.getValue(), System.currentTimeMillis()));
                         _statusCallback.apply(StatusMessage.RETRYABLE_ERROR);
                         return;
                     }
 
-                    _telemetryRuntimeProducer.recordStreamingEvents(new StreamingEvent(StreamEventsEnum.SSE_CONNECTION_ERROR.get_type(), NON_REQUESTED_CONNECTION_ERROR, System.currentTimeMillis()));
+                    _telemetryRuntimeProducer.recordStreamingEvents(new StreamingEvent(StreamEventsEnum.SSE_CONNECTION_ERROR.getType(), StreamEventsEnum.StreamEventsValues.NON_REQUESTED_CONNECTION_ERROR.getValue(), System.currentTimeMillis()));
                 }
             }
         } catch (Exception e) { // Any other error non related to the connection disables streaming altogether
 
-            _telemetryRuntimeProducer.recordStreamingEvents(new StreamingEvent(StreamEventsEnum.SSE_CONNECTION_ERROR.get_type(), NON_REQUESTED_CONNECTION_ERROR, System.currentTimeMillis()));
+            _telemetryRuntimeProducer.recordStreamingEvents(new StreamingEvent(StreamEventsEnum.SSE_CONNECTION_ERROR.getType(), StreamEventsEnum.StreamEventsValues.NON_REQUESTED_CONNECTION_ERROR.getValue(), System.currentTimeMillis()));
             _log.warn(e.getMessage(), e);
             _statusCallback.apply(StatusMessage.NONRETRYABLE_ERROR);
         } finally {

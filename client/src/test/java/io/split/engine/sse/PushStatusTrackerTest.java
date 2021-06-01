@@ -128,7 +128,7 @@ public class PushStatusTrackerTest {
         pushStatusTracker.handleSseStatus(SSEClient.StatusMessage.CONNECTED);
         pushStatusTracker.handleSseStatus(SSEClient.StatusMessage.FIRST_EVENT);
 
-        Mockito.verify(telemetryStorage, Mockito.times(2)).recordStreamingEvents(Mockito.any());
+        Mockito.verify(telemetryStorage, Mockito.times(1)).recordStreamingEvents(Mockito.any());
     }
 
     @Test

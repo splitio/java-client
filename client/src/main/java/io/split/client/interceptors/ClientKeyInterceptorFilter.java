@@ -14,7 +14,7 @@ public class ClientKeyInterceptorFilter implements HttpRequestInterceptor {
     private final String _clientKey;
 
     public static ClientKeyInterceptorFilter instance(String apiToken) {
-        return new ClientKeyInterceptorFilter(apiToken.substring(apiToken.length() - 4));
+        return new ClientKeyInterceptorFilter(getKey(apiToken));
     }
 
     private ClientKeyInterceptorFilter(String clientKey) {
@@ -24,5 +24,9 @@ public class ClientKeyInterceptorFilter implements HttpRequestInterceptor {
     @Override
     public void process(HttpRequest httpRequest, EntityDetails entityDetails, HttpContext httpContext) throws HttpException, IOException {
         httpRequest.addHeader(CLIENT_KEY, _clientKey);
+    }
+
+    private static String getKey(String clientKey) {
+        return clientKey.length() >4 ? clientKey.substring(clientKey.length() - 4) : clientKey;
     }
 }

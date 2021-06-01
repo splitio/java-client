@@ -37,9 +37,6 @@ import static com.google.common.base.Preconditions.checkNotNull;
 public final class SplitClientImpl implements SplitClient {
     public static final SplitResult SPLIT_RESULT_CONTROL = new SplitResult(Treatments.CONTROL, null);
 
-    private static final String GET_TREATMENT = "getTreatment";
-    private static final String GET_TREATMENT_WITH_CONFIG = "getTreatmentWithConfig";
-
     private static final Logger _log = LoggerFactory.getLogger(SplitClientImpl.class);
 
     private final SplitFactory _container;
@@ -79,27 +76,27 @@ public final class SplitClientImpl implements SplitClient {
 
     @Override
     public String getTreatment(String key, String split, Map<String, Object> attributes) {
-        return getTreatmentWithConfigInternal(GET_TREATMENT, key, null, split, attributes, MethodEnum.TREATMENT).treatment();
+        return getTreatmentWithConfigInternal(key, null, split, attributes, MethodEnum.TREATMENT).treatment();
     }
 
     @Override
     public String getTreatment(Key key, String split, Map<String, Object> attributes) {
-        return getTreatmentWithConfigInternal(GET_TREATMENT, key.matchingKey(), key.bucketingKey(), split, attributes, MethodEnum.TREATMENT).treatment();
+        return getTreatmentWithConfigInternal(key.matchingKey(), key.bucketingKey(), split, attributes, MethodEnum.TREATMENT).treatment();
     }
 
     @Override
     public SplitResult getTreatmentWithConfig(String key, String split) {
-        return getTreatmentWithConfigInternal(GET_TREATMENT_WITH_CONFIG, key, null, split, Collections.<String, Object>emptyMap(), MethodEnum.TREATMENT_WITH_CONFIG);
+        return getTreatmentWithConfigInternal(key, null, split, Collections.<String, Object>emptyMap(), MethodEnum.TREATMENT_WITH_CONFIG);
     }
 
     @Override
     public SplitResult getTreatmentWithConfig(String key, String split, Map<String, Object> attributes) {
-        return getTreatmentWithConfigInternal(GET_TREATMENT_WITH_CONFIG, key, null, split, attributes, MethodEnum.TREATMENT_WITH_CONFIG);
+        return getTreatmentWithConfigInternal(key, null, split, attributes, MethodEnum.TREATMENT_WITH_CONFIG);
     }
 
     @Override
     public SplitResult getTreatmentWithConfig(Key key, String split, Map<String, Object> attributes) {
-        return getTreatmentWithConfigInternal(GET_TREATMENT_WITH_CONFIG, key.matchingKey(), key.bucketingKey(), split, attributes, MethodEnum.TREATMENT_WITH_CONFIG);
+        return getTreatmentWithConfigInternal(key.matchingKey(), key.bucketingKey(), split, attributes, MethodEnum.TREATMENT_WITH_CONFIG);
     }
 
     @Override
@@ -184,11 +181,11 @@ public final class SplitClientImpl implements SplitClient {
         return _eventClient.track(event, propertiesResult.getEventSize());
     }
 
-    private SplitResult getTreatmentWithConfigInternal(String method, String matchingKey, String bucketingKey, String split, Map<String, Object> attributes, MethodEnum methodEnum) {
+    private SplitResult getTreatmentWithConfigInternal(String matchingKey, String bucketingKey, String split, Map<String, Object> attributes, MethodEnum methodEnum) {
         long initTime = System.currentTimeMillis();
         try {
             if(!_gates.isSDKReady()){
-                _log.warn(method + ": the SDK is not ready, results may be incorrect. Make sure to wait for SDK readiness before using this method");
+                _log.warn(methodEnum.getMethod() + ": the SDK is not ready, results may be incorrect. Make sure to wait for SDK readiness before using this method");
                 _telemetryConfigProducer.recordNonReadyUsage();
             }
             if (_container.isDestroyed()) {
@@ -196,15 +193,15 @@ public final class SplitClientImpl implements SplitClient {
                 return SPLIT_RESULT_CONTROL;
             }
 
-            if (!KeyValidator.isValid(matchingKey, "matchingKey", _config.maxStringLength(), method)) {
+            if (!KeyValidator.isValid(matchingKey, "matchingKey", _config.maxStringLength(), methodEnum.getMethod())) {
                 return SPLIT_RESULT_CONTROL;
             }
 
-            if (!KeyValidator.bucketingKeyIsValid(bucketingKey, _config.maxStringLength(), method)) {
+            if (!KeyValidator.bucketingKeyIsValid(bucketingKey, _config.maxStringLength(), methodEnum.getMethod())) {
                 return SPLIT_RESULT_CONTROL;
             }
 
-            Optional<String> splitNameResult = SplitNameValidator.isValid(split, method);
+            Optional<String> splitNameResult = SplitNameValidator.isValid(split, methodEnum.getMethod());
             if (!splitNameResult.isPresent()) {
                 return SPLIT_RESULT_CONTROL;
             }
@@ -226,7 +223,7 @@ public final class SplitClientImpl implements SplitClient {
                     split,
                     start,
                     result.treatment,
-                    String.format("sdk.%s", method),
+                    String.format("sdk.%s", methodEnum.getMethod()),
                     _config.labelsEnabled() ? result.label : null,
                     result.changeNumber,
                     attributes

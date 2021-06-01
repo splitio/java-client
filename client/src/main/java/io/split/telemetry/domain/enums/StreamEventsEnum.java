@@ -17,7 +17,27 @@ public enum StreamEventsEnum {
         _type = type;
     }
 
-    public int get_type() {
+    public int getType() {
         return _type;
+    }
+
+    public enum StreamEventsValues {
+        STREAMING_DISABLED(0),
+        STREAMING_PAUSED(2),
+        STREAMING_EVENT(0),
+        POLLING_EVENT(1),
+        REQUESTED_CONNECTION_ERROR(0),
+        NON_REQUESTED_CONNECTION_ERROR (1),
+        STREAMING_ENABLED(1);
+
+        private long _value;
+
+        StreamEventsValues(long value) {
+            _value = value;
+        }
+
+        public long getValue() {
+            return _value;
+        }
     }
 }

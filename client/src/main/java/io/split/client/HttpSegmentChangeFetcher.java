@@ -101,7 +101,6 @@ public final class HttpSegmentChangeFetcher implements SegmentChangeFetcher {
                 throw new IllegalStateException("Could not retrieve segment changes for " + segmentName + "; http return code " + statusCode);
             }
 
-            _telemetryRuntimeProducer.recordSyncLatency(HTTPLatenciesEnum.SEGMENTS, System.currentTimeMillis()-start);
             _telemetryRuntimeProducer.recordSuccessfulSync(LastSynchronizationRecordsEnum.SEGMENTS, System.currentTimeMillis());
 
             String json = EntityUtils.toString(response.getEntity(), StandardCharsets.UTF_8);
@@ -113,6 +112,7 @@ public final class HttpSegmentChangeFetcher implements SegmentChangeFetcher {
         } catch (Throwable t) {
             throw new IllegalStateException("Problem fetching segmentChanges: " + t.getMessage(), t);
         } finally {
+            _telemetryRuntimeProducer.recordSyncLatency(HTTPLatenciesEnum.SEGMENTS, System.currentTimeMillis()-start);
             Utils.forceClose(response);
         }
 

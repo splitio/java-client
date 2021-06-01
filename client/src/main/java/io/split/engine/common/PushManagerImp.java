@@ -90,7 +90,7 @@ public class PushManagerImp implements PushManager {
         _log.debug(String.format("Auth service response pushEnabled: %s", response.isPushEnabled()));
         if (response.isPushEnabled() && startSse(response.getToken(), response.getChannels())) {
             _expirationTime.set(response.getExpiration());
-            _telemetryRuntimeProducer.recordStreamingEvents(new StreamingEvent(StreamEventsEnum.TOKEN_REFRESH.get_type(), response.getExpiration(), System.currentTimeMillis()));
+            _telemetryRuntimeProducer.recordStreamingEvents(new StreamingEvent(StreamEventsEnum.TOKEN_REFRESH.getType(), response.getExpiration(), System.currentTimeMillis()));
             return;
         }
 

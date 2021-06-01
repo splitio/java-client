@@ -2,7 +2,6 @@ package io.split.telemetry.synchronizer;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
-import io.split.client.SplitManagerImpl;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -10,6 +9,8 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
+
+import static com.google.common.base.Preconditions.checkNotNull;
 
 public class TelemetrySyncTask {
 
@@ -23,13 +24,13 @@ public class TelemetrySyncTask {
                 .setDaemon(true)
                 .setNameFormat("Telemetry-sync-%d")
                 .build();
-        _telemetrySynchronizer = telemetrySynchronizer;
+        _telemetrySynchronizer = checkNotNull(telemetrySynchronizer);
         _telemetryRefreshRate = telemetryRefreshRate;
         _telemetrySyncScheduledExecutorService = Executors.newSingleThreadScheduledExecutor(telemetrySyncThreadFactory);
         try {
             this.startScheduledTask();
         } catch (Exception e) {
-            e.printStackTrace();
+            _log.warn("Error trying to init telemetry stats synchronizer task.");
         }
     }
 
@@ -39,7 +40,7 @@ public class TelemetrySyncTask {
             try {
                 _telemetrySynchronizer.synchronizeStats();
             } catch (Exception e) {
-                e.printStackTrace();
+                _log.warn("Error sending telemetry stats.");
             }
         },_telemetryRefreshRate,  _telemetryRefreshRate, TimeUnit.SECONDS);
     }

@@ -14,7 +14,7 @@ import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
 import java.net.URI;
 import java.net.URISyntaxException;
 
-public class HttpTelemetryMemorySender extends HttpPostImp {
+public class HttpTelemetryMemorySender{
 
     private static final String CONFIG_ENDPOINT_PATH = "metrics/config";
     private static final String STATS_ENDPOINT_PATH = "metrics/usage";
@@ -23,6 +23,7 @@ public class HttpTelemetryMemorySender extends HttpPostImp {
 
     private final URI _impressionConfigTarget;
     private final URI _impressionStatsTarget;
+    private final HttpPostImp _httpPost;
 
     public static HttpTelemetryMemorySender create(CloseableHttpClient client, URI telemetryRootEndpoint, TelemetryRuntimeProducer telemetryRuntimeProducer) throws URISyntaxException {
         return new HttpTelemetryMemorySender(client,
@@ -34,17 +35,17 @@ public class HttpTelemetryMemorySender extends HttpPostImp {
 
     @VisibleForTesting
     HttpTelemetryMemorySender(CloseableHttpClient client, URI impressionConfigTarget, URI impressionStatsTarget, TelemetryRuntimeProducer telemetryRuntimeProducer) {
-        super(client, telemetryRuntimeProducer);
+        _httpPost = new HttpPostImp(client, telemetryRuntimeProducer);
         _impressionConfigTarget = impressionConfigTarget;
         _impressionStatsTarget = impressionStatsTarget;
     }
 
     public void postConfig(Config config) {
-        post(_impressionConfigTarget, config, CONFIG_METRICS, HTTPLatenciesEnum.TELEMETRY, LastSynchronizationRecordsEnum.TELEMETRY, ResourceEnum.TELEMETRY_SYNC);
+        _httpPost.post(_impressionConfigTarget, config, CONFIG_METRICS, HTTPLatenciesEnum.TELEMETRY, LastSynchronizationRecordsEnum.TELEMETRY, ResourceEnum.TELEMETRY_SYNC);
     }
 
     public void postStats(Stats stats) {
-        post(_impressionStatsTarget, stats, STATS_METRICS, HTTPLatenciesEnum.TELEMETRY, LastSynchronizationRecordsEnum.TELEMETRY, ResourceEnum.TELEMETRY_SYNC);
+        _httpPost.post(_impressionStatsTarget, stats, STATS_METRICS, HTTPLatenciesEnum.TELEMETRY, LastSynchronizationRecordsEnum.TELEMETRY, ResourceEnum.TELEMETRY_SYNC);
     }
 
 }

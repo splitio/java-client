@@ -145,7 +145,6 @@ public class ImpressionsManagerImplTest {
         assertThat(captured.size(), is(equalTo(1)));
         assertThat(captured.get(0).keyImpressions.size(), is(equalTo(4)));
         assertThat(captured.get(0).keyImpressions.get(0), is(equalTo(ki1)));
-        Mockito.verify(TELEMETRY_STORAGE, times(2)).recordImpressionStats(ImpressionsDataTypeEnum.IMPRESSIONS_DEDUPED, 1);
         Mockito.verify(TELEMETRY_STORAGE, times(4)).recordImpressionStats(ImpressionsDataTypeEnum.IMPRESSIONS_QUEUED, 1);
     }
 

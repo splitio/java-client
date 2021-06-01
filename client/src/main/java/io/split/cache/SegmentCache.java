@@ -53,8 +53,8 @@ public interface SegmentCache {
     List<SegmentImp> getAll();
 
     /**
-     * return every key
+     * return key count
      * @return
      */
-    Set<String> getAllKeys();
+    long getKeyCount();
 }

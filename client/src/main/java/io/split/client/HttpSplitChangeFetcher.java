@@ -98,7 +98,6 @@ public final class HttpSplitChangeFetcher implements SplitChangeFetcher {
                 _telemetryRuntimeProducer.recordSyncError(ResourceEnum.SPLIT_SYNC, statusCode);
                 throw new IllegalStateException("Could not retrieve splitChanges; http return code " + statusCode);
             }
-            _telemetryRuntimeProducer.recordSyncLatency(HTTPLatenciesEnum.SPLITS, System.currentTimeMillis()-start);
 
 
             String json = EntityUtils.toString(response.getEntity(), StandardCharsets.UTF_8);
@@ -110,6 +109,7 @@ public final class HttpSplitChangeFetcher implements SplitChangeFetcher {
         } catch (Throwable t) {
             throw new IllegalStateException("Problem fetching splitChanges: " + t.getMessage(), t);
         } finally {
+            _telemetryRuntimeProducer.recordSyncLatency(HTTPLatenciesEnum.SPLITS, System.currentTimeMillis()-start);
             Utils.forceClose(response);
         }
     }

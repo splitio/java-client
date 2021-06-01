@@ -29,8 +29,6 @@ import static com.google.common.base.Preconditions.checkNotNull;
 
 public class SyncManagerImp implements SyncManager {
     private static final Logger _log = LoggerFactory.getLogger(SyncManager.class);
-    private static final int STREAMING_STREAMING_EVENT = 0;
-    private static final int POLLING_STREAMING_EVENT = 1;
 
     private final AtomicBoolean _streamingEnabledConfig;
     private final Synchronizer _synchronizer;
@@ -159,13 +157,13 @@ public class SyncManagerImp implements SyncManager {
             _pushStatusMonitorTask = _executorService.submit(this::incomingPushStatusHandler);
         }
         _pushManager.start();
-        _telemetryRuntimeProducer.recordStreamingEvents(new StreamingEvent(StreamEventsEnum.SYNC_MODE_UPDATE.get_type(), STREAMING_STREAMING_EVENT, System.currentTimeMillis()));
+        _telemetryRuntimeProducer.recordStreamingEvents(new StreamingEvent(StreamEventsEnum.SYNC_MODE_UPDATE.getType(), StreamEventsEnum.StreamEventsValues.STREAMING_EVENT.getValue(), System.currentTimeMillis()));
     }
 
     private void startPollingMode() {
         _log.debug("Starting in polling mode ...");
         _synchronizer.startPeriodicFetching();
-        _telemetryRuntimeProducer.recordStreamingEvents(new StreamingEvent(StreamEventsEnum.SYNC_MODE_UPDATE.get_type(), POLLING_STREAMING_EVENT, System.currentTimeMillis()));
+        _telemetryRuntimeProducer.recordStreamingEvents(new StreamingEvent(StreamEventsEnum.SYNC_MODE_UPDATE.getType(), StreamEventsEnum.StreamEventsValues.POLLING_EVENT.getValue(), System.currentTimeMillis()));
     }
 
     @VisibleForTesting
@@ -181,6 +179,7 @@ public class SyncManagerImp implements SyncManager {
                         _pushManager.startWorkers();
                         _pushManager.scheduleConnectionReset();
                         _backoff.reset();
+                        _telemetryRuntimeProducer.recordStreamingEvents(new StreamingEvent(StreamEventsEnum.STREAMING_STATUS.getType(), StreamEventsEnum.StreamEventsValues.STREAMING_ENABLED.getValue(), System.currentTimeMillis()));
                         _log.info("Streaming up and running.");
                         break;
                     case STREAMING_DOWN:

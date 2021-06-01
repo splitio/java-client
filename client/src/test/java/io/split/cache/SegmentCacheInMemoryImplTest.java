@@ -73,6 +73,6 @@ public class SegmentCacheInMemoryImplTest extends TestCase {
         SegmentCacheInMemoryImpl segmentCacheInMemory = new SegmentCacheInMemoryImpl();
         segmentCacheInMemory.updateSegment(SEGMENT_NAME,Stream.of("KEY1", "KEY2").collect(Collectors.toList()), new ArrayList<>());
         segmentCacheInMemory.updateSegment(FAKE_SEGMENT_NAME,Stream.of("KEY3", "KEY2").collect(Collectors.toList()), new ArrayList<>());
-        Assert.assertEquals(3, segmentCacheInMemory.getAllKeys().stream().count());
+        Assert.assertEquals(4, segmentCacheInMemory.getKeyCount());
     }
 }

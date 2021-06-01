@@ -104,15 +104,15 @@ public class ImpressionsManagerImpl implements ImpressionsManager, Closeable {
             _counter.inc(impression.split(), impression.time(), 1);
         }
 
-        if (Mode.DEBUG.equals(_mode) || shouldQueueImpression(impression)) {
-            if (_storage.put(KeyImpression.fromImpression(impression))) {
-                _telemetryRuntimeProducer.recordImpressionStats(ImpressionsDataTypeEnum.IMPRESSIONS_QUEUED, 1);
-            } else {
-                _telemetryRuntimeProducer.recordImpressionStats(ImpressionsDataTypeEnum.IMPRESSIONS_DROPPED, 1);
-            }
-        } else {
+        if (Mode.OPTIMIZED.equals(_mode) && !shouldQueueImpression(impression)) {
             _telemetryRuntimeProducer.recordImpressionStats(ImpressionsDataTypeEnum.IMPRESSIONS_DEDUPED, 1);
+            return;
         }
+        if (!_storage.put(KeyImpression.fromImpression(impression))) {
+            _telemetryRuntimeProducer.recordImpressionStats(ImpressionsDataTypeEnum.IMPRESSIONS_DROPPED, 1);
+            return;
+        }
+        _telemetryRuntimeProducer.recordImpressionStats(ImpressionsDataTypeEnum.IMPRESSIONS_QUEUED, 1);
     }
 
     @Override
@@ -130,7 +130,7 @@ public class ImpressionsManagerImpl implements ImpressionsManager, Closeable {
     }
 
     @VisibleForTesting
-        /* package private */ void sendImpressions() {
+    /* package private */ void sendImpressions() {
         if (_storage.isFull()) {
             _log.warn("Split SDK impressions queue is full. Impressions may have been dropped. Consider increasing capacity.");
         }

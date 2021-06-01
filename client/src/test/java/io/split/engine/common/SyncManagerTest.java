@@ -26,7 +26,7 @@ public class SyncManagerTest {
 
     @Test
     public void startWithStreamingFalseShouldStartPolling() throws InterruptedException {
-        TelemetryStorage telemetryStorage = new InMemoryTelemetryStorage();
+        TelemetryStorage telemetryStorage = Mockito.mock(TelemetryStorage.class);
         _gates.sdkInternalReady();
         TelemetrySynchronizer telemetrySynchronizer = Mockito.mock(TelemetrySynchronizer.class);
         SplitClientConfig config = Mockito.mock(SplitClientConfig.class);
@@ -41,7 +41,7 @@ public class SyncManagerTest {
 
     @Test
     public void startWithStreamingTrueShouldStartSyncAll() throws InterruptedException {
-        TelemetryStorage telemetryStorage = new InMemoryTelemetryStorage();
+        TelemetryStorage telemetryStorage = Mockito.mock(TelemetryStorage.class);
         TelemetrySynchronizer telemetrySynchronizer = Mockito.mock(TelemetrySynchronizer.class);
         SplitClientConfig config = Mockito.mock(SplitClientConfig.class);
         Mockito.when(_synchronizer.syncAll()).thenReturn(true);
@@ -51,23 +51,25 @@ public class SyncManagerTest {
         Mockito.verify(_synchronizer, Mockito.times(0)).startPeriodicFetching();
         Mockito.verify(_synchronizer, Mockito.times(1)).syncAll();
         Mockito.verify(_pushManager, Mockito.times(1)).start();
+        Mockito.verify(telemetryStorage, Mockito.times(1)).recordStreamingEvents(Mockito.any());
     }
 
     @Test
     public void onStreamingAvailable() throws InterruptedException {
-        TelemetryStorage telemetryStorage = new InMemoryTelemetryStorage();
-        LinkedBlockingQueue<PushManager.Status> messsages = new LinkedBlockingQueue<>();
+        TelemetryStorage telemetryStorage = Mockito.mock(TelemetryStorage.class);
+        LinkedBlockingQueue<PushManager.Status> messages = new LinkedBlockingQueue<>();
         TelemetrySynchronizer telemetrySynchronizer = Mockito.mock(TelemetrySynchronizer.class);
         SplitClientConfig config = Mockito.mock(SplitClientConfig.class);
 
-        SyncManagerImp syncManager = new SyncManagerImp(true, _synchronizer, _pushManager, messsages, BACKOFF_BASE, _gates, telemetryStorage, telemetrySynchronizer, config);
+        SyncManagerImp syncManager = new SyncManagerImp(true, _synchronizer, _pushManager, messages, BACKOFF_BASE, _gates, telemetryStorage, telemetrySynchronizer, config);
         Thread t = new Thread(syncManager::incomingPushStatusHandler);
         t.start();
-        messsages.offer(PushManager.Status.STREAMING_READY);
+        messages.offer(PushManager.Status.STREAMING_READY);
         Thread.sleep(500);
         Mockito.verify(_synchronizer, Mockito.times(1)).stopPeriodicFetching();
         Mockito.verify(_synchronizer, Mockito.times(1)).syncAll();
         Mockito.verify(_pushManager, Mockito.times(1)).startWorkers();
+        Mockito.verify(telemetryStorage, Mockito.times(1)).recordStreamingEvents(Mockito.any());
         t.interrupt();
     }
 

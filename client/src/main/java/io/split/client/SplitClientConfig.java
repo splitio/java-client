@@ -271,7 +271,7 @@ public class SplitClientConfig {
         return _streamingServiceURL;
     }
 
-    public String get_telemetryURL() {
+    public String telemetryURL() {
         return _telemetryURL;
     }
 

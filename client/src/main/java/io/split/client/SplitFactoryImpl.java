@@ -123,7 +123,7 @@ public class SplitFactoryImpl implements SplitFactory {
         // Cache Initialisations
         _segmentCache = new SegmentCacheInMemoryImpl();
         _splitCache = new InMemoryCacheImp();
-        _telemetrySynchronizer = new TelemetrySubmitter(_httpclient, URI.create(config.get_telemetryURL()), _telemetryStorage, _splitCache, _segmentCache, _telemetryStorage, _startTime);
+        _telemetrySynchronizer = new TelemetrySubmitter(_httpclient, URI.create(config.telemetryURL()), _telemetryStorage, _splitCache, _segmentCache, _telemetryStorage, _startTime);
 
 
         // Segments
@@ -213,7 +213,7 @@ public class SplitFactoryImpl implements SplitFactory {
             try {
                 long splitCount = _splitCache.getAll().stream().count();
                 long segmentCount = _segmentCache.getAll().stream().count();
-                long segmentKeyCount = _segmentCache.getAllKeys().stream().count();
+                long segmentKeyCount = _segmentCache.getKeyCount();
                 _impressionsManager.close();
                 _log.info("Successful shutdown of impressions manager");
                 _eventClient.close();

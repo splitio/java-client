@@ -78,12 +78,12 @@ public class HttpImpressionsSender implements ImpressionsSender {
                 _telemetryRuntimeProducer.recordSyncError(ResourceEnum.IMPRESSION_SYNC, status);
                 _logger.warn("Response status was: " + status);
             }
-            _telemetryRuntimeProducer.recordSyncLatency(HTTPLatenciesEnum.IMPRESSIONS, System.currentTimeMillis() - initTime);
             _telemetryRuntimeProducer.recordSuccessfulSync(LastSynchronizationRecordsEnum.IMPRESSIONS, System.currentTimeMillis());
 
         } catch (Throwable t) {
             _logger.warn("Exception when posting impressions" + impressions, t);
         } finally {
+            _telemetryRuntimeProducer.recordSyncLatency(HTTPLatenciesEnum.IMPRESSIONS, System.currentTimeMillis() - initTime);
             Utils.forceClose(response);
         }
 

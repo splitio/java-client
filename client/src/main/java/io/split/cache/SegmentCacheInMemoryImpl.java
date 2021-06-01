@@ -68,7 +68,7 @@ public class SegmentCacheInMemoryImpl implements SegmentCache {
     }
 
     @Override
-    public Set<String> getAllKeys() {
-        return _segments.values().stream().flatMap(si -> si.getKeys().stream()).collect(Collectors.toSet());
+    public long getKeyCount() {
+        return _segments.values().stream().mapToLong(SegmentImp::getKeysSize).sum();
     }
 }

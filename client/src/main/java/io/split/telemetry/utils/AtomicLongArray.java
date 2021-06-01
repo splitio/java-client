@@ -25,7 +25,8 @@ public class AtomicLongArray {
 
     public void increment(int index) {
         if (index < 0 || index >= array.length) {
-            throw new ArrayIndexOutOfBoundsException();
+           _log.error("Index is out of bounds. Did not incremented.");
+           return;
         }
         array[index].getAndIncrement();
     }

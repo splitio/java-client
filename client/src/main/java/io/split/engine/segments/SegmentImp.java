@@ -42,7 +42,7 @@ public class SegmentImp{
         return _concurrentKeySet.contains(key);
     }
 
-    public Set<String> getKeys() {
-        return _concurrentKeySet;
+    public long getKeysSize() {
+        return _concurrentKeySet.size();
     }
 }
