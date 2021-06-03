@@ -96,14 +96,14 @@ public class PushStatusTrackerImp implements PushStatusTracker {
                 }
                 break;
             case STREAMING_PAUSED:
-                _telemetryRuntimeProducer.recordStreamingEvents(new StreamingEvent(StreamEventsEnum.STREAMING_STATUS.getType(), StreamEventsEnum.StreamEventsValues.STREAMING_PAUSED.getValue(), System.currentTimeMillis()));
+                _telemetryRuntimeProducer.recordStreamingEvents(new StreamingEvent(StreamEventsEnum.STREAMING_STATUS.getType(), StreamEventsEnum.StreamingStatusValues.STREAMING_PAUSED.getValue(), System.currentTimeMillis()));
                 if (_backendStatus.compareAndSet(ControlType.STREAMING_RESUMED, ControlType.STREAMING_PAUSED) && _publishersOnline.get()) {
                     // If there are no publishers online, the STREAMING_DOWN message should have already been sent
                     _statusMessages.offer(PushManager.Status.STREAMING_DOWN);
                 }
                 break;
             case STREAMING_DISABLED:
-                _telemetryRuntimeProducer.recordStreamingEvents(new StreamingEvent(StreamEventsEnum.STREAMING_STATUS.getType(), StreamEventsEnum.StreamEventsValues.STREAMING_DISABLED.getValue(), System.currentTimeMillis()));
+                _telemetryRuntimeProducer.recordStreamingEvents(new StreamingEvent(StreamEventsEnum.STREAMING_STATUS.getType(), StreamEventsEnum.StreamingStatusValues.STREAMING_DISABLED.getValue(), System.currentTimeMillis()));
                 _backendStatus.set(ControlType.STREAMING_DISABLED);
                 _statusMessages.offer(PushManager.Status.STREAMING_OFF);
                 break;

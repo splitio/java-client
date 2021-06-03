@@ -21,18 +21,44 @@ public enum StreamEventsEnum {
         return _type;
     }
 
-    public enum StreamEventsValues {
+    public enum StreamingStatusValues {
         STREAMING_DISABLED(0),
         STREAMING_PAUSED(2),
-        STREAMING_EVENT(0),
-        POLLING_EVENT(1),
-        REQUESTED_CONNECTION_ERROR(0),
-        NON_REQUESTED_CONNECTION_ERROR (1),
         STREAMING_ENABLED(1);
 
         private long _value;
 
-        StreamEventsValues(long value) {
+        StreamingStatusValues(long value) {
+            _value = value;
+        }
+
+        public long getValue() {
+            return _value;
+        }
+    }
+
+    public enum SseConnectionErrorValues {
+        REQUESTED_CONNECTION_ERROR(0),
+        NON_REQUESTED_CONNECTION_ERROR (1);
+
+        private long _value;
+
+        SseConnectionErrorValues(long value) {
+            _value = value;
+        }
+
+        public long getValue() {
+            return _value;
+        }
+    }
+
+    public enum SyncModeUpdateValues {
+        STREAMING_EVENT(0),
+        POLLING_EVENT(1);
+
+        private long _value;
+
+        SyncModeUpdateValues(long value) {
             _value = value;
         }
 
