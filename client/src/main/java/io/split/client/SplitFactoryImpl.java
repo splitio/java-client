@@ -225,10 +225,9 @@ public class SplitFactoryImpl implements SplitFactory {
                         .setSoTimeout(Timeout.ofMilliseconds(config.readTimeout()))
                         .build())
                 .setValidateAfterInactivity(TimeValue.ofMilliseconds(config.validateAfterInactivityInMillis()))
-                .setConnectionTimeToLive(TimeValue.ofMilliseconds(2000))
                 .build();
-        cm.setMaxTotal(2);
-        cm.setDefaultMaxPerRoute(2);
+        cm.setMaxTotal(20);
+        cm.setDefaultMaxPerRoute(20);
 
         HttpClientBuilder httpClientbuilder = HttpClients.custom()
                 .setConnectionManager(cm)
