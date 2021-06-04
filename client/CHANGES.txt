@@ -1,9 +1,5 @@
 CHANGES
 
-4.1.7 (Apr 15, 2021)
-- add validateAfterInactivityInMillis to config to help with stale connection handling
-- Remove TLS 1.1 from the target list
-
 4.1.6 (Apr 15, 2021)
 -Updated log level and message in some messages.
 
