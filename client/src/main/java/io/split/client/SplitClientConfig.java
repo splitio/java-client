@@ -47,6 +47,10 @@ public class SplitClientConfig {
     private final String _authServiceURL;
     private final String _streamingServiceURL;
     private long _validateAfterInactivityInMillis;
+    private final int _onDemandFetchRetryDelayMs;
+    private final int _onDemandFetchMaxRetries;
+    private final int _failedAttemptsBeforeLogging;
+    private final boolean _cdnDebugLogging;
 
     // Proxy configs
     private final HttpHost _proxy;
@@ -91,7 +95,11 @@ public class SplitClientConfig {
                               int streamingReconnectBackoffBase,
                               String authServiceURL,
                               String streamingServiceURL,
-                              long validateAfterInactivityInMillis) {
+                              long validateAfterInactivityInMillis,
+                              int onDemandFetchRetryDelayMs,
+                              int onDemandFetchMaxRetries,
+                              int failedAttemptsBeforeLogging,
+                              boolean cdnDebugLogging) {
         _endpoint = endpoint;
         _eventsEndpoint = eventsEndpoint;
         _featuresRefreshRate = pollForFeatureChangesEveryNSeconds;
@@ -123,6 +131,10 @@ public class SplitClientConfig {
         _authServiceURL = authServiceURL;
         _streamingServiceURL = streamingServiceURL;
         _validateAfterInactivityInMillis = validateAfterInactivityInMillis;
+        _onDemandFetchRetryDelayMs = onDemandFetchRetryDelayMs;
+        _onDemandFetchMaxRetries = onDemandFetchMaxRetries;
+        _failedAttemptsBeforeLogging = failedAttemptsBeforeLogging;
+        _cdnDebugLogging = cdnDebugLogging;
 
         Properties props = new Properties();
         try {
@@ -254,6 +266,14 @@ public class SplitClientConfig {
     public long validateAfterInactivityInMillis() {
         return _validateAfterInactivityInMillis;
     }
+    public int streamingRetryDelay() {return _onDemandFetchRetryDelayMs;}
+
+    public int streamingFetchMaxRetries() {return _onDemandFetchMaxRetries;}
+
+    public int failedAttemptsBeforeLogging() {return _failedAttemptsBeforeLogging;}
+
+    public boolean cdnDebugLogging() { return _cdnDebugLogging; }
+
 
     public static final class Builder {
 
@@ -291,6 +311,10 @@ public class SplitClientConfig {
         private String _authServiceURL = "https://auth.split.io/api/auth";
         private String _streamingServiceURL = "https://streaming.split.io/sse";
         private long _validateAfterInactivityInMillis = -1;
+        private final int _onDemandFetchRetryDelayMs = 50;
+        private final int _onDemandFetchMaxRetries = 10;
+        private final int _failedAttemptsBeforeLogging = 10;
+        private final boolean _cdnDebugLogging = true;
 
         public Builder() {
         }
@@ -762,6 +786,13 @@ public class SplitClientConfig {
                 throw new IllegalArgumentException("streamingServiceURL must not be null");
             }
 
+            if(_onDemandFetchRetryDelayMs <= 0) {
+                throw new IllegalStateException("streamingRetryDelay must be > 0");
+            }
+            if(_onDemandFetchMaxRetries <= 0) {
+                throw new IllegalStateException("_onDemandFetchMaxRetries must be > 0");
+            }
+
             return new SplitClientConfig(
                     _endpoint,
                     _eventsEndpoint,
@@ -793,7 +824,11 @@ public class SplitClientConfig {
                     _streamingReconnectBackoffBase,
                     _authServiceURL,
                     _streamingServiceURL,
-                    _validateAfterInactivityInMillis);
+                    _validateAfterInactivityInMillis,
+                    _onDemandFetchRetryDelayMs,
+                    _onDemandFetchMaxRetries,
+                    _failedAttemptsBeforeLogging,
+                    _cdnDebugLogging);
         }
     }
 }

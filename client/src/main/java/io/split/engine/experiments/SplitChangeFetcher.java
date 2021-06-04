@@ -1,6 +1,7 @@
 package io.split.engine.experiments;
 
 import io.split.client.dtos.SplitChange;
+import io.split.engine.common.FetchOptions;
 
 /**
  * Created by adilaijaz on 5/11/15.
@@ -31,5 +32,5 @@ public interface SplitChangeFetcher {
      * @return SegmentChange
      * @throws java.lang.RuntimeException if there was a problem computing split changes
      */
-    SplitChange fetch(long since, boolean addCacheHeader);
+    SplitChange fetch(long since, FetchOptions options);
 }

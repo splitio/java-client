@@ -4,11 +4,13 @@ import com.google.common.annotations.VisibleForTesting;
 import io.split.client.dtos.SplitChange;
 import io.split.client.utils.Json;
 import io.split.client.utils.Utils;
+import io.split.engine.common.FetchOptions;
 import io.split.engine.experiments.SplitChangeFetcher;
 import io.split.engine.metrics.Metrics;
 import org.apache.hc.client5.http.classic.methods.HttpGet;
 import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
 import org.apache.hc.client5.http.impl.classic.CloseableHttpResponse;
+import org.apache.hc.core5.http.Header;
 import org.apache.hc.core5.http.io.entity.EntityUtils;
 import org.apache.hc.core5.net.URIBuilder;
 import org.slf4j.Logger;
@@ -17,6 +19,8 @@ import org.slf4j.LoggerFactory;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.nio.charset.StandardCharsets;
+import java.util.Arrays;
+import java.util.stream.Collectors;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
@@ -27,9 +31,14 @@ public final class HttpSplitChangeFetcher implements SplitChangeFetcher {
     private static final Logger _log = LoggerFactory.getLogger(HttpSplitChangeFetcher.class);
 
     private static final String SINCE = "since";
+    private static final String TILL = "till";
     private static final String PREFIX = "splitChangeFetcher";
-    private static final String NAME_CACHE = "Cache-Control";
-    private static final String VALUE_CACHE = "no-cache";
+
+    private static final String HEADER_CACHE_CONTROL_NAME = "Cache-Control";
+    private static final String HEADER_CACHE_CONTROL_VALUE = "no-cache";
+
+    private static final String HEADER_FASTLY_DEBUG_NAME = "Fastly-Debug";
+    private static final String HEADER_FASTLY_DEBUG_VALUE = "1";
 
     private final CloseableHttpClient _client;
     private final URI _target;
@@ -50,21 +59,37 @@ public final class HttpSplitChangeFetcher implements SplitChangeFetcher {
         checkNotNull(_target);
     }
 
+    long makeRandomTill() {
+
+        return (-1)*(long)Math.floor(Math.random()*(Math.pow(2, 63)));
+    }
+
     @Override
-    public SplitChange fetch(long since, boolean addCacheHeader) {
+    public SplitChange fetch(long since, FetchOptions options) {
 
         long start = System.currentTimeMillis();
 
         CloseableHttpResponse response = null;
 
         try {
-            URI uri = new URIBuilder(_target).addParameter(SINCE, "" + since).build();
+            URIBuilder uriBuilder = new URIBuilder(_target).addParameter(SINCE, "" + since);
+            if (options.hasCustomCN()) {
+                uriBuilder.addParameter(TILL, "" + options.targetCN());
+            }
+            URI uri = uriBuilder.build();
 
             HttpGet request = new HttpGet(uri);
-            if(addCacheHeader) {
-                request.setHeader(NAME_CACHE, VALUE_CACHE);
+            if(options.cacheControlHeadersEnabled()) {
+                request.setHeader(HEADER_CACHE_CONTROL_NAME, HEADER_CACHE_CONTROL_VALUE);
             }
+
+            if (options.fastlyDebugHeaderEnabled()) {
+                request.addHeader(HEADER_FASTLY_DEBUG_NAME, HEADER_FASTLY_DEBUG_VALUE);
+            }
+
             response = _client.execute(request);
+            options.handleResponseHeaders(Arrays.stream(response.getHeaders())
+                    .collect(Collectors.toMap(Header::getName, Header::getValue)));
 
             int statusCode = response.getCode();
 
