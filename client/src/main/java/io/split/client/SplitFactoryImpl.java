@@ -43,6 +43,7 @@ import org.apache.hc.client5.http.ssl.SSLConnectionSocketFactoryBuilder;
 import org.apache.hc.core5.http.io.SocketConfig;
 import org.apache.hc.core5.http.ssl.TLS;
 import org.apache.hc.core5.ssl.SSLContexts;
+import org.apache.hc.core5.util.TimeValue;
 import org.apache.hc.core5.util.Timeout;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -210,7 +211,7 @@ public class SplitFactoryImpl implements SplitFactory {
 
         SSLConnectionSocketFactory sslSocketFactory = SSLConnectionSocketFactoryBuilder.create()
                 .setSslContext(SSLContexts.createSystemDefault())
-                .setTlsVersions(TLS.V_1_1, TLS.V_1_2)
+                .setTlsVersions(TLS.V_1_2)
                 .build();
 
         RequestConfig requestConfig = RequestConfig.custom()
@@ -223,9 +224,11 @@ public class SplitFactoryImpl implements SplitFactory {
                 .setDefaultSocketConfig(SocketConfig.custom()
                         .setSoTimeout(Timeout.ofMilliseconds(config.readTimeout()))
                         .build())
+                .setValidateAfterInactivity(TimeValue.ofMilliseconds(config.validateAfterInactivityInMillis()))
+                .setConnectionTimeToLive(TimeValue.ofMilliseconds(2000))
                 .build();
-        cm.setMaxTotal(20);
-        cm.setDefaultMaxPerRoute(20);
+        cm.setMaxTotal(2);
+        cm.setDefaultMaxPerRoute(2);
 
         HttpClientBuilder httpClientbuilder = HttpClients.custom()
                 .setConnectionManager(cm)
@@ -249,7 +252,7 @@ public class SplitFactoryImpl implements SplitFactory {
 
         SSLConnectionSocketFactory sslSocketFactory = SSLConnectionSocketFactoryBuilder.create()
                 .setSslContext(SSLContexts.createSystemDefault())
-                .setTlsVersions(TLS.V_1_1, TLS.V_1_2)
+                .setTlsVersions(TLS.V_1_2)
                 .build();
 
         PoolingHttpClientConnectionManager cm = PoolingHttpClientConnectionManagerBuilder.create()

@@ -46,6 +46,7 @@ public class SplitClientConfig {
     private final int _streamingReconnectBackoffBase;
     private final String _authServiceURL;
     private final String _streamingServiceURL;
+    private long _validateAfterInactivityInMillis;
 
     // Proxy configs
     private final HttpHost _proxy;
@@ -89,7 +90,8 @@ public class SplitClientConfig {
                               int authRetryBackoffBase,
                               int streamingReconnectBackoffBase,
                               String authServiceURL,
-                              String streamingServiceURL) {
+                              String streamingServiceURL,
+                              long validateAfterInactivityInMillis) {
         _endpoint = endpoint;
         _eventsEndpoint = eventsEndpoint;
         _featuresRefreshRate = pollForFeatureChangesEveryNSeconds;
@@ -120,6 +122,7 @@ public class SplitClientConfig {
         _streamingReconnectBackoffBase = streamingReconnectBackoffBase;
         _authServiceURL = authServiceURL;
         _streamingServiceURL = streamingServiceURL;
+        _validateAfterInactivityInMillis = validateAfterInactivityInMillis;
 
         Properties props = new Properties();
         try {
@@ -248,6 +251,10 @@ public class SplitClientConfig {
         return _streamingServiceURL;
     }
 
+    public long validateAfterInactivityInMillis() {
+        return _validateAfterInactivityInMillis;
+    }
+
     public static final class Builder {
 
         private String _endpoint = "https://sdk.split.io";
@@ -283,6 +290,7 @@ public class SplitClientConfig {
         private int _streamingReconnectBackoffBase = 1;
         private String _authServiceURL = "https://auth.split.io/api/auth";
         private String _streamingServiceURL = "https://streaming.split.io/sse";
+        private long _validateAfterInactivityInMillis = -1;
 
         public Builder() {
         }
@@ -674,6 +682,16 @@ public class SplitClientConfig {
             return this;
         }
 
+        /**
+         * Set the time after which period of inactivity a connection must be revalidated .
+         * @param validateAfterInactivityInMillis
+         * @return
+         */
+        public Builder validateAfterInactivityInMillis(long validateAfterInactivityInMillis) {
+            _validateAfterInactivityInMillis = validateAfterInactivityInMillis;
+            return this;
+        }
+
         public SplitClientConfig build() {
             if (_featuresRefreshRate < 5 ) {
                 throw new IllegalArgumentException("featuresRefreshRate must be >= 5: " + _featuresRefreshRate);
@@ -774,7 +792,8 @@ public class SplitClientConfig {
                     _authRetryBackoffBase,
                     _streamingReconnectBackoffBase,
                     _authServiceURL,
-                    _streamingServiceURL);
+                    _streamingServiceURL,
+                    _validateAfterInactivityInMillis);
         }
     }
 }
