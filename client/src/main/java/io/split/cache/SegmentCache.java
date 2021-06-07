@@ -1,6 +1,9 @@
 package io.split.cache;
 
+import io.split.engine.segments.SegmentImp;
+
 import java.util.List;
+import java.util.Set;
 
 /**
  * Memory for segments
@@ -42,4 +45,16 @@ public interface SegmentCache {
      * clear all segments
      */
     void clear();
+
+    /**
+     * return every segment
+     * @return
+     */
+    List<SegmentImp> getAll();
+
+    /**
+     * return key count
+     * @return
+     */
+    long getKeyCount();
 }

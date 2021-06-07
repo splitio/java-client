@@ -1,8 +1,12 @@
 package io.split.engine.segments;
 
+import com.google.common.annotations.VisibleForTesting;
 import io.split.cache.SegmentCache;
 import io.split.client.dtos.SegmentChange;
 import io.split.engine.SDKReadinessGates;
+import io.split.telemetry.domain.enums.HTTPLatenciesEnum;
+import io.split.telemetry.domain.enums.LastSynchronizationRecordsEnum;
+import io.split.telemetry.storage.TelemetryRuntimeProducer;
 import io.split.engine.common.FetchOptions;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -19,14 +23,16 @@ public class SegmentFetcherImp implements SegmentFetcher {
     private final SegmentChangeFetcher _segmentChangeFetcher;
     private final SegmentCache _segmentCache;
     private final SDKReadinessGates _gates;
+    private final TelemetryRuntimeProducer _telemetryRuntimeProducer;
 
     private final Object _lock = new Object();
 
-    public SegmentFetcherImp(String segmentName, SegmentChangeFetcher segmentChangeFetcher, SDKReadinessGates gates, SegmentCache segmentCache) {
+    public SegmentFetcherImp(String segmentName, SegmentChangeFetcher segmentChangeFetcher, SDKReadinessGates gates, SegmentCache segmentCache, TelemetryRuntimeProducer telemetryRuntimeProducer) {
         _segmentName = checkNotNull(segmentName);
         _segmentChangeFetcher = checkNotNull(segmentChangeFetcher);
         _segmentCache = checkNotNull(segmentCache);
         _gates = checkNotNull(gates);
+        _telemetryRuntimeProducer = checkNotNull(telemetryRuntimeProducer);
 
         _segmentCache.updateSegment(segmentName, new ArrayList<>(), new ArrayList<>());
     }
@@ -44,6 +50,7 @@ public class SegmentFetcherImp implements SegmentFetcher {
     }
 
     private void runWithoutExceptionHandling(FetchOptions options) {
+        long initTime = System.currentTimeMillis();
         SegmentChange change = _segmentChangeFetcher.fetch(_segmentName, _segmentCache.getChangeNumber(_segmentName), options);
 
         if (change == null) {
@@ -87,6 +94,7 @@ public class SegmentFetcherImp implements SegmentFetcher {
             }
 
             _segmentCache.setChangeNumber(_segmentName,change.till);
+            _telemetryRuntimeProducer.recordSuccessfulSync(LastSynchronizationRecordsEnum.SEGMENTS, System.currentTimeMillis());
         }
     }
 
@@ -110,7 +118,8 @@ public class SegmentFetcherImp implements SegmentFetcher {
         return bldr.toString();
     }
 
-    private void callLoopRun(FetchOptions opts){
+    @VisibleForTesting
+    void callLoopRun(FetchOptions opts){
         final long INITIAL_CN = _segmentCache.getChangeNumber(_segmentName);
         while (true) {
             long start = _segmentCache.getChangeNumber(_segmentName);
@@ -126,27 +135,27 @@ public class SegmentFetcherImp implements SegmentFetcher {
     }
 
     @Override
-    public void runWhitCacheHeader(){
-        this.fetchAndUpdate(new FetchOptions.Builder().cacheControlHeaders(true).build());
+    public boolean runWhitCacheHeader(){
+       return this.fetchAndUpdate(new FetchOptions.Builder().cacheControlHeaders(true).build());
     }
 
     /**
      * Calls callLoopRun and after fetchs segment.
      * @param opts contains all soft of options used when issuing the fetch request
      */
-    private void fetchAndUpdate(FetchOptions opts) {
+    @VisibleForTesting
+    boolean fetchAndUpdate(FetchOptions opts) {
         try {
             // Do this again in case the previous call errored out.
-            _gates.registerSegment(_segmentName);
             callLoopRun(opts);
-
-            _gates.segmentIsReady(_segmentName);
+            return true;
 
         } catch (Throwable t) {
             _log.error("RefreshableSegmentFetcher failed: " + t.getMessage());
             if (_log.isDebugEnabled()) {
                 _log.debug("Reason:", t);
             }
+            return false;
         }
     }
 
@@ -154,6 +163,4 @@ public class SegmentFetcherImp implements SegmentFetcher {
     public void fetchAll() {
         this.fetchAndUpdate(new FetchOptions.Builder().build());
     }
-
-
 }

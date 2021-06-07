@@ -4,6 +4,7 @@ import com.google.common.collect.Maps;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import io.split.cache.SegmentCache;
 import io.split.engine.SDKReadinessGates;
+import io.split.telemetry.storage.TelemetryRuntimeProducer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -11,13 +12,14 @@ import java.io.Closeable;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.ThreadFactory;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicLong;
-import java.util.concurrent.Executors;
-import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
@@ -33,10 +35,12 @@ public class SegmentSynchronizationTaskImp implements SegmentSynchronizationTask
     private final SegmentCache _segmentCache;
     private final SDKReadinessGates _gates;
     private final ScheduledExecutorService _scheduledExecutorService;
+    private final TelemetryRuntimeProducer _telemetryRuntimeProducer;
 
     private ScheduledFuture<?> _scheduledFuture;
 
-    public SegmentSynchronizationTaskImp(SegmentChangeFetcher segmentChangeFetcher, long refreshEveryNSeconds, int numThreads, SDKReadinessGates gates, SegmentCache segmentCache) {
+    public SegmentSynchronizationTaskImp(SegmentChangeFetcher segmentChangeFetcher, long refreshEveryNSeconds, int numThreads, SDKReadinessGates gates, SegmentCache segmentCache,
+                                         TelemetryRuntimeProducer telemetryRuntimeProducer) {
         _segmentChangeFetcher = checkNotNull(segmentChangeFetcher);
 
         checkArgument(refreshEveryNSeconds >= 0L);
@@ -54,6 +58,7 @@ public class SegmentSynchronizationTaskImp implements SegmentSynchronizationTask
         _running = new AtomicBoolean(false);
 
         _segmentCache = checkNotNull(segmentCache);
+        _telemetryRuntimeProducer = checkNotNull(telemetryRuntimeProducer);
     }
 
     @Override
@@ -77,13 +82,7 @@ public class SegmentSynchronizationTaskImp implements SegmentSynchronizationTask
                 return;
             }
 
-            try {
-                _gates.registerSegment(segmentName);
-            } catch (InterruptedException e) {
-                _log.error("Unable to register segment " + segmentName);
-            }
-
-            segment = new SegmentFetcherImp(segmentName, _segmentChangeFetcher, _gates, _segmentCache);
+            segment = new SegmentFetcherImp(segmentName, _segmentChangeFetcher, _gates, _segmentCache, _telemetryRuntimeProducer);
 
             if (_running.get()) {
                 _scheduledExecutorService.submit(segment::fetchAll);
@@ -102,7 +101,7 @@ public class SegmentSynchronizationTaskImp implements SegmentSynchronizationTask
 
     @Override
     public void startPeriodicFetching() {
-        if (_running.getAndSet(true)) {
+        if (_running.getAndSet(true) ) {
             _log.debug("Segments PeriodicFetching is running...");
             return;
         }
@@ -154,7 +153,27 @@ public class SegmentSynchronizationTaskImp implements SegmentSynchronizationTask
                 _scheduledExecutorService.submit(fetcher::runWhitCacheHeader);
                 continue;
             }
+
             _scheduledExecutorService.submit(fetcher::fetchAll);
         }
+    }
+
+    @Override
+    public boolean fetchAllSynchronous() {
+        AtomicBoolean fetchAllStatus = new AtomicBoolean(true);
+        _segmentFetchers
+                .entrySet()
+                .stream().map(e -> _scheduledExecutorService.submit(e.getValue()::runWhitCacheHeader))
+                .collect(Collectors.toList())
+                .stream().forEach(future -> {
+                    try {
+                        if(!future.get()) {
+                            fetchAllStatus.set(false);
+                        };
+                    } catch (Exception ex) {
+                        fetchAllStatus.set(false);
+                        _log.error(ex.getMessage());
+                    }});
+        return fetchAllStatus.get();
     }
 }
