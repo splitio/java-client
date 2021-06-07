@@ -43,7 +43,6 @@ import static com.google.common.base.Preconditions.checkNotNull;
  */
 public final class SplitParser {
 
-    public static final int CONDITIONS_UPPER_LIMIT = 50;
     private static final Logger _log = LoggerFactory.getLogger(SplitParser.class);
 
     private final SegmentSynchronizationTask _segmentSynchronizationTask;
@@ -66,12 +65,6 @@ public final class SplitParser {
 
     private ParsedSplit parseWithoutExceptionHandling(Split split) {
         if (split.status != Status.ACTIVE) {
-            return null;
-        }
-
-        if (split.conditions.size() > CONDITIONS_UPPER_LIMIT) {
-            _log.warn(String.format("Dropping Split name=%s due to large number of conditions(%d)",
-                    split.name, split.conditions.size()));
             return null;
         }
 

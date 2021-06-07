@@ -26,6 +26,7 @@ import io.split.engine.segments.SegmentSynchronizationTaskImp;
 import io.split.grammar.Treatments;
 import io.split.telemetry.storage.InMemoryTelemetryStorage;
 import io.split.telemetry.storage.TelemetryStorage;
+import org.junit.Assert;
 import org.junit.Test;
 import org.mockito.Mockito;
 
@@ -38,7 +39,6 @@ import java.util.stream.Stream;
 
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.is;
-import static org.hamcrest.Matchers.nullValue;
 import static org.junit.Assert.assertThat;
 
 /**
@@ -50,6 +50,7 @@ public class SplitParserTest {
 
     public static final String EMPLOYEES = "employees";
     public static final String SALES_PEOPLE = "salespeople";
+    public static final int CONDITIONS_UPPER_LIMIT = 50;
     private static final TelemetryStorage TELEMETRY_STORAGE = Mockito.mock(InMemoryTelemetryStorage.class);
 
     @Test
@@ -176,7 +177,7 @@ public class SplitParserTest {
     }
 
     @Test
-    public void fails_for_long_conditions() {
+    public void success_for_long_conditions() {
         SDKReadinessGates gates = new SDKReadinessGates();
         SegmentCache segmentCache = new SegmentCacheInMemoryImpl();
         segmentCache.updateSegment(EMPLOYEES, Stream.of("adil", "pato", "trevor").collect(Collectors.toList()), new ArrayList<>());
@@ -193,14 +194,14 @@ public class SplitParserTest {
 
         List<Condition> conditions = Lists.newArrayList();
         List<Partition> p1 = Lists.newArrayList(ConditionsTestUtil.partition("on", 100));
-        for (int i = 0 ; i < SplitParser.CONDITIONS_UPPER_LIMIT+1 ; i++) {
+        for (int i = 0 ; i < CONDITIONS_UPPER_LIMIT+1 ; i++) {
             Condition c = ConditionsTestUtil.and(employeesMatcher, p1);
             conditions.add(c);
         }
 
         Split split = makeSplit("first.name", 123, conditions, 1);
 
-        assertThat(parser.parse(split), is(nullValue()));
+        Assert.assertNotNull(parser.parse(split));
     }
 
 
