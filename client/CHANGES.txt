@@ -1,7 +1,7 @@
 CHANGES
 
 4.2.0 (Jun 7, 2021)
-- Update SDK telemetry storage, metrics and updater to be more effective and send less often.
+- Updated SDK telemetry storage, metrics and updater to be more effective and send less often.
 - Improved the synchronization flow to be more reliable in the event of an edge case generating delay in cache purge propagation, keeping the SDK cache properly synced.
 - Fixed issue where the SDK was validating no Split had over 50 conditions (legacy code).
 
