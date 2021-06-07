@@ -5,6 +5,8 @@ import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import io.split.client.SplitClientConfig;
 import io.split.client.dtos.KeyImpression;
 import io.split.client.dtos.TestImpressions;
+import io.split.telemetry.domain.enums.ImpressionsDataTypeEnum;
+import io.split.telemetry.storage.TelemetryRuntimeProducer;
 import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -41,36 +43,41 @@ public class ImpressionsManagerImpl implements ImpressionsManager, Closeable {
     private final ImpressionCounter _counter;
     private final ImpressionListener _listener;
     private final ImpressionsManager.Mode _mode;
+    private final TelemetryRuntimeProducer _telemetryRuntimeProducer;
 
     public static ImpressionsManagerImpl instance(CloseableHttpClient client,
                                                   SplitClientConfig config,
-                                                  List<ImpressionListener> listeners) throws URISyntaxException {
-        return new ImpressionsManagerImpl(client, config, null, listeners);
+                                                  List<ImpressionListener> listeners,
+                                                  TelemetryRuntimeProducer telemetryRuntimeProducer) throws URISyntaxException {
+        return new ImpressionsManagerImpl(client, config, null, listeners, telemetryRuntimeProducer);
     }
 
     public static ImpressionsManagerImpl instanceForTest(CloseableHttpClient client,
                                                          SplitClientConfig config,
                                                          ImpressionsSender impressionsSender,
-                                                         List<ImpressionListener> listeners) throws URISyntaxException {
-        return new ImpressionsManagerImpl(client, config, impressionsSender, listeners);
+                                                         List<ImpressionListener> listeners,
+                                                         TelemetryRuntimeProducer telemetryRuntimeProducer) throws URISyntaxException {
+        return new ImpressionsManagerImpl(client, config, impressionsSender, listeners, telemetryRuntimeProducer);
     }
 
     private ImpressionsManagerImpl(CloseableHttpClient client,
                                    SplitClientConfig config,
                                    ImpressionsSender impressionsSender,
-                                   List<ImpressionListener> listeners) throws URISyntaxException {
+                                   List<ImpressionListener> listeners,
+                                   TelemetryRuntimeProducer telemetryRuntimeProducer) throws URISyntaxException {
 
 
         _config = checkNotNull(config);
         _mode = checkNotNull(config.impressionsMode());
+        _telemetryRuntimeProducer = checkNotNull(telemetryRuntimeProducer);
         _storage = new InMemoryImpressionsStorage(config.impressionsQueueSize());
         _impressionObserver = new ImpressionObserver(LAST_SEEN_CACHE_SIZE);
         _counter = new ImpressionCounter();
         _impressionsSender = (null != impressionsSender) ? impressionsSender
-                : HttpImpressionsSender.create(client, URI.create(config.eventsEndpoint()), _mode);
+                : HttpImpressionsSender.create(client, URI.create(config.eventsEndpoint()), _mode, telemetryRuntimeProducer);
 
         _scheduler = buildExecutor();
-        _scheduler.scheduleAtFixedRate(this::sendImpressions, BULK_INITIAL_DELAY_SECONDS,config.impressionsRefreshRate(), TimeUnit.SECONDS);
+        _scheduler.scheduleAtFixedRate(this::sendImpressions, BULK_INITIAL_DELAY_SECONDS, config.impressionsRefreshRate(), TimeUnit.SECONDS);
         if (Mode.OPTIMIZED.equals(_mode)) {
             _scheduler.scheduleAtFixedRate(this::sendImpressionCounters, COUNT_INITIAL_DELAY_SECONDS, COUNT_REFRESH_RATE_SECONDS, TimeUnit.SECONDS);
         }
@@ -97,9 +104,15 @@ public class ImpressionsManagerImpl implements ImpressionsManager, Closeable {
             _counter.inc(impression.split(), impression.time(), 1);
         }
 
-        if (Mode.DEBUG.equals(_mode) || shouldQueueImpression(impression)) {
-            _storage.put(KeyImpression.fromImpression(impression));
+        if (Mode.OPTIMIZED.equals(_mode) && !shouldQueueImpression(impression)) {
+            _telemetryRuntimeProducer.recordImpressionStats(ImpressionsDataTypeEnum.IMPRESSIONS_DEDUPED, 1);
+            return;
         }
+        if (!_storage.put(KeyImpression.fromImpression(impression))) {
+            _telemetryRuntimeProducer.recordImpressionStats(ImpressionsDataTypeEnum.IMPRESSIONS_DROPPED, 1);
+            return;
+        }
+        _telemetryRuntimeProducer.recordImpressionStats(ImpressionsDataTypeEnum.IMPRESSIONS_QUEUED, 1);
     }
 
     @Override
@@ -129,14 +142,14 @@ public class ImpressionsManagerImpl implements ImpressionsManager, Closeable {
         }
 
         _impressionsSender.postImpressionsBulk(TestImpressions.fromKeyImpressions(impressions));
-        if(_config.debugEnabled()) {
+        if (_config.debugEnabled()) {
             _log.info(String.format("Posting %d Split impressions took %d millis",
                     impressions.size(), (System.currentTimeMillis() - start)));
         }
     }
 
     @VisibleForTesting
-    /* package private */ void sendImpressionCounters() {
+        /* package private */ void sendImpressionCounters() {
         if (!_counter.isEmpty()) {
             _impressionsSender.postCounters(_counter.popAll());
         }

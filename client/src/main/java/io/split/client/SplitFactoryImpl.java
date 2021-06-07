@@ -3,12 +3,11 @@ package io.split.client;
 import io.split.client.impressions.AsynchronousImpressionListener;
 import io.split.client.impressions.ImpressionListener;
 import io.split.client.impressions.ImpressionsManagerImpl;
-import io.split.client.interceptors.AddSplitHeadersFilter;
+import io.split.client.interceptors.AuthorizationInterceptorFilter;
+import io.split.client.interceptors.ClientKeyInterceptorFilter;
 import io.split.client.interceptors.GzipDecoderResponseInterceptor;
 import io.split.client.interceptors.GzipEncoderRequestInterceptor;
-import io.split.client.metrics.CachedMetrics;
-import io.split.client.metrics.FireAndForgetMetrics;
-import io.split.client.metrics.HttpMetrics;
+import io.split.client.interceptors.SdkMetadataInterceptorFilter;
 import io.split.cache.InMemoryCacheImp;
 import io.split.cache.SplitCache;
 import io.split.engine.evaluator.Evaluator;
@@ -26,6 +25,11 @@ import io.split.cache.SegmentCache;
 import io.split.cache.SegmentCacheInMemoryImpl;
 import io.split.engine.segments.SegmentSynchronizationTaskImp;
 import io.split.integrations.IntegrationsConfig;
+import io.split.telemetry.storage.InMemoryTelemetryStorage;
+import io.split.telemetry.storage.TelemetryStorage;
+import io.split.telemetry.synchronizer.TelemetrySubmitter;
+import io.split.telemetry.synchronizer.TelemetrySyncTask;
+import io.split.telemetry.synchronizer.TelemetrySynchronizer;
 import org.apache.hc.client5.http.auth.AuthScope;
 import org.apache.hc.client5.http.auth.Credentials;
 import org.apache.hc.client5.http.auth.UsernamePasswordCredentials;
@@ -50,10 +54,10 @@ import org.slf4j.LoggerFactory;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
-import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 public class SplitFactoryImpl implements SplitFactory {
@@ -67,13 +71,10 @@ public class SplitFactoryImpl implements SplitFactory {
     private final URI _eventsRootTarget;
     private final CloseableHttpClient _httpclient;
     private final SDKReadinessGates _gates;
-    private final HttpMetrics _httpMetrics;
-    private final FireAndForgetMetrics _unCachedFireAndForget;
     private final SegmentSynchronizationTaskImp _segmentSynchronizationTaskImp;
     private final SplitFetcher _splitFetcher;
     private final SplitSynchronizationTask _splitSynchronizationTask;
     private final ImpressionsManagerImpl _impressionsManager;
-    private final FireAndForgetMetrics _cachedFireAndForgetMetrics;
     private final EventClient _eventClient;
     private final SyncManager _syncManager;
     private final Evaluator _evaluator;
@@ -89,11 +90,18 @@ public class SplitFactoryImpl implements SplitFactory {
 
     private boolean isTerminated = false;
     private final ApiKeyCounter _apiKeyCounter;
+    private final TelemetryStorage _telemetryStorage;
+    private final TelemetrySynchronizer _telemetrySynchronizer;
+    private final TelemetrySyncTask _telemetrySyncTask;
+    private final long _startTime;
 
     public SplitFactoryImpl(String apiToken, SplitClientConfig config) throws URISyntaxException {
+        _startTime = System.currentTimeMillis();
         _apiToken = apiToken;
         _apiKeyCounter = ApiKeyCounter.getApiKeyCounterInstance();
         _apiKeyCounter.add(apiToken);
+
+        _telemetryStorage = new InMemoryTelemetryStorage();
 
         if (config.blockUntilReady() == -1) {
             //BlockUntilReady not been set
@@ -112,15 +120,11 @@ public class SplitFactoryImpl implements SplitFactory {
         _rootTarget = URI.create(config.endpoint());
         _eventsRootTarget = URI.create(config.eventsEndpoint());
 
-        // HttpMetrics
-        _httpMetrics = HttpMetrics.create(_httpclient, _eventsRootTarget);
-
         // Cache Initialisations
         _segmentCache = new SegmentCacheInMemoryImpl();
         _splitCache = new InMemoryCacheImp();
+        _telemetrySynchronizer = new TelemetrySubmitter(_httpclient, URI.create(config.telemetryURL()), _telemetryStorage, _splitCache, _segmentCache, _telemetryStorage, _startTime);
 
-        // Metrics
-        _unCachedFireAndForget = FireAndForgetMetrics.instance(_httpMetrics, 2, 1000);
 
         // Segments
         _segmentSynchronizationTaskImp = buildSegments(config);
@@ -129,36 +133,66 @@ public class SplitFactoryImpl implements SplitFactory {
         _splitFetcher = buildSplitFetcher();
 
         // SplitSynchronizationTask
-        _splitSynchronizationTask = new SplitSynchronizationTask(_splitFetcher, _splitCache, findPollingPeriod(RANDOM, config.featuresRefreshRate()));
+        _splitSynchronizationTask = new SplitSynchronizationTask(_splitFetcher,
+                _splitCache,
+                findPollingPeriod(RANDOM, config.featuresRefreshRate()));
 
         // Impressions
         _impressionsManager = buildImpressionsManager(config);
 
-        // CachedFireAndForgetMetrics
-        _cachedFireAndForgetMetrics = buildCachedFireAndForgetMetrics(config);
-
         // EventClient
-        _eventClient = EventClientImpl.create(_httpclient, _eventsRootTarget, config.eventsQueueSize(), config.eventFlushIntervalInMillis(), config.waitBeforeShutdown());
+        _eventClient = EventClientImpl.create(_httpclient,
+                _eventsRootTarget,
+                config.eventsQueueSize(),
+                config.eventFlushIntervalInMillis(),
+                config.waitBeforeShutdown(),
+                _telemetryStorage);
 
-        // SyncManager
-        _syncManager = SyncManagerImp.build(config.streamingEnabled(), _splitSynchronizationTask, _splitFetcher, _segmentSynchronizationTaskImp, _splitCache, config.authServiceURL(), _httpclient, config.streamingServiceURL(), config.authRetryBackoffBase(), buildSSEdHttpClient(config), _segmentCache);
-        _syncManager.start();
+        _telemetrySyncTask = new TelemetrySyncTask(config.get_telemetryRefreshRate(), _telemetrySynchronizer);
 
         // Evaluator
         _evaluator = new EvaluatorImp(_splitCache);
 
         // SplitClient
-        _client = new SplitClientImpl(this, _splitCache, _impressionsManager, _cachedFireAndForgetMetrics, _eventClient, config, _gates, _evaluator);
+        _client = new SplitClientImpl(this,
+                _splitCache,
+                _impressionsManager,
+                _eventClient,
+                config,
+                _gates,
+                _evaluator, 
+                _telemetryStorage, 
+                _telemetryStorage);
 
         // SplitManager
-        _manager = new SplitManagerImpl(_splitCache, config, _gates);
+        _manager = new SplitManagerImpl(_splitCache, config, _gates, _telemetryStorage);
+
+        // SyncManager
+        _syncManager = SyncManagerImp.build(config.streamingEnabled(),
+                _splitSynchronizationTask,
+                _splitFetcher,
+                _segmentSynchronizationTaskImp,
+                _splitCache,
+                config.authServiceURL(),
+                _httpclient,
+                config.streamingServiceURL(),
+                config.authRetryBackoffBase(),
+                buildSSEdHttpClient(apiToken, config),
+                _segmentCache,
+                config.streamingRetryDelay(),
+                config.streamingFetchMaxRetries(),
+                config.failedAttemptsBeforeLogging(),
+                config.cdnDebugLogging(), _gates, _telemetryStorage, _telemetrySynchronizer,config);
+        _syncManager.start();
 
         // DestroyOnShutDown
         if (config.destroyOnShutDown()) {
-            Runtime.getRuntime().addShutdownHook(new Thread(() -> {
+            Thread shutdown = new Thread(() -> {
                 // Using the full path to avoid conflicting with Thread.destroy()
                 SplitFactoryImpl.this.destroy();
-            }));
+            });
+            shutdown.setName("split-destroy-worker");
+            Runtime.getRuntime().addShutdownHook(shutdown);
         }
     }
 
@@ -177,22 +211,24 @@ public class SplitFactoryImpl implements SplitFactory {
         if (!isTerminated) {
             _log.info("Shutdown called for split");
             try {
+                long splitCount = _splitCache.getAll().stream().count();
+                long segmentCount = _segmentCache.getAll().stream().count();
+                long segmentKeyCount = _segmentCache.getKeyCount();
+                _impressionsManager.close();
+                _log.info("Successful shutdown of impressions manager");
+                _eventClient.close();
+                _log.info("Successful shutdown of eventClient");
                 _segmentSynchronizationTaskImp.close();
                 _log.info("Successful shutdown of segment fetchers");
                 _splitSynchronizationTask.close();
                 _log.info("Successful shutdown of splits");
-                _impressionsManager.close();
-                _log.info("Successful shutdown of impressions manager");
-                _unCachedFireAndForget.close();
-                _log.info("Successful shutdown of metrics 1");
-                _cachedFireAndForgetMetrics.close();
-                _log.info("Successful shutdown of metrics 2");
-                _httpclient.close();
-                _log.info("Successful shutdown of httpclient");
-                _eventClient.close();
-                _log.info("Successful shutdown of eventClient");
                 _syncManager.shutdown();
                 _log.info("Successful shutdown of syncManager");
+                _telemetryStorage.recordSessionLength(System.currentTimeMillis() - _startTime);
+                _telemetrySyncTask.stopScheduledTask(splitCount, segmentCount, segmentKeyCount);
+                _log.info("Successful shutdown of telemetry sync task");
+                _httpclient.close();
+                _log.info("Successful shutdown of httpclient");
             } catch (IOException e) {
                 _log.error("We could not shutdown split", e);
             }
@@ -207,7 +243,6 @@ public class SplitFactoryImpl implements SplitFactory {
     }
 
     private static CloseableHttpClient buildHttpClient(String apiToken, SplitClientConfig config) {
-
         SSLConnectionSocketFactory sslSocketFactory = SSLConnectionSocketFactoryBuilder.create()
                 .setSslContext(SSLContexts.createSystemDefault())
                 .setTlsVersions(TLS.V_1_1, TLS.V_1_2)
@@ -230,7 +265,8 @@ public class SplitFactoryImpl implements SplitFactory {
         HttpClientBuilder httpClientbuilder = HttpClients.custom()
                 .setConnectionManager(cm)
                 .setDefaultRequestConfig(requestConfig)
-                .addRequestInterceptorLast(AddSplitHeadersFilter.instance(apiToken, config.ipAddressEnabled()))
+                .addRequestInterceptorLast(AuthorizationInterceptorFilter.instance(apiToken))
+                .addRequestInterceptorLast(SdkMetadataInterceptorFilter.instance(config.ipAddressEnabled(), SplitClientConfig.splitSdkVersion))
                 .addRequestInterceptorLast(new GzipEncoderRequestInterceptor())
                 .addResponseInterceptorLast((new GzipDecoderResponseInterceptor()));
 
@@ -242,7 +278,7 @@ public class SplitFactoryImpl implements SplitFactory {
         return httpClientbuilder.build();
     }
 
-    private static CloseableHttpClient buildSSEdHttpClient(SplitClientConfig config) {
+    private static CloseableHttpClient buildSSEdHttpClient(String apiToken, SplitClientConfig config) {
         RequestConfig requestConfig = RequestConfig.custom()
                 .setConnectTimeout(Timeout.ofMilliseconds(SSE_CONNECT_TIMEOUT))
                 .build();
@@ -263,7 +299,9 @@ public class SplitFactoryImpl implements SplitFactory {
 
         HttpClientBuilder httpClientbuilder = HttpClients.custom()
                 .setConnectionManager(cm)
-                .setDefaultRequestConfig(requestConfig);
+                .setDefaultRequestConfig(requestConfig)
+                .addRequestInterceptorLast(SdkMetadataInterceptorFilter.instance(config.ipAddressEnabled(), SplitClientConfig.splitSdkVersion))
+                .addRequestInterceptorLast(ClientKeyInterceptorFilter.instance(apiToken));
 
         // Set up proxy is it exists
         if (config.proxy() != null) {
@@ -296,20 +334,21 @@ public class SplitFactoryImpl implements SplitFactory {
     }
 
     private SegmentSynchronizationTaskImp buildSegments(SplitClientConfig config) throws URISyntaxException {
-        SegmentChangeFetcher segmentChangeFetcher = HttpSegmentChangeFetcher.create(_httpclient, _rootTarget, _unCachedFireAndForget);
+        SegmentChangeFetcher segmentChangeFetcher = HttpSegmentChangeFetcher.create(_httpclient, _rootTarget, _telemetryStorage);
 
         return new SegmentSynchronizationTaskImp(segmentChangeFetcher,
                 findPollingPeriod(RANDOM, config.segmentsRefreshRate()),
                 config.numThreadsForSegmentFetch(),
                 _gates,
-                _segmentCache);
+                _segmentCache,
+                _telemetryStorage);
     }
 
     private SplitFetcher buildSplitFetcher() throws URISyntaxException {
-        SplitChangeFetcher splitChangeFetcher = HttpSplitChangeFetcher.create(_httpclient, _rootTarget, _unCachedFireAndForget);
+        SplitChangeFetcher splitChangeFetcher = HttpSplitChangeFetcher.create(_httpclient, _rootTarget, _telemetryStorage);
         SplitParser splitParser = new SplitParser(_segmentSynchronizationTaskImp, _segmentCache);
 
-        return new SplitFetcherImp(splitChangeFetcher, splitParser, _gates, _splitCache);
+        return new SplitFetcherImp(splitChangeFetcher, splitParser, _splitCache, _telemetryStorage);
     }
 
     private ImpressionsManagerImpl buildImpressionsManager(SplitClientConfig config) throws URISyntaxException {
@@ -324,12 +363,6 @@ public class SplitFactoryImpl implements SplitFactory {
                     .collect(Collectors.toCollection(() -> impressionListeners));
         }
 
-        return ImpressionsManagerImpl.instance(_httpclient, config, impressionListeners);
-    }
-
-    private FireAndForgetMetrics buildCachedFireAndForgetMetrics(SplitClientConfig config) {
-        CachedMetrics cachedMetrics = new CachedMetrics(_httpMetrics, TimeUnit.SECONDS.toMillis(config.metricsRefreshRate()));
-
-        return FireAndForgetMetrics.instance(cachedMetrics, 2, 1000);
+        return ImpressionsManagerImpl.instance(_httpclient, config, impressionListeners, _telemetryStorage);
     }
 }

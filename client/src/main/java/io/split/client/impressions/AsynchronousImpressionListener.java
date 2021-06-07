@@ -44,12 +44,7 @@ public class AsynchronousImpressionListener implements ImpressionListener {
     @Override
     public void log(final Impression impression) {
         try {
-            _executor.execute(new Runnable() {
-                @Override
-                public void run() {
-                    _delegate.log(impression);
-                }
-            });
+            _executor.execute(() -> _delegate.log(impression));
         }
         catch (Exception e) {
             _log.warn("Unable to send impression to impression listener", e);

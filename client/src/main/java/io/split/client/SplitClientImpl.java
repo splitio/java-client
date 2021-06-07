@@ -10,12 +10,14 @@ import io.split.engine.SDKReadinessGates;
 import io.split.engine.evaluator.Evaluator;
 import io.split.engine.evaluator.EvaluatorImp;
 import io.split.engine.evaluator.Labels;
-import io.split.engine.metrics.Metrics;
 import io.split.grammar.Treatments;
 import io.split.inputValidation.EventsValidator;
 import io.split.inputValidation.KeyValidator;
 import io.split.inputValidation.SplitNameValidator;
 import io.split.inputValidation.TrafficTypeValidator;
+import io.split.telemetry.domain.enums.MethodEnum;
+import io.split.telemetry.storage.TelemetryConfigProducer;
+import io.split.telemetry.storage.TelemetryEvaluationProducer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -35,36 +37,36 @@ import static com.google.common.base.Preconditions.checkNotNull;
 public final class SplitClientImpl implements SplitClient {
     public static final SplitResult SPLIT_RESULT_CONTROL = new SplitResult(Treatments.CONTROL, null);
 
-    private static final String GET_TREATMENT = "getTreatment";
-    private static final String GET_TREATMENT_WITH_CONFIG = "getTreatmentWithConfig";
-
     private static final Logger _log = LoggerFactory.getLogger(SplitClientImpl.class);
 
     private final SplitFactory _container;
     private final SplitCache _splitCache;
     private final ImpressionsManager _impressionManager;
-    private final Metrics _metrics;
     private final SplitClientConfig _config;
     private final EventClient _eventClient;
     private final SDKReadinessGates _gates;
     private final Evaluator _evaluator;
+    private final TelemetryEvaluationProducer _telemetryEvaluationProducer;
+    private final TelemetryConfigProducer _telemetryConfigProducer;
 
     public SplitClientImpl(SplitFactory container,
                            SplitCache splitCache,
                            ImpressionsManager impressionManager,
-                           Metrics metrics,
                            EventClient eventClient,
                            SplitClientConfig config,
                            SDKReadinessGates gates,
-                           Evaluator evaluator) {
+                           Evaluator evaluator,
+                           TelemetryEvaluationProducer telemetryEvaluationProducer,
+                           TelemetryConfigProducer telemetryConfigProducer) {
         _container = container;
         _splitCache = checkNotNull(splitCache);
         _impressionManager = checkNotNull(impressionManager);
-        _metrics = metrics;
         _eventClient = eventClient;
         _config = config;
         _gates = checkNotNull(gates);
         _evaluator = checkNotNull(evaluator);
+        _telemetryEvaluationProducer = checkNotNull(telemetryEvaluationProducer);
+        _telemetryConfigProducer = checkNotNull(telemetryConfigProducer);
     }
 
     @Override
@@ -74,27 +76,27 @@ public final class SplitClientImpl implements SplitClient {
 
     @Override
     public String getTreatment(String key, String split, Map<String, Object> attributes) {
-        return getTreatmentWithConfigInternal(GET_TREATMENT, key, null, split, attributes).treatment();
+        return getTreatmentWithConfigInternal(key, null, split, attributes, MethodEnum.TREATMENT).treatment();
     }
 
     @Override
     public String getTreatment(Key key, String split, Map<String, Object> attributes) {
-        return getTreatmentWithConfigInternal(GET_TREATMENT, key.matchingKey(), key.bucketingKey(), split, attributes).treatment();
+        return getTreatmentWithConfigInternal(key.matchingKey(), key.bucketingKey(), split, attributes, MethodEnum.TREATMENT).treatment();
     }
 
     @Override
     public SplitResult getTreatmentWithConfig(String key, String split) {
-        return getTreatmentWithConfigInternal(GET_TREATMENT_WITH_CONFIG, key, null, split, Collections.<String, Object>emptyMap());
+        return getTreatmentWithConfigInternal(key, null, split, Collections.<String, Object>emptyMap(), MethodEnum.TREATMENT_WITH_CONFIG);
     }
 
     @Override
     public SplitResult getTreatmentWithConfig(String key, String split, Map<String, Object> attributes) {
-        return getTreatmentWithConfigInternal(GET_TREATMENT_WITH_CONFIG, key, null, split, attributes);
+        return getTreatmentWithConfigInternal(key, null, split, attributes, MethodEnum.TREATMENT_WITH_CONFIG);
     }
 
     @Override
     public SplitResult getTreatmentWithConfig(Key key, String split, Map<String, Object> attributes) {
-        return getTreatmentWithConfigInternal(GET_TREATMENT_WITH_CONFIG, key.matchingKey(), key.bucketingKey(), split, attributes);
+        return getTreatmentWithConfigInternal(key.matchingKey(), key.bucketingKey(), split, attributes, MethodEnum.TREATMENT_WITH_CONFIG);
     }
 
     @Override
@@ -132,7 +134,7 @@ public final class SplitClientImpl implements SplitClient {
         if (_config.blockUntilReady() <= 0) {
             throw new IllegalArgumentException("setBlockUntilReadyTimeout must be positive but in config was: " + _config.blockUntilReady());
         }
-        if (!_gates.isSDKReady(_config.blockUntilReady())) {
+        if (!_gates.waitUntilInternalReady(_config.blockUntilReady())) {
             throw new TimeoutException("SDK was not ready in " + _config.blockUntilReady()+ " milliseconds");
         }
         _log.debug(String.format("Split SDK ready in %d ms", (System.currentTimeMillis() - startTime)));
@@ -144,6 +146,7 @@ public final class SplitClientImpl implements SplitClient {
     }
 
     private boolean track(Event event) {
+        long initTime = System.currentTimeMillis();
         if (_container.isDestroyed()) {
             _log.error("Client has already been destroyed - no calls possible");
             return false;
@@ -173,26 +176,32 @@ public final class SplitClientImpl implements SplitClient {
         }
 
         event.properties = propertiesResult.getValue();
+        _telemetryEvaluationProducer.recordLatency(MethodEnum.TRACK, System.currentTimeMillis() - initTime);
 
         return _eventClient.track(event, propertiesResult.getEventSize());
     }
 
-    private SplitResult getTreatmentWithConfigInternal(String method, String matchingKey, String bucketingKey, String split, Map<String, Object> attributes) {
+    private SplitResult getTreatmentWithConfigInternal(String matchingKey, String bucketingKey, String split, Map<String, Object> attributes, MethodEnum methodEnum) {
+        long initTime = System.currentTimeMillis();
         try {
+            if(!_gates.isSDKReady()){
+                _log.warn(methodEnum.getMethod() + ": the SDK is not ready, results may be incorrect. Make sure to wait for SDK readiness before using this method");
+                _telemetryConfigProducer.recordNonReadyUsage();
+            }
             if (_container.isDestroyed()) {
                 _log.error("Client has already been destroyed - no calls possible");
                 return SPLIT_RESULT_CONTROL;
             }
 
-            if (!KeyValidator.isValid(matchingKey, "matchingKey", _config.maxStringLength(), method)) {
+            if (!KeyValidator.isValid(matchingKey, "matchingKey", _config.maxStringLength(), methodEnum.getMethod())) {
                 return SPLIT_RESULT_CONTROL;
             }
 
-            if (!KeyValidator.bucketingKeyIsValid(bucketingKey, _config.maxStringLength(), method)) {
+            if (!KeyValidator.bucketingKeyIsValid(bucketingKey, _config.maxStringLength(), methodEnum.getMethod())) {
                 return SPLIT_RESULT_CONTROL;
             }
 
-            Optional<String> splitNameResult = SplitNameValidator.isValid(split, method);
+            Optional<String> splitNameResult = SplitNameValidator.isValid(split, methodEnum.getMethod());
             if (!splitNameResult.isPresent()) {
                 return SPLIT_RESULT_CONTROL;
             }
@@ -202,7 +211,7 @@ public final class SplitClientImpl implements SplitClient {
 
             EvaluatorImp.TreatmentLabelAndChangeNumber result = _evaluator.evaluateFeature(matchingKey, bucketingKey, split, attributes);
 
-            if (result.treatment.equals(Treatments.CONTROL) && result.label.equals(Labels.DEFINITION_NOT_FOUND) && _gates.isSDKReadyNow()) {
+            if (result.treatment.equals(Treatments.CONTROL) && result.label.equals(Labels.DEFINITION_NOT_FOUND) && _gates.isSDKReady()) {
                 _log.warn(
                         "getTreatment: you passed \"" + split + "\" that does not exist in this environment, " +
                                 "please double check what Splits exist in the web console.");
@@ -214,15 +223,16 @@ public final class SplitClientImpl implements SplitClient {
                     split,
                     start,
                     result.treatment,
-                    String.format("sdk.%s", method),
+                    String.format("sdk.%s", methodEnum.getMethod()),
                     _config.labelsEnabled() ? result.label : null,
                     result.changeNumber,
                     attributes
             );
-
+            _telemetryEvaluationProducer.recordLatency(methodEnum, System.currentTimeMillis()-initTime);
             return new SplitResult(result.treatment, result.configurations);
         } catch (Exception e) {
             try {
+                _telemetryEvaluationProducer.recordException(methodEnum);
                 _log.error("CatchAll Exception", e);
             } catch (Exception e1) {
                 // ignore
@@ -235,7 +245,6 @@ public final class SplitClientImpl implements SplitClient {
                              String operation, String label, Long changeNumber, Map<String, Object> attributes) {
         try {
             _impressionManager.track(new Impression(matchingKey, bucketingKey, split, result, System.currentTimeMillis(), label, changeNumber, attributes));
-            _metrics.time(operation, System.currentTimeMillis() - start);
         } catch (Throwable t) {
             _log.error("Exception", t);
         }

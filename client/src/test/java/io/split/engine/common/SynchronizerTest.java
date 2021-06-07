@@ -1,14 +1,25 @@
 package io.split.engine.common;
 
+import io.split.cache.InMemoryCacheImp;
 import io.split.cache.SegmentCache;
 import io.split.cache.SplitCache;
+import io.split.engine.SDKReadinessGates;
 import io.split.engine.experiments.SplitFetcherImp;
 import io.split.engine.experiments.SplitSynchronizationTask;
 import io.split.engine.segments.SegmentFetcher;
 import io.split.engine.segments.SegmentSynchronizationTask;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
+import org.mockito.ArgumentCaptor;
 import org.mockito.Mockito;
+
+import java.lang.reflect.Field;
+import java.lang.reflect.Modifier;
+import java.util.List;
+import java.util.concurrent.atomic.AtomicInteger;
+
+import static org.mockito.Mockito.when;
 
 public class SynchronizerTest {
     private SplitSynchronizationTask _refreshableSplitFetcherTask;
@@ -17,6 +28,7 @@ public class SynchronizerTest {
     private SplitCache _splitCache;
     private Synchronizer _synchronizer;
     private SegmentCache _segmentCache;
+    private SDKReadinessGates _gates;
 
     @Before
     public void beforeMethod() {
@@ -25,17 +37,20 @@ public class SynchronizerTest {
         _splitFetcher = Mockito.mock(SplitFetcherImp.class);
         _splitCache = Mockito.mock(SplitCache.class);
         _segmentCache = Mockito.mock(SegmentCache.class);
+        _gates = Mockito.mock(SDKReadinessGates.class);
 
-        _synchronizer = new SynchronizerImp(_refreshableSplitFetcherTask, _splitFetcher, _segmentFetcher, _splitCache, _segmentCache);
+        _synchronizer = new SynchronizerImp(_refreshableSplitFetcherTask, _splitFetcher, _segmentFetcher, _splitCache, _segmentCache, 50, 10, 5, false, _gates);
     }
 
     @Test
     public void syncAll() throws InterruptedException {
+        Mockito.when(_splitFetcher.fetchAll(Mockito.anyObject())).thenReturn(true);
+        Mockito.when(_segmentFetcher.fetchAllSynchronous()).thenReturn(true);
         _synchronizer.syncAll();
 
-        Thread.sleep(100);
-        Mockito.verify(_splitFetcher, Mockito.times(1)).fetchAll(true);
-        Mockito.verify(_segmentFetcher, Mockito.times(1)).fetchAll(true);
+        Thread.sleep(1000);
+        Mockito.verify(_splitFetcher, Mockito.times(1)).fetchAll(Mockito.anyObject());
+        Mockito.verify(_segmentFetcher, Mockito.times(1)).fetchAllSynchronous();
     }
 
     @Test
@@ -56,7 +71,7 @@ public class SynchronizerTest {
 
     @Test
     public void streamingRetryOnSplit() {
-        Mockito.when(_splitCache.getChangeNumber()).thenReturn(0l).thenReturn(0l).thenReturn(1l);
+        when(_splitCache.getChangeNumber()).thenReturn(0l).thenReturn(0l).thenReturn(1l);
         _synchronizer.refreshSplits(1l);
 
         Mockito.verify(_splitCache, Mockito.times(3)).getChangeNumber();
@@ -65,11 +80,164 @@ public class SynchronizerTest {
     @Test
     public void streamingRetryOnSegment() {
         SegmentFetcher fetcher = Mockito.mock(SegmentFetcher.class);
-        Mockito.when(_segmentFetcher.getFetcher(Mockito.anyString())).thenReturn(fetcher);
-        Mockito.when(_segmentCache.getChangeNumber(Mockito.anyString())).thenReturn(0l).thenReturn(0l).thenReturn(1l);
+        when(_segmentFetcher.getFetcher(Mockito.anyString())).thenReturn(fetcher);
+        when(_segmentCache.getChangeNumber(Mockito.anyString())).thenReturn(0l).thenReturn(0l).thenReturn(1l);
         _synchronizer.refreshSegment("Segment",1l);
 
         Mockito.verify(_segmentCache, Mockito.times(3)).getChangeNumber(Mockito.anyString());
     }
 
+    @Test
+    public void testCDNBypassIsRequestedAfterNFailures() throws NoSuchFieldException, IllegalAccessException {
+
+        SplitCache cache = new InMemoryCacheImp();
+        Synchronizer imp = new SynchronizerImp(_refreshableSplitFetcherTask,
+                _splitFetcher,
+                _segmentFetcher,
+                cache,
+                _segmentCache,
+                50,
+                3,
+                1,
+                true,
+                Mockito.mock(SDKReadinessGates.class));
+
+        ArgumentCaptor<FetchOptions> optionsCaptor = ArgumentCaptor.forClass(FetchOptions.class);
+        AtomicInteger calls = new AtomicInteger();
+        Mockito.doAnswer(invocationOnMock -> {
+            calls.getAndIncrement();
+            switch (calls.get()) {
+                case 4: cache.setChangeNumber(123);
+            }
+            return null;
+        }).when(_splitFetcher).forceRefresh(optionsCaptor.capture());
+
+        imp.refreshSplits(123);
+
+        List<FetchOptions> options = optionsCaptor.getAllValues();
+        Assert.assertEquals(options.size(), 4);
+        Assert.assertFalse(options.get(0).hasCustomCN());
+        Assert.assertFalse(options.get(1).hasCustomCN());
+        Assert.assertFalse(options.get(2).hasCustomCN());
+        Assert.assertTrue(options.get(3).hasCustomCN());
+    }
+
+    @Test
+    public void testCDNBypassRequestLimitAndBackoff() throws NoSuchFieldException, IllegalAccessException {
+
+        SplitCache cache = new InMemoryCacheImp();
+        Synchronizer imp = new SynchronizerImp(_refreshableSplitFetcherTask,
+                _splitFetcher,
+                _segmentFetcher,
+                cache,
+                _segmentCache,
+                50,
+                3,
+                1,
+                true,
+                Mockito.mock(SDKReadinessGates.class));
+
+        ArgumentCaptor<FetchOptions> optionsCaptor = ArgumentCaptor.forClass(FetchOptions.class);
+        AtomicInteger calls = new AtomicInteger();
+        Mockito.doAnswer(invocationOnMock -> {
+            calls.getAndIncrement();
+            switch (calls.get()) {
+                case 14: Assert.assertTrue(false); // should never get here
+            }
+            return null;
+        }).when(_splitFetcher).forceRefresh(optionsCaptor.capture());
+
+        // Before executing, we'll update the backoff via reflection, to avoid waiting minutes for the test to run.
+        Field backoffBase = SynchronizerImp.class.getDeclaredField("ON_DEMAND_FETCH_BACKOFF_BASE_MS");
+        backoffBase.setAccessible(true);
+        Field modifiersField = Field.class.getDeclaredField("modifiers");
+        modifiersField.setAccessible(true);
+        modifiersField.setInt(backoffBase, backoffBase.getModifiers() & ~Modifier.FINAL);
+        backoffBase.set(imp, 1); // 1ms
+
+        long before = System.currentTimeMillis();
+        imp.refreshSplits(1);
+        long after = System.currentTimeMillis();
+
+        List<FetchOptions> options = optionsCaptor.getAllValues();
+        Assert.assertEquals(options.size(), 13);
+        Assert.assertFalse(options.get(0).hasCustomCN());
+        Assert.assertFalse(options.get(1).hasCustomCN());
+        Assert.assertFalse(options.get(2).hasCustomCN());
+        Assert.assertTrue(options.get(3).hasCustomCN());
+        Assert.assertTrue(options.get(4).hasCustomCN());
+        Assert.assertTrue(options.get(5).hasCustomCN());
+        Assert.assertTrue(options.get(6).hasCustomCN());
+        Assert.assertTrue(options.get(7).hasCustomCN());
+        Assert.assertTrue(options.get(8).hasCustomCN());
+        Assert.assertTrue(options.get(9).hasCustomCN());
+        Assert.assertTrue(options.get(10).hasCustomCN());
+        Assert.assertTrue(options.get(11).hasCustomCN());
+        Assert.assertTrue(options.get(12).hasCustomCN());
+        
+        Assert.assertEquals(calls.get(), 13);
+        long minDiffExpected = 1 + 2 + 4 + 8 + 16 + 32 + 64 + 128 + 256;
+        Assert.assertTrue((after - before) > minDiffExpected);
+    }
+
+    @Test
+    public void testCDNBypassRequestLimitAndForSegmentsBackoff() throws NoSuchFieldException, IllegalAccessException {
+
+        SplitCache cache = new InMemoryCacheImp();
+        Synchronizer imp = new SynchronizerImp(_refreshableSplitFetcherTask,
+                _splitFetcher,
+                _segmentFetcher,
+                cache,
+                _segmentCache,
+                50,
+                3,
+                1,
+                true,
+                Mockito.mock(SDKReadinessGates.class));
+
+        SegmentFetcher fetcher = Mockito.mock(SegmentFetcher.class);
+        when(_segmentFetcher.getFetcher("someSegment")).thenReturn(fetcher);
+
+        ArgumentCaptor<FetchOptions> optionsCaptor = ArgumentCaptor.forClass(FetchOptions.class);
+        AtomicInteger calls = new AtomicInteger();
+        Mockito.doAnswer(invocationOnMock -> {
+            calls.getAndIncrement();
+            switch (calls.get()) {
+                case 14: Assert.assertTrue(false); // should never get here
+            }
+            return null;
+        }).when(fetcher).fetch(optionsCaptor.capture());
+
+        // Before executing, we'll update the backoff via reflection, to avoid waiting minutes for the test to run.
+        Field backoffBase = SynchronizerImp.class.getDeclaredField("ON_DEMAND_FETCH_BACKOFF_BASE_MS");
+        backoffBase.setAccessible(true);
+        Field modifiersField = Field.class.getDeclaredField("modifiers");
+        modifiersField.setAccessible(true);
+        modifiersField.setInt(backoffBase, backoffBase.getModifiers() & ~Modifier.FINAL);
+        backoffBase.set(imp, 1); // 1ms
+
+        long before = System.currentTimeMillis();
+        imp.refreshSegment("someSegment",1);
+        long after = System.currentTimeMillis();
+
+        List<FetchOptions> options = optionsCaptor.getAllValues();
+        Assert.assertEquals(options.size(), 13);
+        Assert.assertFalse(options.get(0).hasCustomCN());
+        Assert.assertFalse(options.get(1).hasCustomCN());
+        Assert.assertFalse(options.get(2).hasCustomCN());
+        Assert.assertTrue(options.get(3).hasCustomCN());
+        Assert.assertTrue(options.get(4).hasCustomCN());
+        Assert.assertTrue(options.get(5).hasCustomCN());
+        Assert.assertTrue(options.get(6).hasCustomCN());
+        Assert.assertTrue(options.get(7).hasCustomCN());
+        Assert.assertTrue(options.get(8).hasCustomCN());
+        Assert.assertTrue(options.get(9).hasCustomCN());
+        Assert.assertTrue(options.get(10).hasCustomCN());
+        Assert.assertTrue(options.get(11).hasCustomCN());
+        Assert.assertTrue(options.get(12).hasCustomCN());
+
+        Assert.assertEquals(calls.get(), 13);
+        long minDiffExpected = 1 + 2 + 4 + 8 + 16 + 32 + 64 + 128 + 256;
+        Assert.assertTrue((after - before) > minDiffExpected);
+    }
 }
