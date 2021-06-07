@@ -9,7 +9,7 @@ CHANGES
 - Updated log level and message in some messages.
 
 4.1.5 (Apr 6, 2021)
-- Updated streaming logic to use limited fetch retry attempts
+- Updated streaming logic to use limited fetch retry attempts.
 
 4.1.4 (Mar 19, 2021)
 - Updated: Internal cache structure refactor.
