@@ -17,6 +17,7 @@ public class FetchOptions {
             _cacheControlHeaders = opts._cacheControlHeaders;
             _fastlyDebugHeader = opts._fastlyDebugHeader;
             _responseHeadersCallback = opts._responseHeadersCallback;
+            _hostHeader = opts._hostHeader;
         }
 
         public Builder cacheControlHeaders(boolean on) {
@@ -39,13 +40,19 @@ public class FetchOptions {
             return this;
         }
 
+        public Builder hostHeader(String hostHeader) {
+            _hostHeader = hostHeader;
+            return this;
+        }
+
         public FetchOptions build() {
-            return new FetchOptions(_cacheControlHeaders, _targetCN, _responseHeadersCallback, _fastlyDebugHeader);
+            return new FetchOptions(_cacheControlHeaders, _targetCN, _responseHeadersCallback, _fastlyDebugHeader, _hostHeader);
         }
 
         private long _targetCN = DEFAULT_TARGET_CHANGENUMBER;
         private boolean _cacheControlHeaders = false;
         private boolean _fastlyDebugHeader = false;
+        private String _hostHeader = null;
         private Function<Map<String, String>, Void> _responseHeadersCallback = null;
     }
 
@@ -61,6 +68,8 @@ public class FetchOptions {
 
     public boolean hasCustomCN() { return _targetCN != DEFAULT_TARGET_CHANGENUMBER; }
 
+    public String hostHeader() { return _hostHeader; }
+
     public void handleResponseHeaders(Map<String, String> headers) {
         if (Objects.isNull(_responseHeadersCallback) || Objects.isNull(headers)) {
             return;
@@ -71,11 +80,12 @@ public class FetchOptions {
     private FetchOptions(boolean cacheControlHeaders,
                          long targetCN,
                          Function<Map<String, String>, Void> responseHeadersCallback,
-                         boolean fastlyDebugHeader) {
+                         boolean fastlyDebugHeader, String hostHeader) {
         _cacheControlHeaders = cacheControlHeaders;
         _targetCN = targetCN;
         _responseHeadersCallback = responseHeadersCallback;
         _fastlyDebugHeader = fastlyDebugHeader;
+        _hostHeader = hostHeader;
     }
 
     @Override
@@ -89,16 +99,18 @@ public class FetchOptions {
         return Objects.equals(_cacheControlHeaders, other._cacheControlHeaders)
                 && Objects.equals(_fastlyDebugHeader, other._fastlyDebugHeader)
                 && Objects.equals(_responseHeadersCallback, other._responseHeadersCallback)
-                && Objects.equals(_targetCN, other._targetCN);
+                && Objects.equals(_targetCN, other._targetCN)
+                && Objects.equals(_hostHeader, other._hostHeader);
     }
 
     @Override
     public int hashCode() {
-        return com.google.common.base.Objects.hashCode(_cacheControlHeaders, _fastlyDebugHeader, _responseHeadersCallback, _targetCN);
+        return com.google.common.base.Objects.hashCode(_cacheControlHeaders, _fastlyDebugHeader, _responseHeadersCallback, _targetCN, _hostHeader);
     }
 
     private final boolean _cacheControlHeaders;
     private final boolean _fastlyDebugHeader;
     private final long _targetCN;
+    private final String _hostHeader;
     private final Function<Map<String, String>, Void> _responseHeadersCallback;
 }

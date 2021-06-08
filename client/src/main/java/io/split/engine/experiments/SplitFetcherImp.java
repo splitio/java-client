@@ -1,5 +1,6 @@
 package io.split.engine.experiments;
 
+import io.split.client.SplitClientConfig;
 import io.split.client.dtos.Split;
 import io.split.client.dtos.SplitChange;
 import io.split.client.dtos.Status;
@@ -24,6 +25,7 @@ public class SplitFetcherImp implements SplitFetcher {
     private final SplitChangeFetcher _splitChangeFetcher;
     private final SplitCache _splitCache;
     private final SDKReadinessGates _gates;
+    private final SplitClientConfig _config;
     private final Object _lock = new Object();
 
     /**
@@ -36,11 +38,12 @@ public class SplitFetcherImp implements SplitFetcher {
      * an ARCHIVED split is received, we know if we need to remove a traffic type from the multiset.
      */
 
-    public SplitFetcherImp(SplitChangeFetcher splitChangeFetcher, SplitParser parser, SDKReadinessGates gates, SplitCache splitCache) {
+    public SplitFetcherImp(SplitChangeFetcher splitChangeFetcher, SplitParser parser, SDKReadinessGates gates, SplitCache splitCache, SplitClientConfig config) {
         _splitChangeFetcher = checkNotNull(splitChangeFetcher);
         _parser = checkNotNull(parser);
         _gates = checkNotNull(gates);
         _splitCache = checkNotNull(splitCache);
+        _config = checkNotNull(config);
     }
 
     @Override
@@ -74,7 +77,7 @@ public class SplitFetcherImp implements SplitFetcher {
 
     @Override
     public void run() {
-        this.fetchAll(new FetchOptions.Builder().cacheControlHeaders(false).build());
+        this.fetchAll(new FetchOptions.Builder().cacheControlHeaders(false).hostHeader(_config.hostHeader()).build());
     }
 
     private void runWithoutExceptionHandling(FetchOptions options) throws InterruptedException {

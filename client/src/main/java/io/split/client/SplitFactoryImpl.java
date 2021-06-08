@@ -126,7 +126,7 @@ public class SplitFactoryImpl implements SplitFactory {
         _segmentSynchronizationTaskImp = buildSegments(config);
 
         // SplitFetcher
-        _splitFetcher = buildSplitFetcher();
+        _splitFetcher = buildSplitFetcher(config);
 
         // SplitSynchronizationTask
         _splitSynchronizationTask = new SplitSynchronizationTask(_splitFetcher,
@@ -161,7 +161,8 @@ public class SplitFactoryImpl implements SplitFactory {
                 config.streamingRetryDelay(),
                 config.streamingFetchMaxRetries(),
                 config.failedAttemptsBeforeLogging(),
-                config.cdnDebugLogging());
+                config.cdnDebugLogging(),
+                config.hostHeader());
         _syncManager.start();
 
         // Evaluator
@@ -333,11 +334,11 @@ public class SplitFactoryImpl implements SplitFactory {
                 _segmentCache);
     }
 
-    private SplitFetcher buildSplitFetcher() throws URISyntaxException {
+    private SplitFetcher buildSplitFetcher(SplitClientConfig config) throws URISyntaxException {
         SplitChangeFetcher splitChangeFetcher = HttpSplitChangeFetcher.create(_httpclient, _rootTarget, _unCachedFireAndForget);
         SplitParser splitParser = new SplitParser(_segmentSynchronizationTaskImp, _segmentCache);
 
-        return new SplitFetcherImp(splitChangeFetcher, splitParser, _gates, _splitCache);
+        return new SplitFetcherImp(splitChangeFetcher, splitParser, _gates, _splitCache, config);
     }
 
     private ImpressionsManagerImpl buildImpressionsManager(SplitClientConfig config) throws URISyntaxException {

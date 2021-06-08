@@ -36,7 +36,7 @@ public class SynchronizerTest {
         _splitCache = Mockito.mock(SplitCache.class);
         _segmentCache = Mockito.mock(SegmentCache.class);
 
-        _synchronizer = new SynchronizerImp(_refreshableSplitFetcherTask, _splitFetcher, _segmentFetcher, _splitCache, _segmentCache, 50, 10, 5, false);
+        _synchronizer = new SynchronizerImp(_refreshableSplitFetcherTask, _splitFetcher, _segmentFetcher, _splitCache, _segmentCache, 50, 10, 5, false, null);
     }
 
     @Test
@@ -94,7 +94,8 @@ public class SynchronizerTest {
                 50,
                 3,
                 1,
-                true);
+                true,
+                null);
 
         ArgumentCaptor<FetchOptions> optionsCaptor = ArgumentCaptor.forClass(FetchOptions.class);
         AtomicInteger calls = new AtomicInteger();
@@ -128,7 +129,8 @@ public class SynchronizerTest {
                 50,
                 3,
                 1,
-                true);
+                true,
+                null);
 
         ArgumentCaptor<FetchOptions> optionsCaptor = ArgumentCaptor.forClass(FetchOptions.class);
         AtomicInteger calls = new AtomicInteger();
@@ -185,7 +187,8 @@ public class SynchronizerTest {
                 50,
                 3,
                 1,
-                true);
+                true,
+                null);
 
         SegmentFetcher fetcher = Mockito.mock(SegmentFetcher.class);
         when(_segmentFetcher.getFetcher("someSegment")).thenReturn(fetcher);

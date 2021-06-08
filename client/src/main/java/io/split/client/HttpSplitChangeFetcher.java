@@ -1,6 +1,7 @@
 package io.split.client;
 
 import com.google.common.annotations.VisibleForTesting;
+import com.google.common.base.Strings;
 import io.split.client.dtos.SplitChange;
 import io.split.client.utils.Json;
 import io.split.client.utils.Utils;
@@ -40,6 +41,8 @@ public final class HttpSplitChangeFetcher implements SplitChangeFetcher {
     private static final String HEADER_FASTLY_DEBUG_NAME = "Fastly-Debug";
     private static final String HEADER_FASTLY_DEBUG_VALUE = "1";
 
+    private static final String HEADER_FASTLY_HOST = "Host";
+
     private final CloseableHttpClient _client;
     private final URI _target;
     private final Metrics _metrics;
@@ -61,7 +64,7 @@ public final class HttpSplitChangeFetcher implements SplitChangeFetcher {
 
     long makeRandomTill() {
 
-        return (-1)*(long)Math.floor(Math.random()*(Math.pow(2, 63)));
+        return (-1) * (long) Math.floor(Math.random() * (Math.pow(2, 63)));
     }
 
     @Override
@@ -79,12 +82,16 @@ public final class HttpSplitChangeFetcher implements SplitChangeFetcher {
             URI uri = uriBuilder.build();
 
             HttpGet request = new HttpGet(uri);
-            if(options.cacheControlHeadersEnabled()) {
+            if (options.cacheControlHeadersEnabled()) {
                 request.setHeader(HEADER_CACHE_CONTROL_NAME, HEADER_CACHE_CONTROL_VALUE);
             }
 
             if (options.fastlyDebugHeaderEnabled()) {
                 request.addHeader(HEADER_FASTLY_DEBUG_NAME, HEADER_FASTLY_DEBUG_VALUE);
+            }
+
+            if (!Strings.isNullOrEmpty(options.hostHeader())) {
+                request.setHeader(HEADER_FASTLY_HOST, options.hostHeader());
             }
 
             response = _client.execute(request);

@@ -63,7 +63,8 @@ public class SyncManagerImp implements SyncManager {
                                        int streamingRetryDelay,
                                        int maxOnDemandFetchRetries,
                                        int failedAttemptsBeforeLogging,
-                                       boolean cdnDebugLogging) {
+                                       boolean cdnDebugLogging,
+                                       String hostHeader) {
         LinkedBlockingQueue<PushManager.Status> pushMessages = new LinkedBlockingQueue<>();
         Synchronizer synchronizer = new SynchronizerImp(splitSynchronizationTask,
                                                         splitFetcher,
@@ -73,7 +74,8 @@ public class SyncManagerImp implements SyncManager {
                                                         streamingRetryDelay,
                                                         maxOnDemandFetchRetries,
                                                         failedAttemptsBeforeLogging,
-                                                        cdnDebugLogging);
+                                                        cdnDebugLogging,
+                                                        hostHeader);
 
         PushManager pushManager = PushManagerImp.build(synchronizer,
                                                         streamingServiceUrl,

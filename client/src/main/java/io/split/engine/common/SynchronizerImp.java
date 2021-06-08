@@ -38,6 +38,7 @@ public class SynchronizerImp implements Synchronizer {
     private final int _onDemandFetchMaxRetries;
     private final int _failedAttemptsBeforeLogging;
     private final boolean _cdnResponseHeadersLogging;
+    private final String _hostHeader;
 
     private final Gson gson = new GsonBuilder().create();
 
@@ -49,7 +50,8 @@ public class SynchronizerImp implements Synchronizer {
                            int onDemandFetchRetryDelayMs,
                            int onDemandFetchMaxRetries,
                            int failedAttemptsBeforeLogging,
-                           boolean cdnResponseHeadersLogging) {
+                           boolean cdnResponseHeadersLogging,
+                           String hostHeader) {
         _splitSynchronizationTask = checkNotNull(splitSynchronizationTask);
         _splitFetcher = checkNotNull(splitFetcher);
         _segmentSynchronizationTaskImp = checkNotNull(segmentSynchronizationTaskImp);
@@ -59,6 +61,7 @@ public class SynchronizerImp implements Synchronizer {
         _cdnResponseHeadersLogging = cdnResponseHeadersLogging;
         _onDemandFetchMaxRetries = onDemandFetchMaxRetries;
         _failedAttemptsBeforeLogging = failedAttemptsBeforeLogging;
+        _hostHeader = hostHeader;
 
         ThreadFactory splitsThreadFactory = new ThreadFactoryBuilder()
                 .setDaemon(true)
@@ -70,8 +73,9 @@ public class SynchronizerImp implements Synchronizer {
     @Override
     public void syncAll() {
         _syncAllScheduledExecutorService.schedule(() -> {
-            _splitFetcher.fetchAll(new FetchOptions.Builder().cacheControlHeaders(true).build());
-            _segmentSynchronizationTaskImp.fetchAll(true);
+            FetchOptions fetchOptions = new FetchOptions.Builder().cacheControlHeaders(true).hostHeader(_hostHeader).build();
+            _splitFetcher.fetchAll(fetchOptions);
+            _segmentSynchronizationTaskImp.fetchAll(false);
         }, 0, TimeUnit.SECONDS);
     }
 
@@ -144,6 +148,7 @@ public class SynchronizerImp implements Synchronizer {
                 .cacheControlHeaders(true)
                 .fastlyDebugHeader(_cdnResponseHeadersLogging)
                 .responseHeadersCallback(_cdnResponseHeadersLogging ? captor::handle : null)
+                .hostHeader(_hostHeader)
                 .build();
 
         SyncResult regularResult = attemptSplitsSync(targetChangeNumber, opts,
@@ -225,6 +230,7 @@ public class SynchronizerImp implements Synchronizer {
                 .cacheControlHeaders(true)
                 .fastlyDebugHeader(_cdnResponseHeadersLogging)
                 .responseHeadersCallback(_cdnResponseHeadersLogging ? captor::handle : null)
+                .hostHeader(_hostHeader)
                 .build();
 
         SyncResult regularResult = attemptSegmentSync(segmentName, targetChangeNumber, opts,

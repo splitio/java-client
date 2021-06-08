@@ -50,6 +50,7 @@ public class SplitClientConfig {
     private final int _onDemandFetchMaxRetries;
     private final int _failedAttemptsBeforeLogging;
     private final boolean _cdnDebugLogging;
+    private final String _hostHeader;
 
     // Proxy configs
     private final HttpHost _proxy;
@@ -97,7 +98,8 @@ public class SplitClientConfig {
                               int onDemandFetchRetryDelayMs,
                               int onDemandFetchMaxRetries,
                               int failedAttemptsBeforeLogging,
-                              boolean cdnDebugLogging) {
+                              boolean cdnDebugLogging,
+                              String hostHeader) {
         _endpoint = endpoint;
         _eventsEndpoint = eventsEndpoint;
         _featuresRefreshRate = pollForFeatureChangesEveryNSeconds;
@@ -132,6 +134,7 @@ public class SplitClientConfig {
         _onDemandFetchMaxRetries = onDemandFetchMaxRetries;
         _failedAttemptsBeforeLogging = failedAttemptsBeforeLogging;
         _cdnDebugLogging = cdnDebugLogging;
+        _hostHeader = hostHeader;
 
         Properties props = new Properties();
         try {
@@ -268,6 +271,8 @@ public class SplitClientConfig {
 
     public boolean cdnDebugLogging() { return _cdnDebugLogging; }
 
+    public String hostHeader() { return _hostHeader; }
+
 
     public static final class Builder {
 
@@ -308,6 +313,7 @@ public class SplitClientConfig {
         private final int _onDemandFetchMaxRetries = 10;
         private final int _failedAttemptsBeforeLogging = 10;
         private final boolean _cdnDebugLogging = true;
+        private String _hostHeader = null;
 
         public Builder() {
         }
@@ -699,6 +705,11 @@ public class SplitClientConfig {
             return this;
         }
 
+        public Builder hostHeader(String hostHeader) {
+            _hostHeader = hostHeader;
+            return this;
+        }
+
         public SplitClientConfig build() {
             if (_featuresRefreshRate < 5 ) {
                 throw new IllegalArgumentException("featuresRefreshRate must be >= 5: " + _featuresRefreshRate);
@@ -810,7 +821,8 @@ public class SplitClientConfig {
                     _onDemandFetchRetryDelayMs,
                     _onDemandFetchMaxRetries,
                     _failedAttemptsBeforeLogging,
-                    _cdnDebugLogging);
+                    _cdnDebugLogging,
+                    _hostHeader);
         }
     }
 }

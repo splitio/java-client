@@ -3,6 +3,7 @@ package io.split.engine.experiments;
 import com.google.common.collect.Lists;
 import io.split.cache.SegmentCache;
 import io.split.cache.SegmentCacheInMemoryImpl;
+import io.split.client.SplitClientConfig;
 import io.split.client.dtos.*;
 import io.split.engine.ConditionsTestUtil;
 import io.split.engine.SDKReadinessGates;
