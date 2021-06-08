@@ -11,7 +11,5 @@ public interface SegmentFetcher {
      */
     void fetch(FetchOptions opts);
 
-    void runWhitCacheHeader();
-
-    void fetchAll();
+    void fetchAll(FetchOptions opts);
 }

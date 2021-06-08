@@ -331,7 +331,8 @@ public class SplitFactoryImpl implements SplitFactory {
                 findPollingPeriod(RANDOM, config.segmentsRefreshRate()),
                 config.numThreadsForSegmentFetch(),
                 _gates,
-                _segmentCache);
+                _segmentCache,
+                config);
     }
 
     private SplitFetcher buildSplitFetcher(SplitClientConfig config) throws URISyntaxException {

@@ -1,5 +1,6 @@
 package io.split.engine.segments;
 
+import io.split.client.SplitClientConfig;
 import io.split.engine.SDKReadinessGates;
 import io.split.cache.SegmentCache;
 import org.junit.Before;
@@ -40,7 +41,7 @@ public class SegmentSynchronizationTaskImpTest {
         SegmentCache segmentCache = Mockito.mock(SegmentCache.class);
 
         SegmentChangeFetcher segmentChangeFetcher = Mockito.mock(SegmentChangeFetcher.class);
-        final SegmentSynchronizationTaskImp fetchers = new SegmentSynchronizationTaskImp(segmentChangeFetcher, 1L, 1, gates, segmentCache);
+        final SegmentSynchronizationTaskImp fetchers = new SegmentSynchronizationTaskImp(segmentChangeFetcher, 1L, 1, gates, segmentCache, SplitClientConfig.builder().build());
 
 
         // create two tasks that will separately call segment and make sure

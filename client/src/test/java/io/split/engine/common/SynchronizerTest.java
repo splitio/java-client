@@ -45,7 +45,7 @@ public class SynchronizerTest {
 
         Thread.sleep(100);
         Mockito.verify(_splitFetcher, Mockito.times(1)).fetchAll(new FetchOptions.Builder().cacheControlHeaders(true).build());
-        Mockito.verify(_segmentFetcher, Mockito.times(1)).fetchAll(true);
+        Mockito.verify(_segmentFetcher, Mockito.times(1)).fetchAll(new FetchOptions.Builder().cacheControlHeaders(false).build());
     }
 
     @Test

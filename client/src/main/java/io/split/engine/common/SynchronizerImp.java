@@ -75,7 +75,7 @@ public class SynchronizerImp implements Synchronizer {
         _syncAllScheduledExecutorService.schedule(() -> {
             FetchOptions fetchOptions = new FetchOptions.Builder().cacheControlHeaders(true).hostHeader(_hostHeader).build();
             _splitFetcher.fetchAll(fetchOptions);
-            _segmentSynchronizationTaskImp.fetchAll(false);
+            _segmentSynchronizationTaskImp.fetchAll(new FetchOptions.Builder(fetchOptions).cacheControlHeaders(false).build());
         }, 0, TimeUnit.SECONDS);
     }
 

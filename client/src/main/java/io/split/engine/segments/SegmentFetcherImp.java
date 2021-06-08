@@ -126,8 +126,8 @@ public class SegmentFetcherImp implements SegmentFetcher {
     }
 
     @Override
-    public void runWhitCacheHeader(){
-        this.fetchAndUpdate(new FetchOptions.Builder().cacheControlHeaders(true).build());
+    public void fetchAll(FetchOptions fetchOptions) {
+        this.fetchAndUpdate(fetchOptions);
     }
 
     /**
@@ -149,11 +149,4 @@ public class SegmentFetcherImp implements SegmentFetcher {
             }
         }
     }
-
-    @Override
-    public void fetchAll() {
-        this.fetchAndUpdate(new FetchOptions.Builder().build());
-    }
-
-
 }

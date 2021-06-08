@@ -67,7 +67,7 @@ public class SegmentFetcherImpTest {
 
         // execute the fetcher for a little bit.
         ScheduledExecutorService scheduledExecutorService = Executors.newSingleThreadScheduledExecutor();
-        scheduledExecutorService.scheduleWithFixedDelay(fetcher::fetchAll, 0L, 100, TimeUnit.MICROSECONDS);
+        scheduledExecutorService.scheduleWithFixedDelay(() -> fetcher.fetchAll(new FetchOptions.Builder().build()), 0L, 100, TimeUnit.MICROSECONDS);
         Thread.currentThread().sleep(5 * 100);
 
         scheduledExecutorService.shutdown();
@@ -108,7 +108,7 @@ public class SegmentFetcherImpTest {
 
         // execute the fetcher for a little bit.
         ScheduledExecutorService scheduledExecutorService = Executors.newSingleThreadScheduledExecutor();
-        scheduledExecutorService.scheduleWithFixedDelay(fetcher::fetchAll, 0L, Integer.MAX_VALUE, TimeUnit.SECONDS);
+        scheduledExecutorService.scheduleWithFixedDelay(() -> fetcher.fetchAll(new FetchOptions.Builder().build()), 0L, Integer.MAX_VALUE, TimeUnit.SECONDS);
         Thread.currentThread().sleep(5 * 100);
 
         scheduledExecutorService.shutdown();

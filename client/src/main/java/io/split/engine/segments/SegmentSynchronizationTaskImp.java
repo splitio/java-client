@@ -3,7 +3,9 @@ package io.split.engine.segments;
 import com.google.common.collect.Maps;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import io.split.cache.SegmentCache;
+import io.split.client.SplitClientConfig;
 import io.split.engine.SDKReadinessGates;
+import io.split.engine.common.FetchOptions;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -33,10 +35,12 @@ public class SegmentSynchronizationTaskImp implements SegmentSynchronizationTask
     private final SegmentCache _segmentCache;
     private final SDKReadinessGates _gates;
     private final ScheduledExecutorService _scheduledExecutorService;
+    private final SplitClientConfig _config;
+    private final FetchOptions _fetchAllOptions;
 
     private ScheduledFuture<?> _scheduledFuture;
 
-    public SegmentSynchronizationTaskImp(SegmentChangeFetcher segmentChangeFetcher, long refreshEveryNSeconds, int numThreads, SDKReadinessGates gates, SegmentCache segmentCache) {
+    public SegmentSynchronizationTaskImp(SegmentChangeFetcher segmentChangeFetcher, long refreshEveryNSeconds, int numThreads, SDKReadinessGates gates, SegmentCache segmentCache, SplitClientConfig config) {
         _segmentChangeFetcher = checkNotNull(segmentChangeFetcher);
 
         checkArgument(refreshEveryNSeconds >= 0L);
@@ -54,11 +58,13 @@ public class SegmentSynchronizationTaskImp implements SegmentSynchronizationTask
         _running = new AtomicBoolean(false);
 
         _segmentCache = checkNotNull(segmentCache);
+        _config = checkNotNull(config);
+        _fetchAllOptions = new FetchOptions.Builder().cacheControlHeaders(false).hostHeader(_config.hostHeader()).build();
     }
 
     @Override
     public void run() {
-        this.fetchAll(false);
+        this.fetchAll(_fetchAllOptions);
     }
 
     @Override
@@ -83,13 +89,13 @@ public class SegmentSynchronizationTaskImp implements SegmentSynchronizationTask
                 _log.error("Unable to register segment " + segmentName);
             }
 
-            segment = new SegmentFetcherImp(segmentName, _segmentChangeFetcher, _gates, _segmentCache);
+            final SegmentFetcher segmentFetcher = new SegmentFetcherImp(segmentName, _segmentChangeFetcher, _gates, _segmentCache);
 
             if (_running.get()) {
-                _scheduledExecutorService.submit(segment::fetchAll);
+                _scheduledExecutorService.submit(() -> segmentFetcher.fetchAll(_fetchAllOptions));
             }
 
-            _segmentFetchers.putIfAbsent(segmentName, segment);
+            _segmentFetchers.putIfAbsent(segmentName, segmentFetcher);
         }
     }
 
@@ -142,7 +148,7 @@ public class SegmentSynchronizationTaskImp implements SegmentSynchronizationTask
     }
 
     @Override
-    public void fetchAll(boolean addCacheHeader) {
+    public void fetchAll(FetchOptions fetchOptions) {
         for (Map.Entry<String, SegmentFetcher> entry : _segmentFetchers.entrySet()) {
             SegmentFetcher fetcher = entry.getValue();
 
@@ -150,11 +156,7 @@ public class SegmentSynchronizationTaskImp implements SegmentSynchronizationTask
                 continue;
             }
 
-            if(addCacheHeader) {
-                _scheduledExecutorService.submit(fetcher::runWhitCacheHeader);
-                continue;
-            }
-            _scheduledExecutorService.submit(fetcher::fetchAll);
+            _scheduledExecutorService.submit(() -> fetcher.fetchAll(fetchOptions));
         }
     }
 }

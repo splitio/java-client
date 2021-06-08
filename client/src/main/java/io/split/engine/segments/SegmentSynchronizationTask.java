@@ -1,5 +1,7 @@
 package io.split.engine.segments;
 
+import io.split.engine.common.FetchOptions;
+
 public interface SegmentSynchronizationTask extends Runnable {
     /**
      * initializes the segment
@@ -28,5 +30,5 @@ public interface SegmentSynchronizationTask extends Runnable {
      * fetch every Segment
      * @param addCacheHeader
      */
-    void fetchAll(boolean addCacheHeader);
+    void fetchAll(FetchOptions fetchOptions);
 }
