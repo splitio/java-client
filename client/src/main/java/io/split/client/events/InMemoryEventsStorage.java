@@ -46,7 +46,7 @@ public class InMemoryEventsStorage implements EventsStorage{
                 _telemetryRuntimeProducer.recordEventStats(EventsDataRecordsEnum.EVENTS_QUEUED, 1);
             }
             else {
-                _log.warn("Event dropped.");
+                _log.warn("Event queue is full, dropping event.");
                 _telemetryRuntimeProducer.recordEventStats(EventsDataRecordsEnum.EVENTS_DROPPED, 1);
                 return false;
             }
