@@ -31,7 +31,7 @@ public class InMemoryEventsStorage implements EventsStorage{
         try {
             return _eventQueue.take();
         } catch (InterruptedException e) {
-            _log.warn("Error trying to pop Event from queue.");
+            _log.warn("Got interrupted while waiting for an event in the queue.");
         }
         return null;
     }
@@ -48,6 +48,7 @@ public class InMemoryEventsStorage implements EventsStorage{
             else {
                 _log.warn("Event dropped.");
                 _telemetryRuntimeProducer.recordEventStats(EventsDataRecordsEnum.EVENTS_DROPPED, 1);
+                return false;
             }
 
         } catch (ClassCastException | NullPointerException | IllegalArgumentException e) {
