@@ -57,7 +57,7 @@ public class InMemoryEventsStorageTest{
     }
 
     @Test
-    public void testTrackException() throws NoSuchFieldException, IllegalAccessException, InterruptedException {
+    public void testTrackException() throws NoSuchFieldException, IllegalAccessException {
         TelemetryRuntimeProducer telemetryRuntimeProducer = Mockito.mock(TelemetryRuntimeProducer.class);
         BlockingQueue blockingQueue = Mockito.mock(BlockingQueue.class);
         EventsStorage eventsStorage = new InMemoryEventsStorage(2, telemetryRuntimeProducer);

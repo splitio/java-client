@@ -4,6 +4,7 @@ import io.split.cache.SplitCache;
 import io.split.client.api.Key;
 import io.split.client.api.SplitResult;
 import io.split.client.dtos.Event;
+import io.split.client.events.EventsStorageProducer;
 import io.split.client.impressions.Impression;
 import io.split.client.impressions.ImpressionsManager;
 import io.split.engine.SDKReadinessGates;
@@ -43,7 +44,7 @@ public final class SplitClientImpl implements SplitClient {
     private final SplitCache _splitCache;
     private final ImpressionsManager _impressionManager;
     private final SplitClientConfig _config;
-    private final EventClient _eventClient;
+    private final EventsStorageProducer _eventsStorageProducer;
     private final SDKReadinessGates _gates;
     private final Evaluator _evaluator;
     private final TelemetryEvaluationProducer _telemetryEvaluationProducer;
@@ -52,7 +53,7 @@ public final class SplitClientImpl implements SplitClient {
     public SplitClientImpl(SplitFactory container,
                            SplitCache splitCache,
                            ImpressionsManager impressionManager,
-                           EventClient eventClient,
+                           EventsStorageProducer eventsStorageProducer,
                            SplitClientConfig config,
                            SDKReadinessGates gates,
                            Evaluator evaluator,
@@ -61,7 +62,7 @@ public final class SplitClientImpl implements SplitClient {
         _container = container;
         _splitCache = checkNotNull(splitCache);
         _impressionManager = checkNotNull(impressionManager);
-        _eventClient = eventClient;
+        _eventsStorageProducer = eventsStorageProducer;
         _config = config;
         _gates = checkNotNull(gates);
         _evaluator = checkNotNull(evaluator);
@@ -178,7 +179,7 @@ public final class SplitClientImpl implements SplitClient {
         event.properties = propertiesResult.getValue();
         _telemetryEvaluationProducer.recordLatency(MethodEnum.TRACK, System.currentTimeMillis() - initTime);
 
-        return _eventClient.track(event, propertiesResult.getEventSize());
+        return _eventsStorageProducer.track(event, propertiesResult.getEventSize());
     }
 
     private SplitResult getTreatmentWithConfigInternal(String matchingKey, String bucketingKey, String split, Map<String, Object> attributes, MethodEnum methodEnum) {
