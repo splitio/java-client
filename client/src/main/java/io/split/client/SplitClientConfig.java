@@ -57,6 +57,7 @@ public class SplitClientConfig {
     private final int _onDemandFetchMaxRetries;
     private final int _failedAttemptsBeforeLogging;
     private final boolean _cdnDebugLogging;
+    private long _validateAfterInactivityInMillis;
 
     // Proxy configs
     private final HttpHost _proxy;
@@ -106,7 +107,8 @@ public class SplitClientConfig {
                               int onDemandFetchRetryDelayMs,
                               int onDemandFetchMaxRetries,
                               int failedAttemptsBeforeLogging,
-                              boolean cdnDebugLogging) {
+                              boolean cdnDebugLogging,
+                              long validateAfterInactivityInMillis) {
         _endpoint = endpoint;
         _eventsEndpoint = eventsEndpoint;
         _featuresRefreshRate = pollForFeatureChangesEveryNSeconds;
@@ -143,6 +145,7 @@ public class SplitClientConfig {
         _onDemandFetchMaxRetries = onDemandFetchMaxRetries;
         _failedAttemptsBeforeLogging = failedAttemptsBeforeLogging;
         _cdnDebugLogging = cdnDebugLogging;
+        _validateAfterInactivityInMillis = validateAfterInactivityInMillis;
 
         Properties props = new Properties();
         try {
@@ -286,6 +289,9 @@ public class SplitClientConfig {
 
     public boolean cdnDebugLogging() { return _cdnDebugLogging; }
 
+    public long validateAfterInactivityInMillis() {
+        return _validateAfterInactivityInMillis;
+    }
 
     public static final class Builder {
 
@@ -323,11 +329,12 @@ public class SplitClientConfig {
         private String _authServiceURL = AUTH_ENDPOINT;
         private String _streamingServiceURL = STREAMING_ENDPOINT;
         private String _telemetryURl = TELEMETRY_ENDPOINT;
-        private int _telemetryRefreshRate = 60;
+        private int _telemetryRefreshRate = 3600;
         private int _onDemandFetchRetryDelayMs = 50;
         private final int _onDemandFetchMaxRetries = 10;
         private final int _failedAttemptsBeforeLogging = 10;
         private final boolean _cdnDebugLogging = true;
+        private long _validateAfterInactivityInMillis = 1000;
 
         public Builder() {
         }
@@ -719,8 +726,7 @@ public class SplitClientConfig {
             return this;
         }
 
-        /**
-         * Set telemetry service URL.
+         /** Set telemetry service URL.
          * @param telemetryURL
          * @return
          */
@@ -817,8 +823,13 @@ public class SplitClientConfig {
             if (_onDemandFetchRetryDelayMs <= 0) {
                 throw new IllegalStateException("streamingRetryDelay must be > 0");
             }
+
             if(_onDemandFetchMaxRetries <= 0) {
                 throw new IllegalStateException("_onDemandFetchMaxRetries must be > 0");
+            }
+
+            if(_telemetryRefreshRate <= 60) {
+                throw new IllegalStateException("_telemetryRefreshRate must be >= 60");
             }
 
             return new SplitClientConfig(
@@ -857,7 +868,8 @@ public class SplitClientConfig {
                     _onDemandFetchRetryDelayMs,
                     _onDemandFetchMaxRetries,
                     _failedAttemptsBeforeLogging,
-                    _cdnDebugLogging);
+                    _cdnDebugLogging,
+                    _validateAfterInactivityInMillis);
         }
     }
 }
