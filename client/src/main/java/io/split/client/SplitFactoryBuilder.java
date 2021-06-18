@@ -66,7 +66,7 @@ public class SplitFactoryBuilder {
         return LocalhostSplitFactory.createLocalhostSplitFactory(config);
     }
 
-    public static void main(String... args) throws IOException, InterruptedException, TimeoutException, URISyntaxException {
+    public static void main(String... args) throws IOException, URISyntaxException {
         if (args.length != 1) {
             System.out.println("Usage: <api_token>");
             System.exit(1);

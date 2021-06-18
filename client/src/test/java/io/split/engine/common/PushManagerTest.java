@@ -8,6 +8,9 @@ import io.split.engine.sse.client.SSEClient;
 import io.split.engine.sse.dtos.AuthenticationResponse;
 import io.split.engine.sse.workers.SegmentsWorkerImp;
 import io.split.engine.sse.workers.SplitsWorker;
+import io.split.telemetry.storage.InMemoryTelemetryStorage;
+import io.split.telemetry.storage.TelemetryStorage;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mockito;
@@ -20,6 +23,7 @@ public class PushManagerTest {
     private Backoff _backoff;
     private PushManager _pushManager;
     private PushStatusTracker _pushStatusTracker;
+    private TelemetryStorage _telemetryStorage;
 
     @Before
     public void setUp() {
@@ -27,11 +31,12 @@ public class PushManagerTest {
         _eventSourceClient = Mockito.mock(EventSourceClient.class);
         _backoff = Mockito.mock(Backoff.class);
         _pushStatusTracker = Mockito.mock(PushStatusTrackerImp.class);
+        _telemetryStorage = new InMemoryTelemetryStorage();
         _pushManager = new PushManagerImp(_authApiClient,
                 _eventSourceClient,
                 Mockito.mock(SplitsWorker.class),
                 Mockito.mock(SegmentsWorkerImp.class),
-                _pushStatusTracker);
+                _pushStatusTracker, _telemetryStorage);
     }
 
     @Test
@@ -58,6 +63,7 @@ public class PushManagerTest {
 
         Mockito.verify(_pushStatusTracker, Mockito.times(0)).handleSseStatus(SSEClient.StatusMessage.RETRYABLE_ERROR);
         Mockito.verify(_pushStatusTracker, Mockito.times(0)).forcePushDisable();
+        Assert.assertEquals(1, _telemetryStorage.popStreamingEvents().size());
     }
 
     @Test

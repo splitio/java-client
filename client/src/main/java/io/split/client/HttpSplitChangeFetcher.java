@@ -7,9 +7,14 @@ import io.split.client.utils.Utils;
 import io.split.engine.common.FetchOptions;
 import io.split.engine.experiments.SplitChangeFetcher;
 import io.split.engine.metrics.Metrics;
+import io.split.telemetry.domain.enums.HTTPLatenciesEnum;
+import io.split.telemetry.domain.enums.LastSynchronizationRecordsEnum;
+import io.split.telemetry.domain.enums.ResourceEnum;
+import io.split.telemetry.storage.TelemetryRuntimeProducer;
 import org.apache.hc.client5.http.classic.methods.HttpGet;
 import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
 import org.apache.hc.client5.http.impl.classic.CloseableHttpResponse;
+import org.apache.hc.core5.http.HttpStatus;
 import org.apache.hc.core5.http.Header;
 import org.apache.hc.core5.http.io.entity.EntityUtils;
 import org.apache.hc.core5.net.URIBuilder;
@@ -42,21 +47,17 @@ public final class HttpSplitChangeFetcher implements SplitChangeFetcher {
 
     private final CloseableHttpClient _client;
     private final URI _target;
-    private final Metrics _metrics;
+    private final TelemetryRuntimeProducer _telemetryRuntimeProducer;
 
-    public static HttpSplitChangeFetcher create(CloseableHttpClient client, URI root) throws URISyntaxException {
-        return create(client, root, new Metrics.NoopMetrics());
+    public static HttpSplitChangeFetcher create(CloseableHttpClient client, URI root, TelemetryRuntimeProducer telemetryRuntimeProducer) throws URISyntaxException {
+        return new HttpSplitChangeFetcher(client, Utils.appendPath(root, "api/splitChanges"), telemetryRuntimeProducer);
     }
 
-    public static HttpSplitChangeFetcher create(CloseableHttpClient client, URI root, Metrics metrics) throws URISyntaxException {
-        return new HttpSplitChangeFetcher(client, Utils.appendPath(root, "api/splitChanges"), metrics);
-    }
-
-    private HttpSplitChangeFetcher(CloseableHttpClient client, URI uri, Metrics metrics) {
+    private HttpSplitChangeFetcher(CloseableHttpClient client, URI uri, TelemetryRuntimeProducer telemetryRuntimeProducer) {
         _client = client;
         _target = uri;
-        _metrics = metrics;
         checkNotNull(_target);
+        _telemetryRuntimeProducer = checkNotNull(telemetryRuntimeProducer);
     }
 
     long makeRandomTill() {
@@ -93,8 +94,8 @@ public final class HttpSplitChangeFetcher implements SplitChangeFetcher {
 
             int statusCode = response.getCode();
 
-            if (statusCode < 200 || statusCode >= 300) {
-                _metrics.count(PREFIX + ".status." + statusCode, 1);
+            if (statusCode < HttpStatus.SC_OK || statusCode >= HttpStatus.SC_MULTIPLE_CHOICES) {
+                _telemetryRuntimeProducer.recordSyncError(ResourceEnum.SPLIT_SYNC, statusCode);
                 throw new IllegalStateException("Could not retrieve splitChanges; http return code " + statusCode);
             }
 
@@ -106,11 +107,10 @@ public final class HttpSplitChangeFetcher implements SplitChangeFetcher {
 
             return Json.fromJson(json, SplitChange.class);
         } catch (Throwable t) {
-            _metrics.count(PREFIX + ".exception", 1);
             throw new IllegalStateException("Problem fetching splitChanges: " + t.getMessage(), t);
         } finally {
+            _telemetryRuntimeProducer.recordSyncLatency(HTTPLatenciesEnum.SPLITS, System.currentTimeMillis()-start);
             Utils.forceClose(response);
-            _metrics.time(PREFIX + ".time", System.currentTimeMillis() - start);
         }
     }
 

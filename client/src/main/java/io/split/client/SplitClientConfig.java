@@ -17,6 +17,11 @@ import java.util.Properties;
 public class SplitClientConfig {
 
     public static final String LOCALHOST_DEFAULT_FILE = "split.yaml";
+    public static final String SDK_ENDPOINT = "https://sdk.split.io";
+    public static final String EVENTS_ENDPOINT = "https://events.split.io";
+    public static final String AUTH_ENDPOINT = "https://auth.split.io/api/auth";
+    public static final String STREAMING_ENDPOINT = "https://streaming.split.io/sse";
+    public static final String TELEMETRY_ENDPOINT = "https://telemetry.split.io/api/v1";
 
     private final String _endpoint;
     private final String _eventsEndpoint;
@@ -46,11 +51,13 @@ public class SplitClientConfig {
     private final int _streamingReconnectBackoffBase;
     private final String _authServiceURL;
     private final String _streamingServiceURL;
-    private long _validateAfterInactivityInMillis;
+    private final String _telemetryURL;
+    private final int _telemetryRefreshRate;
     private final int _onDemandFetchRetryDelayMs;
     private final int _onDemandFetchMaxRetries;
     private final int _failedAttemptsBeforeLogging;
     private final boolean _cdnDebugLogging;
+    private long _validateAfterInactivityInMillis;
 
     // Proxy configs
     private final HttpHost _proxy;
@@ -95,11 +102,13 @@ public class SplitClientConfig {
                               int streamingReconnectBackoffBase,
                               String authServiceURL,
                               String streamingServiceURL,
-                              long validateAfterInactivityInMillis,
+                              String telemetryURL,
+                              int telemetryRefreshRate,
                               int onDemandFetchRetryDelayMs,
                               int onDemandFetchMaxRetries,
                               int failedAttemptsBeforeLogging,
-                              boolean cdnDebugLogging) {
+                              boolean cdnDebugLogging,
+                              long validateAfterInactivityInMillis) {
         _endpoint = endpoint;
         _eventsEndpoint = eventsEndpoint;
         _featuresRefreshRate = pollForFeatureChangesEveryNSeconds;
@@ -130,11 +139,13 @@ public class SplitClientConfig {
         _streamingReconnectBackoffBase = streamingReconnectBackoffBase;
         _authServiceURL = authServiceURL;
         _streamingServiceURL = streamingServiceURL;
-        _validateAfterInactivityInMillis = validateAfterInactivityInMillis;
+        _telemetryURL = telemetryURL;
+        _telemetryRefreshRate = telemetryRefreshRate;
         _onDemandFetchRetryDelayMs = onDemandFetchRetryDelayMs;
         _onDemandFetchMaxRetries = onDemandFetchMaxRetries;
         _failedAttemptsBeforeLogging = failedAttemptsBeforeLogging;
         _cdnDebugLogging = cdnDebugLogging;
+        _validateAfterInactivityInMillis = validateAfterInactivityInMillis;
 
         Properties props = new Properties();
         try {
@@ -263,8 +274,12 @@ public class SplitClientConfig {
         return _streamingServiceURL;
     }
 
-    public long validateAfterInactivityInMillis() {
-        return _validateAfterInactivityInMillis;
+    public String telemetryURL() {
+        return _telemetryURL;
+    }
+
+    public int get_telemetryRefreshRate() {
+        return _telemetryRefreshRate;
     }
     public int streamingRetryDelay() {return _onDemandFetchRetryDelayMs;}
 
@@ -274,12 +289,14 @@ public class SplitClientConfig {
 
     public boolean cdnDebugLogging() { return _cdnDebugLogging; }
 
+    public long validateAfterInactivityInMillis() {
+        return _validateAfterInactivityInMillis;
 
     public static final class Builder {
 
-        private String _endpoint = "https://sdk.split.io";
+        private String _endpoint = SDK_ENDPOINT;
         private boolean _endpointSet = false;
-        private String _eventsEndpoint = "https://events.split.io";
+        private String _eventsEndpoint = EVENTS_ENDPOINT;
         private boolean _eventsEndpointSet = false;
         private int _featuresRefreshRate = 60;
         private int _segmentsRefreshRate = 60;
@@ -308,13 +325,15 @@ public class SplitClientConfig {
         private boolean _streamingEnabled = true;
         private int _authRetryBackoffBase = 1;
         private int _streamingReconnectBackoffBase = 1;
-        private String _authServiceURL = "https://auth.split.io/api/auth";
-        private String _streamingServiceURL = "https://streaming.split.io/sse";
-        private long _validateAfterInactivityInMillis = -1;
-        private final int _onDemandFetchRetryDelayMs = 50;
+        private String _authServiceURL = AUTH_ENDPOINT;
+        private String _streamingServiceURL = STREAMING_ENDPOINT;
+        private String _telemetryURl = TELEMETRY_ENDPOINT;
+        private int _telemetryRefreshRate = 60;
+        private int _onDemandFetchRetryDelayMs = 50;
         private final int _onDemandFetchMaxRetries = 10;
         private final int _failedAttemptsBeforeLogging = 10;
         private final boolean _cdnDebugLogging = true;
+        private long _validateAfterInactivityInMillis = -1;
 
         public Builder() {
         }
@@ -706,6 +725,26 @@ public class SplitClientConfig {
             return this;
         }
 
+         * Set telemetry service URL.
+         * @param telemetryURL
+         * @return
+         */
+        public Builder telemetryURL(String telemetryURL) {
+            _telemetryURl = telemetryURL;
+            return this;
+        }
+
+        /**
+         * How often send telemetry data
+         *
+         * @param telemetryRefreshRate
+         * @return this builder
+         */
+        public Builder telemetryRefreshRate(int telemetryRefreshRate) {
+            _telemetryRefreshRate = telemetryRefreshRate;
+            return this;
+        }
+
         /**
          * Set the time after which period of inactivity a connection must be revalidated .
          * @param validateAfterInactivityInMillis
@@ -713,8 +752,6 @@ public class SplitClientConfig {
          */
         public Builder validateAfterInactivityInMillis(long validateAfterInactivityInMillis) {
             _validateAfterInactivityInMillis = validateAfterInactivityInMillis;
-            return this;
-        }
 
         public SplitClientConfig build() {
             if (_featuresRefreshRate < 5 ) {
@@ -786,7 +823,11 @@ public class SplitClientConfig {
                 throw new IllegalArgumentException("streamingServiceURL must not be null");
             }
 
-            if(_onDemandFetchRetryDelayMs <= 0) {
+            if (_telemetryURl == null) {
+                throw new IllegalArgumentException("telemetryURl must not be null");
+            }
+
+            if (_onDemandFetchRetryDelayMs <= 0) {
                 throw new IllegalStateException("streamingRetryDelay must be > 0");
             }
             if(_onDemandFetchMaxRetries <= 0) {
@@ -824,11 +865,13 @@ public class SplitClientConfig {
                     _streamingReconnectBackoffBase,
                     _authServiceURL,
                     _streamingServiceURL,
-                    _validateAfterInactivityInMillis,
+                    _telemetryURl,
+                    _telemetryRefreshRate,
                     _onDemandFetchRetryDelayMs,
                     _onDemandFetchMaxRetries,
                     _failedAttemptsBeforeLogging,
-                    _cdnDebugLogging);
+                    _cdnDebugLogging,
+                    _validateAfterInactivityInMillis);
         }
     }
 }

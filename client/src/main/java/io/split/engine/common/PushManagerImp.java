@@ -16,6 +16,9 @@ import io.split.engine.sse.workers.SplitsWorker;
 import io.split.engine.sse.workers.SplitsWorkerImp;
 import io.split.engine.sse.workers.Worker;
 
+import io.split.telemetry.domain.StreamingEvent;
+import io.split.telemetry.domain.enums.StreamEventsEnum;
+import io.split.telemetry.storage.TelemetryRuntimeProducer;
 import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -41,13 +44,15 @@ public class PushManagerImp implements PushManager {
     private Future<?> _nextTokenRefreshTask;
     private final ScheduledExecutorService _scheduledExecutorService;
     private AtomicLong _expirationTime;
+    private final TelemetryRuntimeProducer _telemetryRuntimeProducer;
 
     @VisibleForTesting
     /* package private */ PushManagerImp(AuthApiClient authApiClient,
                                              EventSourceClient eventSourceClient,
                                              SplitsWorker splitsWorker,
                                              Worker<SegmentQueueDto> segmentWorker,
-                                             PushStatusTracker pushStatusTracker) {
+                                             PushStatusTracker pushStatusTracker,
+                                            TelemetryRuntimeProducer telemetryRuntimeProducer) {
 
         _authApiClient = checkNotNull(authApiClient);
         _eventSourceClient = checkNotNull(eventSourceClient);
@@ -59,6 +64,7 @@ public class PushManagerImp implements PushManager {
                 .setDaemon(true)
                 .setNameFormat("Split-SSERefreshToken-%d")
                 .build());
+        _telemetryRuntimeProducer = checkNotNull(telemetryRuntimeProducer);
     }
 
     public static PushManagerImp build(Synchronizer synchronizer,
@@ -66,15 +72,16 @@ public class PushManagerImp implements PushManager {
                                        String authUrl,
                                        CloseableHttpClient httpClient,
                                        LinkedBlockingQueue<PushManager.Status> statusMessages,
-                                       CloseableHttpClient sseHttpClient) {
+                                       CloseableHttpClient sseHttpClient,
+                                       TelemetryRuntimeProducer telemetryRuntimeProducer) {
         SplitsWorker splitsWorker = new SplitsWorkerImp(synchronizer);
         Worker<SegmentQueueDto> segmentWorker = new SegmentsWorkerImp(synchronizer);
-        PushStatusTracker pushStatusTracker = new PushStatusTrackerImp(statusMessages);
-        return new PushManagerImp(new AuthApiClientImp(authUrl, httpClient),
-                EventSourceClientImp.build(streamingUrl, splitsWorker, segmentWorker, pushStatusTracker, sseHttpClient),
+        PushStatusTracker pushStatusTracker = new PushStatusTrackerImp(statusMessages, telemetryRuntimeProducer);
+        return new PushManagerImp(new AuthApiClientImp(authUrl, httpClient, telemetryRuntimeProducer),
+                EventSourceClientImp.build(streamingUrl, splitsWorker, segmentWorker, pushStatusTracker, sseHttpClient, telemetryRuntimeProducer),
                 splitsWorker,
                 segmentWorker,
-                pushStatusTracker);
+                pushStatusTracker, telemetryRuntimeProducer);
     }
 
     @Override
@@ -83,6 +90,7 @@ public class PushManagerImp implements PushManager {
         _log.debug(String.format("Auth service response pushEnabled: %s", response.isPushEnabled()));
         if (response.isPushEnabled() && startSse(response.getToken(), response.getChannels())) {
             _expirationTime.set(response.getExpiration());
+            _telemetryRuntimeProducer.recordStreamingEvents(new StreamingEvent(StreamEventsEnum.TOKEN_REFRESH.getType(), response.getExpiration(), System.currentTimeMillis()));
             return;
         }
 

@@ -6,6 +6,8 @@ import io.split.client.impressions.ImpressionsManager;
 import io.split.engine.SDKReadinessGates;
 import io.split.engine.evaluator.EvaluatorImp;
 import io.split.engine.metrics.Metrics;
+import io.split.telemetry.storage.InMemoryTelemetryStorage;
+import io.split.telemetry.storage.NoopTelemetryStorage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -54,12 +56,12 @@ public final class LocalhostSplitFactory implements SplitFactory {
         SplitCache splitCache = new InMemoryCacheImp();
         SDKReadinessGates sdkReadinessGates = new SDKReadinessGates();
 
-        sdkReadinessGates.splitsAreReady();
         _cacheUpdaterService = new CacheUpdaterService(splitCache);
         _cacheUpdaterService.updateCache(splitAndKeyToTreatment);
+        sdkReadinessGates.sdkInternalReady();
         _client = new SplitClientImpl(this, splitCache,
-                new ImpressionsManager.NoOpImpressionsManager(),  new Metrics.NoopMetrics(), new NoopEventClient(),
-                SplitClientConfig.builder().setBlockUntilReadyTimeout(1).build(), sdkReadinessGates, new EvaluatorImp(splitCache));
+                new ImpressionsManager.NoOpImpressionsManager(), new NoopEventClient(),
+                SplitClientConfig.builder().setBlockUntilReadyTimeout(1).build(), sdkReadinessGates, new EvaluatorImp(splitCache), new NoopTelemetryStorage(), new NoopTelemetryStorage());
         _manager = LocalhostSplitManager.of(splitAndKeyToTreatment);
 
         _splitFile.registerWatcher();

@@ -1,7 +1,7 @@
 package io.split.engine.common;
 
 public interface Synchronizer {
-    void syncAll();
+    boolean syncAll();
     void startPeriodicFetching();
     void stopPeriodicFetching();
     void refreshSplits(long targetChangeNumber);

@@ -6,6 +6,9 @@ import com.google.common.collect.Multiset;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.HashMap;
+import java.util.Map;
+
 public class ApiKeyCounter {
 
     private static final Logger _log = LoggerFactory.getLogger(ApiKeyCounter.class);
@@ -62,5 +65,19 @@ public class ApiKeyCounter {
     @VisibleForTesting
     int getCount(String apiKey) {
         return USED_API_KEYS.count(apiKey);
+    }
+
+    public Map<String, Long> getFactoryInstances() {
+        Map<String, Long> factoryInstances = new HashMap<>();
+        for (String factory :USED_API_KEYS) {
+            factoryInstances.putIfAbsent(factory, new Long(getCount(factory)));
+        }
+
+        return factoryInstances;
+    }
+
+    @VisibleForTesting
+    void clearApiKeys() {
+        USED_API_KEYS.clear();
     }
 }

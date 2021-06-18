@@ -6,7 +6,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.List;
+import java.util.Set;
 import java.util.concurrent.ConcurrentMap;
+import java.util.stream.Collectors;
 
 /**
  * InMemoryCache Implementation
@@ -58,5 +60,15 @@ public class SegmentCacheInMemoryImpl implements SegmentCache {
     @Override
     public void clear() {
         _segments.clear();
+    }
+
+    @Override
+    public List<SegmentImp> getAll() {
+        return _segments.values().stream().collect(Collectors.toList());
+    }
+
+    @Override
+    public long getKeyCount() {
+        return _segments.values().stream().mapToLong(SegmentImp::getKeysSize).sum();
     }
 }

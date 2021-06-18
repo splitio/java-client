@@ -1,6 +1,7 @@
 package io.split.cache;
 
 import junit.framework.TestCase;
+import org.junit.Assert;
 import org.junit.Test;
 
 import java.util.ArrayList;
@@ -57,5 +58,21 @@ public class SegmentCacheInMemoryImplTest extends TestCase {
         segmentCacheInMemory.setChangeNumber(SEGMENT_NAME, CHANGE_NUMBER);
         segmentCacheInMemory.clear();
         assertEquals(DEFAULT_CHANGE_NUMBER, segmentCacheInMemory.getChangeNumber(SEGMENT_NAME));
+    }
+
+    @Test
+    public void testGetAll() {
+        SegmentCacheInMemoryImpl segmentCacheInMemory = new SegmentCacheInMemoryImpl();
+        segmentCacheInMemory.updateSegment(SEGMENT_NAME,new ArrayList<>(), new ArrayList<>());
+        segmentCacheInMemory.updateSegment(FAKE_SEGMENT_NAME,new ArrayList<>(), new ArrayList<>());
+        Assert.assertEquals(2, segmentCacheInMemory.getAll().stream().count());
+    }
+
+    @Test
+    public void testGetAllKeys() {
+        SegmentCacheInMemoryImpl segmentCacheInMemory = new SegmentCacheInMemoryImpl();
+        segmentCacheInMemory.updateSegment(SEGMENT_NAME,Stream.of("KEY1", "KEY2").collect(Collectors.toList()), new ArrayList<>());
+        segmentCacheInMemory.updateSegment(FAKE_SEGMENT_NAME,Stream.of("KEY3", "KEY2").collect(Collectors.toList()), new ArrayList<>());
+        Assert.assertEquals(4, segmentCacheInMemory.getKeyCount());
     }
 }

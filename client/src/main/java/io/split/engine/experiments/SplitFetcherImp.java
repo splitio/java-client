@@ -5,6 +5,9 @@ import io.split.client.dtos.SplitChange;
 import io.split.client.dtos.Status;
 import io.split.engine.SDKReadinessGates;
 import io.split.cache.SplitCache;
+import io.split.telemetry.domain.enums.HTTPLatenciesEnum;
+import io.split.telemetry.domain.enums.LastSynchronizationRecordsEnum;
+import io.split.telemetry.storage.TelemetryRuntimeProducer;
 import io.split.engine.common.FetchOptions;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -23,8 +26,8 @@ public class SplitFetcherImp implements SplitFetcher {
     private final SplitParser _parser;
     private final SplitChangeFetcher _splitChangeFetcher;
     private final SplitCache _splitCache;
-    private final SDKReadinessGates _gates;
     private final Object _lock = new Object();
+    private final TelemetryRuntimeProducer _telemetryRuntimeProducer;
 
     /**
      * Contains all the traffic types that are currently being used by the splits and also the count
@@ -36,11 +39,11 @@ public class SplitFetcherImp implements SplitFetcher {
      * an ARCHIVED split is received, we know if we need to remove a traffic type from the multiset.
      */
 
-    public SplitFetcherImp(SplitChangeFetcher splitChangeFetcher, SplitParser parser, SDKReadinessGates gates, SplitCache splitCache) {
+    public SplitFetcherImp(SplitChangeFetcher splitChangeFetcher, SplitParser parser, SplitCache splitCache, TelemetryRuntimeProducer telemetryRuntimeProducer) {
         _splitChangeFetcher = checkNotNull(splitChangeFetcher);
         _parser = checkNotNull(parser);
-        _gates = checkNotNull(gates);
         _splitCache = checkNotNull(splitCache);
+        _telemetryRuntimeProducer = checkNotNull(telemetryRuntimeProducer);
     }
 
     @Override
@@ -78,6 +81,7 @@ public class SplitFetcherImp implements SplitFetcher {
     }
 
     private void runWithoutExceptionHandling(FetchOptions options) throws InterruptedException {
+        long initTime = System.currentTimeMillis();
         SplitChange change = _splitChangeFetcher.fetch(_splitCache.getChangeNumber(), options);
 
         if (change == null) {
@@ -145,23 +149,26 @@ public class SplitFetcherImp implements SplitFetcher {
             }
 
             _splitCache.setChangeNumber(change.till);
+            _telemetryRuntimeProducer.recordSuccessfulSync(LastSynchronizationRecordsEnum.SPLITS, System.currentTimeMillis());
         }
     }
     @Override
-    public void fetchAll(FetchOptions options) {
+    public boolean fetchAll(FetchOptions options) {
         _log.debug("Fetch splits starting ...");
         long start = _splitCache.getChangeNumber();
         try {
             runWithoutExceptionHandling(options);
-            _gates.splitsAreReady();
+            return true;
         } catch (InterruptedException e) {
             _log.warn("Interrupting split fetcher task");
             Thread.currentThread().interrupt();
+            return false;
         } catch (Throwable t) {
             _log.error("RefreshableSplitFetcher failed: " + t.getMessage());
             if (_log.isDebugEnabled()) {
                 _log.debug("Reason:", t);
             }
+            return false;
         } finally {
             if (_log.isDebugEnabled()) {
                 _log.debug("split fetch before: " + start + ", after: " + _splitCache.getChangeNumber());

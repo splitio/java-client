@@ -13,7 +13,7 @@ import java.util.Map;
 
 public class YamlLocalhostSplitFile extends AbstractLocalhostSplitFile {
 
-    private static final Logger _log = LoggerFactory.getLogger(LegacyLocalhostSplitFile.class);
+    private static final Logger _log = LoggerFactory.getLogger(YamlLocalhostSplitFile.class);
 
     public YamlLocalhostSplitFile(LocalhostSplitFactory localhostSplitFactory, String directory, String filenameYaml) throws IOException {
         super(localhostSplitFactory, directory, filenameYaml);

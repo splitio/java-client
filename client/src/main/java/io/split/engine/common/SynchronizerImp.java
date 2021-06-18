@@ -5,6 +5,7 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import io.split.cache.SegmentCache;
 import io.split.cache.SplitCache;
+import io.split.engine.SDKReadinessGates;
 import io.split.engine.experiments.SplitFetcher;
 import io.split.engine.experiments.SplitSynchronizationTask;
 import io.split.engine.segments.SegmentFetcher;
@@ -31,7 +32,6 @@ public class SynchronizerImp implements Synchronizer {
     private final SplitSynchronizationTask _splitSynchronizationTask;
     private final SplitFetcher _splitFetcher;
     private final SegmentSynchronizationTask _segmentSynchronizationTaskImp;
-    private final ScheduledExecutorService _syncAllScheduledExecutorService;
     private final SplitCache _splitCache;
     private final SegmentCache _segmentCache;
     private final int _onDemandFetchRetryDelayMs;
@@ -49,30 +49,23 @@ public class SynchronizerImp implements Synchronizer {
                            int onDemandFetchRetryDelayMs,
                            int onDemandFetchMaxRetries,
                            int failedAttemptsBeforeLogging,
-                           boolean cdnResponseHeadersLogging) {
+                           boolean cdnResponseHeadersLogging,
+                           SDKReadinessGates gates) {
         _splitSynchronizationTask = checkNotNull(splitSynchronizationTask);
         _splitFetcher = checkNotNull(splitFetcher);
         _segmentSynchronizationTaskImp = checkNotNull(segmentSynchronizationTaskImp);
         _splitCache = checkNotNull(splitCache);
         _segmentCache = checkNotNull(segmentCache);
-        _onDemandFetchRetryDelayMs = onDemandFetchRetryDelayMs;
+        _onDemandFetchRetryDelayMs = checkNotNull(onDemandFetchRetryDelayMs);
         _cdnResponseHeadersLogging = cdnResponseHeadersLogging;
         _onDemandFetchMaxRetries = onDemandFetchMaxRetries;
         _failedAttemptsBeforeLogging = failedAttemptsBeforeLogging;
 
-        ThreadFactory splitsThreadFactory = new ThreadFactoryBuilder()
-                .setDaemon(true)
-                .setNameFormat("Split-SyncAll-%d")
-                .build();
-        _syncAllScheduledExecutorService = Executors.newSingleThreadScheduledExecutor(splitsThreadFactory);
     }
 
     @Override
-    public void syncAll() {
-        _syncAllScheduledExecutorService.schedule(() -> {
-            _splitFetcher.fetchAll(new FetchOptions.Builder().cacheControlHeaders(true).build());
-            _segmentSynchronizationTaskImp.fetchAll(true);
-        }, 0, TimeUnit.SECONDS);
+    public boolean syncAll() {
+        return _splitFetcher.fetchAll(new FetchOptions.Builder().cacheControlHeaders(true).build()) && _segmentSynchronizationTaskImp.fetchAllSynchronous();
     }
 
     @Override

@@ -16,5 +16,5 @@ public interface SplitFetcher extends Runnable {
      * Forces a sync of ALL splits, outside of any scheduled
      * syncs. This method MUST NOT throw any exceptions.
      */
-    void fetchAll(FetchOptions options);
+    boolean fetchAll(FetchOptions options);
 }
