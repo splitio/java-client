@@ -334,7 +334,7 @@ public class SplitClientConfig {
         private final int _onDemandFetchMaxRetries = 10;
         private final int _failedAttemptsBeforeLogging = 10;
         private final boolean _cdnDebugLogging = true;
-        private long _validateAfterInactivityInMillis = 500;
+        private long _validateAfterInactivityInMillis = 1000;
 
         public Builder() {
         }
@@ -743,16 +743,6 @@ public class SplitClientConfig {
          */
         public Builder telemetryRefreshRate(int telemetryRefreshRate) {
             _telemetryRefreshRate = telemetryRefreshRate;
-            return this;
-        }
-
-        /**
-         * Set the time after which period of inactivity a connection must be revalidated .
-         * @param validateAfterInactivityInMillis
-         * @return
-         */
-        public Builder validateAfterInactivityInMillis(long validateAfterInactivityInMillis) {
-            _validateAfterInactivityInMillis = validateAfterInactivityInMillis;
             return this;
         }
 
