@@ -291,6 +291,7 @@ public class SplitClientConfig {
 
     public long validateAfterInactivityInMillis() {
         return _validateAfterInactivityInMillis;
+    }
 
     public static final class Builder {
 
@@ -328,12 +329,12 @@ public class SplitClientConfig {
         private String _authServiceURL = AUTH_ENDPOINT;
         private String _streamingServiceURL = STREAMING_ENDPOINT;
         private String _telemetryURl = TELEMETRY_ENDPOINT;
-        private int _telemetryRefreshRate = 60;
+        private int _telemetryRefreshRate = 3600;
         private int _onDemandFetchRetryDelayMs = 50;
         private final int _onDemandFetchMaxRetries = 10;
         private final int _failedAttemptsBeforeLogging = 10;
         private final boolean _cdnDebugLogging = true;
-        private long _validateAfterInactivityInMillis = -1;
+        private long _validateAfterInactivityInMillis = 500;
 
         public Builder() {
         }
@@ -725,7 +726,7 @@ public class SplitClientConfig {
             return this;
         }
 
-         * Set telemetry service URL.
+         /** Set telemetry service URL.
          * @param telemetryURL
          * @return
          */
@@ -752,6 +753,8 @@ public class SplitClientConfig {
          */
         public Builder validateAfterInactivityInMillis(long validateAfterInactivityInMillis) {
             _validateAfterInactivityInMillis = validateAfterInactivityInMillis;
+            return this;
+        }
 
         public SplitClientConfig build() {
             if (_featuresRefreshRate < 5 ) {
@@ -830,8 +833,13 @@ public class SplitClientConfig {
             if (_onDemandFetchRetryDelayMs <= 0) {
                 throw new IllegalStateException("streamingRetryDelay must be > 0");
             }
+
             if(_onDemandFetchMaxRetries <= 0) {
                 throw new IllegalStateException("_onDemandFetchMaxRetries must be > 0");
+            }
+
+            if(_telemetryRefreshRate <= 60) {
+                throw new IllegalStateException("_telemetryRefreshRate must be >= 60");
             }
 
             return new SplitClientConfig(
