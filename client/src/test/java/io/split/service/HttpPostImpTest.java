@@ -2,6 +2,7 @@ package io.split.service;
 
 import io.split.TestHelper;
 import io.split.telemetry.domain.enums.HTTPLatenciesEnum;
+import io.split.telemetry.domain.enums.HttpParamsWrapper;
 import io.split.telemetry.domain.enums.LastSynchronizationRecordsEnum;
 import io.split.telemetry.domain.enums.ResourceEnum;
 import io.split.telemetry.storage.InMemoryTelemetryStorage;
@@ -27,7 +28,7 @@ public class HttpPostImpTest{
         CloseableHttpClient client =TestHelper.mockHttpClient(URL, HttpStatus.SC_OK);
         TelemetryStorage telemetryStorage = new InMemoryTelemetryStorage();
         HttpPostImp httpPostImp = new HttpPostImp(client, telemetryStorage);
-        httpPostImp.post(URI.create(URL), new Object(), "Metrics", HTTPLatenciesEnum.TELEMETRY, LastSynchronizationRecordsEnum.TELEMETRY, ResourceEnum.TELEMETRY_SYNC);
+        httpPostImp.post(URI.create(URL), new Object(), "Metrics", HttpParamsWrapper.TELEMETRY);
         Mockito.verify(client, Mockito.times(1)).execute(Mockito.any());
         Assert.assertNotEquals(0, telemetryStorage.getLastSynchronization().get_telemetry());
         Assert.assertEquals(1, telemetryStorage.popHTTPLatencies().get_telemetry().stream().mapToInt(Long::intValue).sum());
@@ -38,7 +39,7 @@ public class HttpPostImpTest{
         CloseableHttpClient client =TestHelper.mockHttpClient(URL, HttpStatus.SC_CLIENT_ERROR);
         TelemetryStorage telemetryStorage = new InMemoryTelemetryStorage();
         HttpPostImp httpPostImp = new HttpPostImp(client, telemetryStorage);
-        httpPostImp.post(URI.create(URL), new Object(), "Metrics", HTTPLatenciesEnum.TELEMETRY, LastSynchronizationRecordsEnum.TELEMETRY, ResourceEnum.TELEMETRY_SYNC);
+        httpPostImp.post(URI.create(URL), new Object(), "Metrics", HttpParamsWrapper.TELEMETRY);
         Mockito.verify(client, Mockito.times(1)).execute(Mockito.any());
 
         Assert.assertEquals(1, telemetryStorage.popHTTPErrors().get_telemetry().get(Long.valueOf(HttpStatus.SC_CLIENT_ERROR)).intValue());

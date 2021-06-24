@@ -68,11 +68,11 @@ public class EventsTask{
     EventsTask(EventsStorage eventsStorage, CloseableHttpClient httpclient, URI target, int maxQueueSize,
                long flushIntervalMillis, int waitBeforeShutdown, TelemetryRuntimeProducer telemetryRuntimeProducer) throws URISyntaxException {
 
-        _httpclient = httpclient;
+        _httpclient = checkNotNull(httpclient);
 
-        _target = target;
+        _target = checkNotNull(target);
 
-        _eventsStorage = eventsStorage;
+        _eventsStorage = checkNotNull(eventsStorage);
         _waitBeforeShutdown = waitBeforeShutdown;
 
         _maxQueueSize = maxQueueSize;
@@ -80,14 +80,7 @@ public class EventsTask{
         _telemetryRuntimeProducer = checkNotNull(telemetryRuntimeProducer);
 
         _eventsSender = EventsSender.create(_httpclient, _target, _telemetryRuntimeProducer);
-        _senderExecutor = new ThreadPoolExecutor(
-                1,
-                1,
-                0L,
-                TimeUnit.MILLISECONDS,
-                new LinkedBlockingQueue<Runnable>(50),
-                eventClientThreadFactory("eventclient-sender"),
-                (r, executor) -> _log.warn("Executor queue full. Dropping events."));
+        _senderExecutor = Executors.newSingleThreadExecutor(eventClientThreadFactory("eventclient-sender"));
 
         _consumerExecutor = Executors.newSingleThreadExecutor(eventClientThreadFactory("eventclient-consumer"));
         _consumerExecutor.submit(runConsumer());

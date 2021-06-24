@@ -3,6 +3,7 @@ package io.split.client.events;
 import io.split.client.dtos.Event;
 import io.split.service.HttpPostImp;
 import io.split.telemetry.domain.enums.HTTPLatenciesEnum;
+import io.split.telemetry.domain.enums.HttpParamsWrapper;
 import io.split.telemetry.domain.enums.LastSynchronizationRecordsEnum;
 import io.split.telemetry.domain.enums.ResourceEnum;
 import io.split.telemetry.storage.TelemetryRuntimeProducer;
@@ -31,6 +32,6 @@ public class EventsSender {
     }
 
     public void sendEvents(List<Event> _data) {
-        _httpPostImp.post(_endpoint, _data, "Events ", HTTPLatenciesEnum.EVENTS, LastSynchronizationRecordsEnum.EVENTS, ResourceEnum.EVENT_SYNC);
+        _httpPostImp.post(_endpoint, _data, "Events ", HttpParamsWrapper.EVENTS);
     }
 }
