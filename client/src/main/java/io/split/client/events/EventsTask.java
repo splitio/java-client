@@ -80,7 +80,14 @@ public class EventsTask{
         _telemetryRuntimeProducer = checkNotNull(telemetryRuntimeProducer);
 
         _eventsSender = EventsSender.create(_httpclient, _target, _telemetryRuntimeProducer);
-        _senderExecutor = Executors.newSingleThreadExecutor(eventClientThreadFactory("eventclient-sender"));
+        _senderExecutor = new ThreadPoolExecutor(
+                1,
+                1,
+                0L,
+                TimeUnit.MILLISECONDS,
+                new LinkedBlockingQueue<Runnable>(50),
+                eventClientThreadFactory("eventclient-sender"),
+                (r, executor) -> _log.warn("Executor queue full. Dropping events."));
 
         _consumerExecutor = Executors.newSingleThreadExecutor(eventClientThreadFactory("eventclient-consumer"));
         _consumerExecutor.submit(runConsumer());
