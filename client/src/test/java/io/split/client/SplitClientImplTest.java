@@ -8,6 +8,8 @@ import io.split.client.dtos.ConditionType;
 import io.split.client.dtos.DataType;
 import io.split.client.dtos.Event;
 import io.split.client.dtos.Partition;
+import io.split.client.events.EventsStorageProducer;
+import io.split.client.events.NoopEventsStorageImp;
 import io.split.client.impressions.Impression;
 import io.split.client.impressions.ImpressionsManager;
 import io.split.cache.InMemoryCacheImp;
@@ -85,7 +87,7 @@ public class SplitClientImplTest {
                 mock(SplitFactory.class),
                 splitCache,
                 new ImpressionsManager.NoOpImpressionsManager(),
-                NoopEventClient.create(),
+                NoopEventsStorageImp.create(),
                 config,
                 gates,
                 new EvaluatorImp(splitCache), TELEMETRY_STORAGE, TELEMETRY_STORAGE
@@ -111,7 +113,7 @@ public class SplitClientImplTest {
                 mock(SplitFactory.class),
                 splitCache,
                 new ImpressionsManager.NoOpImpressionsManager(),
-                NoopEventClient.create(),
+                NoopEventsStorageImp.create(),
                 config,
                 gates,
                 new EvaluatorImp(splitCache), TELEMETRY_STORAGE, TELEMETRY_STORAGE
@@ -132,7 +134,7 @@ public class SplitClientImplTest {
                 mock(SplitFactory.class),
                 splitCache,
                 new ImpressionsManager.NoOpImpressionsManager(),
-                NoopEventClient.create(),
+                NoopEventsStorageImp.create(),
                 config,
                 gates,
                 new EvaluatorImp(splitCache), TELEMETRY_STORAGE, TELEMETRY_STORAGE
@@ -159,7 +161,7 @@ public class SplitClientImplTest {
                 mock(SplitFactory.class),
                 splitCache,
                 new ImpressionsManager.NoOpImpressionsManager(),
-                NoopEventClient.create(),
+                NoopEventsStorageImp.create(),
                 config,
                 gates,
                 new EvaluatorImp(splitCache), TELEMETRY_STORAGE, TELEMETRY_STORAGE
@@ -194,7 +196,7 @@ public class SplitClientImplTest {
                 mock(SplitFactory.class),
                 splitCache,
                 new ImpressionsManager.NoOpImpressionsManager(),
-                NoopEventClient.create(),
+                NoopEventsStorageImp.create(),
                 config,
                 gates,
                 new EvaluatorImp(splitCache), TELEMETRY_STORAGE, TELEMETRY_STORAGE
@@ -230,7 +232,7 @@ public class SplitClientImplTest {
                 mock(SplitFactory.class),
                 splitCache,
                 new ImpressionsManager.NoOpImpressionsManager(),
-                NoopEventClient.create(),
+                NoopEventsStorageImp.create(),
                 config,
                 gates,
                 new EvaluatorImp(splitCache), TELEMETRY_STORAGE, TELEMETRY_STORAGE
@@ -264,7 +266,7 @@ public class SplitClientImplTest {
                 mock(SplitFactory.class),
                 splitCache,
                 new ImpressionsManager.NoOpImpressionsManager(),
-                NoopEventClient.create(),
+                NoopEventsStorageImp.create(),
                 config,
                 gates,
                 new EvaluatorImp(splitCache), TELEMETRY_STORAGE, TELEMETRY_STORAGE
@@ -299,7 +301,7 @@ public class SplitClientImplTest {
                 mock(SplitFactory.class),
                 splitCache,
                 new ImpressionsManager.NoOpImpressionsManager(),
-                NoopEventClient.create(),
+                NoopEventsStorageImp.create(),
                 config,
                 gates,
                 new EvaluatorImp(splitCache), TELEMETRY_STORAGE, TELEMETRY_STORAGE
@@ -332,7 +334,7 @@ public class SplitClientImplTest {
                 mock(SplitFactory.class),
                 splitCache,
                 new ImpressionsManager.NoOpImpressionsManager(),
-                NoopEventClient.create(),
+                NoopEventsStorageImp.create(),
                 config,
                 gates,
                 new EvaluatorImp(splitCache), TELEMETRY_STORAGE, TELEMETRY_STORAGE
@@ -363,7 +365,7 @@ public class SplitClientImplTest {
                 mock(SplitFactory.class),
                 splitCache,
                 new ImpressionsManager.NoOpImpressionsManager(),
-                NoopEventClient.create(),
+                NoopEventsStorageImp.create(),
                 config,
                 gates,
                 new EvaluatorImp(splitCache), TELEMETRY_STORAGE, TELEMETRY_STORAGE
@@ -398,7 +400,7 @@ public class SplitClientImplTest {
                 mock(SplitFactory.class),
                 splitCache,
                 new ImpressionsManager.NoOpImpressionsManager(),
-                NoopEventClient.create(),
+                NoopEventsStorageImp.create(),
                 config,
                 gates,
                 new EvaluatorImp(splitCache), TELEMETRY_STORAGE, TELEMETRY_STORAGE
@@ -433,7 +435,7 @@ public class SplitClientImplTest {
                 mock(SplitFactory.class),
                 splitCache,
                 new ImpressionsManager.NoOpImpressionsManager(),
-                NoopEventClient.create(),
+                NoopEventsStorageImp.create(),
                 config,
                 gates,
                 new EvaluatorImp(splitCache), TELEMETRY_STORAGE, TELEMETRY_STORAGE
@@ -465,7 +467,7 @@ public class SplitClientImplTest {
                 mock(SplitFactory.class),
                 splitCache,
                 new ImpressionsManager.NoOpImpressionsManager(),
-                NoopEventClient.create(),
+                NoopEventsStorageImp.create(),
                 config,
                 gates,
                 new EvaluatorImp(splitCache), TELEMETRY_STORAGE, TELEMETRY_STORAGE
@@ -491,7 +493,7 @@ public class SplitClientImplTest {
                 mock(SplitFactory.class),
                 splitCache,
                 new ImpressionsManager.NoOpImpressionsManager(),
-                NoopEventClient.create(),
+                NoopEventsStorageImp.create(),
                 config,
                 gates,
                 new EvaluatorImp(splitCache), TELEMETRY_STORAGE, TELEMETRY_STORAGE
@@ -518,7 +520,7 @@ public class SplitClientImplTest {
                 mock(SplitFactory.class),
                 splitCache,
                 new ImpressionsManager.NoOpImpressionsManager(),
-                NoopEventClient.create(),
+                NoopEventsStorageImp.create(),
                 config,
                 gates,
                 new EvaluatorImp(splitCache), TELEMETRY_STORAGE, TELEMETRY_STORAGE
@@ -551,7 +553,7 @@ public class SplitClientImplTest {
                 mock(SplitFactory.class),
                 splitCache,
                 new ImpressionsManager.NoOpImpressionsManager(),
-                NoopEventClient.create(),
+                NoopEventsStorageImp.create(),
                 config,
                 gates,
                 new EvaluatorImp(splitCache), TELEMETRY_STORAGE, TELEMETRY_STORAGE
@@ -584,7 +586,7 @@ public class SplitClientImplTest {
                 mock(SplitFactory.class),
                 splitCache,
                 new ImpressionsManager.NoOpImpressionsManager(),
-                NoopEventClient.create(),
+                NoopEventsStorageImp.create(),
                 config,
                 gates,
                 new EvaluatorImp(splitCache), TELEMETRY_STORAGE, TELEMETRY_STORAGE
@@ -620,7 +622,7 @@ public class SplitClientImplTest {
                 mock(SplitFactory.class),
                 splitCache,
                 new ImpressionsManager.NoOpImpressionsManager(),
-                NoopEventClient.create(),
+                NoopEventsStorageImp.create(),
                 config,
                 gates,
                 new EvaluatorImp(splitCache), TELEMETRY_STORAGE, TELEMETRY_STORAGE
@@ -662,7 +664,7 @@ public class SplitClientImplTest {
                 mock(SplitFactory.class),
                 splitCache,
                 impressionsManager,
-                NoopEventClient.create(),
+                NoopEventsStorageImp.create(),
                 config,
                 gates,
                 new EvaluatorImp(splitCache), TELEMETRY_STORAGE, TELEMETRY_STORAGE
@@ -753,7 +755,7 @@ public class SplitClientImplTest {
                 mock(SplitFactory.class),
                 splitCache,
                 impressionsManager,
-                NoopEventClient.create(),
+                NoopEventsStorageImp.create(),
                 config,
                 gates,
                 new EvaluatorImp(splitCache), TELEMETRY_STORAGE, TELEMETRY_STORAGE
@@ -800,7 +802,7 @@ public class SplitClientImplTest {
                 mock(SplitFactory.class),
                 splitCache,
                 impressionsManager,
-                NoopEventClient.create(),
+                NoopEventsStorageImp.create(),
                 config,
                 gates,
                 new EvaluatorImp(splitCache), TELEMETRY_STORAGE, TELEMETRY_STORAGE
@@ -839,7 +841,7 @@ public class SplitClientImplTest {
                 mock(SplitFactory.class),
                 splitCache,
                 new ImpressionsManager.NoOpImpressionsManager(),
-                NoopEventClient.create(),
+                NoopEventsStorageImp.create(),
                 config,
                 gates,
                 new EvaluatorImp(splitCache), TELEMETRY_STORAGE, TELEMETRY_STORAGE
@@ -876,7 +878,7 @@ public class SplitClientImplTest {
                 mock(SplitFactory.class),
                 splitCache,
                 impressionsManager,
-                NoopEventClient.create(),
+                NoopEventsStorageImp.create(),
                 config,
                 gates,
                 new EvaluatorImp(splitCache), TELEMETRY_STORAGE, TELEMETRY_STORAGE
@@ -911,7 +913,7 @@ public class SplitClientImplTest {
                 mock(SplitFactory.class),
                 splitCache,
                 mock(ImpressionsManager.class),
-                NoopEventClient.create(),
+                NoopEventsStorageImp.create(),
                 config,
                 ready,
                 new EvaluatorImp(splitCache), TELEMETRY_STORAGE, TELEMETRY_STORAGE
@@ -930,7 +932,7 @@ public class SplitClientImplTest {
                 mock(SplitFactory.class),
                 splitCache,
                 mock(ImpressionsManager.class),
-                NoopEventClient.create(),
+                NoopEventsStorageImp.create(),
                 config,
                 ready,
                 new EvaluatorImp(splitCache), TELEMETRY_STORAGE, TELEMETRY_STORAGE
@@ -948,7 +950,7 @@ public class SplitClientImplTest {
                 mock(SplitFactory.class),
                 splitCache,
                 new ImpressionsManager.NoOpImpressionsManager(),
-                NoopEventClient.create(),
+                NoopEventsStorageImp.create(),
                 config,
                 gates,
                 new EvaluatorImp(splitCache), TELEMETRY_STORAGE, TELEMETRY_STORAGE
@@ -974,7 +976,7 @@ public class SplitClientImplTest {
                 mock(SplitFactory.class),
                 splitCache,
                 new ImpressionsManager.NoOpImpressionsManager(),
-                NoopEventClient.create(),
+                NoopEventsStorageImp.create(),
                 config,
                 gates,
                 new EvaluatorImp(splitCache), TELEMETRY_STORAGE, TELEMETRY_STORAGE
@@ -1004,7 +1006,7 @@ public class SplitClientImplTest {
                 mock(SplitFactory.class),
                 splitCache,
                 new ImpressionsManager.NoOpImpressionsManager(),
-                NoopEventClient.create(),
+                NoopEventsStorageImp.create(),
                 config,
                 gates,
                 new EvaluatorImp(splitCache), TELEMETRY_STORAGE, TELEMETRY_STORAGE
@@ -1026,7 +1028,7 @@ public class SplitClientImplTest {
                 mock(SplitFactory.class),
                 splitCache,
                 new ImpressionsManager.NoOpImpressionsManager(),
-                NoopEventClient.create(),
+                NoopEventsStorageImp.create(),
                 config,
                 gates,
                 new EvaluatorImp(splitCache), TELEMETRY_STORAGE, TELEMETRY_STORAGE
@@ -1047,7 +1049,7 @@ public class SplitClientImplTest {
     public void track_with_properties() {
         SDKReadinessGates gates = mock(SDKReadinessGates.class);
         SplitCache splitCache = mock(InMemoryCacheImp.class);
-        EventClient eventClientMock = Mockito.mock(EventClient.class);
+        EventsStorageProducer eventClientMock = Mockito.mock(EventsStorageProducer.class);
         Mockito.when(eventClientMock.track((Event) Mockito.any(), Mockito.anyInt())).thenReturn(true);
 
         SplitClientImpl client = new SplitClientImpl(
@@ -1164,7 +1166,7 @@ public class SplitClientImplTest {
                 mock(SplitFactory.class),
                 splitCache,
                 new ImpressionsManager.NoOpImpressionsManager(),
-                NoopEventClient.create(),
+                NoopEventsStorageImp.create(),
                 config,
                 gates,
                 new EvaluatorImp(splitCache), TELEMETRY_STORAGE, TELEMETRY_STORAGE
@@ -1248,7 +1250,7 @@ public class SplitClientImplTest {
                 mockFactory,
                 splitCache,
                 new ImpressionsManager.NoOpImpressionsManager(),
-                NoopEventClient.create(),
+                NoopEventsStorageImp.create(),
                 config,
                 gates,
                 new EvaluatorImp(splitCache), TELEMETRY_STORAGE, TELEMETRY_STORAGE
@@ -1290,7 +1292,7 @@ public class SplitClientImplTest {
                 mock(SplitFactory.class),
                 splitCache,
                 new ImpressionsManager.NoOpImpressionsManager(),
-                NoopEventClient.create(),
+                NoopEventsStorageImp.create(),
                 config,
                 gates,
                 new EvaluatorImp(splitCache), TELEMETRY_STORAGE, TELEMETRY_STORAGE
@@ -1326,7 +1328,7 @@ public class SplitClientImplTest {
                 mock(SplitFactory.class),
                 splitCache,
                 new ImpressionsManager.NoOpImpressionsManager(),
-                NoopEventClient.create(),
+                NoopEventsStorageImp.create(),
                 config,
                 gates,
                 new EvaluatorImp(splitCache), TELEMETRY_STORAGE, TELEMETRY_STORAGE
