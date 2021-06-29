@@ -1,9 +1,9 @@
 package io.split.telemetry.synchronizer;
 
 import io.split.TestHelper;
-import io.split.cache.SegmentCache;
-import io.split.cache.SegmentCacheInMemoryImpl;
-import io.split.cache.SplitCache;
+import io.split.storages.SegmentCache;
+import io.split.storages.memory.SegmentCacheInMemoryImpl;
+import io.split.storages.SplitCache;
 import io.split.client.ApiKeyCounter;
 import io.split.client.SplitClientConfig;
 import io.split.telemetry.domain.Config;

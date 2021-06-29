@@ -4,7 +4,7 @@ import com.google.common.collect.Lists;
 import io.split.client.api.SplitView;
 import io.split.engine.ConditionsTestUtil;
 import io.split.engine.SDKReadinessGates;
-import io.split.cache.SplitCache;
+import io.split.storages.SplitCache;
 import io.split.engine.experiments.ParsedCondition;
 import io.split.engine.experiments.ParsedSplit;
 import io.split.engine.matchers.AllKeysMatcher;

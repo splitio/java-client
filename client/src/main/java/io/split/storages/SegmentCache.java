@@ -1,9 +1,8 @@
-package io.split.cache;
+package io.split.storages;
 
 import io.split.engine.segments.SegmentImp;
 
 import java.util.List;
-import java.util.Set;
 
 /**
  * Memory for segments

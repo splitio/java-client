@@ -1,10 +1,9 @@
 package io.split.engine.common;
 
-import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
-import io.split.cache.SegmentCache;
-import io.split.cache.SplitCache;
+import io.split.storages.SegmentCache;
+import io.split.storages.SplitCache;
 import io.split.engine.SDKReadinessGates;
 import io.split.engine.experiments.SplitFetcher;
 import io.split.engine.experiments.SplitSynchronizationTask;
@@ -15,7 +14,6 @@ import org.slf4j.LoggerFactory;
 
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.*;
 import java.util.function.Function;
 
 import static com.google.common.base.Preconditions.checkNotNull;

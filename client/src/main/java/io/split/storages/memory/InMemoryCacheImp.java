@@ -1,10 +1,11 @@
-package io.split.cache;
+package io.split.storages.memory;
 
 import com.google.common.collect.ConcurrentHashMultiset;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Multiset;
 import com.google.common.collect.Sets;
 import io.split.engine.experiments.ParsedSplit;
+import io.split.storages.SplitCache;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

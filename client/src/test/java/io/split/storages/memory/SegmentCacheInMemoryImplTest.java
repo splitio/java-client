@@ -1,4 +1,4 @@
-package io.split.cache;
+package io.split.storages.memory;
 
 import junit.framework.TestCase;
 import org.junit.Assert;

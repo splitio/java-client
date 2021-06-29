@@ -1,6 +1,7 @@
-package io.split.cache;
+package io.split.storages.memory;
 
 import io.split.engine.experiments.ParsedSplit;
+import io.split.storages.SplitCache;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;

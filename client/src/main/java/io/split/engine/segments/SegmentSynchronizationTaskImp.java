@@ -2,7 +2,7 @@ package io.split.engine.segments;
 
 import com.google.common.collect.Maps;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
-import io.split.cache.SegmentCache;
+import io.split.storages.SegmentCache;
 import io.split.engine.SDKReadinessGates;
 import io.split.telemetry.storage.TelemetryRuntimeProducer;
 import org.slf4j.Logger;

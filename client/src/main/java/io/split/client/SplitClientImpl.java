@@ -1,6 +1,6 @@
 package io.split.client;
 
-import io.split.cache.SplitCache;
+import io.split.storages.SplitCache;
 import io.split.client.api.Key;
 import io.split.client.api.SplitResult;
 import io.split.client.dtos.Event;

@@ -1,20 +1,14 @@
 package io.split.engine.segments;
 
 import com.google.common.collect.Sets;
-import io.split.cache.InMemoryCacheImp;
-import io.split.cache.SegmentCache;
-import io.split.cache.SegmentCacheInMemoryImpl;
-import io.split.cache.SplitCache;
+import io.split.storages.SegmentCache;
+import io.split.storages.memory.SegmentCacheInMemoryImpl;
 import io.split.client.dtos.SegmentChange;
-import io.split.client.dtos.SplitChange;
 import io.split.engine.SDKReadinessGates;
 import io.split.telemetry.storage.InMemoryTelemetryStorage;
 import io.split.telemetry.storage.TelemetryRuntimeProducer;
 import io.split.telemetry.storage.TelemetryStorage;
 import io.split.engine.common.FetchOptions;
-import io.split.engine.experiments.SplitChangeFetcher;
-import io.split.engine.experiments.SplitFetcherImp;
-import io.split.engine.experiments.SplitParser;
 import org.junit.Assert;
 import org.junit.Test;
 import org.mockito.ArgumentCaptor;
