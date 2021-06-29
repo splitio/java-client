@@ -1,4 +1,4 @@
-package io.split.cache;
+package io.split.storages;
 
 import io.split.engine.experiments.ParsedSplit;
 

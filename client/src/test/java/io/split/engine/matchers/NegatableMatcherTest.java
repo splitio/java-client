@@ -1,8 +1,8 @@
 package io.split.engine.matchers;
 
 import com.google.common.collect.Lists;
-import io.split.cache.SegmentCache;
-import io.split.cache.SegmentCacheInMemoryImpl;
+import io.split.storages.SegmentCache;
+import io.split.storages.memory.SegmentCacheInMemoryImpl;
 import io.split.engine.matchers.strings.WhitelistMatcher;
 import org.junit.Test;
 

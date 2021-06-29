@@ -1,7 +1,7 @@
 package io.split.client.jmx;
 
-import io.split.cache.SegmentCache;
-import io.split.cache.SplitCache;
+import io.split.storages.SegmentCache;
+import io.split.storages.SplitCache;
 import io.split.client.SplitClient;
 import io.split.engine.common.FetchOptions;
 import io.split.engine.experiments.SplitFetcher;

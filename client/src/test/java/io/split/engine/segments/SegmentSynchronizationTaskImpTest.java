@@ -2,7 +2,7 @@ package io.split.engine.segments;
 
 import com.google.common.collect.Maps;
 import io.split.engine.SDKReadinessGates;
-import io.split.cache.SegmentCache;
+import io.split.storages.SegmentCache;
 import io.split.telemetry.storage.InMemoryTelemetryStorage;
 import io.split.telemetry.storage.TelemetryStorage;
 import org.junit.Assert;

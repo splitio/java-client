@@ -1,12 +1,12 @@
-package io.split.cache;
+package io.split.storages.memory;
 
 import com.google.common.collect.Maps;
 import io.split.engine.segments.SegmentImp;
+import io.split.storages.SegmentCache;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.List;
-import java.util.Set;
 import java.util.concurrent.ConcurrentMap;
 import java.util.stream.Collectors;
 

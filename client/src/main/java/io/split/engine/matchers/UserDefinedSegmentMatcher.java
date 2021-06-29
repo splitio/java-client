@@ -1,6 +1,6 @@
 package io.split.engine.matchers;
 
-import io.split.cache.SegmentCache;
+import io.split.storages.SegmentCache;
 import io.split.engine.evaluator.Evaluator;
 
 import java.util.Map;

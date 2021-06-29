@@ -1,7 +1,7 @@
 package io.split.client;
 
 import com.google.common.collect.Lists;
-import io.split.cache.SplitCache;
+import io.split.storages.SplitCache;
 import io.split.client.dtos.ConditionType;
 import io.split.client.dtos.MatcherCombiner;
 import io.split.client.dtos.Partition;

@@ -1,6 +1,6 @@
 package io.split.inputValidation;
 
-import io.split.cache.SplitCache;
+import io.split.storages.SplitCache;
 import org.junit.Assert;
 import org.junit.Test;
 import org.mockito.Mockito;

@@ -1,8 +1,8 @@
 package io.split.telemetry.synchronizer;
 
 import com.google.common.annotations.VisibleForTesting;
-import io.split.cache.SegmentCache;
-import io.split.cache.SplitCache;
+import io.split.storages.SegmentCache;
+import io.split.storages.SplitCache;
 import io.split.client.SplitClientConfig;
 import io.split.client.impressions.ImpressionListener;
 import io.split.client.impressions.ImpressionsManager;

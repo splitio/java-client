@@ -2,8 +2,8 @@ package io.split.engine.common;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
-import io.split.cache.SegmentCache;
-import io.split.cache.SplitCache;
+import io.split.storages.SegmentCache;
+import io.split.storages.SplitCache;
 import io.split.client.ApiKeyCounter;
 import io.split.client.SplitClientConfig;
 import io.split.engine.SDKReadinessGates;

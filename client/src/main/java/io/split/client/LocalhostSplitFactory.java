@@ -1,7 +1,7 @@
 package io.split.client;
 
-import io.split.cache.InMemoryCacheImp;
-import io.split.cache.SplitCache;
+import io.split.storages.memory.InMemoryCacheImp;
+import io.split.storages.SplitCache;
 import io.split.client.events.NoopEventsStorageImp;
 import io.split.client.impressions.ImpressionsManager;
 import io.split.engine.SDKReadinessGates;

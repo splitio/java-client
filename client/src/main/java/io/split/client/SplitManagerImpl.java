@@ -3,7 +3,7 @@ package io.split.client;
 import com.google.common.base.Preconditions;
 import io.split.client.api.SplitView;
 import io.split.engine.SDKReadinessGates;
-import io.split.cache.SplitCache;
+import io.split.storages.SplitCache;
 import io.split.engine.experiments.ParsedSplit;
 import io.split.inputValidation.SplitNameValidator;
 import io.split.telemetry.storage.TelemetryConfigProducer;

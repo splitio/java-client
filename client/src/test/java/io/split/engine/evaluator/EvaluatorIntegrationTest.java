@@ -1,8 +1,8 @@
 package io.split.engine.evaluator;
 
 import com.google.common.collect.Lists;
-import io.split.cache.InMemoryCacheImp;
-import io.split.cache.SplitCache;
+import io.split.storages.memory.InMemoryCacheImp;
+import io.split.storages.SplitCache;
 import io.split.client.dtos.ConditionType;
 import io.split.client.dtos.MatcherCombiner;
 import io.split.client.dtos.Partition;

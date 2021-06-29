@@ -4,6 +4,7 @@ package io.split.client;
 import io.split.client.impressions.ImpressionListener;
 import io.split.client.impressions.ImpressionsManager;
 import io.split.integrations.IntegrationsConfig;
+import io.split.storages.enums.StorageMode;
 import org.apache.hc.core5.http.HttpHost;
 
 import java.io.IOException;
@@ -57,6 +58,7 @@ public class SplitClientConfig {
     private final int _onDemandFetchMaxRetries;
     private final int _failedAttemptsBeforeLogging;
     private final boolean _cdnDebugLogging;
+    private final StorageMode _storageMode;
 
     // Proxy configs
     private final HttpHost _proxy;
@@ -106,7 +108,8 @@ public class SplitClientConfig {
                               int onDemandFetchRetryDelayMs,
                               int onDemandFetchMaxRetries,
                               int failedAttemptsBeforeLogging,
-                              boolean cdnDebugLogging) {
+                              boolean cdnDebugLogging,
+                              StorageMode storageMode) {
         _endpoint = endpoint;
         _eventsEndpoint = eventsEndpoint;
         _featuresRefreshRate = pollForFeatureChangesEveryNSeconds;
@@ -143,6 +146,7 @@ public class SplitClientConfig {
         _onDemandFetchMaxRetries = onDemandFetchMaxRetries;
         _failedAttemptsBeforeLogging = failedAttemptsBeforeLogging;
         _cdnDebugLogging = cdnDebugLogging;
+        _storageMode = storageMode;
 
         Properties props = new Properties();
         try {
@@ -286,6 +290,8 @@ public class SplitClientConfig {
 
     public boolean cdnDebugLogging() { return _cdnDebugLogging; }
 
+    public StorageMode storageMode() { return _storageMode;}
+
 
     public static final class Builder {
 
@@ -328,6 +334,7 @@ public class SplitClientConfig {
         private final int _onDemandFetchMaxRetries = 10;
         private final int _failedAttemptsBeforeLogging = 10;
         private final boolean _cdnDebugLogging = true;
+        private StorageMode _storageMode = StorageMode.STANDALONE;
 
         public Builder() {
         }
@@ -740,6 +747,17 @@ public class SplitClientConfig {
             return this;
         }
 
+        /**
+         * Type of storage
+         *
+         * @param mode
+         * @return this builder
+         */
+        public Builder storageMode(StorageMode mode) {
+            _storageMode = mode;
+            return this;
+        }
+
         public SplitClientConfig build() {
             if (_featuresRefreshRate < 5 ) {
                 throw new IllegalArgumentException("featuresRefreshRate must be >= 5: " + _featuresRefreshRate);
@@ -821,6 +839,10 @@ public class SplitClientConfig {
                 throw new IllegalStateException("_onDemandFetchMaxRetries must be > 0");
             }
 
+            if(_storageMode == null) {
+                throw new IllegalStateException("storageMode must not be null");
+            }
+
             return new SplitClientConfig(
                     _endpoint,
                     _eventsEndpoint,
@@ -857,7 +879,8 @@ public class SplitClientConfig {
                     _onDemandFetchRetryDelayMs,
                     _onDemandFetchMaxRetries,
                     _failedAttemptsBeforeLogging,
-                    _cdnDebugLogging);
+                    _cdnDebugLogging,
+                    _storageMode);
         }
     }
 }

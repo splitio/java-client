@@ -1,8 +1,8 @@
 package io.split.engine.common;
 
-import io.split.cache.InMemoryCacheImp;
-import io.split.cache.SegmentCache;
-import io.split.cache.SplitCache;
+import io.split.storages.memory.InMemoryCacheImp;
+import io.split.storages.SegmentCache;
+import io.split.storages.SplitCache;
 import io.split.engine.SDKReadinessGates;
 import io.split.engine.experiments.SplitFetcherImp;
 import io.split.engine.experiments.SplitSynchronizationTask;

@@ -1,10 +1,9 @@
 package io.split.engine.segments;
 
 import com.google.common.annotations.VisibleForTesting;
-import io.split.cache.SegmentCache;
+import io.split.storages.SegmentCache;
 import io.split.client.dtos.SegmentChange;
 import io.split.engine.SDKReadinessGates;
-import io.split.telemetry.domain.enums.HTTPLatenciesEnum;
 import io.split.telemetry.domain.enums.LastSynchronizationRecordsEnum;
 import io.split.telemetry.storage.TelemetryRuntimeProducer;
 import io.split.engine.common.FetchOptions;
