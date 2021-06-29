@@ -43,10 +43,15 @@
                                     <include>io.split.client:*</include>
                                     <include>io.split.schemas:*</include>
                                     <include>io.codigo.grammar:*</include>
-                                    <include>org.apache.httpcomponents:httpclient</include>
-                                    <include>org.apache.httpcomponents:httpcore</include>
-                                    <include>com.google.code.gson:gson</include>
-                                    <include>com.google.guava:guava</include>
+                                    <include>org.apache.httpcomponents.*</include>
+                                    <include>com.google.*</include>
+                                    <include>org.yaml:snakeyaml:*</include>
+
+                                    <!-- Transitive dependency of guava -->
+                                    <include>org.checkerframework:*</include>
+
+                                    <!-- Transitive dependency of httpclient5. Package name is org.apache.commons -->
+                                    <include>commons-codec:*</include>
                                 </includes>
                             </artifactSet>
                             <transformers>
@@ -55,12 +60,20 @@
                             </transformers>
                             <relocations>
                                 <relocation>
-                                    <pattern>org.apache.http</pattern>
-                                    <shadedPattern>split.org.apache.http</shadedPattern>
+                                    <pattern>org.apache</pattern>
+                                    <shadedPattern>split.org.apache</shadedPattern>
                                 </relocation>
                                 <relocation>
                                     <pattern>com.google</pattern>
                                     <shadedPattern>split.com.google</shadedPattern>
+                                </relocation>
+                                <relocation>
+                                    <pattern>org.yaml</pattern>
+                                    <shadedPattern>split.org.yaml</shadedPattern>
+                                </relocation>
+                                <relocation>
+                                    <pattern>org.checkerframework</pattern>
+                                    <shadedPattern>split.org.checkerframework</shadedPattern>
                                 </relocation>
                             </relocations>
                             <filters>
