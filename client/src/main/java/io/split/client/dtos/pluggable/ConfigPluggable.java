@@ -16,7 +16,7 @@ public class ConfigPluggable extends Config {
         _metadata = metadata;
     }
 
-    public Metadata get_metadata() {
+    public Metadata getMetadata() {
         return _metadata;
     }
 }

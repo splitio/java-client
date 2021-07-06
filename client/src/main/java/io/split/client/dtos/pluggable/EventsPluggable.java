@@ -15,7 +15,7 @@ public class EventsPluggable extends Event {
         _metadata = metadata;
     }
 
-    public Metadata get_metadata() {
+    public Metadata getMetadata() {
         return _metadata;
     }
 }
