@@ -19,7 +19,7 @@ public class ImpressionsPluggable extends TestImpressions {
         _metadata = metadata;
     }
 
-    public Metadata get_metadata() {
+    public Metadata getMetadata() {
         return _metadata;
     }
 }
