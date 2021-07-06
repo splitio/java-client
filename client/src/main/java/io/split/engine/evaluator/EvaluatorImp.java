@@ -2,11 +2,11 @@ package io.split.engine.evaluator;
 
 import io.split.client.dtos.ConditionType;
 import io.split.client.exceptions.ChangeNumberExceptionWrapper;
-import io.split.storages.SplitCache;
 import io.split.engine.experiments.ParsedCondition;
 import io.split.engine.experiments.ParsedSplit;
 import io.split.engine.splitter.Splitter;
 import io.split.grammar.Treatments;
+import io.split.storages.SplitCacheConsumer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -19,16 +19,16 @@ public class EvaluatorImp implements Evaluator {
 
     private static final Logger _log = LoggerFactory.getLogger(EvaluatorImp.class);
 
-    private final SplitCache _splitCache;
+    private final SplitCacheConsumer _splitCacheConsumer;
 
-    public EvaluatorImp(SplitCache splitCache) {
-        _splitCache = checkNotNull(splitCache);
+    public EvaluatorImp(SplitCacheConsumer splitCacheConsumer) {
+        _splitCacheConsumer = checkNotNull(splitCacheConsumer);
     }
 
     @Override
     public TreatmentLabelAndChangeNumber evaluateFeature(String matchingKey, String bucketingKey, String split, Map<String, Object> attributes) {
         try {
-            ParsedSplit parsedSplit = _splitCache.get(split);
+            ParsedSplit parsedSplit = _splitCacheConsumer.get(split);
 
             if (parsedSplit == null) {
                 return new TreatmentLabelAndChangeNumber(Treatments.CONTROL, Labels.DEFINITION_NOT_FOUND);

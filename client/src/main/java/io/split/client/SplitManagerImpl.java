@@ -3,9 +3,9 @@ package io.split.client;
 import com.google.common.base.Preconditions;
 import io.split.client.api.SplitView;
 import io.split.engine.SDKReadinessGates;
-import io.split.storages.SplitCache;
 import io.split.engine.experiments.ParsedSplit;
 import io.split.inputValidation.SplitNameValidator;
+import io.split.storages.SplitCacheConsumer;
 import io.split.telemetry.storage.TelemetryConfigProducer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -24,18 +24,18 @@ public class SplitManagerImpl implements SplitManager {
 
     private static final Logger _log = LoggerFactory.getLogger(SplitManagerImpl.class);
 
-    private final SplitCache _splitCache;
+    private final SplitCacheConsumer _splitCacheConsumer;
     private final SplitClientConfig _config;
     private final SDKReadinessGates _gates;
     private final TelemetryConfigProducer _telemetryConfigProducer;
 
 
-    public SplitManagerImpl(SplitCache splitCache,
+    public SplitManagerImpl(SplitCacheConsumer splitCacheConsumer,
                             SplitClientConfig config,
                             SDKReadinessGates gates,
                             TelemetryConfigProducer telemetryConfigProducer) {
         _config = Preconditions.checkNotNull(config);
-        _splitCache  = Preconditions.checkNotNull(splitCache);
+        _splitCacheConsumer = Preconditions.checkNotNull(splitCacheConsumer);
         _gates = Preconditions.checkNotNull(gates);
         _telemetryConfigProducer = telemetryConfigProducer;
     }
@@ -47,7 +47,7 @@ public class SplitManagerImpl implements SplitManager {
             _telemetryConfigProducer.recordNonReadyUsage();
         }}
         List<SplitView> result = new ArrayList<>();
-        Collection<ParsedSplit> parsedSplits = _splitCache.getAll();
+        Collection<ParsedSplit> parsedSplits = _splitCacheConsumer.getAll();
         for (ParsedSplit split : parsedSplits) {
             result.add(SplitView.fromParsedSplit(split));
         }
@@ -67,7 +67,7 @@ public class SplitManagerImpl implements SplitManager {
         }
         featureName = result.get();
 
-        ParsedSplit parsedSplit = _splitCache.get(featureName);
+        ParsedSplit parsedSplit = _splitCacheConsumer.get(featureName);
         if (parsedSplit == null) {
             if (_gates.isSDKReady()) {
                 _log.warn("split: you passed \"" + featureName + "\" that does not exist in this environment, " +
@@ -86,7 +86,7 @@ public class SplitManagerImpl implements SplitManager {
             _telemetryConfigProducer.recordNonReadyUsage();
         }}
         List<String> result = new ArrayList<>();
-        Collection<ParsedSplit> parsedSplits = _splitCache.getAll();
+        Collection<ParsedSplit> parsedSplits = _splitCacheConsumer.getAll();
         for (ParsedSplit split : parsedSplits) {
             result.add(split.feature());
         }

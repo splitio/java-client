@@ -10,6 +10,8 @@ import io.split.engine.SDKReadinessGates;
 import io.split.engine.experiments.SplitFetcher;
 import io.split.engine.experiments.SplitSynchronizationTask;
 import io.split.engine.segments.SegmentSynchronizationTaskImp;
+import io.split.storages.SplitCacheConsumer;
+import io.split.storages.SplitCacheProducer;
 import io.split.telemetry.domain.StreamingEvent;
 import io.split.telemetry.domain.enums.StreamEventsEnum;
 import io.split.telemetry.storage.TelemetryRuntimeProducer;
@@ -77,7 +79,8 @@ public class SyncManagerImp implements SyncManager {
                                        SplitSynchronizationTask splitSynchronizationTask,
                                        SplitFetcher splitFetcher,
                                        SegmentSynchronizationTaskImp segmentSynchronizationTaskImp,
-                                       SplitCache splitCache,
+                                       SplitCacheConsumer splitCacheConsumer,
+                                       SplitCacheProducer splitCacheProducer,
                                        String authUrl,
                                        CloseableHttpClient httpClient,
                                        String streamingServiceUrl,
@@ -96,7 +99,8 @@ public class SyncManagerImp implements SyncManager {
         Synchronizer synchronizer = new SynchronizerImp(splitSynchronizationTask,
                                         splitFetcher,
                                         segmentSynchronizationTaskImp,
-                                        splitCache,
+                                        splitCacheConsumer,
+                                        splitCacheProducer,
                                         segmentCache,
                                         streamingRetryDelay,
                                         maxOnDemandFetchRetries,

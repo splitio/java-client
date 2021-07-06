@@ -2,12 +2,12 @@ package io.split.telemetry.synchronizer;
 
 import com.google.common.annotations.VisibleForTesting;
 import io.split.storages.SegmentCache;
-import io.split.storages.SplitCache;
 import io.split.client.SplitClientConfig;
 import io.split.client.impressions.ImpressionListener;
 import io.split.client.impressions.ImpressionsManager;
 import io.split.integrations.IntegrationsConfig;
 import io.split.integrations.NewRelicListener;
+import io.split.storages.SplitCacheConsumer;
 import io.split.telemetry.domain.Config;
 import io.split.telemetry.domain.Rates;
 import io.split.telemetry.domain.Stats;
@@ -31,15 +31,15 @@ public class TelemetrySubmitter implements TelemetrySynchronizer{
 
     private HttpTelemetryMemorySender _httpHttpTelemetryMemorySender;
     private TelemetryStorageConsumer _teleTelemetryStorageConsumer;
-    private SplitCache _splitCache;
+    private SplitCacheConsumer _splitCacheConsumer;
     private SegmentCache _segmentCache;
     private final long _initStartTime;
 
-    public TelemetrySubmitter(CloseableHttpClient client, URI telemetryRootEndpoint, TelemetryStorageConsumer telemetryStorageConsumer, SplitCache splitCache,
+    public TelemetrySubmitter(CloseableHttpClient client, URI telemetryRootEndpoint, TelemetryStorageConsumer telemetryStorageConsumer, SplitCacheConsumer splitCacheConsumer,
                               SegmentCache segmentCache, TelemetryRuntimeProducer telemetryRuntimeProducer, long initStartTime) throws URISyntaxException {
         _httpHttpTelemetryMemorySender = HttpTelemetryMemorySender.create(client, telemetryRootEndpoint, telemetryRuntimeProducer);
         _teleTelemetryStorageConsumer = telemetryStorageConsumer;
-        _splitCache = splitCache;
+        _splitCacheConsumer = splitCacheConsumer;
         _segmentCache = segmentCache;
         _initStartTime = initStartTime;
     }
@@ -76,7 +76,7 @@ public class TelemetrySubmitter implements TelemetrySynchronizer{
         stats.set_impressionsQueued(_teleTelemetryStorageConsumer.getImpressionsStats(ImpressionsDataTypeEnum.IMPRESSIONS_QUEUED));
         stats.set_impressionsDeduped(_teleTelemetryStorageConsumer.getImpressionsStats(ImpressionsDataTypeEnum.IMPRESSIONS_DEDUPED));
         stats.set_impressionsDropped(_teleTelemetryStorageConsumer.getImpressionsStats(ImpressionsDataTypeEnum.IMPRESSIONS_DROPPED));
-        stats.set_splitCount(_splitCache.getAll().stream().count());
+        stats.set_splitCount(_splitCacheConsumer.getAll().stream().count());
         stats.set_segmentCount(_segmentCache.getAll().stream().count());
         stats.set_segmentKeyCount(_segmentCache.getKeyCount());
         stats.set_sessionLengthMs(_teleTelemetryStorageConsumer.getSessionLength());

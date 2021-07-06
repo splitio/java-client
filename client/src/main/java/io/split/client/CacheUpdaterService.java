@@ -1,7 +1,6 @@
 package io.split.client;
 
 import com.google.common.collect.Lists;
-import io.split.storages.SplitCache;
 import io.split.client.dtos.ConditionType;
 import io.split.client.dtos.MatcherCombiner;
 import io.split.client.dtos.Partition;
@@ -12,6 +11,8 @@ import io.split.engine.matchers.AttributeMatcher;
 import io.split.engine.matchers.CombiningMatcher;
 import io.split.engine.matchers.strings.WhitelistMatcher;
 import io.split.grammar.Treatments;
+import io.split.storages.SplitCacheConsumer;
+import io.split.storages.SplitCacheProducer;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -20,23 +21,27 @@ import java.util.Map;
 import java.util.Comparator;
 import java.util.stream.Collectors;
 
+import static com.google.gson.internal.$Gson$Preconditions.checkNotNull;
+
 public final  class CacheUpdaterService {
 
     private static String LOCALHOST = "localhost";
-    private SplitCache _splitCache;
+    private SplitCacheConsumer _splitCacheConsumer;
+    private SplitCacheProducer _splitCacheProducer;
 
-    public CacheUpdaterService(SplitCache splitCache) {
-        _splitCache = splitCache;
+    public CacheUpdaterService(SplitCacheConsumer splitCacheConsumer, SplitCacheProducer splitCacheProducer) {
+        _splitCacheConsumer = checkNotNull(splitCacheConsumer);
+        _splitCacheProducer = checkNotNull(splitCacheProducer);
     }
 
     public void updateCache(Map<SplitAndKey, LocalhostSplit> map) {
-        _splitCache.clear();
+        _splitCacheProducer.clear();
         for (Map.Entry<SplitAndKey,LocalhostSplit> entrySplit : map.entrySet()) {
             SplitAndKey splitAndKey = entrySplit.getKey();
             String splitName = splitAndKey.split();
             String splitKey = splitAndKey.key();
             LocalhostSplit localhostSplit = entrySplit.getValue();
-            ParsedSplit split = _splitCache.get(splitName);
+            ParsedSplit split = _splitCacheConsumer.get(splitName);
             List<ParsedCondition> conditions = getConditions(splitKey, split, localhostSplit.treatment);
             String treatment = conditions.size() > 0 ? Treatments.CONTROL : localhostSplit.treatment;
             Map<String, String> configurations = new HashMap<>();
@@ -46,7 +51,7 @@ public final  class CacheUpdaterService {
             configurations.put(localhostSplit.treatment, localhostSplit.config);
 
             split = new ParsedSplit(splitName, 0, false, treatment,conditions, LOCALHOST, 0, 100, 0, 0, configurations);
-            _splitCache.put(split);
+            _splitCacheProducer.put(split);
         }
     }
 

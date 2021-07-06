@@ -11,7 +11,6 @@ import io.split.client.interceptors.ClientKeyInterceptorFilter;
 import io.split.client.interceptors.GzipDecoderResponseInterceptor;
 import io.split.client.interceptors.GzipEncoderRequestInterceptor;
 import io.split.client.interceptors.SdkMetadataInterceptorFilter;
-import io.split.storages.enums.StorageMode;
 import io.split.storages.memory.InMemoryCacheImp;
 import io.split.storages.SplitCache;
 import io.split.engine.evaluator.Evaluator;
@@ -178,6 +177,7 @@ public class SplitFactoryImpl implements SplitFactory {
                 _splitSynchronizationTask,
                 _splitFetcher,
                 _segmentSynchronizationTaskImp,
+                _splitCache,
                 _splitCache,
                 config.authServiceURL(),
                 _httpclient,
@@ -354,7 +354,7 @@ public class SplitFactoryImpl implements SplitFactory {
         SplitChangeFetcher splitChangeFetcher = HttpSplitChangeFetcher.create(_httpclient, _rootTarget, _telemetryStorage);
         SplitParser splitParser = new SplitParser(_segmentSynchronizationTaskImp, _segmentCache);
 
-        return new SplitFetcherImp(splitChangeFetcher, splitParser, _splitCache, _telemetryStorage);
+        return new SplitFetcherImp(splitChangeFetcher, splitParser, _splitCache, _splitCache, _telemetryStorage);
     }
 
     private ImpressionsManagerImpl buildImpressionsManager(SplitClientConfig config) throws URISyntaxException {
