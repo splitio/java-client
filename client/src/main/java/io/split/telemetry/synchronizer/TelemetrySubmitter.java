@@ -1,12 +1,12 @@
 package io.split.telemetry.synchronizer;
 
 import com.google.common.annotations.VisibleForTesting;
-import io.split.storages.SegmentCache;
 import io.split.client.SplitClientConfig;
 import io.split.client.impressions.ImpressionListener;
 import io.split.client.impressions.ImpressionsManager;
 import io.split.integrations.IntegrationsConfig;
 import io.split.integrations.NewRelicListener;
+import io.split.storages.SegmentCacheConsumer;
 import io.split.storages.SplitCacheConsumer;
 import io.split.telemetry.domain.Config;
 import io.split.telemetry.domain.Rates;
@@ -24,6 +24,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
+import static com.google.common.base.Preconditions.checkNotNull;
+
 public class TelemetrySubmitter implements TelemetrySynchronizer{
 
     private static final int OPERATION_MODE = 0;
@@ -32,15 +34,15 @@ public class TelemetrySubmitter implements TelemetrySynchronizer{
     private HttpTelemetryMemorySender _httpHttpTelemetryMemorySender;
     private TelemetryStorageConsumer _teleTelemetryStorageConsumer;
     private SplitCacheConsumer _splitCacheConsumer;
-    private SegmentCache _segmentCache;
+    private SegmentCacheConsumer _segmentCacheConsumer;
     private final long _initStartTime;
 
     public TelemetrySubmitter(CloseableHttpClient client, URI telemetryRootEndpoint, TelemetryStorageConsumer telemetryStorageConsumer, SplitCacheConsumer splitCacheConsumer,
-                              SegmentCache segmentCache, TelemetryRuntimeProducer telemetryRuntimeProducer, long initStartTime) throws URISyntaxException {
+                              SegmentCacheConsumer segmentCacheConsumer, TelemetryRuntimeProducer telemetryRuntimeProducer, long initStartTime) throws URISyntaxException {
         _httpHttpTelemetryMemorySender = HttpTelemetryMemorySender.create(client, telemetryRootEndpoint, telemetryRuntimeProducer);
-        _teleTelemetryStorageConsumer = telemetryStorageConsumer;
-        _splitCacheConsumer = splitCacheConsumer;
-        _segmentCache = segmentCache;
+        _teleTelemetryStorageConsumer = checkNotNull(telemetryStorageConsumer);
+        _splitCacheConsumer = checkNotNull(splitCacheConsumer);
+        _segmentCacheConsumer = checkNotNull(segmentCacheConsumer);
         _initStartTime = initStartTime;
     }
 
@@ -77,8 +79,8 @@ public class TelemetrySubmitter implements TelemetrySynchronizer{
         stats.set_impressionsDeduped(_teleTelemetryStorageConsumer.getImpressionsStats(ImpressionsDataTypeEnum.IMPRESSIONS_DEDUPED));
         stats.set_impressionsDropped(_teleTelemetryStorageConsumer.getImpressionsStats(ImpressionsDataTypeEnum.IMPRESSIONS_DROPPED));
         stats.set_splitCount(_splitCacheConsumer.getAll().stream().count());
-        stats.set_segmentCount(_segmentCache.getAll().stream().count());
-        stats.set_segmentKeyCount(_segmentCache.getKeyCount());
+        stats.set_segmentCount(_segmentCacheConsumer.getAll().stream().count());
+        stats.set_segmentKeyCount(_segmentCacheConsumer.getKeyCount());
         stats.set_sessionLengthMs(_teleTelemetryStorageConsumer.getSessionLength());
         stats.set_eventsQueued(_teleTelemetryStorageConsumer.getEventStats(EventsDataRecordsEnum.EVENTS_QUEUED));
         stats.set_eventsDropped(_teleTelemetryStorageConsumer.getEventStats(EventsDataRecordsEnum.EVENTS_DROPPED));

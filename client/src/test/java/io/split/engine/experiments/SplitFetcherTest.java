@@ -1,6 +1,7 @@
 package io.split.engine.experiments;
 
 import com.google.common.collect.Lists;
+import io.split.storages.SegmentCacheConsumer;
 import io.split.storages.memory.InMemoryCacheImp;
 import io.split.storages.SegmentCache;
 import io.split.storages.memory.SegmentCacheInMemoryImpl;
@@ -220,7 +221,7 @@ public class SplitFetcherTest {
     public void testBypassCdnClearedAfterFirstHit() {
         SplitChangeFetcher mockFetcher = Mockito.mock(SplitChangeFetcher.class);
         SegmentSynchronizationTask segmentSynchronizationTaskMock = Mockito.mock(SegmentSynchronizationTask.class);
-        SegmentCache segmentCacheMock = Mockito.mock(SegmentCache.class);
+        SegmentCacheConsumer segmentCacheMock = Mockito.mock(SegmentCacheConsumer.class);
         SplitParser mockParser = new SplitParser(segmentSynchronizationTaskMock, segmentCacheMock);
         SDKReadinessGates mockGates = Mockito.mock(SDKReadinessGates.class);
         SplitCache mockCache = new InMemoryCacheImp();

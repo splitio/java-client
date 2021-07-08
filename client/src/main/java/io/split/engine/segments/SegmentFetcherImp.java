@@ -1,9 +1,9 @@
 package io.split.engine.segments;
 
 import com.google.common.annotations.VisibleForTesting;
-import io.split.storages.SegmentCache;
 import io.split.client.dtos.SegmentChange;
 import io.split.engine.SDKReadinessGates;
+import io.split.storages.SegmentCacheProducer;
 import io.split.telemetry.domain.enums.LastSynchronizationRecordsEnum;
 import io.split.telemetry.storage.TelemetryRuntimeProducer;
 import io.split.engine.common.FetchOptions;
@@ -20,20 +20,20 @@ public class SegmentFetcherImp implements SegmentFetcher {
 
     private final String _segmentName;
     private final SegmentChangeFetcher _segmentChangeFetcher;
-    private final SegmentCache _segmentCache;
+    private final SegmentCacheProducer _segmentCacheProducer;
     private final SDKReadinessGates _gates;
     private final TelemetryRuntimeProducer _telemetryRuntimeProducer;
 
     private final Object _lock = new Object();
 
-    public SegmentFetcherImp(String segmentName, SegmentChangeFetcher segmentChangeFetcher, SDKReadinessGates gates, SegmentCache segmentCache, TelemetryRuntimeProducer telemetryRuntimeProducer) {
+    public SegmentFetcherImp(String segmentName, SegmentChangeFetcher segmentChangeFetcher, SDKReadinessGates gates, SegmentCacheProducer segmentCacheProducer, TelemetryRuntimeProducer telemetryRuntimeProducer) {
         _segmentName = checkNotNull(segmentName);
         _segmentChangeFetcher = checkNotNull(segmentChangeFetcher);
-        _segmentCache = checkNotNull(segmentCache);
+        _segmentCacheProducer = checkNotNull(segmentCacheProducer);
         _gates = checkNotNull(gates);
         _telemetryRuntimeProducer = checkNotNull(telemetryRuntimeProducer);
 
-        _segmentCache.updateSegment(segmentName, new ArrayList<>(), new ArrayList<>());
+        _segmentCacheProducer.updateSegment(segmentName, new ArrayList<>(), new ArrayList<>());
     }
 
     @Override
@@ -50,19 +50,19 @@ public class SegmentFetcherImp implements SegmentFetcher {
 
     private void runWithoutExceptionHandling(FetchOptions options) {
         long initTime = System.currentTimeMillis();
-        SegmentChange change = _segmentChangeFetcher.fetch(_segmentName, _segmentCache.getChangeNumber(_segmentName), options);
+        SegmentChange change = _segmentChangeFetcher.fetch(_segmentName, _segmentCacheProducer.getChangeNumber(_segmentName), options);
 
         if (change == null) {
             throw new IllegalStateException("SegmentChange was null");
         }
 
-        if (change.till == _segmentCache.getChangeNumber(_segmentName)) {
+        if (change.till == _segmentCacheProducer.getChangeNumber(_segmentName)) {
             // no change.
             return;
         }
 
-        if (change.since != _segmentCache.getChangeNumber(_segmentName)
-                || change.since < _segmentCache.getChangeNumber(_segmentName)) {
+        if (change.since != _segmentCacheProducer.getChangeNumber(_segmentName)
+                || change.since < _segmentCacheProducer.getChangeNumber(_segmentName)) {
             // some other thread may have updated the shared state. exit
             return;
         }
@@ -70,19 +70,19 @@ public class SegmentFetcherImp implements SegmentFetcher {
 
         if (change.added.isEmpty() && change.removed.isEmpty()) {
             // there are no changes. weird!
-            _segmentCache.setChangeNumber(_segmentName,change.till);
+            _segmentCacheProducer.setChangeNumber(_segmentName,change.till);
             return;
         }
 
         synchronized (_lock) {
             // check state one more time.
-            if (change.since != _segmentCache.getChangeNumber(_segmentName)
-                    || change.till < _segmentCache.getChangeNumber(_segmentName)) {
+            if (change.since != _segmentCacheProducer.getChangeNumber(_segmentName)
+                    || change.till < _segmentCacheProducer.getChangeNumber(_segmentName)) {
                 // some other thread may have updated the shared state. exit
                 return;
             }
             //updateSegment(sn, toadd, tormv, chngN)
-            _segmentCache.updateSegment(_segmentName,change.added, change.removed);
+            _segmentCacheProducer.updateSegment(_segmentName,change.added, change.removed);
 
             if (!change.added.isEmpty()) {
                 _log.info(_segmentName + " added keys: " + summarize(change.added));
@@ -92,7 +92,7 @@ public class SegmentFetcherImp implements SegmentFetcher {
                 _log.info(_segmentName + " removed keys: " + summarize(change.removed));
             }
 
-            _segmentCache.setChangeNumber(_segmentName,change.till);
+            _segmentCacheProducer.setChangeNumber(_segmentName,change.till);
             _telemetryRuntimeProducer.recordSuccessfulSync(LastSynchronizationRecordsEnum.SEGMENTS, System.currentTimeMillis());
         }
     }
@@ -119,14 +119,14 @@ public class SegmentFetcherImp implements SegmentFetcher {
 
     @VisibleForTesting
     void callLoopRun(FetchOptions opts){
-        final long INITIAL_CN = _segmentCache.getChangeNumber(_segmentName);
+        final long INITIAL_CN = _segmentCacheProducer.getChangeNumber(_segmentName);
         while (true) {
-            long start = _segmentCache.getChangeNumber(_segmentName);
+            long start = _segmentCacheProducer.getChangeNumber(_segmentName);
             runWithoutExceptionHandling(opts);
             if (INITIAL_CN == start) {
                 opts = new FetchOptions.Builder(opts).targetChangeNumber(FetchOptions.DEFAULT_TARGET_CHANGENUMBER).build();
             }
-            long end = _segmentCache.getChangeNumber(_segmentName);
+            long end = _segmentCacheProducer.getChangeNumber(_segmentName);
             if (start >= end) {
                 break;
             }

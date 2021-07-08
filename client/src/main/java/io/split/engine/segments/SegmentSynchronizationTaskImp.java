@@ -2,8 +2,8 @@ package io.split.engine.segments;
 
 import com.google.common.collect.Maps;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
-import io.split.storages.SegmentCache;
 import io.split.engine.SDKReadinessGates;
+import io.split.storages.SegmentCacheProducer;
 import io.split.telemetry.storage.TelemetryRuntimeProducer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -32,14 +32,14 @@ public class SegmentSynchronizationTaskImp implements SegmentSynchronizationTask
     private final AtomicBoolean _running;
     private final Object _lock = new Object();
     private final ConcurrentMap<String, SegmentFetcher> _segmentFetchers = Maps.newConcurrentMap();
-    private final SegmentCache _segmentCache;
+    private final SegmentCacheProducer _segmentCacheProducer;
     private final SDKReadinessGates _gates;
     private final ScheduledExecutorService _scheduledExecutorService;
     private final TelemetryRuntimeProducer _telemetryRuntimeProducer;
 
     private ScheduledFuture<?> _scheduledFuture;
 
-    public SegmentSynchronizationTaskImp(SegmentChangeFetcher segmentChangeFetcher, long refreshEveryNSeconds, int numThreads, SDKReadinessGates gates, SegmentCache segmentCache,
+    public SegmentSynchronizationTaskImp(SegmentChangeFetcher segmentChangeFetcher, long refreshEveryNSeconds, int numThreads, SDKReadinessGates gates, SegmentCacheProducer segmentCacheProducer,
                                          TelemetryRuntimeProducer telemetryRuntimeProducer) {
         _segmentChangeFetcher = checkNotNull(segmentChangeFetcher);
 
@@ -57,7 +57,7 @@ public class SegmentSynchronizationTaskImp implements SegmentSynchronizationTask
 
         _running = new AtomicBoolean(false);
 
-        _segmentCache = checkNotNull(segmentCache);
+        _segmentCacheProducer = checkNotNull(segmentCacheProducer);
         _telemetryRuntimeProducer = checkNotNull(telemetryRuntimeProducer);
     }
 
@@ -82,7 +82,7 @@ public class SegmentSynchronizationTaskImp implements SegmentSynchronizationTask
                 return;
             }
 
-            segment = new SegmentFetcherImp(segmentName, _segmentChangeFetcher, _gates, _segmentCache, _telemetryRuntimeProducer);
+            segment = new SegmentFetcherImp(segmentName, _segmentChangeFetcher, _gates, _segmentCacheProducer, _telemetryRuntimeProducer);
 
             if (_running.get()) {
                 _scheduledExecutorService.submit(segment::fetchAll);
