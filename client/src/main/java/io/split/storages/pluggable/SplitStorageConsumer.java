@@ -1,6 +1,6 @@
 package io.split.storages.pluggable;
 
-import io.split.storages.SplitCache;
+import io.split.storages.SplitCacheConsumer;
 
-public interface SplitStorageConsumer extends SplitCache {
+public interface SplitStorageConsumer extends SplitCacheConsumer {
 }
