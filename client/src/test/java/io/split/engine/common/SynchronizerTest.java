@@ -1,8 +1,10 @@
 package io.split.engine.common;
 
+import io.split.storages.SplitCache;
+import io.split.storages.SplitCacheConsumer;
+import io.split.storages.SplitCacheProducer;
 import io.split.storages.memory.InMemoryCacheImp;
 import io.split.storages.SegmentCache;
-import io.split.storages.SplitCache;
 import io.split.engine.SDKReadinessGates;
 import io.split.engine.experiments.SplitFetcherImp;
 import io.split.engine.experiments.SplitSynchronizationTask;
@@ -25,7 +27,8 @@ public class SynchronizerTest {
     private SplitSynchronizationTask _refreshableSplitFetcherTask;
     private SegmentSynchronizationTask _segmentFetcher;
     private SplitFetcherImp _splitFetcher;
-    private SplitCache _splitCache;
+    private SplitCacheConsumer _splitCacheConsumer;
+    private SplitCacheProducer _splitCacheProducer;
     private Synchronizer _synchronizer;
     private SegmentCache _segmentCache;
     private SDKReadinessGates _gates;
@@ -35,11 +38,12 @@ public class SynchronizerTest {
         _refreshableSplitFetcherTask = Mockito.mock(SplitSynchronizationTask.class);
         _segmentFetcher = Mockito.mock(SegmentSynchronizationTask.class);
         _splitFetcher = Mockito.mock(SplitFetcherImp.class);
-        _splitCache = Mockito.mock(SplitCache.class);
+        _splitCacheConsumer = Mockito.mock(SplitCacheConsumer.class);
+        _splitCacheProducer = Mockito.mock(SplitCacheProducer.class);
         _segmentCache = Mockito.mock(SegmentCache.class);
         _gates = Mockito.mock(SDKReadinessGates.class);
 
-        _synchronizer = new SynchronizerImp(_refreshableSplitFetcherTask, _splitFetcher, _segmentFetcher, _splitCache, _segmentCache, 50, 10, 5, false, _gates);
+        _synchronizer = new SynchronizerImp(_refreshableSplitFetcherTask, _splitFetcher, _segmentFetcher, _splitCacheProducer, _segmentCache, 50, 10, 5, false, _gates);
     }
 
     @Test
@@ -71,10 +75,10 @@ public class SynchronizerTest {
 
     @Test
     public void streamingRetryOnSplit() {
-        when(_splitCache.getChangeNumber()).thenReturn(0l).thenReturn(0l).thenReturn(1l);
+        when(_splitCacheProducer.getChangeNumber()).thenReturn(0l).thenReturn(0l).thenReturn(1l);
         _synchronizer.refreshSplits(1l);
 
-        Mockito.verify(_splitCache, Mockito.times(3)).getChangeNumber();
+        Mockito.verify(_splitCacheProducer, Mockito.times(3)).getChangeNumber();
     }
 
     @Test

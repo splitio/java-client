@@ -1,7 +1,7 @@
 package io.split.engine.experiments;
 
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
-import io.split.storages.SplitCache;
+import io.split.storages.SplitCacheProducer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -28,7 +28,7 @@ public class SplitSynchronizationTask implements Closeable {
     private static final Logger _log = LoggerFactory.getLogger(SplitSynchronizationTask.class);
 
     private final AtomicReference<SplitFetcher> _splitFetcher = new AtomicReference<>();
-    private final AtomicReference<SplitCache> _splitCache = new AtomicReference<SplitCache>();
+    private final AtomicReference<SplitCacheProducer> _splitCacheProducer = new AtomicReference<SplitCacheProducer>();
     private final AtomicReference<ScheduledExecutorService> _executorService = new AtomicReference<>();
     private final AtomicLong _refreshEveryNSeconds;
     private final ScheduledExecutorService _scheduledExecutorService;
@@ -36,9 +36,9 @@ public class SplitSynchronizationTask implements Closeable {
 
     private ScheduledFuture<?> _scheduledFuture;
 
-    public SplitSynchronizationTask(SplitFetcher splitFetcher, SplitCache splitCache, long refreshEveryNSeconds) {
+    public SplitSynchronizationTask(SplitFetcher splitFetcher, SplitCacheProducer splitCachesplitCacheProducer, long refreshEveryNSeconds) {
         _splitFetcher.set(checkNotNull(splitFetcher));
-        _splitCache.set(checkNotNull(splitCache));
+        _splitCacheProducer.set(checkNotNull(splitCachesplitCacheProducer));
         checkArgument(refreshEveryNSeconds >= 0L);
         _refreshEveryNSeconds = new AtomicLong(refreshEveryNSeconds);
 
@@ -80,7 +80,7 @@ public class SplitSynchronizationTask implements Closeable {
         }
 
         if (_splitFetcher.get() != null) {
-            _splitCache.get().clear();
+            _splitCacheProducer.get().clear();
         }
 
         stop();

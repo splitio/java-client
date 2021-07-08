@@ -2,8 +2,8 @@ package io.split.telemetry.synchronizer;
 
 import io.split.TestHelper;
 import io.split.storages.SegmentCache;
+import io.split.storages.SplitCacheConsumer;
 import io.split.storages.memory.SegmentCacheInMemoryImpl;
-import io.split.storages.SplitCache;
 import io.split.client.ApiKeyCounter;
 import io.split.client.SplitClientConfig;
 import io.split.telemetry.domain.Config;
@@ -141,9 +141,9 @@ public class TelemetrySubmitterTest {
     private TelemetrySubmitter getTelemetrySynchronizer(CloseableHttpClient httpClient) throws URISyntaxException, InvocationTargetException, NoSuchMethodException, IllegalAccessException, IOException {
         TelemetryStorageConsumer consumer = Mockito.mock(InMemoryTelemetryStorage.class);
         TelemetryRuntimeProducer telemetryRuntimeProducer = Mockito.mock(TelemetryRuntimeProducer.class);
-        SplitCache splitCache = Mockito.mock(SplitCache.class);
+        SplitCacheConsumer splitCacheConsumer = Mockito.mock(SplitCacheConsumer.class);
         SegmentCache segmentCache = Mockito.mock(SegmentCacheInMemoryImpl.class);
-        TelemetrySubmitter telemetrySynchronizer = new TelemetrySubmitter(httpClient, URI.create(TELEMETRY_ENDPOINT), consumer, splitCache, segmentCache, telemetryRuntimeProducer, 0l);
+        TelemetrySubmitter telemetrySynchronizer = new TelemetrySubmitter(httpClient, URI.create(TELEMETRY_ENDPOINT), consumer, splitCacheConsumer, segmentCache, telemetryRuntimeProducer, 0l);
         return telemetrySynchronizer;
     }
 

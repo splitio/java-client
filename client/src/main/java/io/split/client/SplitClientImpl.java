@@ -1,6 +1,5 @@
 package io.split.client;
 
-import io.split.storages.SplitCache;
 import io.split.client.api.Key;
 import io.split.client.api.SplitResult;
 import io.split.client.dtos.Event;
@@ -16,6 +15,7 @@ import io.split.inputValidation.EventsValidator;
 import io.split.inputValidation.KeyValidator;
 import io.split.inputValidation.SplitNameValidator;
 import io.split.inputValidation.TrafficTypeValidator;
+import io.split.storages.SplitCacheConsumer;
 import io.split.telemetry.domain.enums.MethodEnum;
 import io.split.telemetry.storage.TelemetryConfigProducer;
 import io.split.telemetry.storage.TelemetryEvaluationProducer;
@@ -41,7 +41,7 @@ public final class SplitClientImpl implements SplitClient {
     private static final Logger _log = LoggerFactory.getLogger(SplitClientImpl.class);
 
     private final SplitFactory _container;
-    private final SplitCache _splitCache;
+    private final SplitCacheConsumer _splitCacheConsumer;
     private final ImpressionsManager _impressionManager;
     private final SplitClientConfig _config;
     private final EventsStorageProducer _eventsStorageProducer;
@@ -51,7 +51,7 @@ public final class SplitClientImpl implements SplitClient {
     private final TelemetryConfigProducer _telemetryConfigProducer;
 
     public SplitClientImpl(SplitFactory container,
-                           SplitCache splitCache,
+                           SplitCacheConsumer splitCacheConsumer,
                            ImpressionsManager impressionManager,
                            EventsStorageProducer eventsStorageProducer,
                            SplitClientConfig config,
@@ -60,7 +60,7 @@ public final class SplitClientImpl implements SplitClient {
                            TelemetryEvaluationProducer telemetryEvaluationProducer,
                            TelemetryConfigProducer telemetryConfigProducer) {
         _container = container;
-        _splitCache = checkNotNull(splitCache);
+        _splitCacheConsumer = checkNotNull(splitCacheConsumer);
         _impressionManager = checkNotNull(impressionManager);
         _eventsStorageProducer = eventsStorageProducer;
         _config = config;
@@ -154,7 +154,7 @@ public final class SplitClientImpl implements SplitClient {
         }
 
         // Traffic Type validations
-        Optional<String> trafficTypeResult = TrafficTypeValidator.isValid(event.trafficTypeName, _splitCache, "track");
+        Optional<String> trafficTypeResult = TrafficTypeValidator.isValid(event.trafficTypeName, _splitCacheConsumer, "track");
         if (!trafficTypeResult.isPresent()) {
             return false;
         }

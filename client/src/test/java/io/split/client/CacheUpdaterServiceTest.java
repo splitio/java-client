@@ -18,7 +18,7 @@ public class CacheUpdaterServiceTest {
     @Test
     public void testCacheUpdate() {
         SplitCache splitCache = new InMemoryCacheImp();
-        CacheUpdaterService cacheUpdaterService = new CacheUpdaterService(splitCache);
+        CacheUpdaterService cacheUpdaterService = new CacheUpdaterService(splitCache, splitCache);
         cacheUpdaterService.updateCache(getMap());
         Assert.assertNotNull(splitCache.get(MY_FEATURE));
     }
