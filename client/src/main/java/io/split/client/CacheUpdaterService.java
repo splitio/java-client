@@ -21,7 +21,7 @@ import java.util.Map;
 import java.util.Comparator;
 import java.util.stream.Collectors;
 
-import static com.google.gson.internal.$Gson$Preconditions.checkNotNull;
+import static com.google.common.base.Preconditions.checkNotNull;
 
 public final  class CacheUpdaterService {
 

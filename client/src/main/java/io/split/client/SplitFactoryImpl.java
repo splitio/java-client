@@ -178,7 +178,6 @@ public class SplitFactoryImpl implements SplitFactory {
                 _splitFetcher,
                 _segmentSynchronizationTaskImp,
                 _splitCache,
-                _splitCache,
                 config.authServiceURL(),
                 _httpclient,
                 config.streamingServiceURL(),

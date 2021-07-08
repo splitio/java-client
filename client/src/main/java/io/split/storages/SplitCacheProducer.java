@@ -2,7 +2,7 @@ package io.split.storages;
 
 import io.split.engine.experiments.ParsedSplit;
 
-public interface SplitCacheProducer {
+public interface SplitCacheProducer extends  SplitCacheCommons{
     void put(ParsedSplit split);
     boolean remove(String name);
     void setChangeNumber(long changeNumber);

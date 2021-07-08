@@ -43,7 +43,7 @@ public class SynchronizerTest {
         _segmentCache = Mockito.mock(SegmentCache.class);
         _gates = Mockito.mock(SDKReadinessGates.class);
 
-        _synchronizer = new SynchronizerImp(_refreshableSplitFetcherTask, _splitFetcher, _segmentFetcher, _splitCacheConsumer, _splitCacheProducer, _segmentCache, 50, 10, 5, false, _gates);
+        _synchronizer = new SynchronizerImp(_refreshableSplitFetcherTask, _splitFetcher, _segmentFetcher, _splitCacheProducer, _segmentCache, 50, 10, 5, false, _gates);
     }
 
     @Test
@@ -75,10 +75,10 @@ public class SynchronizerTest {
 
     @Test
     public void streamingRetryOnSplit() {
-        when(_splitCacheConsumer.getChangeNumber()).thenReturn(0l).thenReturn(0l).thenReturn(1l);
+        when(_splitCacheProducer.getChangeNumber()).thenReturn(0l).thenReturn(0l).thenReturn(1l);
         _synchronizer.refreshSplits(1l);
 
-        Mockito.verify(_splitCacheConsumer, Mockito.times(3)).getChangeNumber();
+        Mockito.verify(_splitCacheProducer, Mockito.times(3)).getChangeNumber();
     }
 
     @Test
@@ -98,7 +98,6 @@ public class SynchronizerTest {
         Synchronizer imp = new SynchronizerImp(_refreshableSplitFetcherTask,
                 _splitFetcher,
                 _segmentFetcher,
-                cache,
                 cache,
                 _segmentCache,
                 50,
@@ -134,7 +133,6 @@ public class SynchronizerTest {
         Synchronizer imp = new SynchronizerImp(_refreshableSplitFetcherTask,
                 _splitFetcher,
                 _segmentFetcher,
-                cache,
                 cache,
                 _segmentCache,
                 50,
@@ -193,7 +191,6 @@ public class SynchronizerTest {
         Synchronizer imp = new SynchronizerImp(_refreshableSplitFetcherTask,
                 _splitFetcher,
                 _segmentFetcher,
-                cache,
                 cache,
                 _segmentCache,
                 50,
