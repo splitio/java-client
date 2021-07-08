@@ -2,10 +2,10 @@ package io.split.engine.evaluator;
 
 import io.split.client.dtos.ConditionType;
 import io.split.client.dtos.Partition;
-import io.split.storages.SplitCache;
 import io.split.engine.experiments.ParsedCondition;
 import io.split.engine.experiments.ParsedSplit;
 import io.split.engine.matchers.CombiningMatcher;
+import io.split.storages.SplitCacheConsumer;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mockito;
@@ -27,7 +27,7 @@ public class EvaluatorTest {
     private static final String TRAFFIC_TYPE_VALUE = "tt";
     private static final String TREATMENT_VALUE = "treatment_test";
 
-    private SplitCache _splitCache;
+    private SplitCacheConsumer splitCacheConsumer;
     private Evaluator _evaluator;
     private CombiningMatcher _matcher;
     private Map<String, String> _configurations;
@@ -36,8 +36,8 @@ public class EvaluatorTest {
 
     @Before
     public void before() {
-        _splitCache = Mockito.mock(SplitCache.class);
-        _evaluator = new EvaluatorImp(_splitCache);
+        splitCacheConsumer = Mockito.mock(SplitCacheConsumer.class);
+        _evaluator = new EvaluatorImp(splitCacheConsumer);
         _matcher = Mockito.mock(CombiningMatcher.class);
 
         _configurations = new HashMap<>();
@@ -47,7 +47,7 @@ public class EvaluatorTest {
 
     @Test
     public void evaluateWhenSplitNameDoesNotExistReturnControl() {
-        Mockito.when(_splitCache.get(SPLIT_NAME)).thenReturn(null);
+        Mockito.when(splitCacheConsumer.get(SPLIT_NAME)).thenReturn(null);
 
         EvaluatorImp.TreatmentLabelAndChangeNumber result = _evaluator.evaluateFeature(MATCHING_KEY, BUCKETING_KEY, SPLIT_NAME, null);
 
@@ -58,7 +58,7 @@ public class EvaluatorTest {
     @Test
     public void evaluateWhenSplitIsKilledReturnDefaultTreatment() {
         ParsedSplit split = ParsedSplit.createParsedSplitForTests(SPLIT_NAME, 0, true, DEFAULT_TREATMENT_VALUE, _conditions, TRAFFIC_TYPE_VALUE, CHANGE_NUMBER, 2);
-        Mockito.when(_splitCache.get(SPLIT_NAME)).thenReturn(split);
+        Mockito.when(splitCacheConsumer.get(SPLIT_NAME)).thenReturn(split);
 
         EvaluatorImp.TreatmentLabelAndChangeNumber result = _evaluator.evaluateFeature(MATCHING_KEY, BUCKETING_KEY, SPLIT_NAME, null);
 
@@ -70,7 +70,7 @@ public class EvaluatorTest {
     @Test
     public void evaluateWithoutConditionsReturnDefaultTreatment() {
         ParsedSplit split = ParsedSplit.createParsedSplitForTests(SPLIT_NAME, 0, false, DEFAULT_TREATMENT_VALUE, _conditions, TRAFFIC_TYPE_VALUE, CHANGE_NUMBER, 2);
-        Mockito.when(_splitCache.get(SPLIT_NAME)).thenReturn(split);
+        Mockito.when(splitCacheConsumer.get(SPLIT_NAME)).thenReturn(split);
 
         EvaluatorImp.TreatmentLabelAndChangeNumber result = _evaluator.evaluateFeature(MATCHING_KEY, BUCKETING_KEY, SPLIT_NAME, null);
 
@@ -90,7 +90,7 @@ public class EvaluatorTest {
 
         ParsedSplit split = new ParsedSplit(SPLIT_NAME, 0, false, DEFAULT_TREATMENT_VALUE, _conditions, TRAFFIC_TYPE_VALUE, CHANGE_NUMBER, 10, 12, 2, _configurations);
 
-        Mockito.when(_splitCache.get(SPLIT_NAME)).thenReturn(split);
+        Mockito.when(splitCacheConsumer.get(SPLIT_NAME)).thenReturn(split);
         Mockito.when(condition.matcher().match(MATCHING_KEY, BUCKETING_KEY, null, _evaluator)).thenReturn(true);
 
         EvaluatorImp.TreatmentLabelAndChangeNumber result = _evaluator.evaluateFeature(MATCHING_KEY, BUCKETING_KEY, SPLIT_NAME, null);
@@ -111,7 +111,7 @@ public class EvaluatorTest {
 
         ParsedSplit split = new ParsedSplit(SPLIT_NAME, 0, false, DEFAULT_TREATMENT_VALUE, _conditions, TRAFFIC_TYPE_VALUE, CHANGE_NUMBER, 60, 18, 2, _configurations);
 
-        Mockito.when(_splitCache.get(SPLIT_NAME)).thenReturn(split);
+        Mockito.when(splitCacheConsumer.get(SPLIT_NAME)).thenReturn(split);
         Mockito.when(condition.matcher().match(MATCHING_KEY, BUCKETING_KEY, null, _evaluator)).thenReturn(true);
 
         EvaluatorImp.TreatmentLabelAndChangeNumber result = _evaluator.evaluateFeature(MATCHING_KEY, BUCKETING_KEY, SPLIT_NAME, null);
@@ -132,7 +132,7 @@ public class EvaluatorTest {
 
         ParsedSplit split = new ParsedSplit(SPLIT_NAME, 0, false, DEFAULT_TREATMENT_VALUE, _conditions, TRAFFIC_TYPE_VALUE, CHANGE_NUMBER, 60, 18, 2, _configurations);
 
-        Mockito.when(_splitCache.get(SPLIT_NAME)).thenReturn(split);
+        Mockito.when(splitCacheConsumer.get(SPLIT_NAME)).thenReturn(split);
         Mockito.when(condition.matcher().match(MATCHING_KEY, BUCKETING_KEY, null, _evaluator)).thenReturn(true);
 
         EvaluatorImp.TreatmentLabelAndChangeNumber result = _evaluator.evaluateFeature(MATCHING_KEY, BUCKETING_KEY, SPLIT_NAME, null);

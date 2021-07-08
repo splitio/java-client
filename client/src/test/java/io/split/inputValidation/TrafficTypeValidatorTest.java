@@ -1,6 +1,6 @@
 package io.split.inputValidation;
 
-import io.split.storages.SplitCache;
+import io.split.storages.SplitCacheConsumer;
 import org.junit.Assert;
 import org.junit.Test;
 import org.mockito.Mockito;
@@ -11,25 +11,25 @@ public class TrafficTypeValidatorTest {
 
     @Test
     public void isValidWorks() {
-        SplitCache splitCache = Mockito.mock(SplitCache.class);
+        SplitCacheConsumer splitCacheConsumer = Mockito.mock(SplitCacheConsumer.class);
 
-        Optional<String> result = TrafficTypeValidator.isValid("traffic_type_test", splitCache, "test");
+        Optional<String> result = TrafficTypeValidator.isValid("traffic_type_test", splitCacheConsumer, "test");
         Assert.assertTrue(result.isPresent());
         Assert.assertEquals("traffic_type_test", result.get());
 
         // when tt have upper case
-        result = TrafficTypeValidator.isValid("trafficTypeTest", splitCache, "test");
+        result = TrafficTypeValidator.isValid("trafficTypeTest", splitCacheConsumer, "test");
 
         Assert.assertTrue(result.isPresent());
         Assert.assertEquals("traffictypetest", result.get());
 
         // when tt is null
-        result = TrafficTypeValidator.isValid(null, splitCache, "test");
+        result = TrafficTypeValidator.isValid(null, splitCacheConsumer, "test");
 
         Assert.assertFalse(result.isPresent());
 
         // when tt is empty
-        result = TrafficTypeValidator.isValid("", splitCache, "test");
+        result = TrafficTypeValidator.isValid("", splitCacheConsumer, "test");
 
         Assert.assertFalse(result.isPresent());
     }

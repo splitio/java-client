@@ -3,7 +3,8 @@ package io.split.engine.experiments;
 import io.split.client.dtos.Split;
 import io.split.client.dtos.SplitChange;
 import io.split.client.dtos.Status;
-import io.split.storages.SplitCache;
+import io.split.storages.SplitCacheConsumer;
+import io.split.storages.SplitCacheProducer;
 import io.split.telemetry.domain.enums.LastSynchronizationRecordsEnum;
 import io.split.telemetry.storage.TelemetryRuntimeProducer;
 import io.split.engine.common.FetchOptions;
@@ -23,7 +24,8 @@ public class SplitFetcherImp implements SplitFetcher {
 
     private final SplitParser _parser;
     private final SplitChangeFetcher _splitChangeFetcher;
-    private final SplitCache _splitCache;
+    private final SplitCacheConsumer _splitCacheConsumer;
+    private final SplitCacheProducer _splitCacheProducer;
     private final Object _lock = new Object();
     private final TelemetryRuntimeProducer _telemetryRuntimeProducer;
 
@@ -37,22 +39,23 @@ public class SplitFetcherImp implements SplitFetcher {
      * an ARCHIVED split is received, we know if we need to remove a traffic type from the multiset.
      */
 
-    public SplitFetcherImp(SplitChangeFetcher splitChangeFetcher, SplitParser parser, SplitCache splitCache, TelemetryRuntimeProducer telemetryRuntimeProducer) {
+    public SplitFetcherImp(SplitChangeFetcher splitChangeFetcher, SplitParser parser, SplitCacheConsumer splitCacheConsumer, SplitCacheProducer splitCacheProducer, TelemetryRuntimeProducer telemetryRuntimeProducer) {
         _splitChangeFetcher = checkNotNull(splitChangeFetcher);
         _parser = checkNotNull(parser);
-        _splitCache = checkNotNull(splitCache);
+        _splitCacheConsumer = checkNotNull(splitCacheConsumer);
+        _splitCacheProducer = checkNotNull(splitCacheProducer);
         _telemetryRuntimeProducer = checkNotNull(telemetryRuntimeProducer);
     }
 
     @Override
     public void forceRefresh(FetchOptions options) {
         _log.debug("Force Refresh splits starting ...");
-        final long INITIAL_CN = _splitCache.getChangeNumber();
+        final long INITIAL_CN = _splitCacheProducer.getChangeNumber();
         try {
             while (true) {
-                long start = _splitCache.getChangeNumber();
+                long start = _splitCacheProducer.getChangeNumber();
                 runWithoutExceptionHandling(options);
-                long end = _splitCache.getChangeNumber();
+                long end = _splitCacheProducer.getChangeNumber();
 
                 // If the previous execution was the first one, clear the `cdnBypass` flag
                 // for the next fetches. (This will clear a local copy of the fetch options,
@@ -80,32 +83,32 @@ public class SplitFetcherImp implements SplitFetcher {
 
     private void runWithoutExceptionHandling(FetchOptions options) throws InterruptedException {
         long initTime = System.currentTimeMillis();
-        SplitChange change = _splitChangeFetcher.fetch(_splitCache.getChangeNumber(), options);
+        SplitChange change = _splitChangeFetcher.fetch(_splitCacheProducer.getChangeNumber(), options);
 
         if (change == null) {
             throw new IllegalStateException("SplitChange was null");
         }
 
-        if (change.till == _splitCache.getChangeNumber()) {
+        if (change.till == _splitCacheProducer.getChangeNumber()) {
             // no change.
             return;
         }
 
-        if (change.since != _splitCache.getChangeNumber() || change.till < _splitCache.getChangeNumber()) {
+        if (change.since != _splitCacheProducer.getChangeNumber() || change.till < _splitCacheProducer.getChangeNumber()) {
             // some other thread may have updated the shared state. exit
             return;
         }
 
         if (change.splits.isEmpty()) {
             // there are no changes. weird!
-            _splitCache.setChangeNumber(change.till);
+            _splitCacheProducer.setChangeNumber(change.till);
             return;
         }
 
         synchronized (_lock) {
             // check state one more time.
-            if (change.since != _splitCache.getChangeNumber()
-                    || change.till < _splitCache.getChangeNumber()) {
+            if (change.since != _splitCacheProducer.getChangeNumber()
+                    || change.till < _splitCacheProducer.getChangeNumber()) {
                 // some other thread may have updated the shared state. exit
                 return;
             }
@@ -117,7 +120,7 @@ public class SplitFetcherImp implements SplitFetcher {
 
                 if (split.status != Status.ACTIVE) {
                     // archive.
-                    _splitCache.remove(split.name);
+                    _splitCacheProducer.remove(split.name);
                     continue;
                 }
 
@@ -125,7 +128,7 @@ public class SplitFetcherImp implements SplitFetcher {
                 if (parsedSplit == null) {
                     _log.info("We could not parse the experiment definition for: " + split.name + " so we are removing it completely to be careful");
 
-                    _splitCache.remove(split.name);
+                    _splitCacheProducer.remove(split.name);
                     _log.debug("Deleted feature: " + split.name);
 
                     continue;
@@ -137,23 +140,23 @@ public class SplitFetcherImp implements SplitFetcher {
                 // If it's deleted & recreated, the old one should be decreased and the new one increased.
                 // To handle both cases, we simply delete the old one if the split is present.
                 // The new one is always increased.
-                ParsedSplit current = _splitCache.get(split.name);
+                ParsedSplit current = _splitCacheConsumer.get(split.name); // TODO (lecheverz): implement UPDATE method at Split Cache
                 if (current != null) {
-                    _splitCache.remove(split.name);
+                    _splitCacheProducer.remove(split.name);
                 }
 
-                _splitCache.put(parsedSplit);
+                _splitCacheProducer.put(parsedSplit);
                 _log.debug("Updated feature: " + parsedSplit.feature());
             }
 
-            _splitCache.setChangeNumber(change.till);
+            _splitCacheProducer.setChangeNumber(change.till);
             _telemetryRuntimeProducer.recordSuccessfulSync(LastSynchronizationRecordsEnum.SPLITS, System.currentTimeMillis());
         }
     }
     @Override
     public boolean fetchAll(FetchOptions options) {
         _log.debug("Fetch splits starting ...");
-        long start = _splitCache.getChangeNumber();
+        long start = _splitCacheProducer.getChangeNumber();
         try {
             runWithoutExceptionHandling(options);
             return true;
@@ -169,7 +172,7 @@ public class SplitFetcherImp implements SplitFetcher {
             return false;
         } finally {
             if (_log.isDebugEnabled()) {
-                _log.debug("split fetch before: " + start + ", after: " + _splitCache.getChangeNumber());
+                _log.debug("split fetch before: " + start + ", after: " + _splitCacheProducer.getChangeNumber());
             }
         }
     }
