@@ -17,7 +17,7 @@ public interface SegmentCacheConsumer extends SegmentCacheCommons{
      * return every segment
      * @return
      */
-    List<SegmentImp> getAll();
+    long getSegmentCount();
 
     /**
      * return key count

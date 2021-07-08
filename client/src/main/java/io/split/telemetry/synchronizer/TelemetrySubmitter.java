@@ -79,7 +79,7 @@ public class TelemetrySubmitter implements TelemetrySynchronizer{
         stats.set_impressionsDeduped(_teleTelemetryStorageConsumer.getImpressionsStats(ImpressionsDataTypeEnum.IMPRESSIONS_DEDUPED));
         stats.set_impressionsDropped(_teleTelemetryStorageConsumer.getImpressionsStats(ImpressionsDataTypeEnum.IMPRESSIONS_DROPPED));
         stats.set_splitCount(_splitCacheConsumer.getAll().stream().count());
-        stats.set_segmentCount(_segmentCacheConsumer.getAll().stream().count());
+        stats.set_segmentCount(_segmentCacheConsumer.getSegmentCount());
         stats.set_segmentKeyCount(_segmentCacheConsumer.getKeyCount());
         stats.set_sessionLengthMs(_teleTelemetryStorageConsumer.getSessionLength());
         stats.set_eventsQueued(_teleTelemetryStorageConsumer.getEventStats(EventsDataRecordsEnum.EVENTS_QUEUED));

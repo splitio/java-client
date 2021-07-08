@@ -217,7 +217,7 @@ public class SplitFactoryImpl implements SplitFactory {
             _log.info("Shutdown called for split");
             try {
                 long splitCount = _splitCache.getAll().stream().count();
-                long segmentCount = _segmentCache.getAll().stream().count();
+                long segmentCount = _segmentCache.getSegmentCount();
                 long segmentKeyCount = _segmentCache.getKeyCount();
                 _impressionsManager.close();
                 _log.info("Successful shutdown of impressions manager");
