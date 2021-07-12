@@ -1,7 +1,6 @@
 package io.split.engine.experiments;
 
 import com.google.common.collect.Lists;
-import io.split.storages.SegmentCache;
 import io.split.client.dtos.Condition;
 import io.split.client.dtos.Matcher;
 import io.split.client.dtos.MatcherGroup;
@@ -28,6 +27,7 @@ import io.split.engine.matchers.strings.RegularExpressionMatcher;
 import io.split.engine.matchers.strings.StartsWithAnyOfMatcher;
 import io.split.engine.matchers.strings.WhitelistMatcher;
 import io.split.engine.segments.SegmentSynchronizationTask;
+import io.split.storages.SegmentCacheConsumer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -46,12 +46,12 @@ public final class SplitParser {
     private static final Logger _log = LoggerFactory.getLogger(SplitParser.class);
 
     private final SegmentSynchronizationTask _segmentSynchronizationTask;
-    private final SegmentCache _segmentCache;
+    private final SegmentCacheConsumer _segmentCacheConsumer;
 
     public SplitParser(SegmentSynchronizationTask segmentSynchronizationTaskImp,
-                       SegmentCache segmentCache) {
+                       SegmentCacheConsumer segmentCacheConsumer) {
         _segmentSynchronizationTask = checkNotNull(segmentSynchronizationTaskImp);
-        _segmentCache = checkNotNull(segmentCache);
+        _segmentCacheConsumer = checkNotNull(segmentCacheConsumer);
     }
 
     public ParsedSplit parse(Split split) {
@@ -103,7 +103,7 @@ public final class SplitParser {
                 checkNotNull(matcher.userDefinedSegmentMatcherData);
                 String segmentName = matcher.userDefinedSegmentMatcherData.segmentName;
                 _segmentSynchronizationTask.initializeSegment(segmentName);
-                delegate = new UserDefinedSegmentMatcher(_segmentCache, segmentName);
+                delegate = new UserDefinedSegmentMatcher(_segmentCacheConsumer, segmentName);
                 break;
             case WHITELIST:
                 checkNotNull(matcher.whitelistMatcherData);

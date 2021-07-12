@@ -1,7 +1,7 @@
 package io.split.engine.matchers;
 
-import io.split.storages.SegmentCache;
 import io.split.engine.evaluator.Evaluator;
+import io.split.storages.SegmentCacheConsumer;
 
 import java.util.Map;
 
@@ -16,10 +16,10 @@ import static com.google.common.base.Preconditions.checkNotNull;
  */
 public class UserDefinedSegmentMatcher implements Matcher {
     private final String _segmentName;
-    private final SegmentCache _segmentCache;
+    private final SegmentCacheConsumer _segmentCacheConsumer;
 
-    public UserDefinedSegmentMatcher(SegmentCache segmentCache, String segmentName) {
-        _segmentCache = checkNotNull(segmentCache);
+    public UserDefinedSegmentMatcher(SegmentCacheConsumer segmentCacheConsumer, String segmentName) {
+        _segmentCacheConsumer = checkNotNull(segmentCacheConsumer);
         _segmentName = checkNotNull(segmentName);
     }
 
@@ -30,7 +30,7 @@ public class UserDefinedSegmentMatcher implements Matcher {
             return false;
         }
 
-        return _segmentCache.isInSegment(_segmentName, (String) matchValue);
+        return _segmentCacheConsumer.isInSegment(_segmentName, (String) matchValue);
     }
 
     @Override

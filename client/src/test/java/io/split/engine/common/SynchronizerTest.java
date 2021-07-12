@@ -1,10 +1,7 @@
 package io.split.engine.common;
 
-import io.split.storages.SplitCache;
-import io.split.storages.SplitCacheConsumer;
-import io.split.storages.SplitCacheProducer;
+import io.split.storages.*;
 import io.split.storages.memory.InMemoryCacheImp;
-import io.split.storages.SegmentCache;
 import io.split.engine.SDKReadinessGates;
 import io.split.engine.experiments.SplitFetcherImp;
 import io.split.engine.experiments.SplitSynchronizationTask;
@@ -30,7 +27,7 @@ public class SynchronizerTest {
     private SplitCacheConsumer _splitCacheConsumer;
     private SplitCacheProducer _splitCacheProducer;
     private Synchronizer _synchronizer;
-    private SegmentCache _segmentCache;
+    private SegmentCacheProducer _segmentCacheProducer;
     private SDKReadinessGates _gates;
 
     @Before
@@ -40,10 +37,10 @@ public class SynchronizerTest {
         _splitFetcher = Mockito.mock(SplitFetcherImp.class);
         _splitCacheConsumer = Mockito.mock(SplitCacheConsumer.class);
         _splitCacheProducer = Mockito.mock(SplitCacheProducer.class);
-        _segmentCache = Mockito.mock(SegmentCache.class);
+        _segmentCacheProducer = Mockito.mock(SegmentCache.class);
         _gates = Mockito.mock(SDKReadinessGates.class);
 
-        _synchronizer = new SynchronizerImp(_refreshableSplitFetcherTask, _splitFetcher, _segmentFetcher, _splitCacheProducer, _segmentCache, 50, 10, 5, false, _gates);
+        _synchronizer = new SynchronizerImp(_refreshableSplitFetcherTask, _splitFetcher, _segmentFetcher, _splitCacheProducer, _segmentCacheProducer, 50, 10, 5, false, _gates);
     }
 
     @Test
@@ -85,10 +82,10 @@ public class SynchronizerTest {
     public void streamingRetryOnSegment() {
         SegmentFetcher fetcher = Mockito.mock(SegmentFetcher.class);
         when(_segmentFetcher.getFetcher(Mockito.anyString())).thenReturn(fetcher);
-        when(_segmentCache.getChangeNumber(Mockito.anyString())).thenReturn(0l).thenReturn(0l).thenReturn(1l);
+        when(_segmentCacheProducer.getChangeNumber(Mockito.anyString())).thenReturn(0l).thenReturn(0l).thenReturn(1l);
         _synchronizer.refreshSegment("Segment",1l);
 
-        Mockito.verify(_segmentCache, Mockito.times(3)).getChangeNumber(Mockito.anyString());
+        Mockito.verify(_segmentCacheProducer, Mockito.times(3)).getChangeNumber(Mockito.anyString());
     }
 
     @Test
@@ -99,7 +96,7 @@ public class SynchronizerTest {
                 _splitFetcher,
                 _segmentFetcher,
                 cache,
-                _segmentCache,
+                _segmentCacheProducer,
                 50,
                 3,
                 1,
@@ -134,7 +131,7 @@ public class SynchronizerTest {
                 _splitFetcher,
                 _segmentFetcher,
                 cache,
-                _segmentCache,
+                _segmentCacheProducer,
                 50,
                 3,
                 1,
@@ -192,7 +189,7 @@ public class SynchronizerTest {
                 _splitFetcher,
                 _segmentFetcher,
                 cache,
-                _segmentCache,
+                _segmentCacheProducer,
                 50,
                 3,
                 1,

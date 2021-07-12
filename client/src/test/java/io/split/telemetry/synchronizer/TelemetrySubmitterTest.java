@@ -1,9 +1,8 @@
 package io.split.telemetry.synchronizer;
 
 import io.split.TestHelper;
-import io.split.storages.SegmentCache;
+import io.split.storages.SegmentCacheConsumer;
 import io.split.storages.SplitCacheConsumer;
-import io.split.storages.memory.SegmentCacheInMemoryImpl;
 import io.split.client.ApiKeyCounter;
 import io.split.client.SplitClientConfig;
 import io.split.telemetry.domain.Config;
@@ -142,8 +141,8 @@ public class TelemetrySubmitterTest {
         TelemetryStorageConsumer consumer = Mockito.mock(InMemoryTelemetryStorage.class);
         TelemetryRuntimeProducer telemetryRuntimeProducer = Mockito.mock(TelemetryRuntimeProducer.class);
         SplitCacheConsumer splitCacheConsumer = Mockito.mock(SplitCacheConsumer.class);
-        SegmentCache segmentCache = Mockito.mock(SegmentCacheInMemoryImpl.class);
-        TelemetrySubmitter telemetrySynchronizer = new TelemetrySubmitter(httpClient, URI.create(TELEMETRY_ENDPOINT), consumer, splitCacheConsumer, segmentCache, telemetryRuntimeProducer, 0l);
+        SegmentCacheConsumer segmentCacheConsumer = Mockito.mock(SegmentCacheConsumer.class);
+        TelemetrySubmitter telemetrySynchronizer = new TelemetrySubmitter(httpClient, URI.create(TELEMETRY_ENDPOINT), consumer, splitCacheConsumer, segmentCacheConsumer, telemetryRuntimeProducer, 0l);
         return telemetrySynchronizer;
     }
 
