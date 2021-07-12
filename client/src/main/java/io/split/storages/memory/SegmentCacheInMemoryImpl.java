@@ -63,8 +63,8 @@ public class SegmentCacheInMemoryImpl implements SegmentCache {
     }
 
     @Override
-    public List<SegmentImp> getAll() {
-        return _segments.values().stream().collect(Collectors.toList());
+    public long getSegmentCount() {
+        return _segments.values().size();
     }
 
     @Override

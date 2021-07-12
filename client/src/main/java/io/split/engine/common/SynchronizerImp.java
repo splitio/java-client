@@ -2,12 +2,12 @@ package io.split.engine.common;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
-import io.split.storages.SegmentCache;
 import io.split.engine.SDKReadinessGates;
 import io.split.engine.experiments.SplitFetcher;
 import io.split.engine.experiments.SplitSynchronizationTask;
 import io.split.engine.segments.SegmentFetcher;
 import io.split.engine.segments.SegmentSynchronizationTask;
+import io.split.storages.SegmentCacheProducer;
 import io.split.storages.SplitCacheProducer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -31,7 +31,7 @@ public class SynchronizerImp implements Synchronizer {
     private final SplitFetcher _splitFetcher;
     private final SegmentSynchronizationTask _segmentSynchronizationTaskImp;
     private final SplitCacheProducer _splitCacheProducer;
-    private final SegmentCache _segmentCache;
+    private final SegmentCacheProducer segmentCacheProducer;
     private final int _onDemandFetchRetryDelayMs;
     private final int _onDemandFetchMaxRetries;
     private final int _failedAttemptsBeforeLogging;
@@ -43,7 +43,7 @@ public class SynchronizerImp implements Synchronizer {
                            SplitFetcher splitFetcher,
                            SegmentSynchronizationTask segmentSynchronizationTaskImp,
                            SplitCacheProducer splitCacheProducer,
-                           SegmentCache segmentCache,
+                           SegmentCacheProducer segmentCacheProducer,
                            int onDemandFetchRetryDelayMs,
                            int onDemandFetchMaxRetries,
                            int failedAttemptsBeforeLogging,
@@ -53,7 +53,7 @@ public class SynchronizerImp implements Synchronizer {
         _splitFetcher = checkNotNull(splitFetcher);
         _segmentSynchronizationTaskImp = checkNotNull(segmentSynchronizationTaskImp);
         _splitCacheProducer = checkNotNull(splitCacheProducer);
-        _segmentCache = checkNotNull(segmentCache);
+        this.segmentCacheProducer = checkNotNull(segmentCacheProducer);
         _onDemandFetchRetryDelayMs = checkNotNull(onDemandFetchRetryDelayMs);
         _cdnResponseHeadersLogging = cdnResponseHeadersLogging;
         _onDemandFetchMaxRetries = onDemandFetchMaxRetries;
@@ -189,7 +189,7 @@ public class SynchronizerImp implements Synchronizer {
         while(true) {
             remainingAttempts--;
             fetcher.fetch(opts);
-            if (targetChangeNumber <= _segmentCache.getChangeNumber(segmentName)) {
+            if (targetChangeNumber <= segmentCacheProducer.getChangeNumber(segmentName)) {
                 return new SyncResult(true, remainingAttempts);
             } else if (remainingAttempts <= 0) {
                 return new SyncResult(false, remainingAttempts);
@@ -207,7 +207,7 @@ public class SynchronizerImp implements Synchronizer {
     @Override
     public void refreshSegment(String segmentName, long targetChangeNumber) {
 
-        if (targetChangeNumber <= _segmentCache.getChangeNumber(segmentName)) {
+        if (targetChangeNumber <= segmentCacheProducer.getChangeNumber(segmentName)) {
             return;
         }
 

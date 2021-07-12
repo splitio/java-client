@@ -65,7 +65,7 @@ public class SegmentCacheInMemoryImplTest extends TestCase {
         SegmentCacheInMemoryImpl segmentCacheInMemory = new SegmentCacheInMemoryImpl();
         segmentCacheInMemory.updateSegment(SEGMENT_NAME,new ArrayList<>(), new ArrayList<>());
         segmentCacheInMemory.updateSegment(FAKE_SEGMENT_NAME,new ArrayList<>(), new ArrayList<>());
-        Assert.assertEquals(2, segmentCacheInMemory.getAll().stream().count());
+        Assert.assertEquals(2, segmentCacheInMemory.getSegmentCount());
     }
 
     @Test
