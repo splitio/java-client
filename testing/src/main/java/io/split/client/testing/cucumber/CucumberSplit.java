@@ -16,7 +16,7 @@ import java.util.regex.Pattern;
  * configure a {@link SplitClientForTest} instance.
  * </p>
  * <p>
- * To use it, define a <a href="">Before Hook</a> that invokes the {@link CucumberSplit#configureSplit(SplitClientForTest, Scenario)}
+ * To use it, define a <a href="https://cucumber.io/docs/cucumber/api/#hooks">Before Hook</a> that invokes the {@link CucumberSplit#configureSplit(SplitClientForTest, Scenario)}
  * method. Example:
  * </p>
  *
