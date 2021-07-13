@@ -1,6 +1,0 @@
-package io.split.storages.pluggable;
-
-import io.split.storages.SegmentCache;
-
-public interface SegmentStorageProducer extends SegmentCache {
-}
