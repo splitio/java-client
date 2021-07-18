@@ -1,7 +1,7 @@
 # This tag is inherited by all the scenarios, setting the "cappuccino" split feature to "off" by default.
 @split[cappuccino:off]
 Feature: Make Coffee
-  The scenarios in this feature describes how the coffee machine works.
+  The scenarios in this feature file describes how the coffee machine works.
 
   Scenario: Empty machine
     Given the machine is empty
