@@ -7,12 +7,14 @@ import org.junit.Before;
 import org.junit.Test;
 
 import java.util.*;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 public class InMemoryCacheTest {
-    private SplitCache _cache;
+    private InMemoryCacheImp _cache;
 
     @Before
     public void before() {
@@ -92,7 +94,7 @@ public class InMemoryCacheTest {
         names.add("split_name_2");
         names.add("split_name_3");
 
-        Collection<ParsedSplit> result = _cache.getMany(names);
+        Collection<ParsedSplit> result = _cache.fetchMany(names);
         Assert.assertEquals(2, result.size());
     }
 
@@ -118,5 +120,30 @@ public class InMemoryCacheTest {
 
     private ParsedSplit getParsedSplit(String splitName) {
         return ParsedSplit.createParsedSplitForTests(splitName, 0, false, "default_treatment", new ArrayList<>(), "tt", 123, 2);
+    }
+
+    @Test
+    public void testPutMany() {
+        _cache.putMany(Stream.of(getParsedSplit("split_name_1"),getParsedSplit("split_name_2"),getParsedSplit("split_name_3"),getParsedSplit("split_name_4")).collect(Collectors.toList()), 120l);
+        List<String> names = Stream.of("split_name_1","split_name_2","split_name_3","split_name_4").collect(Collectors.toList());
+
+        Collection<ParsedSplit> result = _cache.fetchMany(names);
+        Assert.assertEquals(4, result.size());
+        Assert.assertEquals(120l, _cache.getChangeNumber());
+    }
+
+    @Test
+    public void testIncreaseTrafficType() {
+
+        _cache.put(ParsedSplit.createParsedSplitForTests("splitName_1", 0, false, "default_treatment", new ArrayList<>(), "tt", 123, 2));
+        _cache.increaseTrafficType("tt_2");
+        assertTrue(_cache.trafficTypeExists("tt_2"));
+    }
+
+    @Test
+    public void testDecreaseTrafficType() {
+        _cache.put(ParsedSplit.createParsedSplitForTests("splitName_1", 0, false, "default_treatment", new ArrayList<>(), "tt", 123, 2));
+        _cache.decreaseTrafficType("tt");
+        assertFalse(_cache.trafficTypeExists("tt_2"));
     }
 }
