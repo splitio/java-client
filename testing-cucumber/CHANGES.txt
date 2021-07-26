@@ -1,0 +1,5 @@
+CHANGES
+
+1.0.0(July 27, 2021)
+- First release of Cucumber integration for Split testing module
+
