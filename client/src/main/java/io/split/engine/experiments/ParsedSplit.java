@@ -1,9 +1,15 @@
 package io.split.engine.experiments;
 
 import com.google.common.collect.ImmutableList;
+import io.split.engine.matchers.AttributeMatcher;
+import io.split.engine.matchers.Matcher;
+import io.split.engine.matchers.UserDefinedSegmentMatcher;
 
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 /**
  * a value class representing an io.codigo.dtos.Experiment. Why are we not using
@@ -205,4 +211,22 @@ public class ParsedSplit {
         return bldr.toString();
 
     }
+
+    public Set<String> getSegmentsNames() {
+        return parsedConditions().stream()
+                .flatMap(parsedCondition -> parsedCondition.matcher().attributeMatchers().stream())
+                .filter(ParsedSplit::isSegmentMatcher)
+                .map(ParsedSplit::asSegmentMatcherForEach)
+                .map(UserDefinedSegmentMatcher::getSegmentName)
+                .collect(Collectors.toSet());
+    }
+
+    private static boolean isSegmentMatcher(AttributeMatcher attributeMatcher) {
+        return ((AttributeMatcher.NegatableMatcher) attributeMatcher.matcher()).delegate() instanceof UserDefinedSegmentMatcher;
+    }
+
+    private static UserDefinedSegmentMatcher asSegmentMatcherForEach(AttributeMatcher attributeMatcher) {
+        return (UserDefinedSegmentMatcher) ((AttributeMatcher.NegatableMatcher) attributeMatcher.matcher()).delegate();
+    }
+
 }

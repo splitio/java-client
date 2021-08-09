@@ -140,7 +140,7 @@ public class SplitFetcherImp implements SplitFetcher {
 
                     continue;
                 }
-                segments = getSegments(parsedSplit);
+                segments = parsedSplit.getSegmentsNames();
 
                 // If the split already exists, this is either an update, or the split has been
                 // deleted and recreated (possibly with a different traffic type).
@@ -161,15 +161,5 @@ public class SplitFetcherImp implements SplitFetcher {
             _telemetryRuntimeProducer.recordSuccessfulSync(LastSynchronizationRecordsEnum.SPLITS, System.currentTimeMillis());
         }
         return segments;
-    }
-
-    public Set<String> getSegments(ParsedSplit parsedSplit) {
-        Set<String> segmentsNames = new HashSet<>();
-        parsedSplit.parsedConditions().stream()
-                        .flatMap(parsedCondition -> parsedCondition.matcher().attributeMatchers().stream())
-                        .filter(attributeMatcher -> ((AttributeMatcher.NegatableMatcher) attributeMatcher.matcher()).delegate() instanceof UserDefinedSegmentMatcher)
-                        .forEach(m -> { UserDefinedSegmentMatcher segmentMatcher = (UserDefinedSegmentMatcher) ((AttributeMatcher.NegatableMatcher) m.matcher()).delegate();
-                            segmentsNames.add(segmentMatcher.getSegmentName()); });
-        return segmentsNames;
     }
 }

@@ -18,6 +18,7 @@ import java.util.Set;
 import java.util.HashSet;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.atomic.AtomicLong;
+import java.util.stream.Collectors;
 
 public class InMemoryCacheImp implements SplitCache {
 
@@ -131,13 +132,7 @@ public class InMemoryCacheImp implements SplitCache {
 
     @Override
     public Set<String> getSegments() {
-        Set<String> segmentsNames = new HashSet<>();
-        _concurrentMap.values().stream()
-                .forEach(parsedSplit -> parsedSplit.parsedConditions().stream()
-                        .flatMap(parsedCondition -> parsedCondition.matcher().attributeMatchers().stream())
-                        .filter(attributeMatcher -> ((AttributeMatcher.NegatableMatcher) attributeMatcher.matcher()).delegate() instanceof UserDefinedSegmentMatcher)
-                        .forEach(m -> { UserDefinedSegmentMatcher segmentMatcher = (UserDefinedSegmentMatcher) ((AttributeMatcher.NegatableMatcher) m.matcher()).delegate();
-                            segmentsNames.add(segmentMatcher.getSegmentName()); }));
-        return segmentsNames;
+        return _concurrentMap.values().stream()
+                .flatMap(parsedSplit -> parsedSplit.getSegmentsNames().stream()).collect(Collectors.toSet());
     }
 }
