@@ -1,6 +1,7 @@
 package io.split.engine.matchers;
 
 import io.split.cache.SegmentCache;
+import io.split.engine.evaluator.EvaluationContext;
 import io.split.engine.evaluator.Evaluator;
 
 import java.util.Map;
@@ -16,21 +17,19 @@ import static com.google.common.base.Preconditions.checkNotNull;
  */
 public class UserDefinedSegmentMatcher implements Matcher {
     private final String _segmentName;
-    private final SegmentCache _segmentCache;
 
-    public UserDefinedSegmentMatcher(SegmentCache segmentCache, String segmentName) {
-        _segmentCache = checkNotNull(segmentCache);
+    public UserDefinedSegmentMatcher(String segmentName) {
         _segmentName = checkNotNull(segmentName);
     }
 
 
     @Override
-    public boolean match(Object matchValue, String bucketingKey, Map<String, Object> attributes, Evaluator evaluator) {
+    public boolean match(Object matchValue, String bucketingKey, Map<String, Object> attributes, EvaluationContext evaluationContext) {
         if (!(matchValue instanceof String)) {
             return false;
         }
 
-        return _segmentCache.isInSegment(_segmentName, (String) matchValue);
+        return evaluationContext.getSegmentCache().isInSegment(_segmentName, (String) matchValue);
     }
 
     @Override
@@ -57,5 +56,9 @@ public class UserDefinedSegmentMatcher implements Matcher {
         bldr.append("in segment ");
         bldr.append(_segmentName);
         return bldr.toString();
+    }
+
+    public String getSegmentName() {
+        return _segmentName;
     }
 }

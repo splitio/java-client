@@ -1,5 +1,6 @@
 package io.split.engine.matchers;
 
+import io.split.engine.evaluator.EvaluationContext;
 import io.split.engine.evaluator.Evaluator;
 
 import java.util.Map;
@@ -27,9 +28,9 @@ public final class AttributeMatcher {
         _matcher = new NegatableMatcher(matcher, negate);
     }
 
-    public boolean match(String key, String bucketingKey, Map<String, Object> attributes, Evaluator evaluator) {
+    public boolean match(String key, String bucketingKey, Map<String, Object> attributes, EvaluationContext evaluationContext) {
         if (_attribute == null) {
-            return _matcher.match(key, bucketingKey, attributes, evaluator);
+            return _matcher.match(key, bucketingKey, attributes, evaluationContext);
         }
 
         if (attributes == null) {
@@ -95,8 +96,8 @@ public final class AttributeMatcher {
 
 
         @Override
-        public boolean match(Object matchValue, String bucketingKey, Map<String, Object> attributes, Evaluator evaluator) {
-            boolean result = _delegate.match(matchValue, bucketingKey, attributes, evaluator);
+        public boolean match(Object matchValue, String bucketingKey, Map<String, Object> attributes, EvaluationContext evaluationContext) {
+            boolean result = _delegate.match(matchValue, bucketingKey, attributes, evaluationContext);
             return (_negate) ? !result : result;
         }
 

@@ -1,5 +1,6 @@
 package io.split.engine.matchers.collections;
 
+import io.split.engine.evaluator.EvaluationContext;
 import io.split.engine.evaluator.Evaluator;
 import io.split.engine.matchers.Matcher;
 
@@ -25,7 +26,7 @@ public class EqualToSetMatcher implements Matcher {
     }
 
     @Override
-    public boolean match(Object matchValue, String bucketingKey, Map<String, Object> attributes, Evaluator evaluator) {
+    public boolean match(Object matchValue, String bucketingKey, Map<String, Object> attributes, EvaluationContext evaluationContext) {
         if (matchValue == null) {
             return false;
         }

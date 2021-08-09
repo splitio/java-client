@@ -45,13 +45,7 @@ public final class SplitParser {
 
     private static final Logger _log = LoggerFactory.getLogger(SplitParser.class);
 
-    private final SegmentSynchronizationTask _segmentSynchronizationTask;
-    private final SegmentCache _segmentCache;
-
-    public SplitParser(SegmentSynchronizationTask segmentSynchronizationTaskImp,
-                       SegmentCache segmentCache) {
-        _segmentSynchronizationTask = checkNotNull(segmentSynchronizationTaskImp);
-        _segmentCache = checkNotNull(segmentCache);
+    public SplitParser() {
     }
 
     public ParsedSplit parse(Split split) {
@@ -102,8 +96,7 @@ public final class SplitParser {
             case IN_SEGMENT:
                 checkNotNull(matcher.userDefinedSegmentMatcherData);
                 String segmentName = matcher.userDefinedSegmentMatcherData.segmentName;
-                _segmentSynchronizationTask.initializeSegment(segmentName);
-                delegate = new UserDefinedSegmentMatcher(_segmentCache, segmentName);
+                delegate = new UserDefinedSegmentMatcher(segmentName);
                 break;
             case WHITELIST:
                 checkNotNull(matcher.whitelistMatcherData);

@@ -1,16 +1,26 @@
 package io.split.cache;
 
+import com.google.common.collect.Lists;
+import io.split.client.dtos.Partition;
+import io.split.engine.ConditionsTestUtil;
+import io.split.engine.experiments.ParsedCondition;
 import io.split.engine.experiments.ParsedSplit;
+import io.split.engine.matchers.CombiningMatcher;
+import io.split.engine.matchers.UserDefinedSegmentMatcher;
+import io.split.grammar.Treatments;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
 import java.util.*;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 public class InMemoryCacheTest {
+    private static final String EMPLOYEES = "Employees";
     private SplitCache _cache;
 
     @Before
@@ -113,6 +123,26 @@ public class InMemoryCacheTest {
 
         cache.remove("splitName_1");
         assertFalse(cache.trafficTypeExists("tt"));
+    }
+
+    @Test
+    public void testSegmentNames() {
+        SplitCache cache = new InMemoryCacheImp(-1);
+        List<Partition> fullyRollout = Lists.newArrayList(ConditionsTestUtil.partition("on", 100));
+        List<Partition> turnOff = Lists.newArrayList(ConditionsTestUtil.partition(Treatments.CONTROL, 100));
+        ParsedCondition parsedCondition1 = ParsedCondition.createParsedConditionForTests(CombiningMatcher.of(new UserDefinedSegmentMatcher(EMPLOYEES)), fullyRollout);
+        ParsedCondition parsedCondition2 = ParsedCondition.createParsedConditionForTests(CombiningMatcher.of(new UserDefinedSegmentMatcher(EMPLOYEES+"2")), turnOff);
+
+        cache.put(ParsedSplit.createParsedSplitForTests("splitName_1", 0, false, "default_treatment", Stream.of(parsedCondition1).collect(Collectors.toList()), "tt", 123, 2));
+        cache.put(ParsedSplit.createParsedSplitForTests("splitName_2", 0, false, "default_treatment", Stream.of(parsedCondition2).collect(Collectors.toList()), "tt", 123, 2));
+        cache.put(ParsedSplit.createParsedSplitForTests("splitName_3", 0, false, "default_treatment", Stream.of(parsedCondition1).collect(Collectors.toList()), "tt_2", 123, 2));
+        cache.put(ParsedSplit.createParsedSplitForTests("splitName_4", 0, false, "default_treatment", Stream.of(parsedCondition2).collect(Collectors.toList()), "tt_3", 123, 2));
+
+        Set<String> segments = cache.getSegments();
+        Assert.assertEquals(2, segments.size());
+        Assert.assertTrue(segments.contains(EMPLOYEES));
+        Assert.assertTrue(segments.contains(EMPLOYEES+"2"));
+
     }
 
     private ParsedSplit getParsedSplit(String splitName) {
