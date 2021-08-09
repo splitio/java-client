@@ -4,6 +4,7 @@ import io.split.cache.InMemoryCacheImp;
 import io.split.cache.SegmentCache;
 import io.split.cache.SplitCache;
 import io.split.engine.SDKReadinessGates;
+import io.split.engine.experiments.FetchResult;
 import io.split.engine.experiments.SplitFetcherImp;
 import io.split.engine.experiments.SplitSynchronizationTask;
 import io.split.engine.segments.SegmentFetcher;
@@ -16,6 +17,7 @@ import org.mockito.Mockito;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
+import java.util.HashSet;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -44,12 +46,12 @@ public class SynchronizerTest {
 
     @Test
     public void syncAll() throws InterruptedException {
-        Mockito.when(_splitFetcher.fetchAll(Mockito.anyObject())).thenReturn(true);
+        Mockito.when(_splitFetcher.forceRefresh(Mockito.anyObject())).thenReturn(new FetchResult(true, new HashSet<>()));
         Mockito.when(_segmentFetcher.fetchAllSynchronous()).thenReturn(true);
         _synchronizer.syncAll();
 
         Thread.sleep(1000);
-        Mockito.verify(_splitFetcher, Mockito.times(1)).fetchAll(Mockito.anyObject());
+        Mockito.verify(_splitFetcher, Mockito.times(1)).forceRefresh(Mockito.anyObject());
         Mockito.verify(_segmentFetcher, Mockito.times(1)).fetchAllSynchronous();
     }
 
@@ -72,6 +74,7 @@ public class SynchronizerTest {
     @Test
     public void streamingRetryOnSplit() {
         when(_splitCache.getChangeNumber()).thenReturn(0l).thenReturn(0l).thenReturn(1l);
+        when(_splitFetcher.forceRefresh(Mockito.anyObject())).thenReturn(new FetchResult(true, new HashSet<>()));
         _synchronizer.refreshSplits(1l);
 
         Mockito.verify(_splitCache, Mockito.times(3)).getChangeNumber();
@@ -109,7 +112,7 @@ public class SynchronizerTest {
             switch (calls.get()) {
                 case 4: cache.setChangeNumber(123);
             }
-            return null;
+            return new FetchResult(true, new HashSet<>());
         }).when(_splitFetcher).forceRefresh(optionsCaptor.capture());
 
         imp.refreshSplits(123);

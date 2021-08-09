@@ -3,32 +3,26 @@ package io.split.client;
 import io.split.SSEMockServer;
 import io.split.SplitMockServer;
 import io.split.client.api.SplitView;
-import io.split.telemetry.storage.InMemoryTelemetryStorage;
-import io.split.telemetry.storage.TelemetryStorage;
+import io.split.client.utils.CustomDispatcher;
+import okhttp3.mockwebserver.MockResponse;
 import org.awaitility.Awaitility;
 import org.glassfish.grizzly.utils.Pair;
 import org.glassfish.jersey.media.sse.OutboundEvent;
 import org.junit.Assert;
 import org.junit.Ignore;
 import org.junit.Test;
-import org.mockito.Mockito;
 
 import javax.ws.rs.sse.OutboundSseEvent;
-import java.io.IOException;
-import java.net.URISyntaxException;
-import java.util.Date;
-import java.util.List;
+import java.util.*;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
 
 public class SplitClientIntegrationTest {
     // TODO: review this test.
-    private static final TelemetryStorage TELEMETRY_STORAGE = Mockito.mock(InMemoryTelemetryStorage.class);
 
     @Test
     @Ignore
     public void getTreatmentWithStreamingEnabled() throws Exception {
-        SplitMockServer splitServer = new SplitMockServer();
+        SplitMockServer splitServer = new SplitMockServer(CustomDispatcher.builder().build());
         SSEMockServer.SseEventQueue eventQueue = new SSEMockServer.SseEventQueue();
         SSEMockServer sseServer = buildSSEMockServer(eventQueue);
 
@@ -117,7 +111,12 @@ public class SplitClientIntegrationTest {
 
     @Test
     public void getTreatmentWithStreamingEnabledAndAuthDisabled() throws Exception {
-        SplitMockServer splitServer = new SplitMockServer();
+        MockResponse response = new MockResponse().setBody("{\"splits\": [], \"since\":1585948850109, \"till\":1585948850109}");
+        Queue responses = new LinkedList<>();
+        responses.add(response);
+        SplitMockServer splitServer = new SplitMockServer(CustomDispatcher.builder()
+                .path(CustomDispatcher.SINCE_1585948850109, responses)
+                .build());
         splitServer.start();
 
         SplitClientConfig config = SplitClientConfig.builder()
@@ -140,7 +139,12 @@ public class SplitClientIntegrationTest {
 
     @Test
     public void getTreatmentWithStreamingDisabled() throws Exception {
-        SplitMockServer splitServer = new SplitMockServer();
+        MockResponse response = new MockResponse().setBody("{\"splits\": [], \"since\":1585948850109, \"till\":1585948850109}");
+        Queue responses = new LinkedList<>();
+        responses.add(response);
+        SplitMockServer splitServer = new SplitMockServer(CustomDispatcher.builder()
+                .path(CustomDispatcher.SINCE_1585948850109, responses)
+                .build());
         splitServer.start();
 
         SplitClientConfig config = SplitClientConfig.builder()
@@ -168,7 +172,12 @@ public class SplitClientIntegrationTest {
 
     @Test
     public void managerSplitsWithStreamingEnabled() throws Exception {
-        SplitMockServer splitServer = new SplitMockServer();
+        MockResponse response = new MockResponse().setBody("{\"splits\": [], \"since\":1585948850109, \"till\":1585948850109}");
+        Queue responses = new LinkedList<>();
+        responses.add(response);
+        SplitMockServer splitServer = new SplitMockServer(CustomDispatcher.builder()
+                .path(CustomDispatcher.SINCE_1585948850109, responses)
+                .build());
         SSEMockServer.SseEventQueue eventQueue = new SSEMockServer.SseEventQueue();
         SSEMockServer sseServer = buildSSEMockServer(eventQueue);
 
@@ -203,7 +212,20 @@ public class SplitClientIntegrationTest {
 
     @Test
     public void splitClientOccupancyNotifications() throws Exception {
-        SplitMockServer splitServer = new SplitMockServer();
+        MockResponse response = new MockResponse().setBody("{\"splits\": [], \"since\":1585948850109, \"till\":1585948850109}");
+        MockResponse response2 = new MockResponse().setBody("{\"splits\": [], \"since\":1585948850110, \"till\":1585948850110}");
+        MockResponse response3 = new MockResponse().setBody("{\"splits\": [], \"since\":1585948850111, \"till\":1585948850111}");
+        Queue responses = new LinkedList<>();
+        responses.add(response);
+        Queue responses2 = new LinkedList<>();
+        responses2.add(response2);
+        Queue responses3 = new LinkedList<>();
+        responses3.add(response3);
+        SplitMockServer splitServer = new SplitMockServer(CustomDispatcher.builder()
+                .path(CustomDispatcher.SINCE_1585948850109, responses)
+                .path(CustomDispatcher.SINCE_1585948850110, responses2)
+                .path(CustomDispatcher.SINCE_1585948850111, responses3)
+                .build());
         SSEMockServer.SseEventQueue eventQueue = new SSEMockServer.SseEventQueue();
         SSEMockServer sseServer = buildSSEMockServer(eventQueue);
 
@@ -265,7 +287,20 @@ public class SplitClientIntegrationTest {
 
     @Test
     public void splitClientControlNotifications() throws Exception {
-        SplitMockServer splitServer = new SplitMockServer();
+        MockResponse response = new MockResponse().setBody("{\"splits\": [], \"since\":1585948850109, \"till\":1585948850109}");
+        MockResponse response2 = new MockResponse().setBody("{\"splits\": [], \"since\":1585948850110, \"till\":1585948850110}");
+        MockResponse response3 = new MockResponse().setBody("{\"splits\": [], \"since\":1585948850111, \"till\":1585948850111}");
+        Queue responses = new LinkedList<>();
+        responses.add(response);
+        Queue responses2 = new LinkedList<>();
+        responses2.add(response2);
+        Queue responses3 = new LinkedList<>();
+        responses3.add(response3);
+        SplitMockServer splitServer = new SplitMockServer(CustomDispatcher.builder()
+                .path(CustomDispatcher.SINCE_1585948850109, responses)
+                .path(CustomDispatcher.SINCE_1585948850110, responses2)
+                .path(CustomDispatcher.SINCE_1585948850111, responses3)
+                .build());
         SSEMockServer.SseEventQueue eventQueue = new SSEMockServer.SseEventQueue();
         SSEMockServer sseServer = buildSSEMockServer(eventQueue);
 
@@ -347,7 +382,22 @@ public class SplitClientIntegrationTest {
 
     @Test
     public void splitClientMultiFactory() throws Exception {
-        SplitMockServer splitServer = new SplitMockServer();
+        MockResponse response = new MockResponse().setBody("{\"splits\": [], \"since\":1585948850109, \"till\":1585948850109}");
+        MockResponse response2 = new MockResponse().setBody("{\"splits\": [], \"since\":1585948850110, \"till\":1585948850110}");
+        Queue responses = new LinkedList<>();
+        Queue responses2 = new LinkedList<>();
+        responses.add(response);
+        responses.add(response);
+        responses.add(response);
+        responses.add(response);
+        responses2.add(response2);
+        responses2.add(response2);
+        responses2.add(response2);
+        responses2.add(response2);
+        SplitMockServer splitServer = new SplitMockServer(CustomDispatcher.builder()
+                .path(CustomDispatcher.SINCE_1585948850109, responses)
+                .path(CustomDispatcher.SINCE_1585948850110, responses2)
+                .build());
 
         SSEMockServer.SseEventQueue eventQueue1 = new SSEMockServer.SseEventQueue();
         SSEMockServer sseServer1 = buildSSEMockServer(eventQueue1);
@@ -471,7 +521,7 @@ public class SplitClientIntegrationTest {
     @Test
     @Ignore
     public void keepAlive() throws Exception {
-        SplitMockServer splitServer = new SplitMockServer();
+        SplitMockServer splitServer = new SplitMockServer(CustomDispatcher.builder().build());
         SSEMockServer.SseEventQueue eventQueue = new SSEMockServer.SseEventQueue();
         SSEMockServer sseServer = buildSSEMockServer(eventQueue);
 
@@ -501,7 +551,12 @@ public class SplitClientIntegrationTest {
 
     @Test
     public void testConnectionClosedByRemoteHostIsProperlyHandled() throws Exception {
-        SplitMockServer splitServer = new SplitMockServer();
+        MockResponse response = new MockResponse().setBody("{\"splits\": [], \"since\":1585948850109, \"till\":1585948850109}");
+        Queue responses = new LinkedList<>();
+        responses.add(response);
+        SplitMockServer splitServer = new SplitMockServer(CustomDispatcher.builder()
+                .path(CustomDispatcher.SINCE_1585948850109, responses)
+                .build());
         SSEMockServer.SseEventQueue eventQueue = new SSEMockServer.SseEventQueue();
         SSEMockServer sseServer = buildSSEMockServer(eventQueue);
 
@@ -534,7 +589,12 @@ public class SplitClientIntegrationTest {
 
     @Test
     public void testConnectionClosedIsProperlyHandled() throws Exception {
-        SplitMockServer splitServer = new SplitMockServer();
+        MockResponse response = new MockResponse().setBody("{\"splits\": [], \"since\":1585948850109, \"till\":1585948850109}");
+        Queue responses = new LinkedList<>();
+        responses.add(response);
+        SplitMockServer splitServer = new SplitMockServer(CustomDispatcher.builder()
+                .path(CustomDispatcher.SINCE_1585948850109, responses)
+                .build());
         SSEMockServer.SseEventQueue eventQueue = new SSEMockServer.SseEventQueue();
         SSEMockServer sseServer = buildSSEMockServer(eventQueue);
 

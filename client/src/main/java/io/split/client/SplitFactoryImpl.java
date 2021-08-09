@@ -152,7 +152,7 @@ public class SplitFactoryImpl implements SplitFactory {
         _telemetrySyncTask = new TelemetrySyncTask(config.get_telemetryRefreshRate(), _telemetrySynchronizer);
 
         // Evaluator
-        _evaluator = new EvaluatorImp(_splitCache);
+        _evaluator = new EvaluatorImp(_splitCache, _segmentCache);
 
         // SplitClient
         _client = new SplitClientImpl(this,
@@ -348,7 +348,7 @@ public class SplitFactoryImpl implements SplitFactory {
 
     private SplitFetcher buildSplitFetcher() throws URISyntaxException {
         SplitChangeFetcher splitChangeFetcher = HttpSplitChangeFetcher.create(_httpclient, _rootTarget, _telemetryStorage);
-        SplitParser splitParser = new SplitParser(_segmentSynchronizationTaskImp, _segmentCache);
+        SplitParser splitParser = new SplitParser();
 
         return new SplitFetcherImp(splitChangeFetcher, splitParser, _splitCache, _telemetryStorage);
     }

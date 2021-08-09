@@ -1,5 +1,6 @@
 package io.split.engine.matchers;
 
+import io.split.engine.evaluator.EvaluationContext;
 import io.split.engine.evaluator.Evaluator;
 
 import java.util.Map;
@@ -12,7 +13,7 @@ import java.util.Map;
 public final class AllKeysMatcher implements Matcher {
 
     @Override
-    public boolean match(Object matchValue, String bucketingKey, Map<String, Object> attributes, Evaluator evaluator) {
+    public boolean match(Object matchValue, String bucketingKey, Map<String, Object> attributes, EvaluationContext evaluationContext) {
         if (matchValue == null) {
             return false;
         }

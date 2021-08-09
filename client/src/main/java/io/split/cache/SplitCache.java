@@ -4,6 +4,7 @@ import io.split.engine.experiments.ParsedSplit;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.Set;
 
 public interface SplitCache {
     void put(ParsedSplit split);
@@ -16,4 +17,5 @@ public interface SplitCache {
     boolean trafficTypeExists(String trafficTypeName);
     void kill(String splitName, String defaultTreatment, long changeNumber);
     void clear();
+    Set<String> getSegments();
 }
