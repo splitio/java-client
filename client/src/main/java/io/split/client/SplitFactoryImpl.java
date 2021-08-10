@@ -50,6 +50,7 @@ import org.apache.hc.client5.http.ssl.SSLConnectionSocketFactoryBuilder;
 import org.apache.hc.core5.http.io.SocketConfig;
 import org.apache.hc.core5.http.ssl.TLS;
 import org.apache.hc.core5.ssl.SSLContexts;
+import org.apache.hc.core5.util.TimeValue;
 import org.apache.hc.core5.util.Timeout;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -156,7 +157,7 @@ public class SplitFactoryImpl implements SplitFactory {
         _telemetrySyncTask = new TelemetrySyncTask(config.get_telemetryRefreshRate(), _telemetrySynchronizer);
 
         // Evaluator
-        _evaluator = new EvaluatorImp(_splitCache);
+        _evaluator = new EvaluatorImp(_splitCache, _segmentCache);
 
         // SplitClient
         _client = new SplitClientImpl(this,
@@ -263,6 +264,7 @@ public class SplitFactoryImpl implements SplitFactory {
                 .setDefaultSocketConfig(SocketConfig.custom()
                         .setSoTimeout(Timeout.ofMilliseconds(config.readTimeout()))
                         .build())
+                .setValidateAfterInactivity(TimeValue.ofMilliseconds(config.validateAfterInactivityInMillis()))
                 .build();
         cm.setMaxTotal(20);
         cm.setDefaultMaxPerRoute(20);
@@ -351,7 +353,7 @@ public class SplitFactoryImpl implements SplitFactory {
 
     private SplitFetcher buildSplitFetcher() throws URISyntaxException {
         SplitChangeFetcher splitChangeFetcher = HttpSplitChangeFetcher.create(_httpclient, _rootTarget, _telemetryStorage);
-        SplitParser splitParser = new SplitParser(_segmentSynchronizationTaskImp, _segmentCache);
+        SplitParser splitParser = new SplitParser();
 
         return new SplitFetcherImp(splitChangeFetcher, splitParser, _splitCache, _splitCache, _telemetryStorage);
     }

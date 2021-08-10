@@ -12,8 +12,10 @@ import org.slf4j.LoggerFactory;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.Set;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.atomic.AtomicLong;
+import java.util.stream.Collectors;
 
 public class InMemoryCacheImp implements SplitCache {
 
@@ -142,5 +144,10 @@ public class InMemoryCacheImp implements SplitCache {
     @Override
     public void decreaseTrafficType(String trafficType) {
         _concurrentTrafficTypeNameSet.remove(trafficType);
+    }
+    
+    public Set<String> getSegments() {
+        return _concurrentMap.values().stream()
+                .flatMap(parsedSplit -> parsedSplit.getSegmentsNames().stream()).collect(Collectors.toSet());
     }
 }

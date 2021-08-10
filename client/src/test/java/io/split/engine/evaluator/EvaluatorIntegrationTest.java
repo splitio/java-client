@@ -1,8 +1,6 @@
 package io.split.engine.evaluator;
 
 import com.google.common.collect.Lists;
-import io.split.storages.memory.InMemoryCacheImp;
-import io.split.storages.SplitCache;
 import io.split.client.dtos.ConditionType;
 import io.split.client.dtos.MatcherCombiner;
 import io.split.client.dtos.Partition;
@@ -12,6 +10,10 @@ import io.split.engine.matchers.AttributeMatcher;
 import io.split.engine.matchers.CombiningMatcher;
 import io.split.engine.matchers.strings.EndsWithAnyOfMatcher;
 import io.split.engine.matchers.strings.WhitelistMatcher;
+import io.split.storages.SegmentCache;
+import io.split.storages.SplitCache;
+import io.split.storages.memory.InMemoryCacheImp;
+import io.split.storages.memory.SegmentCacheInMemoryImpl;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -123,7 +125,8 @@ public class EvaluatorIntegrationTest {
 
     private Evaluator buildEvaluatorAndLoadCache(boolean killed, int trafficAllocation) {
         SplitCache splitCache = new InMemoryCacheImp();
-        Evaluator evaluator = new EvaluatorImp(splitCache);
+        SegmentCache segmentCache = new SegmentCacheInMemoryImpl();
+        Evaluator evaluator = new EvaluatorImp(splitCache, segmentCache);
 
         Partition partition = new Partition();
         partition.treatment = ON_TREATMENT;

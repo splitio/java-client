@@ -4,6 +4,7 @@ import io.split.engine.experiments.ParsedSplit;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.Set;
 
 public interface SplitCacheConsumer extends SplitCacheCommons{
     ParsedSplit get(String name);

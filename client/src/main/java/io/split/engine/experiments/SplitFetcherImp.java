@@ -5,11 +5,19 @@ import io.split.client.dtos.SplitChange;
 import io.split.client.dtos.Status;
 import io.split.storages.SplitCacheConsumer;
 import io.split.storages.SplitCacheProducer;
+import io.split.engine.SDKReadinessGates;
+import io.split.engine.matchers.AttributeMatcher;
+import io.split.engine.matchers.UserDefinedSegmentMatcher;
+import io.split.telemetry.domain.enums.HTTPLatenciesEnum;
 import io.split.telemetry.domain.enums.LastSynchronizationRecordsEnum;
 import io.split.telemetry.storage.TelemetryRuntimeProducer;
 import io.split.engine.common.FetchOptions;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
@@ -48,13 +56,13 @@ public class SplitFetcherImp implements SplitFetcher {
     }
 
     @Override
-    public void forceRefresh(FetchOptions options) {
+    public FetchResult forceRefresh(FetchOptions options) {
         _log.debug("Force Refresh splits starting ...");
         final long INITIAL_CN = _splitCacheProducer.getChangeNumber();
         try {
             while (true) {
                 long start = _splitCacheProducer.getChangeNumber();
-                runWithoutExceptionHandling(options);
+                Set<String> segments = runWithoutExceptionHandling(options);
                 long end = _splitCacheProducer.getChangeNumber();
 
                 // If the previous execution was the first one, clear the `cdnBypass` flag
@@ -65,25 +73,27 @@ public class SplitFetcherImp implements SplitFetcher {
                 }
 
                 if (start >= end) {
-                    break;
+                    return new FetchResult(true, segments);
                 }
             }
         } catch (InterruptedException e) {
             _log.warn("Interrupting split fetcher task");
             Thread.currentThread().interrupt();
+            return new FetchResult(false, new HashSet<>());
         } catch (Throwable t) {
             _log.error("RefreshableSplitFetcher failed: " + t.getMessage());
+            return new FetchResult(false, new HashSet<>());
         }
     }
 
     @Override
     public void run() {
-        this.fetchAll(new FetchOptions.Builder().cacheControlHeaders(false).build());
+        this.forceRefresh(new FetchOptions.Builder().cacheControlHeaders(false).build());
     }
 
-    private void runWithoutExceptionHandling(FetchOptions options) throws InterruptedException {
-        long initTime = System.currentTimeMillis();
+    private Set<String> runWithoutExceptionHandling(FetchOptions options) throws InterruptedException {
         SplitChange change = _splitChangeFetcher.fetch(_splitCacheProducer.getChangeNumber(), options);
+        Set<String> segments = new HashSet<>();
 
         if (change == null) {
             throw new IllegalStateException("SplitChange was null");
@@ -91,18 +101,18 @@ public class SplitFetcherImp implements SplitFetcher {
 
         if (change.till == _splitCacheProducer.getChangeNumber()) {
             // no change.
-            return;
+            return segments;
         }
 
         if (change.since != _splitCacheProducer.getChangeNumber() || change.till < _splitCacheProducer.getChangeNumber()) {
             // some other thread may have updated the shared state. exit
-            return;
+            return segments;
         }
 
         if (change.splits.isEmpty()) {
             // there are no changes. weird!
             _splitCacheProducer.setChangeNumber(change.till);
-            return;
+            return segments;
         }
 
         synchronized (_lock) {
@@ -110,7 +120,7 @@ public class SplitFetcherImp implements SplitFetcher {
             if (change.since != _splitCacheProducer.getChangeNumber()
                     || change.till < _splitCacheProducer.getChangeNumber()) {
                 // some other thread may have updated the shared state. exit
-                return;
+                return segments;
             }
 
             for (Split split : change.splits) {
@@ -133,6 +143,7 @@ public class SplitFetcherImp implements SplitFetcher {
 
                     continue;
                 }
+                segments = parsedSplit.getSegmentsNames();
 
                 // If the split already exists, this is either an update, or the split has been
                 // deleted and recreated (possibly with a different traffic type).
@@ -152,28 +163,6 @@ public class SplitFetcherImp implements SplitFetcher {
             _splitCacheProducer.setChangeNumber(change.till);
             _telemetryRuntimeProducer.recordSuccessfulSync(LastSynchronizationRecordsEnum.SPLITS, System.currentTimeMillis());
         }
-    }
-    @Override
-    public boolean fetchAll(FetchOptions options) {
-        _log.debug("Fetch splits starting ...");
-        long start = _splitCacheProducer.getChangeNumber();
-        try {
-            runWithoutExceptionHandling(options);
-            return true;
-        } catch (InterruptedException e) {
-            _log.warn("Interrupting split fetcher task");
-            Thread.currentThread().interrupt();
-            return false;
-        } catch (Throwable t) {
-            _log.error("RefreshableSplitFetcher failed: " + t.getMessage());
-            if (_log.isDebugEnabled()) {
-                _log.debug("Reason:", t);
-            }
-            return false;
-        } finally {
-            if (_log.isDebugEnabled()) {
-                _log.debug("split fetch before: " + start + ", after: " + _splitCacheProducer.getChangeNumber());
-            }
-        }
+        return segments;
     }
 }
