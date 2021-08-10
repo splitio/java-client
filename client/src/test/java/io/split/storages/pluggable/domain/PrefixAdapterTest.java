@@ -13,6 +13,7 @@ public class PrefixAdapterTest{
     private static final String TRAFFIC_TYPE = "TrafficType";
     private static final String DEFAULT_PREFIX = "SPLITIO.";
     private static final String SPLIT_PREFIX = "split.";
+    private static final String SPLITS_PREFIX = "splits.";
     private static final String TRAFFIC_TYPE_PREFIX = "trafficType.";
 
     @Test
@@ -25,7 +26,7 @@ public class PrefixAdapterTest{
     @Test
     public void testBuildSplitGetChangeNumber() {
         String prefix = PrefixAdapter.buildSplitChangeNumber();
-        String expectedPrefix = DEFAULT_PREFIX+ SPLIT_PREFIX +"till";
+        String expectedPrefix = DEFAULT_PREFIX+ SPLITS_PREFIX +"till";
         Assert.assertEquals(expectedPrefix,prefix);
     }
 

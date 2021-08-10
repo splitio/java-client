@@ -25,5 +25,5 @@ public interface CustomStorageWrapper {
     boolean itemContains(String key, String item);
     void addItems(String key, String items);
     void removeItems(String key, String items);
-    String getItems(String key);
+    String getItems(List<String> keys);
 }

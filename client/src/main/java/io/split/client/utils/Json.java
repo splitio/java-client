@@ -8,6 +8,8 @@ import com.google.gson.JsonSerializationContext;
 import com.google.gson.JsonSerializer;
 
 import java.lang.reflect.Type;
+import java.util.Arrays;
+import java.util.List;
 
 /**
  * Created by adilaijaz on 6/10/16.
@@ -34,6 +36,10 @@ public class Json {
 
     public static <T> T fromJson(String json, Class<T> clz) {
         return _json.fromJson(json, clz);
+    }
+
+    public static <T> List<T> fromJsonToArray(String s, Class<T[]> clz) {
+        return Arrays.asList(_json.fromJson(s, clz));
     }
 
 }
