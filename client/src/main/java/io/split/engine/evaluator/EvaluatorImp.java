@@ -1,5 +1,6 @@
 package io.split.engine.evaluator;
 
+import io.split.cache.SegmentCache;
 import io.split.client.dtos.ConditionType;
 import io.split.client.exceptions.ChangeNumberExceptionWrapper;
 import io.split.engine.experiments.ParsedCondition;
@@ -19,10 +20,15 @@ public class EvaluatorImp implements Evaluator {
 
     private static final Logger _log = LoggerFactory.getLogger(EvaluatorImp.class);
 
+    private final SegmentCache _segmentCache;
+    private final EvaluationContext _evaluationContext;
     private final SplitCacheConsumer _splitCacheConsumer;
 
-    public EvaluatorImp(SplitCacheConsumer splitCacheConsumer) {
+    public EvaluatorImp(SplitCacheConsumer splitCacheConsumer, SegmentCache segmentCache) {
         _splitCacheConsumer = checkNotNull(splitCacheConsumer);
+        _splitCache = checkNotNull(splitCache);
+        _segmentCache = checkNotNull(segmentCache);
+        _evaluationContext = new EvaluationContext(this, _segmentCache);
     }
 
     @Override
@@ -88,7 +94,7 @@ public class EvaluatorImp implements Evaluator {
                     inRollout = true;
                 }
 
-                if (parsedCondition.matcher().match(matchingKey, bucketingKey, attributes, this)) {
+                if (parsedCondition.matcher().match(matchingKey, bucketingKey, attributes, _evaluationContext)) {
                     String treatment = Splitter.getTreatment(bk, parsedSplit.seed(), parsedCondition.partitions(), parsedSplit.algo());
                     String config = parsedSplit.configurations() != null ? parsedSplit.configurations().get(treatment) : null;
                     return new TreatmentLabelAndChangeNumber(treatment, parsedCondition.label(), parsedSplit.changeNumber(), config);

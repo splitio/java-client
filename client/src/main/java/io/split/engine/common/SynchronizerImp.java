@@ -3,6 +3,7 @@ package io.split.engine.common;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import io.split.engine.SDKReadinessGates;
+import io.split.engine.experiments.FetchResult;
 import io.split.engine.experiments.SplitFetcher;
 import io.split.engine.experiments.SplitSynchronizationTask;
 import io.split.engine.segments.SegmentFetcher;
@@ -12,6 +13,7 @@ import io.split.storages.SplitCacheProducer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
@@ -63,7 +65,8 @@ public class SynchronizerImp implements Synchronizer {
 
     @Override
     public boolean syncAll() {
-        return _splitFetcher.fetchAll(new FetchOptions.Builder().cacheControlHeaders(true).build()) && _segmentSynchronizationTaskImp.fetchAllSynchronous();
+        FetchResult fetchResult = _splitFetcher.forceRefresh(new FetchOptions.Builder().cacheControlHeaders(true).build());
+        return fetchResult.isSuccess() && _segmentSynchronizationTaskImp.fetchAllSynchronous();
     }
 
     @Override
@@ -82,9 +85,10 @@ public class SynchronizerImp implements Synchronizer {
 
     private static class SyncResult {
 
-        /* package private */ SyncResult(boolean success, int remainingAttempts) {
+        /* package private */ SyncResult(boolean success, int remainingAttempts, FetchResult fetchResult) {
             _success = success;
             _remainingAttempts =  remainingAttempts;
+            _fetchResult = fetchResult;
         }
 
         public boolean success() { return _success; }
@@ -92,6 +96,7 @@ public class SynchronizerImp implements Synchronizer {
 
         private final boolean _success;
         private final int _remainingAttempts;
+        private final FetchResult _fetchResult;
     }
 
     private SyncResult attemptSplitsSync(long targetChangeNumber,
@@ -101,11 +106,11 @@ public class SynchronizerImp implements Synchronizer {
         int remainingAttempts = maxRetries;
         while(true) {
             remainingAttempts--;
-            _splitFetcher.forceRefresh(opts);
+            FetchResult fetchResult = _splitFetcher.forceRefresh(opts);
             if (targetChangeNumber <= _splitCacheProducer.getChangeNumber()) {
-                return new SyncResult(true, remainingAttempts);
+                return new SyncResult(true, remainingAttempts, fetchResult);
             } else if (remainingAttempts <= 0) {
-                return new SyncResult(false, remainingAttempts);
+                return new SyncResult(false, remainingAttempts, fetchResult);
             }
             try {
                 long howLong = nextWaitMs.apply(null);
@@ -146,6 +151,8 @@ public class SynchronizerImp implements Synchronizer {
             if (_cdnResponseHeadersLogging) {
                 logCdnHeaders("[splits]", _onDemandFetchMaxRetries , regularResult.remainingAttempts(), captor.get());
             }
+            regularResult._fetchResult.getSegments().stream()
+                    .forEach(segmentName -> _segmentSynchronizationTaskImp.initializeSegment(segmentName));
             return;
         }
 
@@ -158,6 +165,8 @@ public class SynchronizerImp implements Synchronizer {
         int withoutCDNAttempts = ON_DEMAND_FETCH_BACKOFF_MAX_RETRIES - withCDNBypassed._remainingAttempts;
         if (withCDNBypassed.success()) {
             _log.debug(String.format("Refresh completed bypassing the CDN in %s attempts.", withoutCDNAttempts));
+            withCDNBypassed._fetchResult.getSegments().stream()
+                    .forEach(segmentName -> _segmentSynchronizationTaskImp.initializeSegment(segmentName));
         } else {
             _log.debug(String.format("No changes fetched after %s attempts with CDN bypassed.", withoutCDNAttempts));
         }
@@ -190,9 +199,9 @@ public class SynchronizerImp implements Synchronizer {
             remainingAttempts--;
             fetcher.fetch(opts);
             if (targetChangeNumber <= segmentCacheProducer.getChangeNumber(segmentName)) {
-                return new SyncResult(true, remainingAttempts);
+                return new SyncResult(true, remainingAttempts, new FetchResult(false, new HashSet<>()));
             } else if (remainingAttempts <= 0) {
-                return new SyncResult(false, remainingAttempts);
+                return new SyncResult(false, remainingAttempts, new FetchResult(false, new HashSet<>()));
             }
             try {
                 long howLong = nextWaitMs.apply(null);

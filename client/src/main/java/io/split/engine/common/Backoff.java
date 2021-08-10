@@ -24,7 +24,7 @@ public class Backoff {
     public long interval() {
         long interval = _backoffBase * (long) Math.pow(2, _attempt.getAndIncrement());
 
-        return interval >= _maxAllowed ? BACKOFF_MAX_ALLOWED : interval;
+        return interval >= _maxAllowed ? _maxAllowed : interval;
     }
 
     public synchronized void reset() {

@@ -1,5 +1,6 @@
 package io.split.engine.matchers;
 
+import io.split.engine.evaluator.EvaluationContext;
 import io.split.engine.evaluator.Evaluator;
 
 import java.util.List;
@@ -19,7 +20,7 @@ public class DependencyMatcher implements Matcher {
     }
 
     @Override
-    public boolean match(Object matchValue, String bucketingKey, Map<String, Object> attributes, Evaluator evaluator) {
+    public boolean match(Object matchValue, String bucketingKey, Map<String, Object> attributes, EvaluationContext evaluationContext) {
         if (matchValue == null) {
             return false;
         }
@@ -28,7 +29,7 @@ public class DependencyMatcher implements Matcher {
             return false;
         }
 
-        String result = evaluator.evaluateFeature((String) matchValue, bucketingKey, _split, attributes).treatment;
+        String result = evaluationContext.getEvaluator().evaluateFeature((String) matchValue, bucketingKey, _split, attributes).treatment;
 
         return _treatments.contains(result);
     }

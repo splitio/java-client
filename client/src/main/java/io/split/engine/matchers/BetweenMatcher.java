@@ -1,6 +1,7 @@
 package io.split.engine.matchers;
 
 import io.split.client.dtos.DataType;
+import io.split.engine.evaluator.EvaluationContext;
 import io.split.engine.evaluator.Evaluator;
 
 import java.util.Map;
@@ -36,7 +37,7 @@ public class BetweenMatcher implements Matcher {
     }
 
     @Override
-    public boolean match(Object matchValue, String bucketingKey, Map<String, Object> attributes, Evaluator evaluator) {
+    public boolean match(Object matchValue, String bucketingKey, Map<String, Object> attributes, EvaluationContext evaluationContext) {
         Long keyAsLong;
 
         if (_dataType == DataType.DATETIME) {

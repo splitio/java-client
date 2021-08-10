@@ -4,16 +4,21 @@ import com.google.common.collect.ConcurrentHashMultiset;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Multiset;
 import com.google.common.collect.Sets;
+import io.split.engine.experiments.ParsedCondition;
 import io.split.engine.experiments.ParsedSplit;
-import io.split.storages.SplitCache;
+import io.split.engine.matchers.AttributeMatcher;
+import io.split.engine.matchers.UserDefinedSegmentMatcher;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.Set;
+import java.util.HashSet;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.atomic.AtomicLong;
+import java.util.stream.Collectors;
 
 public class InMemoryCacheImp implements SplitCache {
 
@@ -123,5 +128,11 @@ public class InMemoryCacheImp implements SplitCache {
     public void clear() {
         _concurrentMap.clear();
         _concurrentTrafficTypeNameSet.clear();
+    }
+
+    @Override
+    public Set<String> getSegments() {
+        return _concurrentMap.values().stream()
+                .flatMap(parsedSplit -> parsedSplit.getSegmentsNames().stream()).collect(Collectors.toSet());
     }
 }
