@@ -1,11 +1,11 @@
 package io.split.engine.evaluator;
 
-import io.split.cache.SegmentCache;
 import io.split.client.dtos.ConditionType;
 import io.split.client.dtos.Partition;
 import io.split.engine.experiments.ParsedCondition;
 import io.split.engine.experiments.ParsedSplit;
 import io.split.engine.matchers.CombiningMatcher;
+import io.split.storages.SegmentCacheConsumer;
 import io.split.storages.SplitCacheConsumer;
 import org.junit.Before;
 import org.junit.Test;
@@ -41,7 +41,7 @@ public class EvaluatorTest {
     public void before() {
         _splitCacheConsumer = Mockito.mock(SplitCacheConsumer.class);
         _segmentCacheConsumer = Mockito.mock(SegmentCacheConsumer.class);
-        _evaluator = new EvaluatorImp(_splitCache, _segmentCache);
+        _evaluator = new EvaluatorImp(_splitCacheConsumer, _segmentCacheConsumer);
         _matcher = Mockito.mock(CombiningMatcher.class);
         _evaluationContext = Mockito.mock(EvaluationContext.class);
 

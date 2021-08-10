@@ -1,12 +1,6 @@
 package io.split.engine.evaluator;
 
 import com.google.common.collect.Lists;
-import io.split.storages.memory.InMemoryCacheImp;
-import io.split.storages.SplitCache;
-import io.split.cache.InMemoryCacheImp;
-import io.split.cache.SegmentCache;
-import io.split.cache.SegmentCacheInMemoryImpl;
-import io.split.cache.SplitCache;
 import io.split.client.dtos.ConditionType;
 import io.split.client.dtos.MatcherCombiner;
 import io.split.client.dtos.Partition;
@@ -16,6 +10,10 @@ import io.split.engine.matchers.AttributeMatcher;
 import io.split.engine.matchers.CombiningMatcher;
 import io.split.engine.matchers.strings.EndsWithAnyOfMatcher;
 import io.split.engine.matchers.strings.WhitelistMatcher;
+import io.split.storages.SegmentCache;
+import io.split.storages.SplitCache;
+import io.split.storages.memory.InMemoryCacheImp;
+import io.split.storages.memory.SegmentCacheInMemoryImpl;
 import org.junit.Assert;
 import org.junit.Test;
 

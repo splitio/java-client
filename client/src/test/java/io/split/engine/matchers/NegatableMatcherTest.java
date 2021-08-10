@@ -1,14 +1,11 @@
 package io.split.engine.matchers;
 
 import com.google.common.collect.Lists;
-import io.split.storages.SegmentCache;
-import io.split.storages.memory.SegmentCacheInMemoryImpl;
-import io.split.cache.SegmentCache;
-import io.split.cache.SegmentCacheInMemoryImpl;
 import io.split.engine.evaluator.EvaluationContext;
 import io.split.engine.evaluator.Evaluator;
-import io.split.engine.evaluator.EvaluatorImp;
 import io.split.engine.matchers.strings.WhitelistMatcher;
+import io.split.storages.SegmentCache;
+import io.split.storages.memory.SegmentCacheInMemoryImpl;
 import org.junit.Test;
 import org.mockito.Mockito;
 

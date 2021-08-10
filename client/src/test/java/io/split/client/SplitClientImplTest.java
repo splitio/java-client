@@ -2,7 +2,6 @@ package io.split.client;
 
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
-import io.split.cache.SegmentCache;
 import io.split.client.api.Key;
 import io.split.client.api.SplitResult;
 import io.split.client.dtos.ConditionType;
@@ -13,6 +12,7 @@ import io.split.client.events.EventsStorageProducer;
 import io.split.client.events.NoopEventsStorageImp;
 import io.split.client.impressions.Impression;
 import io.split.client.impressions.ImpressionsManager;
+import io.split.storages.SegmentCacheConsumer;
 import io.split.storages.SplitCacheConsumer;
 import io.split.engine.evaluator.EvaluatorImp;
 import io.split.engine.SDKReadinessGates;
