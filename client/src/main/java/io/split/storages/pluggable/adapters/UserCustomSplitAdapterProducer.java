@@ -85,6 +85,7 @@ public class UserCustomSplitAdapterProducer implements SplitCacheProducer {
 
     @Override
     public Set<String> getSegments() {
+        //NoOp
         return new HashSet<>();
     }
 }

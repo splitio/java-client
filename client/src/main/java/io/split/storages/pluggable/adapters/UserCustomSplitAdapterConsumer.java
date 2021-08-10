@@ -70,6 +70,7 @@ public class UserCustomSplitAdapterConsumer  implements SplitCacheConsumer {
 
     @Override
     public Set<String> getSegments() {
+        //NoOp
         return new HashSet<>();
     }
 }
