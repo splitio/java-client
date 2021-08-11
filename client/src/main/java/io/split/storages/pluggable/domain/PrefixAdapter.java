@@ -9,6 +9,7 @@ public class PrefixAdapter {
     private static final String SPLIT_PREFIX = "split.";
     private static final String SPLITS_PREFIX = "splits.";
     private static final String TRAFFIC_TYPE_PREFIX = "trafficType.";
+    private static final String EVENTS = "events";
 
     //Split Consumer
     public static String buildSplitKey(String name) {
@@ -33,6 +34,10 @@ public class PrefixAdapter {
             prefixes.add(String.format(DEFAULT_PREFIX+ SPLIT_PREFIX +"{%s}", name));
         }
         return prefixes;
+    }
+
+    public static String buildEvent() {
+        return DEFAULT_PREFIX+EVENTS;
     }
 
 }

@@ -2,24 +2,24 @@ package io.split.storages.pluggable.adapters;
 
 import io.split.client.dtos.Event;
 import io.split.client.events.EventsStorageProducer;
+import io.split.client.utils.Json;
 import io.split.storages.pluggable.CustomStorageWrapper;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import io.split.storages.pluggable.domain.PrefixAdapter;
+import io.split.storages.pluggable.domain.SafeUserStorageWrapper;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
 public class UserCustomEventAdapterProducer implements EventsStorageProducer {
 
-    private static final Logger _log = LoggerFactory.getLogger(UserCustomEventAdapterProducer.class);
-
-    private final CustomStorageWrapper _customStorageWrapper;
+    private final SafeUserStorageWrapper _safeUserStorageWrapper;
 
     public UserCustomEventAdapterProducer(CustomStorageWrapper customStorageWrapper) {
-        _customStorageWrapper = checkNotNull(customStorageWrapper);
+        _safeUserStorageWrapper = new SafeUserStorageWrapper(checkNotNull(customStorageWrapper));
     }
 
     @Override
     public boolean track(Event event, int eventSize) {
-        return false;
+        _safeUserStorageWrapper.pushItems(PrefixAdapter.buildEvent(), Json.toJson(event));
+        return true;
     }
 }
