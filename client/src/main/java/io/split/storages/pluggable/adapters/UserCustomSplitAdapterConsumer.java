@@ -6,6 +6,7 @@ import io.split.engine.experiments.ParsedSplit;
 import io.split.engine.experiments.SplitParser;
 import io.split.storages.SplitCacheConsumer;
 import io.split.storages.pluggable.CustomStorageWrapper;
+import io.split.storages.pluggable.domain.SafeUserStorageWrapper;
 import io.split.storages.pluggable.domain.PrefixAdapter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -19,22 +20,30 @@ public class UserCustomSplitAdapterConsumer  implements SplitCacheConsumer {
 
     private static final Logger _log = LoggerFactory.getLogger(UserCustomSplitAdapterConsumer.class);
 
-    private final CustomStorageWrapper _customStorageWrapper;
     private final SplitParser _splitParser;
+    private final SafeUserStorageWrapper _safeUserStorageWrapper;
 
     public UserCustomSplitAdapterConsumer(CustomStorageWrapper customStorageWrapper) {
-        _customStorageWrapper = checkNotNull(customStorageWrapper);
         _splitParser = new SplitParser();
+        _safeUserStorageWrapper = new SafeUserStorageWrapper(checkNotNull(customStorageWrapper));
     }
 
     @Override
     public long getChangeNumber() {
-        return Json.fromJson(_customStorageWrapper.get(PrefixAdapter.buildSplitChangeNumber()), Long.class);
+        String wrapperResponse = _safeUserStorageWrapper.get(PrefixAdapter.buildSplitChangeNumber());
+        if(wrapperResponse == null) {
+            return 0L;
+        }
+        return Json.fromJson(wrapperResponse, Long.class);
     }
 
     @Override
     public ParsedSplit get(String name) {
-        Split split = Json.fromJson(_customStorageWrapper.get(PrefixAdapter.buildSplitKey(name)), Split.class);
+        String wrapperResponse = _safeUserStorageWrapper.get(PrefixAdapter.buildSplitKey(name));
+        if(wrapperResponse == null) {
+            return null;
+        }
+        Split split = Json.fromJson(wrapperResponse, Split.class);
         if(split == null) {
             _log.warn("Could not parse Split.");
             return null;
@@ -44,28 +53,39 @@ public class UserCustomSplitAdapterConsumer  implements SplitCacheConsumer {
 
     @Override
     public Collection<ParsedSplit> getAll() {
-        List<Split> splits = Json.fromJsonToArray(_customStorageWrapper.get(PrefixAdapter.buildGetAllSplit()), Split[].class);
-        if(splits == null || splits.size() == 0) {
+        String wrapperResponse = _safeUserStorageWrapper.get(PrefixAdapter.buildGetAllSplit());
+        if(wrapperResponse == null) {
+            return new ArrayList<>();
+        }
+        List<Split> splits = Json.fromJsonToArray(wrapperResponse, Split[].class);
+        if(splits.size() == 0) {
             _log.warn("Could not parse Splits.");
             return new ArrayList<>();
         }
-        return splits.stream().map(s -> _splitParser.parse(s)).collect(Collectors.toList());
+        return splits.stream().map(_splitParser::parse).collect(Collectors.toList());
     }
 
     @Override
     public boolean trafficTypeExists(String trafficTypeName) {
-        boolean splits = Json.fromJson(_customStorageWrapper.get(PrefixAdapter.buildTrafficTypeExists(trafficTypeName)), Boolean.class);
-        return splits;
+        String wrapperResponse = _safeUserStorageWrapper.get(PrefixAdapter.buildTrafficTypeExists(trafficTypeName));
+        if(wrapperResponse == null) {
+            return false;
+        }
+        return Json.fromJson(wrapperResponse, Boolean.class);
     }
 
     @Override
     public Collection<ParsedSplit> fetchMany(List<String> names) {
-        List<Split> splits = Json.fromJsonToArray(_customStorageWrapper.getItems(PrefixAdapter.buildFetchManySplits(names)), Split[].class);
-        if(splits == null || splits.size() == 0) {
+        String wrapperResponse = _safeUserStorageWrapper.getItems(PrefixAdapter.buildFetchManySplits(names));
+        if(wrapperResponse == null) {
+            return new ArrayList<>();
+        }
+        List<Split> splits = Json.fromJsonToArray(wrapperResponse, Split[].class);
+        if(splits.size() == 0) {
             _log.warn("Could not parse Splits.");
             return new ArrayList<>();
         }
-        return splits.stream().map(s -> _splitParser.parse(s)).collect(Collectors.toList());
+        return splits.stream().map(_splitParser::parse).collect(Collectors.toList());
     }
 
     @Override

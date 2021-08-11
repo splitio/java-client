@@ -11,11 +11,14 @@ import io.split.engine.experiments.SplitParser;
 import io.split.grammar.Treatments;
 import io.split.storages.pluggable.CustomStorageWrapper;
 import io.split.storages.pluggable.domain.PrefixAdapter;
+import io.split.storages.pluggable.domain.SafeUserStorageWrapper;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mockito;
 
+import java.lang.reflect.Field;
+import java.lang.reflect.Modifier;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -23,83 +26,101 @@ public class UserCustomSplitAdapterProducerTest{
 
     private static final String SPLIT_NAME = "SplitName";
     private CustomStorageWrapper _customStorageWrapper;
+    private SafeUserStorageWrapper _safeUserStorageWrapper;
+    private UserCustomSplitAdapterProducer _userCustomSplitAdapterProducer;
 
     @Before
-    public void setUp() {
+    public void setUp() throws NoSuchFieldException, IllegalAccessException {
         _customStorageWrapper = Mockito.mock(CustomStorageWrapper.class);
+        _safeUserStorageWrapper = Mockito.mock(SafeUserStorageWrapper.class);
+        _userCustomSplitAdapterProducer = new UserCustomSplitAdapterProducer(_customStorageWrapper);
+        Field userCustomSplitAdapterProducer = UserCustomSplitAdapterProducer.class.getDeclaredField("_safeUserStorageWrapper");
+        userCustomSplitAdapterProducer.setAccessible(true);
+        Field modifiersField = Field.class.getDeclaredField("modifiers");
+        modifiersField.setAccessible(true);
+        modifiersField.setInt(userCustomSplitAdapterProducer, userCustomSplitAdapterProducer.getModifiers() & ~Modifier.FINAL);
+        userCustomSplitAdapterProducer.set(_userCustomSplitAdapterProducer, _safeUserStorageWrapper);
     }
 
     @Test
     public void testGetChangeNumber() {
-        UserCustomSplitAdapterProducer userCustomSplitAdapterProducer = new UserCustomSplitAdapterProducer(_customStorageWrapper);
-        Mockito.when(_customStorageWrapper.get(PrefixAdapter.buildSplitChangeNumber())).thenReturn(UserCustomSplitAdapterConsumerTest.getLongAsJson(120l));
-        Assert.assertEquals(120l, userCustomSplitAdapterProducer.getChangeNumber());
-        Mockito.verify(_customStorageWrapper, Mockito.times(1)).get(Mockito.anyString());
+        Mockito.when(_safeUserStorageWrapper.get(PrefixAdapter.buildSplitChangeNumber())).thenReturn(UserCustomSplitAdapterConsumerTest.getLongAsJson(120L));
+        Assert.assertEquals(120L, _userCustomSplitAdapterProducer.getChangeNumber());
+        Mockito.verify(_safeUserStorageWrapper, Mockito.times(1)).get(Mockito.anyString());
     }
 
     @Test
-    public void testPut() {
-        //Noop
-        UserCustomSplitAdapterProducer userCustomSplitAdapterProducer = new UserCustomSplitAdapterProducer(_customStorageWrapper);
-        userCustomSplitAdapterProducer.put(Mockito.mock(ParsedSplit.class));
+    public void testGetChangeNumberWithWrapperFailing() {
+        Mockito.when(_safeUserStorageWrapper.get(PrefixAdapter.buildSplitChangeNumber())).thenReturn(null);
+        Assert.assertEquals(0L, _userCustomSplitAdapterProducer.getChangeNumber());
+        Mockito.verify(_safeUserStorageWrapper, Mockito.times(1)).get(Mockito.anyString());
     }
 
     @Test
-    public void testRemove () {
-        UserCustomSplitAdapterProducer userCustomSplitAdapterProducer = new UserCustomSplitAdapterProducer(_customStorageWrapper);
-        Assert.assertTrue(userCustomSplitAdapterProducer.remove(SPLIT_NAME));
-        Mockito.verify(_customStorageWrapper, Mockito.times(1)).delete(Mockito.anyObject());
+    public void testRemove() {
+        Split split = getSplit(SPLIT_NAME);
+        Mockito.when(_safeUserStorageWrapper.get(PrefixAdapter.buildSplitKey(SPLIT_NAME)))
+                .thenReturn(UserCustomSplitAdapterConsumerTest.getSplitAsJson(split));
+        _userCustomSplitAdapterProducer.remove(SPLIT_NAME);
+        Mockito.verify(_safeUserStorageWrapper, Mockito.times(2)).delete(Mockito.anyObject());
+        Mockito.verify(_safeUserStorageWrapper, Mockito.times(1)).decrement(Mockito.anyObject(), Mockito.anyLong());
+        Mockito.verify(_safeUserStorageWrapper, Mockito.times(1)).get(Mockito.anyString());
+    }
+
+    @Test
+    public void testRemoveWithWrapperFailing() {
+        Mockito.when(_safeUserStorageWrapper.get(PrefixAdapter.buildSplitKey(SPLIT_NAME)))
+                .thenReturn(null);
+        Assert.assertFalse(_userCustomSplitAdapterProducer.remove(SPLIT_NAME));
+        Mockito.verify(_safeUserStorageWrapper, Mockito.times(0)).delete(Mockito.anyObject());
+        Mockito.verify(_safeUserStorageWrapper, Mockito.times(0)).decrement(Mockito.anyObject(), Mockito.anyLong());
+        Mockito.verify(_safeUserStorageWrapper, Mockito.times(1)).get(Mockito.anyString());
     }
 
     @Test
     public void testSetChangeNumber()  {
-        UserCustomSplitAdapterProducer userCustomSplitAdapterProducer = new UserCustomSplitAdapterProducer(_customStorageWrapper);
-        userCustomSplitAdapterProducer.setChangeNumber(1l);
-        Mockito.verify(_customStorageWrapper, Mockito.times(1)).set(Mockito.anyString(), Mockito.anyString());
+        _userCustomSplitAdapterProducer.setChangeNumber(1L);
+        Mockito.verify(_safeUserStorageWrapper, Mockito.times(1)).set(Mockito.anyString(), Mockito.anyString());
     }
 
     @Test
     public void testKill() {
-        UserCustomSplitAdapterProducer userCustomSplitAdapterProducer = new UserCustomSplitAdapterProducer(_customStorageWrapper);
-        Mockito.when(_customStorageWrapper.get(PrefixAdapter.buildSplitKey(SPLIT_NAME))).thenReturn(UserCustomSplitAdapterConsumerTest.getSplitAsJson(getSplit(SPLIT_NAME)));
-        userCustomSplitAdapterProducer.kill(SPLIT_NAME, "DefaultTreatment", 2l);
-        Mockito.verify(_customStorageWrapper, Mockito.times(1)).get(Mockito.anyString());
-        Mockito.verify(_customStorageWrapper, Mockito.times(1)).set(Mockito.anyString(), Mockito.anyString());
+        Mockito.when(_safeUserStorageWrapper.get(PrefixAdapter.buildSplitKey(SPLIT_NAME))).thenReturn(UserCustomSplitAdapterConsumerTest.getSplitAsJson(getSplit(SPLIT_NAME)));
+        _userCustomSplitAdapterProducer.kill(SPLIT_NAME, "DefaultTreatment", 2L);
+        Mockito.verify(_safeUserStorageWrapper, Mockito.times(1)).get(Mockito.anyString());
+        Mockito.verify(_safeUserStorageWrapper, Mockito.times(1)).set(Mockito.anyString(), Mockito.anyString());
     }
 
     @Test
     public void testKillSplitNotFound() {
-        UserCustomSplitAdapterProducer userCustomSplitAdapterProducer = new UserCustomSplitAdapterProducer(_customStorageWrapper);
-        Mockito.when(_customStorageWrapper.get(PrefixAdapter.buildSplitKey(SPLIT_NAME))).thenReturn(null);
-        userCustomSplitAdapterProducer.kill(SPLIT_NAME, "DefaultTreatment", 2l);
-        Mockito.verify(_customStorageWrapper, Mockito.times(1)).get(Mockito.anyString());
-        Mockito.verify(_customStorageWrapper, Mockito.times(0)).set(Mockito.anyString(), Mockito.anyString());
+        Mockito.when(_safeUserStorageWrapper.get(PrefixAdapter.buildSplitKey(SPLIT_NAME))).thenReturn(null);
+        _userCustomSplitAdapterProducer.kill(SPLIT_NAME, "DefaultTreatment", 2L);
+        Mockito.verify(_safeUserStorageWrapper, Mockito.times(1)).get(Mockito.anyString());
+        Mockito.verify(_safeUserStorageWrapper, Mockito.times(0)).set(Mockito.anyString(), Mockito.anyString());
     }
 
     @Test
     public void testPutMany() {
-        UserCustomSplitAdapterProducer userCustomSplitAdapterProducer = new UserCustomSplitAdapterProducer(_customStorageWrapper);
         SplitParser splitParser = new SplitParser();
         ParsedSplit parsedSplit = splitParser.parse(getSplit(SPLIT_NAME));
         ParsedSplit parsedSplit2 = splitParser.parse(getSplit(SPLIT_NAME+"2"));
-        userCustomSplitAdapterProducer.putMany(Stream.of(parsedSplit, parsedSplit2).collect(Collectors.toList()), 1l);
-        Mockito.verify(_customStorageWrapper, Mockito.times(3)).set(Mockito.anyString(), Mockito.anyString());
+        _userCustomSplitAdapterProducer.putMany(Stream.of(parsedSplit, parsedSplit2).collect(Collectors.toList()), 1L);
+        Mockito.verify(_safeUserStorageWrapper, Mockito.times(3)).set(Mockito.anyString(), Mockito.anyString());
+        Mockito.verify(_safeUserStorageWrapper, Mockito.times(2)).increment(Mockito.anyString(), Mockito.anyLong());
 
     }
 
     @Test
     public void testIncreaseTrafficType() {
-        UserCustomSplitAdapterProducer userCustomSplitAdapterProducer = new UserCustomSplitAdapterProducer(_customStorageWrapper);
-        userCustomSplitAdapterProducer.increaseTrafficType("TrafficType");
-        Mockito.verify(_customStorageWrapper, Mockito.times(1)).increment(PrefixAdapter.buildTrafficTypeExists("TrafficType"), 1);
+        _userCustomSplitAdapterProducer.increaseTrafficType("TrafficType");
+        Mockito.verify(_safeUserStorageWrapper, Mockito.times(1)).increment(PrefixAdapter.buildTrafficTypeExists("TrafficType"), 1);
     }
 
     @Test
     public void testDecreaseTrafficType() {
-        UserCustomSplitAdapterProducer userCustomSplitAdapterProducer = new UserCustomSplitAdapterProducer(_customStorageWrapper);
-        userCustomSplitAdapterProducer.decreaseTrafficType("TrafficType");
-        Mockito.verify(_customStorageWrapper, Mockito.times(1)).decrement(PrefixAdapter.buildTrafficTypeExists("TrafficType"), 1);
-        Mockito.verify(_customStorageWrapper, Mockito.times(1)).delete(Mockito.anyObject());
+        _userCustomSplitAdapterProducer.decreaseTrafficType("TrafficType");
+        Mockito.verify(_safeUserStorageWrapper, Mockito.times(1)).decrement(PrefixAdapter.buildTrafficTypeExists("TrafficType"), 1);
+        Mockito.verify(_safeUserStorageWrapper, Mockito.times(1)).delete(Mockito.anyObject());
 
     }
 
@@ -124,12 +145,13 @@ public class UserCustomSplitAdapterProducerTest{
         Split split = new Split();
         split.status = Status.ACTIVE;
         split.trafficAllocation = 100;
-        split.trafficAllocationSeed = (int) 12l;
-        split.seed = (int) 12l;
+        split.trafficAllocationSeed = (int) 12L;
+        split.seed = (int) 12L;
         split.conditions = Lists.newArrayList(condition);
         split.name = name;
         split.defaultTreatment = Treatments.OFF;
-        split.changeNumber = 12l;
+        split.changeNumber = 12L;
+        split.trafficTypeName = "TrafficType";
         return split;
     }
 

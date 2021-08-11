@@ -18,6 +18,8 @@ import org.slf4j.LoggerFactory;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
@@ -156,7 +158,7 @@ public class SplitFetcherImp implements SplitFetcher {
                     _splitCacheProducer.remove(split.name);
                 }
 
-                _splitCacheProducer.put(parsedSplit);
+                _splitCacheProducer.putMany(Stream.of(parsedSplit).collect(Collectors.toList()), change.till);
                 _log.debug("Updated feature: " + parsedSplit.feature());
             }
 
