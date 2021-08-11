@@ -37,18 +37,8 @@ public class InMemoryCacheImp implements SplitCache {
     }
 
     @Override
-    public void put(ParsedSplit split) {
-        _concurrentMap.put(split.feature(), split);
-
-        if (split.trafficTypeName() != null) {
-            this.increaseTrafficType(split.trafficTypeName());
-        }
-    }
-
-    @Override
     public boolean remove(String name) {
         ParsedSplit removed = _concurrentMap.remove(name);
-
         if (removed != null && removed.trafficTypeName() != null) {
             this.decreaseTrafficType(removed.trafficTypeName());
         }
@@ -130,7 +120,11 @@ public class InMemoryCacheImp implements SplitCache {
     @Override
     public void putMany(List<ParsedSplit> splits, long changeNumber) {
         for (ParsedSplit split : splits) {
-            this.put(split);
+            _concurrentMap.put(split.feature(), split);
+
+            if (split.trafficTypeName() != null) {
+                this.increaseTrafficType(split.trafficTypeName());
+            }
         }
         this.setChangeNumber(changeNumber);
     }

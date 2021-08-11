@@ -20,6 +20,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Comparator;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
@@ -51,12 +52,12 @@ public final  class CacheUpdaterService {
             configurations.put(localhostSplit.treatment, localhostSplit.config);
 
             split = new ParsedSplit(splitName, 0, false, treatment,conditions, LOCALHOST, 0, 100, 0, 0, configurations);
-            _splitCacheProducer.put(split);
+            _splitCacheProducer.putMany(Stream.of(split).collect(Collectors.toList()), _splitCacheProducer.getChangeNumber());
         }
     }
 
     private List<ParsedCondition> getConditions(String splitKey, ParsedSplit split, String treatment){
-        List<ParsedCondition> conditions = split == null ? new ArrayList<>() : split.parsedConditions().stream().collect(Collectors.toList());
+        List<ParsedCondition> conditions = split == null ? new ArrayList<>() : new ArrayList<>(split.parsedConditions());
         Partition partition = new Partition();
         partition.treatment = treatment;
         partition.size = 100;
