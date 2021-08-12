@@ -14,11 +14,7 @@ import io.split.grammar.Treatments;
 import io.split.storages.SplitCacheConsumer;
 import io.split.storages.SplitCacheProducer;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Comparator;
+import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -37,23 +33,27 @@ public final  class CacheUpdaterService {
 
     public void updateCache(Map<SplitAndKey, LocalhostSplit> map) {
         _splitCacheProducer.clear();
+        List<ParsedSplit> parsedSplits = new ArrayList<>();
         for (Map.Entry<SplitAndKey,LocalhostSplit> entrySplit : map.entrySet()) {
             SplitAndKey splitAndKey = entrySplit.getKey();
             String splitName = splitAndKey.split();
             String splitKey = splitAndKey.key();
             LocalhostSplit localhostSplit = entrySplit.getValue();
-            ParsedSplit split = _splitCacheConsumer.get(splitName);
-            List<ParsedCondition> conditions = getConditions(splitKey, split, localhostSplit.treatment);
-            String treatment = conditions.size() > 0 ? Treatments.CONTROL : localhostSplit.treatment;
+            Optional<ParsedSplit> splitOptional = parsedSplits.stream().filter(ps -> ps.feature().equals(splitName)).findFirst();
+            ParsedSplit split = splitOptional.orElse(null);
             Map<String, String> configurations = new HashMap<>();
             if(split != null && split.configurations().size() > 0) {
                 configurations = split.configurations();
             }
+            List<ParsedCondition> conditions = getConditions(splitKey, split, localhostSplit.treatment);
+            String treatment = conditions.size() > 0 ? Treatments.CONTROL : localhostSplit.treatment;
             configurations.put(localhostSplit.treatment, localhostSplit.config);
 
             split = new ParsedSplit(splitName, 0, false, treatment,conditions, LOCALHOST, 0, 100, 0, 0, configurations);
-            _splitCacheProducer.putMany(Stream.of(split).collect(Collectors.toList()), _splitCacheProducer.getChangeNumber());
+            parsedSplits.removeIf(parsedSplit -> parsedSplit.feature().equals(splitName));
+            parsedSplits.add(split);
         }
+        _splitCacheProducer.putMany(parsedSplits, _splitCacheProducer.getChangeNumber());
     }
 
     private List<ParsedCondition> getConditions(String splitKey, ParsedSplit split, String treatment){

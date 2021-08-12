@@ -38,8 +38,4 @@ public class Json {
         return _json.fromJson(json, clz);
     }
 
-    public static <T> List<T> fromJsonToArray(String s, Class<T[]> clz) {
-        return Arrays.asList(_json.fromJson(s, clz));
-    }
-
 }

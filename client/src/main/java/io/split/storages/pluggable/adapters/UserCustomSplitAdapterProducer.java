@@ -45,7 +45,7 @@ public class UserCustomSplitAdapterProducer implements SplitCacheProducer {
         }
         Split split = Json.fromJson(wrapperResponse, Split.class);
         if(split == null) {
-            _log.warn("Could not parse Split.");
+            _log.info("Could not parse Split.");
             return false;
         }
         _safeUserStorageWrapper.delete(Stream.of(PrefixAdapter.buildSplitKey(splitName)).collect(Collectors.toList()));
@@ -68,7 +68,7 @@ public class UserCustomSplitAdapterProducer implements SplitCacheProducer {
         }
         Split split = Json.fromJson(wrapperResponse, Split.class);
         if(split == null) {
-            _log.warn("Could not parse Split.");
+            _log.info("Could not parse Split.");
             return;
         }
         _safeUserStorageWrapper.set(PrefixAdapter.buildSplitKey(splitName), Json.toJson(split));
@@ -95,8 +95,10 @@ public class UserCustomSplitAdapterProducer implements SplitCacheProducer {
 
     @Override
     public void decreaseTrafficType(String trafficType) {
-        _safeUserStorageWrapper.decrement(PrefixAdapter.buildTrafficTypeExists(trafficType), 1);
-        _safeUserStorageWrapper.delete(Stream.of(PrefixAdapter.buildTrafficTypeExists(trafficType)).collect(Collectors.toList()));
+        long trafficTypeCount = _safeUserStorageWrapper.decrement(PrefixAdapter.buildTrafficTypeExists(trafficType), 1);
+        if(trafficTypeCount<=0) {
+            _safeUserStorageWrapper.delete(Stream.of(PrefixAdapter.buildTrafficTypeExists(trafficType)).collect(Collectors.toList()));
+        }
     }
 
     @Override

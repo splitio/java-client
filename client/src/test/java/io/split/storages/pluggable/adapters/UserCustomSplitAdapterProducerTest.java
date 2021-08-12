@@ -61,8 +61,23 @@ public class UserCustomSplitAdapterProducerTest{
         Split split = getSplit(SPLIT_NAME);
         Mockito.when(_safeUserStorageWrapper.get(PrefixAdapter.buildSplitKey(SPLIT_NAME)))
                 .thenReturn(UserCustomSplitAdapterConsumerTest.getSplitAsJson(split));
+        Mockito.when(_safeUserStorageWrapper.decrement(Mockito.anyString(), Mockito.anyLong()))
+                .thenReturn(0L);
         _userCustomSplitAdapterProducer.remove(SPLIT_NAME);
         Mockito.verify(_safeUserStorageWrapper, Mockito.times(2)).delete(Mockito.anyObject());
+        Mockito.verify(_safeUserStorageWrapper, Mockito.times(1)).decrement(Mockito.anyObject(), Mockito.anyLong());
+        Mockito.verify(_safeUserStorageWrapper, Mockito.times(1)).get(Mockito.anyString());
+    }
+
+    @Test
+    public void testRemoveWithNoDelete() {
+        Split split = getSplit(SPLIT_NAME);
+        Mockito.when(_safeUserStorageWrapper.get(PrefixAdapter.buildSplitKey(SPLIT_NAME)))
+                .thenReturn(UserCustomSplitAdapterConsumerTest.getSplitAsJson(split));
+        Mockito.when(_safeUserStorageWrapper.decrement(Mockito.anyString(), Mockito.anyLong()))
+                .thenReturn(1L);
+        _userCustomSplitAdapterProducer.remove(SPLIT_NAME);
+        Mockito.verify(_safeUserStorageWrapper, Mockito.times(1)).delete(Mockito.anyObject());
         Mockito.verify(_safeUserStorageWrapper, Mockito.times(1)).decrement(Mockito.anyObject(), Mockito.anyLong());
         Mockito.verify(_safeUserStorageWrapper, Mockito.times(1)).get(Mockito.anyString());
     }

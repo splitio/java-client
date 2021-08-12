@@ -5,6 +5,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
@@ -30,7 +32,7 @@ public class SafeUserStorageWrapper implements CustomStorageWrapper {
     }
 
     @Override
-    public String getMany(List<String> keys) {
+    public List<String> getMany(List<String> keys) {
         try {
             return _customStorageWrapper.getMany(keys);
         }
@@ -61,17 +63,6 @@ public class SafeUserStorageWrapper implements CustomStorageWrapper {
     }
 
     @Override
-    public String getByPrefix(String prefix){
-        try {
-            return _customStorageWrapper.getByPrefix(prefix);
-        }
-        catch (Exception e) {
-            _log.error(String.format("error fetching key '%s' from storage. Error: '%s'", prefix, e.getMessage()));
-            return null;
-        }
-    }
-
-    @Override
     public String getAndSet(String key, String item){
         try {
             return _customStorageWrapper.getAndSet(key, item);
@@ -83,7 +74,7 @@ public class SafeUserStorageWrapper implements CustomStorageWrapper {
     }
 
     @Override
-    public String getKeysByPrefix(String prefix){
+    public Set<String> getKeysByPrefix(String prefix){
         try {
             return _customStorageWrapper.getKeysByPrefix(prefix);
         }
@@ -94,27 +85,29 @@ public class SafeUserStorageWrapper implements CustomStorageWrapper {
     }
 
     @Override
-    public void increment(String key, long value) {
+    public long increment(String key, long value) {
         try {
-            _customStorageWrapper.increment(key, value);
+            return _customStorageWrapper.increment(key, value);
         }
         catch (Exception e) {
             _log.error(String.format("error incrementing key '%s' from storage. Error: '%s'", key, e.getMessage()));
+            return 0L;
         }
     }
 
     @Override
-    public void decrement(String key, long value) {
+    public long decrement(String key, long value) {
         try {
-            _customStorageWrapper.decrement(key, value);
+            return _customStorageWrapper.decrement(key, value);
         }
         catch (Exception e) {
             _log.error(String.format("error decrementing key '%s' from storage. Error: '%s'", key, e.getMessage()));
+            return 0L;
         }
     }
 
     @Override
-    public void pushItems(String key, String items) {
+    public void pushItems(String key, List<String> items) {
         try {
             _customStorageWrapper.pushItems(key, items);
         }
@@ -124,7 +117,7 @@ public class SafeUserStorageWrapper implements CustomStorageWrapper {
     }
 
     @Override
-    public String popItems(String key, long count){
+    public List<String> popItems(String key, long count){
         try {
             return _customStorageWrapper.popItems(key, count);
         }
@@ -141,7 +134,7 @@ public class SafeUserStorageWrapper implements CustomStorageWrapper {
         }
         catch (Exception e) {
             _log.error(String.format("error getting items count key '%s' from storage. Error: '%s'", key, e.getMessage()));
-            return 0L;
+            return -1L;
         }
     }
 
@@ -157,7 +150,7 @@ public class SafeUserStorageWrapper implements CustomStorageWrapper {
     }
 
     @Override
-    public void addItems(String key, String items) {
+    public void addItems(String key, List<String> items) {
         try {
             _customStorageWrapper.addItems(key, items);
         }
@@ -167,7 +160,7 @@ public class SafeUserStorageWrapper implements CustomStorageWrapper {
     }
 
     @Override
-    public void removeItems(String key, String items) {
+    public void removeItems(String key, List<String> items) {
         try {
             _customStorageWrapper.removeItems(key, items);
         }
@@ -177,7 +170,7 @@ public class SafeUserStorageWrapper implements CustomStorageWrapper {
     }
 
     @Override
-    public String getItems(List<String> keys){
+    public List<String> getItems(List<String> keys){
         try {
             return _customStorageWrapper.getItems(keys);
         }
