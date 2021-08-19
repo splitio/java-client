@@ -164,8 +164,8 @@ public class SplitFetcherImp implements SplitFetcher {
                 _log.debug("Updated feature: " + parsedSplit.feature());
             }
 
+            _splitCacheProducer.putMany(parsedSplits);
             _splitCacheProducer.setChangeNumber(change.till);
-            _splitCacheProducer.putMany(parsedSplits, change.till);
             _telemetryRuntimeProducer.recordSuccessfulSync(LastSynchronizationRecordsEnum.SPLITS, System.currentTimeMillis());
         }
         return segments;

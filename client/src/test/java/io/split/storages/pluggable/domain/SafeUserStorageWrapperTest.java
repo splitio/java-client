@@ -188,7 +188,7 @@ public class SafeUserStorageWrapperTest{
     }
 
     @Test
-    public void testGetItemsCount(){
+    public void testGetItemsCount() throws Exception {
         long response = 2L;
         Mockito.when(_customStorageWrapper.getItemsCount(Mockito.anyString())).thenReturn(response);
         long result = _safeUserStorageWrapper.getItemsCount(KEY);
@@ -196,7 +196,7 @@ public class SafeUserStorageWrapperTest{
     }
 
     @Test
-    public void testGetItemsCountException(){
+    public void testGetItemsCountException() throws Exception {
         Mockito.when(_customStorageWrapper.getItemsCount(Mockito.anyString())).thenThrow(Exception.class);
         long result = _safeUserStorageWrapper.getItemsCount(KEY);
         Assert.assertEquals(-1L, result);

@@ -58,6 +58,13 @@ public class UserCustomSplitAdapterConsumerTest {
     }
 
     @Test
+    public void testGetChangeNumberWithGsonFailing() {
+        Mockito.when(_safeUserStorageWrapper.get(PrefixAdapter.buildSplitChangeNumber())).thenReturn("a");
+        Assert.assertEquals(-1L, _userCustomSplitAdapterConsumer.getChangeNumber());
+        Mockito.verify(_safeUserStorageWrapper, Mockito.times(1)).get(Mockito.anyString());
+    }
+
+    @Test
     public void testGetSplit() {
         SplitParser splitParser = new SplitParser();
         Split split = getSplit(SPLIT_NAME);
@@ -133,6 +140,14 @@ public class UserCustomSplitAdapterConsumerTest {
     public void testTrafficTypeExistsWithWrapperFailing() {
         Mockito.when(_safeUserStorageWrapper.get(PrefixAdapter.buildTrafficTypeExists("TrafficType"))).
                 thenReturn(null);
+        boolean result = _userCustomSplitAdapterConsumer.trafficTypeExists("TrafficType");
+        Assert.assertFalse(result);
+    }
+
+    @Test
+    public void testTrafficTypeExistsWithGsonFailing() {
+        Mockito.when(_safeUserStorageWrapper.get(PrefixAdapter.buildTrafficTypeExists("TrafficType"))).
+                thenReturn("2");
         boolean result = _userCustomSplitAdapterConsumer.trafficTypeExists("TrafficType");
         Assert.assertFalse(result);
     }

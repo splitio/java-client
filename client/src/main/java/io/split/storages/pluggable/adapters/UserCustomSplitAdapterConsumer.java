@@ -35,10 +35,17 @@ public class UserCustomSplitAdapterConsumer  implements SplitCacheConsumer {
     @Override
     public long getChangeNumber() {
         String wrapperResponse = _safeUserStorageWrapper.get(PrefixAdapter.buildSplitChangeNumber());
-        if(wrapperResponse == null) {
-            return -1L;
+        long response = -1L;
+        if(wrapperResponse==null) {
+            return response;
         }
-        return Json.fromJson(wrapperResponse, Long.class);
+        try{
+            response = Json.fromJson(wrapperResponse, Long.class);
+        }
+        catch(Exception e) {
+            _log.info("Error getting long value from String.");
+        }
+        return response;
     }
 
     @Override
@@ -71,10 +78,18 @@ public class UserCustomSplitAdapterConsumer  implements SplitCacheConsumer {
     @Override
     public boolean trafficTypeExists(String trafficTypeName) {
         String wrapperResponse = _safeUserStorageWrapper.get(PrefixAdapter.buildTrafficTypeExists(trafficTypeName));
+        boolean response = false;
         if(wrapperResponse == null) {
-            return false;
+            return response;
         }
-        return Json.fromJson(wrapperResponse, Boolean.class);
+        try {
+            response = Json.fromJson(wrapperResponse, Boolean.class);
+            return response;
+        }
+        catch(Exception e) {
+            _log.info("Error getting boolean from String.");
+        }
+        return response;
     }
 
     @Override

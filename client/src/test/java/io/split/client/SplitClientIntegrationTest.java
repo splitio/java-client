@@ -394,7 +394,6 @@ public class SplitClientIntegrationTest {
         responses.add(response);
         SplitMockServer splitServer = new SplitMockServer(CustomDispatcher.builder()
                 .path(CustomDispatcher.SINCE_1585948850109, responses)
-//                .path(CustomDispatcher.SINCE_1585948850112, responses2)
                 .build());
 
         SSEMockServer.SseEventQueue eventQueue1 = new SSEMockServer.SseEventQueue();

@@ -53,7 +53,8 @@ public final  class CacheUpdaterService {
             parsedSplits.removeIf(parsedSplit -> parsedSplit.feature().equals(splitName));
             parsedSplits.add(split);
         }
-        _splitCacheProducer.putMany(parsedSplits, _splitCacheProducer.getChangeNumber());
+        _splitCacheProducer.putMany(parsedSplits);
+        _splitCacheProducer.setChangeNumber(_splitCacheProducer.getChangeNumber());
     }
 
     private List<ParsedCondition> getConditions(String splitKey, ParsedSplit split, String treatment){

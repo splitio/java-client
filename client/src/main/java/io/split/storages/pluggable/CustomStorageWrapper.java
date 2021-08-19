@@ -20,7 +20,7 @@ public interface CustomStorageWrapper {
     // queue operations
     void pushItems(String key, List<String> items) throws Exception;
     List<String> popItems(String key, long count) throws Exception;
-    long getItemsCount(String key);
+    long getItemsCount(String key) throws Exception;
 
     // set operations
     boolean itemContains(String key, String item) throws Exception;
