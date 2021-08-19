@@ -109,6 +109,23 @@ public class SafeUserStorageWrapperTest{
     }
 
     @Test
+    public void testGetKeysByPrefix() throws Exception {
+        Set<String> response =new HashSet<>();
+        response.add(RESPONSE);
+        Mockito.when(_customStorageWrapper.getKeysByPrefix(Mockito.anyString())).thenReturn(response);
+        Set<String> result = _safeUserStorageWrapper.getKeysByPrefix(KEY);
+        Assert.assertNotNull(result);
+        Assert.assertTrue(result.contains(RESPONSE));
+    }
+
+    @Test
+    public void testGetKeysByPrefixException() throws Exception {
+        Mockito.when(_customStorageWrapper.getKeysByPrefix(Mockito.anyString())).thenThrow(Exception.class);
+        Set<String> result = _safeUserStorageWrapper.getKeysByPrefix(KEY);
+        Assert.assertNull(result);
+    }
+
+    @Test
     public void testIncrement() throws Exception {
         long response = 2L;
         Mockito.when(_customStorageWrapper.increment(Mockito.anyString(), Mockito.anyLong())).thenReturn(response);
