@@ -7,6 +7,10 @@ import io.split.storages.pluggable.CustomStorageWrapper;
 import io.split.storages.pluggable.domain.PrefixAdapter;
 import io.split.storages.pluggable.domain.SafeUserStorageWrapper;
 
+import java.util.List;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+
 import static com.google.common.base.Preconditions.checkNotNull;
 
 public class UserCustomEventAdapterProducer implements EventsStorageProducer {
@@ -19,7 +23,8 @@ public class UserCustomEventAdapterProducer implements EventsStorageProducer {
 
     @Override
     public boolean track(Event event, int eventSize) {
-        _safeUserStorageWrapper.pushItems(PrefixAdapter.buildEvent(), Json.toJson(event));
+        List<String> events = Stream.of(Json.toJson(event)).collect(Collectors.toList());
+        _safeUserStorageWrapper.pushItems(PrefixAdapter.buildEvent(), events);
         return true;
     }
 }
