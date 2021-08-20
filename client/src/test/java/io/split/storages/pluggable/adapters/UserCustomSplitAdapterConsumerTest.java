@@ -19,6 +19,7 @@ import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -52,7 +53,14 @@ public class UserCustomSplitAdapterConsumerTest {
     @Test
     public void testGetChangeNumberWithWrapperFailing() {
         Mockito.when(_safeUserStorageWrapper.get(PrefixAdapter.buildSplitChangeNumber())).thenReturn(null);
-        Assert.assertEquals(0L, _userCustomSplitAdapterConsumer.getChangeNumber());
+        Assert.assertEquals(-1L, _userCustomSplitAdapterConsumer.getChangeNumber());
+        Mockito.verify(_safeUserStorageWrapper, Mockito.times(1)).get(Mockito.anyString());
+    }
+
+    @Test
+    public void testGetChangeNumberWithGsonFailing() {
+        Mockito.when(_safeUserStorageWrapper.get(PrefixAdapter.buildSplitChangeNumber())).thenReturn("a");
+        Assert.assertEquals(-1L, _userCustomSplitAdapterConsumer.getChangeNumber());
         Mockito.verify(_safeUserStorageWrapper, Mockito.times(1)).get(Mockito.anyString());
     }
 
@@ -75,16 +83,20 @@ public class UserCustomSplitAdapterConsumerTest {
 
     @Test
     public void testGetAll(){
-        SplitParser splitParser = new SplitParser();
         Split split = getSplit(SPLIT_NAME);
         Split split2 = getSplit(SPLIT_NAME+"2");
         List<Split> listResultExpected = Stream.of(split, split2).collect(Collectors.toList());
-        Mockito.when(_safeUserStorageWrapper.get(PrefixAdapter.buildGetAllSplit())).
-                thenReturn(getListOfSplitsAsJson(listResultExpected));
+        Set<String> keysResult = Stream.of(SPLIT_NAME, SPLIT_NAME+"2").collect(Collectors.toSet());
+        Mockito.when(_safeUserStorageWrapper.getKeysByPrefix(Mockito.anyObject())).
+                thenReturn(keysResult);
+        List<String> getManyExpected = Stream.of(Json.toJson(split), Json.toJson(split2)).collect(Collectors.toList());
+        Mockito.when(_safeUserStorageWrapper.getMany(Mockito.anyObject())).
+                thenReturn(getManyExpected);
         List<ParsedSplit> splitsResult = (List<ParsedSplit>) _userCustomSplitAdapterConsumer.getAll();
-        List<ParsedSplit> splitsExpected = Stream.of(splitParser.parse(split), splitParser.parse(split2)).collect(Collectors.toList());
         Assert.assertNotNull(splitsResult);
-        Assert.assertEquals(splitsExpected.size(), splitsResult.size());
+        Assert.assertEquals(listResultExpected.size(), splitsResult.size());
+        Mockito.verify(_safeUserStorageWrapper, Mockito.times(1)).getKeysByPrefix(Mockito.anyString());
+        Mockito.verify(_safeUserStorageWrapper, Mockito.times(1)).getMany(Mockito.anyObject());
     }
 
     @Test
@@ -97,12 +109,24 @@ public class UserCustomSplitAdapterConsumerTest {
     }
 
     @Test
-    public void testGetAllNoResults() {
-        Mockito.when(_safeUserStorageWrapper.get(PrefixAdapter.buildGetAllSplit())).
-                thenReturn(getListOfSplitsAsJson(new ArrayList<>()));
+    public void testGetAllNullOnWrappers() {
+        Mockito.when(_safeUserStorageWrapper.getKeysByPrefix(PrefixAdapter.buildGetAllSplit())).
+                thenReturn(null);
         List<ParsedSplit> splitsResult = (List<ParsedSplit>) _userCustomSplitAdapterConsumer.getAll();
         Assert.assertEquals(0, splitsResult.size());
     }
+
+    @Test
+    public void testGetAllNullOnGetMany() {
+        Set<String> keysResult = Stream.of(SPLIT_NAME, SPLIT_NAME+"2").collect(Collectors.toSet());
+        Mockito.when(_safeUserStorageWrapper.getKeysByPrefix(Mockito.anyObject())).
+                thenReturn(keysResult);
+        Mockito.when(_safeUserStorageWrapper.getMany(Mockito.anyObject())).
+                thenReturn(null);
+        List<ParsedSplit> splitsResult = (List<ParsedSplit>) _userCustomSplitAdapterConsumer.getAll();
+        Assert.assertEquals(0, splitsResult.size());
+    }
+
 
     @Test
     public void testTrafficTypeExists() {
@@ -121,12 +145,20 @@ public class UserCustomSplitAdapterConsumerTest {
     }
 
     @Test
+    public void testTrafficTypeExistsWithGsonFailing() {
+        Mockito.when(_safeUserStorageWrapper.get(PrefixAdapter.buildTrafficTypeExists("TrafficType"))).
+                thenReturn("2");
+        boolean result = _userCustomSplitAdapterConsumer.trafficTypeExists("TrafficType");
+        Assert.assertFalse(result);
+    }
+
+    @Test
     public void testFetchMany(){
         Split split = getSplit(SPLIT_NAME);
         Split split2 = getSplit(SPLIT_NAME+"2");
-        List<Split> listResultExpected = Stream.of(split, split2).collect(Collectors.toList());
+        List<String> listResultExpected = Stream.of(Json.toJson(split), Json.toJson(split2)).collect(Collectors.toList());
         Mockito.when(_safeUserStorageWrapper.getItems(PrefixAdapter.buildFetchManySplits(Stream.of(SPLIT_NAME, SPLIT_NAME+"2").collect(Collectors.toList())))).
-                thenReturn(getListOfSplitsAsJson(listResultExpected));
+                thenReturn(listResultExpected);
         List<ParsedSplit> splitsResult = (List<ParsedSplit>) _userCustomSplitAdapterConsumer.fetchMany(Stream.of(SPLIT_NAME, SPLIT_NAME+"2").collect(Collectors.toList()));
         Assert.assertNotNull(splitsResult);
         Assert.assertEquals(2, splitsResult.size());
@@ -144,7 +176,7 @@ public class UserCustomSplitAdapterConsumerTest {
     @Test
     public void testFetchManyNotFound(){
         Mockito.when(_safeUserStorageWrapper.getItems(PrefixAdapter.buildFetchManySplits(Stream.of(SPLIT_NAME, SPLIT_NAME+"2").collect(Collectors.toList())))).
-                thenReturn(getListOfSplitsAsJson(new ArrayList<>()));
+                thenReturn(null);
         List<ParsedSplit> splitsResult = (List<ParsedSplit>) _userCustomSplitAdapterConsumer.fetchMany(Stream.of(SPLIT_NAME, SPLIT_NAME+"2").collect(Collectors.toList()));
         Assert.assertNotNull(splitsResult);
         Assert.assertEquals(0, splitsResult.size());

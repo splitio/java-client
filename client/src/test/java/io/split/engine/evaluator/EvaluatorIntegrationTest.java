@@ -152,7 +152,7 @@ public class EvaluatorIntegrationTest {
         ParsedSplit parsedSplit3 = new ParsedSplit("split_3", 0, false, DEFAULT_TREATMENT_VALUE, conditions, TRAFFIC_TYPE_VALUE, 223366554, 100, 0, 2, null);
         ParsedSplit parsedSplit4 = new ParsedSplit("split_test", 0, killed, DEFAULT_TREATMENT_VALUE, conditions, TRAFFIC_TYPE_VALUE, 223366555, trafficAllocation, 0, 2, null);
 
-        splitCache.putMany(Stream.of(parsedSplit1, parsedSplit2, parsedSplit3, parsedSplit4).collect(Collectors.toList()), 1L);
+        splitCache.putMany(Stream.of(parsedSplit1, parsedSplit2, parsedSplit3, parsedSplit4).collect(Collectors.toList()));
         return evaluator;
     }
 }

@@ -118,7 +118,7 @@ public class InMemoryCacheImp implements SplitCache {
     }
 
     @Override
-    public void putMany(List<ParsedSplit> splits, long changeNumber) {
+    public void putMany(List<ParsedSplit> splits) {
         for (ParsedSplit split : splits) {
             _concurrentMap.put(split.feature(), split);
 
@@ -126,13 +126,11 @@ public class InMemoryCacheImp implements SplitCache {
                 this.increaseTrafficType(split.trafficTypeName());
             }
         }
-        this.setChangeNumber(changeNumber);
     }
 
     @Override
     public void increaseTrafficType(String trafficType) {
         _concurrentTrafficTypeNameSet.add(trafficType);
-
     }
 
     @Override

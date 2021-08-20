@@ -11,7 +11,11 @@ import io.split.storages.pluggable.domain.PrefixAdapter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+import java.util.Set;
+import java.util.HashSet;
 import java.util.stream.Collectors;
 
 import static com.google.common.base.Preconditions.checkNotNull;
@@ -31,10 +35,17 @@ public class UserCustomSplitAdapterConsumer  implements SplitCacheConsumer {
     @Override
     public long getChangeNumber() {
         String wrapperResponse = _safeUserStorageWrapper.get(PrefixAdapter.buildSplitChangeNumber());
-        if(wrapperResponse == null) {
-            return 0L;
+        long response = -1L;
+        if(wrapperResponse==null) {
+            return response;
         }
-        return Json.fromJson(wrapperResponse, Long.class);
+        try{
+            response = Json.fromJson(wrapperResponse, Long.class);
+        }
+        catch(Exception e) {
+            _log.info("Error getting long value from String.");
+        }
+        return response;
     }
 
     @Override
@@ -53,44 +64,53 @@ public class UserCustomSplitAdapterConsumer  implements SplitCacheConsumer {
 
     @Override
     public Collection<ParsedSplit> getAll() {
-        String wrapperResponse = _safeUserStorageWrapper.get(PrefixAdapter.buildGetAllSplit());
+        Set<String> keys = _safeUserStorageWrapper.getKeysByPrefix(PrefixAdapter.buildGetAllSplit());
+        if(keys == null) {
+            return new ArrayList<>();
+        }
+        List<String> wrapperResponse = _safeUserStorageWrapper.getMany(new ArrayList<>(keys));
         if(wrapperResponse == null) {
             return new ArrayList<>();
         }
-        List<Split> splits = Json.fromJsonToArray(wrapperResponse, Split[].class);
-        if(splits.size() == 0) {
-            _log.warn("Could not parse Splits.");
-            return new ArrayList<>();
-        }
-        return splits.stream().map(_splitParser::parse).collect(Collectors.toList());
+        return stringsToParsedSplits(wrapperResponse);
     }
 
     @Override
     public boolean trafficTypeExists(String trafficTypeName) {
         String wrapperResponse = _safeUserStorageWrapper.get(PrefixAdapter.buildTrafficTypeExists(trafficTypeName));
+        boolean response = false;
         if(wrapperResponse == null) {
-            return false;
+            return response;
         }
-        return Json.fromJson(wrapperResponse, Boolean.class);
+        try {
+            response = Json.fromJson(wrapperResponse, Boolean.class);
+            return response;
+        }
+        catch(Exception e) {
+            _log.info("Error getting boolean from String.");
+        }
+        return response;
     }
 
     @Override
     public Collection<ParsedSplit> fetchMany(List<String> names) {
-        String wrapperResponse = _safeUserStorageWrapper.getItems(PrefixAdapter.buildFetchManySplits(names));
+        List<String> wrapperResponse = _safeUserStorageWrapper.getItems(PrefixAdapter.buildFetchManySplits(names));
         if(wrapperResponse == null) {
             return new ArrayList<>();
         }
-        List<Split> splits = Json.fromJsonToArray(wrapperResponse, Split[].class);
-        if(splits.size() == 0) {
-            _log.warn("Could not parse Splits.");
-            return new ArrayList<>();
-        }
-        return splits.stream().map(_splitParser::parse).collect(Collectors.toList());
+        return stringsToParsedSplits(wrapperResponse);
     }
 
     @Override
     public Set<String> getSegments() {
         //NoOp
         return new HashSet<>();
+    }
+
+    private List<ParsedSplit> stringsToParsedSplits(List<String> elements) {
+        return elements.stream()
+                .map(s -> Json.fromJson(s, Split.class))
+                .map(_splitParser::parse)
+                .collect(Collectors.toList());
     }
 }

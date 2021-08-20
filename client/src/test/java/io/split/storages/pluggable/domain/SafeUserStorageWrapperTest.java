@@ -9,6 +9,7 @@ import org.slf4j.Logger;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
+import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -51,16 +52,17 @@ public class SafeUserStorageWrapperTest{
 
     @Test
     public void testGetMany() throws Exception {
-        Mockito.when(_customStorageWrapper.getMany(Mockito.anyObject())).thenReturn(RESPONSE);
-        String result = _safeUserStorageWrapper.getMany(Stream.of(KEY).collect(Collectors.toList()));
+        Mockito.when(_customStorageWrapper.getMany(Mockito.anyObject())).thenReturn(Stream.of(RESPONSE).collect(Collectors.toList()));
+        List<String> result = _safeUserStorageWrapper.getMany(Stream.of(KEY).collect(Collectors.toList()));
         Assert.assertNotNull(result);
-        Assert.assertEquals(RESPONSE, result);
+        Assert.assertEquals(1, result.size());
+        Assert.assertEquals(RESPONSE, result.get(0));
     }
 
     @Test
     public void testGetManyException() throws Exception {
         Mockito.when(_customStorageWrapper.getMany(Mockito.anyObject())).thenThrow(Exception.class);
-        String result = _safeUserStorageWrapper.getMany(Stream.of(KEY).collect(Collectors.toList()));
+        List<String> result = _safeUserStorageWrapper.getMany(Stream.of(KEY).collect(Collectors.toList()));
         Assert.assertNull(result);
     }
 
@@ -92,21 +94,6 @@ public class SafeUserStorageWrapperTest{
     }
 
     @Test
-    public void testGetByPrefix() throws Exception {
-        Mockito.when(_customStorageWrapper.getByPrefix(Mockito.anyString())).thenReturn(RESPONSE);
-        String result = _safeUserStorageWrapper.getByPrefix(KEY);
-        Assert.assertNotNull(result);
-        Assert.assertEquals(RESPONSE, result);
-    }
-
-    @Test
-    public void testGetByPrefixException() throws Exception {
-        Mockito.when(_customStorageWrapper.getByPrefix(Mockito.anyString())).thenThrow(Exception.class);
-        String result = _safeUserStorageWrapper.getByPrefix(KEY);
-        Assert.assertNull(result);
-    }
-
-    @Test
     public void testGetAndSet() throws Exception {
         Mockito.when(_customStorageWrapper.getAndSet(Mockito.anyString(), Mockito.anyObject())).thenReturn(RESPONSE);
         String result = _safeUserStorageWrapper.getAndSet(KEY, ITEM);
@@ -123,76 +110,85 @@ public class SafeUserStorageWrapperTest{
 
     @Test
     public void testGetKeysByPrefix() throws Exception {
-        Mockito.when(_customStorageWrapper.getKeysByPrefix(Mockito.anyString())).thenReturn(RESPONSE);
-        String result = _safeUserStorageWrapper.getKeysByPrefix(KEY);
+        Set<String> response =new HashSet<>();
+        response.add(RESPONSE);
+        Mockito.when(_customStorageWrapper.getKeysByPrefix(Mockito.anyString())).thenReturn(response);
+        Set<String> result = _safeUserStorageWrapper.getKeysByPrefix(KEY);
         Assert.assertNotNull(result);
-        Assert.assertEquals(RESPONSE, result);
+        Assert.assertTrue(result.contains(RESPONSE));
     }
 
     @Test
     public void testGetKeysByPrefixException() throws Exception {
         Mockito.when(_customStorageWrapper.getKeysByPrefix(Mockito.anyString())).thenThrow(Exception.class);
-        String result = _safeUserStorageWrapper.getKeysByPrefix(KEY);
+        Set<String> result = _safeUserStorageWrapper.getKeysByPrefix(KEY);
         Assert.assertNull(result);
     }
 
     @Test
-    public void testIncrement() {
-        _safeUserStorageWrapper.increment(KEY, 1L);
-        Mockito.verify(_log, Mockito.times(0)).error(Mockito.anyString());
+    public void testIncrement() throws Exception {
+        long response = 2L;
+        Mockito.when(_customStorageWrapper.increment(Mockito.anyString(), Mockito.anyLong())).thenReturn(response);
+        long result = _safeUserStorageWrapper.increment(KEY, 1);
+        Assert.assertEquals(response, result);
     }
 
     @Test
     public void testIncrementException() throws Exception {
-        Mockito.doThrow(Exception.class).when(_customStorageWrapper).increment(Mockito.anyString(), Mockito.anyLong());
-        _safeUserStorageWrapper.increment(KEY, 1L);
+        Mockito.when(_customStorageWrapper.increment(Mockito.anyString(), Mockito.anyLong())).thenThrow(Exception.class);
+        long result = _safeUserStorageWrapper.increment(KEY, 1);
+        Assert.assertEquals(0L, result);
         Mockito.verify(_log, Mockito.times(1)).error(Mockito.anyString());
     }
 
     @Test
-    public void testDecrement() {
-        _safeUserStorageWrapper.decrement(KEY, 1L);
-        Mockito.verify(_log, Mockito.times(0)).error(Mockito.anyString());
+    public void testDecrement() throws Exception {
+        long response = 2L;
+        Mockito.when(_customStorageWrapper.decrement(Mockito.anyString(), Mockito.anyLong())).thenReturn(response);
+        long result = _safeUserStorageWrapper.decrement(KEY, 1);
+        Assert.assertEquals(response, result);
     }
 
     @Test
     public void testDecrementException() throws Exception {
-        Mockito.doThrow(Exception.class).when(_customStorageWrapper).decrement(Mockito.anyString(), Mockito.anyLong());
-        _safeUserStorageWrapper.decrement(KEY, 1L);
+        Mockito.when(_customStorageWrapper.decrement(Mockito.anyString(), Mockito.anyLong())).thenThrow(Exception.class);
+        long result = _safeUserStorageWrapper.decrement(KEY, 1);
+        Assert.assertEquals(0L, result);
         Mockito.verify(_log, Mockito.times(1)).error(Mockito.anyString());
     }
 
     @Test
     public void testPushItems() {
-        _safeUserStorageWrapper.pushItems(KEY, ITEM);
+        _safeUserStorageWrapper.pushItems(KEY, Stream.of(ITEM).collect(Collectors.toList()));
         Mockito.verify(_log, Mockito.times(0)).error(Mockito.anyString());
     }
 
     @Test
     public void testPushItemsException() throws Exception {
-        Mockito.doThrow(Exception.class).when(_customStorageWrapper).pushItems(Mockito.anyString(), Mockito.anyString());
-        _safeUserStorageWrapper.pushItems(KEY, ITEM);
+        Mockito.doThrow(Exception.class).when(_customStorageWrapper).pushItems(Mockito.anyString(), Mockito.anyObject());
+        _safeUserStorageWrapper.pushItems(KEY, Stream.of(ITEM).collect(Collectors.toList()));
         Mockito.verify(_log, Mockito.times(1)).error(Mockito.anyString());
     }
 
     @Test
     public void testPopItems() throws Exception {
-        Mockito.when(_customStorageWrapper.popItems(Mockito.anyString(), Mockito.anyLong())).thenReturn(RESPONSE);
-        String result = _safeUserStorageWrapper.popItems(KEY, 1L);
+        Mockito.when(_customStorageWrapper.popItems(Mockito.anyString(), Mockito.anyLong()))
+                .thenReturn(Stream.of(RESPONSE).collect(Collectors.toList()));
+        List<String> result = _safeUserStorageWrapper.popItems(KEY, 1L);
         Assert.assertNotNull(result);
-        Assert.assertEquals(RESPONSE, result);
+        Assert.assertEquals(RESPONSE, result.get(0));
     }
 
     @Test
     public void testPopItemsException() throws Exception {
         Mockito.when(_customStorageWrapper.popItems(Mockito.anyString(), Mockito.anyLong())).thenThrow(Exception.class);
-        String result = _safeUserStorageWrapper.popItems(KEY, 1L);
+        List<String> result = _safeUserStorageWrapper.popItems(KEY, 1L);
         Assert.assertNull(result);
         Mockito.verify(_log, Mockito.times(1)).error(Mockito.anyString());
     }
 
     @Test
-    public void testGetItemsCount(){
+    public void testGetItemsCount() throws Exception {
         long response = 2L;
         Mockito.when(_customStorageWrapper.getItemsCount(Mockito.anyString())).thenReturn(response);
         long result = _safeUserStorageWrapper.getItemsCount(KEY);
@@ -200,10 +196,10 @@ public class SafeUserStorageWrapperTest{
     }
 
     @Test
-    public void testGetItemsCountException(){
+    public void testGetItemsCountException() throws Exception {
         Mockito.when(_customStorageWrapper.getItemsCount(Mockito.anyString())).thenThrow(Exception.class);
         long result = _safeUserStorageWrapper.getItemsCount(KEY);
-        Assert.assertEquals(0L, result);
+        Assert.assertEquals(-1L, result);
         Mockito.verify(_log, Mockito.times(1)).error(Mockito.anyString());
     }
 
@@ -224,42 +220,42 @@ public class SafeUserStorageWrapperTest{
 
     @Test
     public void testAddItems() {
-        _safeUserStorageWrapper.addItems(KEY, ITEM);
+        _safeUserStorageWrapper.addItems(KEY, Stream.of(ITEM).collect(Collectors.toList()));
         Mockito.verify(_log, Mockito.times(0)).error(Mockito.anyString());
     }
 
     @Test
     public void testAddItemsException() throws Exception {
-        Mockito.doThrow(Exception.class).when(_customStorageWrapper).addItems(Mockito.anyString(), Mockito.anyString());
-        _safeUserStorageWrapper.addItems(KEY, ITEM);
+        Mockito.doThrow(Exception.class).when(_customStorageWrapper).addItems(Mockito.anyString(), Mockito.anyObject());
+        _safeUserStorageWrapper.addItems(KEY, Stream.of(ITEM).collect(Collectors.toList()));
         Mockito.verify(_log, Mockito.times(1)).error(Mockito.anyString());
     }
 
     @Test
     public void testRemoveItems() {
-        _safeUserStorageWrapper.removeItems(KEY, ITEM);
+        _safeUserStorageWrapper.removeItems(KEY, Stream.of(ITEM).collect(Collectors.toList()));
         Mockito.verify(_log, Mockito.times(0)).error(Mockito.anyString());
     }
 
     @Test
     public void testRemoveItemsException() throws Exception {
-        Mockito.doThrow(Exception.class).when(_customStorageWrapper).removeItems(Mockito.anyString(), Mockito.anyString());
-        _safeUserStorageWrapper.removeItems(KEY, ITEM);
+        Mockito.doThrow(Exception.class).when(_customStorageWrapper).removeItems(Mockito.anyString(), Mockito.anyObject());
+        _safeUserStorageWrapper.removeItems(KEY, Stream.of(ITEM).collect(Collectors.toList()));
         Mockito.verify(_log, Mockito.times(1)).error(Mockito.anyString());
     }
 
     @Test
     public void testGetItems() throws Exception {
-        Mockito.when(_customStorageWrapper.getItems(Mockito.anyObject())).thenReturn(RESPONSE);
-        String result = _safeUserStorageWrapper.getItems(Stream.of(KEY).collect(Collectors.toList()));
+        Mockito.when(_customStorageWrapper.getItems(Mockito.anyObject())).thenReturn(Stream.of(RESPONSE).collect(Collectors.toList()));
+        List<String> result = _safeUserStorageWrapper.getItems(Stream.of(KEY).collect(Collectors.toList()));
         Assert.assertNotNull(result);
-        Assert.assertEquals(RESPONSE, result);
+        Assert.assertEquals(RESPONSE, result.get(0));
     }
 
     @Test
     public void testGetItemsException() throws Exception {
         Mockito.when(_customStorageWrapper.getItems(Mockito.anyObject())).thenThrow(Exception.class);
-        String result = _safeUserStorageWrapper.getItems(Stream.of(KEY).collect(Collectors.toList()));
+        List<String> result = _safeUserStorageWrapper.getItems(Stream.of(KEY).collect(Collectors.toList()));
         Assert.assertNull(result);
         Mockito.verify(_log, Mockito.times(1)).error(Mockito.anyString());
     }

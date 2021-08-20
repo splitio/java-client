@@ -9,7 +9,7 @@ public interface SplitCacheProducer extends  SplitCacheCommons{
     void setChangeNumber(long changeNumber);
     void kill(String splitName, String defaultTreatment, long changeNumber);
     void clear();
-    void putMany(List<ParsedSplit> splits, long changeNumber);
+    void putMany(List<ParsedSplit> splits);
     void increaseTrafficType(String trafficType);
     void decreaseTrafficType(String trafficType);
 }

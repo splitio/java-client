@@ -31,10 +31,17 @@ public class UserCustomSplitAdapterProducer implements SplitCacheProducer {
     @Override
     public long getChangeNumber() {
         String wrapperResponse = _safeUserStorageWrapper.get(PrefixAdapter.buildSplitChangeNumber());
+        long response = -1L;
         if(wrapperResponse==null) {
-            return 0L;
+            return response;
         }
-        return Json.fromJson(wrapperResponse, Long.class);
+        try{
+            response = Json.fromJson(wrapperResponse, Long.class);
+        }
+        catch(Exception e) {
+            _log.info("Error getting long value from String.");
+        }
+        return response;
     }
 
     @Override
@@ -45,7 +52,7 @@ public class UserCustomSplitAdapterProducer implements SplitCacheProducer {
         }
         Split split = Json.fromJson(wrapperResponse, Split.class);
         if(split == null) {
-            _log.warn("Could not parse Split.");
+            _log.info("Could not parse Split.");
             return false;
         }
         _safeUserStorageWrapper.delete(Stream.of(PrefixAdapter.buildSplitKey(splitName)).collect(Collectors.toList()));
@@ -68,7 +75,7 @@ public class UserCustomSplitAdapterProducer implements SplitCacheProducer {
         }
         Split split = Json.fromJson(wrapperResponse, Split.class);
         if(split == null) {
-            _log.warn("Could not parse Split.");
+            _log.info("Could not parse Split.");
             return;
         }
         _safeUserStorageWrapper.set(PrefixAdapter.buildSplitKey(splitName), Json.toJson(split));
@@ -80,12 +87,11 @@ public class UserCustomSplitAdapterProducer implements SplitCacheProducer {
     }
 
     @Override
-    public void putMany(List<ParsedSplit> splits, long changeNumber) {
+    public void putMany(List<ParsedSplit> splits) {
         for(ParsedSplit split : splits) {
             _safeUserStorageWrapper.set(PrefixAdapter.buildSplitKey(split.feature()), Json.toJson(split));
             this.increaseTrafficType(PrefixAdapter.buildTrafficTypeExists(split.trafficTypeName()));
         }
-        this.setChangeNumber(changeNumber);
     }
 
     @Override
@@ -95,8 +101,10 @@ public class UserCustomSplitAdapterProducer implements SplitCacheProducer {
 
     @Override
     public void decreaseTrafficType(String trafficType) {
-        _safeUserStorageWrapper.decrement(PrefixAdapter.buildTrafficTypeExists(trafficType), 1);
-        _safeUserStorageWrapper.delete(Stream.of(PrefixAdapter.buildTrafficTypeExists(trafficType)).collect(Collectors.toList()));
+        long trafficTypeCount = _safeUserStorageWrapper.decrement(PrefixAdapter.buildTrafficTypeExists(trafficType), 1);
+        if(trafficTypeCount<=0) {
+            _safeUserStorageWrapper.delete(Stream.of(PrefixAdapter.buildTrafficTypeExists(trafficType)).collect(Collectors.toList()));
+        }
     }
 
     @Override
