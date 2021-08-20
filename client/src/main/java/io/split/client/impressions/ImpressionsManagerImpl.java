@@ -91,6 +91,7 @@ public class ImpressionsManagerImpl implements ImpressionsManager, Closeable {
                 ImpressionUtils.truncateTimeframe(i.pt()) != ImpressionUtils.truncateTimeframe(i.time());
     }
 
+    //TODO create a track method with multiple impressions.
     @Override
     public void track(Impression impression) {
         if (null == impression) {
