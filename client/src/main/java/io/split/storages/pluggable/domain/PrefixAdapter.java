@@ -11,8 +11,9 @@ public class PrefixAdapter {
     private static final String TRAFFIC_TYPE_PREFIX = "trafficType.";
     private static final String EVENTS = "events";
     private static final String IMPRESSIONS = "impressions";
+    private static final String SEGMENT = "segment.";
+    private static final String TILL = "till";
 
-    //Split Consumer
     public static String buildSplitKey(String name) {
         return String.format(DEFAULT_PREFIX+ SPLIT_PREFIX +"{%s}", name);
     }
@@ -45,4 +46,11 @@ public class PrefixAdapter {
         return DEFAULT_PREFIX+IMPRESSIONS;
     }
 
+    public static String buildSegment(String segmentName) {
+        return String.format(DEFAULT_PREFIX+SEGMENT+"{%s}", segmentName);
+    }
+
+    public static String buildSegmentTill(String segmentName) {
+        return String.format(DEFAULT_PREFIX+SEGMENT+"{%s}."+TILL, segmentName);
+    }
 }
