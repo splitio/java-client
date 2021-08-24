@@ -383,20 +383,17 @@ public class SplitClientIntegrationTest {
     @Test
     public void splitClientMultiFactory() throws Exception {
         MockResponse response = new MockResponse().setBody("{\"splits\": [], \"since\":1585948850109, \"till\":1585948850109}");
-        MockResponse response2 = new MockResponse().setBody("{\"splits\": [], \"since\":1585948850110, \"till\":1585948850110}");
         Queue responses = new LinkedList<>();
-        Queue responses2 = new LinkedList<>();
         responses.add(response);
         responses.add(response);
         responses.add(response);
         responses.add(response);
-        responses2.add(response2);
-        responses2.add(response2);
-        responses2.add(response2);
-        responses2.add(response2);
+        responses.add(response);
+        responses.add(response);
+        responses.add(response);
+        responses.add(response);
         SplitMockServer splitServer = new SplitMockServer(CustomDispatcher.builder()
                 .path(CustomDispatcher.SINCE_1585948850109, responses)
-                .path(CustomDispatcher.SINCE_1585948850110, responses2)
                 .build());
 
         SSEMockServer.SseEventQueue eventQueue1 = new SSEMockServer.SseEventQueue();

@@ -1,5 +1,7 @@
 package io.split.engine.common;
 
+import io.split.engine.segments.SegmentChangeFetcher;
+import io.split.engine.segments.SegmentSynchronizationTaskImp;
 import io.split.storages.*;
 import io.split.storages.memory.InMemoryCacheImp;
 import io.split.engine.SDKReadinessGates;
@@ -8,6 +10,8 @@ import io.split.engine.experiments.SplitFetcherImp;
 import io.split.engine.experiments.SplitSynchronizationTask;
 import io.split.engine.segments.SegmentFetcher;
 import io.split.engine.segments.SegmentSynchronizationTask;
+import io.split.storages.pluggable.adapters.UserCustomSplitAdapterConsumer;
+import io.split.telemetry.storage.TelemetryRuntimeProducer;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -19,6 +23,8 @@ import java.lang.reflect.Modifier;
 import java.util.HashSet;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import static org.mockito.Mockito.when;
 
@@ -26,7 +32,6 @@ public class SynchronizerTest {
     private SplitSynchronizationTask _refreshableSplitFetcherTask;
     private SegmentSynchronizationTask _segmentFetcher;
     private SplitFetcherImp _splitFetcher;
-    private SplitCacheConsumer _splitCacheConsumer;
     private SplitCacheProducer _splitCacheProducer;
     private Synchronizer _synchronizer;
     private SegmentCacheProducer _segmentCacheProducer;
@@ -37,7 +42,6 @@ public class SynchronizerTest {
         _refreshableSplitFetcherTask = Mockito.mock(SplitSynchronizationTask.class);
         _segmentFetcher = Mockito.mock(SegmentSynchronizationTask.class);
         _splitFetcher = Mockito.mock(SplitFetcherImp.class);
-        _splitCacheConsumer = Mockito.mock(SplitCacheConsumer.class);
         _splitCacheProducer = Mockito.mock(SplitCacheProducer.class);
         _segmentCacheProducer = Mockito.mock(SegmentCache.class);
         _gates = Mockito.mock(SDKReadinessGates.class);
@@ -54,6 +58,26 @@ public class SynchronizerTest {
         Thread.sleep(1000);
         Mockito.verify(_splitFetcher, Mockito.times(1)).forceRefresh(Mockito.anyObject());
         Mockito.verify(_segmentFetcher, Mockito.times(1)).fetchAllSynchronous();
+    }
+
+    @Test
+    public void testSyncAllSegments() throws InterruptedException, NoSuchFieldException, IllegalAccessException {
+        SegmentSynchronizationTask segmentSynchronizationTask = new SegmentSynchronizationTaskImp(Mockito.mock(SegmentChangeFetcher.class),
+                20L, 1, new SDKReadinessGates(), _segmentCacheProducer, Mockito.mock(TelemetryRuntimeProducer.class));
+        Field synchronizerSegmentFetcher = SynchronizerImp.class.getDeclaredField("_segmentSynchronizationTaskImp");
+        synchronizerSegmentFetcher.setAccessible(true);
+        Field modifiersField = Field.class.getDeclaredField("modifiers");
+        modifiersField.setAccessible(true);
+        modifiersField.setInt(synchronizerSegmentFetcher, synchronizerSegmentFetcher.getModifiers() & ~Modifier.FINAL);
+        synchronizerSegmentFetcher.set(_synchronizer, segmentSynchronizationTask);
+        Mockito.when(_splitFetcher.forceRefresh(Mockito.anyObject())).thenReturn(new FetchResult(true, Stream.of("Segment1", "Segment2").collect(Collectors.toSet())));
+        Mockito.when(_segmentFetcher.fetchAllSynchronous()).thenReturn(true);
+        _synchronizer.syncAll();
+
+        Thread.sleep(1000);
+        Mockito.verify(_splitFetcher, Mockito.times(1)).forceRefresh(Mockito.anyObject());
+        Assert.assertNotNull(segmentSynchronizationTask.getFetcher("Segment1"));
+        Assert.assertNotNull(segmentSynchronizationTask.getFetcher("Segment2"));
     }
 
     @Test

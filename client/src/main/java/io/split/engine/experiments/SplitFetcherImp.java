@@ -15,9 +15,12 @@ import io.split.engine.common.FetchOptions;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
@@ -123,6 +126,7 @@ public class SplitFetcherImp implements SplitFetcher {
                 return segments;
             }
 
+            List<ParsedSplit> parsedSplits = new ArrayList<>();
             for (Split split : change.splits) {
                 if (Thread.currentThread().isInterrupted()) {
                     throw new InterruptedException();
@@ -156,10 +160,11 @@ public class SplitFetcherImp implements SplitFetcher {
                     _splitCacheProducer.remove(split.name);
                 }
 
-                _splitCacheProducer.put(parsedSplit);
+                parsedSplits.add(parsedSplit);
                 _log.debug("Updated feature: " + parsedSplit.feature());
             }
 
+            _splitCacheProducer.putMany(parsedSplits);
             _splitCacheProducer.setChangeNumber(change.till);
             _telemetryRuntimeProducer.recordSuccessfulSync(LastSynchronizationRecordsEnum.SPLITS, System.currentTimeMillis());
         }

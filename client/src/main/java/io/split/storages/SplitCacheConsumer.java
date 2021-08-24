@@ -9,6 +9,6 @@ import java.util.Set;
 public interface SplitCacheConsumer extends SplitCacheCommons{
     ParsedSplit get(String name);
     Collection<ParsedSplit> getAll();
-    Collection<ParsedSplit> getMany(List<String> names);
+    Collection<ParsedSplit> fetchMany(List<String> names);
     boolean trafficTypeExists(String trafficTypeName);
 }

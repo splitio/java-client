@@ -37,20 +37,10 @@ public class InMemoryCacheImp implements SplitCache {
     }
 
     @Override
-    public void put(ParsedSplit split) {
-        _concurrentMap.put(split.feature(), split);
-
-        if (split.trafficTypeName() != null) {
-            _concurrentTrafficTypeNameSet.add(split.trafficTypeName());
-        }
-    }
-
-    @Override
     public boolean remove(String name) {
         ParsedSplit removed = _concurrentMap.remove(name);
-
         if (removed != null && removed.trafficTypeName() != null) {
-            _concurrentTrafficTypeNameSet.remove(removed.trafficTypeName());
+            this.decreaseTrafficType(removed.trafficTypeName());
         }
 
         return removed != null;
@@ -67,7 +57,7 @@ public class InMemoryCacheImp implements SplitCache {
     }
 
     @Override
-    public Collection<ParsedSplit> getMany(List<String> names) {
+    public Collection<ParsedSplit> fetchMany(List<String> names) {
         List<ParsedSplit> splits = new ArrayList<>();
 
         for (String name : names) {
@@ -128,6 +118,26 @@ public class InMemoryCacheImp implements SplitCache {
     }
 
     @Override
+    public void putMany(List<ParsedSplit> splits) {
+        for (ParsedSplit split : splits) {
+            _concurrentMap.put(split.feature(), split);
+
+            if (split.trafficTypeName() != null) {
+                this.increaseTrafficType(split.trafficTypeName());
+            }
+        }
+    }
+
+    @Override
+    public void increaseTrafficType(String trafficType) {
+        _concurrentTrafficTypeNameSet.add(trafficType);
+    }
+
+    @Override
+    public void decreaseTrafficType(String trafficType) {
+        _concurrentTrafficTypeNameSet.remove(trafficType);
+    }
+    
     public Set<String> getSegments() {
         return _concurrentMap.values().stream()
                 .flatMap(parsedSplit -> parsedSplit.getSegmentsNames().stream()).collect(Collectors.toSet());

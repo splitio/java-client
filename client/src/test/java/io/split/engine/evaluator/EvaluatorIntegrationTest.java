@@ -18,6 +18,8 @@ import org.junit.Assert;
 import org.junit.Test;
 
 import java.util.List;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 public class EvaluatorIntegrationTest {
     private static final String DEFAULT_TREATMENT_VALUE = "defaultTreatment";
@@ -145,11 +147,12 @@ public class EvaluatorIntegrationTest {
 
         List<ParsedCondition> conditions = Lists.newArrayList(whitelistCondition, rollOutCondition);
 
-        splitCache.put(new ParsedSplit("split_1", 0, false, DEFAULT_TREATMENT_VALUE, conditions, TRAFFIC_TYPE_VALUE, 223366551, 100, 0, 2, null));
-        splitCache.put(new ParsedSplit("split_2", 0, true, DEFAULT_TREATMENT_VALUE, conditions, TRAFFIC_TYPE_VALUE, 223366552, 100, 0, 2, null));
-        splitCache.put(new ParsedSplit("split_3", 0, false, DEFAULT_TREATMENT_VALUE, conditions, TRAFFIC_TYPE_VALUE, 223366554, 100, 0, 2, null));
-        splitCache.put(new ParsedSplit("split_test", 0, killed, DEFAULT_TREATMENT_VALUE, conditions, TRAFFIC_TYPE_VALUE, 223366555, trafficAllocation, 0, 2, null));
+        ParsedSplit parsedSplit1 = new ParsedSplit("split_1", 0, false, DEFAULT_TREATMENT_VALUE, conditions, TRAFFIC_TYPE_VALUE, 223366551, 100, 0, 2, null);
+        ParsedSplit parsedSplit2 = new ParsedSplit("split_2", 0, true, DEFAULT_TREATMENT_VALUE, conditions, TRAFFIC_TYPE_VALUE, 223366552, 100, 0, 2, null);
+        ParsedSplit parsedSplit3 = new ParsedSplit("split_3", 0, false, DEFAULT_TREATMENT_VALUE, conditions, TRAFFIC_TYPE_VALUE, 223366554, 100, 0, 2, null);
+        ParsedSplit parsedSplit4 = new ParsedSplit("split_test", 0, killed, DEFAULT_TREATMENT_VALUE, conditions, TRAFFIC_TYPE_VALUE, 223366555, trafficAllocation, 0, 2, null);
 
+        splitCache.putMany(Stream.of(parsedSplit1, parsedSplit2, parsedSplit3, parsedSplit4).collect(Collectors.toList()));
         return evaluator;
     }
 }
