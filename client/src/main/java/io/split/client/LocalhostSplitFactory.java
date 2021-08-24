@@ -58,7 +58,7 @@ public final class LocalhostSplitFactory implements SplitFactory {
         SegmentCacheConsumer segmentCache = new SegmentCacheInMemoryImpl();
         SDKReadinessGates sdkReadinessGates = new SDKReadinessGates();
 
-        _cacheUpdaterService = new CacheUpdaterService(splitCache, splitCache);
+        _cacheUpdaterService = new CacheUpdaterService(splitCache);
         _cacheUpdaterService.updateCache(splitAndKeyToTreatment);
         sdkReadinessGates.sdkInternalReady();
         _client = new SplitClientImpl(this, splitCache,
