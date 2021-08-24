@@ -47,4 +47,12 @@ public class AtomicLongArrayTest {
         Mockito.verify(log, Mockito.times(1)).error(Mockito.anyString());
     }
 
+    @Test
+    public void testClearAll() {
+        AtomicLongArray atomicLongArray = new AtomicLongArray(SIZE);
+        atomicLongArray.increment(2);
+        Assert.assertEquals(1, atomicLongArray.fetchAndClearAll().stream().mapToInt(Long::intValue).sum());
+        Assert.assertEquals(0, atomicLongArray.fetchAndClearAll().stream().mapToInt(Long::intValue).sum());
+    }
+
 }

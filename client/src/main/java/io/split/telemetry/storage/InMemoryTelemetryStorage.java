@@ -67,14 +67,11 @@ public class InMemoryTelemetryStorage implements  TelemetryStorage{
     @Override
     public MethodExceptions popExceptions() {
         MethodExceptions exceptions = new MethodExceptions();
-        exceptions.set_treatment(_exceptionsCounters.get(MethodEnum.TREATMENT).get());
-        exceptions.set_treatments(_exceptionsCounters.get(MethodEnum.TREATMENTS).get());
-        exceptions.set_treatmentWithConfig(_exceptionsCounters.get(MethodEnum.TREATMENT_WITH_CONFIG).get());
-        exceptions.set_treatmentsWithConfig(_exceptionsCounters.get(MethodEnum.TREATMENTS_WITH_CONFIG).get());
-        exceptions.set_track(_exceptionsCounters.get(MethodEnum.TRACK).get());
-
-        _exceptionsCounters.clear();
-        initMethodExceptions();
+        exceptions.set_treatment(_exceptionsCounters.get(MethodEnum.TREATMENT).getAndSet(0L));
+        exceptions.set_treatments(_exceptionsCounters.get(MethodEnum.TREATMENTS).getAndSet(0L));
+        exceptions.set_treatmentWithConfig(_exceptionsCounters.get(MethodEnum.TREATMENT_WITH_CONFIG).getAndSet(0L));
+        exceptions.set_treatmentsWithConfig(_exceptionsCounters.get(MethodEnum.TREATMENTS_WITH_CONFIG).getAndSet(0L));
+        exceptions.set_track(_exceptionsCounters.get(MethodEnum.TRACK).getAndSet(0L));
 
         return exceptions;
     }
@@ -87,9 +84,6 @@ public class InMemoryTelemetryStorage implements  TelemetryStorage{
         latencies.set_treatmentWithConfig(_methodLatencies.get(MethodEnum.TREATMENT_WITH_CONFIG).fetchAndClearAll());
         latencies.set_treatmentsWithConfig(_methodLatencies.get(MethodEnum.TREATMENTS_WITH_CONFIG).fetchAndClearAll());
         latencies.set_track(_methodLatencies.get(MethodEnum.TRACK).fetchAndClearAll());
-
-        _methodLatencies.clear();
-        initMethodLatencies();
 
         return latencies;
     }
@@ -167,9 +161,6 @@ public class InMemoryTelemetryStorage implements  TelemetryStorage{
         latencies.set_events(_httpLatencies.get(HTTPLatenciesEnum.EVENTS).fetchAndClearAll());
         latencies.set_telemetry(_httpLatencies.get(HTTPLatenciesEnum.TELEMETRY).fetchAndClearAll());
         latencies.set_token(_httpLatencies.get(HTTPLatenciesEnum.TOKEN).fetchAndClearAll());
-
-        _httpLatencies.clear();
-        initHttpLatencies();
 
         return latencies;
     }
