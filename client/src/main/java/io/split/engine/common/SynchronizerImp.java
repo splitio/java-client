@@ -66,6 +66,8 @@ public class SynchronizerImp implements Synchronizer {
     @Override
     public boolean syncAll() {
         FetchResult fetchResult = _splitFetcher.forceRefresh(new FetchOptions.Builder().cacheControlHeaders(true).build());
+        fetchResult.getSegments().stream()
+                .forEach(segmentName -> _segmentSynchronizationTaskImp.initializeSegment(segmentName));
         return fetchResult.isSuccess() && _segmentSynchronizationTaskImp.fetchAllSynchronous();
     }
 
