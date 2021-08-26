@@ -50,6 +50,10 @@ public class PrefixAdapter {
         return String.format(DEFAULT_PREFIX+SEGMENT+"{%s}", segmentName);
     }
 
+    public static String buildSegmentAll() {
+        return String.format(DEFAULT_PREFIX+SEGMENT+"*");
+    }
+
     public static String buildSegmentTill(String segmentName) {
         return String.format(DEFAULT_PREFIX+SEGMENT+"{%s}."+TILL, segmentName);
     }

@@ -5,18 +5,12 @@ import io.split.storages.pluggable.CustomStorageWrapper;
 import io.split.storages.pluggable.domain.PrefixAdapter;
 import io.split.storages.pluggable.domain.SafeUserStorageWrapper;
 import io.split.storages.pluggable.utils.Helper;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Set;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
 public class UserCustomSegmentAdapterConsumer implements SegmentCacheConsumer {
-
-    private static final Logger _log = LoggerFactory.getLogger(UserCustomSegmentAdapterConsumer.class);
 
     private final SafeUserStorageWrapper _safeUserStorageWrapper;
 
@@ -37,19 +31,17 @@ public class UserCustomSegmentAdapterConsumer implements SegmentCacheConsumer {
 
     @Override
     public long getSegmentCount() {
-        return 0;
+        Set<String> keys = _safeUserStorageWrapper.getKeysByPrefix(PrefixAdapter.buildSegmentAll());
+        return keys == null ? 0L : keys.size();
     }
 
     @Override
     public long getKeyCount() {
-        Set<String> keys = _safeUserStorageWrapper.getKeysByPrefix(PrefixAdapter.buildSegment("fake"));
+        Set<String> keys = _safeUserStorageWrapper.getKeysByPrefix(PrefixAdapter.buildSegmentAll());
         long keysCount = 0L;
         if(keys == null) {
             return keysCount;
         }
-        keys.stream()
-                .map(key -> _safeUserStorageWrapper.getItemsCount(key));
-        keysCount = _safeUserStorageWrapper.getItemsCount("");
-        return 0;
+        return keys.stream().mapToLong(key -> _safeUserStorageWrapper.getItemsCount(key)).sum();
     }
 }

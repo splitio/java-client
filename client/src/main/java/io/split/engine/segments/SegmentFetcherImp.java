@@ -33,7 +33,7 @@ public class SegmentFetcherImp implements SegmentFetcher {
         _gates = checkNotNull(gates);
         _telemetryRuntimeProducer = checkNotNull(telemetryRuntimeProducer);
 
-        _segmentCacheProducer.updateSegment(segmentName, new ArrayList<>(), new ArrayList<>());
+        _segmentCacheProducer.updateSegment(segmentName, new ArrayList<>(), new ArrayList<>(), -1L);
     }
 
     @Override
@@ -49,7 +49,6 @@ public class SegmentFetcherImp implements SegmentFetcher {
     }
 
     private void runWithoutExceptionHandling(FetchOptions options) {
-        long initTime = System.currentTimeMillis();
         SegmentChange change = _segmentChangeFetcher.fetch(_segmentName, _segmentCacheProducer.getChangeNumber(_segmentName), options);
 
         if (change == null) {
@@ -81,8 +80,7 @@ public class SegmentFetcherImp implements SegmentFetcher {
                 // some other thread may have updated the shared state. exit
                 return;
             }
-            //updateSegment(sn, toadd, tormv, chngN)
-            _segmentCacheProducer.updateSegment(_segmentName,change.added, change.removed);
+            _segmentCacheProducer.updateSegment(_segmentName,change.added, change.removed, change.till);
 
             if (!change.added.isEmpty()) {
                 _log.info(_segmentName + " added keys: " + summarize(change.added));
@@ -92,7 +90,6 @@ public class SegmentFetcherImp implements SegmentFetcher {
                 _log.info(_segmentName + " removed keys: " + summarize(change.removed));
             }
 
-            _segmentCacheProducer.setChangeNumber(_segmentName,change.till);
             _telemetryRuntimeProducer.recordSuccessfulSync(LastSynchronizationRecordsEnum.SEGMENTS, System.currentTimeMillis());
         }
     }

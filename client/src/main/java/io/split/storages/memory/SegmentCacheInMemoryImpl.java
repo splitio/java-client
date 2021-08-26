@@ -1,5 +1,6 @@
 package io.split.storages.memory;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.Maps;
 import io.split.engine.segments.SegmentImp;
 import io.split.storages.SegmentCache;
@@ -20,12 +21,13 @@ public class SegmentCacheInMemoryImpl implements SegmentCache {
     private final ConcurrentMap<String, SegmentImp> _segments = Maps.newConcurrentMap();
 
     @Override
-    public void updateSegment(String segmentName, List<String> toAdd, List<String> toRemove) {
+    public void updateSegment(String segmentName, List<String> toAdd, List<String> toRemove, long changeNumber) {
         if(_segments.get(segmentName) == null){
             _segments.put(segmentName, new SegmentImp(DEFAULT_CHANGE_NUMBER, segmentName,toAdd));
         }
 
         _segments.get(segmentName).update(toAdd,toRemove);
+        this.setChangeNumber(segmentName, changeNumber);
     }
 
     @Override
@@ -57,8 +59,8 @@ public class SegmentCacheInMemoryImpl implements SegmentCache {
         return segmentImp.getChangeNumber();
     }
 
-    @Override
-    public void clear() {
+    @VisibleForTesting
+    void clear() {
         _segments.clear();
     }
 

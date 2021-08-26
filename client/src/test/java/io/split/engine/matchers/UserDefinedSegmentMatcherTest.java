@@ -28,7 +28,7 @@ public class UserDefinedSegmentMatcherTest {
         Evaluator evaluator = Mockito.mock(Evaluator.class);
         SegmentCache segmentCache = new SegmentCacheInMemoryImpl();
         EvaluationContext evaluationContext = new EvaluationContext(evaluator, segmentCache);
-        segmentCache.updateSegment("foo", Stream.of("a","b").collect(Collectors.toList()), new ArrayList<>());
+        segmentCache.updateSegment("foo", Stream.of("a","b").collect(Collectors.toList()), new ArrayList<>(), 1L);
         UserDefinedSegmentMatcher matcher = new UserDefinedSegmentMatcher("foo");
 
         for (String key : keys) {

@@ -8,6 +8,7 @@ import io.split.storages.SplitCacheConsumer;
 import io.split.storages.pluggable.CustomStorageWrapper;
 import io.split.storages.pluggable.domain.SafeUserStorageWrapper;
 import io.split.storages.pluggable.domain.PrefixAdapter;
+import io.split.storages.pluggable.utils.Helper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -35,17 +36,7 @@ public class UserCustomSplitAdapterConsumer  implements SplitCacheConsumer {
     @Override
     public long getChangeNumber() {
         String wrapperResponse = _safeUserStorageWrapper.get(PrefixAdapter.buildSplitChangeNumber());
-        long response = -1L;
-        if(wrapperResponse==null) {
-            return response;
-        }
-        try{
-            response = Json.fromJson(wrapperResponse, Long.class);
-        }
-        catch(Exception e) {
-            _log.info("Error getting long value from String.");
-        }
-        return response;
+        return Helper.responseToLong(wrapperResponse, -1L);
     }
 
     @Override
