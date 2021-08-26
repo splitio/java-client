@@ -9,7 +9,6 @@ import org.slf4j.LoggerFactory;
 
 import java.util.List;
 import java.util.concurrent.ConcurrentMap;
-import java.util.stream.Collectors;
 
 /**
  * InMemoryCache Implementation
@@ -22,12 +21,8 @@ public class SegmentCacheInMemoryImpl implements SegmentCache {
 
     @Override
     public void updateSegment(String segmentName, List<String> toAdd, List<String> toRemove, long changeNumber) {
-        if(_segments.get(segmentName) == null){
-            _segments.put(segmentName, new SegmentImp(DEFAULT_CHANGE_NUMBER, segmentName,toAdd));
-        }
-
-        _segments.get(segmentName).update(toAdd,toRemove);
-        this.setChangeNumber(segmentName, changeNumber);
+        SegmentImp segmentImp = _segments.putIfAbsent(segmentName, new SegmentImp(changeNumber, segmentName,toAdd));
+        segmentImp.update(toAdd,toRemove, changeNumber);
     }
 
     @Override

@@ -38,9 +38,8 @@ public class UserCustomSegmentAdapterConsumer implements SegmentCacheConsumer {
     @Override
     public long getKeyCount() {
         Set<String> keys = _safeUserStorageWrapper.getKeysByPrefix(PrefixAdapter.buildSegmentAll());
-        long keysCount = 0L;
         if(keys == null) {
-            return keysCount;
+            return 0L;
         }
         return keys.stream().mapToLong(key -> _safeUserStorageWrapper.getItemsCount(key)).sum();
     }
