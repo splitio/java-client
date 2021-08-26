@@ -1,14 +1,14 @@
-package io.split.cache;
+package io.split.storages.memory;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.Maps;
 import io.split.engine.segments.SegmentImp;
+import io.split.storages.SegmentCache;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.List;
-import java.util.Set;
 import java.util.concurrent.ConcurrentMap;
-import java.util.stream.Collectors;
 
 /**
  * InMemoryCache Implementation
@@ -20,12 +20,9 @@ public class SegmentCacheInMemoryImpl implements SegmentCache {
     private final ConcurrentMap<String, SegmentImp> _segments = Maps.newConcurrentMap();
 
     @Override
-    public void updateSegment(String segmentName, List<String> toAdd, List<String> toRemove) {
-        if(_segments.get(segmentName) == null){
-            _segments.put(segmentName, new SegmentImp(DEFAULT_CHANGE_NUMBER, segmentName,toAdd));
-        }
-
-        _segments.get(segmentName).update(toAdd,toRemove);
+    public void updateSegment(String segmentName, List<String> toAdd, List<String> toRemove, long changeNumber) {
+        _segments.putIfAbsent(segmentName, new SegmentImp(changeNumber, segmentName,toAdd));
+        _segments.get(segmentName).update(toAdd,toRemove, changeNumber);
     }
 
     @Override
@@ -57,14 +54,14 @@ public class SegmentCacheInMemoryImpl implements SegmentCache {
         return segmentImp.getChangeNumber();
     }
 
-    @Override
-    public void clear() {
+    @VisibleForTesting
+    void clear() {
         _segments.clear();
     }
 
     @Override
-    public List<SegmentImp> getAll() {
-        return _segments.values().stream().collect(Collectors.toList());
+    public long getSegmentCount() {
+        return _segments.values().size();
     }
 
     @Override

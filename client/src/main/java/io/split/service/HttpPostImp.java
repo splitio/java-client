@@ -2,6 +2,7 @@ package io.split.service;
 
 import io.split.client.utils.Utils;
 import io.split.telemetry.domain.enums.HTTPLatenciesEnum;
+import io.split.telemetry.domain.enums.HttpParamsWrapper;
 import io.split.telemetry.domain.enums.LastSynchronizationRecordsEnum;
 import io.split.telemetry.domain.enums.ResourceEnum;
 import io.split.telemetry.storage.TelemetryRuntimeProducer;
@@ -27,7 +28,7 @@ public class HttpPostImp {
         _telemetryRuntimeProducer = checkNotNull(telemetryRuntimeProducer);
     }
 
-    public void post(URI uri, Object object, String posted, HTTPLatenciesEnum httpLatenciesEnum, LastSynchronizationRecordsEnum lastSynchronizationRecordsEnum, ResourceEnum resourceEnum) {
+    public void post(URI uri, Object object, String posted, HttpParamsWrapper httpParamsWrapper) {
         long initTime = System.currentTimeMillis();
         HttpEntity entity = Utils.toJsonEntity(object);
         HttpPost request = new HttpPost(uri);
@@ -38,12 +39,12 @@ public class HttpPostImp {
             int status = response.getCode();
 
             if (status < HttpStatus.SC_OK || status >= HttpStatus.SC_MULTIPLE_CHOICES) {
-                _telemetryRuntimeProducer.recordSyncError(resourceEnum, status);
+                _telemetryRuntimeProducer.recordSyncError(httpParamsWrapper.getResourceEnum(), status);
                 _logger.warn("Response status was: " + status);
                 return;
             }
-            _telemetryRuntimeProducer.recordSyncLatency(httpLatenciesEnum, System.currentTimeMillis() - initTime);
-            _telemetryRuntimeProducer.recordSuccessfulSync(lastSynchronizationRecordsEnum, System.currentTimeMillis());
+            _telemetryRuntimeProducer.recordSyncLatency(httpParamsWrapper.getHttpLatenciesEnum(), System.currentTimeMillis() - initTime);
+            _telemetryRuntimeProducer.recordSuccessfulSync(httpParamsWrapper.getLastSynchronizationRecordsEnum(), System.currentTimeMillis());
         } catch (Throwable t) {
             _logger.warn("Exception when posting " + posted + object, t);
         }

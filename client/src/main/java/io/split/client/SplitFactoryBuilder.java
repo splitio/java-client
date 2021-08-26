@@ -2,6 +2,7 @@ package io.split.client;
 
 import io.split.inputValidation.ApiKeyValidator;
 import io.split.grammar.Treatments;
+import io.split.storages.enums.StorageMode;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -42,7 +43,13 @@ public class SplitFactoryBuilder {
         if (LocalhostSplitFactory.LOCALHOST.equals(apiToken)) {
             return LocalhostSplitFactory.createLocalhostSplitFactory(config);
         } else {
-            return new SplitFactoryImpl(apiToken, config);
+            if (StorageMode.CONSUMER.equals(config.storageMode())){
+                //TODO Here, once wrapper was implemented I'll add a new constructor with the wrapper as 3rd param for CONSUMER mode .
+                return new SplitFactoryImpl(apiToken, config);
+            }
+            else {
+                return new SplitFactoryImpl(apiToken, config);
+            }
 
         }
     }

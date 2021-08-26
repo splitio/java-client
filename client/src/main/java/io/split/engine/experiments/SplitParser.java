@@ -1,7 +1,6 @@
 package io.split.engine.experiments;
 
 import com.google.common.collect.Lists;
-import io.split.cache.SegmentCache;
 import io.split.client.dtos.Condition;
 import io.split.client.dtos.Matcher;
 import io.split.client.dtos.MatcherGroup;
@@ -28,6 +27,7 @@ import io.split.engine.matchers.strings.RegularExpressionMatcher;
 import io.split.engine.matchers.strings.StartsWithAnyOfMatcher;
 import io.split.engine.matchers.strings.WhitelistMatcher;
 import io.split.engine.segments.SegmentSynchronizationTask;
+import io.split.storages.SegmentCacheConsumer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

@@ -1,23 +1,21 @@
 package io.split.engine.common;
 
-import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
-import io.split.cache.SegmentCache;
-import io.split.cache.SplitCache;
 import io.split.engine.SDKReadinessGates;
 import io.split.engine.experiments.FetchResult;
 import io.split.engine.experiments.SplitFetcher;
 import io.split.engine.experiments.SplitSynchronizationTask;
 import io.split.engine.segments.SegmentFetcher;
 import io.split.engine.segments.SegmentSynchronizationTask;
+import io.split.storages.SegmentCacheProducer;
+import io.split.storages.SplitCacheProducer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.*;
 import java.util.function.Function;
 
 import static com.google.common.base.Preconditions.checkNotNull;
@@ -34,8 +32,8 @@ public class SynchronizerImp implements Synchronizer {
     private final SplitSynchronizationTask _splitSynchronizationTask;
     private final SplitFetcher _splitFetcher;
     private final SegmentSynchronizationTask _segmentSynchronizationTaskImp;
-    private final SplitCache _splitCache;
-    private final SegmentCache _segmentCache;
+    private final SplitCacheProducer _splitCacheProducer;
+    private final SegmentCacheProducer segmentCacheProducer;
     private final int _onDemandFetchRetryDelayMs;
     private final int _onDemandFetchMaxRetries;
     private final int _failedAttemptsBeforeLogging;
@@ -46,8 +44,8 @@ public class SynchronizerImp implements Synchronizer {
     public SynchronizerImp(SplitSynchronizationTask splitSynchronizationTask,
                            SplitFetcher splitFetcher,
                            SegmentSynchronizationTask segmentSynchronizationTaskImp,
-                           SplitCache splitCache,
-                           SegmentCache segmentCache,
+                           SplitCacheProducer splitCacheProducer,
+                           SegmentCacheProducer segmentCacheProducer,
                            int onDemandFetchRetryDelayMs,
                            int onDemandFetchMaxRetries,
                            int failedAttemptsBeforeLogging,
@@ -56,8 +54,8 @@ public class SynchronizerImp implements Synchronizer {
         _splitSynchronizationTask = checkNotNull(splitSynchronizationTask);
         _splitFetcher = checkNotNull(splitFetcher);
         _segmentSynchronizationTaskImp = checkNotNull(segmentSynchronizationTaskImp);
-        _splitCache = checkNotNull(splitCache);
-        _segmentCache = checkNotNull(segmentCache);
+        _splitCacheProducer = checkNotNull(splitCacheProducer);
+        this.segmentCacheProducer = checkNotNull(segmentCacheProducer);
         _onDemandFetchRetryDelayMs = checkNotNull(onDemandFetchRetryDelayMs);
         _cdnResponseHeadersLogging = cdnResponseHeadersLogging;
         _onDemandFetchMaxRetries = onDemandFetchMaxRetries;
@@ -68,6 +66,8 @@ public class SynchronizerImp implements Synchronizer {
     @Override
     public boolean syncAll() {
         FetchResult fetchResult = _splitFetcher.forceRefresh(new FetchOptions.Builder().cacheControlHeaders(true).build());
+        fetchResult.getSegments().stream()
+                .forEach(segmentName -> _segmentSynchronizationTaskImp.initializeSegment(segmentName));
         return fetchResult.isSuccess() && _segmentSynchronizationTaskImp.fetchAllSynchronous();
     }
 
@@ -109,7 +109,7 @@ public class SynchronizerImp implements Synchronizer {
         while(true) {
             remainingAttempts--;
             FetchResult fetchResult = _splitFetcher.forceRefresh(opts);
-            if (targetChangeNumber <= _splitCache.getChangeNumber()) {
+            if (targetChangeNumber <= _splitCacheProducer.getChangeNumber()) {
                 return new SyncResult(true, remainingAttempts, fetchResult);
             } else if (remainingAttempts <= 0) {
                 return new SyncResult(false, remainingAttempts, fetchResult);
@@ -133,7 +133,7 @@ public class SynchronizerImp implements Synchronizer {
     @Override
     public void refreshSplits(long targetChangeNumber) {
 
-        if (targetChangeNumber <= _splitCache.getChangeNumber()) {
+        if (targetChangeNumber <= _splitCacheProducer.getChangeNumber()) {
             return;
         }
 
@@ -181,8 +181,8 @@ public class SynchronizerImp implements Synchronizer {
 
     @Override
     public void localKillSplit(String splitName, String defaultTreatment, long newChangeNumber) {
-        if (newChangeNumber > _splitCache.getChangeNumber()) {
-            _splitCache.kill(splitName, defaultTreatment, newChangeNumber);
+        if (newChangeNumber > _splitCacheProducer.getChangeNumber()) {
+            _splitCacheProducer.kill(splitName, defaultTreatment, newChangeNumber);
             refreshSplits(newChangeNumber);
         }
     }
@@ -200,7 +200,7 @@ public class SynchronizerImp implements Synchronizer {
         while(true) {
             remainingAttempts--;
             fetcher.fetch(opts);
-            if (targetChangeNumber <= _segmentCache.getChangeNumber(segmentName)) {
+            if (targetChangeNumber <= segmentCacheProducer.getChangeNumber(segmentName)) {
                 return new SyncResult(true, remainingAttempts, new FetchResult(false, new HashSet<>()));
             } else if (remainingAttempts <= 0) {
                 return new SyncResult(false, remainingAttempts, new FetchResult(false, new HashSet<>()));
@@ -218,7 +218,7 @@ public class SynchronizerImp implements Synchronizer {
     @Override
     public void refreshSegment(String segmentName, long targetChangeNumber) {
 
-        if (targetChangeNumber <= _segmentCache.getChangeNumber(segmentName)) {
+        if (targetChangeNumber <= segmentCacheProducer.getChangeNumber(segmentName)) {
             return;
         }
 

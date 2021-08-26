@@ -1,4 +1,4 @@
-package io.split.cache;
+package io.split.storages.memory;
 
 import junit.framework.TestCase;
 import org.junit.Assert;
@@ -18,28 +18,28 @@ public class SegmentCacheInMemoryImplTest extends TestCase {
     @Test
     public void testUpdateSegment(){
         SegmentCacheInMemoryImpl segmentCacheInMemory = new SegmentCacheInMemoryImpl();
-        segmentCacheInMemory.updateSegment(SEGMENT_NAME,new ArrayList<>(), new ArrayList<>());
+        segmentCacheInMemory.updateSegment(SEGMENT_NAME,new ArrayList<>(), new ArrayList<>(), 1L);
 
-        assertEquals(DEFAULT_CHANGE_NUMBER, segmentCacheInMemory.getChangeNumber(SEGMENT_NAME));
+        assertEquals(1L, segmentCacheInMemory.getChangeNumber(SEGMENT_NAME));
     }
 
     @Test
     public void testIsInSegment() {
         SegmentCacheInMemoryImpl segmentCacheInMemory = new SegmentCacheInMemoryImpl();
-        segmentCacheInMemory.updateSegment(SEGMENT_NAME, Stream.of(KEY).collect(Collectors.toList()), new ArrayList<>());
+        segmentCacheInMemory.updateSegment(SEGMENT_NAME, Stream.of(KEY).collect(Collectors.toList()), new ArrayList<>(), 1L);
         assertTrue(segmentCacheInMemory.isInSegment(SEGMENT_NAME, KEY));
     }
     @Test
     public void testIsInSegmentWithFakeSegment() {
         SegmentCacheInMemoryImpl segmentCacheInMemory = new SegmentCacheInMemoryImpl();
-        segmentCacheInMemory.updateSegment(SEGMENT_NAME, Stream.of(KEY).collect(Collectors.toList()), new ArrayList<>());
+        segmentCacheInMemory.updateSegment(SEGMENT_NAME, Stream.of(KEY).collect(Collectors.toList()), new ArrayList<>(), 1L);
         assertFalse(segmentCacheInMemory.isInSegment(FAKE_SEGMENT_NAME, KEY));
     }
 
     @Test
     public void testSetChangeNumber() {
         SegmentCacheInMemoryImpl segmentCacheInMemory = new SegmentCacheInMemoryImpl();
-        segmentCacheInMemory.updateSegment(SEGMENT_NAME,new ArrayList<>(), new ArrayList<>());
+        segmentCacheInMemory.updateSegment(SEGMENT_NAME,new ArrayList<>(), new ArrayList<>(), 1L);
         segmentCacheInMemory.setChangeNumber(SEGMENT_NAME, CHANGE_NUMBER);
         assertEquals(CHANGE_NUMBER, segmentCacheInMemory.getChangeNumber(SEGMENT_NAME));
     }
@@ -47,14 +47,14 @@ public class SegmentCacheInMemoryImplTest extends TestCase {
     @Test
     public void testGetChangeNumberWithFakeSegment() {
         SegmentCacheInMemoryImpl segmentCacheInMemory = new SegmentCacheInMemoryImpl();
-        segmentCacheInMemory.updateSegment(SEGMENT_NAME,new ArrayList<>(), new ArrayList<>());
+        segmentCacheInMemory.updateSegment(SEGMENT_NAME,new ArrayList<>(), new ArrayList<>(), 1L);
         assertEquals(DEFAULT_CHANGE_NUMBER, segmentCacheInMemory.getChangeNumber(FAKE_SEGMENT_NAME));
     }
 
     @Test
     public void testClear() {
         SegmentCacheInMemoryImpl segmentCacheInMemory = new SegmentCacheInMemoryImpl();
-        segmentCacheInMemory.updateSegment(SEGMENT_NAME,new ArrayList<>(), new ArrayList<>());
+        segmentCacheInMemory.updateSegment(SEGMENT_NAME,new ArrayList<>(), new ArrayList<>(), 1L);
         segmentCacheInMemory.setChangeNumber(SEGMENT_NAME, CHANGE_NUMBER);
         segmentCacheInMemory.clear();
         assertEquals(DEFAULT_CHANGE_NUMBER, segmentCacheInMemory.getChangeNumber(SEGMENT_NAME));
@@ -63,16 +63,16 @@ public class SegmentCacheInMemoryImplTest extends TestCase {
     @Test
     public void testGetAll() {
         SegmentCacheInMemoryImpl segmentCacheInMemory = new SegmentCacheInMemoryImpl();
-        segmentCacheInMemory.updateSegment(SEGMENT_NAME,new ArrayList<>(), new ArrayList<>());
-        segmentCacheInMemory.updateSegment(FAKE_SEGMENT_NAME,new ArrayList<>(), new ArrayList<>());
-        Assert.assertEquals(2, segmentCacheInMemory.getAll().stream().count());
+        segmentCacheInMemory.updateSegment(SEGMENT_NAME,new ArrayList<>(), new ArrayList<>(), 1L);
+        segmentCacheInMemory.updateSegment(FAKE_SEGMENT_NAME,new ArrayList<>(), new ArrayList<>(), 1L);
+        Assert.assertEquals(2, segmentCacheInMemory.getSegmentCount());
     }
 
     @Test
     public void testGetAllKeys() {
         SegmentCacheInMemoryImpl segmentCacheInMemory = new SegmentCacheInMemoryImpl();
-        segmentCacheInMemory.updateSegment(SEGMENT_NAME,Stream.of("KEY1", "KEY2").collect(Collectors.toList()), new ArrayList<>());
-        segmentCacheInMemory.updateSegment(FAKE_SEGMENT_NAME,Stream.of("KEY3", "KEY2").collect(Collectors.toList()), new ArrayList<>());
+        segmentCacheInMemory.updateSegment(SEGMENT_NAME,Stream.of("KEY1", "KEY2").collect(Collectors.toList()), new ArrayList<>(), 1L);
+        segmentCacheInMemory.updateSegment(FAKE_SEGMENT_NAME,Stream.of("KEY3", "KEY2").collect(Collectors.toList()), new ArrayList<>(), 1L);
         Assert.assertEquals(4, segmentCacheInMemory.getKeyCount());
     }
 }

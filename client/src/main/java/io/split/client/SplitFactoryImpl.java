@@ -1,5 +1,8 @@
 package io.split.client;
 
+import io.split.client.events.EventsStorage;
+import io.split.client.events.EventsTask;
+import io.split.client.events.InMemoryEventsStorage;
 import io.split.client.impressions.AsynchronousImpressionListener;
 import io.split.client.impressions.ImpressionListener;
 import io.split.client.impressions.ImpressionsManagerImpl;
@@ -8,8 +11,8 @@ import io.split.client.interceptors.ClientKeyInterceptorFilter;
 import io.split.client.interceptors.GzipDecoderResponseInterceptor;
 import io.split.client.interceptors.GzipEncoderRequestInterceptor;
 import io.split.client.interceptors.SdkMetadataInterceptorFilter;
-import io.split.cache.InMemoryCacheImp;
-import io.split.cache.SplitCache;
+import io.split.storages.memory.InMemoryCacheImp;
+import io.split.storages.SplitCache;
 import io.split.engine.evaluator.Evaluator;
 import io.split.engine.evaluator.EvaluatorImp;
 import io.split.engine.SDKReadinessGates;
@@ -21,8 +24,8 @@ import io.split.engine.experiments.SplitFetcherImp;
 import io.split.engine.experiments.SplitParser;
 import io.split.engine.experiments.SplitSynchronizationTask;
 import io.split.engine.segments.SegmentChangeFetcher;
-import io.split.cache.SegmentCache;
-import io.split.cache.SegmentCacheInMemoryImpl;
+import io.split.storages.SegmentCache;
+import io.split.storages.memory.SegmentCacheInMemoryImpl;
 import io.split.engine.segments.SegmentSynchronizationTaskImp;
 import io.split.integrations.IntegrationsConfig;
 import io.split.telemetry.storage.InMemoryTelemetryStorage;
@@ -76,7 +79,7 @@ public class SplitFactoryImpl implements SplitFactory {
     private final SplitFetcher _splitFetcher;
     private final SplitSynchronizationTask _splitSynchronizationTask;
     private final ImpressionsManagerImpl _impressionsManager;
-    private final EventClient _eventClient;
+    private final EventsStorage _eventsStorage;
     private final SyncManager _syncManager;
     private final Evaluator _evaluator;
     private final String _apiToken;
@@ -95,6 +98,7 @@ public class SplitFactoryImpl implements SplitFactory {
     private final TelemetrySynchronizer _telemetrySynchronizer;
     private final TelemetrySyncTask _telemetrySyncTask;
     private final long _startTime;
+    private final EventsTask _eventsTask;
 
     public SplitFactoryImpl(String apiToken, SplitClientConfig config) throws URISyntaxException {
         _startTime = System.currentTimeMillis();
@@ -142,12 +146,13 @@ public class SplitFactoryImpl implements SplitFactory {
         _impressionsManager = buildImpressionsManager(config);
 
         // EventClient
-        _eventClient = EventClientImpl.create(_httpclient,
+        _eventsStorage = new InMemoryEventsStorage(config.eventsQueueSize(), _telemetryStorage);
+        _eventsTask = EventsTask.create(_httpclient,
                 _eventsRootTarget,
                 config.eventsQueueSize(),
                 config.eventFlushIntervalInMillis(),
                 config.waitBeforeShutdown(),
-                _telemetryStorage);
+                _telemetryStorage, _eventsStorage);
 
         _telemetrySyncTask = new TelemetrySyncTask(config.get_telemetryRefreshRate(), _telemetrySynchronizer);
 
@@ -158,7 +163,7 @@ public class SplitFactoryImpl implements SplitFactory {
         _client = new SplitClientImpl(this,
                 _splitCache,
                 _impressionsManager,
-                _eventClient,
+                _eventsStorage,
                 config,
                 _gates,
                 _evaluator, 
@@ -213,12 +218,12 @@ public class SplitFactoryImpl implements SplitFactory {
             _log.info("Shutdown called for split");
             try {
                 long splitCount = _splitCache.getAll().stream().count();
-                long segmentCount = _segmentCache.getAll().stream().count();
+                long segmentCount = _segmentCache.getSegmentCount();
                 long segmentKeyCount = _segmentCache.getKeyCount();
                 _impressionsManager.close();
                 _log.info("Successful shutdown of impressions manager");
-                _eventClient.close();
-                _log.info("Successful shutdown of eventClient");
+                _eventsTask.close();
+                _log.info("Successful shutdown of eventsTask");
                 _segmentSynchronizationTaskImp.close();
                 _log.info("Successful shutdown of segment fetchers");
                 _splitSynchronizationTask.close();
@@ -350,7 +355,7 @@ public class SplitFactoryImpl implements SplitFactory {
         SplitChangeFetcher splitChangeFetcher = HttpSplitChangeFetcher.create(_httpclient, _rootTarget, _telemetryStorage);
         SplitParser splitParser = new SplitParser();
 
-        return new SplitFetcherImp(splitChangeFetcher, splitParser, _splitCache, _telemetryStorage);
+        return new SplitFetcherImp(splitChangeFetcher, splitParser, _splitCache, _splitCache, _telemetryStorage);
     }
 
     private ImpressionsManagerImpl buildImpressionsManager(SplitClientConfig config) throws URISyntaxException {

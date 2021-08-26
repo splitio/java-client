@@ -6,6 +6,7 @@ import io.split.service.HttpPostImp;
 import io.split.telemetry.domain.Config;
 import io.split.telemetry.domain.Stats;
 import io.split.telemetry.domain.enums.HTTPLatenciesEnum;
+import io.split.telemetry.domain.enums.HttpParamsWrapper;
 import io.split.telemetry.domain.enums.LastSynchronizationRecordsEnum;
 import io.split.telemetry.domain.enums.ResourceEnum;
 import io.split.telemetry.storage.TelemetryRuntimeProducer;
@@ -41,11 +42,11 @@ public class HttpTelemetryMemorySender{
     }
 
     public void postConfig(Config config) {
-        _httpPost.post(_impressionConfigTarget, config, CONFIG_METRICS, HTTPLatenciesEnum.TELEMETRY, LastSynchronizationRecordsEnum.TELEMETRY, ResourceEnum.TELEMETRY_SYNC);
+        _httpPost.post(_impressionConfigTarget, config, CONFIG_METRICS, HttpParamsWrapper.TELEMETRY);
     }
 
     public void postStats(Stats stats) {
-        _httpPost.post(_impressionStatsTarget, stats, STATS_METRICS, HTTPLatenciesEnum.TELEMETRY, LastSynchronizationRecordsEnum.TELEMETRY, ResourceEnum.TELEMETRY_SYNC);
+        _httpPost.post(_impressionStatsTarget, stats, STATS_METRICS, HttpParamsWrapper.TELEMETRY);
     }
 
 }

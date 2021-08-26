@@ -1,12 +1,11 @@
 package io.split.engine.matchers;
 
 import com.google.common.collect.Lists;
-import io.split.cache.SegmentCache;
-import io.split.cache.SegmentCacheInMemoryImpl;
 import io.split.engine.evaluator.EvaluationContext;
 import io.split.engine.evaluator.Evaluator;
-import io.split.engine.evaluator.EvaluatorImp;
 import io.split.engine.matchers.strings.WhitelistMatcher;
+import io.split.storages.SegmentCache;
+import io.split.storages.memory.SegmentCacheInMemoryImpl;
 import org.junit.Test;
 import org.mockito.Mockito;
 
@@ -35,7 +34,7 @@ public class NegatableMatcherTest {
     @Test
     public void works_segment() {
         SegmentCache segmentCache = new SegmentCacheInMemoryImpl();
-        segmentCache.updateSegment("foo", Stream.of("a","b").collect(Collectors.toList()), new ArrayList<>());
+        segmentCache.updateSegment("foo", Stream.of("a","b").collect(Collectors.toList()), new ArrayList<>(), 1L);
         UserDefinedSegmentMatcher delegate = new UserDefinedSegmentMatcher("foo");
         AttributeMatcher.NegatableMatcher matcher = new AttributeMatcher.NegatableMatcher(delegate, true);
 
