@@ -7,6 +7,7 @@ import io.split.storages.pluggable.CustomStorageWrapper;
 import io.split.storages.pluggable.domain.PrefixAdapter;
 import io.split.storages.pluggable.domain.SafeUserStorageWrapper;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -22,7 +23,7 @@ public class UserCustomImpressionAdapterProducer implements ImpressionsStoragePr
     }
     @Override
     public boolean put(KeyImpression imps) {
-        return this.put(Stream.of(imps).collect(Collectors.toList()));
+        return this.put(Collections.singletonList(imps));
     }
 
     @Override
