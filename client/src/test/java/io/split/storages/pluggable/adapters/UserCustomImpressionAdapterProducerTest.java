@@ -1,0 +1,49 @@
+package io.split.storages.pluggable.adapters;
+
+import io.split.client.dtos.KeyImpression;
+import io.split.storages.pluggable.CustomStorageWrapper;
+import io.split.storages.pluggable.domain.SafeUserStorageWrapper;
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Test;
+import org.mockito.Mockito;
+
+import java.lang.reflect.Field;
+import java.lang.reflect.Modifier;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+
+public class UserCustomImpressionAdapterProducerTest {
+
+    private CustomStorageWrapper _customStorageWrapper;
+    private UserCustomImpressionAdapterProducer _impressionAdapterProducer;
+    private SafeUserStorageWrapper _safeUserStorageWrapper;
+
+    @Before
+    public void setUp() throws NoSuchFieldException, IllegalAccessException {
+        _customStorageWrapper = Mockito.mock(CustomStorageWrapper.class);
+        _safeUserStorageWrapper = Mockito.mock(SafeUserStorageWrapper.class);
+        _impressionAdapterProducer = new UserCustomImpressionAdapterProducer(_customStorageWrapper);
+        Field userCustomImpressionAdapterProducer = UserCustomImpressionAdapterProducer.class.getDeclaredField("_safeUserStorageWrapper");
+        userCustomImpressionAdapterProducer.setAccessible(true);
+        Field modifiersField = Field.class.getDeclaredField("modifiers");
+        modifiersField.setAccessible(true);
+        modifiersField.setInt(userCustomImpressionAdapterProducer, userCustomImpressionAdapterProducer.getModifiers() & ~Modifier.FINAL);
+        userCustomImpressionAdapterProducer.set(_impressionAdapterProducer, _safeUserStorageWrapper);
+    }
+
+    @Test
+    public void testPut() {
+        KeyImpression keyImpression = new KeyImpression();
+        Assert.assertTrue(_impressionAdapterProducer.put(keyImpression));
+        Mockito.verify(_safeUserStorageWrapper, Mockito.times(1)).pushItems(Mockito.anyString(), Mockito.anyObject());
+    }
+
+    @Test
+    public void testPutMany() {
+        KeyImpression keyImpression = new KeyImpression();
+        Assert.assertTrue(_impressionAdapterProducer.put(Stream.of(keyImpression).collect(Collectors.toList())));
+        Mockito.verify(_safeUserStorageWrapper, Mockito.times(1)).pushItems(Mockito.anyString(), Mockito.anyObject());
+    }
+
+}

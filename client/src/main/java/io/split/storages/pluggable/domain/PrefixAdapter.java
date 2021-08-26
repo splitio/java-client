@@ -10,6 +10,7 @@ public class PrefixAdapter {
     private static final String SPLITS_PREFIX = "splits.";
     private static final String TRAFFIC_TYPE_PREFIX = "trafficType.";
     private static final String EVENTS = "events";
+    private static final String IMPRESSIONS = "impressions";
 
     //Split Consumer
     public static String buildSplitKey(String name) {
@@ -38,6 +39,10 @@ public class PrefixAdapter {
 
     public static String buildEvent() {
         return DEFAULT_PREFIX+EVENTS;
+    }
+
+    public static String buildImpressions() {
+        return DEFAULT_PREFIX+IMPRESSIONS;
     }
 
 }
