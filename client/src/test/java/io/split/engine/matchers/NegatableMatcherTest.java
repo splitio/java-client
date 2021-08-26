@@ -34,7 +34,7 @@ public class NegatableMatcherTest {
     @Test
     public void works_segment() {
         SegmentCache segmentCache = new SegmentCacheInMemoryImpl();
-        segmentCache.updateSegment("foo", Stream.of("a","b").collect(Collectors.toList()), new ArrayList<>());
+        segmentCache.updateSegment("foo", Stream.of("a","b").collect(Collectors.toList()), new ArrayList<>(), 1L);
         UserDefinedSegmentMatcher delegate = new UserDefinedSegmentMatcher("foo");
         AttributeMatcher.NegatableMatcher matcher = new AttributeMatcher.NegatableMatcher(delegate, true);
 

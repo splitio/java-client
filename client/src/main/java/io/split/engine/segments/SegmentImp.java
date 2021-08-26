@@ -33,9 +33,10 @@ public class SegmentImp{
         _changeNumber.set(changeNumber);
     }
 
-    public void update(List<String> toAdd, List<String> toRemove){
+    public void update(List<String> toAdd, List<String> toRemove, long changeNumber){
         _concurrentKeySet.removeAll(toRemove);
         _concurrentKeySet.addAll(toAdd);
+        _changeNumber.set(changeNumber);
     }
 
     public boolean contains(String key) {

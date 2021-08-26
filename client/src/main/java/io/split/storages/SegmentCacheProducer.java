@@ -9,7 +9,7 @@ public interface SegmentCacheProducer extends SegmentCacheCommons{
      * @param toAdd
      * @param toRemove
      */
-    void updateSegment(String segmentName, List<String> toAdd, List<String> toRemove) ;
+    void updateSegment(String segmentName, List<String> toAdd, List<String> toRemove, long changeNumber) ;
 
     /**
      * update the changeNumber of a segment
@@ -17,9 +17,4 @@ public interface SegmentCacheProducer extends SegmentCacheCommons{
      * @param changeNumber
      */
     void setChangeNumber(String segmentName, long changeNumber);
-
-    /**
-     * clear all segments
-     */
-    void clear();
 }

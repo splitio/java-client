@@ -17,6 +17,7 @@ public class PrefixAdapterTest{
     private static final String TRAFFIC_TYPE_PREFIX = "trafficType.";
     private static final String EVENTS = "events";
     private static final String IMPRESSIONS = "impressions";
+    private static final String SEGMENT =  "segment." ;
 
     @Test
     public void testBuildSplitKey() {
@@ -67,6 +68,12 @@ public class PrefixAdapterTest{
     public void testBuildImpressions() {
         String expectedPrefix = DEFAULT_PREFIX + IMPRESSIONS;
         Assert.assertEquals(expectedPrefix, PrefixAdapter.buildImpressions());
+    }
+
+    @Test
+    public void testBuildSegments() {
+        String expectedPrefix = DEFAULT_PREFIX + SEGMENT + "*";
+        Assert.assertEquals(expectedPrefix, PrefixAdapter.buildSegmentAll());
     }
 
 }
