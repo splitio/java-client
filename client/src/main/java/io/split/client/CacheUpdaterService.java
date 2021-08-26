@@ -14,20 +14,22 @@ import io.split.grammar.Treatments;
 import io.split.storages.SplitCacheConsumer;
 import io.split.storages.SplitCacheProducer;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.Comparator;
+import java.util.HashMap;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
 public final  class CacheUpdaterService {
 
     private static String LOCALHOST = "localhost";
-    private SplitCacheConsumer _splitCacheConsumer;
     private SplitCacheProducer _splitCacheProducer;
 
-    public CacheUpdaterService(SplitCacheConsumer splitCacheConsumer, SplitCacheProducer splitCacheProducer) {
-        _splitCacheConsumer = checkNotNull(splitCacheConsumer);
+    public CacheUpdaterService(SplitCacheProducer splitCacheProducer) {
         _splitCacheProducer = checkNotNull(splitCacheProducer);
     }
 
