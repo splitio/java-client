@@ -1,0 +1,64 @@
+name: ci
+on:
+  pull_request:
+    branches:
+      - master
+
+jobs:
+  maven-install:
+    name: Build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Set up JDK 8
+        uses: actions/setup-java@v2
+        with:
+          distribution: 'adopt'
+          java-version: '8'
+
+      - name: Login to Dockerhub
+        uses: docker/login-action@v1
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_PASSWORD }}
+
+      - name: Login to Artifactory
+        uses: docker/login-action@v1
+        with:
+          registry: splitio-docker.jfrog.io
+          username: ${{ secrets.ARTIFACTORY_DOCKER_USER }}
+          password: ${{ secrets.ARTIFACTORY_DOCKER_PASS }}
+
+      - name: Setup Environment
+        run: |
+          cp .travis.settings.xml ${HOME}/.m2/settings.xml
+
+      - name: Maven install
+        run: mvn --batch-mode -T 1C -U clean install
+        env:
+          ARTIFACTORY_USER: ${{ secrets.ARTIFACTORY_USER }}
+          ARTIFACTORY_TOKEN: ${{ secrets.ARTIFACTORY_TOKEN }}
+          SONAR_TOKEN: ${{ secrets.SONARQUBE_TOKEN }}
+          MAVEN_OPTS: "-XX:InitialHeapSize=2G -XX:MaxHeapSize=2G -XX:+PrintCommandLineFlags -XX:ThreadStackSize=65536 -XX:-TieredCompilation -Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=warn"
+          muteProps: "true"
+
+      - name: SonarQube Scan (Pull Request)
+        if: github.event_name == 'pull_request'
+        env:
+          SONAR_TOKEN: ${{ secrets.SONARQUBE_TOKEN }}
+        run: |
+          mvn --batch-mode sonar:sonar -DskipTests -q \
+          -Dsonar.pullrequest.key=${{ github.event.pull_request.number }} \
+          -Dsonar.pullrequest.branch=${{ github.event.pull_request.head.ref }} \
+          -Dsonar.pullrequest.base=${{ github.event.pull_request.base.ref }} \
+
+        # Run SonarQube for Merge
+      - name: SonarQube Scan (Push)
+        if: github.event_name == 'push'
+        env:
+          SONAR_TOKEN: ${{ secrets.SONARQUBE_TOKEN }}
+        run: |
+          mvn --batch-mode sonar:sonar -DskipTests -q \
+          -Dsonar.branch.name= ${{ github.event.pull_request.base.ref }}
