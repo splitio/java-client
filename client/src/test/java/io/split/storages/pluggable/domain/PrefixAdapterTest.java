@@ -76,4 +76,16 @@ public class PrefixAdapterTest{
         Assert.assertEquals(expectedPrefix, PrefixAdapter.buildSegmentAll());
     }
 
+    @Test
+    public void testBuildTelemetryLatencies() {
+        String expectedPrefix = "SPLITIO.telemetry.latencies::{sv}/{mn}/{mi}/{getTreatment}/{2}";
+        Assert.assertEquals(expectedPrefix, PrefixAdapter.buildTelemetryLatenciesPrefix("getTreatment", 2, "sv", "mi","mn"));
+    }
+
+    @Test
+    public void testBuildTelemetryExceptions() {
+        String expectedPrefix = "SPLITIO.telemetry.exceptions::{sv}/{mn}/{mi}/{getTreatment}";
+        Assert.assertEquals(expectedPrefix, PrefixAdapter.buildTelemetryExceptionsPrefix("getTreatment", "sv", "mi","mn"));
+    }
+
 }
