@@ -5,6 +5,7 @@ import io.split.client.impressions.ImpressionListener;
 import io.split.client.impressions.ImpressionsManager;
 import io.split.integrations.IntegrationsConfig;
 import io.split.storages.enums.StorageMode;
+import io.split.storages.pluggable.CustomStorageWrapper;
 import org.apache.hc.core5.http.HttpHost;
 
 import java.io.IOException;
@@ -60,6 +61,7 @@ public class SplitClientConfig {
     private final boolean _cdnDebugLogging;
     private final StorageMode _storageMode;
     private long _validateAfterInactivityInMillis;
+    private final CustomStorageWrapper _customStorageWrapper;
 
     // Proxy configs
     private final HttpHost _proxy;
@@ -111,7 +113,8 @@ public class SplitClientConfig {
                               int failedAttemptsBeforeLogging,
                               boolean cdnDebugLogging,
                               StorageMode storageMode,
-                              long validateAfterInactivityInMillis) {
+                              long validateAfterInactivityInMillis,
+                              CustomStorageWrapper customStorageWrapper) {
         _endpoint = endpoint;
         _eventsEndpoint = eventsEndpoint;
         _featuresRefreshRate = pollForFeatureChangesEveryNSeconds;
@@ -150,6 +153,7 @@ public class SplitClientConfig {
         _cdnDebugLogging = cdnDebugLogging;
         _storageMode = storageMode;
         _validateAfterInactivityInMillis = validateAfterInactivityInMillis;
+        _customStorageWrapper = customStorageWrapper;
 
         Properties props = new Properties();
         try {
@@ -299,6 +303,10 @@ public class SplitClientConfig {
         return _validateAfterInactivityInMillis;
     }
 
+    public CustomStorageWrapper customStorageWrapper() {
+        return _customStorageWrapper;
+    }
+
     public static final class Builder {
 
         private String _endpoint = SDK_ENDPOINT;
@@ -342,6 +350,7 @@ public class SplitClientConfig {
         private final boolean _cdnDebugLogging = true;
         private StorageMode _storageMode = StorageMode.STANDALONE;
         private long _validateAfterInactivityInMillis = 1000;
+        private CustomStorageWrapper _customStorageWrapper;
 
         public Builder() {
         }
@@ -764,6 +773,17 @@ public class SplitClientConfig {
             return this;
         }
 
+        /**
+         * Storage wrapper
+         *
+         * @param customStorageWrapper
+         * @return this builder
+         */
+        public Builder customStorageWrapper(CustomStorageWrapper customStorageWrapper) {
+            _customStorageWrapper = customStorageWrapper;
+            return this;
+        }
+
         public SplitClientConfig build() {
             if (_featuresRefreshRate < 5 ) {
                 throw new IllegalArgumentException("featuresRefreshRate must be >= 5: " + _featuresRefreshRate);
@@ -854,6 +874,10 @@ public class SplitClientConfig {
                 throw new IllegalStateException("_telemetryRefreshRate must be >= 60");
             }
 
+            if(StorageMode.CONSUMER.equals(_storageMode) && _customStorageWrapper == null) {
+                throw new IllegalStateException("Custom Storage must not be null on Consumer mode.");
+            }
+
             return new SplitClientConfig(
                     _endpoint,
                     _eventsEndpoint,
@@ -892,7 +916,8 @@ public class SplitClientConfig {
                     _failedAttemptsBeforeLogging,
                     _cdnDebugLogging,
                     _storageMode,
-                    _validateAfterInactivityInMillis);
+                    _validateAfterInactivityInMillis,
+                    _customStorageWrapper);
         }
     }
 }

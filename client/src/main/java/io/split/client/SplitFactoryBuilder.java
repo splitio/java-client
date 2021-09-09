@@ -44,8 +44,7 @@ public class SplitFactoryBuilder {
             return LocalhostSplitFactory.createLocalhostSplitFactory(config);
         } else {
             if (StorageMode.CONSUMER.equals(config.storageMode())){
-                //TODO Here, once wrapper was implemented I'll add a new constructor with the wrapper as 3rd param for CONSUMER mode .
-                return new SplitFactoryImpl(apiToken, config);
+                return new SplitFactoryImpl(apiToken, config, config.customStorageWrapper());
             }
             else {
                 return new SplitFactoryImpl(apiToken, config);
