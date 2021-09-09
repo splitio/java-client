@@ -1,6 +1,7 @@
 package io.split.storages.pluggable.adapters;
 
 import io.split.client.utils.Json;
+import io.split.client.utils.SDKMetadata;
 import io.split.storages.pluggable.CustomStorageWrapper;
 import io.split.storages.pluggable.domain.PrefixAdapter;
 import io.split.storages.pluggable.domain.SafeUserStorageWrapper;
@@ -16,7 +17,6 @@ import io.split.telemetry.utils.BucketCalculator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.net.InetAddress;
 import java.util.Collections;
 
 import static com.google.common.base.Preconditions.checkNotNull;
@@ -33,15 +33,11 @@ public class UserCustomTelemetryAdapterProducer implements TelemetryStorageProdu
     private static final String SESSION = "sessionLength";
 
     private final SafeUserStorageWrapper _safeUserStorageWrapper;
+    private SDKMetadata _sdkMetadata;
 
-    private String _sdkVersion;
-    private String _machineIp;
-    private String _machineName;
-
-    public UserCustomTelemetryAdapterProducer(CustomStorageWrapper customStorageWrapper, String sdkVersion, boolean ipAddressEnabled) {
+    public UserCustomTelemetryAdapterProducer(CustomStorageWrapper customStorageWrapper, SDKMetadata sdkMetadata) {
         _safeUserStorageWrapper = new SafeUserStorageWrapper(checkNotNull(customStorageWrapper));
-        _sdkVersion = sdkVersion;
-        setConnectionInfo(ipAddressEnabled);
+        _sdkMetadata = sdkMetadata;
     }
 
     @Override
@@ -57,12 +53,12 @@ public class UserCustomTelemetryAdapterProducer implements TelemetryStorageProdu
 
     @Override
     public void recordLatency(MethodEnum method, long latency) {
-        _safeUserStorageWrapper.increment(PrefixAdapter.buildTelemetryLatenciesPrefix(method.getMethod(), BucketCalculator.getBucketForLatency(latency), _sdkVersion, _machineIp, _machineName), 1);
+        _safeUserStorageWrapper.increment(PrefixAdapter.buildTelemetryLatenciesPrefix(method.getMethod(), BucketCalculator.getBucketForLatency(latency), _sdkMetadata.getSdkVersion(), _sdkMetadata.getMachineIp(), _sdkMetadata.getMachineName()), 1);
     }
 
     @Override
     public void recordException(MethodEnum method) {
-        _safeUserStorageWrapper.increment(PrefixAdapter.buildTelemetryExceptionsPrefix(method.getMethod(), _sdkVersion, _machineIp, _machineName), 1);
+        _safeUserStorageWrapper.increment(PrefixAdapter.buildTelemetryExceptionsPrefix(method.getMethod(), _sdkMetadata.getSdkVersion(), _sdkMetadata.getMachineIp(), _sdkMetadata.getMachineName()), 1);
     }
 
     @Override
@@ -113,22 +109,5 @@ public class UserCustomTelemetryAdapterProducer implements TelemetryStorageProdu
     @Override
     public void recordSessionLength(long sessionLength) {
         _safeUserStorageWrapper.set(PrefixAdapter.buildTelemetryPrefix(SESSION), Json.toJson(sessionLength));
-    }
-
-    private void setConnectionInfo(boolean ipAddressEnabled) {
-        String machineName = "";
-        String ip = "";
-
-        if (ipAddressEnabled) {
-            try {
-                InetAddress localHost = InetAddress.getLocalHost();
-                machineName = localHost.getHostName();
-                ip = localHost.getHostAddress();
-            } catch (Exception e) {
-                _log.error("Could not resolve InetAddress", e);
-            }
-        }
-        _machineName = machineName;
-        _machineIp = ip;
     }
 }
