@@ -392,6 +392,5 @@ public class SplitFactoryImpl implements SplitFactory {
             }
         }
         return new SDKMetadata(splitSdkVersion, ip, machineName);
-
     }
 }
