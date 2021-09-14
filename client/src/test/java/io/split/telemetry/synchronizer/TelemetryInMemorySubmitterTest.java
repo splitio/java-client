@@ -29,7 +29,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
-public class TelemetrySubmitterTest {
+public class TelemetryInMemorySubmitterTest {
     private static final String FIRST_KEY = "KEY_1";
     private static final String SECOND_KEY = "KEY_2";
     public static final String TELEMETRY_ENDPOINT = "https://telemetry.split.io/api/v1";
@@ -56,6 +56,7 @@ public class TelemetrySubmitterTest {
 
     @Test
     public void testConfig() throws InvocationTargetException, NoSuchMethodException, IllegalAccessException, IOException, URISyntaxException, NoSuchFieldException, ClassNotFoundException {
+        ApiKeyCounter.getApiKeyCounterInstance().clearApiKeys();
         ApiKeyCounter.getApiKeyCounterInstance().add(FIRST_KEY);
         ApiKeyCounter.getApiKeyCounterInstance().add(FIRST_KEY);
         ApiKeyCounter.getApiKeyCounterInstance().add(FIRST_KEY);
@@ -63,10 +64,10 @@ public class TelemetrySubmitterTest {
         ApiKeyCounter.getApiKeyCounterInstance().add(SECOND_KEY);
         TelemetryStorage telemetryStorage = new InMemoryTelemetryStorage();
         CloseableHttpClient httpClient = TestHelper.mockHttpClient(TELEMETRY_ENDPOINT, HttpStatus.SC_OK);
-        TelemetrySubmitter telemetrySynchronizer = getTelemetrySynchronizer(httpClient);
+        TelemetryInMemorySubmitter telemetrySynchronizer = getTelemetrySynchronizer(httpClient);
         SplitClientConfig splitClientConfig = SplitClientConfig.builder().build();
         populateConfig(telemetryStorage);
-        Field teleTelemetryStorageConsumer = TelemetrySubmitter.class.getDeclaredField("_teleTelemetryStorageConsumer");
+        Field teleTelemetryStorageConsumer = TelemetryInMemorySubmitter.class.getDeclaredField("_teleTelemetryStorageConsumer");
         teleTelemetryStorageConsumer.setAccessible(true);
         Field modifiersField = Field.class.getDeclaredField("modifiers");
         modifiersField.setAccessible(true);
@@ -82,9 +83,9 @@ public class TelemetrySubmitterTest {
     public void testStats() throws Exception {
         TelemetryStorage telemetryStorage = new InMemoryTelemetryStorage();
         CloseableHttpClient httpClient = TestHelper.mockHttpClient(TELEMETRY_ENDPOINT, HttpStatus.SC_OK);
-        TelemetrySubmitter telemetrySynchronizer = getTelemetrySynchronizer(httpClient);
+        TelemetryInMemorySubmitter telemetrySynchronizer = getTelemetrySynchronizer(httpClient);
         populateStats(telemetryStorage);
-        Field teleTelemetryStorageConsumer = TelemetrySubmitter.class.getDeclaredField("_teleTelemetryStorageConsumer");
+        Field teleTelemetryStorageConsumer = TelemetryInMemorySubmitter.class.getDeclaredField("_teleTelemetryStorageConsumer");
         teleTelemetryStorageConsumer.setAccessible(true);
         Field modifiersField = Field.class.getDeclaredField("modifiers");
         modifiersField.setAccessible(true);
@@ -137,12 +138,12 @@ public class TelemetrySubmitterTest {
         Assert.assertEquals(91218, streamingEvents.get(0).getTimestamp());
     }
 
-    private TelemetrySubmitter getTelemetrySynchronizer(CloseableHttpClient httpClient) throws URISyntaxException, InvocationTargetException, NoSuchMethodException, IllegalAccessException, IOException {
+    private TelemetryInMemorySubmitter getTelemetrySynchronizer(CloseableHttpClient httpClient) throws URISyntaxException, InvocationTargetException, NoSuchMethodException, IllegalAccessException, IOException {
         TelemetryStorageConsumer consumer = Mockito.mock(InMemoryTelemetryStorage.class);
         TelemetryRuntimeProducer telemetryRuntimeProducer = Mockito.mock(TelemetryRuntimeProducer.class);
         SplitCacheConsumer splitCacheConsumer = Mockito.mock(SplitCacheConsumer.class);
         SegmentCacheConsumer segmentCacheConsumer = Mockito.mock(SegmentCacheConsumer.class);
-        TelemetrySubmitter telemetrySynchronizer = new TelemetrySubmitter(httpClient, URI.create(TELEMETRY_ENDPOINT), consumer, splitCacheConsumer, segmentCacheConsumer, telemetryRuntimeProducer, 0l);
+        TelemetryInMemorySubmitter telemetrySynchronizer = new TelemetryInMemorySubmitter(httpClient, URI.create(TELEMETRY_ENDPOINT), consumer, splitCacheConsumer, segmentCacheConsumer, telemetryRuntimeProducer, 0l);
         return telemetrySynchronizer;
     }
 

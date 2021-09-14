@@ -39,18 +39,6 @@ public class UserCustomTelemetryAdapterProducerTest {
     }
 
     @Test
-    public void testRecordNonReadyUsage() {
-        _userCustomTelemetryAdapterProducer.recordNonReadyUsage();
-        Mockito.verify(_safeUserStorageWrapper, Mockito.times(1)).increment(Mockito.anyString(), Mockito.anyLong());
-    }
-
-    @Test
-    public void testRecordBURTimeout() {
-        _userCustomTelemetryAdapterProducer.recordBURTimeout();
-        Mockito.verify(_safeUserStorageWrapper, Mockito.times(1)).increment(Mockito.anyString(), Mockito.anyLong());
-    }
-
-    @Test
     public void testRecordLatency() {
         _userCustomTelemetryAdapterProducer.recordLatency(MethodEnum.TRACK, 10l);
         Mockito.verify(_safeUserStorageWrapper, Mockito.times(1)).increment(Mockito.anyString(), Mockito.anyLong());
@@ -60,65 +48,5 @@ public class UserCustomTelemetryAdapterProducerTest {
     public void testRecordException() {
         _userCustomTelemetryAdapterProducer.recordException(MethodEnum.TRACK);
         Mockito.verify(_safeUserStorageWrapper, Mockito.times(1)).increment(Mockito.anyString(), Mockito.anyLong());
-    }
-
-    @Test
-    public void testAddTag() {
-        _userCustomTelemetryAdapterProducer.addTag("Tag1");
-        Mockito.verify(_safeUserStorageWrapper, Mockito.times(1)).pushItems(Mockito.anyString(), Mockito.anyObject());
-    }
-
-    @Test
-    public void testRecordImpressionStats() {
-        _userCustomTelemetryAdapterProducer.recordImpressionStats(ImpressionsDataTypeEnum.IMPRESSIONS_DEDUPED, 1L);
-        Mockito.verify(_safeUserStorageWrapper, Mockito.times(1)).increment(Mockito.anyString(), Mockito.anyLong());
-    }
-
-    @Test
-    public void testRecordEventStats() {
-        _userCustomTelemetryAdapterProducer.recordEventStats(EventsDataRecordsEnum.EVENTS_DROPPED, 2L);
-        Mockito.verify(_safeUserStorageWrapper, Mockito.times(1)).increment(Mockito.anyString(), Mockito.anyLong());
-    }
-
-    @Test
-    public void testRecordSuccessfulSync() {
-        _userCustomTelemetryAdapterProducer.recordSuccessfulSync(LastSynchronizationRecordsEnum.TOKEN, 20L);
-        Mockito.verify(_safeUserStorageWrapper, Mockito.times(1)).set(Mockito.anyString(), Mockito.anyObject());
-    }
-
-    @Test
-    public void testRecordSyncError() {
-        _userCustomTelemetryAdapterProducer.recordSyncError(ResourceEnum.SPLIT_SYNC, HttpStatus.SC_OK);
-        Mockito.verify(_safeUserStorageWrapper, Mockito.times(1)).increment(Mockito.anyString(), Mockito.anyLong());
-    }
-
-    @Test
-    public void testRecordSyncLatency() {
-        _userCustomTelemetryAdapterProducer.recordSyncLatency(HTTPLatenciesEnum.EVENTS, 20L);
-        Mockito.verify(_safeUserStorageWrapper, Mockito.times(1)).increment(Mockito.anyString(), Mockito.anyLong());
-    }
-
-    @Test
-    public void testRecordAuthRejections() {
-        _userCustomTelemetryAdapterProducer.recordAuthRejections();
-        Mockito.verify(_safeUserStorageWrapper, Mockito.times(1)).increment(Mockito.anyString(), Mockito.anyLong());
-    }
-
-    @Test
-    public void testRecordTokenRefreshes() {
-        _userCustomTelemetryAdapterProducer.recordTokenRefreshes();
-        Mockito.verify(_safeUserStorageWrapper, Mockito.times(1)).increment(Mockito.anyString(), Mockito.anyLong());
-    }
-
-    @Test
-    public void testRecordStreamingEvents() {
-        _userCustomTelemetryAdapterProducer.recordStreamingEvents(new StreamingEvent(200, 299L, 20120L));
-        Mockito.verify(_safeUserStorageWrapper, Mockito.times(1)).pushItems(Mockito.anyString(), Mockito.anyObject());
-    }
-
-    @Test
-    public void testRecordSessionLength() {
-        _userCustomTelemetryAdapterProducer.recordSessionLength(200L);
-        Mockito.verify(_safeUserStorageWrapper, Mockito.times(1)).set(Mockito.anyString(), Mockito.anyObject());
     }
 }
