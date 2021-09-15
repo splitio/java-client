@@ -34,9 +34,7 @@ import io.split.storages.pluggable.adapters.UserCustomTelemetryAdapterProducer;
 import io.split.telemetry.storage.InMemoryTelemetryStorage;
 import io.split.telemetry.storage.NoopTelemetryStorage;
 import io.split.telemetry.storage.TelemetryStorage;
-import io.split.telemetry.storage.TelemetryStorageConsumer;
-import io.split.telemetry.storage.TelemetryStorageProducer;
-import io.split.telemetry.synchronizer.TelemetrySubmitter;
+import io.split.telemetry.synchronizer.TelemetryInMemorySubmitter;
 import io.split.telemetry.synchronizer.TelemetrySyncTask;
 import io.split.telemetry.synchronizer.TelemetrySynchronizer;
 import org.apache.hc.client5.http.auth.AuthScope;
@@ -60,7 +58,6 @@ import org.apache.hc.core5.util.TimeValue;
 import org.apache.hc.core5.util.Timeout;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import sun.util.resources.cldr.so.CalendarData_so_DJ;
 
 import java.io.IOException;
 import java.net.InetAddress;
@@ -143,7 +140,7 @@ public class SplitFactoryImpl implements SplitFactory {
         // Cache Initialisations
         _segmentCache = new SegmentCacheInMemoryImpl();
         _splitCache = new InMemoryCacheImp();
-        _telemetrySynchronizer = new TelemetrySubmitter(_httpclient, URI.create(config.telemetryURL()), _telemetryStorageConsumer, _splitCache, _segmentCache, _telemetryStorageProducer, _startTime);
+        _telemetrySynchronizer = new TelemetryInMemorySubmitter(_httpclient, URI.create(config.telemetryURL()), _telemetryStorage, _splitCache, _segmentCache, _telemetryStorage, _startTime);
 
 
         // Segments

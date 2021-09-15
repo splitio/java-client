@@ -26,7 +26,7 @@ import java.util.Map;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
-public class TelemetrySubmitter implements TelemetrySynchronizer{
+public class TelemetryInMemorySubmitter implements TelemetrySynchronizer{
 
     private static final int OPERATION_MODE = 0;
     private static  final String STORAGE = "memory";
@@ -37,8 +37,8 @@ public class TelemetrySubmitter implements TelemetrySynchronizer{
     private SegmentCacheConsumer _segmentCacheConsumer;
     private final long _initStartTime;
 
-    public TelemetrySubmitter(CloseableHttpClient client, URI telemetryRootEndpoint, TelemetryStorageConsumer telemetryStorageConsumer, SplitCacheConsumer splitCacheConsumer,
-                              SegmentCacheConsumer segmentCacheConsumer, TelemetryRuntimeProducer telemetryRuntimeProducer, long initStartTime) throws URISyntaxException {
+    public TelemetryInMemorySubmitter(CloseableHttpClient client, URI telemetryRootEndpoint, TelemetryStorageConsumer telemetryStorageConsumer, SplitCacheConsumer splitCacheConsumer,
+                                      SegmentCacheConsumer segmentCacheConsumer, TelemetryRuntimeProducer telemetryRuntimeProducer, long initStartTime) throws URISyntaxException {
         _httpHttpTelemetryMemorySender = HttpTelemetryMemorySender.create(client, telemetryRootEndpoint, telemetryRuntimeProducer);
         _teleTelemetryStorageConsumer = checkNotNull(telemetryStorageConsumer);
         _splitCacheConsumer = checkNotNull(splitCacheConsumer);
