@@ -76,8 +76,7 @@ public class ApiKeyCounter {
         return factoryInstances;
     }
 
-    @VisibleForTesting
-    void clearApiKeys() {
+    public void clearApiKeys() {
         USED_API_KEYS.clear();
     }
 }

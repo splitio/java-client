@@ -11,6 +11,7 @@ import io.split.client.interceptors.ClientKeyInterceptorFilter;
 import io.split.client.interceptors.GzipDecoderResponseInterceptor;
 import io.split.client.interceptors.GzipEncoderRequestInterceptor;
 import io.split.client.interceptors.SdkMetadataInterceptorFilter;
+import io.split.client.utils.SDKMetadata;
 import io.split.storages.memory.InMemoryCacheImp;
 import io.split.storages.SplitCache;
 import io.split.engine.evaluator.Evaluator;
@@ -30,7 +31,7 @@ import io.split.engine.segments.SegmentSynchronizationTaskImp;
 import io.split.integrations.IntegrationsConfig;
 import io.split.telemetry.storage.InMemoryTelemetryStorage;
 import io.split.telemetry.storage.TelemetryStorage;
-import io.split.telemetry.synchronizer.TelemetrySubmitter;
+import io.split.telemetry.synchronizer.TelemetryInMemorySubmitter;
 import io.split.telemetry.synchronizer.TelemetrySyncTask;
 import io.split.telemetry.synchronizer.TelemetrySynchronizer;
 import org.apache.hc.client5.http.auth.AuthScope;
@@ -56,6 +57,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
+import java.net.InetAddress;
 import java.net.URI;
 import java.net.URISyntaxException;
 
@@ -99,12 +101,14 @@ public class SplitFactoryImpl implements SplitFactory {
     private final TelemetrySyncTask _telemetrySyncTask;
     private final long _startTime;
     private final EventsTask _eventsTask;
+    private final SDKMetadata _sdkMetadata;
 
     public SplitFactoryImpl(String apiToken, SplitClientConfig config) throws URISyntaxException {
         _startTime = System.currentTimeMillis();
         _apiToken = apiToken;
         _apiKeyCounter = ApiKeyCounter.getApiKeyCounterInstance();
         _apiKeyCounter.add(apiToken);
+        _sdkMetadata = createSdkMetadata(config.ipAddressEnabled(), SplitClientConfig.splitSdkVersion);
 
         _telemetryStorage = new InMemoryTelemetryStorage();
 
@@ -119,7 +123,7 @@ public class SplitFactoryImpl implements SplitFactory {
         _gates = new SDKReadinessGates();
 
         // HttpClient
-        _httpclient = buildHttpClient(apiToken, config);
+        _httpclient = buildHttpClient(apiToken, config, _sdkMetadata);
 
         // Roots
         _rootTarget = URI.create(config.endpoint());
@@ -128,7 +132,7 @@ public class SplitFactoryImpl implements SplitFactory {
         // Cache Initialisations
         _segmentCache = new SegmentCacheInMemoryImpl();
         _splitCache = new InMemoryCacheImp();
-        _telemetrySynchronizer = new TelemetrySubmitter(_httpclient, URI.create(config.telemetryURL()), _telemetryStorage, _splitCache, _segmentCache, _telemetryStorage, _startTime);
+        _telemetrySynchronizer = new TelemetryInMemorySubmitter(_httpclient, URI.create(config.telemetryURL()), _telemetryStorage, _splitCache, _segmentCache, _telemetryStorage, _startTime);
 
 
         // Segments
@@ -183,7 +187,7 @@ public class SplitFactoryImpl implements SplitFactory {
                 _httpclient,
                 config.streamingServiceURL(),
                 config.authRetryBackoffBase(),
-                buildSSEdHttpClient(apiToken, config),
+                buildSSEdHttpClient(apiToken, config, _sdkMetadata),
                 _segmentCache,
                 config.streamingRetryDelay(),
                 config.streamingFetchMaxRetries(),
@@ -248,7 +252,7 @@ public class SplitFactoryImpl implements SplitFactory {
         return isTerminated;
     }
 
-    private static CloseableHttpClient buildHttpClient(String apiToken, SplitClientConfig config) {
+    private static CloseableHttpClient buildHttpClient(String apiToken, SplitClientConfig config, SDKMetadata sdkMetadata) {
         SSLConnectionSocketFactory sslSocketFactory = SSLConnectionSocketFactoryBuilder.create()
                 .setSslContext(SSLContexts.createSystemDefault())
                 .setTlsVersions(TLS.V_1_1, TLS.V_1_2)
@@ -273,7 +277,7 @@ public class SplitFactoryImpl implements SplitFactory {
                 .setConnectionManager(cm)
                 .setDefaultRequestConfig(requestConfig)
                 .addRequestInterceptorLast(AuthorizationInterceptorFilter.instance(apiToken))
-                .addRequestInterceptorLast(SdkMetadataInterceptorFilter.instance(config.ipAddressEnabled(), SplitClientConfig.splitSdkVersion))
+                .addRequestInterceptorLast(SdkMetadataInterceptorFilter.instance(sdkMetadata))
                 .addRequestInterceptorLast(new GzipEncoderRequestInterceptor())
                 .addResponseInterceptorLast((new GzipDecoderResponseInterceptor()));
 
@@ -285,7 +289,7 @@ public class SplitFactoryImpl implements SplitFactory {
         return httpClientbuilder.build();
     }
 
-    private static CloseableHttpClient buildSSEdHttpClient(String apiToken, SplitClientConfig config) {
+    private static CloseableHttpClient buildSSEdHttpClient(String apiToken, SplitClientConfig config, SDKMetadata sdkMetadata) {
         RequestConfig requestConfig = RequestConfig.custom()
                 .setConnectTimeout(Timeout.ofMilliseconds(SSE_CONNECT_TIMEOUT))
                 .build();
@@ -307,7 +311,7 @@ public class SplitFactoryImpl implements SplitFactory {
         HttpClientBuilder httpClientbuilder = HttpClients.custom()
                 .setConnectionManager(cm)
                 .setDefaultRequestConfig(requestConfig)
-                .addRequestInterceptorLast(SdkMetadataInterceptorFilter.instance(config.ipAddressEnabled(), SplitClientConfig.splitSdkVersion))
+                .addRequestInterceptorLast(SdkMetadataInterceptorFilter.instance(sdkMetadata))
                 .addRequestInterceptorLast(ClientKeyInterceptorFilter.instance(apiToken));
 
         // Set up proxy is it exists
@@ -371,5 +375,21 @@ public class SplitFactoryImpl implements SplitFactory {
         }
 
         return ImpressionsManagerImpl.instance(_httpclient, config, impressionListeners, _telemetryStorage);
+    }
+
+    private SDKMetadata createSdkMetadata(boolean ipAddressEnabled, String splitSdkVersion) {
+        String machineName = "";
+        String ip = "";
+
+        if (ipAddressEnabled) {
+            try {
+                InetAddress localHost = InetAddress.getLocalHost();
+                machineName = localHost.getHostName();
+                ip = localHost.getHostAddress();
+            } catch (Exception e) {
+                _log.error("Could not resolve InetAddress", e);
+            }
+        }
+        return new SDKMetadata(splitSdkVersion, ip, machineName);
     }
 }
