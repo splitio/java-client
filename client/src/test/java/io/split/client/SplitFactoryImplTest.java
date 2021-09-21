@@ -1,8 +1,10 @@
 package io.split.client;
 
 import io.split.client.impressions.ImpressionsManager;
-import io.split.engine.segments.SegmentSynchronizationTaskImp;
 import io.split.integrations.IntegrationsConfig;
+import io.split.storages.enums.OperationMode;
+import io.split.storages.enums.StorageMode;
+import io.split.storages.pluggable.CustomStorageWrapper;
 import io.split.telemetry.storage.TelemetryStorage;
 import junit.framework.TestCase;
 import org.junit.Test;
@@ -10,7 +12,6 @@ import org.mockito.Mockito;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
-import java.net.URISyntaxException;
 
 public class SplitFactoryImplTest extends TestCase {
     public static final String API_KEY ="29013ionasdasd09u";
@@ -107,7 +108,7 @@ public class SplitFactoryImplTest extends TestCase {
 
         SplitFactoryImpl splitFactory = new SplitFactoryImpl(API_KEY, splitClientConfig);
         //Before destroy we replace telemetryStorage via reflection.
-        Field factoryDestroy = SplitFactoryImpl.class.getDeclaredField("_telemetryStorage");
+        Field factoryDestroy = SplitFactoryImpl.class.getDeclaredField("_telemetryStorageProducer");
         factoryDestroy.setAccessible(true);
         Field modifiersField = Field.class.getDeclaredField("modifiers");
         modifiersField.setAccessible(true);
@@ -118,6 +119,26 @@ public class SplitFactoryImplTest extends TestCase {
 
         assertTrue(splitFactory.isDestroyed());
         Mockito.verify(telemetryStorage, Mockito.times(1)).recordSessionLength(Mockito.anyLong());
+    }
+
+    @Test
+    public void testFactoryConsumerInstantiation() throws Exception {
+        CustomStorageWrapper customStorageWrapper = Mockito.mock(CustomStorageWrapper.class);
+        SplitClientConfig splitClientConfig = SplitClientConfig.builder()
+                .enableDebug()
+                .impressionsMode(ImpressionsManager.Mode.DEBUG)
+                .impressionsRefreshRate(1)
+                .endpoint(ENDPOINT,EVENTS_ENDPOINT)
+                .authServiceURL(AUTH_SERVICE)
+                .setBlockUntilReadyTimeout(10000)
+                .telemetryURL(SplitClientConfig.TELEMETRY_ENDPOINT)
+                .operationMode(OperationMode.CONSUMER)
+                .customStorageWrapper(customStorageWrapper)
+                .build();
+        SplitFactoryImpl splitFactory = new SplitFactoryImpl(API_KEY, splitClientConfig, customStorageWrapper);
+
+        assertNotNull(splitFactory.client());
+        assertNotNull(splitFactory.manager());
     }
 
 }

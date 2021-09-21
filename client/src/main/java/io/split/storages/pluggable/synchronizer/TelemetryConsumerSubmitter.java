@@ -4,6 +4,7 @@ import com.google.common.annotations.VisibleForTesting;
 import io.split.client.SplitClientConfig;
 import io.split.client.utils.Json;
 import io.split.client.utils.SDKMetadata;
+import io.split.storages.enums.OperationMode;
 import io.split.storages.enums.StorageMode;
 import io.split.storages.pluggable.CustomStorageWrapper;
 import io.split.storages.pluggable.domain.ConfigConsumer;
@@ -46,7 +47,7 @@ public class TelemetryConsumerSubmitter implements TelemetrySynchronizer {
     @VisibleForTesting
     ConfigConsumer generateConfig(SplitClientConfig splitClientConfig, Map<String, Long> factoryInstances, List<String> tags) {
         ConfigConsumer config = new ConfigConsumer();
-        config.set_operationMode(splitClientConfig.storageMode()== StorageMode.STANDALONE ? 0 : 1);
+        config.set_operationMode(splitClientConfig.operationMode()== OperationMode.STANDALONE ? 0 : 1);
         config.set_storage(STORAGE);
         config.set_activeFactories(factoryInstances.size());
         config.set_redundantFactories(getRedundantFactories(factoryInstances));
