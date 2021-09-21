@@ -5,7 +5,6 @@ import io.split.client.SplitClientConfig;
 import io.split.client.utils.Json;
 import io.split.client.utils.SDKMetadata;
 import io.split.storages.enums.OperationMode;
-import io.split.storages.enums.StorageMode;
 import io.split.storages.pluggable.CustomStorageWrapper;
 import io.split.storages.pluggable.domain.ConfigConsumer;
 import io.split.storages.pluggable.domain.PrefixAdapter;
