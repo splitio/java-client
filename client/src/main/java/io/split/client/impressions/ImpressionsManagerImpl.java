@@ -114,16 +114,15 @@ public class ImpressionsManagerImpl implements ImpressionsManager, Closeable {
             return;
         }
 
-        impression = impression.withPreviousTime(_impressionObserver.testAndSet(impression));
+        impression = _addPreviousTimeEnabled ? impression.withPreviousTime(_impressionObserver.testAndSet(impression)) : impression;
         _listener.log(impression);
 
         if (_isOptimized) {
             _counter.inc(impression.split(), impression.time(), 1);
-        }
-
-        if (_isOptimized && !shouldQueueImpression(impression)) {
-            _telemetryRuntimeProducer.recordImpressionStats(ImpressionsDataTypeEnum.IMPRESSIONS_DEDUPED, 1);
-            return;
+            if (!shouldQueueImpression(impression)) {
+                _telemetryRuntimeProducer.recordImpressionStats(ImpressionsDataTypeEnum.IMPRESSIONS_DEDUPED, 1);
+                return;
+            }
         }
         if (!_impressionsStorageProducer.put(KeyImpression.fromImpression(impression))) {
             _telemetryRuntimeProducer.recordImpressionStats(ImpressionsDataTypeEnum.IMPRESSIONS_DROPPED, 1);
