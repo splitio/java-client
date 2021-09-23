@@ -84,22 +84,22 @@ public class ImpressionsManagerImpl implements ImpressionsManager, Closeable {
         _impressionsStorageConsumer = checkNotNull(impressionsStorageConsumer);
         _impressionsStorageProducer = checkNotNull(impressionsStorageProducer);
         _impressionObserver = new ImpressionObserver(LAST_SEEN_CACHE_SIZE);
-        _counter = new ImpressionCounter();
         _impressionsSender = (null != impressionsSender) ? impressionsSender
                 : HttpImpressionsSender.create(client, URI.create(config.eventsEndpoint()), _mode, telemetryRuntimeProducer);
 
         _scheduler = buildExecutor();
         _scheduler.scheduleAtFixedRate(this::sendImpressions, BULK_INITIAL_DELAY_SECONDS, config.impressionsRefreshRate(), TimeUnit.SECONDS);
-        if (Mode.OPTIMIZED.equals(_mode)) {
-            _scheduler.scheduleAtFixedRate(this::sendImpressionCounters, COUNT_INITIAL_DELAY_SECONDS, COUNT_REFRESH_RATE_SECONDS, TimeUnit.SECONDS);
-        }
 
         _listener = (null != listeners && !listeners.isEmpty()) ? new ImpressionListener.FederatedImpressionListener(listeners)
                 : new ImpressionListener.NoopImpressionListener();
 
         _operationMode = config.operationMode();
         _addPreviousTimeEnabled = shouldAddPreviousTime();
+        _counter = _addPreviousTimeEnabled ? new ImpressionCounter() : null;
         _isOptimized = _counter != null && shouldBeOptimized();
+        if (_isOptimized) {
+            _scheduler.scheduleAtFixedRate(this::sendImpressionCounters, COUNT_INITIAL_DELAY_SECONDS, COUNT_REFRESH_RATE_SECONDS, TimeUnit.SECONDS);
+        }
     }
 
     private static boolean shouldQueueImpression(Impression i) {
@@ -200,5 +200,10 @@ public class ImpressionsManagerImpl implements ImpressionsManager, Closeable {
             default:
                 return false;
         }
+    }
+
+    @VisibleForTesting
+    /* package private */ ImpressionCounter getCounter() {
+        return _counter;
     }
 }
