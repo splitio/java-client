@@ -30,7 +30,8 @@ public class EventsTask{
 
     public static final Long MAX_SIZE_BYTES = 5 * 1024 * 1024L;
 
-    private final EventsStorage _eventsStorage;
+    private final EventsStorageConsumer _eventsStorageConsumer;
+    private final EventsStorageProducer _eventsStorageProducer;
     private final EventsSender _eventsSender;
     private final int _maxQueueSize;
     private final long _flushIntervalMillis;
@@ -55,8 +56,10 @@ public class EventsTask{
     }
 
 
-    public static EventsTask create(CloseableHttpClient httpclient, URI eventsRootTarget, int maxQueueSize, long flushIntervalMillis, int waitBeforeShutdown, TelemetryRuntimeProducer telemetryRuntimeProducer, EventsStorage eventsStorage) throws URISyntaxException {
-        return new EventsTask(eventsStorage,
+    public static EventsTask create(CloseableHttpClient httpclient, URI eventsRootTarget, int maxQueueSize,
+                                    long flushIntervalMillis, int waitBeforeShutdown, TelemetryRuntimeProducer telemetryRuntimeProducer, EventsStorageConsumer eventsStorageConsumer, EventsStorageProducer _eventsStorageProducer) throws URISyntaxException {
+        return new EventsTask(eventsStorageConsumer,
+                _eventsStorageProducer,
                 httpclient,
                 Utils.appendPath(eventsRootTarget, "api/events/bulk"),
                 maxQueueSize,
@@ -65,14 +68,15 @@ public class EventsTask{
                 telemetryRuntimeProducer);
     }
 
-    EventsTask(EventsStorage eventsStorage, CloseableHttpClient httpclient, URI target, int maxQueueSize,
+    EventsTask(EventsStorageConsumer eventsStorageConsumer, EventsStorageProducer eventsStorageProducer, CloseableHttpClient httpclient, URI target, int maxQueueSize,
                long flushIntervalMillis, int waitBeforeShutdown, TelemetryRuntimeProducer telemetryRuntimeProducer) throws URISyntaxException {
 
         _httpclient = checkNotNull(httpclient);
 
         _target = checkNotNull(target);
 
-        _eventsStorage = checkNotNull(eventsStorage);
+        _eventsStorageConsumer = checkNotNull(eventsStorageConsumer);
+        _eventsStorageProducer = checkNotNull(eventsStorageProducer);
         _waitBeforeShutdown = waitBeforeShutdown;
 
         _maxQueueSize = maxQueueSize;
@@ -100,7 +104,7 @@ public class EventsTask{
      * the existence of this message in the queue triggers a send event in the consumer thread.
      */
     public void flush() {
-        _eventsStorage.track(SENTINEL, 0);
+        _eventsStorageProducer.track(SENTINEL, 0);
     }  // SENTINEL event won't be queued, so no size needed.
 
     public void close() {
@@ -125,7 +129,7 @@ public class EventsTask{
             List<Event> events = new ArrayList<>();
             long accumulated = 0;
             while (!Thread.currentThread().isInterrupted()) {
-                WrappedEvent data = _eventsStorage.pop();
+                WrappedEvent data = _eventsStorageConsumer.pop();
                 Event event = data.event();
                 Long size = data.size();
 

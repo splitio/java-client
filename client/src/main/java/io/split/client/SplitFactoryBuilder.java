@@ -10,7 +10,6 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.URISyntaxException;
-import java.util.concurrent.TimeoutException;
 
 /**
  * Builds an instance of SplitClient.
@@ -43,9 +42,8 @@ public class SplitFactoryBuilder {
         if (LocalhostSplitFactory.LOCALHOST.equals(apiToken)) {
             return LocalhostSplitFactory.createLocalhostSplitFactory(config);
         } else {
-            if (StorageMode.CONSUMER.equals(config.storageMode())){
-                //TODO Here, once wrapper was implemented I'll add a new constructor with the wrapper as 3rd param for CONSUMER mode .
-                return new SplitFactoryImpl(apiToken, config);
+            if (StorageMode.PLUGGABLE.equals(config.operationMode())){
+                return new SplitFactoryImpl(apiToken, config, config.customStorageWrapper());
             }
             else {
                 return new SplitFactoryImpl(apiToken, config);

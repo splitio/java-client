@@ -1,9 +1,6 @@
 package io.split.client.events;
 
 import io.split.client.dtos.Event;
-import io.split.client.events.EventsStorage;
-import io.split.client.events.EventsTask;
-import io.split.client.events.InMemoryEventsStorage;
 import io.split.telemetry.storage.InMemoryTelemetryStorage;
 import io.split.telemetry.storage.TelemetryRuntimeProducer;
 import io.split.telemetry.storage.TelemetryStorage;
@@ -27,7 +24,7 @@ public class EventsTaskTest {
         URI rootTarget = URI.create("https://api.split.io");
         CloseableHttpClient httpClient = HttpClients.custom().build();
         EventsStorage eventsStorage = Mockito.mock(EventsStorage.class);
-        EventsTask fetcher = EventsTask.create(httpClient, rootTarget, 5, 5, 5, TELEMETRY_STORAGE, eventsStorage);
+        EventsTask fetcher = EventsTask.create(httpClient, rootTarget, 5, 5, 5, TELEMETRY_STORAGE, eventsStorage, eventsStorage);
         Assert.assertThat(fetcher.getTarget().toString(), Matchers.is(Matchers.equalTo("https://api.split.io/api/events/bulk")));
     }
 
@@ -36,7 +33,7 @@ public class EventsTaskTest {
         URI rootTarget = URI.create("https://kubernetesturl.com");
         CloseableHttpClient httpClient = HttpClients.custom().build();
         EventsStorage eventsStorage = Mockito.mock(EventsStorage.class);
-        EventsTask fetcher = EventsTask.create(httpClient, rootTarget, 5, 5, 5, TELEMETRY_STORAGE, eventsStorage);
+        EventsTask fetcher = EventsTask.create(httpClient, rootTarget, 5, 5, 5, TELEMETRY_STORAGE, eventsStorage, eventsStorage);
         Assert.assertThat(fetcher.getTarget().toString(), Matchers.is(Matchers.equalTo("https://kubernetesturl.com/api/events/bulk")));
     }
 
@@ -45,7 +42,7 @@ public class EventsTaskTest {
         URI rootTarget = URI.create("https://kubernetesturl.com/split/");
         CloseableHttpClient httpClient = HttpClients.custom().build();
         EventsStorage eventsStorage = Mockito.mock(EventsStorage.class);
-        EventsTask fetcher = EventsTask.create(httpClient, rootTarget, 5, 5, 5, TELEMETRY_STORAGE, eventsStorage);
+        EventsTask fetcher = EventsTask.create(httpClient, rootTarget, 5, 5, 5, TELEMETRY_STORAGE, eventsStorage, eventsStorage);
         Assert.assertThat(fetcher.getTarget().toString(), Matchers.is(Matchers.equalTo("https://kubernetesturl.com/split/api/events/bulk")));
     }
 
@@ -54,7 +51,7 @@ public class EventsTaskTest {
         URI rootTarget = URI.create("https://kubernetesturl.com/split");
         CloseableHttpClient httpClient = HttpClients.custom().build();
         EventsStorage eventsStorage = Mockito.mock(EventsStorage.class);
-        EventsTask fetcher = EventsTask.create(httpClient, rootTarget, 5, 5, 5, TELEMETRY_STORAGE, eventsStorage);
+        EventsTask fetcher = EventsTask.create(httpClient, rootTarget, 5, 5, 5, TELEMETRY_STORAGE, eventsStorage, eventsStorage);
         Assert.assertThat(fetcher.getTarget().toString(), Matchers.is(Matchers.equalTo("https://kubernetesturl.com/split/api/events/bulk")));
     }
 
@@ -62,8 +59,8 @@ public class EventsTaskTest {
     public void testEventsFlushedWhenSizeLimitReached() throws URISyntaxException, InterruptedException, IOException {
         TelemetryRuntimeProducer telemetryRuntimeProducer = Mockito.mock(TelemetryRuntimeProducer.class);
         CloseableHttpClient client = Mockito.mock(CloseableHttpClient.class);
-        EventsStorage eventsStorageConsumer = new InMemoryEventsStorage(10000, telemetryRuntimeProducer);
-        EventsTask eventClient = new EventsTask(eventsStorageConsumer,
+        EventsStorage eventsStorage = new InMemoryEventsStorage(10000, telemetryRuntimeProducer);
+        EventsTask eventClient = new EventsTask(eventsStorage, eventsStorage,
                 client,
                 URI.create("https://kubernetesturl.com/split"),
                 10000, // Long queue so it doesn't flush by # of events
@@ -72,14 +69,14 @@ public class EventsTaskTest {
 
         for (int i = 0; i < 159; ++i) {
             Event event = new Event();
-            eventsStorageConsumer.track(event, 1024 * 32); // 159 32kb events should be about to flush
+            eventsStorage.track(event, 1024 * 32); // 159 32kb events should be about to flush
         }
 
         Thread.sleep(2000);
         Mockito.verifyZeroInteractions(client);
 
         Event event = new Event();
-        eventsStorageConsumer.track(event, 1024 * 32); // 159 32kb events should be about to flush
+        eventsStorage.track(event, 1024 * 32); // 159 32kb events should be about to flush
         Thread.sleep(2000);
         Mockito.verify(client, Mockito.times(1)).execute((HttpUriRequest) Mockito.any());
     }

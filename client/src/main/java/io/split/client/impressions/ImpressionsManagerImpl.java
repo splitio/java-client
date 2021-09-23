@@ -5,6 +5,7 @@ import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import io.split.client.SplitClientConfig;
 import io.split.client.dtos.KeyImpression;
 import io.split.client.dtos.TestImpressions;
+import io.split.storages.enums.OperationMode;
 import io.split.telemetry.domain.enums.ImpressionsDataTypeEnum;
 import io.split.telemetry.storage.TelemetryRuntimeProducer;
 import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
@@ -36,7 +37,8 @@ public class ImpressionsManagerImpl implements ImpressionsManager, Closeable {
     private static final long LAST_SEEN_CACHE_SIZE = 500000; // cache up to 500k impression hashes
 
     private final SplitClientConfig _config;
-    private final ImpressionsStorage _storage;
+    private final ImpressionsStorageProducer _impressionsStorageProducer;
+    private final ImpressionsStorageConsumer _impressionsStorageConsumer;
     private final ScheduledExecutorService _scheduler;
     private final ImpressionsSender _impressionsSender;
     private final ImpressionObserver _impressionObserver;
@@ -44,46 +46,60 @@ public class ImpressionsManagerImpl implements ImpressionsManager, Closeable {
     private final ImpressionListener _listener;
     private final ImpressionsManager.Mode _mode;
     private final TelemetryRuntimeProducer _telemetryRuntimeProducer;
+    private final boolean _addPreviousTimeEnabled;
+    private final boolean _isOptimized;
+    private final OperationMode _operationMode;
 
     public static ImpressionsManagerImpl instance(CloseableHttpClient client,
                                                   SplitClientConfig config,
                                                   List<ImpressionListener> listeners,
-                                                  TelemetryRuntimeProducer telemetryRuntimeProducer) throws URISyntaxException {
-        return new ImpressionsManagerImpl(client, config, null, listeners, telemetryRuntimeProducer);
+                                                  TelemetryRuntimeProducer telemetryRuntimeProducer,
+                                                  ImpressionsStorageConsumer impressionsStorageConsumer,
+                                                  ImpressionsStorageProducer impressionsStorageProducer) throws URISyntaxException {
+        return new ImpressionsManagerImpl(client, config, null, listeners, telemetryRuntimeProducer, impressionsStorageConsumer, impressionsStorageProducer);
     }
 
     public static ImpressionsManagerImpl instanceForTest(CloseableHttpClient client,
                                                          SplitClientConfig config,
                                                          ImpressionsSender impressionsSender,
                                                          List<ImpressionListener> listeners,
-                                                         TelemetryRuntimeProducer telemetryRuntimeProducer) throws URISyntaxException {
-        return new ImpressionsManagerImpl(client, config, impressionsSender, listeners, telemetryRuntimeProducer);
+                                                         TelemetryRuntimeProducer telemetryRuntimeProducer,
+                                                         ImpressionsStorageConsumer impressionsStorageConsumer,
+                                                         ImpressionsStorageProducer impressionsStorageProducer) throws URISyntaxException {
+        return new ImpressionsManagerImpl(client, config, impressionsSender, listeners, telemetryRuntimeProducer, impressionsStorageConsumer, impressionsStorageProducer);
     }
 
     private ImpressionsManagerImpl(CloseableHttpClient client,
                                    SplitClientConfig config,
                                    ImpressionsSender impressionsSender,
                                    List<ImpressionListener> listeners,
-                                   TelemetryRuntimeProducer telemetryRuntimeProducer) throws URISyntaxException {
+                                   TelemetryRuntimeProducer telemetryRuntimeProducer,
+                                   ImpressionsStorageConsumer impressionsStorageConsumer,
+                                   ImpressionsStorageProducer impressionsStorageProducer) throws URISyntaxException {
 
 
         _config = checkNotNull(config);
         _mode = checkNotNull(config.impressionsMode());
         _telemetryRuntimeProducer = checkNotNull(telemetryRuntimeProducer);
-        _storage = new InMemoryImpressionsStorage(config.impressionsQueueSize());
+        _impressionsStorageConsumer = checkNotNull(impressionsStorageConsumer);
+        _impressionsStorageProducer = checkNotNull(impressionsStorageProducer);
         _impressionObserver = new ImpressionObserver(LAST_SEEN_CACHE_SIZE);
-        _counter = new ImpressionCounter();
         _impressionsSender = (null != impressionsSender) ? impressionsSender
                 : HttpImpressionsSender.create(client, URI.create(config.eventsEndpoint()), _mode, telemetryRuntimeProducer);
 
         _scheduler = buildExecutor();
         _scheduler.scheduleAtFixedRate(this::sendImpressions, BULK_INITIAL_DELAY_SECONDS, config.impressionsRefreshRate(), TimeUnit.SECONDS);
-        if (Mode.OPTIMIZED.equals(_mode)) {
-            _scheduler.scheduleAtFixedRate(this::sendImpressionCounters, COUNT_INITIAL_DELAY_SECONDS, COUNT_REFRESH_RATE_SECONDS, TimeUnit.SECONDS);
-        }
 
         _listener = (null != listeners && !listeners.isEmpty()) ? new ImpressionListener.FederatedImpressionListener(listeners)
                 : new ImpressionListener.NoopImpressionListener();
+
+        _operationMode = config.operationMode();
+        _addPreviousTimeEnabled = shouldAddPreviousTime();
+        _counter = _addPreviousTimeEnabled ? new ImpressionCounter() : null;
+        _isOptimized = _counter != null && shouldBeOptimized();
+        if (_isOptimized) {
+            _scheduler.scheduleAtFixedRate(this::sendImpressionCounters, COUNT_INITIAL_DELAY_SECONDS, COUNT_REFRESH_RATE_SECONDS, TimeUnit.SECONDS);
+        }
     }
 
     private static boolean shouldQueueImpression(Impression i) {
@@ -98,18 +114,17 @@ public class ImpressionsManagerImpl implements ImpressionsManager, Closeable {
             return;
         }
 
-        impression = impression.withPreviousTime(_impressionObserver.testAndSet(impression));
+        impression = _addPreviousTimeEnabled ? impression.withPreviousTime(_impressionObserver.testAndSet(impression)) : impression;
         _listener.log(impression);
 
-        if (Mode.OPTIMIZED.equals(_mode)) {
+        if (_isOptimized) {
             _counter.inc(impression.split(), impression.time(), 1);
+            if (!shouldQueueImpression(impression)) {
+                _telemetryRuntimeProducer.recordImpressionStats(ImpressionsDataTypeEnum.IMPRESSIONS_DEDUPED, 1);
+                return;
+            }
         }
-
-        if (Mode.OPTIMIZED.equals(_mode) && !shouldQueueImpression(impression)) {
-            _telemetryRuntimeProducer.recordImpressionStats(ImpressionsDataTypeEnum.IMPRESSIONS_DEDUPED, 1);
-            return;
-        }
-        if (!_storage.put(KeyImpression.fromImpression(impression))) {
+        if (!_impressionsStorageProducer.put(KeyImpression.fromImpression(impression))) {
             _telemetryRuntimeProducer.recordImpressionStats(ImpressionsDataTypeEnum.IMPRESSIONS_DROPPED, 1);
             return;
         }
@@ -132,12 +147,12 @@ public class ImpressionsManagerImpl implements ImpressionsManager, Closeable {
 
     @VisibleForTesting
     /* package private */ void sendImpressions() {
-        if (_storage.isFull()) {
+        if (_impressionsStorageConsumer.isFull()) {
             _log.warn("Split SDK impressions queue is full. Impressions may have been dropped. Consider increasing capacity.");
         }
 
         long start = System.currentTimeMillis();
-        List<KeyImpression> impressions = _storage.pop();
+        List<KeyImpression> impressions = _impressionsStorageConsumer.pop();
         if (impressions.isEmpty()) {
             return; // Nothing to send
         }
@@ -162,5 +177,32 @@ public class ImpressionsManagerImpl implements ImpressionsManager, Closeable {
                 .setNameFormat("Split-ImpressionsManager-%d")
                 .build();
         return Executors.newScheduledThreadPool(2, threadFactory);
+    }
+
+
+
+    private boolean shouldAddPreviousTime() {
+            switch (_operationMode) {
+                case STANDALONE:
+                    return true;
+                default:
+                    return false;
+            }
+    }
+
+    private boolean shouldBeOptimized() {
+        if(!_addPreviousTimeEnabled)
+            return false;
+        switch (_mode) {
+            case OPTIMIZED:
+                return true;
+            default:
+                return false;
+        }
+    }
+
+    @VisibleForTesting
+    /* package private */ ImpressionCounter getCounter() {
+        return _counter;
     }
 }
