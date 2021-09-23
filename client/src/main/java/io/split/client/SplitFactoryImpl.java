@@ -1,5 +1,6 @@
 package io.split.client;
 
+import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import io.split.client.events.EventsStorage;
 import io.split.client.events.EventsTask;
 import io.split.client.events.InMemoryEventsStorage;
@@ -48,6 +49,7 @@ import io.split.storages.pluggable.adapters.UserCustomSegmentAdapterProducer;
 import io.split.storages.pluggable.adapters.UserCustomSplitAdapterConsumer;
 import io.split.storages.pluggable.adapters.UserCustomSplitAdapterProducer;
 import io.split.storages.pluggable.adapters.UserCustomTelemetryAdapterProducer;
+import io.split.storages.pluggable.domain.SafeUserStorageWrapper;
 import io.split.storages.pluggable.synchronizer.TelemetryConsumerSubmitter;
 import io.split.telemetry.storage.InMemoryTelemetryStorage;
 import io.split.telemetry.storage.TelemetryStorage;
@@ -85,6 +87,8 @@ import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.stream.Collectors;
 
 public class SplitFactoryImpl implements SplitFactory {
@@ -117,7 +121,7 @@ public class SplitFactoryImpl implements SplitFactory {
     private final SDKMetadata _sdkMetadata;
     private final OperationMode _operationMode;
 
-    //Depending on mode (not mandatory for Consumer mode)
+    //Depending on mode are not mandatory
     private final TelemetrySyncTask _telemetrySyncTask;
     private final SegmentSynchronizationTaskImp _segmentSynchronizationTaskImp;
     private final SplitFetcher _splitFetcher;
@@ -125,10 +129,12 @@ public class SplitFactoryImpl implements SplitFactory {
     private final EventsTask _eventsTask;
     private final SyncManager _syncManager;
     private final CloseableHttpClient _httpclient;
+    private final SafeUserStorageWrapper _safeUserStorageWrapper;
 
 
     //Constructor for standalone mode
     public SplitFactoryImpl(String apiToken, SplitClientConfig config) throws URISyntaxException {
+        _safeUserStorageWrapper = null;
         _operationMode = config.operationMode();
         _startTime = System.currentTimeMillis();
         _apiToken = apiToken;
@@ -248,6 +254,7 @@ public class SplitFactoryImpl implements SplitFactory {
         _syncManager = null;
         _httpclient = null;
 
+        _safeUserStorageWrapper = new SafeUserStorageWrapper(customStorageWrapper);
         UserCustomSegmentAdapterConsumer userCustomSegmentAdapterConsumer= new UserCustomSegmentAdapterConsumer(customStorageWrapper);
         UserCustomSplitAdapterProducer userCustomSplitAdapterProducer = new UserCustomSplitAdapterProducer(customStorageWrapper);
         UserCustomSplitAdapterConsumer userCustomSplitAdapterConsumer = new UserCustomSplitAdapterConsumer(customStorageWrapper);
@@ -296,6 +303,7 @@ public class SplitFactoryImpl implements SplitFactory {
                 _telemetryStorageProducer);
 
         _manager = new SplitManagerImpl(userCustomSplitAdapterConsumer, config, _gates, _telemetryStorageProducer);
+        manageSdkReady(config);
     }
 
     @Override
@@ -310,29 +318,34 @@ public class SplitFactoryImpl implements SplitFactory {
 
     @Override
     public synchronized void destroy() {
-        if (!isTerminated && OperationMode.STANDALONE.equals(_operationMode)) {
-            _log.info("Shutdown called for split");
-            try {
-                long splitCount = _splitCache.getAll().stream().count();
-                long segmentCount = _segmentCache.getSegmentCount();
-                long segmentKeyCount = _segmentCache.getKeyCount();
-                _impressionsManager.close();
-                _log.info("Successful shutdown of impressions manager");
-                _eventsTask.close();
-                _log.info("Successful shutdown of eventsTask");
-                _segmentSynchronizationTaskImp.close();
-                _log.info("Successful shutdown of segment fetchers");
-                _splitSynchronizationTask.close();
-                _log.info("Successful shutdown of splits");
-                _syncManager.shutdown();
-                _log.info("Successful shutdown of syncManager");
-                _telemetryStorageProducer.recordSessionLength(System.currentTimeMillis() - _startTime);
-                _telemetrySyncTask.stopScheduledTask(splitCount, segmentCount, segmentKeyCount);
-                _log.info("Successful shutdown of telemetry sync task");
-                _httpclient.close();
-                _log.info("Successful shutdown of httpclient");
-            } catch (IOException e) {
-                _log.error("We could not shutdown split", e);
+        if (!isTerminated) {
+            if(OperationMode.STANDALONE.equals(_operationMode)) {
+                _log.info("Shutdown called for split");
+                try {
+                    long splitCount = _splitCache.getAll().stream().count();
+                    long segmentCount = _segmentCache.getSegmentCount();
+                    long segmentKeyCount = _segmentCache.getKeyCount();
+                    _impressionsManager.close();
+                    _log.info("Successful shutdown of impressions manager");
+                    _eventsTask.close();
+                    _log.info("Successful shutdown of eventsTask");
+                    _segmentSynchronizationTaskImp.close();
+                    _log.info("Successful shutdown of segment fetchers");
+                    _splitSynchronizationTask.close();
+                    _log.info("Successful shutdown of splits");
+                    _syncManager.shutdown();
+                    _log.info("Successful shutdown of syncManager");
+                    _telemetryStorageProducer.recordSessionLength(System.currentTimeMillis() - _startTime);
+                    _telemetrySyncTask.stopScheduledTask(splitCount, segmentCount, segmentKeyCount);
+                    _log.info("Successful shutdown of telemetry sync task");
+                    _httpclient.close();
+                    _log.info("Successful shutdown of httpclient");
+                } catch (IOException e) {
+                    _log.error("We could not shutdown split", e);
+                }
+            }
+            else if(OperationMode.CONSUMER.equals(_operationMode)) {
+                _safeUserStorageWrapper.close();
             }
             _apiKeyCounter.remove(_apiToken);
             isTerminated = true;
@@ -483,5 +496,24 @@ public class SplitFactoryImpl implements SplitFactory {
             }
         }
         return new SDKMetadata(splitSdkVersion, ip, machineName);
+    }
+
+    private void manageSdkReady(SplitClientConfig config) {
+        ExecutorService executorService = Executors.newSingleThreadExecutor(new ThreadFactoryBuilder()
+                .setNameFormat("SPLIT-PollingMode-%d")
+                .setDaemon(true)
+                .build());
+        executorService.submit(() -> {
+            while(!_safeUserStorageWrapper.connect()) {
+                try {
+                    Thread.currentThread().sleep(1000);
+                } catch (InterruptedException e) {
+                    _log.warn("Sdk Initializer thread interrupted");
+                    Thread.currentThread().interrupt();
+                }
+            }
+            _gates.sdkInternalReady();
+            _telemetrySynchronizer.synchronizeConfig(config, System.currentTimeMillis(), ApiKeyCounter.getApiKeyCounterInstance().getFactoryInstances(), new ArrayList<>());
+        });
     }
 }

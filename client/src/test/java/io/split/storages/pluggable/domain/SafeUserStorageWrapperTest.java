@@ -260,6 +260,33 @@ public class SafeUserStorageWrapperTest{
         Mockito.verify(_log, Mockito.times(1)).error(Mockito.anyString());
     }
 
+    @Test
+    public void testConnect() throws Exception {
+        Mockito.when(_customStorageWrapper.connect()).thenReturn(true);
+        boolean result = _safeUserStorageWrapper.connect();
+        Assert.assertTrue(result);
+    }
 
+    @Test
+    public void testConnectFailed() throws Exception {
+        Mockito.when(_customStorageWrapper.connect()).thenThrow(Exception.class);
+        boolean result = _safeUserStorageWrapper.connect();
+        Assert.assertFalse(result);
+        Mockito.verify(_log, Mockito.times(1)).error(Mockito.anyString());
+    }
 
+    @Test
+    public void testClose() throws Exception {
+        Mockito.when(_customStorageWrapper.close()).thenReturn(true);
+        boolean result = _safeUserStorageWrapper.close();
+        Assert.assertTrue(result);
+    }
+
+    @Test
+    public void testCloseFailed() throws Exception {
+        Mockito.when(_customStorageWrapper.close()).thenThrow(Exception.class);
+        boolean result = _safeUserStorageWrapper.close();
+        Assert.assertFalse(result);
+        Mockito.verify(_log, Mockito.times(1)).error(Mockito.anyString());
+    }
 }

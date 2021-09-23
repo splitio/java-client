@@ -90,9 +90,6 @@ public class ImpressionsManagerImpl implements ImpressionsManager, Closeable {
 
         _scheduler = buildExecutor();
         _scheduler.scheduleAtFixedRate(this::sendImpressions, BULK_INITIAL_DELAY_SECONDS, config.impressionsRefreshRate(), TimeUnit.SECONDS);
-        if (Mode.OPTIMIZED.equals(_mode)) {
-            _scheduler.scheduleAtFixedRate(this::sendImpressionCounters, COUNT_INITIAL_DELAY_SECONDS, COUNT_REFRESH_RATE_SECONDS, TimeUnit.SECONDS);
-        }
 
         _listener = (null != listeners && !listeners.isEmpty()) ? new ImpressionListener.FederatedImpressionListener(listeners)
                 : new ImpressionListener.NoopImpressionListener();
@@ -100,6 +97,9 @@ public class ImpressionsManagerImpl implements ImpressionsManager, Closeable {
         _operationMode = config.operationMode();
         _addPreviousTimeEnabled = shouldAddPreviousTime();
         _isOptimized = _counter != null && shouldBeOptimized();
+        if (_isOptimized) {
+            _scheduler.scheduleAtFixedRate(this::sendImpressionCounters, COUNT_INITIAL_DELAY_SECONDS, COUNT_REFRESH_RATE_SECONDS, TimeUnit.SECONDS);
+        }
     }
 
     private static boolean shouldQueueImpression(Impression i) {
