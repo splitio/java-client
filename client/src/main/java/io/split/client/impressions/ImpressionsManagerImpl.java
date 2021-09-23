@@ -84,7 +84,6 @@ public class ImpressionsManagerImpl implements ImpressionsManager, Closeable {
         _impressionsStorageConsumer = checkNotNull(impressionsStorageConsumer);
         _impressionsStorageProducer = checkNotNull(impressionsStorageProducer);
         _impressionObserver = new ImpressionObserver(LAST_SEEN_CACHE_SIZE);
-        _counter = new ImpressionCounter();
         _impressionsSender = (null != impressionsSender) ? impressionsSender
                 : HttpImpressionsSender.create(client, URI.create(config.eventsEndpoint()), _mode, telemetryRuntimeProducer);
 
@@ -96,6 +95,7 @@ public class ImpressionsManagerImpl implements ImpressionsManager, Closeable {
 
         _operationMode = config.operationMode();
         _addPreviousTimeEnabled = shouldAddPreviousTime();
+        _counter = _addPreviousTimeEnabled ? new ImpressionCounter() : null;
         _isOptimized = _counter != null && shouldBeOptimized();
         if (_isOptimized) {
             _scheduler.scheduleAtFixedRate(this::sendImpressionCounters, COUNT_INITIAL_DELAY_SECONDS, COUNT_REFRESH_RATE_SECONDS, TimeUnit.SECONDS);
@@ -114,16 +114,15 @@ public class ImpressionsManagerImpl implements ImpressionsManager, Closeable {
             return;
         }
 
-        impression = impression.withPreviousTime(_impressionObserver.testAndSet(impression));
+        impression = _addPreviousTimeEnabled ? impression.withPreviousTime(_impressionObserver.testAndSet(impression)) : impression;
         _listener.log(impression);
 
         if (_isOptimized) {
             _counter.inc(impression.split(), impression.time(), 1);
-        }
-
-        if (_isOptimized && !shouldQueueImpression(impression)) {
-            _telemetryRuntimeProducer.recordImpressionStats(ImpressionsDataTypeEnum.IMPRESSIONS_DEDUPED, 1);
-            return;
+            if (!shouldQueueImpression(impression)) {
+                _telemetryRuntimeProducer.recordImpressionStats(ImpressionsDataTypeEnum.IMPRESSIONS_DEDUPED, 1);
+                return;
+            }
         }
         if (!_impressionsStorageProducer.put(KeyImpression.fromImpression(impression))) {
             _telemetryRuntimeProducer.recordImpressionStats(ImpressionsDataTypeEnum.IMPRESSIONS_DROPPED, 1);
@@ -200,5 +199,10 @@ public class ImpressionsManagerImpl implements ImpressionsManager, Closeable {
             default:
                 return false;
         }
+    }
+
+    @VisibleForTesting
+    /* package private */ ImpressionCounter getCounter() {
+        return _counter;
     }
 }

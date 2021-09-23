@@ -4,9 +4,12 @@ import io.split.client.SplitClientConfig;
 import io.split.client.dtos.KeyImpression;
 import io.split.client.dtos.TestImpressions;
 
+import io.split.storages.enums.OperationMode;
+import io.split.storages.pluggable.CustomStorageWrapper;
 import io.split.telemetry.domain.enums.ImpressionsDataTypeEnum;
 import io.split.telemetry.storage.InMemoryTelemetryStorage;
 import io.split.telemetry.storage.TelemetryStorage;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
@@ -286,4 +289,37 @@ public class ImpressionsManagerImplTest {
         treatmentLog.sendImpressionCounters();
         verify(senderMock, Mockito.times(0)).postCounters(Mockito.any());
     }
+
+    @Test
+    public void testCounterStandaloneMode() throws URISyntaxException {
+        SplitClientConfig config = SplitClientConfig.builder()
+                .impressionsQueueSize(10)
+                .endpoint("nowhere.com", "nowhere.com")
+                .impressionsMode(ImpressionsManager.Mode.OPTIMIZED)
+                .build();
+        ImpressionsStorage storage = new InMemoryImpressionsStorage(config.impressionsQueueSize());
+
+        ImpressionsSender senderMock = Mockito.mock(ImpressionsSender.class);
+
+        ImpressionsManagerImpl manager = ImpressionsManagerImpl.instanceForTest(null, config, senderMock, null, TELEMETRY_STORAGE, storage, storage);
+        Assert.assertNotNull(manager.getCounter());
+    }
+
+    @Test
+    public void testCounterConsumerMode() throws URISyntaxException {
+        SplitClientConfig config = SplitClientConfig.builder()
+                .impressionsQueueSize(10)
+                .endpoint("nowhere.com", "nowhere.com")
+                .impressionsMode(ImpressionsManager.Mode.OPTIMIZED)
+                .operationMode(OperationMode.CONSUMER)
+                .customStorageWrapper(Mockito.mock(CustomStorageWrapper.class))
+                .build();
+        ImpressionsStorage storage = new InMemoryImpressionsStorage(config.impressionsQueueSize());
+
+        ImpressionsSender senderMock = Mockito.mock(ImpressionsSender.class);
+
+        ImpressionsManagerImpl manager = ImpressionsManagerImpl.instanceForTest(null, config, senderMock, null, TELEMETRY_STORAGE, storage, storage);
+        Assert.assertNull(manager.getCounter());
+    }
+
 }
