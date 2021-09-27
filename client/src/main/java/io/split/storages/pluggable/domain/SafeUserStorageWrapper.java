@@ -179,4 +179,26 @@ public class SafeUserStorageWrapper implements CustomStorageWrapper {
             return null;
         }
     }
+
+    @Override
+    public boolean connect(){
+        try {
+            return _customStorageWrapper.connect();
+        }
+        catch (Exception e) {
+            _log.error(String.format("error trying to connect. Error: '%s'" , e.getMessage()));
+            return false;
+        }
+    }
+
+    @Override
+    public boolean close(){
+        try {
+            return _customStorageWrapper.close();
+        }
+        catch (Exception e) {
+            _log.error(String.format("error trying to connect. Error: '%s'" , e.getMessage()));
+            return false;
+        }
+    }
 }
