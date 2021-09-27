@@ -207,6 +207,7 @@ public class InMemoryTelemetryStorageTest{
         //Tags
         telemetryStorage.addTag("TAG_1");
         telemetryStorage.addTag("TAG_2");
+        telemetryStorage.addTag("TAG_2");
         List<String> tags = telemetryStorage.popTags();
         Assert.assertEquals(2, tags.size());
 
