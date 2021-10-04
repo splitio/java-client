@@ -59,6 +59,7 @@ public class UserCustomSplitAdapterConsumer  implements SplitCacheConsumer {
         if(keys == null) {
             return new ArrayList<>();
         }
+        keys = keys.stream().map(k -> k = PrefixAdapter.buildSplitKey(k)).collect(Collectors.toSet());
         List<String> wrapperResponse = _safeUserStorageWrapper.getMany(new ArrayList<>(keys));
         if(wrapperResponse == null) {
             return new ArrayList<>();
