@@ -97,8 +97,4 @@ public class CombiningMatcher {
 
         return _combiner.equals(other._combiner) && _delegates.equals(other._delegates);
     }
-
-    public MatcherCombiner getCombiningMatcher() {
-        return _combiner;
-    }
 }
