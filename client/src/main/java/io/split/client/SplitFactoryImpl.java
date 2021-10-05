@@ -170,7 +170,7 @@ public class SplitFactoryImpl implements SplitFactory {
         _telemetrySynchronizer = new TelemetryInMemorySubmitter(_httpclient, URI.create(config.telemetryURL()), telemetryStorage, splitCache, segmentCache, telemetryStorage, _startTime);
 
         // Segments
-        _segmentSynchronizationTaskImp = buildSegments(config, segmentCache);
+        _segmentSynchronizationTaskImp = buildSegments(config, segmentCache, splitCache);
 
         // SplitFetcher
         _splitFetcher = buildSplitFetcher(splitCache, splitCache);
@@ -444,7 +444,7 @@ public class SplitFactoryImpl implements SplitFactory {
         return rand.nextInt((max - min) + 1) + min;
     }
 
-    private SegmentSynchronizationTaskImp buildSegments(SplitClientConfig config, SegmentCacheProducer segmentCacheProducer) throws URISyntaxException {
+    private SegmentSynchronizationTaskImp buildSegments(SplitClientConfig config, SegmentCacheProducer segmentCacheProducer, SplitCacheConsumer splitCacheConsumer) throws URISyntaxException {
         SegmentChangeFetcher segmentChangeFetcher = HttpSegmentChangeFetcher.create(_httpclient, _rootTarget, _telemetryStorageProducer);
 
         return new SegmentSynchronizationTaskImp(segmentChangeFetcher,
@@ -452,7 +452,8 @@ public class SplitFactoryImpl implements SplitFactory {
                 config.numThreadsForSegmentFetch(),
                 _gates,
                 segmentCacheProducer,
-                _telemetryStorageProducer);
+                _telemetryStorageProducer,
+                splitCacheConsumer);
     }
 
     private SplitFetcher buildSplitFetcher(SplitCacheConsumer splitCacheConsumer, SplitCacheProducer splitCacheProducer) throws URISyntaxException {
