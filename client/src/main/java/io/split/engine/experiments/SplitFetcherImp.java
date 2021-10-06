@@ -62,10 +62,11 @@ public class SplitFetcherImp implements SplitFetcher {
     public FetchResult forceRefresh(FetchOptions options) {
         _log.debug("Force Refresh splits starting ...");
         final long INITIAL_CN = _splitCacheProducer.getChangeNumber();
+        Set<String> segments = new HashSet<>();
         try {
             while (true) {
                 long start = _splitCacheProducer.getChangeNumber();
-                Set<String> segments = runWithoutExceptionHandling(options);
+                segments.addAll(runWithoutExceptionHandling(options));
                 long end = _splitCacheProducer.getChangeNumber();
 
                 // If the previous execution was the first one, clear the `cdnBypass` flag
@@ -147,7 +148,7 @@ public class SplitFetcherImp implements SplitFetcher {
 
                     continue;
                 }
-                segments = parsedSplit.getSegmentsNames();
+                segments.addAll(parsedSplit.getSegmentsNames());
 
                 // If the split already exists, this is either an update, or the split has been
                 // deleted and recreated (possibly with a different traffic type).

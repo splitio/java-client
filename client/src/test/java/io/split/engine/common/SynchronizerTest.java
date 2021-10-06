@@ -63,7 +63,8 @@ public class SynchronizerTest {
     @Test
     public void testSyncAllSegments() throws InterruptedException, NoSuchFieldException, IllegalAccessException {
         SegmentSynchronizationTask segmentSynchronizationTask = new SegmentSynchronizationTaskImp(Mockito.mock(SegmentChangeFetcher.class),
-                20L, 1, new SDKReadinessGates(), _segmentCacheProducer, Mockito.mock(TelemetryRuntimeProducer.class));
+                20L, 1, new SDKReadinessGates(), _segmentCacheProducer, Mockito.mock(TelemetryRuntimeProducer.class),
+                Mockito.mock(SplitCacheConsumer.class));
         Field synchronizerSegmentFetcher = SynchronizerImp.class.getDeclaredField("_segmentSynchronizationTaskImp");
         synchronizerSegmentFetcher.setAccessible(true);
         Field modifiersField = Field.class.getDeclaredField("modifiers");
