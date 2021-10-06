@@ -166,21 +166,20 @@ public class SegmentSynchronizationTaskImp implements SegmentSynchronizationTask
     @Override
     public boolean fetchAllSynchronous() {
         _splitCacheConsumer.getSegments().forEach(this::initialize);
-        AtomicBoolean fetchAllStatus = new AtomicBoolean(true);
-        _segmentFetchers
+        int failures = _segmentFetchers
                 .entrySet()
                 .stream().map(e -> _scheduledExecutorService.submit(e.getValue()::runWhitCacheHeader))
-                .collect(Collectors.toList())
-                .stream().forEach(future -> {
+                .reduce(0, (accum, current) -> {
                     try {
-                        if(!future.get()) {
-                            fetchAllStatus.set(false);
-                        };
+                        if(!current.get()) {
+                            return accum + 1;
+                        }
                     } catch (Exception ex) {
-                        fetchAllStatus.set(false);
                         _log.error(ex.getMessage());
-                    }});
-        return fetchAllStatus.get();
+                    }
+                    return accum;
+                }, Integer::sum);
+        return failures == 0;
     }
 
     private void initialize(String segmentName) {
