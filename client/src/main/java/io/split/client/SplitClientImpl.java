@@ -216,6 +216,7 @@ public final class SplitClientImpl implements SplitClient {
                 _log.warn(
                         "getTreatment: you passed \"" + split + "\" that does not exist in this environment, " +
                                 "please double check what Splits exist in the web console.");
+                return SPLIT_RESULT_CONTROL;
             }
 
             recordStats(
