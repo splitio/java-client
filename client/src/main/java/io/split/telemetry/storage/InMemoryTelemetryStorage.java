@@ -7,13 +7,17 @@ import io.split.telemetry.utils.AtomicLongArray;
 import io.split.telemetry.utils.BucketCalculator;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.stream.Collectors;
 
 public class InMemoryTelemetryStorage implements  TelemetryStorage{
     public static final int MAX_LATENCY_BUCKET_COUNT = 23;
+    public static final int MAX_STREAMING_EVENTS = 20;
+    public static final int MAX_TAGS = 10;
 
     //Latencies
     private final ConcurrentMap<MethodEnum, AtomicLongArray> _methodLatencies = Maps.newConcurrentMap();
@@ -35,11 +39,11 @@ public class InMemoryTelemetryStorage implements  TelemetryStorage{
 
     //StreamingEvents
     private final Object _streamingEventsLock = new Object();
-    private final List<StreamingEvent> _streamingEvents = new ArrayList<>();
+    private List<StreamingEvent> _streamingEvents = new ArrayList<>();
 
     //Tags
     private final Object _tagsLock = new Object();
-    private final List<String> _tags = new ArrayList<>();
+    private Set<String> _tags = new HashSet<>();
 
     public InMemoryTelemetryStorage() {
         initMethodLatencies();
@@ -186,10 +190,8 @@ public class InMemoryTelemetryStorage implements  TelemetryStorage{
     @Override
     public List<StreamingEvent> popStreamingEvents() {
         synchronized (_streamingEventsLock) {
-            List<StreamingEvent> streamingEvents = _streamingEvents.stream().collect(Collectors.toList());
-
-            _streamingEvents.clear();
-
+            List<StreamingEvent> streamingEvents = _streamingEvents;
+            _streamingEvents = new ArrayList<>();
             return streamingEvents;
         }
     }
@@ -197,10 +199,8 @@ public class InMemoryTelemetryStorage implements  TelemetryStorage{
     @Override
     public List<String> popTags() {
         synchronized (_tagsLock) {
-            List<String> tags = _tags.stream().collect(Collectors.toList());
-
-            _tags.clear();
-
+            List<String> tags = new ArrayList<>(_tags);
+            _tags = new HashSet<>();
             return tags;
         }
     }
@@ -213,7 +213,9 @@ public class InMemoryTelemetryStorage implements  TelemetryStorage{
     @Override
     public void addTag(String tag) {
         synchronized (_tagsLock) {
-            _tags.add(tag);
+            if(_tags.size() < MAX_TAGS) {
+                _tags.add(tag);
+            }
         }
     }
 
@@ -259,7 +261,9 @@ public class InMemoryTelemetryStorage implements  TelemetryStorage{
     @Override
     public void recordStreamingEvents(StreamingEvent streamingEvent) {
         synchronized (_streamingEventsLock) {
-            _streamingEvents.add(streamingEvent);
+            if(_streamingEvents.size() < MAX_STREAMING_EVENTS) {
+                _streamingEvents.add(streamingEvent);
+            }
         }
     }
 
