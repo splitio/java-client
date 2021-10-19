@@ -34,17 +34,10 @@ public class AtomicLongArrayTest {
     }
 
     @Test
-    public void testIncrementError() throws NoSuchFieldException, IllegalAccessException {
-        Logger log = Mockito.mock(Logger.class);
+    public void testIncrementError() {
         AtomicLongArray atomicLongArray = new AtomicLongArray(SIZE);
-        Field logAssert = AtomicLongArray.class.getDeclaredField("_log");
-        logAssert.setAccessible(true);
-        Field modifiersField = Field.class.getDeclaredField("modifiers");
-        modifiersField.setAccessible(true);
-        modifiersField.setInt(logAssert, logAssert.getModifiers() & ~Modifier.FINAL);
-        logAssert.set(atomicLongArray, log);
         atomicLongArray.increment(25);
-        Mockito.verify(log, Mockito.times(1)).error(Mockito.anyString());
+        Assert.assertEquals(0, atomicLongArray.fetchAndClearAll().stream().mapToInt(Long::intValue).sum());
     }
 
     @Test
