@@ -1,7 +1,9 @@
 CHANGES
 
-4.X.X
-- Initial commit.
+4.3.0 (Oct 19, 2021)
+- Added support for the SDK to run with a custom implementation of it's internal storage modules, enabling customers to implement this caching in any storage technology of choice and connect it to the SDK instance itself which will use it instead of the in-memory structures.
+- Fixed a possible OOM when there were too many Streaming events being captured, applying the expected limit of 20.
+- Fixed an NPE caused in a race condition on telemetry which generated noisy logs.  (https://github.com/splitio/java-client/issues/251)[#251]
 
 4.2.1 (Jun 18, 2021)
 - Updated settings for httpClient instances to add stale check to more effectively manage connection pools after it was turned off by default on httpClient 5.x.x.
