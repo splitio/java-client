@@ -1,5 +1,6 @@
 package io.split.client.interceptors;
 
+import io.split.client.utils.SDKMetadata;
 import org.apache.hc.core5.http.HttpException;
 import org.apache.hc.core5.http.HttpRequest;
 import org.apache.hc.core5.http.protocol.HttpContext;
@@ -27,7 +28,7 @@ public class SdkMetadataInterceptorFilterTest {
 
     @Test
     public void sdkMetadataWithIpEnabled() throws IOException, HttpException {
-        SdkMetadataInterceptorFilter filter = SdkMetadataInterceptorFilter.instance(true, "sdk-version-1.2.3");
+        SdkMetadataInterceptorFilter filter = SdkMetadataInterceptorFilter.instance(new SDKMetadata( "sdk-version-1.2.3", "156256325", "testName"));
         HttpRequest req = Mockito.mock(HttpRequest.class);
         HttpContext ctx = Mockito.mock(HttpContext.class);
 
@@ -47,7 +48,7 @@ public class SdkMetadataInterceptorFilterTest {
 
     @Test
     public void sdkMetadataWithIpDisabled() throws IOException, HttpException {
-        SdkMetadataInterceptorFilter filter = SdkMetadataInterceptorFilter.instance(false, "sdk-version-1.2.3");
+        SdkMetadataInterceptorFilter filter = SdkMetadataInterceptorFilter.instance(new SDKMetadata( "sdk-version-1.2.3", "", ""));
         HttpRequest req = Mockito.mock(HttpRequest.class);
         HttpContext ctx = Mockito.mock(HttpContext.class);
 

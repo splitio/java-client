@@ -2,6 +2,7 @@ package io.split.client;
 
 import io.split.inputValidation.ApiKeyValidator;
 import io.split.grammar.Treatments;
+import io.split.storages.enums.StorageMode;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -9,7 +10,6 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.URISyntaxException;
-import java.util.concurrent.TimeoutException;
 
 /**
  * Builds an instance of SplitClient.
@@ -42,7 +42,12 @@ public class SplitFactoryBuilder {
         if (LocalhostSplitFactory.LOCALHOST.equals(apiToken)) {
             return LocalhostSplitFactory.createLocalhostSplitFactory(config);
         } else {
-            return new SplitFactoryImpl(apiToken, config);
+            if (StorageMode.PLUGGABLE.equals(config.storageMode())){
+                return new SplitFactoryImpl(apiToken, config, config.customStorageWrapper());
+            }
+            else {
+                return new SplitFactoryImpl(apiToken, config);
+            }
 
         }
     }

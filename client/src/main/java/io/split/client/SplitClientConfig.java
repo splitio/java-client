@@ -4,6 +4,9 @@ package io.split.client;
 import io.split.client.impressions.ImpressionListener;
 import io.split.client.impressions.ImpressionsManager;
 import io.split.integrations.IntegrationsConfig;
+import io.split.storages.enums.OperationMode;
+import io.split.storages.enums.StorageMode;
+import io.split.storages.pluggable.CustomStorageWrapper;
 import org.apache.hc.core5.http.HttpHost;
 
 import java.io.IOException;
@@ -57,7 +60,10 @@ public class SplitClientConfig {
     private final int _onDemandFetchMaxRetries;
     private final int _failedAttemptsBeforeLogging;
     private final boolean _cdnDebugLogging;
+    private final OperationMode _operationMode;
     private long _validateAfterInactivityInMillis;
+    private final CustomStorageWrapper _customStorageWrapper;
+    private final StorageMode _storageMode;
 
     // Proxy configs
     private final HttpHost _proxy;
@@ -108,7 +114,10 @@ public class SplitClientConfig {
                               int onDemandFetchMaxRetries,
                               int failedAttemptsBeforeLogging,
                               boolean cdnDebugLogging,
-                              long validateAfterInactivityInMillis) {
+                              OperationMode operationMode,
+                              long validateAfterInactivityInMillis,
+                              CustomStorageWrapper customStorageWrapper,
+                              StorageMode storageMode) {
         _endpoint = endpoint;
         _eventsEndpoint = eventsEndpoint;
         _featuresRefreshRate = pollForFeatureChangesEveryNSeconds;
@@ -145,7 +154,10 @@ public class SplitClientConfig {
         _onDemandFetchMaxRetries = onDemandFetchMaxRetries;
         _failedAttemptsBeforeLogging = failedAttemptsBeforeLogging;
         _cdnDebugLogging = cdnDebugLogging;
+        _operationMode = operationMode;
+        _storageMode = storageMode;
         _validateAfterInactivityInMillis = validateAfterInactivityInMillis;
+        _customStorageWrapper = customStorageWrapper;
 
         Properties props = new Properties();
         try {
@@ -289,9 +301,17 @@ public class SplitClientConfig {
 
     public boolean cdnDebugLogging() { return _cdnDebugLogging; }
 
+    public OperationMode operationMode() { return _operationMode;}
+
     public long validateAfterInactivityInMillis() {
         return _validateAfterInactivityInMillis;
     }
+
+    public CustomStorageWrapper customStorageWrapper() {
+        return _customStorageWrapper;
+    }
+
+    public StorageMode storageMode() { return _storageMode;}
 
     public static final class Builder {
 
@@ -334,7 +354,10 @@ public class SplitClientConfig {
         private final int _onDemandFetchMaxRetries = 10;
         private final int _failedAttemptsBeforeLogging = 10;
         private final boolean _cdnDebugLogging = true;
+        private OperationMode _operationMode = OperationMode.STANDALONE;
         private long _validateAfterInactivityInMillis = 1000;
+        private CustomStorageWrapper _customStorageWrapper;
+        private StorageMode _storageMode = StorageMode.MEMORY;
 
         public Builder() {
         }
@@ -746,6 +769,28 @@ public class SplitClientConfig {
             return this;
         }
 
+        /**
+         * Type of storage
+         *
+         * @param mode
+         * @return this builder
+         */
+        public Builder operationMode(OperationMode mode) {
+            _operationMode = mode;
+            return this;
+        }
+
+        /**
+         * Storage wrapper
+         *
+         * @param customStorageWrapper
+         * @return this builder
+         */
+        public Builder customStorageWrapper(CustomStorageWrapper customStorageWrapper) {
+            _customStorageWrapper = customStorageWrapper;
+            return this;
+        }
+
         public SplitClientConfig build() {
             if (_featuresRefreshRate < 5 ) {
                 throw new IllegalArgumentException("featuresRefreshRate must be >= 5: " + _featuresRefreshRate);
@@ -828,8 +873,19 @@ public class SplitClientConfig {
                 throw new IllegalStateException("_onDemandFetchMaxRetries must be > 0");
             }
 
-            if(_telemetryRefreshRate <= 60) {
+            if(_storageMode == null) {
+                _storageMode = StorageMode.MEMORY;
+            }
+            
+            if(_telemetryRefreshRate < 60) {
                 throw new IllegalStateException("_telemetryRefreshRate must be >= 60");
+            }
+
+            if(OperationMode.CONSUMER.equals(_operationMode)){
+                if(_customStorageWrapper == null) {
+                    throw new IllegalStateException("Custom Storage must not be null on Consumer mode.");
+                }
+                _storageMode = StorageMode.PLUGGABLE;
             }
 
             return new SplitClientConfig(
@@ -869,7 +925,10 @@ public class SplitClientConfig {
                     _onDemandFetchMaxRetries,
                     _failedAttemptsBeforeLogging,
                     _cdnDebugLogging,
-                    _validateAfterInactivityInMillis);
+                    _operationMode,
+                    _validateAfterInactivityInMillis,
+                    _customStorageWrapper,
+                    _storageMode);
         }
     }
 }

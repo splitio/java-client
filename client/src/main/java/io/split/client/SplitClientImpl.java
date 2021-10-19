@@ -1,9 +1,9 @@
 package io.split.client;
 
-import io.split.cache.SplitCache;
 import io.split.client.api.Key;
 import io.split.client.api.SplitResult;
 import io.split.client.dtos.Event;
+import io.split.client.events.EventsStorageProducer;
 import io.split.client.impressions.Impression;
 import io.split.client.impressions.ImpressionsManager;
 import io.split.engine.SDKReadinessGates;
@@ -15,6 +15,7 @@ import io.split.inputValidation.EventsValidator;
 import io.split.inputValidation.KeyValidator;
 import io.split.inputValidation.SplitNameValidator;
 import io.split.inputValidation.TrafficTypeValidator;
+import io.split.storages.SplitCacheConsumer;
 import io.split.telemetry.domain.enums.MethodEnum;
 import io.split.telemetry.storage.TelemetryConfigProducer;
 import io.split.telemetry.storage.TelemetryEvaluationProducer;
@@ -40,28 +41,28 @@ public final class SplitClientImpl implements SplitClient {
     private static final Logger _log = LoggerFactory.getLogger(SplitClientImpl.class);
 
     private final SplitFactory _container;
-    private final SplitCache _splitCache;
+    private final SplitCacheConsumer _splitCacheConsumer;
     private final ImpressionsManager _impressionManager;
     private final SplitClientConfig _config;
-    private final EventClient _eventClient;
+    private final EventsStorageProducer _eventsStorageProducer;
     private final SDKReadinessGates _gates;
     private final Evaluator _evaluator;
     private final TelemetryEvaluationProducer _telemetryEvaluationProducer;
     private final TelemetryConfigProducer _telemetryConfigProducer;
 
     public SplitClientImpl(SplitFactory container,
-                           SplitCache splitCache,
+                           SplitCacheConsumer splitCacheConsumer,
                            ImpressionsManager impressionManager,
-                           EventClient eventClient,
+                           EventsStorageProducer eventsStorageProducer,
                            SplitClientConfig config,
                            SDKReadinessGates gates,
                            Evaluator evaluator,
                            TelemetryEvaluationProducer telemetryEvaluationProducer,
                            TelemetryConfigProducer telemetryConfigProducer) {
         _container = container;
-        _splitCache = checkNotNull(splitCache);
+        _splitCacheConsumer = checkNotNull(splitCacheConsumer);
         _impressionManager = checkNotNull(impressionManager);
-        _eventClient = eventClient;
+        _eventsStorageProducer = eventsStorageProducer;
         _config = config;
         _gates = checkNotNull(gates);
         _evaluator = checkNotNull(evaluator);
@@ -153,7 +154,7 @@ public final class SplitClientImpl implements SplitClient {
         }
 
         // Traffic Type validations
-        Optional<String> trafficTypeResult = TrafficTypeValidator.isValid(event.trafficTypeName, _splitCache, "track");
+        Optional<String> trafficTypeResult = TrafficTypeValidator.isValid(event.trafficTypeName, _splitCacheConsumer, "track");
         if (!trafficTypeResult.isPresent()) {
             return false;
         }
@@ -178,7 +179,7 @@ public final class SplitClientImpl implements SplitClient {
         event.properties = propertiesResult.getValue();
         _telemetryEvaluationProducer.recordLatency(MethodEnum.TRACK, System.currentTimeMillis() - initTime);
 
-        return _eventClient.track(event, propertiesResult.getEventSize());
+        return _eventsStorageProducer.track(event, propertiesResult.getEventSize());
     }
 
     private SplitResult getTreatmentWithConfigInternal(String matchingKey, String bucketingKey, String split, Map<String, Object> attributes, MethodEnum methodEnum) {
@@ -215,6 +216,7 @@ public final class SplitClientImpl implements SplitClient {
                 _log.warn(
                         "getTreatment: you passed \"" + split + "\" that does not exist in this environment, " +
                                 "please double check what Splits exist in the web console.");
+                return SPLIT_RESULT_CONTROL;
             }
 
             recordStats(

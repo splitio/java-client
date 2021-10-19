@@ -3,7 +3,18 @@ package io.split.client;
 import io.split.SSEMockServer;
 import io.split.SplitMockServer;
 import io.split.client.api.SplitView;
+import io.split.client.dtos.Event;
+import io.split.client.impressions.ImpressionsManager;
 import io.split.client.utils.CustomDispatcher;
+import io.split.integrations.IntegrationsConfig;
+import io.split.storages.enums.OperationMode;
+import io.split.storages.enums.StorageMode;
+import io.split.storages.pluggable.CustomStorageWrapper;
+import io.split.storages.pluggable.CustomStorageWrapperImp;
+import io.split.storages.pluggable.domain.EventConsumer;
+import io.split.storages.pluggable.domain.ImpressionConsumer;
+import io.split.telemetry.domain.enums.MethodEnum;
+import io.split.telemetry.utils.AtomicLongArray;
 import okhttp3.mockwebserver.MockResponse;
 import org.awaitility.Awaitility;
 import org.glassfish.grizzly.utils.Pair;
@@ -11,10 +22,14 @@ import org.glassfish.jersey.media.sse.OutboundEvent;
 import org.junit.Assert;
 import org.junit.Ignore;
 import org.junit.Test;
+import org.mockito.ArgumentCaptor;
 
 import javax.ws.rs.sse.OutboundSseEvent;
+import java.io.IOException;
+import java.net.URISyntaxException;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 
 public class SplitClientIntegrationTest {
     // TODO: review this test.
@@ -383,20 +398,17 @@ public class SplitClientIntegrationTest {
     @Test
     public void splitClientMultiFactory() throws Exception {
         MockResponse response = new MockResponse().setBody("{\"splits\": [], \"since\":1585948850109, \"till\":1585948850109}");
-        MockResponse response2 = new MockResponse().setBody("{\"splits\": [], \"since\":1585948850110, \"till\":1585948850110}");
         Queue responses = new LinkedList<>();
-        Queue responses2 = new LinkedList<>();
         responses.add(response);
         responses.add(response);
         responses.add(response);
         responses.add(response);
-        responses2.add(response2);
-        responses2.add(response2);
-        responses2.add(response2);
-        responses2.add(response2);
+        responses.add(response);
+        responses.add(response);
+        responses.add(response);
+        responses.add(response);
         SplitMockServer splitServer = new SplitMockServer(CustomDispatcher.builder()
                 .path(CustomDispatcher.SINCE_1585948850109, responses)
-                .path(CustomDispatcher.SINCE_1585948850110, responses2)
                 .build());
 
         SSEMockServer.SseEventQueue eventQueue1 = new SSEMockServer.SseEventQueue();
@@ -623,6 +635,62 @@ public class SplitClientIntegrationTest {
         Assert.assertNotEquals("on_whitelist", result);
     }
 
+    @Test
+    public void testPluggableMode() throws IOException, URISyntaxException {
+        CustomStorageWrapperImp customStorageWrapper = new CustomStorageWrapperImp();
+        SplitClientConfig config = SplitClientConfig.builder()
+            .enableDebug()
+            .impressionsMode(ImpressionsManager.Mode.DEBUG)
+            .impressionsRefreshRate(1)
+            .setBlockUntilReadyTimeout(10000)
+            .streamingEnabled(true)
+            .operationMode(OperationMode.CONSUMER)
+            .customStorageWrapper(customStorageWrapper)
+            .build();
+        SplitFactory splitFactory = SplitFactoryBuilder.build("fake-api-token", config);
+        SplitClient client = splitFactory.client();
+        try {
+            client.blockUntilReady();
+            SplitManager splitManager = splitFactory.manager();HashMap<String, Object> properties = new HashMap<>();
+            properties.put("number_property", 123);
+            properties.put("object_property", new Object());
+
+            client.track("key", "tt", "importantEventType");
+            client.track("keyValue", "tt", "importantEventType", 12L);
+            client.track("keyProperties", "tt", "importantEventType", 12L, properties);
+            List<EventConsumer> events = customStorageWrapper.getEvents();
+            List<SplitView> splits = splitManager.splits();
+
+            Assert.assertEquals(3, events.size());
+            Assert.assertTrue(events.stream().anyMatch(e -> "key".equals(e.getEventDto().key) && "tt".equals(e.getEventDto().trafficTypeName)));
+            Assert.assertTrue(events.stream().anyMatch(e -> "keyValue".equals(e.getEventDto().key) && e.getEventDto().value == 12L));
+            Assert.assertTrue(events.stream().anyMatch(e -> "keyProperties".equals(e.getEventDto().key) && e.getEventDto().properties != null));
+
+            Assert.assertEquals(2, splits.size());
+            Assert.assertTrue(splits.stream().anyMatch(sw -> "first.name".equals(sw.name)));
+            Assert.assertTrue(splits.stream().anyMatch(sw -> "second.name".equals(sw.name)));
+            Assert.assertEquals("on", client.getTreatment("key", "first.name"));
+            Assert.assertEquals("off", client.getTreatmentWithConfig("FakeKey", "second.name").treatment());
+            Assert.assertEquals("control", client.getTreatment("FakeKey", "noSplit"));
+
+            List<ImpressionConsumer> impressions = customStorageWrapper.getImps();
+            Assert.assertEquals(2, impressions.size());
+            Assert.assertTrue(impressions.stream().anyMatch(imp -> "first.name".equals(imp.getKeyImpression().feature) && "on".equals(imp.getKeyImpression().treatment)));
+            Assert.assertTrue(impressions.stream().anyMatch(imp -> "second.name".equals(imp.getKeyImpression().feature) && "off".equals(imp.getKeyImpression().treatment)));
+
+            Map<String, AtomicLongArray> latencies = customStorageWrapper.get_methodLatencies();
+
+            Assert.assertEquals(3, latencies.get(MethodEnum.TRACK.getMethod()).fetchAndClearAll().stream().mapToInt(Long::intValue).sum());
+            Assert.assertEquals(1, latencies.get(MethodEnum.TREATMENT.getMethod()).fetchAndClearAll().stream().mapToInt(Long::intValue).sum());
+            Assert.assertEquals(1, latencies.get(MethodEnum.TREATMENT_WITH_CONFIG.getMethod()).fetchAndClearAll().stream().mapToInt(Long::intValue).sum());
+
+            Assert.assertNotNull(customStorageWrapper.get_telemetryInit());
+            Assert.assertEquals(StorageMode.PLUGGABLE.name(), customStorageWrapper.get_telemetryInit().get_storage());
+
+        } catch (TimeoutException | InterruptedException e) {
+        }
+    }
+
     private SSEMockServer buildSSEMockServer(SSEMockServer.SseEventQueue eventQueue) {
         return new SSEMockServer(eventQueue, (token, version, channel) -> {
             if (!"1.1".equals(version)) {
@@ -642,4 +710,5 @@ public class SplitClientIntegrationTest {
                 .streamingEnabled(streamingEnabled)
                 .build();
     }
+
 }

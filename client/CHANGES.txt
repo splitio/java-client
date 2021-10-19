@@ -1,5 +1,8 @@
 CHANGES
 
+4.X.X
+- Initial commit.
+
 4.2.1 (Jun 18, 2021)
 - Updated settings for httpClient instances to add stale check to more effectively manage connection pools after it was turned off by default on httpClient 5.x.x.
 - Updated TelemetryRefreshRate setting default value to 3600s.
