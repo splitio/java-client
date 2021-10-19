@@ -688,7 +688,6 @@ public class SplitClientIntegrationTest {
             Assert.assertEquals(StorageMode.PLUGGABLE.name(), customStorageWrapper.get_telemetryInit().get_storage());
 
         } catch (TimeoutException | InterruptedException e) {
-            System.out.println();
         }
     }
 

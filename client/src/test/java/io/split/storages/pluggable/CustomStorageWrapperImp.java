@@ -38,7 +38,7 @@ public class CustomStorageWrapperImp implements CustomStorageWrapper {
     private static final String IMPRESSIONS = "SPLITIO.impressions";
     private static final String EVENTS = "SPLITIO.events";
     private Map<String, Split> splitsStorage = new HashMap<>();
-    private Map<String, SegmentImp> segmentStorage = new HashMap<>();//Latencies
+    private Map<String, SegmentImp> segmentStorage = new HashMap<>();
     private final ConcurrentMap<String, AtomicLongArray> _methodLatencies = Maps.newConcurrentMap();
     private ConfigConsumer _telemetryInit = null;
     private List<ImpressionConsumer> imps = new ArrayList<>();
