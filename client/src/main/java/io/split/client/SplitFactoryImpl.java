@@ -1,6 +1,7 @@
 package io.split.client;
 
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
+import io.split.client.dtos.Metadata;
 import io.split.client.events.EventsStorage;
 import io.split.client.events.EventsTask;
 import io.split.client.events.InMemoryEventsStorage;
@@ -254,12 +255,13 @@ public class SplitFactoryImpl implements SplitFactory {
         _rootTarget = null;
         _eventsRootTarget = null;
 
+        Metadata metadata = new Metadata(config.ipAddressEnabled(), SplitClientConfig.splitSdkVersion);
         _safeUserStorageWrapper = new SafeUserStorageWrapper(customStorageWrapper);
         UserCustomSegmentAdapterConsumer userCustomSegmentAdapterConsumer= new UserCustomSegmentAdapterConsumer(customStorageWrapper);
         UserCustomSplitAdapterConsumer userCustomSplitAdapterConsumer = new UserCustomSplitAdapterConsumer(customStorageWrapper);
         UserCustomImpressionAdapterConsumer userCustomImpressionAdapterConsumer = new UserCustomImpressionAdapterConsumer(); // TODO migrate impressions sender to Task instead manager and not instantiate Producer here.
-        UserCustomImpressionAdapterProducer userCustomImpressionAdapterProducer = new UserCustomImpressionAdapterProducer(customStorageWrapper);
-        UserCustomEventAdapterProducer userCustomEventAdapterProducer = new UserCustomEventAdapterProducer(customStorageWrapper);
+        UserCustomImpressionAdapterProducer userCustomImpressionAdapterProducer = new UserCustomImpressionAdapterProducer(customStorageWrapper, metadata);
+        UserCustomEventAdapterProducer userCustomEventAdapterProducer = new UserCustomEventAdapterProducer(customStorageWrapper, metadata);
 
         _operationMode = config.operationMode();
         _sdkMetadata = createSdkMetadata(config.ipAddressEnabled(), SplitClientConfig.splitSdkVersion);

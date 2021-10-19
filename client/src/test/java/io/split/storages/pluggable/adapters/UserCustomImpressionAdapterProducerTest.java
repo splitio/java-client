@@ -1,6 +1,7 @@
 package io.split.storages.pluggable.adapters;
 
 import io.split.client.dtos.KeyImpression;
+import io.split.client.dtos.Metadata;
 import io.split.storages.pluggable.CustomStorageWrapper;
 import io.split.storages.pluggable.domain.SafeUserStorageWrapper;
 import org.junit.Assert;
@@ -23,13 +24,20 @@ public class UserCustomImpressionAdapterProducerTest {
     public void setUp() throws NoSuchFieldException, IllegalAccessException {
         _customStorageWrapper = Mockito.mock(CustomStorageWrapper.class);
         _safeUserStorageWrapper = Mockito.mock(SafeUserStorageWrapper.class);
-        _impressionAdapterProducer = new UserCustomImpressionAdapterProducer(_customStorageWrapper);
+        _impressionAdapterProducer = new UserCustomImpressionAdapterProducer(_customStorageWrapper, Mockito.mock(Metadata.class));
         Field userCustomImpressionAdapterProducer = UserCustomImpressionAdapterProducer.class.getDeclaredField("_safeUserStorageWrapper");
         userCustomImpressionAdapterProducer.setAccessible(true);
         Field modifiersField = Field.class.getDeclaredField("modifiers");
         modifiersField.setAccessible(true);
         modifiersField.setInt(userCustomImpressionAdapterProducer, userCustomImpressionAdapterProducer.getModifiers() & ~Modifier.FINAL);
         userCustomImpressionAdapterProducer.set(_impressionAdapterProducer, _safeUserStorageWrapper);
+        Metadata metadata = new Metadata(true, "SDK-version");
+        Field userCustomMetadata = UserCustomImpressionAdapterProducer.class.getDeclaredField("_metadata");
+        userCustomMetadata.setAccessible(true);
+        Field modifiersFieldMetadata = Field.class.getDeclaredField("modifiers");
+        modifiersFieldMetadata.setAccessible(true);
+        modifiersFieldMetadata.setInt(userCustomMetadata, userCustomMetadata.getModifiers() & ~Modifier.FINAL);
+        userCustomMetadata.set(_impressionAdapterProducer, metadata);
     }
 
     @Test
