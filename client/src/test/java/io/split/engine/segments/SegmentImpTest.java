@@ -48,7 +48,7 @@ public class SegmentImpTest extends TestCase {
     @Test
     public void testUpdateSegment(){
         SegmentImp segmentImp = new SegmentImp(CHANGE_NUMBER, SEGMENT_NAME);
-        segmentImp.update(Stream.of(KEY).collect(Collectors.toList()), new ArrayList<>());
+        segmentImp.update(Stream.of(KEY).collect(Collectors.toList()), new ArrayList<>(), 1L);
         assertTrue(segmentImp.contains(KEY));
     }
 

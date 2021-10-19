@@ -2,14 +2,14 @@ package io.split.engine.common;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
-import io.split.cache.SegmentCache;
-import io.split.cache.SplitCache;
 import io.split.client.ApiKeyCounter;
 import io.split.client.SplitClientConfig;
 import io.split.engine.SDKReadinessGates;
 import io.split.engine.experiments.SplitFetcher;
 import io.split.engine.experiments.SplitSynchronizationTask;
 import io.split.engine.segments.SegmentSynchronizationTaskImp;
+import io.split.storages.SegmentCacheProducer;
+import io.split.storages.SplitCacheProducer;
 import io.split.telemetry.domain.StreamingEvent;
 import io.split.telemetry.domain.enums.StreamEventsEnum;
 import io.split.telemetry.storage.TelemetryRuntimeProducer;
@@ -77,13 +77,13 @@ public class SyncManagerImp implements SyncManager {
                                        SplitSynchronizationTask splitSynchronizationTask,
                                        SplitFetcher splitFetcher,
                                        SegmentSynchronizationTaskImp segmentSynchronizationTaskImp,
-                                       SplitCache splitCache,
+                                       SplitCacheProducer splitCacheProducer,
                                        String authUrl,
                                        CloseableHttpClient httpClient,
                                        String streamingServiceUrl,
                                        int authRetryBackOffBase,
                                        CloseableHttpClient sseHttpClient,
-                                       SegmentCache segmentCache,
+                                       SegmentCacheProducer segmentCacheProducer,
                                        int streamingRetryDelay,
                                        int maxOnDemandFetchRetries,
                                        int failedAttemptsBeforeLogging,
@@ -96,8 +96,8 @@ public class SyncManagerImp implements SyncManager {
         Synchronizer synchronizer = new SynchronizerImp(splitSynchronizationTask,
                                         splitFetcher,
                                         segmentSynchronizationTaskImp,
-                                        splitCache,
-                                        segmentCache,
+                                        splitCacheProducer,
+                                        segmentCacheProducer,
                                         streamingRetryDelay,
                                         maxOnDemandFetchRetries,
                                         failedAttemptsBeforeLogging,

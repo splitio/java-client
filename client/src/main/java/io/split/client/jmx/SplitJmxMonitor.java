@@ -1,12 +1,12 @@
 package io.split.client.jmx;
 
-import io.split.cache.SegmentCache;
-import io.split.cache.SplitCache;
 import io.split.client.SplitClient;
 import io.split.engine.common.FetchOptions;
 import io.split.engine.experiments.SplitFetcher;
 import io.split.engine.segments.SegmentFetcher;
 import io.split.engine.segments.SegmentSynchronizationTask;
+import io.split.storages.SegmentCacheConsumer;
+import io.split.storages.SplitCacheConsumer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -21,16 +21,16 @@ public class SplitJmxMonitor implements SplitJmxMonitorMBean {
 
     private final SplitClient _client;
     private final SplitFetcher _featureFetcher;
-    private final SplitCache _splitCache;
+    private final SplitCacheConsumer _splitCacheConsumer;
     private final SegmentSynchronizationTask _segmentSynchronizationTask;
-    private SegmentCache _segmentCache;
+    private SegmentCacheConsumer segmentCacheConsumer;
 
-    public SplitJmxMonitor(SplitClient splitClient, SplitFetcher featureFetcher, SplitCache splitCache, SegmentSynchronizationTask segmentSynchronizationTask, SegmentCache segmentCache) {
+    public SplitJmxMonitor(SplitClient splitClient, SplitFetcher featureFetcher, SplitCacheConsumer splitCacheConsumer, SegmentSynchronizationTask segmentSynchronizationTask, SegmentCacheConsumer segmentCacheConsumer) {
         _client = checkNotNull(splitClient);
         _featureFetcher = checkNotNull(featureFetcher);
-        _splitCache = checkNotNull(splitCache);
+        _splitCacheConsumer = checkNotNull(splitCacheConsumer);
         _segmentSynchronizationTask = checkNotNull(segmentSynchronizationTask);
-        _segmentCache = checkNotNull(segmentCache);
+        this.segmentCacheConsumer = checkNotNull(segmentCacheConsumer);
     }
 
     @Override
@@ -62,11 +62,11 @@ public class SplitJmxMonitor implements SplitJmxMonitorMBean {
 
     @Override
     public String fetchDefinition(String featureName) {
-        return _splitCache.get(featureName).toString();
+        return _splitCacheConsumer.get(featureName).toString();
     }
 
     @Override
     public boolean isKeyInSegment(String key, String segmentName) {
-        return _segmentCache.isInSegment(segmentName, key);
+        return segmentCacheConsumer.isInSegment(segmentName, key);
     }
 }

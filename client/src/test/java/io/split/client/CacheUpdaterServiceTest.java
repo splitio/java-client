@@ -1,7 +1,7 @@
 package io.split.client;
 
-import io.split.cache.InMemoryCacheImp;
-import io.split.cache.SplitCache;
+import io.split.storages.memory.InMemoryCacheImp;
+import io.split.storages.SplitCache;
 import org.junit.Assert;
 import org.junit.Test;
 

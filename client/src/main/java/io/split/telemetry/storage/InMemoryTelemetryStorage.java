@@ -7,13 +7,17 @@ import io.split.telemetry.utils.AtomicLongArray;
 import io.split.telemetry.utils.BucketCalculator;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.stream.Collectors;
 
 public class InMemoryTelemetryStorage implements  TelemetryStorage{
     public static final int MAX_LATENCY_BUCKET_COUNT = 23;
+    public static final int MAX_STREAMING_EVENTS = 20;
+    public static final int MAX_TAGS = 10;
 
     //Latencies
     private final ConcurrentMap<MethodEnum, AtomicLongArray> _methodLatencies = Maps.newConcurrentMap();
@@ -35,11 +39,11 @@ public class InMemoryTelemetryStorage implements  TelemetryStorage{
 
     //StreamingEvents
     private final Object _streamingEventsLock = new Object();
-    private final List<StreamingEvent> _streamingEvents = new ArrayList<>();
+    private List<StreamingEvent> _streamingEvents = new ArrayList<>();
 
     //Tags
     private final Object _tagsLock = new Object();
-    private final List<String> _tags = new ArrayList<>();
+    private Set<String> _tags = new HashSet<>();
 
     public InMemoryTelemetryStorage() {
         initMethodLatencies();
@@ -67,14 +71,11 @@ public class InMemoryTelemetryStorage implements  TelemetryStorage{
     @Override
     public MethodExceptions popExceptions() {
         MethodExceptions exceptions = new MethodExceptions();
-        exceptions.set_treatment(_exceptionsCounters.get(MethodEnum.TREATMENT).get());
-        exceptions.set_treatments(_exceptionsCounters.get(MethodEnum.TREATMENTS).get());
-        exceptions.set_treatmentWithConfig(_exceptionsCounters.get(MethodEnum.TREATMENT_WITH_CONFIG).get());
-        exceptions.set_treatmentsWithConfig(_exceptionsCounters.get(MethodEnum.TREATMENTS_WITH_CONFIG).get());
-        exceptions.set_track(_exceptionsCounters.get(MethodEnum.TRACK).get());
-
-        _exceptionsCounters.clear();
-        initMethodExceptions();
+        exceptions.set_treatment(_exceptionsCounters.get(MethodEnum.TREATMENT).getAndSet(0L));
+        exceptions.set_treatments(_exceptionsCounters.get(MethodEnum.TREATMENTS).getAndSet(0L));
+        exceptions.set_treatmentWithConfig(_exceptionsCounters.get(MethodEnum.TREATMENT_WITH_CONFIG).getAndSet(0L));
+        exceptions.set_treatmentsWithConfig(_exceptionsCounters.get(MethodEnum.TREATMENTS_WITH_CONFIG).getAndSet(0L));
+        exceptions.set_track(_exceptionsCounters.get(MethodEnum.TRACK).getAndSet(0L));
 
         return exceptions;
     }
@@ -87,9 +88,6 @@ public class InMemoryTelemetryStorage implements  TelemetryStorage{
         latencies.set_treatmentWithConfig(_methodLatencies.get(MethodEnum.TREATMENT_WITH_CONFIG).fetchAndClearAll());
         latencies.set_treatmentsWithConfig(_methodLatencies.get(MethodEnum.TREATMENTS_WITH_CONFIG).fetchAndClearAll());
         latencies.set_track(_methodLatencies.get(MethodEnum.TRACK).fetchAndClearAll());
-
-        _methodLatencies.clear();
-        initMethodLatencies();
 
         return latencies;
     }
@@ -168,9 +166,6 @@ public class InMemoryTelemetryStorage implements  TelemetryStorage{
         latencies.set_telemetry(_httpLatencies.get(HTTPLatenciesEnum.TELEMETRY).fetchAndClearAll());
         latencies.set_token(_httpLatencies.get(HTTPLatenciesEnum.TOKEN).fetchAndClearAll());
 
-        _httpLatencies.clear();
-        initHttpLatencies();
-
         return latencies;
     }
 
@@ -195,10 +190,8 @@ public class InMemoryTelemetryStorage implements  TelemetryStorage{
     @Override
     public List<StreamingEvent> popStreamingEvents() {
         synchronized (_streamingEventsLock) {
-            List<StreamingEvent> streamingEvents = _streamingEvents.stream().collect(Collectors.toList());
-
-            _streamingEvents.clear();
-
+            List<StreamingEvent> streamingEvents = _streamingEvents;
+            _streamingEvents = new ArrayList<>();
             return streamingEvents;
         }
     }
@@ -206,10 +199,8 @@ public class InMemoryTelemetryStorage implements  TelemetryStorage{
     @Override
     public List<String> popTags() {
         synchronized (_tagsLock) {
-            List<String> tags = _tags.stream().collect(Collectors.toList());
-
-            _tags.clear();
-
+            List<String> tags = new ArrayList<>(_tags);
+            _tags = new HashSet<>();
             return tags;
         }
     }
@@ -222,7 +213,9 @@ public class InMemoryTelemetryStorage implements  TelemetryStorage{
     @Override
     public void addTag(String tag) {
         synchronized (_tagsLock) {
-            _tags.add(tag);
+            if(_tags.size() < MAX_TAGS) {
+                _tags.add(tag);
+            }
         }
     }
 
@@ -268,7 +261,9 @@ public class InMemoryTelemetryStorage implements  TelemetryStorage{
     @Override
     public void recordStreamingEvents(StreamingEvent streamingEvent) {
         synchronized (_streamingEventsLock) {
-            _streamingEvents.add(streamingEvent);
+            if(_streamingEvents.size() < MAX_STREAMING_EVENTS) {
+                _streamingEvents.add(streamingEvent);
+            }
         }
     }
 

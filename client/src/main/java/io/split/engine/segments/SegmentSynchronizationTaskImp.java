@@ -2,8 +2,10 @@ package io.split.engine.segments;
 
 import com.google.common.collect.Maps;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
-import io.split.cache.SegmentCache;
 import io.split.engine.SDKReadinessGates;
+import io.split.storages.SegmentCacheProducer;
+import io.split.storages.SplitCacheConsumer;
+import io.split.storages.memory.InMemoryCacheImp;
 import io.split.telemetry.storage.TelemetryRuntimeProducer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -32,15 +34,16 @@ public class SegmentSynchronizationTaskImp implements SegmentSynchronizationTask
     private final AtomicBoolean _running;
     private final Object _lock = new Object();
     private final ConcurrentMap<String, SegmentFetcher> _segmentFetchers = Maps.newConcurrentMap();
-    private final SegmentCache _segmentCache;
+    private final SegmentCacheProducer _segmentCacheProducer;
     private final SDKReadinessGates _gates;
     private final ScheduledExecutorService _scheduledExecutorService;
     private final TelemetryRuntimeProducer _telemetryRuntimeProducer;
+    private final SplitCacheConsumer _splitCacheConsumer;
 
     private ScheduledFuture<?> _scheduledFuture;
 
-    public SegmentSynchronizationTaskImp(SegmentChangeFetcher segmentChangeFetcher, long refreshEveryNSeconds, int numThreads, SDKReadinessGates gates, SegmentCache segmentCache,
-                                         TelemetryRuntimeProducer telemetryRuntimeProducer) {
+    public SegmentSynchronizationTaskImp(SegmentChangeFetcher segmentChangeFetcher, long refreshEveryNSeconds, int numThreads, SDKReadinessGates gates, SegmentCacheProducer segmentCacheProducer,
+                                         TelemetryRuntimeProducer telemetryRuntimeProducer, SplitCacheConsumer splitCacheConsumer) {
         _segmentChangeFetcher = checkNotNull(segmentChangeFetcher);
 
         checkArgument(refreshEveryNSeconds >= 0L);
@@ -57,8 +60,9 @@ public class SegmentSynchronizationTaskImp implements SegmentSynchronizationTask
 
         _running = new AtomicBoolean(false);
 
-        _segmentCache = checkNotNull(segmentCache);
+        _segmentCacheProducer = checkNotNull(segmentCacheProducer);
         _telemetryRuntimeProducer = checkNotNull(telemetryRuntimeProducer);
+        _splitCacheConsumer = checkNotNull(splitCacheConsumer);
     }
 
     @Override
@@ -82,7 +86,7 @@ public class SegmentSynchronizationTaskImp implements SegmentSynchronizationTask
                 return;
             }
 
-            segment = new SegmentFetcherImp(segmentName, _segmentChangeFetcher, _gates, _segmentCache, _telemetryRuntimeProducer);
+            segment = new SegmentFetcherImp(segmentName, _segmentChangeFetcher, _gates, _segmentCacheProducer, _telemetryRuntimeProducer);
 
             if (_running.get()) {
                 _scheduledExecutorService.submit(segment::fetchAll);
@@ -142,6 +146,7 @@ public class SegmentSynchronizationTaskImp implements SegmentSynchronizationTask
 
     @Override
     public void fetchAll(boolean addCacheHeader) {
+        _splitCacheConsumer.getSegments().forEach(this::initialize);
         for (Map.Entry<String, SegmentFetcher> entry : _segmentFetchers.entrySet()) {
             SegmentFetcher fetcher = entry.getValue();
 
@@ -160,20 +165,40 @@ public class SegmentSynchronizationTaskImp implements SegmentSynchronizationTask
 
     @Override
     public boolean fetchAllSynchronous() {
-        AtomicBoolean fetchAllStatus = new AtomicBoolean(true);
-        _segmentFetchers
+        _splitCacheConsumer.getSegments().forEach(this::initialize);
+        int failures = _segmentFetchers
                 .entrySet()
                 .stream().map(e -> _scheduledExecutorService.submit(e.getValue()::runWhitCacheHeader))
-                .collect(Collectors.toList())
-                .stream().forEach(future -> {
+                .reduce(0, (accum, current) -> {
                     try {
-                        if(!future.get()) {
-                            fetchAllStatus.set(false);
-                        };
+                        if(!current.get()) {
+                            return accum + 1;
+                        }
                     } catch (Exception ex) {
-                        fetchAllStatus.set(false);
                         _log.error(ex.getMessage());
-                    }});
-        return fetchAllStatus.get();
+                    }
+                    return accum;
+                }, Integer::sum);
+        return failures == 0;
+    }
+
+    private void initialize(String segmentName) {
+        SegmentFetcher segment = _segmentFetchers.get(segmentName);
+        if (segment != null) {
+            return;
+        }
+        // we are locking here since we wanna make sure that we create only ONE RefreshableSegmentFetcher
+        // per segment.
+        synchronized (_lock) {
+            // double check
+            segment = _segmentFetchers.get(segmentName);
+            if (segment != null) {
+                return;
+            }
+
+            segment = new SegmentFetcherImp(segmentName, _segmentChangeFetcher, _gates, _segmentCacheProducer, _telemetryRuntimeProducer);
+
+            _segmentFetchers.putIfAbsent(segmentName, segment);
+        }
     }
 }

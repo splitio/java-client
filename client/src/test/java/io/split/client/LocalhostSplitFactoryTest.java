@@ -28,7 +28,7 @@ public class LocalhostSplitFactoryTest {
     public TemporaryFolder folder = new TemporaryFolder();
 
     @Test
-    public void works() throws IOException, URISyntaxException {
+    public void works() throws IOException, URISyntaxException, InterruptedException {
         File file = folder.newFile(LocalhostSplitFactory.FILENAME);
 
         Map<SplitAndKey, LocalhostSplit> map = Maps.newHashMap();

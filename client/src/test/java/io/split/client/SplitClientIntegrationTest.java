@@ -3,32 +3,41 @@ package io.split.client;
 import io.split.SSEMockServer;
 import io.split.SplitMockServer;
 import io.split.client.api.SplitView;
-import io.split.telemetry.storage.InMemoryTelemetryStorage;
-import io.split.telemetry.storage.TelemetryStorage;
+import io.split.client.dtos.Event;
+import io.split.client.impressions.ImpressionsManager;
+import io.split.client.utils.CustomDispatcher;
+import io.split.integrations.IntegrationsConfig;
+import io.split.storages.enums.OperationMode;
+import io.split.storages.enums.StorageMode;
+import io.split.storages.pluggable.CustomStorageWrapper;
+import io.split.storages.pluggable.CustomStorageWrapperImp;
+import io.split.storages.pluggable.domain.EventConsumer;
+import io.split.storages.pluggable.domain.ImpressionConsumer;
+import io.split.telemetry.domain.enums.MethodEnum;
+import io.split.telemetry.utils.AtomicLongArray;
+import okhttp3.mockwebserver.MockResponse;
 import org.awaitility.Awaitility;
 import org.glassfish.grizzly.utils.Pair;
 import org.glassfish.jersey.media.sse.OutboundEvent;
 import org.junit.Assert;
 import org.junit.Ignore;
 import org.junit.Test;
-import org.mockito.Mockito;
+import org.mockito.ArgumentCaptor;
 
 import javax.ws.rs.sse.OutboundSseEvent;
 import java.io.IOException;
 import java.net.URISyntaxException;
-import java.util.Date;
-import java.util.List;
+import java.util.*;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
 public class SplitClientIntegrationTest {
     // TODO: review this test.
-    private static final TelemetryStorage TELEMETRY_STORAGE = Mockito.mock(InMemoryTelemetryStorage.class);
 
     @Test
     @Ignore
     public void getTreatmentWithStreamingEnabled() throws Exception {
-        SplitMockServer splitServer = new SplitMockServer();
+        SplitMockServer splitServer = new SplitMockServer(CustomDispatcher.builder().build());
         SSEMockServer.SseEventQueue eventQueue = new SSEMockServer.SseEventQueue();
         SSEMockServer sseServer = buildSSEMockServer(eventQueue);
 
@@ -117,7 +126,12 @@ public class SplitClientIntegrationTest {
 
     @Test
     public void getTreatmentWithStreamingEnabledAndAuthDisabled() throws Exception {
-        SplitMockServer splitServer = new SplitMockServer();
+        MockResponse response = new MockResponse().setBody("{\"splits\": [], \"since\":1585948850109, \"till\":1585948850109}");
+        Queue responses = new LinkedList<>();
+        responses.add(response);
+        SplitMockServer splitServer = new SplitMockServer(CustomDispatcher.builder()
+                .path(CustomDispatcher.SINCE_1585948850109, responses)
+                .build());
         splitServer.start();
 
         SplitClientConfig config = SplitClientConfig.builder()
@@ -140,7 +154,12 @@ public class SplitClientIntegrationTest {
 
     @Test
     public void getTreatmentWithStreamingDisabled() throws Exception {
-        SplitMockServer splitServer = new SplitMockServer();
+        MockResponse response = new MockResponse().setBody("{\"splits\": [], \"since\":1585948850109, \"till\":1585948850109}");
+        Queue responses = new LinkedList<>();
+        responses.add(response);
+        SplitMockServer splitServer = new SplitMockServer(CustomDispatcher.builder()
+                .path(CustomDispatcher.SINCE_1585948850109, responses)
+                .build());
         splitServer.start();
 
         SplitClientConfig config = SplitClientConfig.builder()
@@ -168,7 +187,12 @@ public class SplitClientIntegrationTest {
 
     @Test
     public void managerSplitsWithStreamingEnabled() throws Exception {
-        SplitMockServer splitServer = new SplitMockServer();
+        MockResponse response = new MockResponse().setBody("{\"splits\": [], \"since\":1585948850109, \"till\":1585948850109}");
+        Queue responses = new LinkedList<>();
+        responses.add(response);
+        SplitMockServer splitServer = new SplitMockServer(CustomDispatcher.builder()
+                .path(CustomDispatcher.SINCE_1585948850109, responses)
+                .build());
         SSEMockServer.SseEventQueue eventQueue = new SSEMockServer.SseEventQueue();
         SSEMockServer sseServer = buildSSEMockServer(eventQueue);
 
@@ -203,7 +227,20 @@ public class SplitClientIntegrationTest {
 
     @Test
     public void splitClientOccupancyNotifications() throws Exception {
-        SplitMockServer splitServer = new SplitMockServer();
+        MockResponse response = new MockResponse().setBody("{\"splits\": [], \"since\":1585948850109, \"till\":1585948850109}");
+        MockResponse response2 = new MockResponse().setBody("{\"splits\": [], \"since\":1585948850110, \"till\":1585948850110}");
+        MockResponse response3 = new MockResponse().setBody("{\"splits\": [], \"since\":1585948850111, \"till\":1585948850111}");
+        Queue responses = new LinkedList<>();
+        responses.add(response);
+        Queue responses2 = new LinkedList<>();
+        responses2.add(response2);
+        Queue responses3 = new LinkedList<>();
+        responses3.add(response3);
+        SplitMockServer splitServer = new SplitMockServer(CustomDispatcher.builder()
+                .path(CustomDispatcher.SINCE_1585948850109, responses)
+                .path(CustomDispatcher.SINCE_1585948850110, responses2)
+                .path(CustomDispatcher.SINCE_1585948850111, responses3)
+                .build());
         SSEMockServer.SseEventQueue eventQueue = new SSEMockServer.SseEventQueue();
         SSEMockServer sseServer = buildSSEMockServer(eventQueue);
 
@@ -265,7 +302,20 @@ public class SplitClientIntegrationTest {
 
     @Test
     public void splitClientControlNotifications() throws Exception {
-        SplitMockServer splitServer = new SplitMockServer();
+        MockResponse response = new MockResponse().setBody("{\"splits\": [], \"since\":1585948850109, \"till\":1585948850109}");
+        MockResponse response2 = new MockResponse().setBody("{\"splits\": [], \"since\":1585948850110, \"till\":1585948850110}");
+        MockResponse response3 = new MockResponse().setBody("{\"splits\": [], \"since\":1585948850111, \"till\":1585948850111}");
+        Queue responses = new LinkedList<>();
+        responses.add(response);
+        Queue responses2 = new LinkedList<>();
+        responses2.add(response2);
+        Queue responses3 = new LinkedList<>();
+        responses3.add(response3);
+        SplitMockServer splitServer = new SplitMockServer(CustomDispatcher.builder()
+                .path(CustomDispatcher.SINCE_1585948850109, responses)
+                .path(CustomDispatcher.SINCE_1585948850110, responses2)
+                .path(CustomDispatcher.SINCE_1585948850111, responses3)
+                .build());
         SSEMockServer.SseEventQueue eventQueue = new SSEMockServer.SseEventQueue();
         SSEMockServer sseServer = buildSSEMockServer(eventQueue);
 
@@ -347,7 +397,19 @@ public class SplitClientIntegrationTest {
 
     @Test
     public void splitClientMultiFactory() throws Exception {
-        SplitMockServer splitServer = new SplitMockServer();
+        MockResponse response = new MockResponse().setBody("{\"splits\": [], \"since\":1585948850109, \"till\":1585948850109}");
+        Queue responses = new LinkedList<>();
+        responses.add(response);
+        responses.add(response);
+        responses.add(response);
+        responses.add(response);
+        responses.add(response);
+        responses.add(response);
+        responses.add(response);
+        responses.add(response);
+        SplitMockServer splitServer = new SplitMockServer(CustomDispatcher.builder()
+                .path(CustomDispatcher.SINCE_1585948850109, responses)
+                .build());
 
         SSEMockServer.SseEventQueue eventQueue1 = new SSEMockServer.SseEventQueue();
         SSEMockServer sseServer1 = buildSSEMockServer(eventQueue1);
@@ -471,7 +533,7 @@ public class SplitClientIntegrationTest {
     @Test
     @Ignore
     public void keepAlive() throws Exception {
-        SplitMockServer splitServer = new SplitMockServer();
+        SplitMockServer splitServer = new SplitMockServer(CustomDispatcher.builder().build());
         SSEMockServer.SseEventQueue eventQueue = new SSEMockServer.SseEventQueue();
         SSEMockServer sseServer = buildSSEMockServer(eventQueue);
 
@@ -501,7 +563,12 @@ public class SplitClientIntegrationTest {
 
     @Test
     public void testConnectionClosedByRemoteHostIsProperlyHandled() throws Exception {
-        SplitMockServer splitServer = new SplitMockServer();
+        MockResponse response = new MockResponse().setBody("{\"splits\": [], \"since\":1585948850109, \"till\":1585948850109}");
+        Queue responses = new LinkedList<>();
+        responses.add(response);
+        SplitMockServer splitServer = new SplitMockServer(CustomDispatcher.builder()
+                .path(CustomDispatcher.SINCE_1585948850109, responses)
+                .build());
         SSEMockServer.SseEventQueue eventQueue = new SSEMockServer.SseEventQueue();
         SSEMockServer sseServer = buildSSEMockServer(eventQueue);
 
@@ -534,7 +601,12 @@ public class SplitClientIntegrationTest {
 
     @Test
     public void testConnectionClosedIsProperlyHandled() throws Exception {
-        SplitMockServer splitServer = new SplitMockServer();
+        MockResponse response = new MockResponse().setBody("{\"splits\": [], \"since\":1585948850109, \"till\":1585948850109}");
+        Queue responses = new LinkedList<>();
+        responses.add(response);
+        SplitMockServer splitServer = new SplitMockServer(CustomDispatcher.builder()
+                .path(CustomDispatcher.SINCE_1585948850109, responses)
+                .build());
         SSEMockServer.SseEventQueue eventQueue = new SSEMockServer.SseEventQueue();
         SSEMockServer sseServer = buildSSEMockServer(eventQueue);
 
@@ -563,6 +635,62 @@ public class SplitClientIntegrationTest {
         Assert.assertNotEquals("on_whitelist", result);
     }
 
+    @Test
+    public void testPluggableMode() throws IOException, URISyntaxException {
+        CustomStorageWrapperImp customStorageWrapper = new CustomStorageWrapperImp();
+        SplitClientConfig config = SplitClientConfig.builder()
+            .enableDebug()
+            .impressionsMode(ImpressionsManager.Mode.DEBUG)
+            .impressionsRefreshRate(1)
+            .setBlockUntilReadyTimeout(10000)
+            .streamingEnabled(true)
+            .operationMode(OperationMode.CONSUMER)
+            .customStorageWrapper(customStorageWrapper)
+            .build();
+        SplitFactory splitFactory = SplitFactoryBuilder.build("fake-api-token", config);
+        SplitClient client = splitFactory.client();
+        try {
+            client.blockUntilReady();
+            SplitManager splitManager = splitFactory.manager();HashMap<String, Object> properties = new HashMap<>();
+            properties.put("number_property", 123);
+            properties.put("object_property", new Object());
+
+            client.track("key", "tt", "importantEventType");
+            client.track("keyValue", "tt", "importantEventType", 12L);
+            client.track("keyProperties", "tt", "importantEventType", 12L, properties);
+            List<EventConsumer> events = customStorageWrapper.getEvents();
+            List<SplitView> splits = splitManager.splits();
+
+            Assert.assertEquals(3, events.size());
+            Assert.assertTrue(events.stream().anyMatch(e -> "key".equals(e.getEventDto().key) && "tt".equals(e.getEventDto().trafficTypeName)));
+            Assert.assertTrue(events.stream().anyMatch(e -> "keyValue".equals(e.getEventDto().key) && e.getEventDto().value == 12L));
+            Assert.assertTrue(events.stream().anyMatch(e -> "keyProperties".equals(e.getEventDto().key) && e.getEventDto().properties != null));
+
+            Assert.assertEquals(2, splits.size());
+            Assert.assertTrue(splits.stream().anyMatch(sw -> "first.name".equals(sw.name)));
+            Assert.assertTrue(splits.stream().anyMatch(sw -> "second.name".equals(sw.name)));
+            Assert.assertEquals("on", client.getTreatment("key", "first.name"));
+            Assert.assertEquals("off", client.getTreatmentWithConfig("FakeKey", "second.name").treatment());
+            Assert.assertEquals("control", client.getTreatment("FakeKey", "noSplit"));
+
+            List<ImpressionConsumer> impressions = customStorageWrapper.getImps();
+            Assert.assertEquals(2, impressions.size());
+            Assert.assertTrue(impressions.stream().anyMatch(imp -> "first.name".equals(imp.getKeyImpression().feature) && "on".equals(imp.getKeyImpression().treatment)));
+            Assert.assertTrue(impressions.stream().anyMatch(imp -> "second.name".equals(imp.getKeyImpression().feature) && "off".equals(imp.getKeyImpression().treatment)));
+
+            Map<String, AtomicLongArray> latencies = customStorageWrapper.get_methodLatencies();
+
+            Assert.assertEquals(3, latencies.get(MethodEnum.TRACK.getMethod()).fetchAndClearAll().stream().mapToInt(Long::intValue).sum());
+            Assert.assertEquals(1, latencies.get(MethodEnum.TREATMENT.getMethod()).fetchAndClearAll().stream().mapToInt(Long::intValue).sum());
+            Assert.assertEquals(1, latencies.get(MethodEnum.TREATMENT_WITH_CONFIG.getMethod()).fetchAndClearAll().stream().mapToInt(Long::intValue).sum());
+
+            Assert.assertNotNull(customStorageWrapper.get_telemetryInit());
+            Assert.assertEquals(StorageMode.PLUGGABLE.name(), customStorageWrapper.get_telemetryInit().get_storage());
+
+        } catch (TimeoutException | InterruptedException e) {
+        }
+    }
+
     private SSEMockServer buildSSEMockServer(SSEMockServer.SseEventQueue eventQueue) {
         return new SSEMockServer(eventQueue, (token, version, channel) -> {
             if (!"1.1".equals(version)) {
@@ -582,4 +710,5 @@ public class SplitClientIntegrationTest {
                 .streamingEnabled(streamingEnabled)
                 .build();
     }
+
 }
