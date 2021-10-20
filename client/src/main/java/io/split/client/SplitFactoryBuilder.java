@@ -38,18 +38,13 @@ public class SplitFactoryBuilder {
      */
     public static synchronized SplitFactory build(String apiToken, SplitClientConfig config) throws IOException, URISyntaxException {
         ApiKeyValidator.validate(apiToken);
-
         if (LocalhostSplitFactory.LOCALHOST.equals(apiToken)) {
             return LocalhostSplitFactory.createLocalhostSplitFactory(config);
-        } else {
-            if (StorageMode.PLUGGABLE.equals(config.storageMode())){
-                return new SplitFactoryImpl(apiToken, config, config.customStorageWrapper());
-            }
-            else {
-                return new SplitFactoryImpl(apiToken, config);
-            }
-
         }
+        if (StorageMode.PLUGGABLE.equals(config.storageMode())){
+            return new SplitFactoryImpl(apiToken, config, config.customStorageWrapper());
+        }
+        return new SplitFactoryImpl(apiToken, config);
     }
 
     /**
