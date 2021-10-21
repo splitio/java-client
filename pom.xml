@@ -70,8 +70,9 @@
         <maven.compiler.target>1.8</maven.compiler.target>
     </properties>
     <modules>
-        <module>testing</module>
         <module>client</module>
+        <module>testing</module>
+        <module>testing-cucumber</module>
     </modules>
     <build>
         <plugins>

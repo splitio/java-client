@@ -1,0 +1,40 @@
+<?xml version="1.0"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <parent>
+        <groupId>io.split.client</groupId>
+        <artifactId>java-client-parent</artifactId>
+        <version>4.2.1</version>
+    </parent>
+
+    <artifactId>java-client-testing-cucumber</artifactId>
+    <version>1.0.0-rc1</version>
+    <packaging>jar</packaging>
+    <name>Split Java Client Cucumber testing module</name>
+    <description>Cucumber integration for the testing module of Split Java Client</description>
+    <dependencies>
+        <dependency>
+            <groupId>io.split.client</groupId>
+            <artifactId>java-client-testing</artifactId>
+            <version>${parent.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>io.cucumber</groupId>
+            <artifactId>cucumber-java</artifactId>
+            <version>6.10.4</version>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>io.cucumber</groupId>
+            <artifactId>cucumber-junit</artifactId>
+            <version>6.10.4</version>
+            <scope>provided</scope>
+        </dependency>
+    </dependencies>
+</project>
