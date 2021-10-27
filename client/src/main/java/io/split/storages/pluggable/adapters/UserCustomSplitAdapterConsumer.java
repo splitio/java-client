@@ -5,12 +5,12 @@ import io.split.client.utils.Json;
 import io.split.engine.experiments.ParsedSplit;
 import io.split.engine.experiments.SplitParser;
 import io.split.storages.SplitCacheConsumer;
-import io.split.storages.pluggable.CustomStorageWrapper;
 import io.split.storages.pluggable.domain.SafeUserStorageWrapper;
 import io.split.storages.pluggable.domain.PrefixAdapter;
 import io.split.storages.pluggable.utils.Helper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import pluggable.CustomStorageWrapper;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -59,7 +59,6 @@ public class UserCustomSplitAdapterConsumer  implements SplitCacheConsumer {
         if(keys == null) {
             return new ArrayList<>();
         }
-        keys = keys.stream().map(k -> k = PrefixAdapter.buildSplitKey(k)).collect(Collectors.toSet());
         List<String> wrapperResponse = _safeUserStorageWrapper.getMany(new ArrayList<>(keys));
         if(wrapperResponse == null) {
             return new ArrayList<>();

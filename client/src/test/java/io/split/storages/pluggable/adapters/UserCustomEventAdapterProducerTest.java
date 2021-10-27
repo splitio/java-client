@@ -2,11 +2,11 @@ package io.split.storages.pluggable.adapters;
 
 import io.split.client.dtos.Event;
 import io.split.client.dtos.Metadata;
-import io.split.storages.pluggable.CustomStorageWrapper;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mockito;
+import pluggable.CustomStorageWrapper;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
