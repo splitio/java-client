@@ -4,10 +4,10 @@ import io.split.client.dtos.Event;
 import io.split.client.dtos.Metadata;
 import io.split.client.events.EventsStorageProducer;
 import io.split.client.utils.Json;
-import io.split.storages.pluggable.CustomStorageWrapper;
 import io.split.storages.pluggable.domain.EventConsumer;
 import io.split.storages.pluggable.domain.PrefixAdapter;
 import io.split.storages.pluggable.domain.SafeUserStorageWrapper;
+import pluggable.CustomStorageWrapper;
 
 import java.util.List;
 import java.util.stream.Collectors;

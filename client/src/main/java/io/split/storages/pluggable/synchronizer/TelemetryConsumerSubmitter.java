@@ -5,11 +5,11 @@ import io.split.client.SplitClientConfig;
 import io.split.client.utils.Json;
 import io.split.client.utils.SDKMetadata;
 import io.split.storages.enums.OperationMode;
-import io.split.storages.pluggable.CustomStorageWrapper;
 import io.split.storages.pluggable.domain.ConfigConsumer;
 import io.split.storages.pluggable.domain.PrefixAdapter;
 import io.split.storages.pluggable.domain.SafeUserStorageWrapper;
 import io.split.telemetry.synchronizer.TelemetrySynchronizer;
+import pluggable.CustomStorageWrapper;
 
 import java.util.List;
 import java.util.Map;

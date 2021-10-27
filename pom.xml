@@ -72,6 +72,8 @@
     <modules>
         <module>testing</module>
         <module>client</module>
+        <module>pluggable-storage</module>
+        <module>redis-wrapper</module>
     </modules>
     <build>
         <plugins>
