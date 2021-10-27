@@ -19,7 +19,7 @@ public class PrefixAdapter {
     private static final String INIT = "init";
 
     public static String buildSplitKey(String name) {
-        return String.format(DEFAULT_PREFIX+ SPLIT_PREFIX +"{%s}", name);
+        return String.format(DEFAULT_PREFIX+ SPLIT_PREFIX +"%s", name);
     }
 
     public static String buildSplitChangeNumber() {
@@ -27,17 +27,17 @@ public class PrefixAdapter {
     }
 
     public static String buildGetAllSplit() {
-        return DEFAULT_PREFIX+SPLITS_PREFIX+"*";
+        return DEFAULT_PREFIX+SPLIT_PREFIX+"*";
     }
 
     public static String buildTrafficTypeExists(String trafficType) {
-        return String.format(DEFAULT_PREFIX+TRAFFIC_TYPE_PREFIX+"{%s}", trafficType);
+        return String.format(DEFAULT_PREFIX+TRAFFIC_TYPE_PREFIX+"%s", trafficType);
     }
 
     public static List<String> buildFetchManySplits(List<String> names) {
         List<String> prefixes = new ArrayList<>();
         for(String name : names) {
-            prefixes.add(String.format(DEFAULT_PREFIX+ SPLIT_PREFIX +"{%s}", name));
+            prefixes.add(String.format(DEFAULT_PREFIX+ SPLIT_PREFIX +"%s", name));
         }
         return prefixes;
     }
@@ -51,7 +51,7 @@ public class PrefixAdapter {
     }
 
     public static String buildSegment(String segmentName) {
-        return String.format(DEFAULT_PREFIX+SEGMENT+"{%s}", segmentName);
+        return String.format(DEFAULT_PREFIX+SEGMENT+"%s", segmentName);
     }
 
     public static String buildSegmentAll() {
@@ -59,18 +59,18 @@ public class PrefixAdapter {
     }
 
     public static String buildSegmentTill(String segmentName) {
-        return String.format(DEFAULT_PREFIX+SEGMENT+"{%s}."+TILL, segmentName);
+        return String.format(DEFAULT_PREFIX+SEGMENT+"%s."+TILL, segmentName);
     }
 
     public static String buildTelemetryLatenciesPrefix(String method, int bucketForLatency, String sdkVersion, String machineIp, String machineName) {
-        return String.format(DEFAULT_PREFIX+TELEMETRY+LATENCIES+"::{%s}/{%s}/{%s}/"+"{%s}/{%d}", sdkVersion, machineName, machineIp, method, bucketForLatency);
+        return String.format(DEFAULT_PREFIX+TELEMETRY+LATENCIES+"::%s/%s/%s/"+"%s/%d", sdkVersion, machineName, machineIp, method, bucketForLatency);
     }
 
     public static String buildTelemetryExceptionsPrefix(String method, String sdkVersion, String machineIp, String machineName) {
-        return String.format(DEFAULT_PREFIX+TELEMETRY+EXCEPTIONS+"::{%s}/{%s}/{%s}/"+"{%s}", sdkVersion, machineName, machineIp, method);
+        return String.format(DEFAULT_PREFIX+TELEMETRY+EXCEPTIONS+"::%s/%s/%s/"+"%s", sdkVersion, machineName, machineIp, method);
     }
 
     public static String buildTelemetryInit(String sdkVersion, String machineIp, String machineName) {
-        return String.format(DEFAULT_PREFIX+TELEMETRY+INIT+"::{%s}/{%s}/{%s}", sdkVersion, machineName, machineIp);
+        return String.format(DEFAULT_PREFIX+TELEMETRY+INIT+"::%s/%s/%s", sdkVersion, machineName, machineIp);
     }
 }
