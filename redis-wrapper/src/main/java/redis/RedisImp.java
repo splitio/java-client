@@ -15,8 +15,8 @@ public class RedisImp implements CustomStorageWrapper {
     private Jedis jedis;
     private String _prefix;
 
-    public RedisImp(String url,int port, String prefix) {
-        redisPool = new JedisPool(url, port);
+    public RedisImp(JedisPool jedisPool, String prefix) {
+        redisPool = jedisPool;
         jedis = redisPool.getResource();
         _prefix = prefix;
     }
