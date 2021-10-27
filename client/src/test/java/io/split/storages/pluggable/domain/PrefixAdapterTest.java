@@ -22,7 +22,7 @@ public class PrefixAdapterTest{
     @Test
     public void testBuildSplitKey() {
         String prefix = PrefixAdapter.buildSplitKey(SPLIT_NAME);
-        String expectedPrefix = String.format(DEFAULT_PREFIX+SPLIT_PREFIX+"{%s}", SPLIT_NAME);
+        String expectedPrefix = String.format(DEFAULT_PREFIX+SPLIT_PREFIX+"%s", SPLIT_NAME);
         Assert.assertEquals(expectedPrefix,prefix);
     }
 
@@ -36,22 +36,22 @@ public class PrefixAdapterTest{
     @Test
     public void testBuildGetAllSplit() {
         String prefix = PrefixAdapter.buildGetAllSplit();
-        String expectedPrefix = DEFAULT_PREFIX+ "splits.*";
+        String expectedPrefix = DEFAULT_PREFIX+ "split.*";
         Assert.assertEquals(expectedPrefix,prefix);
     }
 
     @Test
     public void testBuildTrafficTypeExists() {
         String prefix = PrefixAdapter.buildTrafficTypeExists(TRAFFIC_TYPE);
-        String expectedPrefix = String.format(DEFAULT_PREFIX+TRAFFIC_TYPE_PREFIX+"{%s}", TRAFFIC_TYPE);
+        String expectedPrefix = String.format(DEFAULT_PREFIX+TRAFFIC_TYPE_PREFIX+"%s", TRAFFIC_TYPE);
         Assert.assertEquals(expectedPrefix,prefix);
     }
 
     @Test
     public void testBuildFetchManySplits() {
         List<String> prefixes = PrefixAdapter.buildFetchManySplits(Stream.of(SPLIT_NAME+"1", SPLIT_NAME+"2").collect(Collectors.toList()));
-        String expectedPrefix1 = String.format(DEFAULT_PREFIX+ SPLIT_PREFIX +"{%s}", SPLIT_NAME+"1");
-        String expectedPrefix2 = String.format(DEFAULT_PREFIX+ SPLIT_PREFIX +"{%s}", SPLIT_NAME+"2");
+        String expectedPrefix1 = String.format(DEFAULT_PREFIX+ SPLIT_PREFIX +"%s", SPLIT_NAME+"1");
+        String expectedPrefix2 = String.format(DEFAULT_PREFIX+ SPLIT_PREFIX +"%s", SPLIT_NAME+"2");
         Assert.assertEquals(2,prefixes.size());
         Assert.assertEquals(expectedPrefix1,prefixes.get(0));
         Assert.assertEquals(expectedPrefix2,prefixes.get(1));
@@ -78,13 +78,13 @@ public class PrefixAdapterTest{
 
     @Test
     public void testBuildTelemetryLatencies() {
-        String expectedPrefix = "SPLITIO.telemetry.latencies::{sv}/{mn}/{mi}/{getTreatment}/{2}";
+        String expectedPrefix = "SPLITIO.telemetry.latencies::sv/mn/mi/getTreatment/2";
         Assert.assertEquals(expectedPrefix, PrefixAdapter.buildTelemetryLatenciesPrefix("getTreatment", 2, "sv", "mi","mn"));
     }
 
     @Test
     public void testBuildTelemetryExceptions() {
-        String expectedPrefix = "SPLITIO.telemetry.exceptions::{sv}/{mn}/{mi}/{getTreatment}";
+        String expectedPrefix = "SPLITIO.telemetry.exceptions::sv/mn/mi/getTreatment";
         Assert.assertEquals(expectedPrefix, PrefixAdapter.buildTelemetryExceptionsPrefix("getTreatment", "sv", "mi","mn"));
     }
 
