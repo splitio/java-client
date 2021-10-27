@@ -9,6 +9,8 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 public class RedisImpTest {
 
@@ -51,10 +53,10 @@ public class RedisImpTest {
         keys.add("test-5");
         keys.add("test-6");
         keys.add("test-10");
-
+        List<String> expectedResult = Stream.of("5", "6", null).collect(Collectors.toList());
         List<String> result = storageWrapper.getMany(keys);
 
-        Assert.assertEquals("7", result);
+        Assert.assertEquals(expectedResult, result);
 
         storageWrapper.delete(new ArrayList<>(map.keySet()));
     }

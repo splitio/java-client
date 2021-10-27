@@ -9,6 +9,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 public class RedisImp implements CustomStorageWrapper {
+    private static final String TELEMETRY_INIT = "SPLITIO.telemetry.init" ;
 
     private final JedisPool jedisPool;
     private final String prefix;
@@ -41,6 +42,11 @@ public class RedisImp implements CustomStorageWrapper {
     @Override
     public void set(String key, String item) throws Exception {
         try (Jedis jedis = this.jedisPool.getResource()) {
+            if(key.contains(TELEMETRY_INIT)) {
+                String[] splittedKey = key.split("::");
+                jedis.hset(buildKeyWithPrefix(splittedKey[0]), splittedKey[1], item);
+                return;
+            }
             jedis.set(buildKeyWithPrefix(key), item);
         } catch (Exception ex) {
             throw new Exception(ex);
