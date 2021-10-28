@@ -9,7 +9,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-public class RedisImp implements CustomStorageWrapper {
+class RedisImp implements CustomStorageWrapper {
     private static final String TELEMETRY_INIT = "SPLITIO.telemetry.init" ;
 
     private final JedisPool jedisPool;
