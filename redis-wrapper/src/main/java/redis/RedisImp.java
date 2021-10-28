@@ -4,6 +4,7 @@ import pluggable.CustomStorageWrapper;
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisPool;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -30,6 +31,9 @@ public class RedisImp implements CustomStorageWrapper {
 
     @Override
     public List<String> getMany(List<String> keys) throws Exception {
+        if(keys == null || keys.isEmpty()){
+            return new ArrayList<>();
+        }
         try (Jedis jedis = this.jedisPool.getResource()) {
             keys = keys.stream().map(key -> buildKeyWithPrefix(key)).collect(Collectors.toList());
 
@@ -55,6 +59,9 @@ public class RedisImp implements CustomStorageWrapper {
 
     @Override
     public void delete(List<String> keys) throws Exception {
+        if(keys == null || keys.isEmpty()){
+            return ;
+        }
         try (Jedis jedis = this.jedisPool.getResource()) {
             keys = keys.stream().map(key -> buildKeyWithPrefix(key)).collect(Collectors.toList());
 
@@ -157,6 +164,9 @@ public class RedisImp implements CustomStorageWrapper {
 
     @Override
     public List<String> getItems(List<String> keys) throws Exception {
+        if(keys == null || keys.isEmpty()){
+            return new ArrayList<>();
+        }
         try (Jedis jedis = this.jedisPool.getResource()) {
             keys = keys.stream().map(key -> buildKeyWithPrefix(key)).collect(Collectors.toList());
 
@@ -188,7 +198,7 @@ public class RedisImp implements CustomStorageWrapper {
 
     private String buildKeyWithPrefix(String key) {
         if (!key.startsWith(this.prefix)) {
-            key = this.prefix + key;
+            key = String.format("%s.%s", prefix, key);
         }
 
         return key;
