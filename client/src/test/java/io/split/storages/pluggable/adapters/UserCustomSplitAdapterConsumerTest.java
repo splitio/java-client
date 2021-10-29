@@ -130,7 +130,7 @@ public class UserCustomSplitAdapterConsumerTest {
     @Test
     public void testTrafficTypeExists() {
         Mockito.when(_safeUserStorageWrapper.get(PrefixAdapter.buildTrafficTypeExists("TrafficType"))).
-                thenReturn(getBooleanAsJson(true));
+                thenReturn(getLongAsJson(2));
         boolean result = _userCustomSplitAdapterConsumer.trafficTypeExists("TrafficType");
         Assert.assertTrue(result);
     }
@@ -146,7 +146,7 @@ public class UserCustomSplitAdapterConsumerTest {
     @Test
     public void testTrafficTypeExistsWithGsonFailing() {
         Mockito.when(_safeUserStorageWrapper.get(PrefixAdapter.buildTrafficTypeExists("TrafficType"))).
-                thenReturn("2");
+                thenReturn("true");
         boolean result = _userCustomSplitAdapterConsumer.trafficTypeExists("TrafficType");
         Assert.assertFalse(result);
     }
