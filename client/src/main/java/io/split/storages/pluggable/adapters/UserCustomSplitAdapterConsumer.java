@@ -69,18 +69,17 @@ public class UserCustomSplitAdapterConsumer  implements SplitCacheConsumer {
     @Override
     public boolean trafficTypeExists(String trafficTypeName) {
         String wrapperResponse = _safeUserStorageWrapper.get(PrefixAdapter.buildTrafficTypeExists(trafficTypeName));
-        boolean response = false;
         if(wrapperResponse == null) {
-            return response;
+            return false;
         }
         try {
-            response = Json.fromJson(wrapperResponse, Boolean.class);
-            return response;
+            Long value = Json.fromJson(wrapperResponse, Long.class);
+            return value != null && value > 0;
         }
         catch(Exception e) {
             _log.info("Error getting boolean from String.");
         }
-        return response;
+        return false;
     }
 
     @Override
