@@ -5,7 +5,7 @@
     <parent>
         <groupId>io.split.client</groupId>
         <artifactId>java-client-parent</artifactId>
-        <version>4.4.0-alpha</version>
+        <version>4.4.0-beta</version>
     </parent>
     <artifactId>java-client</artifactId>
     <packaging>jar</packaging>
@@ -13,7 +13,7 @@
     <description>Java SDK for Split</description>
 
     <properties>
-        <pluggable.storage>1.0.0-alpha</pluggable.storage>
+        <pluggable.storage>1.0.0-beta</pluggable.storage>
     </properties>
 
     <build>
