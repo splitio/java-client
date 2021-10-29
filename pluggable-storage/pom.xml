@@ -6,10 +6,10 @@
     <parent>
         <artifactId>java-client-parent</artifactId>
         <groupId>io.split.client</groupId>
-        <version>4.4.0-alpha</version>
+        <version>4.4.0-beta</version>
     </parent>
 
-    <version>1.0.0-alpha</version>
+    <version>1.0.0-beta</version>
     <artifactId>pluggable-storage</artifactId>
     <packaging>jar</packaging>
     <name>Package for Pluggable Storage</name>
