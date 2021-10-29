@@ -5,12 +5,17 @@
     <parent>
         <groupId>io.split.client</groupId>
         <artifactId>java-client-parent</artifactId>
-        <version>4.3.0</version>
+        <version>4.4.0-beta</version>
     </parent>
     <artifactId>java-client</artifactId>
     <packaging>jar</packaging>
     <name>Java Client</name>
     <description>Java SDK for Split</description>
+
+    <properties>
+        <pluggable.storage>1.0.0-beta</pluggable.storage>
+    </properties>
+
     <build>
         <plugins>
             <plugin>
@@ -118,6 +123,12 @@
         </resources>
     </build>
     <dependencies>
+        <dependency>
+            <groupId>io.split.client</groupId>
+            <artifactId>pluggable-storage</artifactId>
+            <version>${pluggable.storage}</version>
+            <scope>compile</scope>
+        </dependency>
         <dependency>
             <groupId>com.google.guava</groupId>
             <artifactId>guava</artifactId>

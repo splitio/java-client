@@ -1,13 +1,13 @@
 package io.split.storages.pluggable.adapters;
 
 import io.split.client.utils.Json;
-import io.split.storages.pluggable.CustomStorageWrapper;
 import io.split.storages.pluggable.domain.PrefixAdapter;
 import io.split.storages.pluggable.domain.SafeUserStorageWrapper;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mockito;
+import pluggable.CustomStorageWrapper;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;

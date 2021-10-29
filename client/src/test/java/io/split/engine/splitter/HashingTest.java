@@ -144,8 +144,6 @@ public class HashingTest {
             }
         }
 
-        System.out.println(hash + " collisions: " + collisions + " percentage: " + (100f * collisions / keys.size()));
-        System.out.println(hash + " time: " + durationSum / keys.size() + " ns");
     }
 
     private void bucketTest(int seed, MyHash hash, List<String> keys) {
@@ -161,8 +159,6 @@ public class HashingTest {
             ranges[(bucket - 1) / 10]++;
         }
 
-        System.out.println(buckets);
-        System.out.println(Arrays.toString(ranges));
     }
 
     private void spreadBySeed(int seed1, int seed2, MyHash hash, List<String> keys) {
@@ -182,6 +178,5 @@ public class HashingTest {
         }
 
         int collisions = bitset.cardinality();
-        System.out.println(hash + " collisions " + collisions + " percentage: " + (100f * collisions / keys.size()));
     }
 }

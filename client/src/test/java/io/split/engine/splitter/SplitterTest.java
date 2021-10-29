@@ -40,7 +40,6 @@ public class SplitterTest {
                 String key = RandomStringUtils.randomAlphanumeric(keyLength);
                 long hash = Splitter.hash(key, seed, 1);
                 int bucket = Splitter.bucket(hash);
-                System.out.println(Joiner.on(',').join(Lists.newArrayList(seed, key, hash, bucket)));
             }
         }
 
@@ -59,7 +58,6 @@ public class SplitterTest {
                 String key = RandomStringUtils.random(keyLength);
                 long hash = Splitter.hash(key, seed, 1);
                 int bucket = Splitter.bucket(hash);
-                System.out.println(Joiner.on(',').join(Lists.newArrayList(seed, key, hash, bucket)));
             }
         }
 

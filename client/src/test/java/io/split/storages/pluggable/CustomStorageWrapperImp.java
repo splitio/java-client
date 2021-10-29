@@ -10,14 +10,17 @@ import io.split.client.dtos.Condition;
 import io.split.client.dtos.ConditionType;
 import io.split.client.dtos.Split;
 import io.split.client.dtos.Status;
+import io.split.client.utils.Json;
 import io.split.engine.ConditionsTestUtil;
 import io.split.engine.segments.SegmentImp;
 import io.split.grammar.Treatments;
 import io.split.storages.pluggable.domain.ConfigConsumer;
 import io.split.storages.pluggable.domain.EventConsumer;
 import io.split.storages.pluggable.domain.ImpressionConsumer;
+import io.split.storages.pluggable.domain.PrefixAdapter;
 import io.split.telemetry.domain.enums.MethodEnum;
 import io.split.telemetry.utils.AtomicLongArray;
+import pluggable.CustomStorageWrapper;
 
 import java.lang.reflect.Modifier;
 import java.util.ArrayList;
@@ -32,9 +35,9 @@ public class CustomStorageWrapperImp implements CustomStorageWrapper {
 
     public static final int MAX_LATENCY_BUCKET_COUNT = 23;
     private static final String TELEMETRY = "SPLITIO.telemetry";
-    private static final String SPLIT = "SPLITIO.split";
+    private static final String SPLIT = "SPLITIO.split.";
     private static final String SPLITS = "SPLITIO.splits.*";
-    private static final String SEGMENT = "SPLITIO.segment";
+    private static final String SEGMENT = "SPLITIO.segment.";
     private static final String IMPRESSIONS = "SPLITIO.impressions";
     private static final String EVENTS = "SPLITIO.events";
     private Map<String, Split> splitsStorage = new HashMap<>();
@@ -66,9 +69,7 @@ public class CustomStorageWrapperImp implements CustomStorageWrapper {
     public String get(String key) throws Exception {
         String value = getStorage(key);
         if(value.equals(SPLIT)){
-            String name = key.substring(key.indexOf("{") + 1);
-            name = name.substring(0, name.indexOf("}"));
-            return _json.toJson(splitsStorage.get(name));
+            return _json.toJson(splitsStorage.get(key));
         }
         return "";
     }
@@ -79,13 +80,10 @@ public class CustomStorageWrapperImp implements CustomStorageWrapper {
             return null;
         }
         String value = getStorage(keys.get(0));
-         keys = keys.stream().map(k -> {
-            k = k.substring(k.indexOf("{") + 1);
-            k = k.substring(0, k.indexOf("}"));
-            return k;}).collect(Collectors.toList());
         if(value.equals(SPLIT)){
-            List<String> finalKeys = keys;
-            return splitsStorage.values().stream().filter(v -> finalKeys.contains(v.name)).map(_json::toJson).collect(Collectors.toList());
+            List<String> results = new ArrayList<>();
+            keys.forEach(k -> results.add(Json.toJson(splitsStorage.get(k))));
+            return results;
         }
         return null;
     }
@@ -113,7 +111,7 @@ public class CustomStorageWrapperImp implements CustomStorageWrapper {
     @Override
     public Set<String> getKeysByPrefix(String prefix) throws Exception {
         String value = getStorage(prefix);
-        if(value.equals(SPLITS)){
+        if(value.equals(SPLIT)){
             return splitsStorage.keySet();
         }
         return null;
@@ -164,9 +162,7 @@ public class CustomStorageWrapperImp implements CustomStorageWrapper {
     public boolean itemContains(String key, String item) throws Exception {
         String value = getStorage(key);
         if(value.equals(SEGMENT)){
-            String name = key.substring(key.indexOf("{") + 1);
-            name = name.substring(0, name.indexOf("}"));
-            SegmentImp segmentImp = segmentStorage.get(name);
+            SegmentImp segmentImp = segmentStorage.get(key);
             return segmentImp.contains(item);
         }
         return false;
@@ -215,9 +211,9 @@ public class CustomStorageWrapperImp implements CustomStorageWrapper {
 
     private void updateCache(){
         Condition condition = ConditionsTestUtil.makeUserDefinedSegmentCondition(ConditionType.WHITELIST,"segmentName" , Lists.newArrayList(ConditionsTestUtil.partition("on", 100)));
-        segmentStorage.put("segmentName", new SegmentImp(9874654L, "segmentName", Lists.newArrayList("key", "key2")));
-        splitsStorage.put("first.name", makeSplit("first.name", 123, Lists.newArrayList(condition), 456478976L));
-        splitsStorage.put("second.name", makeSplit("second.name", 321, Lists.newArrayList(), 568613L));
+        segmentStorage.put(PrefixAdapter.buildSegment("segmentName"), new SegmentImp(9874654L, "segmentName", Lists.newArrayList("key", "key2")));
+        splitsStorage.put(PrefixAdapter.buildSplitKey("first.name"), makeSplit("first.name", 123, Lists.newArrayList(condition), 456478976L));
+        splitsStorage.put(PrefixAdapter.buildSplitKey("second.name"), makeSplit("second.name", 321, Lists.newArrayList(), 568613L));
     }
 
     private Split makeSplit(String name, int seed, List<Condition> conditions, long changeNumber) {

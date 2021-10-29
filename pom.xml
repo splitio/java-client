@@ -4,7 +4,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>io.split.client</groupId>
     <artifactId>java-client-parent</artifactId>
-    <version>4.3.0</version>
+    <version>4.4.0-beta</version>
     <dependencyManagement>
         <dependencies>
             <dependency>
@@ -72,6 +72,8 @@
     <modules>
         <module>testing</module>
         <module>client</module>
+        <module>pluggable-storage</module>
+        <module>redis-wrapper</module>
     </modules>
     <build>
         <plugins>
