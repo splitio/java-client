@@ -7,10 +7,10 @@ import com.google.gson.JsonSerializer;
 import io.split.client.dtos.KeyImpression;
 import io.split.client.dtos.Metadata;
 import io.split.client.impressions.ImpressionsStorageProducer;
-import io.split.storages.pluggable.CustomStorageWrapper;
 import io.split.storages.pluggable.domain.ImpressionConsumer;
 import io.split.storages.pluggable.domain.PrefixAdapter;
 import io.split.storages.pluggable.domain.SafeUserStorageWrapper;
+import pluggable.CustomStorageWrapper;
 
 import java.lang.reflect.Modifier;
 import java.util.Collections;

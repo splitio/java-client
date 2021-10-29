@@ -3,14 +3,12 @@ package io.split.storages.pluggable.synchronizer;
 import io.split.client.ApiKeyCounter;
 import io.split.client.SplitClientConfig;
 import io.split.client.utils.SDKMetadata;
-import io.split.storages.pluggable.CustomStorageWrapper;
-import io.split.storages.pluggable.adapters.UserCustomTelemetryAdapterProducer;
 import io.split.storages.pluggable.domain.ConfigConsumer;
 import io.split.storages.pluggable.domain.SafeUserStorageWrapper;
-import io.split.telemetry.domain.Config;
 import org.junit.Assert;
 import org.junit.Test;
 import org.mockito.Mockito;
+import pluggable.CustomStorageWrapper;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;

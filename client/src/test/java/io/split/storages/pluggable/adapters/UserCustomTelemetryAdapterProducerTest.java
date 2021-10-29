@@ -1,19 +1,12 @@
 package io.split.storages.pluggable.adapters;
 
 import io.split.client.utils.SDKMetadata;
-import io.split.storages.pluggable.CustomStorageWrapper;
 import io.split.storages.pluggable.domain.SafeUserStorageWrapper;
-import io.split.telemetry.domain.StreamingEvent;
-import io.split.telemetry.domain.enums.EventsDataRecordsEnum;
-import io.split.telemetry.domain.enums.HTTPLatenciesEnum;
-import io.split.telemetry.domain.enums.ImpressionsDataTypeEnum;
-import io.split.telemetry.domain.enums.LastSynchronizationRecordsEnum;
 import io.split.telemetry.domain.enums.MethodEnum;
-import io.split.telemetry.domain.enums.ResourceEnum;
-import org.apache.hc.core5.http.HttpStatus;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mockito;
+import pluggable.CustomStorageWrapper;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;

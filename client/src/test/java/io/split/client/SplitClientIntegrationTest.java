@@ -9,7 +9,6 @@ import io.split.client.utils.CustomDispatcher;
 import io.split.integrations.IntegrationsConfig;
 import io.split.storages.enums.OperationMode;
 import io.split.storages.enums.StorageMode;
-import io.split.storages.pluggable.CustomStorageWrapper;
 import io.split.storages.pluggable.CustomStorageWrapperImp;
 import io.split.storages.pluggable.domain.EventConsumer;
 import io.split.storages.pluggable.domain.ImpressionConsumer;

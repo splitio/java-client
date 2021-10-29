@@ -1,11 +1,11 @@
 package io.split.storages.pluggable.domain;
 
-import io.split.storages.pluggable.CustomStorageWrapper;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mockito;
 import org.slf4j.Logger;
+import pluggable.CustomStorageWrapper;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;

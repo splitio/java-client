@@ -1,7 +1,6 @@
 package io.split.storages.pluggable.adapters;
 
 import io.split.client.utils.SDKMetadata;
-import io.split.storages.pluggable.CustomStorageWrapper;
 import io.split.storages.pluggable.domain.PrefixAdapter;
 import io.split.storages.pluggable.domain.SafeUserStorageWrapper;
 import io.split.telemetry.domain.StreamingEvent;
@@ -13,6 +12,7 @@ import io.split.telemetry.domain.enums.MethodEnum;
 import io.split.telemetry.domain.enums.ResourceEnum;
 import io.split.telemetry.storage.TelemetryStorageProducer;
 import io.split.telemetry.utils.BucketCalculator;
+import pluggable.CustomStorageWrapper;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 

@@ -6,8 +6,8 @@ import io.split.client.impressions.ImpressionsManager;
 import io.split.integrations.IntegrationsConfig;
 import io.split.storages.enums.OperationMode;
 import io.split.storages.enums.StorageMode;
-import io.split.storages.pluggable.CustomStorageWrapper;
 import org.apache.hc.core5.http.HttpHost;
+import pluggable.CustomStorageWrapper;
 
 import java.io.IOException;
 import java.util.Properties;

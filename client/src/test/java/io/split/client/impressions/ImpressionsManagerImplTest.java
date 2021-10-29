@@ -5,7 +5,6 @@ import io.split.client.dtos.KeyImpression;
 import io.split.client.dtos.TestImpressions;
 
 import io.split.storages.enums.OperationMode;
-import io.split.storages.pluggable.CustomStorageWrapper;
 import io.split.telemetry.domain.enums.ImpressionsDataTypeEnum;
 import io.split.telemetry.storage.InMemoryTelemetryStorage;
 import io.split.telemetry.storage.TelemetryStorage;
@@ -18,6 +17,7 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.Mockito;
 import org.mockito.runners.MockitoJUnitRunner;
+import pluggable.CustomStorageWrapper;
 
 import java.net.URISyntaxException;
 import java.util.AbstractMap;
