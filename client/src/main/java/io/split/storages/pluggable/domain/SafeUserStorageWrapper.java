@@ -106,12 +106,13 @@ public class SafeUserStorageWrapper implements CustomStorageWrapper {
     }
 
     @Override
-    public void pushItems(String key, List<String> items) {
+    public long pushItems(String key, List<String> items) {
         try {
-            _customStorageWrapper.pushItems(key, items);
+            return _customStorageWrapper.pushItems(key, items);
         }
         catch (Exception e) {
             _log.error(String.format("error pushing items with key '%s' from storage. Error: '%s'", key, e.getMessage()));
+            return 0;
         }
     }
 

@@ -38,8 +38,7 @@ public class InMemoryImpressionsStorage implements ImpressionsStorage {
         return _queue.remainingCapacity() == 0;
     }
 
-    @Override
-    public boolean put(KeyImpression imp) {
+    private boolean put(KeyImpression imp) {
         try {
             return _queue.offer(imp);
         } catch (ClassCastException | NullPointerException | IllegalArgumentException e) {
@@ -49,7 +48,12 @@ public class InMemoryImpressionsStorage implements ImpressionsStorage {
     }
 
     @Override
-    public boolean put(List<KeyImpression> imps) {
-        return false;
+    public long put(List<KeyImpression> imps) {
+        return imps.stream().reduce(0, (accum, current) -> {
+            if(this.put(current)) {
+                return accum + 1;
+            }
+            return accum;
+        }, Integer::sum).longValue();
     }
 }

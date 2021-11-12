@@ -27,6 +27,8 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.TimeoutException;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
@@ -246,7 +248,7 @@ public final class SplitClientImpl implements SplitClient {
     private void recordStats(String matchingKey, String bucketingKey, String split, long start, String result,
                              String operation, String label, Long changeNumber, Map<String, Object> attributes) {
         try {
-            _impressionManager.track(new Impression(matchingKey, bucketingKey, split, result, System.currentTimeMillis(), label, changeNumber, attributes));
+            _impressionManager.track(Stream.of(new Impression(matchingKey, bucketingKey, split, result, System.currentTimeMillis(), label, changeNumber, attributes)).collect(Collectors.toList()));
         } catch (Throwable t) {
             _log.error("Exception", t);
         }

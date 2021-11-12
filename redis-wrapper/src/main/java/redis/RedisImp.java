@@ -108,9 +108,9 @@ class RedisImp implements CustomStorageWrapper {
     }
 
     @Override
-    public void pushItems(String key, List<String> items) throws Exception {
+    public long pushItems(String key, List<String> items) throws Exception {
         try (Jedis jedis = this.jedisPool.getResource()) {
-            jedis.rpush(buildKeyWithPrefix(key), items.toArray(new String[items.size()]));
+            return jedis.rpush(buildKeyWithPrefix(key), items.toArray(new String[items.size()]));
         } catch (Exception ex) {
             throw new Exception(ex);
         }
