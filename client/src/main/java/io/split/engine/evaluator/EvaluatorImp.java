@@ -12,6 +12,8 @@ import io.split.storages.SplitCacheConsumer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import static com.google.common.base.Preconditions.checkNotNull;
@@ -49,6 +51,28 @@ public class EvaluatorImp implements Evaluator {
             _log.error("Evaluator Exception", e);
             return new EvaluatorImp.TreatmentLabelAndChangeNumber(Treatments.CONTROL, Labels.EXCEPTION);
         }
+    }
+
+    @Override
+    public Map<String, TreatmentLabelAndChangeNumber> evaluateFeatures(String matchingKey, String bucketingKey, List<String> splits, Map<String, Object> attributes) {
+        Map<String, TreatmentLabelAndChangeNumber> results = createMapTreatments(checkNotNull(splits));
+        Map<String, ParsedSplit> parsedSplits = _splitCacheConsumer.fetchMany(splits);
+        if(parsedSplits == null) {
+            return results;
+        }
+        parsedSplits.values().forEach(ps -> {
+            if(ps != null) {
+                try {
+                    results.put(ps.feature(), getTreatment(matchingKey,bucketingKey,ps, attributes));
+                } catch (ChangeNumberExceptionWrapper e) {
+                    _log.error("Evaluator Exception", e.wrappedException());
+                    results.put(ps.feature(), new EvaluatorImp.TreatmentLabelAndChangeNumber(Treatments.CONTROL, Labels.EXCEPTION, e.changeNumber()));
+                }catch (Exception e) {
+                    _log.error("Evaluator Exception", e);
+                    results.put(ps.feature(), new EvaluatorImp.TreatmentLabelAndChangeNumber(Treatments.CONTROL, Labels.EXCEPTION));
+                }
+            }});
+        return results;
     }
 
     /**
@@ -128,5 +152,11 @@ public class EvaluatorImp implements Evaluator {
             this.changeNumber = changeNumber;
             this.configurations = configurations;
         }
+    }
+
+    private Map<String, TreatmentLabelAndChangeNumber> createMapTreatments(List<String> splits) {
+        Map<String, TreatmentLabelAndChangeNumber> mapTreatment = new HashMap<>();
+        splits.forEach(s -> mapTreatment.put(s, new TreatmentLabelAndChangeNumber(Treatments.CONTROL, Labels.DEFINITION_NOT_FOUND)));
+        return mapTreatment;
     }
 }
