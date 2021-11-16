@@ -4,6 +4,8 @@ import io.split.client.dtos.KeyImpression;
 import org.junit.Test;
 
 import java.util.List;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
@@ -16,9 +18,9 @@ public class InMemoryImpressionsStorageTest {
         InMemoryImpressionsStorage storage = new InMemoryImpressionsStorage(10);
         for (int i = 0; i < 15; i++) {
             if (i < 10) {
-                assertThat(storage.put(new KeyImpression()), is(true));
+                assertThat(storage.put(Stream.of(new KeyImpression()).collect(Collectors.toList())), is(1L));
             } else {
-                assertThat(storage.put(new KeyImpression()), is(false));
+                assertThat(storage.put(Stream.of(new KeyImpression()).collect(Collectors.toList())), is(0L));
             }
         }
 

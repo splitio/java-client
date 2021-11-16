@@ -37,18 +37,12 @@ public class UserCustomImpressionAdapterProducer implements ImpressionsStoragePr
         _safeUserStorageWrapper = new SafeUserStorageWrapper(checkNotNull(customStorageWrapper));
         _metadata = metadata;
     }
-    @Override
-    public boolean put(KeyImpression imps) {
-        return this.put(Collections.singletonList(imps));
-    }
 
     @Override
-    public boolean put(List<KeyImpression> imps) {
+    public long put(List<KeyImpression> imps) {
         //Impression
         List<String> impressions = imps.stream().map(keyImp -> _json.toJson(new ImpressionConsumer(_metadata, keyImp))).collect(Collectors.toList());
-        _safeUserStorageWrapper.pushItems(PrefixAdapter.buildImpressions(), impressions);
-        return true;
+        return _safeUserStorageWrapper.pushItems(PrefixAdapter.buildImpressions(), impressions);
     }
-
 
 }

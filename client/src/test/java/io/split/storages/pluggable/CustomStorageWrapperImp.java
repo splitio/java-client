@@ -29,7 +29,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentMap;
-import java.util.stream.Collectors;
 
 public class CustomStorageWrapperImp implements CustomStorageWrapper {
 
@@ -138,7 +137,7 @@ public class CustomStorageWrapperImp implements CustomStorageWrapper {
     }
 
     @Override
-    public void pushItems(String key, List<String> items) throws Exception {
+    public long pushItems(String key, List<String> items) throws Exception {
         String value = getStorage(key);
         if(value.equals(IMPRESSIONS)){
             items.forEach(imp -> imps.add(_json.fromJson(imp, ImpressionConsumer.class)));
@@ -146,6 +145,7 @@ public class CustomStorageWrapperImp implements CustomStorageWrapper {
         else if(value.equals(EVENTS)) {
             items.forEach(ev -> events.add(_json.fromJson(ev, EventConsumer.class)));
         }
+        return 0;
     }
 
     @Override

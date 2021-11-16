@@ -2,6 +2,7 @@ package io.split.client;
 
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
+import com.google.common.reflect.TypeToken;
 import io.split.client.api.Key;
 import io.split.client.api.SplitResult;
 import io.split.client.dtos.ConditionType;
@@ -45,11 +46,13 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.TimeoutException;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.nullValue;
-import static org.junit.Assert.assertThat;
+import static org.junit.Assert.*;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
@@ -692,13 +695,18 @@ public class SplitClientImplTest {
         Map<String, Object> attributes = ImmutableMap.<String, Object>of("age", -20, "acv", "1000000");
         assertThat(client.getTreatment("pato@codigo.com", test, attributes), is(equalTo("on")));
 
-        ArgumentCaptor<Impression> impressionCaptor = ArgumentCaptor.forClass(Impression.class);
+        ArgumentCaptor<List> impressionCaptor = ArgumentCaptor.forClass(List.class);
 
         verify(impressionsManager).track(impressionCaptor.capture());
 
-        assertThat(impressionCaptor.getValue().appliedRule(), is(equalTo("foolabel")));
+        List<Impression> impressions = impressionCaptor.getValue();
+        assertNotNull(impressions);
+        assertEquals(1, impressions.size());
+        Impression impression = impressions.get(0);
 
-        assertThat(impressionCaptor.getValue().attributes(), is(attributes));
+        assertThat(impression.appliedRule(), is(equalTo("foolabel")));
+
+        assertThat(impression.attributes(), is(attributes));
     }
 
     @Test
@@ -783,11 +791,13 @@ public class SplitClientImplTest {
 
         assertThat(client.getTreatment(key, test), is(equalTo(expected_treatment_on_or_off)));
 
-        ArgumentCaptor<Impression> impressionCaptor = ArgumentCaptor.forClass(Impression.class);
+        ArgumentCaptor<List> impressionCaptor = ArgumentCaptor.forClass(List.class);
 
         verify(impressionsManager).track(impressionCaptor.capture());
-
-        assertThat(impressionCaptor.getValue().appliedRule(), is(equalTo(label)));
+        assertNotNull(impressionCaptor.getValue());
+        assertEquals(1, impressionCaptor.getValue().size());
+        Impression impression = (Impression) impressionCaptor.getValue().get(0);
+        assertThat(impression.appliedRule(), is(equalTo(label)));
     }
 
     /**
@@ -835,10 +845,13 @@ public class SplitClientImplTest {
         assertThat(result.treatment(), is(equalTo(Treatments.OFF)));
         assertThat(result.config(), is(equalTo("{\"size\" : 30}")));
 
-        ArgumentCaptor<Impression> impressionCaptor = ArgumentCaptor.forClass(Impression.class);
+        ArgumentCaptor<List> impressionCaptor = ArgumentCaptor.forClass(List.class);
         verify(impressionsManager, times(2)).track(impressionCaptor.capture());
 
-        assertThat(impressionCaptor.getValue().appliedRule(), is(equalTo("not in split")));
+        assertNotNull(impressionCaptor.getValue());
+        assertEquals(1, impressionCaptor.getValue().size());
+        Impression impression = (Impression) impressionCaptor.getValue().get(0);
+        assertThat(impression.appliedRule(), is(equalTo("not in split")));
     }
 
 
@@ -911,12 +924,17 @@ public class SplitClientImplTest {
 
         assertThat(client.getTreatment("pato@codigo.com", test, attributes), is(equalTo("on")));
 
-        ArgumentCaptor<Impression> impressionCaptor = ArgumentCaptor.forClass(Impression.class);
+        ArgumentCaptor<List> impressionCaptor = ArgumentCaptor.forClass(List.class);
 
         verify(impressionsManager).track(impressionCaptor.capture());
 
-        assertThat(impressionCaptor.getValue().appliedRule(), is(equalTo("foolabel")));
-        assertThat(impressionCaptor.getValue().attributes(), is(equalTo(attributes)));
+
+        assertNotNull(impressionCaptor.getValue());
+        assertEquals(1, impressionCaptor.getValue().size());
+        Impression impression = (Impression) impressionCaptor.getValue().get(0);
+
+        assertThat(impression.appliedRule(), is(equalTo("foolabel")));
+        assertThat(impression.attributes(), is(equalTo(attributes)));
     }
 
     private Partition partition(String treatment, int size) {
