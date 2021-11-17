@@ -18,6 +18,7 @@ import pluggable.CustomStorageWrapper;
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -158,27 +159,29 @@ public class UserCustomSplitAdapterConsumerTest {
         List<String> listResultExpected = Stream.of(Json.toJson(split), Json.toJson(split2)).collect(Collectors.toList());
         Mockito.when(_safeUserStorageWrapper.getItems(PrefixAdapter.buildFetchManySplits(Stream.of(SPLIT_NAME, SPLIT_NAME+"2").collect(Collectors.toList())))).
                 thenReturn(listResultExpected);
-        List<ParsedSplit> splitsResult = (List<ParsedSplit>) _userCustomSplitAdapterConsumer.fetchMany(Stream.of(SPLIT_NAME, SPLIT_NAME+"2").collect(Collectors.toList()));
+        Map<String, ParsedSplit> splitsResult = _userCustomSplitAdapterConsumer.fetchMany(Stream.of(SPLIT_NAME, SPLIT_NAME+"2").collect(Collectors.toList()));
         Assert.assertNotNull(splitsResult);
-        Assert.assertEquals(2, splitsResult.size());
+        Assert.assertEquals(2, splitsResult.keySet().size());
     }
 
     @Test
     public void testFetchManyWithWrapperFailing(){
         Mockito.when(_safeUserStorageWrapper.getItems(PrefixAdapter.buildFetchManySplits(Stream.of(SPLIT_NAME, SPLIT_NAME+"2").collect(Collectors.toList())))).
                 thenReturn(null);
-        List<ParsedSplit> splitsResult = (List<ParsedSplit>) _userCustomSplitAdapterConsumer.fetchMany(Stream.of(SPLIT_NAME, SPLIT_NAME+"2").collect(Collectors.toList()));
+        Map<String, ParsedSplit> splitsResult = _userCustomSplitAdapterConsumer.fetchMany(Stream.of(SPLIT_NAME, SPLIT_NAME+"2").collect(Collectors.toList()));
         Assert.assertNotNull(splitsResult);
-        Assert.assertEquals(0, splitsResult.size());
+        Assert.assertNull(splitsResult.get(SPLIT_NAME));
+        Assert.assertNull(splitsResult.get(SPLIT_NAME+"2"));
     }
 
     @Test
     public void testFetchManyNotFound(){
         Mockito.when(_safeUserStorageWrapper.getItems(PrefixAdapter.buildFetchManySplits(Stream.of(SPLIT_NAME, SPLIT_NAME+"2").collect(Collectors.toList())))).
                 thenReturn(null);
-        List<ParsedSplit> splitsResult = (List<ParsedSplit>) _userCustomSplitAdapterConsumer.fetchMany(Stream.of(SPLIT_NAME, SPLIT_NAME+"2").collect(Collectors.toList()));
+        Map<String, ParsedSplit> splitsResult = _userCustomSplitAdapterConsumer.fetchMany(Stream.of(SPLIT_NAME, SPLIT_NAME+"2").collect(Collectors.toList()));
         Assert.assertNotNull(splitsResult);
-        Assert.assertEquals(0, splitsResult.size());
+        Assert.assertNull(splitsResult.get(SPLIT_NAME));
+        Assert.assertNull(splitsResult.get(SPLIT_NAME+"2"));
     }
 
     @Test

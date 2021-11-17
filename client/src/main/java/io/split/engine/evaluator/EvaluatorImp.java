@@ -12,6 +12,8 @@ import io.split.storages.SplitCacheConsumer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import static com.google.common.base.Preconditions.checkNotNull;
@@ -33,22 +35,19 @@ public class EvaluatorImp implements Evaluator {
 
     @Override
     public TreatmentLabelAndChangeNumber evaluateFeature(String matchingKey, String bucketingKey, String split, Map<String, Object> attributes) {
-        try {
-            ParsedSplit parsedSplit = _splitCacheConsumer.get(split);
+        ParsedSplit parsedSplit = _splitCacheConsumer.get(split);
+        return evaluateParsedSplit(matchingKey, bucketingKey, split, attributes, parsedSplit);
+    }
 
-            if (parsedSplit == null) {
-                return new TreatmentLabelAndChangeNumber(Treatments.CONTROL, Labels.DEFINITION_NOT_FOUND);
-            }
-
-            return getTreatment(matchingKey, bucketingKey, parsedSplit, attributes);
+    @Override
+    public Map<String, TreatmentLabelAndChangeNumber> evaluateFeatures(String matchingKey, String bucketingKey, List<String> splits, Map<String, Object> attributes) {
+        Map<String, TreatmentLabelAndChangeNumber> results = new HashMap<>();
+        Map<String, ParsedSplit> parsedSplits = _splitCacheConsumer.fetchMany(splits);
+        if(parsedSplits == null) {
+            return results;
         }
-        catch (ChangeNumberExceptionWrapper e) {
-            _log.error("Evaluator Exception", e.wrappedException());
-            return new EvaluatorImp.TreatmentLabelAndChangeNumber(Treatments.CONTROL, Labels.EXCEPTION, e.changeNumber());
-        } catch (Exception e) {
-            _log.error("Evaluator Exception", e);
-            return new EvaluatorImp.TreatmentLabelAndChangeNumber(Treatments.CONTROL, Labels.EXCEPTION);
-        }
+        parsedSplits.keySet().forEach(s -> results.put(s, evaluateParsedSplit(matchingKey, bucketingKey, s, attributes, parsedSplits.get(s))));
+        return results;
     }
 
     /**
@@ -105,6 +104,23 @@ public class EvaluatorImp implements Evaluator {
             return new TreatmentLabelAndChangeNumber(parsedSplit.defaultTreatment(), Labels.DEFAULT_RULE, parsedSplit.changeNumber(), config);
         } catch (Exception e) {
             throw new ChangeNumberExceptionWrapper(e, parsedSplit.changeNumber());
+        }
+    }
+
+    private TreatmentLabelAndChangeNumber evaluateParsedSplit(String matchingKey, String bucketingKey, String split, Map<String, Object> attributes, ParsedSplit parsedSplit) {
+        try {
+            if (parsedSplit == null) {
+                return new TreatmentLabelAndChangeNumber(Treatments.CONTROL, Labels.DEFINITION_NOT_FOUND);
+            }
+
+            return getTreatment(matchingKey, bucketingKey, parsedSplit, attributes);
+        }
+        catch (ChangeNumberExceptionWrapper e) {
+            _log.error("Evaluator Exception", e.wrappedException());
+            return new EvaluatorImp.TreatmentLabelAndChangeNumber(Treatments.CONTROL, Labels.EXCEPTION, e.changeNumber());
+        } catch (Exception e) {
+            _log.error("Evaluator Exception", e);
+            return new EvaluatorImp.TreatmentLabelAndChangeNumber(Treatments.CONTROL, Labels.EXCEPTION);
         }
     }
 
