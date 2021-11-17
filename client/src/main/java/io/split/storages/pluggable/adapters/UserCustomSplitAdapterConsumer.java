@@ -87,7 +87,6 @@ public class UserCustomSplitAdapterConsumer  implements SplitCacheConsumer {
     @Override
     public Map<String, ParsedSplit> fetchMany(List<String> names) {
         Map<String, ParsedSplit> result = new HashMap<>();
-        names.forEach(s -> result.put(s, null));
         List<String> wrapperResponse = _safeUserStorageWrapper.getItems(PrefixAdapter.buildFetchManySplits(names));
         if(wrapperResponse == null) {
             return result;

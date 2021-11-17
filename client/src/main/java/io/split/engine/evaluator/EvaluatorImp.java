@@ -35,43 +35,18 @@ public class EvaluatorImp implements Evaluator {
 
     @Override
     public TreatmentLabelAndChangeNumber evaluateFeature(String matchingKey, String bucketingKey, String split, Map<String, Object> attributes) {
-        try {
-            ParsedSplit parsedSplit = _splitCacheConsumer.get(split);
-
-            if (parsedSplit == null) {
-                return new TreatmentLabelAndChangeNumber(Treatments.CONTROL, Labels.DEFINITION_NOT_FOUND);
-            }
-
-            return getTreatment(matchingKey, bucketingKey, parsedSplit, attributes);
-        }
-        catch (ChangeNumberExceptionWrapper e) {
-            _log.error("Evaluator Exception", e.wrappedException());
-            return new EvaluatorImp.TreatmentLabelAndChangeNumber(Treatments.CONTROL, Labels.EXCEPTION, e.changeNumber());
-        } catch (Exception e) {
-            _log.error("Evaluator Exception", e);
-            return new EvaluatorImp.TreatmentLabelAndChangeNumber(Treatments.CONTROL, Labels.EXCEPTION);
-        }
+        ParsedSplit parsedSplit = _splitCacheConsumer.get(split);
+        return evaluateParsedSplit(matchingKey, bucketingKey, split, attributes, parsedSplit);
     }
 
     @Override
     public Map<String, TreatmentLabelAndChangeNumber> evaluateFeatures(String matchingKey, String bucketingKey, List<String> splits, Map<String, Object> attributes) {
-        Map<String, TreatmentLabelAndChangeNumber> results = createMapTreatments(checkNotNull(splits));
+        Map<String, TreatmentLabelAndChangeNumber> results = new HashMap<>();
         Map<String, ParsedSplit> parsedSplits = _splitCacheConsumer.fetchMany(splits);
         if(parsedSplits == null) {
             return results;
         }
-        parsedSplits.values().forEach(ps -> {
-            if(ps != null) {
-                try {
-                    results.put(ps.feature(), getTreatment(matchingKey,bucketingKey,ps, attributes));
-                } catch (ChangeNumberExceptionWrapper e) {
-                    _log.error("Evaluator Exception", e.wrappedException());
-                    results.put(ps.feature(), new EvaluatorImp.TreatmentLabelAndChangeNumber(Treatments.CONTROL, Labels.EXCEPTION, e.changeNumber()));
-                }catch (Exception e) {
-                    _log.error("Evaluator Exception", e);
-                    results.put(ps.feature(), new EvaluatorImp.TreatmentLabelAndChangeNumber(Treatments.CONTROL, Labels.EXCEPTION));
-                }
-            }});
+        parsedSplits.keySet().forEach(s -> results.put(s, evaluateParsedSplit(matchingKey, bucketingKey, s, attributes, parsedSplits.get(s))));
         return results;
     }
 
@@ -132,6 +107,23 @@ public class EvaluatorImp implements Evaluator {
         }
     }
 
+    private TreatmentLabelAndChangeNumber evaluateParsedSplit(String matchingKey, String bucketingKey, String split, Map<String, Object> attributes, ParsedSplit parsedSplit) {
+        try {
+            if (parsedSplit == null) {
+                return new TreatmentLabelAndChangeNumber(Treatments.CONTROL, Labels.DEFINITION_NOT_FOUND);
+            }
+
+            return getTreatment(matchingKey, bucketingKey, parsedSplit, attributes);
+        }
+        catch (ChangeNumberExceptionWrapper e) {
+            _log.error("Evaluator Exception", e.wrappedException());
+            return new EvaluatorImp.TreatmentLabelAndChangeNumber(Treatments.CONTROL, Labels.EXCEPTION, e.changeNumber());
+        } catch (Exception e) {
+            _log.error("Evaluator Exception", e);
+            return new EvaluatorImp.TreatmentLabelAndChangeNumber(Treatments.CONTROL, Labels.EXCEPTION);
+        }
+    }
+
     public static final class TreatmentLabelAndChangeNumber {
         public final String treatment;
         public final String label;
@@ -152,11 +144,5 @@ public class EvaluatorImp implements Evaluator {
             this.changeNumber = changeNumber;
             this.configurations = configurations;
         }
-    }
-
-    private Map<String, TreatmentLabelAndChangeNumber> createMapTreatments(List<String> splits) {
-        Map<String, TreatmentLabelAndChangeNumber> mapTreatment = new HashMap<>();
-        splits.forEach(s -> mapTreatment.put(s, new TreatmentLabelAndChangeNumber(Treatments.CONTROL, Labels.DEFINITION_NOT_FOUND)));
-        return mapTreatment;
     }
 }
