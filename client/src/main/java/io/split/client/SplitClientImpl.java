@@ -22,8 +22,10 @@ import io.split.telemetry.storage.TelemetryEvaluationProducer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.TimeoutException;
@@ -100,6 +102,46 @@ public final class SplitClientImpl implements SplitClient {
     @Override
     public SplitResult getTreatmentWithConfig(Key key, String split, Map<String, Object> attributes) {
         return getTreatmentWithConfigInternal(key.matchingKey(), key.bucketingKey(), split, attributes, MethodEnum.TREATMENT_WITH_CONFIG);
+    }
+
+    @Override
+    public Map<String, String> getTreatments(String key, List<String> splits) {
+        return getTreatments(key, splits, Collections.emptyMap());
+    }
+
+    @Override
+    public Map<String, String> getTreatments(String key, List<String> splits, Map<String, Object> attributes) {
+        Map<String, SplitResult> results = getTreatmentsWithConfigInternal(key, null, splits, attributes, MethodEnum.TREATMENTS);
+        Map<String, String> resultsWrapped = new HashMap<>();
+        for(String split : results.keySet()) {
+            resultsWrapped.put(split, results.get(split).treatment());
+        }
+        return resultsWrapped;
+    }
+
+    @Override
+    public Map<String, String> getTreatments(Key key, List<String> splits, Map<String, Object> attributes) {
+        Map<String, SplitResult> results = getTreatmentsWithConfigInternal(key.matchingKey(), key.bucketingKey(), splits, attributes, MethodEnum.TREATMENTS);
+        Map<String, String> resultsWrapped = new HashMap<>();
+        for(String split : results.keySet()) {
+            resultsWrapped.put(split, results.get(split).treatment());
+        }
+        return resultsWrapped;
+    }
+
+    @Override
+    public Map<String, SplitResult> getTreatmentsWithConfig(String key, List<String> splits) {
+        return getTreatmentsWithConfigInternal(key, null, splits, Collections.<String, Object>emptyMap(), MethodEnum.TREATMENTS_WITH_CONFIG);
+    }
+
+    @Override
+    public Map<String, SplitResult> getTreatmentsWithConfig(String key, List<String> splits, Map<String, Object> attributes) {
+        return getTreatmentsWithConfigInternal(key, null, splits, attributes, MethodEnum.TREATMENTS_WITH_CONFIG);
+    }
+
+    @Override
+    public Map<String, SplitResult> getTreatmentsWithConfig(Key key, List<String> splits, Map<String, Object> attributes) {
+        return getTreatmentsWithConfigInternal(key.matchingKey(), key.bucketingKey(), splits, attributes, MethodEnum.TREATMENTS_WITH_CONFIG);
     }
 
     @Override
@@ -187,10 +229,8 @@ public final class SplitClientImpl implements SplitClient {
     private SplitResult getTreatmentWithConfigInternal(String matchingKey, String bucketingKey, String split, Map<String, Object> attributes, MethodEnum methodEnum) {
         long initTime = System.currentTimeMillis();
         try {
-            if(!_gates.isSDKReady()){
-                _log.warn(methodEnum.getMethod() + ": the SDK is not ready, results may be incorrect. Make sure to wait for SDK readiness before using this method");
-                _telemetryConfigProducer.recordNonReadyUsage();
-            }
+            checkSDKReady(methodEnum);
+
             if (_container.isDestroyed()) {
                 _log.error("Client has already been destroyed - no calls possible");
                 return SPLIT_RESULT_CONTROL;
@@ -245,6 +285,50 @@ public final class SplitClientImpl implements SplitClient {
         }
     }
 
+    private Map<String, SplitResult> getTreatmentsWithConfigInternal(String matchingKey, String bucketingKey, List<String> splits, Map<String, Object> attributes, MethodEnum methodEnum) {
+        Map<String, SplitResult> result = new HashMap<>();
+        checkSDKReady(methodEnum);
+        if (_container.isDestroyed()) {
+            _log.error("Client has already been destroyed - no calls possible");
+            return createMapControl(splits);
+        }
+
+        if (!KeyValidator.isValid(matchingKey, "matchingKey", _config.maxStringLength(), methodEnum.getMethod())) {
+            return createMapControl(splits);
+        }
+
+        if (!KeyValidator.bucketingKeyIsValid(bucketingKey, _config.maxStringLength(), methodEnum.getMethod())) {
+            return createMapControl(splits);
+        }
+        List<Optional<String>> splitNameResult = new ArrayList<>();
+        splits.forEach(s -> splitNameResult.add(SplitNameValidator.isValid(s, methodEnum.getMethod())));
+        splits = new ArrayList<>();
+        for(int i = 0; i < splitNameResult.size(); i++) {
+            if(!splitNameResult.get(i).isPresent()) {
+                result.put(splits.get(i), SPLIT_RESULT_CONTROL);
+            }
+            else {
+                splits.add(splitNameResult.get(i).get());
+            }
+        }
+        Map<String, EvaluatorImp.TreatmentLabelAndChangeNumber> evaluatorResult = _evaluator.evaluateFeatures(matchingKey, bucketingKey, splits, attributes);
+        List<Impression> impressions = new ArrayList<>();
+
+        evaluatorResult.keySet().forEach(t -> {
+            if (evaluatorResult.get(t).treatment.equals(Treatments.CONTROL) && evaluatorResult.get(t).label.equals(Labels.DEFINITION_NOT_FOUND) && _gates.isSDKReady()) {
+                _log.warn(
+                        "getTreatment: you passed \"" + t + "\" that does not exist in this environment, " +
+                                "please double check what Splits exist in the web console.");
+            }
+            else {
+                impressions.add(new Impression(matchingKey, bucketingKey, t, evaluatorResult.get(t).treatment, System.currentTimeMillis(), evaluatorResult.get(t).label, evaluatorResult.get(t).changeNumber, attributes));
+            }
+        });
+        //Track of impressions
+        _impressionManager.track(impressions);
+        return result;
+    }
+
     private void recordStats(String matchingKey, String bucketingKey, String split, long start, String result,
                              String operation, String label, Long changeNumber, Map<String, Object> attributes) {
         try {
@@ -261,5 +345,18 @@ public final class SplitClientImpl implements SplitClient {
         event.key = key;
         event.timestamp = System.currentTimeMillis();
         return event;
+    }
+
+    private void checkSDKReady(MethodEnum methodEnum) {
+        if(!_gates.isSDKReady()){
+            _log.warn(methodEnum.getMethod() + ": the SDK is not ready, results may be incorrect. Make sure to wait for SDK readiness before using this method");
+            _telemetryConfigProducer.recordNonReadyUsage();
+        }
+    }
+
+    private Map<String, SplitResult> createMapControl(List<String> splits) {
+        Map<String, SplitResult> result = new HashMap<>();
+        splits.forEach(s -> result.put(s, SPLIT_RESULT_CONTROL));
+        return result;
     }
 }
