@@ -7,6 +7,7 @@ import io.split.grammar.Treatments;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.List;
 import java.util.concurrent.TimeoutException;
 
 public class SplitClientForTest implements SplitClient {
@@ -69,6 +70,66 @@ public class SplitClientForTest implements SplitClient {
         return new SplitResult(_tests.containsKey(split)
                 ? _tests.get(split)
                 : Treatments.CONTROL, null);
+    }
+
+    @Override
+    public Map<String, String> getTreatments(String key, List<String> splits) {
+        Map<String, String> treatments = new HashMap<>();
+        for (String split : splits) {
+            treatments.put(split, _tests.containsKey(split) ? _tests.get(split) : Treatments.CONTROL);
+        }
+        return treatments;
+    }
+
+    @Override
+    public Map<String, String> getTreatments(String key, List<String> splits, Map<String, Object> attributes){
+        Map<String, String> treatments = new HashMap<>();
+        for (String split : splits) {
+            treatments.put(split, _tests.containsKey(split) ? _tests.get(split) : Treatments.CONTROL);
+        }
+        return treatments;
+    }
+
+    @Override
+    public Map<String, String> getTreatments(Key key, List<String> splits, Map<String, Object> attributes) {
+        Map<String, String> treatments = new HashMap<>();
+        for (String split : splits) {
+            treatments.put(split, _tests.containsKey(split) ? _tests.get(split) : Treatments.CONTROL);
+        }
+        return treatments;
+    }
+
+    @Override
+    public Map<String, SplitResult> getTreatmentsWithConfig(String key, List<String> splits) {
+        Map<String, SplitResult> treatments = new HashMap<>();
+        for (String split : splits) {
+            treatments.put(split, new SplitResult(_tests.containsKey(split)
+            ? _tests.get(split)
+            : Treatments.CONTROL, null));
+        }
+        return treatments;
+    }
+
+    @Override
+    public Map<String, SplitResult> getTreatmentsWithConfig(String key, List<String> splits, Map<String, Object> attributes) {
+        Map<String, SplitResult> treatments = new HashMap<>();
+        for (String split : splits) {
+            treatments.put(split, new SplitResult(_tests.containsKey(split)
+            ? _tests.get(split)
+            : Treatments.CONTROL, null));
+        }
+        return treatments;
+    }
+
+    @Override
+    public Map<String, SplitResult> getTreatmentsWithConfig(Key key, List<String> splits, Map<String, Object> attributes) {
+        Map<String, SplitResult> treatments = new HashMap<>();
+        for (String split : splits) {
+            treatments.put(split, new SplitResult(_tests.containsKey(split)
+            ? _tests.get(split)
+            : Treatments.CONTROL, null));
+        }
+        return treatments;
     }
 
     @Override

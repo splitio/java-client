@@ -219,7 +219,7 @@ public class SplitFactoryImplTest extends TestCase {
         splitFactory.destroy();
 
         assertTrue(splitFactory.isDestroyed());
-        Mockito.verify(safeUserStorageWrapper, Mockito.times(1)).close();
+        Mockito.verify(safeUserStorageWrapper, Mockito.times(1)).disconnect();
     }
 
 }
