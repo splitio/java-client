@@ -319,8 +319,10 @@ public final class SplitClientImpl implements SplitClient {
                 _log.warn(
                         "getTreatment: you passed \"" + t + "\" that does not exist in this environment, " +
                                 "please double check what Splits exist in the web console.");
+                result.put(t, SPLIT_RESULT_CONTROL);
             }
             else {
+                result.put(t,new SplitResult(evaluatorResult.get(t).treatment, evaluatorResult.get(t).configurations));
                 impressions.add(new Impression(matchingKey, bucketingKey, t, evaluatorResult.get(t).treatment, System.currentTimeMillis(), evaluatorResult.get(t).label, evaluatorResult.get(t).changeNumber, attributes));
             }
         });
