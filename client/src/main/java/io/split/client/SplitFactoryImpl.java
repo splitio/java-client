@@ -339,7 +339,7 @@ public class SplitFactoryImpl implements SplitFactory {
             }
         }
         else if(OperationMode.CONSUMER.equals(_operationMode)) {
-            _safeUserStorageWrapper.close();
+            _safeUserStorageWrapper.disconnect();
         }
         _apiKeyCounter.remove(_apiToken);
         isTerminated = true;
