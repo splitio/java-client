@@ -300,6 +300,15 @@ public final class SplitClientImpl implements SplitClient {
         if (!KeyValidator.bucketingKeyIsValid(bucketingKey, _config.maxStringLength(), methodEnum.getMethod())) {
             return createMapControl(splits);
         }
+
+        if(splits == null) {
+            _log.error("getTreatments: split_names must be a non-empty array");
+            return null;
+        }
+        else if(splits.isEmpty()) {
+            _log.error("getTreatments: split_names must be a non-empty array");
+            return result;
+        }
         List<Optional<String>> splitNameResult = new ArrayList<>();
         splits.forEach(s -> splitNameResult.add(SplitNameValidator.isValid(s, methodEnum.getMethod())));
         splits = new ArrayList<>();
