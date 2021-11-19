@@ -327,7 +327,13 @@ public final class SplitClientImpl implements SplitClient {
             }
         });
         //Track of impressions
-        _impressionManager.track(impressions);
+        if(impressions.size() > 0) {
+            try {
+                _impressionManager.track(impressions);
+            } catch (Exception e) {
+                _log.error("Exception", e);
+            }
+        }
         return result;
     }
 
