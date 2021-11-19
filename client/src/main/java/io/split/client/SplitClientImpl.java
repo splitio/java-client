@@ -113,6 +113,9 @@ public final class SplitClientImpl implements SplitClient {
     public Map<String, String> getTreatments(String key, List<String> splits, Map<String, Object> attributes) {
         Map<String, SplitResult> results = getTreatmentsWithConfigInternal(key, null, splits, attributes, MethodEnum.TREATMENTS);
         Map<String, String> resultsWrapped = new HashMap<>();
+        if(results == null) {
+            return null;
+        }
         for(String split : results.keySet()) {
             resultsWrapped.put(split, results.get(split).treatment());
         }
