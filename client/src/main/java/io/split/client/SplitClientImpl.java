@@ -290,60 +290,79 @@ public final class SplitClientImpl implements SplitClient {
 
     private Map<String, SplitResult> getTreatmentsWithConfigInternal(String matchingKey, String bucketingKey, List<String> splits, Map<String, Object> attributes, MethodEnum methodEnum) {
         Map<String, SplitResult> result = new HashMap<>();
-        checkSDKReady(methodEnum);
-        if (_container.isDestroyed()) {
-            _log.error("Client has already been destroyed - no calls possible");
-            return createMapControl(splits);
-        }
-
-        if (!KeyValidator.isValid(matchingKey, "matchingKey", _config.maxStringLength(), methodEnum.getMethod())) {
-            return createMapControl(splits);
-        }
-
-        if (!KeyValidator.bucketingKeyIsValid(bucketingKey, _config.maxStringLength(), methodEnum.getMethod())) {
-            return createMapControl(splits);
-        }
-
-        if(splits == null) {
-            _log.error("getTreatments: split_names must be a non-empty array");
-            return null;
-        }
-        else if(splits.isEmpty()) {
-            _log.error("getTreatments: split_names must be a non-empty array");
-            return result;
-        }
-        List<Optional<String>> splitNameResult = new ArrayList<>();
-        splits.forEach(s -> splitNameResult.add(SplitNameValidator.isValid(s, methodEnum.getMethod())));
-        splits = new ArrayList<>();
-        for(int i = 0; i < splitNameResult.size(); i++) {
-            if(!splitNameResult.get(i).isPresent()) {
-                result.put(splits.get(i), SPLIT_RESULT_CONTROL);
+        long initTime = System.currentTimeMillis();
+        try{
+            checkSDKReady(methodEnum);
+            if (_container.isDestroyed()) {
+                _log.error("Client has already been destroyed - no calls possible");
+                return createMapControl(splits);
             }
-            else {
-                splits.add(splitNameResult.get(i).get());
-            }
-        }
-        Map<String, EvaluatorImp.TreatmentLabelAndChangeNumber> evaluatorResult = _evaluator.evaluateFeatures(matchingKey, bucketingKey, splits, attributes);
-        List<Impression> impressions = new ArrayList<>();
 
-        evaluatorResult.keySet().forEach(t -> {
-            if (evaluatorResult.get(t).treatment.equals(Treatments.CONTROL) && evaluatorResult.get(t).label.equals(Labels.DEFINITION_NOT_FOUND) && _gates.isSDKReady()) {
-                _log.warn(
-                        "getTreatment: you passed \"" + t + "\" that does not exist in this environment, " +
-                                "please double check what Splits exist in the web console.");
-                result.put(t, SPLIT_RESULT_CONTROL);
+            if (!KeyValidator.isValid(matchingKey, "matchingKey", _config.maxStringLength(), methodEnum.getMethod())) {
+                return createMapControl(splits);
             }
-            else {
-                result.put(t,new SplitResult(evaluatorResult.get(t).treatment, evaluatorResult.get(t).configurations));
-                impressions.add(new Impression(matchingKey, bucketingKey, t, evaluatorResult.get(t).treatment, System.currentTimeMillis(), evaluatorResult.get(t).label, evaluatorResult.get(t).changeNumber, attributes));
+
+            if (!KeyValidator.bucketingKeyIsValid(bucketingKey, _config.maxStringLength(), methodEnum.getMethod())) {
+                return createMapControl(splits);
             }
-        });
-        //Track of impressions
-        if(impressions.size() > 0) {
+
+            if(splits == null) {
+                _log.error("getTreatments: split_names must be a non-empty array");
+                return null;
+            }
+            else if(splits.isEmpty()) {
+                _log.error("getTreatments: split_names must be a non-empty array");
+                return result;
+            }
+            List<Optional<String>> splitNameResult = new ArrayList<>();
+            splits.forEach(s -> splitNameResult.add(SplitNameValidator.isValid(s, methodEnum.getMethod())));
+            List<String> filteredSplits = new ArrayList<>();
+            for(int i = 0; i < splitNameResult.size(); i++) {
+                if(!splitNameResult.get(i).isPresent()) {
+                    result.put(splits.get(i), SPLIT_RESULT_CONTROL);
+                }
+                else {
+                    filteredSplits.add(splitNameResult.get(i).get());
+                }
+            }
+            splits = filteredSplits;
+            Map<String, EvaluatorImp.TreatmentLabelAndChangeNumber> evaluatorResult = _evaluator.evaluateFeatures(matchingKey, bucketingKey, splits, attributes);
+            List<Impression> impressions = new ArrayList<>();
+
+            evaluatorResult.keySet().forEach(t -> {
+                if (evaluatorResult.get(t).treatment.equals(Treatments.CONTROL) && evaluatorResult.get(t).label.equals(Labels.DEFINITION_NOT_FOUND) && _gates.isSDKReady()) {
+                    _log.warn(
+                            "getTreatment: you passed \"" + t + "\" that does not exist in this environment, " +
+                                    "please double check what Splits exist in the web console.");
+                    result.put(t, SPLIT_RESULT_CONTROL);
+                }
+                else {
+                    result.put(t,new SplitResult(evaluatorResult.get(t).treatment, evaluatorResult.get(t).configurations));
+                    impressions.add(new Impression(matchingKey, bucketingKey, t, evaluatorResult.get(t).treatment, System.currentTimeMillis(), evaluatorResult.get(t).label, evaluatorResult.get(t).changeNumber, attributes));
+                }
+            });
+
+            _telemetryEvaluationProducer.recordLatency(methodEnum, System.currentTimeMillis()-initTime);
+            //Track of impressions
+            if(impressions.size() > 0) {
+                try {
+                    _impressionManager.track(impressions);
+                } catch (Exception e) {
+                    _log.error("Exception", e);
+                }
+            }
+        } catch (Exception e) {
             try {
-                _impressionManager.track(impressions);
-            } catch (Exception e) {
-                _log.error("Exception", e);
+                _telemetryEvaluationProducer.recordException(methodEnum);
+                _log.error("CatchAll Exception", e);
+            } catch (Exception e1) {
+                // ignore
+            }
+            if(splits == null) {
+                _log.error("getTreatments: split_names must be a non-empty array");
+                return null;
+            }else {
+                return createMapControl(splits);
             }
         }
         return result;
