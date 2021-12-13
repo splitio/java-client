@@ -1670,9 +1670,9 @@ public class SplitClientImplTest {
                 new EvaluatorImp(splitCacheConsumer, segmentCacheConsumer), TELEMETRY_STORAGE, TELEMETRY_STORAGE
         );
 
-        int numKeys = 5;
         Map<String, Object> attributes = new HashMap<>();
-        Map<String, SplitResult> result = client.getTreatmentsWithConfig("randomKey", Arrays.asList(test, test2), attributes);
+        Map<String, SplitResult> result = client.getTreatmentsWithConfig("randomKey", Arrays.asList(test, test2, "", null), attributes);
+        assertEquals(2, result.size());
         assertEquals(configurations.get("on"), result.get(test).config());
         assertNull(result.get(test2).config());
         assertEquals("control", result.get(test2).treatment());

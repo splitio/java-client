@@ -291,6 +291,10 @@ public final class SplitClientImpl implements SplitClient {
     private Map<String, SplitResult> getTreatmentsWithConfigInternal(String matchingKey, String bucketingKey, List<String> splits, Map<String, Object> attributes, MethodEnum methodEnum) {
         Map<String, SplitResult> result = new HashMap<>();
         long initTime = System.currentTimeMillis();
+        if(splits == null) {
+            _log.error("getTreatments: split_names must be a non-empty array");
+            return null;
+        }
         try{
             checkSDKReady(methodEnum);
             if (_container.isDestroyed()) {
@@ -305,27 +309,11 @@ public final class SplitClientImpl implements SplitClient {
             if (!KeyValidator.bucketingKeyIsValid(bucketingKey, _config.maxStringLength(), methodEnum.getMethod())) {
                 return createMapControl(splits);
             }
-
-            if(splits == null) {
-                _log.error("getTreatments: split_names must be a non-empty array");
-                return null;
-            }
             else if(splits.isEmpty()) {
                 _log.error("getTreatments: split_names must be a non-empty array");
                 return result;
             }
-            List<Optional<String>> splitNameResult = new ArrayList<>();
-            splits.forEach(s -> splitNameResult.add(SplitNameValidator.isValid(s, methodEnum.getMethod())));
-            List<String> filteredSplits = new ArrayList<>();
-            for(int i = 0; i < splitNameResult.size(); i++) {
-                if(!splitNameResult.get(i).isPresent()) {
-                    result.put(splits.get(i), SPLIT_RESULT_CONTROL);
-                }
-                else {
-                    filteredSplits.add(splitNameResult.get(i).get());
-                }
-            }
-            splits = filteredSplits;
+            splits = SplitNameValidator.areValid(splits, methodEnum.getMethod());
             Map<String, EvaluatorImp.TreatmentLabelAndChangeNumber> evaluatorResult = _evaluator.evaluateFeatures(matchingKey, bucketingKey, splits, attributes);
             List<Impression> impressions = new ArrayList<>();
 
@@ -358,12 +346,8 @@ public final class SplitClientImpl implements SplitClient {
             } catch (Exception e1) {
                 // ignore
             }
-            if(splits == null) {
-                _log.error("getTreatments: split_names must be a non-empty array");
-                return null;
-            }else {
-                return createMapControl(splits);
-            }
+            return createMapControl(splits);
+
         }
         return result;
     }
