@@ -111,21 +111,15 @@ public final class SplitClientImpl implements SplitClient {
 
     @Override
     public Map<String, String> getTreatments(String key, List<String> splits, Map<String, Object> attributes) {
-        Map<String, SplitResult> results = getTreatmentsWithConfigInternal(key, null, splits, attributes, MethodEnum.TREATMENTS);
-        if(results == null) {
-            return null;
-        }
-        return results.entrySet().stream()
+        return getTreatmentsWithConfigInternal(key, null, splits, attributes, MethodEnum.TREATMENTS)
+                .entrySet().stream()
                 .collect(Collectors.toMap(Map.Entry::getKey, e -> e.getValue().treatment()));
     }
 
     @Override
     public Map<String, String> getTreatments(Key key, List<String> splits, Map<String, Object> attributes) {
-        Map<String, SplitResult> results = getTreatmentsWithConfigInternal(key.matchingKey(), key.bucketingKey(), splits, attributes, MethodEnum.TREATMENTS);
-        if(results == null) {
-            return null;
-        }
-        return results.entrySet().stream()
+        return getTreatmentsWithConfigInternal(key.matchingKey(), key.bucketingKey(), splits, attributes, MethodEnum.TREATMENTS)
+                .entrySet().stream()
                 .collect(Collectors.toMap(Map.Entry::getKey, e -> e.getValue().treatment()));
     }
 
@@ -256,8 +250,8 @@ public final class SplitClientImpl implements SplitClient {
 
             if (result.treatment.equals(Treatments.CONTROL) && result.label.equals(Labels.DEFINITION_NOT_FOUND) && _gates.isSDKReady()) {
                 _log.warn(
-                        "getTreatment: you passed \"" + split + "\" that does not exist in this environment, " +
-                                "please double check what Splits exist in the web console.");
+                        "%s: you passed \"" + split + "\" that does not exist in this environment, " +
+                                "please double check what Splits exist in the web console.", methodEnum.getMethod());
                 return SPLIT_RESULT_CONTROL;
             }
 
@@ -286,11 +280,10 @@ public final class SplitClientImpl implements SplitClient {
     }
 
     private Map<String, SplitResult> getTreatmentsWithConfigInternal(String matchingKey, String bucketingKey, List<String> splits, Map<String, Object> attributes, MethodEnum methodEnum) {
-        Map<String, SplitResult> result = new HashMap<>();
         long initTime = System.currentTimeMillis();
         if(splits == null) {
-            _log.error("getTreatments: split_names must be a non-empty array");
-            return null;
+            _log.error("%s: split_names must be a non-empty array", methodEnum.getMethod());
+            return new HashMap<>();
         }
         try{
             checkSDKReady(methodEnum);
@@ -307,18 +300,18 @@ public final class SplitClientImpl implements SplitClient {
                 return createMapControl(splits);
             }
             else if(splits.isEmpty()) {
-                _log.error("getTreatments: split_names must be a non-empty array");
-                return result;
+                _log.error("%s: split_names must be a non-empty array", methodEnum.getMethod());
+                return new HashMap<>();
             }
             splits = SplitNameValidator.areValid(splits, methodEnum.getMethod());
             Map<String, EvaluatorImp.TreatmentLabelAndChangeNumber> evaluatorResult = _evaluator.evaluateFeatures(matchingKey, bucketingKey, splits, attributes);
             List<Impression> impressions = new ArrayList<>();
-
+            Map<String, SplitResult> result = new HashMap<>();
             evaluatorResult.keySet().forEach(t -> {
                 if (evaluatorResult.get(t).treatment.equals(Treatments.CONTROL) && evaluatorResult.get(t).label.equals(Labels.DEFINITION_NOT_FOUND) && _gates.isSDKReady()) {
                     _log.warn(
-                            "getTreatment: you passed \"" + t + "\" that does not exist in this environment, " +
-                                    "please double check what Splits exist in the web console.");
+                            "%s: you passed \"" + t + "\" that does not exist in this environment, " +
+                                    "please double check what Splits exist in the web console.", methodEnum.getMethod());
                     result.put(t, SPLIT_RESULT_CONTROL);
                 }
                 else {
@@ -332,6 +325,7 @@ public final class SplitClientImpl implements SplitClient {
             if(impressions.size() > 0) {
                 _impressionManager.track(impressions);
             }
+            return result;
         } catch (Exception e) {
             try {
                 _telemetryEvaluationProducer.recordException(methodEnum);
@@ -340,9 +334,7 @@ public final class SplitClientImpl implements SplitClient {
                 // ignore
             }
             return createMapControl(splits);
-
         }
-        return result;
     }
 
     private void recordStats(String matchingKey, String bucketingKey, String split, long start, String result,
