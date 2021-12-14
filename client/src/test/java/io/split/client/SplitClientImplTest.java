@@ -1421,7 +1421,7 @@ public class SplitClientImplTest {
     }
 
     @Test
-    public void null_splits_results_in_null_getTreatments() {
+    public void null_splits_results_in_empty_getTreatments() {
         String test = "test1";
         ParsedCondition rollOutToEveryone = ParsedCondition.createParsedConditionForTests(CombiningMatcher.of(new AllKeysMatcher()), Lists.newArrayList(partition("on", 100)));
         List<ParsedCondition> conditions = Lists.newArrayList(rollOutToEveryone);
@@ -1443,8 +1443,7 @@ public class SplitClientImplTest {
                 new EvaluatorImp(splitCacheConsumer, segmentCacheConsumer), TELEMETRY_STORAGE, TELEMETRY_STORAGE
         );
 
-
-        assertNull(client.getTreatments("key", null));
+        assertEquals(0, client.getTreatments("key", null).size());
 
         verifyZeroInteractions(splitCacheConsumer);
     }
