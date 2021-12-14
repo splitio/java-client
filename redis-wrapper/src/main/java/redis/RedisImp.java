@@ -1,5 +1,6 @@
 package redis;
 
+import com.google.common.annotations.VisibleForTesting;
 import pluggable.CustomStorageWrapper;
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisPool;
@@ -11,6 +12,9 @@ import java.util.stream.Collectors;
 
 class RedisImp implements CustomStorageWrapper {
     private static final String TELEMETRY_INIT = "SPLITIO.telemetry.init" ;
+    private static final String EVENTS_KEY = "SPLITIO.events" ;
+    private static final String IMPRESSIONS_KEY = "SPLITIO.impressions" ;
+    private static final long IMPRESSIONS_OR_EVENTS_DEFAULT_TTL = 3600L;
 
     private final JedisPool jedisPool;
     private final String prefix;
@@ -25,7 +29,7 @@ class RedisImp implements CustomStorageWrapper {
         try (Jedis jedis = this.jedisPool.getResource()) {
             return jedis.get(buildKeyWithPrefix(key));
         } catch (Exception ex) {
-            throw new Exception(ex);
+            throw new RedisException(ex.getMessage());
         }
     }
 
@@ -39,7 +43,7 @@ class RedisImp implements CustomStorageWrapper {
 
             return jedis.mget(keys.toArray(new String[keys.size()]));
         } catch (Exception ex) {
-            throw new Exception(ex);
+            throw new RedisException(ex.getMessage());
         }
     }
 
@@ -53,7 +57,7 @@ class RedisImp implements CustomStorageWrapper {
             }
             jedis.set(buildKeyWithPrefix(key), item);
         } catch (Exception ex) {
-            throw new Exception(ex);
+            throw new RedisException(ex.getMessage());
         }
     }
 
@@ -67,7 +71,7 @@ class RedisImp implements CustomStorageWrapper {
 
             jedis.del(keys.toArray(new String[keys.size()]));
         } catch (Exception ex) {
-            throw new Exception(ex);
+            throw new RedisException(ex.getMessage());
         }
     }
 
@@ -76,7 +80,7 @@ class RedisImp implements CustomStorageWrapper {
         try (Jedis jedis = this.jedisPool.getResource()) {
             return jedis.getSet(buildKeyWithPrefix(key), item);
         } catch (Exception ex) {
-            throw new Exception(ex);
+            throw new RedisException(ex.getMessage());
         }
     }
 
@@ -85,7 +89,7 @@ class RedisImp implements CustomStorageWrapper {
         try (Jedis jedis = this.jedisPool.getResource()) {
             return jedis.keys(buildKeyWithPrefix(prefix));
         } catch (Exception ex) {
-            throw new Exception(ex);
+            throw new RedisException(ex.getMessage());
         }
     }
 
@@ -94,7 +98,7 @@ class RedisImp implements CustomStorageWrapper {
         try (Jedis jedis = this.jedisPool.getResource()) {
             return jedis.incrBy(buildKeyWithPrefix(key), value);
         } catch (Exception ex) {
-            throw new Exception(ex);
+            throw new RedisException(ex.getMessage());
         }
     }
 
@@ -103,16 +107,22 @@ class RedisImp implements CustomStorageWrapper {
         try (Jedis jedis = this.jedisPool.getResource()) {
             return jedis.decrBy(buildKeyWithPrefix(key), value);
         } catch (Exception ex) {
-            throw new Exception(ex);
+            throw new RedisException(ex.getMessage());
         }
     }
 
     @Override
     public long pushItems(String key, List<String> items) throws Exception {
         try (Jedis jedis = this.jedisPool.getResource()) {
-            return jedis.rpush(buildKeyWithPrefix(key), items.toArray(new String[items.size()]));
+            long addedItems = jedis.rpush(buildKeyWithPrefix(key), items.toArray(new String[items.size()]));
+            if(EVENTS_KEY.equals(key) || IMPRESSIONS_KEY.equals(key)) {
+                if(addedItems == items.size()) {
+                    jedis.expire(key, IMPRESSIONS_OR_EVENTS_DEFAULT_TTL);
+                }
+            }
+            return addedItems;
         } catch (Exception ex) {
-            throw new Exception(ex);
+            throw new RedisException(ex.getMessage());
         }
     }
 
@@ -121,7 +131,7 @@ class RedisImp implements CustomStorageWrapper {
         try (Jedis jedis = this.jedisPool.getResource()) {
             return jedis.rpop(buildKeyWithPrefix(key), (int)count);
         } catch (Exception ex) {
-            throw new Exception(ex);
+            throw new RedisException(ex.getMessage());
         }
     }
 
@@ -131,7 +141,7 @@ class RedisImp implements CustomStorageWrapper {
         try (Jedis jedis = this.jedisPool.getResource()) {
             return jedis.scard(buildKeyWithPrefix(key));
         } catch (Exception ex) {
-            throw new Exception(ex);
+            throw new RedisException(ex.getMessage());
         }
     }
 
@@ -140,7 +150,7 @@ class RedisImp implements CustomStorageWrapper {
         try (Jedis jedis = this.jedisPool.getResource()) {
             return jedis.sismember(buildKeyWithPrefix(key), item);
         } catch (Exception ex) {
-            throw new Exception(ex);
+            throw new RedisException(ex.getMessage());
         }
     }
 
@@ -149,7 +159,7 @@ class RedisImp implements CustomStorageWrapper {
         try (Jedis jedis = this.jedisPool.getResource()) {
             jedis.sadd(buildKeyWithPrefix(key), items.toArray(new String[items.size()]));
         } catch (Exception ex) {
-            throw new Exception(ex);
+            throw new RedisException(ex.getMessage());
         }
     }
 
@@ -158,7 +168,7 @@ class RedisImp implements CustomStorageWrapper {
         try (Jedis jedis = this.jedisPool.getResource()) {
             jedis.srem(buildKeyWithPrefix(key), items.toArray(new String[items.size()]));
         } catch (Exception ex) {
-            throw new Exception(ex);
+            throw new RedisException(ex.getMessage());
         }
     }
 
@@ -172,7 +182,7 @@ class RedisImp implements CustomStorageWrapper {
 
             return jedis.mget(keys.toArray(new String[keys.size()]));
         } catch (Exception ex) {
-            throw new Exception(ex);
+            throw new RedisException(ex.getMessage());
         }
     }
 
@@ -181,7 +191,7 @@ class RedisImp implements CustomStorageWrapper {
         try (Jedis jedis = this.jedisPool.getResource()) {
             return "PONG".equalsIgnoreCase(jedis.ping());
         } catch (Exception ex) {
-            throw new Exception(ex);
+            throw new RedisException(ex.getMessage());
         }
     }
 
@@ -192,11 +202,12 @@ class RedisImp implements CustomStorageWrapper {
 
             return true;
         } catch (Exception ex) {
-            throw new Exception(ex);
+            throw new RedisException(ex.getMessage());
         }
     }
 
-    private String buildKeyWithPrefix(String key) {
+    @VisibleForTesting
+    String buildKeyWithPrefix(String key) {
         if (!key.startsWith(this.prefix)) {
             key = String.format("%s.%s", prefix, key);
         }

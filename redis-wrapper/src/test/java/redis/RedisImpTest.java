@@ -1,14 +1,17 @@
 package redis;
 
 import org.junit.Assert;
+import org.junit.Ignore;
 import org.junit.Test;
 import pluggable.CustomStorageWrapper;
 import redis.clients.jedis.JedisPool;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -59,6 +62,180 @@ public class RedisImpTest {
         Assert.assertEquals(expectedResult, result);
 
         storageWrapper.delete(new ArrayList<>(map.keySet()));
+    }
+
+    @Test
+    public void testGetSet() throws Exception {
+        String key = "test-getSet";
+        Map<String, String> map = new HashMap<>();
+        map.put(key, "5");
+
+        CustomStorageWrapper storageWrapper = new RedisImp(new JedisPool(), "test-prefix:.");
+        storageWrapper.set(key, "5");
+        String result = storageWrapper.getAndSet(key, "7");
+        Assert.assertEquals("5", result);
+        Assert.assertEquals("7", storageWrapper.get(key));
+
+        storageWrapper.delete(new ArrayList<>(map.keySet()));
+    }
+
+    @Test
+    public void testGetKeysByPrefix() throws Exception {
+        Map<String, String> map = new HashMap<>();
+        map.put("item-1", "1");
+        map.put("item-2", "2");
+        map.put("item-3", "3");
+        map.put("i-4", "4");
+        RedisImp storageWrapper = new RedisImp(new JedisPool(), "test-prefix");
+        try {
+            for (Map.Entry<String, String> entry : map.entrySet()) {
+                storageWrapper.set(entry.getKey(), entry.getValue());
+            }
+
+            Set<String> result = storageWrapper.getKeysByPrefix("item*");
+
+            Assert.assertEquals(3, result.size());
+            Assert.assertTrue(result.contains(storageWrapper.buildKeyWithPrefix("item-1")));
+            Assert.assertTrue(result.contains(storageWrapper.buildKeyWithPrefix("item-2")));
+            Assert.assertTrue(result.contains(storageWrapper.buildKeyWithPrefix("item-3")));
+        }
+        finally {
+            storageWrapper.delete(new ArrayList<>(map.keySet()));
+        }
+    }
+
+    @Test
+    public void testIncrementAndDecrement() throws Exception {
+        Map<String, String> map = new HashMap<>();
+        map.put("item-1", "2");
+        RedisImp storageWrapper = new RedisImp(new JedisPool(), "test-prefix");
+        try {
+            for (Map.Entry<String, String> entry : map.entrySet()) {
+                storageWrapper.set(entry.getKey(), entry.getValue());
+            }
+
+            long result = storageWrapper.increment("item-1", 2L);
+            Assert.assertEquals(4L, result);
+
+            result = storageWrapper.decrement("item-1", 3L);
+            Assert.assertEquals(1L, result);
+        }
+        finally {
+            storageWrapper.delete(new ArrayList<>(map.keySet()));
+        }
+    }
+
+    @Test
+    public void testPushAndPopItems() throws Exception {
+        Map<String, String> map = new HashMap<>();
+        map.put("item-1", "1");
+        RedisImp storageWrapper = new RedisImp(new JedisPool(), "test-prefix");
+        try {
+            long push = storageWrapper.pushItems("item-1", Arrays.asList("1", "2", "3", "4"));
+            Assert.assertEquals(4L, push);
+
+            List<String> result = storageWrapper.popItems("item-1", 3);
+            Assert.assertEquals(3L, result.size());
+
+            push = storageWrapper.pushItems("item-1", Arrays.asList("5"));
+            Assert.assertEquals(2L, push);
+
+        }
+        finally {
+            storageWrapper.delete(new ArrayList<>(map.keySet()));
+        }
+    }
+
+    @Test
+    public void testGetItemsCount() throws Exception {
+        Map<String, String> map = new HashMap<>();
+        map.put("item-1", "1");
+        RedisImp storageWrapper = new RedisImp(new JedisPool(), "test-prefix");
+        try {
+            storageWrapper.addItems("item-1", Arrays.asList("1", "2", "3", "4"));
+            long result = storageWrapper.getItemsCount("item-1");
+
+            Assert.assertEquals(4L, result);
+        }
+        finally {
+            storageWrapper.delete(new ArrayList<>(map.keySet()));
+        }
+    }
+
+    @Test
+    public void testItemContains() throws Exception {
+        Map<String, String> map = new HashMap<>();
+        map.put("item-1", "1");
+        RedisImp storageWrapper = new RedisImp(new JedisPool(), "test-prefix");
+        try {
+            storageWrapper.addItems("item-1", Arrays.asList("1", "2", "3", "4"));
+            boolean result = storageWrapper.itemContains("item-1", "2");
+
+            Assert.assertTrue(result);
+        }
+        finally {
+            storageWrapper.delete(new ArrayList<>(map.keySet()));
+        }
+    }
+
+    @Test
+    public void testRemoveItems() throws Exception {
+        Map<String, String> map = new HashMap<>();
+        map.put("item-1", "1");
+        RedisImp storageWrapper = new RedisImp(new JedisPool(), "test-prefix");
+        try {
+            storageWrapper.addItems("item-1", Arrays.asList("1", "2", "3", "4"));
+            boolean result = storageWrapper.itemContains("item-1", "2");
+            Assert.assertTrue(result);
+
+            storageWrapper.removeItems("item-1", Arrays.asList("2", "4"));
+            result = storageWrapper.itemContains("item-1", "2");
+            Assert.assertFalse(result);
+            result = storageWrapper.itemContains("item-1", "4");
+            Assert.assertFalse(result);
+        }
+        finally {
+            storageWrapper.delete(new ArrayList<>(map.keySet()));
+        }
+    }
+
+    @Test
+    public void testGetItems() throws Exception {
+        Map<String, String> map = new HashMap<>();
+        map.put("item-1", "1");
+        map.put("item-2", "2");
+        map.put("item-3", "3");
+        map.put("i-4", "4");
+        RedisImp storageWrapper = new RedisImp(new JedisPool(), "test-prefix");
+        try {
+            for (Map.Entry<String, String> entry : map.entrySet()) {
+                storageWrapper.set(entry.getKey(), entry.getValue());
+            }
+
+            Set<String> result = storageWrapper.getKeysByPrefix("item*");
+
+            Assert.assertEquals(3, result.size());
+            List<String> items = storageWrapper.getItems(new ArrayList<>(result));
+            Assert.assertEquals(3, items.size());
+            Assert.assertTrue(items.containsAll(Arrays.asList("1", "2", "3")));
+        }
+        finally {
+            storageWrapper.delete(new ArrayList<>(map.keySet()));
+        }
+    }
+
+    @Test
+    public void testConnect() throws Exception {
+        RedisImp storageWrapper = new RedisImp(new JedisPool(), "test-prefix");
+        Assert.assertTrue(storageWrapper.connect());
+    }
+
+
+
+    @Test
+    public void testDisconnect() throws Exception {
+        RedisImp storageWrapper = new RedisImp(new JedisPool(), "test-prefix");
+        Assert.assertTrue(storageWrapper.disconnect());
     }
 }
 
