@@ -112,14 +112,11 @@ public final class SplitClientImpl implements SplitClient {
     @Override
     public Map<String, String> getTreatments(String key, List<String> splits, Map<String, Object> attributes) {
         Map<String, SplitResult> results = getTreatmentsWithConfigInternal(key, null, splits, attributes, MethodEnum.TREATMENTS);
-        Map<String, String> resultsWrapped = new HashMap<>();
         if(results == null) {
             return null;
         }
-        for(String split : results.keySet()) {
-            resultsWrapped.put(split, results.get(split).treatment());
-        }
-        return resultsWrapped;
+        return results.entrySet().stream()
+                .collect(Collectors.toMap(Map.Entry::getKey, e -> e.getValue().treatment()));
     }
 
     @Override
@@ -333,11 +330,7 @@ public final class SplitClientImpl implements SplitClient {
             _telemetryEvaluationProducer.recordLatency(methodEnum, System.currentTimeMillis()-initTime);
             //Track of impressions
             if(impressions.size() > 0) {
-                try {
-                    _impressionManager.track(impressions);
-                } catch (Exception e) {
-                    _log.error("Exception", e);
-                }
+                _impressionManager.track(impressions);
             }
         } catch (Exception e) {
             try {

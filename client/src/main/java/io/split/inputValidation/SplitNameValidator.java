@@ -32,7 +32,9 @@ public class SplitNameValidator {
     }
 
     public static List<String> areValid(List<String> splits, String method) {
-        List<String> splitsNoDuplicated = splits.stream().distinct().map(s -> isValid(s, method).orElse(null)).collect(Collectors.toList());
-        return splitsNoDuplicated.stream().filter(Objects::nonNull).collect(Collectors.toList());
+        return splits.stream().distinct()
+                .map(s -> isValid(s, method).orElse(null))
+                .filter(Objects::nonNull)
+                .collect(Collectors.toList());
     }
 }
