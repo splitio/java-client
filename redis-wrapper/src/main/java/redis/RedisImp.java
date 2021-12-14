@@ -186,7 +186,7 @@ class RedisImp implements CustomStorageWrapper {
     }
 
     @Override
-    public boolean close() throws Exception {
+    public boolean disconnect() throws Exception {
         try {
             jedisPool.close();
 

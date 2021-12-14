@@ -46,7 +46,7 @@ public class EvaluatorImp implements Evaluator {
         if(parsedSplits == null) {
             return results;
         }
-        parsedSplits.keySet().forEach(s -> results.put(s, evaluateParsedSplit(matchingKey, bucketingKey, s, attributes, parsedSplits.get(s))));
+        splits.forEach(s -> results.put(s, evaluateParsedSplit(matchingKey, bucketingKey, s, attributes, parsedSplits.get(s))));
         return results;
     }
 

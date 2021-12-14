@@ -27,5 +27,5 @@ public interface CustomStorageWrapper {
     void removeItems(String key, List<String> items) throws Exception;
     List<String> getItems(List<String> keys) throws Exception;
     boolean connect() throws Exception;
-    boolean close() throws Exception;
+    boolean disconnect() throws Exception;
 }
