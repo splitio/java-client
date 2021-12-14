@@ -781,6 +781,16 @@ public class SplitClientConfig {
         }
 
         /**
+         *
+         * @param storage mode
+         * @return this builder
+         */
+        public Builder storageMode(StorageMode mode) {
+            _storageMode = mode;
+            return this;
+        }
+
+        /**
          * Storage wrapper
          *
          * @param customStorageWrapper
