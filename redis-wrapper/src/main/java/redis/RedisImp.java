@@ -14,7 +14,7 @@ class RedisImp implements CustomStorageWrapper {
     private static final String TELEMETRY_INIT = "SPLITIO.telemetry.init" ;
     private static final String EVENTS_KEY = "SPLITIO.events" ;
     private static final String IMPRESSIONS_KEY = "SPLITIO.impressions" ;
-    private static final long IMPRESSIONS_OR_EVENTS_DEFAULT_TTL = 3600L;
+    private static final int IMPRESSIONS_OR_EVENTS_DEFAULT_TTL = 3600;
 
     private final JedisPool jedisPool;
     private final String prefix;
