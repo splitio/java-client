@@ -105,9 +105,14 @@ public class UserCustomSplitAdapterConsumer  implements SplitCacheConsumer {
     }
 
     private List<ParsedSplit> stringsToParsedSplits(List<String> elements) {
-        return elements.stream()
-                .map(s -> Json.fromJson(s, Split.class))
-                .map(_splitParser::parse)
-                .collect(Collectors.toList());
+        List<ParsedSplit> result = new ArrayList<>();
+        for(String s : elements) {
+            if(s != null) {
+                result.add(_splitParser.parse(Json.fromJson(s, Split.class)));
+                continue;
+            }
+            result.add(null);
+        }
+        return result;
     }
 }
