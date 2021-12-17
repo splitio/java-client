@@ -129,7 +129,11 @@ class RedisImp implements CustomStorageWrapper {
     @Override
     public List<String> popItems(String key, long count) throws Exception {
         try (Jedis jedis = this.jedisPool.getResource()) {
-            return jedis.rpop(buildKeyWithPrefix(key), (int)count);
+            String keyWithPrefix =  buildKeyWithPrefix(key);
+            List<String> items = jedis.lrange(keyWithPrefix, 0, count-1);
+            int fetchedCount = items.size();
+            jedis.ltrim(keyWithPrefix, fetchedCount, -1);
+            return items;
         } catch (Exception ex) {
             throw new RedisException(ex.getMessage());
         }

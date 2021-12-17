@@ -11,6 +11,10 @@
 
     <artifactId>redis-wrapper</artifactId>
     <version>1.0.0-rc1</version>
+    <packaging>jar</packaging>
+    <name>Package for Redis Wrapper Implementation</name>
+    <description>Implements Redis Pluggable Storage</description>
+
     <properties>
         <maven.compiler.source>8</maven.compiler.source>
         <maven.compiler.target>8</maven.compiler.target>
