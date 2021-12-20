@@ -18,13 +18,12 @@
     <properties>
         <maven.compiler.source>8</maven.compiler.source>
         <maven.compiler.target>8</maven.compiler.target>
-        <pluggable.storage>1.0.0-rc1</pluggable.storage>
     </properties>
     <dependencies>
         <dependency>
             <groupId>io.split.client</groupId>
             <artifactId>pluggable-storage</artifactId>
-            <version>${pluggable.storage}</version>
+            <version>1.0.0-rc1</version>
             <scope>compile</scope>
         </dependency>
         <dependency>
