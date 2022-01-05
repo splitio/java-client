@@ -6,21 +6,24 @@
     <parent>
         <artifactId>java-client-parent</artifactId>
         <groupId>io.split.client</groupId>
-        <version>4.4.0-beta</version>
+        <version>4.4.0-rc1</version>
     </parent>
 
     <artifactId>redis-wrapper</artifactId>
-    <version>1.0.0-beta</version>
+    <version>1.0.0-rc1</version>
+    <packaging>jar</packaging>
+    <name>Package for Redis Wrapper Implementation</name>
+    <description>Implements Redis Pluggable Storage</description>
+
     <properties>
         <maven.compiler.source>8</maven.compiler.source>
         <maven.compiler.target>8</maven.compiler.target>
-        <pluggable.storage>1.0.0-beta</pluggable.storage>
     </properties>
     <dependencies>
         <dependency>
             <groupId>io.split.client</groupId>
             <artifactId>pluggable-storage</artifactId>
-            <version>${pluggable.storage}</version>
+            <version>1.0.0-rc1</version>
             <scope>compile</scope>
         </dependency>
         <dependency>
@@ -33,6 +36,12 @@
             <groupId>junit</groupId>
             <artifactId>junit</artifactId>
             <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.google.guava</groupId>
+            <artifactId>guava</artifactId>
+            <version>30.0-jre</version>
+            <scope>compile</scope>
         </dependency>
     </dependencies>
 
