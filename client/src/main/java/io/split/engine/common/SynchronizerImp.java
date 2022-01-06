@@ -198,6 +198,7 @@ public class SynchronizerImp implements Synchronizer {
         while(true) {
             remainingAttempts--;
             fetcher.fetch(opts);
+            _log.debug("Change Number target: " + targetChangeNumber + " || Change Number after fetch: " + segmentCacheProducer.getChangeNumber(segmentName));
             if (targetChangeNumber <= segmentCacheProducer.getChangeNumber(segmentName)) {
                 return new SyncResult(true, remainingAttempts, new FetchResult(false, new HashSet<>()));
             } else if (remainingAttempts <= 0) {
@@ -209,6 +210,8 @@ public class SynchronizerImp implements Synchronizer {
             } catch (InterruptedException e) {
                 Thread.currentThread().interrupt();
                 _log.debug("Error trying to sleep current Thread.");
+            } catch (Exception e) {
+                _log.debug("Exception while fetching: " + e.getMessage());
             }
         }
     }
@@ -242,9 +245,10 @@ public class SynchronizerImp implements Synchronizer {
         _log.info(String.format("No changes fetched for segment %s after %s attempts. Will retry bypassing CDN.", segmentName, attempts));
         FetchOptions withCdnBypass = new FetchOptions.Builder(opts).targetChangeNumber(targetChangeNumber).build();
         Backoff backoff = new Backoff(ON_DEMAND_FETCH_BACKOFF_BASE_MS, ON_DEMAND_FETCH_BACKOFF_MAX_WAIT_MS);
+        _log.debug("Attempt with CDN by passed about to start.");
         SyncResult withCDNBypassed = attemptSegmentSync(segmentName, targetChangeNumber, withCdnBypass,
                 (discard) -> backoff.interval(), ON_DEMAND_FETCH_BACKOFF_MAX_RETRIES);
-
+        _log.debug("Segment Sync has ended.");
         int withoutCDNAttempts = ON_DEMAND_FETCH_BACKOFF_MAX_RETRIES - withCDNBypassed._remainingAttempts;
         if (withCDNBypassed.success()) {
             _log.debug(String.format("Segment %s refresh completed bypassing the CDN in %s attempts.", segmentName, withoutCDNAttempts));
