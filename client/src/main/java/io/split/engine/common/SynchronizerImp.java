@@ -198,7 +198,7 @@ public class SynchronizerImp implements Synchronizer {
         while(true) {
             remainingAttempts--;
             fetcher.fetch(opts);
-            _log.debug("Change Number target: " + targetChangeNumber + " || Change Number after fetch: " + segmentCacheProducer.getChangeNumber(segmentName));
+            _log.info("Change Number target: " + targetChangeNumber + " || Change Number after fetch: " + segmentCacheProducer.getChangeNumber(segmentName));
             if (targetChangeNumber <= segmentCacheProducer.getChangeNumber(segmentName)) {
                 return new SyncResult(true, remainingAttempts, new FetchResult(false, new HashSet<>()));
             } else if (remainingAttempts <= 0) {
@@ -211,7 +211,7 @@ public class SynchronizerImp implements Synchronizer {
                 Thread.currentThread().interrupt();
                 _log.debug("Error trying to sleep current Thread.");
             } catch (Exception e) {
-                _log.debug("Exception while fetching: " + e.getMessage());
+                _log.info("Exception while fetching: " + e.getMessage());
             }
         }
     }
@@ -246,10 +246,10 @@ public class SynchronizerImp implements Synchronizer {
         FetchOptions withCdnBypass = new FetchOptions.Builder(opts).targetChangeNumber(targetChangeNumber).build();
         _log.info("FetchOptions instanciated. Backoff about to.");
         Backoff backoff = new Backoff(ON_DEMAND_FETCH_BACKOFF_BASE_MS, ON_DEMAND_FETCH_BACKOFF_MAX_WAIT_MS);
-        _log.debug("Attempt with CDN by passed about to start.");
+        _log.info("Attempt with CDN by passed about to start.");
         SyncResult withCDNBypassed = attemptSegmentSync(segmentName, targetChangeNumber, withCdnBypass,
                 (discard) -> backoff.interval(), ON_DEMAND_FETCH_BACKOFF_MAX_RETRIES);
-        _log.debug("Segment Sync has ended.");
+        _log.info("Segment Sync has ended.");
         int withoutCDNAttempts = ON_DEMAND_FETCH_BACKOFF_MAX_RETRIES - withCDNBypassed._remainingAttempts;
         if (withCDNBypassed.success()) {
             _log.debug(String.format("Segment %s refresh completed bypassing the CDN in %s attempts.", segmentName, withoutCDNAttempts));
