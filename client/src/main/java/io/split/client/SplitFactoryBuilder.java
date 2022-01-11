@@ -41,7 +41,7 @@ public class SplitFactoryBuilder {
         if (LocalhostSplitFactory.LOCALHOST.equals(apiToken)) {
             return LocalhostSplitFactory.createLocalhostSplitFactory(config);
         }
-        if (StorageMode.PLUGGABLE.equals(config.storageMode())){
+        if (StorageMode.PLUGGABLE.equals(config.storageMode()) || StorageMode.REDIS.equals(config.storageMode())){
             return new SplitFactoryImpl(apiToken, config, config.customStorageWrapper());
         }
         return new SplitFactoryImpl(apiToken, config);

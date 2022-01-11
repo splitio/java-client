@@ -17,7 +17,10 @@ import io.split.storages.memory.SegmentCacheInMemoryImpl;
 import org.junit.Assert;
 import org.junit.Test;
 
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -123,6 +126,27 @@ public class EvaluatorIntegrationTest {
         EvaluatorImp.TreatmentLabelAndChangeNumber result = evaluator.evaluateFeature("mauro@test.io", null, "test", null);
         Assert.assertEquals("control", result.treatment);
         Assert.assertEquals(Labels.DEFINITION_NOT_FOUND, result.label);
+    }
+
+    @Test
+    public void evaluateMultipleFeatures() {
+        Evaluator evaluator = buildEvaluatorAndLoadCache(false, 100);
+
+        Map<String, EvaluatorImp.TreatmentLabelAndChangeNumber> result = evaluator.evaluateFeatures("test_1", null, new ArrayList<>(Arrays.asList("test", "split_3")), null);
+        Assert.assertNotNull(result);
+        Assert.assertEquals(2, result.keySet().size());
+        Assert.assertEquals(Labels.DEFINITION_NOT_FOUND, result.get("test").label);
+        Assert.assertEquals(ON_TREATMENT, result.get("split_3").treatment);
+        Long changeNumberExpected = 223366554L;
+        Assert.assertEquals(changeNumberExpected, result.get("split_3").changeNumber);
+        Assert.assertEquals(TEST_LABEL_VALUE_WHITELIST, result.get("split_3").label);
+    }
+
+    @Test(expected = NullPointerException.class)
+    public void evaluateFeaturesSplitsNull() {
+        Evaluator evaluator = buildEvaluatorAndLoadCache(false, 100);
+
+        Map<String, EvaluatorImp.TreatmentLabelAndChangeNumber> result = evaluator.evaluateFeatures("mauro@test.io", null, null, null);
     }
 
     private Evaluator buildEvaluatorAndLoadCache(boolean killed, int trafficAllocation) {

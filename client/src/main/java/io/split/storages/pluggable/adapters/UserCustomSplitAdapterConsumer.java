@@ -14,7 +14,9 @@ import pluggable.CustomStorageWrapper;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.HashSet;
 import java.util.stream.Collectors;
@@ -83,12 +85,17 @@ public class UserCustomSplitAdapterConsumer  implements SplitCacheConsumer {
     }
 
     @Override
-    public Collection<ParsedSplit> fetchMany(List<String> names) {
+    public Map<String, ParsedSplit> fetchMany(List<String> names) {
+        Map<String, ParsedSplit> result = new HashMap<>();
         List<String> wrapperResponse = _safeUserStorageWrapper.getItems(PrefixAdapter.buildFetchManySplits(names));
         if(wrapperResponse == null) {
-            return new ArrayList<>();
+            return result;
         }
-        return stringsToParsedSplits(wrapperResponse);
+        List<ParsedSplit> parsedSplits = stringsToParsedSplits(wrapperResponse);
+        for(int i=0; i < parsedSplits.size(); i++) {
+            result.put(names.get(i), parsedSplits.get(i));
+        }
+        return result;
     }
 
     @Override
@@ -98,9 +105,14 @@ public class UserCustomSplitAdapterConsumer  implements SplitCacheConsumer {
     }
 
     private List<ParsedSplit> stringsToParsedSplits(List<String> elements) {
-        return elements.stream()
-                .map(s -> Json.fromJson(s, Split.class))
-                .map(_splitParser::parse)
-                .collect(Collectors.toList());
+        List<ParsedSplit> result = new ArrayList<>();
+        for(String s : elements) {
+            if(s != null) {
+                result.add(_splitParser.parse(Json.fromJson(s, Split.class)));
+                continue;
+            }
+            result.add(null);
+        }
+        return result;
     }
 }

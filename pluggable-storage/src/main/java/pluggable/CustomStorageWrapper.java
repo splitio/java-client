@@ -17,7 +17,7 @@ public interface CustomStorageWrapper {
     long decrement(String key, long value) throws Exception;
 
     // queue operations
-    void pushItems(String key, List<String> items) throws Exception;
+    long pushItems(String key, List<String> items) throws Exception;
     List<String> popItems(String key, long count) throws Exception;
     long getItemsCount(String key) throws Exception;
 
@@ -27,5 +27,5 @@ public interface CustomStorageWrapper {
     void removeItems(String key, List<String> items) throws Exception;
     List<String> getItems(List<String> keys) throws Exception;
     boolean connect() throws Exception;
-    boolean close() throws Exception;
+    boolean disconnect() throws Exception;
 }

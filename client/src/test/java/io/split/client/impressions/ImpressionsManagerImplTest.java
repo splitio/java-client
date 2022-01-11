@@ -23,6 +23,8 @@ import java.net.URISyntaxException;
 import java.util.AbstractMap;
 import java.util.HashMap;
 import java.util.List;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.assertThat;
@@ -64,10 +66,10 @@ public class ImpressionsManagerImplTest {
         KeyImpression ki3 = keyImpression("test1", "pato", "on", 3L, 2L);
         KeyImpression ki4 = keyImpression("test2", "pato", "on", 4L, 3L);
 
-        treatmentLog.track(new Impression(ki1.keyName, null, ki1.feature, ki1.treatment, ki1.time, null, ki1.changeNumber, null));
-        treatmentLog.track(new Impression(ki2.keyName, null, ki2.feature, ki2.treatment, ki2.time, null, ki2.changeNumber, null));
-        treatmentLog.track(new Impression(ki3.keyName, null, ki3.feature, ki3.treatment, ki3.time, null, ki3.changeNumber, null));
-        treatmentLog.track(new Impression(ki4.keyName, null, ki4.feature, ki4.treatment, ki4.time, null, ki4.changeNumber, null));
+        treatmentLog.track(Stream.of(new Impression(ki1.keyName, null, ki1.feature, ki1.treatment, ki1.time, null, ki1.changeNumber, null)).collect(Collectors.toList()));
+        treatmentLog.track(Stream.of(new Impression(ki2.keyName, null, ki2.feature, ki2.treatment, ki2.time, null, ki2.changeNumber, null)).collect(Collectors.toList()));
+        treatmentLog.track(Stream.of(new Impression(ki3.keyName, null, ki3.feature, ki3.treatment, ki3.time, null, ki3.changeNumber, null)).collect(Collectors.toList()));
+        treatmentLog.track(Stream.of(new Impression(ki4.keyName, null, ki4.feature, ki4.treatment, ki4.time, null, ki4.changeNumber, null)).collect(Collectors.toList()));
 
         // Do what the scheduler would do.
         treatmentLog.sendImpressions();
@@ -99,10 +101,10 @@ public class ImpressionsManagerImplTest {
         KeyImpression ki3 = keyImpression("test3", "pato", "on", 3L, null);
         KeyImpression ki4 = keyImpression("test4", "pato", "on", 4L, null);
 
-        treatmentLog.track(new Impression(ki1.keyName, null, ki1.feature, ki1.treatment, ki1.time, null, null, null));
-        treatmentLog.track(new Impression(ki2.keyName, null, ki2.feature, ki2.treatment, ki2.time, null, null, null));
-        treatmentLog.track(new Impression(ki3.keyName, null, ki3.feature, ki3.treatment, ki3.time, null, null, null));
-        treatmentLog.track(new Impression(ki4.keyName, null, ki4.feature, ki4.treatment, ki4.time, null, null, null));
+        treatmentLog.track(Stream.of(new Impression(ki1.keyName, null, ki1.feature, ki1.treatment, ki1.time, null, null, null)).collect(Collectors.toList()));
+        treatmentLog.track(Stream.of(new Impression(ki2.keyName, null, ki2.feature, ki2.treatment, ki2.time, null, null, null)).collect(Collectors.toList()));
+        treatmentLog.track(Stream.of(new Impression(ki3.keyName, null, ki3.feature, ki3.treatment, ki3.time, null, null, null)).collect(Collectors.toList()));
+        treatmentLog.track(Stream.of(new Impression(ki4.keyName, null, ki4.feature, ki4.treatment, ki4.time, null, null, null)).collect(Collectors.toList()));
 
         // Do what the scheduler would do.
         treatmentLog.sendImpressions();
@@ -135,10 +137,10 @@ public class ImpressionsManagerImplTest {
         KeyImpression ki3 = keyImpression("test1", "pato", "on", 3L, 1L);
         KeyImpression ki4 = keyImpression("test1", "pato", "on", 4L, 1L);
 
-        treatmentLog.track(new Impression(ki1.keyName, null, ki1.feature, ki1.treatment, ki1.time, null, 1L, null));
-        treatmentLog.track(new Impression(ki2.keyName, null, ki2.feature, ki2.treatment, ki2.time, null, 1L, null));
-        treatmentLog.track(new Impression(ki3.keyName, null, ki3.feature, ki3.treatment, ki3.time, null, 1L, null));
-        treatmentLog.track(new Impression(ki4.keyName, null, ki4.feature, ki4.treatment, ki4.time, null, 1L, null));
+        treatmentLog.track(Stream.of(new Impression(ki1.keyName, null, ki1.feature, ki1.treatment, ki1.time, null, 1L, null)).collect(Collectors.toList()));
+        treatmentLog.track(Stream.of(new Impression(ki2.keyName, null, ki2.feature, ki2.treatment, ki2.time, null, 1L, null)).collect(Collectors.toList()));
+        treatmentLog.track(Stream.of(new Impression(ki3.keyName, null, ki3.feature, ki3.treatment, ki3.time, null, 1L, null)).collect(Collectors.toList()));
+        treatmentLog.track(Stream.of(new Impression(ki4.keyName, null, ki4.feature, ki4.treatment, ki4.time, null, 1L, null)).collect(Collectors.toList()));
 
         // Do what the scheduler would do.
         treatmentLog.sendImpressions();
@@ -194,10 +196,10 @@ public class ImpressionsManagerImplTest {
         KeyImpression ki3 = keyImpression("test1", "pato", "on", 3L, 1L);
         KeyImpression ki4 = keyImpression("test1", "pato2", "on", 4L, 1L);
 
-        treatmentLog.track(new Impression(ki1.keyName, null, ki1.feature, ki1.treatment, ki1.time, null, 1L, null));
-        treatmentLog.track(new Impression(ki2.keyName, null, ki2.feature, ki2.treatment, ki2.time, null, 1L, null));
-        treatmentLog.track(new Impression(ki3.keyName, null, ki3.feature, ki3.treatment, ki3.time, null, 1L, null));
-        treatmentLog.track(new Impression(ki4.keyName, null, ki4.feature, ki4.treatment, ki4.time, null, 1L, null));
+        treatmentLog.track(Stream.of(new Impression(ki1.keyName, null, ki1.feature, ki1.treatment, ki1.time, null, 1L, null)).collect(Collectors.toList()));
+        treatmentLog.track(Stream.of(new Impression(ki2.keyName, null, ki2.feature, ki2.treatment, ki2.time, null, 1L, null)).collect(Collectors.toList()));
+        treatmentLog.track(Stream.of(new Impression(ki3.keyName, null, ki3.feature, ki3.treatment, ki3.time, null, 1L, null)).collect(Collectors.toList()));
+        treatmentLog.track(Stream.of(new Impression(ki4.keyName, null, ki4.feature, ki4.treatment, ki4.time, null, 1L, null)).collect(Collectors.toList()));
         treatmentLog.sendImpressions();
 
         verify(senderMock).postImpressionsBulk(impressionsCaptor.capture());
@@ -211,10 +213,10 @@ public class ImpressionsManagerImplTest {
 
         // Do it again. Now they should all have a `seenAt` value
         Mockito.reset(senderMock);
-        treatmentLog.track(new Impression(ki1.keyName, null, ki1.feature, ki1.treatment, ki1.time, null, 1L, null));
-        treatmentLog.track(new Impression(ki2.keyName, null, ki2.feature, ki2.treatment, ki2.time, null, 1L, null));
-        treatmentLog.track(new Impression(ki3.keyName, null, ki3.feature, ki3.treatment, ki3.time, null, 1L, null));
-        treatmentLog.track(new Impression(ki4.keyName, null, ki4.feature, ki4.treatment, ki4.time, null, 1L, null));
+        treatmentLog.track(Stream.of(new Impression(ki1.keyName, null, ki1.feature, ki1.treatment, ki1.time, null, 1L, null)).collect(Collectors.toList()));
+        treatmentLog.track(Stream.of(new Impression(ki2.keyName, null, ki2.feature, ki2.treatment, ki2.time, null, 1L, null)).collect(Collectors.toList()));
+        treatmentLog.track(Stream.of(new Impression(ki3.keyName, null, ki3.feature, ki3.treatment, ki3.time, null, 1L, null)).collect(Collectors.toList()));
+        treatmentLog.track(Stream.of(new Impression(ki4.keyName, null, ki4.feature, ki4.treatment, ki4.time, null, 1L, null)).collect(Collectors.toList()));
         treatmentLog.sendImpressions();
 
         verify(senderMock).postImpressionsBulk(impressionsCaptor.capture());
@@ -256,10 +258,10 @@ public class ImpressionsManagerImplTest {
         KeyImpression ki3 = keyImpression("test1", "pato", "on", 3L, 1L);
         KeyImpression ki4 = keyImpression("test1", "pato", "on", 4L, 1L);
 
-        treatmentLog.track(new Impression(ki1.keyName, null, ki1.feature, ki1.treatment, ki1.time, null, 1L, null));
-        treatmentLog.track(new Impression(ki2.keyName, null, ki2.feature, ki2.treatment, ki2.time, null, 1L, null));
-        treatmentLog.track(new Impression(ki3.keyName, null, ki3.feature, ki3.treatment, ki3.time, null, 1L, null));
-        treatmentLog.track(new Impression(ki4.keyName, null, ki4.feature, ki4.treatment, ki4.time, null, 1L, null));
+        treatmentLog.track(Stream.of(new Impression(ki1.keyName, null, ki1.feature, ki1.treatment, ki1.time, null, 1L, null)).collect(Collectors.toList()));
+        treatmentLog.track(Stream.of(new Impression(ki2.keyName, null, ki2.feature, ki2.treatment, ki2.time, null, 1L, null)).collect(Collectors.toList()));
+        treatmentLog.track(Stream.of(new Impression(ki3.keyName, null, ki3.feature, ki3.treatment, ki3.time, null, 1L, null)).collect(Collectors.toList()));
+        treatmentLog.track(Stream.of(new Impression(ki4.keyName, null, ki4.feature, ki4.treatment, ki4.time, null, 1L, null)).collect(Collectors.toList()));
         treatmentLog.sendImpressions();
 
         verify(senderMock).postImpressionsBulk(impressionsCaptor.capture());
