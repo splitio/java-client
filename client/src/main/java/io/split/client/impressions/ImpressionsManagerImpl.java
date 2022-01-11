@@ -15,12 +15,14 @@ import org.slf4j.LoggerFactory;
 import java.io.Closeable;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
@@ -102,33 +104,31 @@ public class ImpressionsManagerImpl implements ImpressionsManager, Closeable {
         }
     }
 
-    private static boolean shouldQueueImpression(Impression i) {
+    private boolean shouldQueueImpression(Impression i) {
         return Objects.isNull(i.pt()) ||
                 ImpressionUtils.truncateTimeframe(i.pt()) != ImpressionUtils.truncateTimeframe(i.time());
     }
 
-    //TODO create a track method with multiple impressions.
     @Override
-    public void track(Impression impression) {
-        if (null == impression) {
+    public void track(List<Impression> impressions) {
+        if (null == impressions) {
             return;
         }
+        int totalImpressions = impressions.size();
 
-        impression = _addPreviousTimeEnabled ? impression.withPreviousTime(_impressionObserver.testAndSet(impression)) : impression;
-        _listener.log(impression);
+        impressions = processImpressions(impressions);
 
-        if (_isOptimized) {
-            _counter.inc(impression.split(), impression.time(), 1);
-            if (!shouldQueueImpression(impression)) {
-                _telemetryRuntimeProducer.recordImpressionStats(ImpressionsDataTypeEnum.IMPRESSIONS_DEDUPED, 1);
-                return;
-            }
+        if (totalImpressions > impressions.size()) {
+            _telemetryRuntimeProducer.recordImpressionStats(ImpressionsDataTypeEnum.IMPRESSIONS_DEDUPED, totalImpressions-impressions.size());
+            totalImpressions = impressions.size();
         }
-        if (!_impressionsStorageProducer.put(KeyImpression.fromImpression(impression))) {
-            _telemetryRuntimeProducer.recordImpressionStats(ImpressionsDataTypeEnum.IMPRESSIONS_DROPPED, 1);
-            return;
+        long queued = _impressionsStorageProducer.put(impressions.stream().map(KeyImpression::fromImpression).collect(Collectors.toList()));
+        if (queued < totalImpressions) {
+            _telemetryRuntimeProducer.recordImpressionStats(ImpressionsDataTypeEnum.IMPRESSIONS_DROPPED, totalImpressions-queued);
         }
-        _telemetryRuntimeProducer.recordImpressionStats(ImpressionsDataTypeEnum.IMPRESSIONS_QUEUED, 1);
+        _telemetryRuntimeProducer.recordImpressionStats(ImpressionsDataTypeEnum.IMPRESSIONS_QUEUED, queued);
+
+        impressions.forEach(imp -> _listener.log(imp));
     }
 
     @Override
@@ -204,5 +204,29 @@ public class ImpressionsManagerImpl implements ImpressionsManager, Closeable {
     @VisibleForTesting
     /* package private */ ImpressionCounter getCounter() {
         return _counter;
+    }
+
+    /**
+     * Filter in case of deduping and format impressions to let them ready to be sent.
+     * @param impressions
+     * @return
+     */
+    private List<Impression> processImpressions(List<Impression> impressions) {
+        if(!_addPreviousTimeEnabled) { //Only STANDALONE Mode needs to iterate over impressions to add previous time.
+            return impressions;
+        }
+
+        List<Impression> impressionsToQueue = new ArrayList<>();
+        for(Impression impression : impressions) {
+            impression = impression.withPreviousTime(_impressionObserver.testAndSet(impression));
+            if (_isOptimized) {
+                _counter.inc(impression.split(), impression.time(), 1);
+                if(!shouldQueueImpression(impression)) {
+                    continue;
+                }
+            }
+            impressionsToQueue.add(impression);
+        }
+        return impressionsToQueue;
     }
 }

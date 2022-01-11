@@ -100,8 +100,9 @@ public class InMemoryCacheTest {
         names.add("split_name_2");
         names.add("split_name_3");
 
-        Collection<ParsedSplit> result = _cache.fetchMany(names);
-        Assert.assertEquals(2, result.size());
+        Map<String, ParsedSplit> result = _cache.fetchMany(names);
+        Assert.assertEquals(2, result.keySet().size());
+        Assert.assertNotNull(result.get("split_name_2"));
     }
 
     @Test
@@ -154,8 +155,8 @@ public class InMemoryCacheTest {
         _cache.putMany(Stream.of(getParsedSplit("split_name_1"),getParsedSplit("split_name_2"),getParsedSplit("split_name_3"),getParsedSplit("split_name_4")).collect(Collectors.toList()));
         List<String> names = Stream.of("split_name_1","split_name_2","split_name_3","split_name_4").collect(Collectors.toList());
 
-        Collection<ParsedSplit> result = _cache.fetchMany(names);
-        Assert.assertEquals(4, result.size());
+        Map<String, ParsedSplit> result = _cache.fetchMany(names);
+        Assert.assertEquals(4, result.keySet().size());
     }
 
     @Test

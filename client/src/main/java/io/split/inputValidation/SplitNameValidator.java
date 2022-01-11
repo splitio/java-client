@@ -3,7 +3,10 @@ package io.split.inputValidation;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 public class SplitNameValidator {
     private static final Logger _log = LoggerFactory.getLogger(SplitNameValidator.class);
@@ -26,5 +29,12 @@ public class SplitNameValidator {
         }
 
         return Optional.of(name);
+    }
+
+    public static List<String> areValid(List<String> splits, String method) {
+        return splits.stream().distinct()
+                .map(s -> isValid(s, method).orElse(null))
+                .filter(Objects::nonNull)
+                .collect(Collectors.toList());
     }
 }

@@ -11,7 +11,9 @@ import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.atomic.AtomicLong;
@@ -57,16 +59,10 @@ public class InMemoryCacheImp implements SplitCache {
     }
 
     @Override
-    public Collection<ParsedSplit> fetchMany(List<String> names) {
-        List<ParsedSplit> splits = new ArrayList<>();
+    public Map<String,ParsedSplit> fetchMany(List<String> names) {
+        Map<String, ParsedSplit> splits = new HashMap<>();
 
-        for (String name : names) {
-            ParsedSplit split = _concurrentMap.get(name);
-
-            if (split != null) {
-                splits.add(split);
-            }
-        }
+        names.forEach(s -> splits.put(s, _concurrentMap.get(s)));
 
         return splits;
     }

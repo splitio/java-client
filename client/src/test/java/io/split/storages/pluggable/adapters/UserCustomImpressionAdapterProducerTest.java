@@ -43,14 +43,16 @@ public class UserCustomImpressionAdapterProducerTest {
     @Test
     public void testPut() {
         KeyImpression keyImpression = new KeyImpression();
-        Assert.assertTrue(_impressionAdapterProducer.put(keyImpression));
+        Mockito.when(_safeUserStorageWrapper.pushItems(Mockito.anyString(), Mockito.anyObject())).thenReturn(1L);
+        Assert.assertEquals(1L, _impressionAdapterProducer.put(Stream.of(keyImpression).collect(Collectors.toList())));
         Mockito.verify(_safeUserStorageWrapper, Mockito.times(1)).pushItems(Mockito.anyString(), Mockito.anyObject());
     }
 
     @Test
     public void testPutMany() {
         KeyImpression keyImpression = new KeyImpression();
-        Assert.assertTrue(_impressionAdapterProducer.put(Stream.of(keyImpression).collect(Collectors.toList())));
+        Mockito.when(_safeUserStorageWrapper.pushItems(Mockito.anyString(), Mockito.anyObject())).thenReturn(1L);
+        Assert.assertEquals(1L, _impressionAdapterProducer.put(Stream.of(keyImpression).collect(Collectors.toList())));
         Mockito.verify(_safeUserStorageWrapper, Mockito.times(1)).pushItems(Mockito.anyString(), Mockito.anyObject());
     }
 

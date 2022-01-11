@@ -5,16 +5,12 @@
     <parent>
         <groupId>io.split.client</groupId>
         <artifactId>java-client-parent</artifactId>
-        <version>4.4.0-beta</version>
+        <version>4.4.0</version>
     </parent>
     <artifactId>java-client</artifactId>
     <packaging>jar</packaging>
     <name>Java Client</name>
     <description>Java SDK for Split</description>
-
-    <properties>
-        <pluggable.storage>1.0.0-beta</pluggable.storage>
-    </properties>
 
     <build>
         <plugins>
@@ -126,7 +122,7 @@
         <dependency>
             <groupId>io.split.client</groupId>
             <artifactId>pluggable-storage</artifactId>
-            <version>${pluggable.storage}</version>
+            <version>1.0.0</version>
             <scope>compile</scope>
         </dependency>
         <dependency>
