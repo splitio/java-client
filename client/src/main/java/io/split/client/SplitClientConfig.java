@@ -326,7 +326,7 @@ public class SplitClientConfig {
         private ImpressionsManager.Mode _impressionsMode = ImpressionsManager.Mode.OPTIMIZED;
         private int _connectionTimeout = 15000;
         private int _readTimeout = 15000;
-        private int _numThreadsForSegmentFetch = 2;
+        private int _numThreadsForSegmentFetch = 10;
         private boolean _debugEnabled = false;
         private int _ready = -1; // -1 means no blocking
         private int _metricsRefreshRate = 60;

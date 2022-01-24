@@ -3,6 +3,8 @@ package io.split.engine.segments;
 import com.google.common.collect.Maps;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import io.split.engine.SDKReadinessGates;
+import io.split.engine.experiments.ParsedSplit;
+import io.split.engine.matchers.UserDefinedSegmentMatcher;
 import io.split.storages.SegmentCacheProducer;
 import io.split.storages.SplitCacheConsumer;
 import io.split.storages.memory.InMemoryCacheImp;
@@ -13,8 +15,12 @@ import org.slf4j.LoggerFactory;
 import java.io.Closeable;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.ThreadFactory;
@@ -166,19 +172,21 @@ public class SegmentSynchronizationTaskImp implements SegmentSynchronizationTask
     @Override
     public boolean fetchAllSynchronous() {
         _splitCacheConsumer.getSegments().forEach(this::initialize);
-        int failures = _segmentFetchers
-                .entrySet()
+        List<Future> futures = _segmentFetchers.entrySet()
                 .stream().map(e -> _scheduledExecutorService.submit(e.getValue()::runWhitCacheHeader))
-                .reduce(0, (accum, current) -> {
+                .collect(Collectors.toList());
+        int failures = futures.stream()
+                .mapToInt(f -> {
                     try {
-                        if(!current.get()) {
-                            return accum + 1;
-                        }
-                    } catch (Exception ex) {
-                        _log.error(ex.getMessage());
+                        return (Boolean) f.get() ? 0 : 1;
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    } catch (ExecutionException e) {
+                        e.printStackTrace();
                     }
-                    return accum;
-                }, Integer::sum);
+                    return 0;
+                })
+                .sum();
         return failures == 0;
     }
 
