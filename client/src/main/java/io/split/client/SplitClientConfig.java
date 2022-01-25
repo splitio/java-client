@@ -22,7 +22,7 @@ public class SplitClientConfig {
     public static final String LOCALHOST_DEFAULT_FILE = "split.yaml";
     public static final String SDK_ENDPOINT = "https://sdk.split.io";
     public static final String EVENTS_ENDPOINT = "https://events.split.io";
-    public static final String AUTH_ENDPOINT = "https://auth.split.io/api/auth";
+    public static final String AUTH_ENDPOINT = "https://auth.split.io/api/v2/auth";
     public static final String STREAMING_ENDPOINT = "https://streaming.split.io/sse";
     public static final String TELEMETRY_ENDPOINT = "https://telemetry.split.io/api/v1";
 

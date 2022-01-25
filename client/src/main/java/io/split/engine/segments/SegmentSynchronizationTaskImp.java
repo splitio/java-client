@@ -175,7 +175,7 @@ public class SegmentSynchronizationTaskImp implements SegmentSynchronizationTask
         List<Future> futures = _segmentFetchers.entrySet()
                 .stream().map(e -> _scheduledExecutorService.submit(e.getValue()::runWhitCacheHeader))
                 .collect(Collectors.toList());
-        int failures = futures.stream()
+        int segmentFetchExecutions = futures.stream()
                 .mapToInt(f -> {
                     try {
                         return (Boolean) f.get() ? 0 : 1;
@@ -187,7 +187,7 @@ public class SegmentSynchronizationTaskImp implements SegmentSynchronizationTask
                     return 0;
                 })
                 .sum();
-        return failures == 0;
+        return segmentFetchExecutions == 0;
     }
 
     private void initialize(String segmentName) {

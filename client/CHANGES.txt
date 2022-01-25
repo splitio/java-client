@@ -1,3 +1,6 @@
+4.4.1 (Jan 25, 2022)
+- Added improvements in segment fetcher to work as threading pool.
+
 4.4.0 (Jan 11, 2022)
 - Added support for Redis to keep consistency across multiple SDK instances.
 - Added logic to fetch multiple splits at once on GetTreatments/GetTreatmentsWithChanges.
