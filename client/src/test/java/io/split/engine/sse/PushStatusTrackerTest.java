@@ -142,6 +142,24 @@ public class PushStatusTrackerTest {
 
     }
 
+    @Test
+    public void HandleTwoRetryableErrorInARow() throws InterruptedException {
+        TelemetryStorage telemetryStorage = new InMemoryTelemetryStorage();
+        LinkedBlockingQueue<PushManager.Status> messages = new LinkedBlockingQueue<>();
+        PushStatusTracker pushStatusTracker = new PushStatusTrackerImp(messages, telemetryStorage);
+        pushStatusTracker.handleSseStatus(SSEClient.StatusMessage.CONNECTED);
+        pushStatusTracker.handleSseStatus(SSEClient.StatusMessage.RETRYABLE_ERROR);
+        pushStatusTracker.handleSseStatus(SSEClient.StatusMessage.RETRYABLE_ERROR);
+
+
+        assertThat(messages.size(), is(equalTo(2)));
+        PushManager.Status m1 = messages.take();
+        assertThat(m1, is(equalTo(PushManager.Status.STREAMING_BACKOFF)));
+
+        PushManager.Status m2 = messages.take();
+        assertThat(m2, is(equalTo(PushManager.Status.STREAMING_BACKOFF)));
+    }
+
     private ControlNotification buildControlNotification(ControlType controlType) {
         return new ControlNotification(buildGenericData(controlType, IncomingNotification.Type.CONTROL,null, null));
     }

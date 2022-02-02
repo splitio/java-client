@@ -172,10 +172,10 @@ public class SegmentSynchronizationTaskImp implements SegmentSynchronizationTask
     @Override
     public boolean fetchAllSynchronous() {
         _splitCacheConsumer.getSegments().forEach(this::initialize);
-        List<Future> futures = _segmentFetchers.entrySet()
+        List<Future> segmentFetchExecutions = _segmentFetchers.entrySet()
                 .stream().map(e -> _scheduledExecutorService.submit(e.getValue()::runWhitCacheHeader))
                 .collect(Collectors.toList());
-        int segmentFetchExecutions = futures.stream()
+        int failures = segmentFetchExecutions.stream()
                 .mapToInt(f -> {
                     try {
                         return (Boolean) f.get() ? 0 : 1;
@@ -187,7 +187,7 @@ public class SegmentSynchronizationTaskImp implements SegmentSynchronizationTask
                     return 0;
                 })
                 .sum();
-        return segmentFetchExecutions == 0;
+        return failures == 0;
     }
 
     private void initialize(String segmentName) {
