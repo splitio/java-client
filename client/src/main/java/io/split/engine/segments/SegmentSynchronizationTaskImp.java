@@ -172,17 +172,17 @@ public class SegmentSynchronizationTaskImp implements SegmentSynchronizationTask
     @Override
     public boolean fetchAllSynchronous() {
         _splitCacheConsumer.getSegments().forEach(this::initialize);
-        List<Future> segmentFetchExecutions = _segmentFetchers.entrySet()
+        List<Future<Boolean>> segmentFetchExecutions = _segmentFetchers.entrySet()
                 .stream().map(e -> _scheduledExecutorService.submit(e.getValue()::runWhitCacheHeader))
                 .collect(Collectors.toList());
         int failures = segmentFetchExecutions.stream()
                 .mapToInt(f -> {
                     try {
-                        return (Boolean) f.get() ? 0 : 1;
+                        return f.get() ? 0 : 1;
                     } catch (InterruptedException e) {
-                        e.printStackTrace();
+                        _log.error(e.getMessage());
                     } catch (ExecutionException e) {
-                        e.printStackTrace();
+                        _log.error(e.getMessage());
                     }
                     return 0;
                 })
