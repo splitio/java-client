@@ -1,3 +1,8 @@
+4.4.1 (Feb 03, 2022)
+- Added improvements in segment fetcher to work as threading pool.
+- Fixed backoff handler for streaming auth calls due to an issue that stopped retrying after multiple subsequent errors.
+- Updated snakeyaml dependencies and reorganized shaded dependencies.
+
 4.4.0 (Jan 11, 2022)
 - Added support for Redis to keep consistency across multiple SDK instances.
 - Added logic to fetch multiple splits at once on GetTreatments/GetTreatmentsWithChanges.

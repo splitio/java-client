@@ -58,7 +58,9 @@ public class PushStatusTrackerImp implements PushStatusTracker {
                 _sseStatus.compareAndSet(SSEClient.StatusMessage.INITIALIZATION_IN_PROGRESS, SSEClient.StatusMessage.CONNECTED);
                 break;
             case RETRYABLE_ERROR:
-                if (_sseStatus.compareAndSet(SSEClient.StatusMessage.CONNECTED, SSEClient.StatusMessage.RETRYABLE_ERROR)) {
+                if (_sseStatus.compareAndSet(SSEClient.StatusMessage.CONNECTED, SSEClient.StatusMessage.RETRYABLE_ERROR)
+                        || _sseStatus.compareAndSet(SSEClient.StatusMessage.INITIALIZATION_IN_PROGRESS, SSEClient.StatusMessage.RETRYABLE_ERROR)
+                || SSEClient.StatusMessage.RETRYABLE_ERROR == _sseStatus.get()) {
                     _statusMessages.offer(PushManager.Status.STREAMING_BACKOFF);
                 }
                 break;
