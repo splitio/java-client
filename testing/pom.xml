@@ -24,14 +24,16 @@
             <artifactId>junit</artifactId>
         </dependency>
     </dependencies>
+
     <build>
         <plugins>
             <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-deploy-plugin</artifactId>
-                <version>3.0.0-M2</version>
+                <groupId>org.sonatype.plugins</groupId>
+                <artifactId>nexus-staging-maven-plugin</artifactId>
+                <version>1.6.3</version>
+                <extensions>true</extensions>
                 <configuration>
-                    <skip>false</skip> <!-- Set true if you want to avoid deploying this module -->
+                    <skipNexusStagingDeployMojo>false</skipNexusStagingDeployMojo>
                 </configuration>
             </plugin>
         </plugins>
