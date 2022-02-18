@@ -3,10 +3,6 @@ name: Update License Year
 on:
   schedule:
     - cron: "0 3 1 1 *" # 03:00 AM on January 1
-  push:
-    branches:
-      - main
-      - master
 
 permissions:
   contents: write
