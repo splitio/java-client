@@ -1,3 +1,6 @@
+4.4.2 (Feb 22, 2022)
+- Teared down unnecessary log error in segments logic.
+
 4.4.1 (Feb 08, 2022)
 - Added improvements in segment fetcher to work as threading pool.
 - Fixed backoff handler for streaming auth calls due to an issue that stopped retrying after multiple subsequent errors.
