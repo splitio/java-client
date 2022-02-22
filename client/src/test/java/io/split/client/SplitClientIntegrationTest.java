@@ -683,6 +683,7 @@ public class SplitClientIntegrationTest {
             Assert.assertEquals(1, latencies.get(MethodEnum.TREATMENT.getMethod()).fetchAndClearAll().stream().mapToInt(Long::intValue).sum());
             Assert.assertEquals(1, latencies.get(MethodEnum.TREATMENT_WITH_CONFIG.getMethod()).fetchAndClearAll().stream().mapToInt(Long::intValue).sum());
 
+            Thread.sleep(500);
             Assert.assertNotNull(customStorageWrapper.get_telemetryInit());
             Assert.assertEquals(StorageMode.PLUGGABLE.name(), customStorageWrapper.get_telemetryInit().get_storage());
 
