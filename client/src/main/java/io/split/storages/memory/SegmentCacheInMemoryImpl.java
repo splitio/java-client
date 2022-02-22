@@ -48,7 +48,6 @@ public class SegmentCacheInMemoryImpl implements SegmentCache {
     public long getChangeNumber(String segmentName) {
         SegmentImp segmentImp = _segments.get(segmentName);
         if(segmentImp == null){
-            _log.error("Segment " + segmentName + "Not found.");
             return DEFAULT_CHANGE_NUMBER;
         }
         return segmentImp.getChangeNumber();
