@@ -61,8 +61,16 @@
                             </transformers>
                             <relocations>
                                 <relocation>
-                                    <pattern>org.apache.http</pattern>
-                                    <shadedPattern>split.org.apache.http</shadedPattern>
+                                    <pattern>org.apache</pattern>
+                                    <shadedPattern>split.org.apache</shadedPattern>
+                                </relocation>
+                                <relocation>
+                                    <pattern>org.checkerframework</pattern>
+                                    <shadedPattern>split.org.checkerframework</shadedPattern>
+                                </relocation>
+                                <relocation>
+                                    <pattern>org.yaml.snakeyaml</pattern>
+                                    <shadedPattern>split.org.yaml.snakeyaml</shadedPattern>
                                 </relocation>
                                 <relocation>
                                     <pattern>com.google</pattern>
