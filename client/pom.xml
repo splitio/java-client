@@ -5,7 +5,7 @@
     <parent>
         <groupId>io.split.client</groupId>
         <artifactId>java-client-parent</artifactId>
-        <version>4.4.2</version>
+        <version>4.4.3-rc2</version>
     </parent>
     <artifactId>java-client</artifactId>
     <packaging>jar</packaging>
@@ -61,8 +61,16 @@
                             </transformers>
                             <relocations>
                                 <relocation>
-                                    <pattern>org.apache.http</pattern>
-                                    <shadedPattern>split.org.apache.http</shadedPattern>
+                                    <pattern>org.apache</pattern>
+                                    <shadedPattern>split.org.apache</shadedPattern>
+                                </relocation>
+                                <relocation>
+                                    <pattern>org.checkerframework</pattern>
+                                    <shadedPattern>split.org.checkerframework</shadedPattern>
+                                </relocation>
+                                <relocation>
+                                    <pattern>org.yaml.snakeyaml</pattern>
+                                    <shadedPattern>split.org.yaml.snakeyaml</shadedPattern>
                                 </relocation>
                                 <relocation>
                                     <pattern>com.google</pattern>
@@ -183,7 +191,7 @@
         <dependency>
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-log4j12</artifactId>
-            <version>1.7.21</version>
+            <version>1.7.36</version>
             <scope>test</scope>
         </dependency>
         <dependency>

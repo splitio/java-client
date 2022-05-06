@@ -4,7 +4,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>io.split.client</groupId>
     <artifactId>java-client-parent</artifactId>
-    <version>4.4.2</version>
+    <version>4.4.3-rc2</version>
     <dependencyManagement>
         <dependencies>
             <dependency>
@@ -15,7 +15,7 @@
             <dependency>
                 <groupId>org.slf4j</groupId>
                 <artifactId>slf4j-api</artifactId>
-                <version>1.7.25</version>
+                <version>1.7.36</version>
             </dependency>
         </dependencies>
     </dependencyManagement>
