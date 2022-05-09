@@ -1,6 +1,6 @@
 4.4.3 (May 9, 2022)
-- Updated shaded dependencies: 'org.apache', 'org.checkerframework' and 'org.yaml.snakeyaml'
-- Updating 'org.slf4j' to 1.7.36 for fixing vulnerability.
+- Updated shaded dependencies: `org.apache`, `org.checkerframework` and `org.yaml.snakeyaml`
+- Updating `org.slf4j` to 1.7.36 for fixing vulnerability.
 
 4.4.2 (Feb 22, 2022)
 - Cleaned up log messages in segments logic.
