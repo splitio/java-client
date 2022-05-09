@@ -406,7 +406,17 @@ public class SplitClientIntegrationTest {
         responses.add(response);
         responses.add(response);
         responses.add(response);
-        SplitMockServer splitServer = new SplitMockServer(CustomDispatcher.builder()
+
+        SplitMockServer splitServer1 = new SplitMockServer(CustomDispatcher.builder()
+                .path(CustomDispatcher.SINCE_1585948850109, responses)
+                .build());
+        SplitMockServer splitServer2 = new SplitMockServer(CustomDispatcher.builder()
+                .path(CustomDispatcher.SINCE_1585948850109, responses)
+                .build());
+        SplitMockServer splitServer3 = new SplitMockServer(CustomDispatcher.builder()
+                .path(CustomDispatcher.SINCE_1585948850109, responses)
+                .build());
+        SplitMockServer splitServer4 = new SplitMockServer(CustomDispatcher.builder()
                 .path(CustomDispatcher.SINCE_1585948850109, responses)
                 .build());
 
@@ -422,28 +432,31 @@ public class SplitClientIntegrationTest {
         SSEMockServer.SseEventQueue eventQueue4 = new SSEMockServer.SseEventQueue();
         SSEMockServer sseServer4 = buildSSEMockServer(eventQueue4);
 
-        splitServer.start();
+        splitServer1.start();
+        splitServer2.start();
+        splitServer3.start();
+        splitServer4.start();
         sseServer1.start();
         sseServer2.start();
         sseServer3.start();
         sseServer4.start();
 
-        SplitClientConfig config1 = buildSplitClientConfig("enabled", splitServer.getUrl(), sseServer1.getPort(), true, 20);
+        SplitClientConfig config1 = buildSplitClientConfig("enabled", splitServer1.getUrl(), sseServer1.getPort(), true, 20);
         SplitFactory factory1 = SplitFactoryBuilder.build("fake-api-token-1", config1);
         SplitClient client1 = factory1.client();
         client1.blockUntilReady();
 
-        SplitClientConfig config2 = buildSplitClientConfig("enabled", splitServer.getUrl(), sseServer2.getPort(), true, 20);
+        SplitClientConfig config2 = buildSplitClientConfig("enabled", splitServer2.getUrl(), sseServer2.getPort(), true, 20);
         SplitFactory factory2 = SplitFactoryBuilder.build("fake-api-token-2", config2);
         SplitClient client2 = factory2.client();
         client2.blockUntilReady();
 
-        SplitClientConfig config3 = buildSplitClientConfig("enabled", splitServer.getUrl(), sseServer3.getPort(), true, 20);
+        SplitClientConfig config3 = buildSplitClientConfig("enabled", splitServer3.getUrl(), sseServer3.getPort(), true, 20);
         SplitFactory factory3 = SplitFactoryBuilder.build("fake-api-token-3", config3);
         SplitClient client3 = factory3.client();
         client3.blockUntilReady();
 
-        SplitClientConfig config4 = buildSplitClientConfig("disabled", splitServer.getUrl(), sseServer4.getPort(), true, 100);
+        SplitClientConfig config4 = buildSplitClientConfig("disabled", splitServer4.getUrl(), sseServer4.getPort(), true, 100);
         SplitFactory factory4 = SplitFactoryBuilder.build("fake-api-token-4", config4);
         SplitClient client4 = factory4.client();
         client4.blockUntilReady();
@@ -478,11 +491,11 @@ public class SplitClientIntegrationTest {
         eventQueue3.push(sseEventInitial);
         eventQueue4.push(sseEventInitial);
 
-        Thread.sleep(1000);
+        Thread.sleep(10000);
         eventQueue1.push(sseEventSplitUpdate);
 
         Awaitility.await()
-                .atMost(50L, TimeUnit.SECONDS)
+                .atMost(100L, TimeUnit.SECONDS)
                 .until(() -> "split_killed".equals(client1.getTreatment("admin", "push_test")));
 
 
@@ -513,15 +526,17 @@ public class SplitClientIntegrationTest {
                 .until(() -> "split_killed".equals(client3.getTreatment("admin", "push_test")));
 
         Awaitility.await()
-                .atMost(50L, TimeUnit.SECONDS)
+                .atMost(100L, TimeUnit.SECONDS)
                 .until(() -> "on_whitelist".equals(client4.getTreatment("admin", "push_test")));
-
 
         client1.destroy();
         client2.destroy();
         client3.destroy();
         client4.destroy();
-        splitServer.stop();
+        splitServer1.stop();
+        splitServer2.stop();
+        splitServer3.stop();
+        splitServer4.stop();
         sseServer1.stop();
         sseServer2.stop();
         sseServer3.stop();
