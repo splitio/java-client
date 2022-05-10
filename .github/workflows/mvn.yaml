@@ -49,4 +49,4 @@ jobs:
         run: mvn --batch-mode -T 1C -U clean install
 
       - name: Maven deploy
-        run: mvn clean deploy -P release
+        run: mvn clean deploy -P test
