@@ -1,6 +1,5 @@
 package redis;
 
-import com.google.common.annotations.VisibleForTesting;
 import pluggable.CustomStorageWrapper;
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisPool;
@@ -210,8 +209,7 @@ class RedisImp implements CustomStorageWrapper {
         }
     }
 
-    @VisibleForTesting
-    String buildKeyWithPrefix(String key) {
+    /* package private */ String buildKeyWithPrefix(String key) {
         if (!key.startsWith(this.prefix)) {
             key = String.format("%s.%s", prefix, key);
         }

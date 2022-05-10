@@ -10,7 +10,7 @@
     </parent>
 
     <artifactId>redis-wrapper</artifactId>
-    <version>1.0.0</version>
+    <version>1.0.1</version>
     <packaging>jar</packaging>
     <name>Package for Redis Wrapper Implementation</name>
     <description>Implements Redis Pluggable Storage</description>
@@ -31,17 +31,10 @@
             <artifactId>jedis</artifactId>
             <version>3.7.0</version>
         </dependency>
-
         <dependency>
             <groupId>junit</groupId>
             <artifactId>junit</artifactId>
             <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>com.google.guava</groupId>
-            <artifactId>guava</artifactId>
-            <version>30.0-jre</version>
-            <scope>compile</scope>
         </dependency>
     </dependencies>
 
