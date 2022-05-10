@@ -43,7 +43,7 @@ jobs:
           java-version: '8'
 
       - name: Setup Maven
-        run: cp ci.settings.xml ${HOME}/.m2/settings.xml
+        run: cp .ci.settings.xml ${HOME}/.m2/settings.xml
 
       - name: Maven install
         run: mvn --batch-mode -T 1C -U clean install
