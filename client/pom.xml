@@ -138,6 +138,11 @@
             </resource>
         </resources>
     </build>
+
+    <properties>
+        <slf4j.api.version>1.7.36</slf4j.api.version>
+    </properties>
+
     <dependencies>
         <dependency>
             <groupId>io.split.client</groupId>
@@ -153,6 +158,7 @@
         <dependency>
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-api</artifactId>
+            <version>${slf4j.api.version}</version>
         </dependency>
         <dependency>
             <groupId>org.apache.httpcomponents.client5</groupId>
@@ -197,7 +203,7 @@
         <dependency>
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-log4j12</artifactId>
-            <version>1.7.36</version>
+            <version>${slf4j.api.version}</version>
             <scope>test</scope>
         </dependency>
         <dependency>
