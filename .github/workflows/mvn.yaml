@@ -1,13 +1,15 @@
 name: mvn
 on:
   pull_request:
-    branches:
-      - test-mvn
+    branches-ignore:
+      - master
+      - main
     paths-ignore:
       - '**/README.md'
   push:
-    branches:
-      - test-mvn
+    branches-ignore:
+      - master
+      - main
     paths-ignore:
       - '**/README.md'
 
