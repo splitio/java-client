@@ -6,7 +6,7 @@
     <parent>
         <artifactId>java-client-parent</artifactId>
         <groupId>io.split.client</groupId>
-        <version>4.4.4-test</version>
+        <version>4.4.4-test2</version>
     </parent>
 
     <artifactId>redis-wrapper</artifactId>
