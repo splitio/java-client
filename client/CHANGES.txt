@@ -1,3 +1,6 @@
+4.4.4 (May 23, 2022)
+- Update `com.google.code.gson` to 2.9.0 for fixing vulnerability.
+
 4.4.3 (May 9, 2022)
 - Updated shaded dependencies: `org.apache`, `org.checkerframework` and `org.yaml.snakeyaml`
 - Updating `org.slf4j` to 1.7.36 for fixing vulnerability.
