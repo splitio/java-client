@@ -1,4 +1,4 @@
-package io.split.client.impressions;
+package io.split.client.impressions.filters;
 
 public interface FilterAdapter {
 

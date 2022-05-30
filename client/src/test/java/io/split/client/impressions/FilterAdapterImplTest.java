@@ -1,5 +1,7 @@
 package io.split.client.impressions;
 
+import io.split.client.impressions.filters.CuckooFilterImp;
+import io.split.client.impressions.filters.FilterAdapterImpl;
 import org.junit.Assert;
 import org.junit.Test;
 

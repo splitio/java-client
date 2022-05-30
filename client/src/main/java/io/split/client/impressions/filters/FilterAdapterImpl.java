@@ -1,6 +1,9 @@
-package io.split.client.impressions;
+package io.split.client.impressions.filters;
 
-public class FilterAdapterImpl implements FilterAdapter{
+import io.split.client.impressions.filters.Filter;
+import io.split.client.impressions.filters.FilterAdapter;
+
+public class FilterAdapterImpl implements FilterAdapter {
 
     Filter filter;
 
