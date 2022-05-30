@@ -156,6 +156,11 @@
             <version>30.0-jre</version>
         </dependency>
         <dependency>
+            <groupId>com.duprasville.guava</groupId>
+            <artifactId>guava-probably</artifactId>
+            <version>1.0</version>
+        </dependency>
+        <dependency>
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-api</artifactId>
             <version>${slf4j.api.version}</version>
