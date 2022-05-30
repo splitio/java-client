@@ -3,7 +3,6 @@ package io.split.client.impressions.filters;
 import com.duprasville.guava.probably.CuckooFilter;
 import com.google.common.base.Charsets;
 import com.google.common.hash.Funnels;
-import io.split.client.impressions.filters.Filter;
 
 public class CuckooFilterImp implements Filter {
 
