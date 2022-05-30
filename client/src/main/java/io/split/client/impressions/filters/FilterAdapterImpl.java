@@ -20,6 +20,6 @@ public class FilterAdapterImpl implements FilterAdapter {
 
     @Override
     public void clear() {
-
+        filter.clear();
     }
 }

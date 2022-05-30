@@ -39,7 +39,7 @@ public class FilterAdapterImplTest {
         filterAdapter.add("feature","key-2");
         filterAdapter.add("feature"," key-3");
 
-        cuckooFilter.clear();
+        filterAdapter.clear();
 
         Assert.assertEquals(false, cuckooFilter.contains("feature key-1"));
         Assert.assertEquals(false, cuckooFilter.contains("feature key-2"));
