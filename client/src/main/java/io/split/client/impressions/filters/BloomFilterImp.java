@@ -17,17 +17,17 @@ public class BloomFilterImp implements Filter {
     }
 
     @Override
-    public boolean add(String data) {
+    public synchronized boolean add(String data) {
         return bloomFilter.put(data);
     }
 
     @Override
-    public boolean contains(String data) {
+    public synchronized boolean contains(String data) {
         return bloomFilter.mightContain(data);
     }
 
     @Override
-    public void clear() {
+    public synchronized void clear() {
         bloomFilter = BloomFilter.create(Funnels.stringFunnel(Charsets.UTF_16), spectedInsertions, fpp);
 
     }

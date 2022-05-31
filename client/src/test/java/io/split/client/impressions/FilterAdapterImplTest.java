@@ -9,8 +9,8 @@ public class FilterAdapterImplTest {
 
     @Test
     public void addSomeElements(){
-        BloomFilterImp cuckooFilter = new BloomFilterImp(5,0.01);
-        FilterAdapterImpl filterAdapter = new FilterAdapterImpl(cuckooFilter);
+        BloomFilterImp bloomFilterImp = new BloomFilterImp(5,0.01);
+        FilterAdapterImpl filterAdapter = new FilterAdapterImpl(bloomFilterImp);
 
         Assert.assertEquals(true, filterAdapter.add("feature", "key-1"));
         Assert.assertEquals(true, filterAdapter.add("feature", "key-2"));
@@ -19,8 +19,8 @@ public class FilterAdapterImplTest {
 
     @Test
     public void checkContainSomeElements(){
-        BloomFilterImp cuckooFilter = new BloomFilterImp(5,0.01);
-        FilterAdapterImpl filterAdapter = new FilterAdapterImpl(cuckooFilter);
+        BloomFilterImp bloomFilterImp = new BloomFilterImp(5,0.01);
+        FilterAdapterImpl filterAdapter = new FilterAdapterImpl(bloomFilterImp);
 
         Assert.assertTrue(filterAdapter.add("feature","key-1"));
         Assert.assertTrue(filterAdapter.add("feature","key-2"));
@@ -33,16 +33,16 @@ public class FilterAdapterImplTest {
 
     @Test
     public void removedElements(){
-        BloomFilterImp cuckooFilter = new BloomFilterImp(5,0.01);
-        FilterAdapterImpl filterAdapter = new FilterAdapterImpl(cuckooFilter);
+        BloomFilterImp bloomFilterImp = new BloomFilterImp(5,0.01);
+        FilterAdapterImpl filterAdapter = new FilterAdapterImpl(bloomFilterImp);
         filterAdapter.add("feature","key-1");
         filterAdapter.add("feature","key-2");
         filterAdapter.add("feature"," key-3");
 
         filterAdapter.clear();
 
-        Assert.assertEquals(false, cuckooFilter.contains("feature key-1"));
-        Assert.assertEquals(false, cuckooFilter.contains("feature key-2"));
-        Assert.assertEquals(false, cuckooFilter.contains("feature key-3"));
+        Assert.assertEquals(false, bloomFilterImp.contains("feature key-1"));
+        Assert.assertEquals(false, bloomFilterImp.contains("feature key-2"));
+        Assert.assertEquals(false, bloomFilterImp.contains("feature key-3"));
     }
 }

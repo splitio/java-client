@@ -8,35 +8,35 @@ public class BloomFilterImpTest {
 
     @Test
     public void addSomeElements(){
-        BloomFilterImp cuckooFilter = new BloomFilterImp(5,0.01);
-        Assert.assertEquals(true, cuckooFilter.add("feature key-1"));
-        Assert.assertEquals(true, cuckooFilter.add("feature key-2"));
-        Assert.assertEquals(true, cuckooFilter.add("feature key-3"));
+        BloomFilterImp bloomFilterImp = new BloomFilterImp(5,0.01);
+        Assert.assertEquals(true, bloomFilterImp.add("feature key-1"));
+        Assert.assertEquals(true, bloomFilterImp.add("feature key-2"));
+        Assert.assertEquals(true, bloomFilterImp.add("feature key-3"));
     }
 
     @Test
     public void checkContainSomeElements(){
-        BloomFilterImp cuckooFilter = new BloomFilterImp(5,0.01);
-        Assert.assertTrue(cuckooFilter.add("feature key-1"));
-        Assert.assertTrue(cuckooFilter.add("feature key-2"));
-        Assert.assertTrue(cuckooFilter.add("feature key-3"));
+        BloomFilterImp bloomFilterImp = new BloomFilterImp(5,0.01);
+        Assert.assertTrue(bloomFilterImp.add("feature key-1"));
+        Assert.assertTrue(bloomFilterImp.add("feature key-2"));
+        Assert.assertTrue(bloomFilterImp.add("feature key-3"));
 
-        Assert.assertEquals(true, cuckooFilter.contains("feature key-1"));
-        Assert.assertEquals(true, cuckooFilter.contains("feature key-2"));
-        Assert.assertEquals(true, cuckooFilter.contains("feature key-3"));
+        Assert.assertEquals(true, bloomFilterImp.contains("feature key-1"));
+        Assert.assertEquals(true, bloomFilterImp.contains("feature key-2"));
+        Assert.assertEquals(true, bloomFilterImp.contains("feature key-3"));
     }
 
     @Test
     public void removedElements(){
-        BloomFilterImp cuckooFilter = new BloomFilterImp(5,0.01);
-        cuckooFilter.add("feature key-1");
-        cuckooFilter.add("feature key-2");
-        cuckooFilter.add("feature key-3");
+        BloomFilterImp bloomFilterImp = new BloomFilterImp(5,0.01);
+        bloomFilterImp.add("feature key-1");
+        bloomFilterImp.add("feature key-2");
+        bloomFilterImp.add("feature key-3");
 
-        cuckooFilter.clear();
+        bloomFilterImp.clear();
 
-        Assert.assertEquals(false, cuckooFilter.contains("feature key-1"));
-        Assert.assertEquals(false, cuckooFilter.contains("feature key-2"));
-        Assert.assertEquals(false, cuckooFilter.contains("feature key-3"));
+        Assert.assertEquals(false, bloomFilterImp.contains("feature key-1"));
+        Assert.assertEquals(false, bloomFilterImp.contains("feature key-2"));
+        Assert.assertEquals(false, bloomFilterImp.contains("feature key-3"));
     }
 }
