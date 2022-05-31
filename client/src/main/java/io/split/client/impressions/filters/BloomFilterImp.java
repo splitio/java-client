@@ -6,14 +6,14 @@ import com.google.common.hash.Funnels;
 
 public class BloomFilterImp implements Filter {
 
-    BloomFilter bloomFilter;
-    int spectedInsertions;
-    double fpp;
+    private BloomFilter bloomFilter;
+    private final int size;
+    private final double errorMargin;
 
-    public BloomFilterImp(int spectedInsertions, double fpp) {
-        this.spectedInsertions = spectedInsertions;
-        this.fpp = fpp;
-        this.bloomFilter = BloomFilter.create(Funnels.stringFunnel(Charsets.UTF_16), spectedInsertions, fpp);
+    public BloomFilterImp(int size, double errorMargin) {
+        this.size = size;
+        this.errorMargin = errorMargin;
+        this.bloomFilter = BloomFilter.create(Funnels.stringFunnel(Charsets.UTF_8), size, errorMargin);
     }
 
     @Override
@@ -28,7 +28,7 @@ public class BloomFilterImp implements Filter {
 
     @Override
     public synchronized void clear() {
-        bloomFilter = BloomFilter.create(Funnels.stringFunnel(Charsets.UTF_16), spectedInsertions, fpp);
+        bloomFilter = BloomFilter.create(Funnels.stringFunnel(Charsets.UTF_16), size, errorMargin);
 
     }
 }
