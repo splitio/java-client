@@ -1,6 +1,6 @@
 package io.split.client.impressions;
 
-import io.split.client.impressions.filters.CuckooFilterImp;
+import io.split.client.impressions.filters.BloomFilterImp;
 import io.split.client.impressions.filters.FilterAdapterImpl;
 import org.junit.Assert;
 import org.junit.Test;
@@ -9,7 +9,7 @@ public class FilterAdapterImplTest {
 
     @Test
     public void addSomeElements(){
-        CuckooFilterImp cuckooFilter = new CuckooFilterImp(5,0.01);
+        BloomFilterImp cuckooFilter = new BloomFilterImp(5,0.01);
         FilterAdapterImpl filterAdapter = new FilterAdapterImpl(cuckooFilter);
 
         Assert.assertEquals(true, filterAdapter.add("feature", "key-1"));
@@ -19,7 +19,7 @@ public class FilterAdapterImplTest {
 
     @Test
     public void checkContainSomeElements(){
-        CuckooFilterImp cuckooFilter = new CuckooFilterImp(5,0.01);
+        BloomFilterImp cuckooFilter = new BloomFilterImp(5,0.01);
         FilterAdapterImpl filterAdapter = new FilterAdapterImpl(cuckooFilter);
 
         Assert.assertTrue(filterAdapter.add("feature","key-1"));
@@ -33,7 +33,7 @@ public class FilterAdapterImplTest {
 
     @Test
     public void removedElements(){
-        CuckooFilterImp cuckooFilter = new CuckooFilterImp(5,0.01);
+        BloomFilterImp cuckooFilter = new BloomFilterImp(5,0.01);
         FilterAdapterImpl filterAdapter = new FilterAdapterImpl(cuckooFilter);
         filterAdapter.add("feature","key-1");
         filterAdapter.add("feature","key-2");
