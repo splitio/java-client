@@ -2,7 +2,7 @@ package io.split.client.impressions.filters;
 
 public class FilterAdapterImpl implements FilterAdapter {
 
-    private Filter filter;
+    private final Filter filter;
 
     public FilterAdapterImpl(Filter filter) {
         this.filter = filter;
