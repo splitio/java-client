@@ -11,11 +11,11 @@ import java.util.HashSet;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class UniqueKeysTrackerImp implements UniqueKeysTracker{
-    private FilterAdapter filterAdapter;
-    private ImpressionsSender impressionsSender;
     private static final double MARGIN_ERROR = 0.01;
     private static final int MAX_AMOUNT_OF_TRACKED_MTKS = 30000;
     private static final int MAX_AMOUNT_OF_KEYS = 10000000;
+    private FilterAdapter filterAdapter;
+    private ImpressionsSender impressionsSender;
     private final ConcurrentHashMap<String,HashSet<String>> mtkTracker;
     private static final Logger _logger = LoggerFactory.getLogger(HttpImpressionsSender.class);
 
