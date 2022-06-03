@@ -1,5 +1,6 @@
 package io.split.client.impressions;
 
+import com.google.common.annotations.VisibleForTesting;
 import io.split.client.impressions.filters.BloomFilterImp;
 import io.split.client.impressions.filters.Filter;
 import io.split.client.impressions.filters.FilterAdapter;
@@ -17,7 +18,7 @@ public class UniqueKeysTrackerImp implements UniqueKeysTracker{
     private FilterAdapter filterAdapter;
     private ImpressionsSender impressionsSender;
     private final ConcurrentHashMap<String,HashSet<String>> mtkTracker;
-    private static final Logger _logger = LoggerFactory.getLogger(HttpImpressionsSender.class);
+    private static final Logger _logger = LoggerFactory.getLogger(UniqueKeysTrackerImp.class);
 
     public UniqueKeysTrackerImp() {
         Filter bloomFilter = new BloomFilterImp(MAX_AMOUNT_OF_KEYS, MARGIN_ERROR);
@@ -33,19 +34,17 @@ public class UniqueKeysTrackerImp implements UniqueKeysTracker{
             _logger.warn("The MTKTracker size reached the maximum limit");
             return false;
         }
-        if (mtkTracker.size() < MAX_AMOUNT_OF_TRACKED_MTKS) {
-            if (filterAdapter.add(featureName, key)) {
-                HashSet<String> value = new HashSet<>();
-                if(mtkTracker.containsKey(featureName)){
-                    value = mtkTracker.get(featureName);
-                }
-                value.add(key);
-                mtkTracker.put(featureName, value);
-                return true;
+        if (filterAdapter.add(featureName, key)) {
+            HashSet<String> value = new HashSet<>();
+            if(mtkTracker.containsKey(featureName)){
+                value = mtkTracker.get(featureName);
             }
-            _logger.warn("The feature and key pair was added");
-            return false;
+            value.add(key);
+            mtkTracker.put(featureName, value);
+            _logger.debug("The feature " + featureName + " and key " + key + " was added");
+            return true;
         }
+        _logger.debug("The feature " + featureName + " and key " + key + " exist in the MtkTracker");
         return false;
     }
 
@@ -58,6 +57,7 @@ public class UniqueKeysTrackerImp implements UniqueKeysTracker{
     public void stop() {
 
     }
+    @VisibleForTesting
     ConcurrentHashMap<String, HashSet<String>> getMtkTracker() {
         return mtkTracker;
     }
