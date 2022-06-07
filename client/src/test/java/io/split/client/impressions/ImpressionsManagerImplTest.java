@@ -58,8 +58,9 @@ public class ImpressionsManagerImplTest {
         ImpressionsStorage storage = new InMemoryImpressionsStorage(config.impressionsQueueSize());
 
         ImpressionsSender senderMock = Mockito.mock(ImpressionsSender.class);
+        UniqueKeysTracker uniqueKeysTracker = new UniqueKeysTrackerImp();
 
-        ImpressionsManagerImpl treatmentLog = ImpressionsManagerImpl.instanceForTest(null, config, senderMock, null, TELEMETRY_STORAGE, storage, storage);
+        ImpressionsManagerImpl treatmentLog = ImpressionsManagerImpl.instanceForTest(null, config, senderMock, null, TELEMETRY_STORAGE, storage, storage, uniqueKeysTracker);
 
         KeyImpression ki1 = keyImpression("test1", "adil", "on", 1L, null);
         KeyImpression ki2 = keyImpression("test1", "adil", "on", 2L, 1L);
@@ -92,8 +93,9 @@ public class ImpressionsManagerImplTest {
         ImpressionsStorage storage = new InMemoryImpressionsStorage(config.impressionsQueueSize());
 
         ImpressionsSender senderMock = Mockito.mock(ImpressionsSender.class);
+        UniqueKeysTracker uniqueKeysTracker = new UniqueKeysTrackerImp();
 
-        ImpressionsManagerImpl treatmentLog = ImpressionsManagerImpl.instanceForTest(null, config, senderMock, null, TELEMETRY_STORAGE, storage, storage);
+        ImpressionsManagerImpl treatmentLog = ImpressionsManagerImpl.instanceForTest(null, config, senderMock, null, TELEMETRY_STORAGE, storage, storage, uniqueKeysTracker);
 
         // These 4 unique test name will cause 4 entries but we are caping at the first 3.
         KeyImpression ki1 = keyImpression("test1", "adil", "on", 1L, null);
@@ -128,8 +130,9 @@ public class ImpressionsManagerImplTest {
         ImpressionsStorage storage = new InMemoryImpressionsStorage(config.impressionsQueueSize());
 
         ImpressionsSender senderMock = Mockito.mock(ImpressionsSender.class);
+        UniqueKeysTracker uniqueKeysTracker = new UniqueKeysTrackerImp();
 
-        ImpressionsManagerImpl treatmentLog = ImpressionsManagerImpl.instanceForTest(null, config, senderMock, null, TELEMETRY_STORAGE, storage, storage);
+        ImpressionsManagerImpl treatmentLog = ImpressionsManagerImpl.instanceForTest(null, config, senderMock, null, TELEMETRY_STORAGE, storage, storage, uniqueKeysTracker);
 
         // These 4 unique test name will cause 4 entries but we are caping at the first 3.
         KeyImpression ki1 = keyImpression("test1", "adil", "on", 1L, 1L);
@@ -166,7 +169,9 @@ public class ImpressionsManagerImplTest {
         ImpressionsStorage storage = new InMemoryImpressionsStorage(config.impressionsQueueSize());
 
         ImpressionsSender senderMock = Mockito.mock(ImpressionsSender.class);
-        ImpressionsManagerImpl treatmentLog = ImpressionsManagerImpl.instanceForTest(null, config, senderMock, null, TELEMETRY_STORAGE, storage, storage);
+        UniqueKeysTracker uniqueKeysTracker = new UniqueKeysTrackerImp();
+
+        ImpressionsManagerImpl treatmentLog = ImpressionsManagerImpl.instanceForTest(null, config, senderMock, null, TELEMETRY_STORAGE, storage, storage, uniqueKeysTracker);
 
         // There are no impressions to post.
 
@@ -187,8 +192,9 @@ public class ImpressionsManagerImplTest {
         ImpressionsStorage storage = new InMemoryImpressionsStorage(config.impressionsQueueSize());
 
         ImpressionsSender senderMock = Mockito.mock(ImpressionsSender.class);
+        UniqueKeysTracker uniqueKeysTracker = new UniqueKeysTrackerImp();
 
-        ImpressionsManagerImpl treatmentLog = ImpressionsManagerImpl.instanceForTest(null, config, senderMock, null, TELEMETRY_STORAGE, storage, storage);
+        ImpressionsManagerImpl treatmentLog = ImpressionsManagerImpl.instanceForTest(null, config, senderMock, null, TELEMETRY_STORAGE, storage, storage, uniqueKeysTracker);
 
         // These 4 unique test name will cause 4 entries but we are caping at the first 3.
         KeyImpression ki1 = keyImpression("test1", "adil", "on", 1L, 1L);
@@ -249,8 +255,9 @@ public class ImpressionsManagerImplTest {
         ImpressionsStorage storage = new InMemoryImpressionsStorage(config.impressionsQueueSize());
 
         ImpressionsSender senderMock = Mockito.mock(ImpressionsSender.class);
+        UniqueKeysTracker uniqueKeysTracker = new UniqueKeysTrackerImp();
 
-        ImpressionsManagerImpl treatmentLog = ImpressionsManagerImpl.instanceForTest(null, config, senderMock, null, TELEMETRY_STORAGE, storage, storage);
+        ImpressionsManagerImpl treatmentLog = ImpressionsManagerImpl.instanceForTest(null, config, senderMock, null, TELEMETRY_STORAGE, storage, storage, uniqueKeysTracker);
 
         // These 4 unique test name will cause 4 entries but we are caping at the first 3.
         KeyImpression ki1 = keyImpression("test1", "adil", "on", 1L, 1L);
@@ -302,8 +309,9 @@ public class ImpressionsManagerImplTest {
         ImpressionsStorage storage = new InMemoryImpressionsStorage(config.impressionsQueueSize());
 
         ImpressionsSender senderMock = Mockito.mock(ImpressionsSender.class);
+        UniqueKeysTracker uniqueKeysTracker = new UniqueKeysTrackerImp();
 
-        ImpressionsManagerImpl manager = ImpressionsManagerImpl.instanceForTest(null, config, senderMock, null, TELEMETRY_STORAGE, storage, storage);
+        ImpressionsManagerImpl manager = ImpressionsManagerImpl.instanceForTest(null, config, senderMock, null, TELEMETRY_STORAGE, storage, storage,uniqueKeysTracker);
         Assert.assertNotNull(manager.getCounter());
     }
 
@@ -319,8 +327,9 @@ public class ImpressionsManagerImplTest {
         ImpressionsStorage storage = new InMemoryImpressionsStorage(config.impressionsQueueSize());
 
         ImpressionsSender senderMock = Mockito.mock(ImpressionsSender.class);
+        UniqueKeysTracker uniqueKeysTracker = new UniqueKeysTrackerImp();
 
-        ImpressionsManagerImpl manager = ImpressionsManagerImpl.instanceForTest(null, config, senderMock, null, TELEMETRY_STORAGE, storage, storage);
+        ImpressionsManagerImpl manager = ImpressionsManagerImpl.instanceForTest(null, config, senderMock, null, TELEMETRY_STORAGE, storage, storage, uniqueKeysTracker);
         Assert.assertNull(manager.getCounter());
     }
 

@@ -5,6 +5,8 @@ import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import io.split.client.SplitClientConfig;
 import io.split.client.dtos.KeyImpression;
 import io.split.client.dtos.TestImpressions;
+import io.split.client.impressions.strategy.ProcessImpressionFactory;
+import io.split.client.impressions.strategy.ProcessImpressionStrategy;
 import io.split.storages.enums.OperationMode;
 import io.split.telemetry.domain.enums.ImpressionsDataTypeEnum;
 import io.split.telemetry.storage.TelemetryRuntimeProducer;
@@ -18,6 +20,7 @@ import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ThreadFactory;
@@ -51,14 +54,17 @@ public class ImpressionsManagerImpl implements ImpressionsManager, Closeable {
     private final boolean _addPreviousTimeEnabled;
     private final boolean _isOptimized;
     private final OperationMode _operationMode;
+    private final ProcessImpressionStrategy _processImpressionStrategy;
+    private final UniqueKeysTracker _uniqueKeysTracker;
 
     public static ImpressionsManagerImpl instance(CloseableHttpClient client,
                                                   SplitClientConfig config,
                                                   List<ImpressionListener> listeners,
                                                   TelemetryRuntimeProducer telemetryRuntimeProducer,
                                                   ImpressionsStorageConsumer impressionsStorageConsumer,
-                                                  ImpressionsStorageProducer impressionsStorageProducer) throws URISyntaxException {
-        return new ImpressionsManagerImpl(client, config, null, listeners, telemetryRuntimeProducer, impressionsStorageConsumer, impressionsStorageProducer);
+                                                  ImpressionsStorageProducer impressionsStorageProducer,
+                                                  UniqueKeysTracker uniqueKeysTracker) throws URISyntaxException {
+        return new ImpressionsManagerImpl(client, config, null, listeners, telemetryRuntimeProducer, impressionsStorageConsumer, impressionsStorageProducer, uniqueKeysTracker);
     }
 
     public static ImpressionsManagerImpl instanceForTest(CloseableHttpClient client,
@@ -67,8 +73,9 @@ public class ImpressionsManagerImpl implements ImpressionsManager, Closeable {
                                                          List<ImpressionListener> listeners,
                                                          TelemetryRuntimeProducer telemetryRuntimeProducer,
                                                          ImpressionsStorageConsumer impressionsStorageConsumer,
-                                                         ImpressionsStorageProducer impressionsStorageProducer) throws URISyntaxException {
-        return new ImpressionsManagerImpl(client, config, impressionsSender, listeners, telemetryRuntimeProducer, impressionsStorageConsumer, impressionsStorageProducer);
+                                                         ImpressionsStorageProducer impressionsStorageProducer,
+                                                         UniqueKeysTracker uniqueKeysTracker) throws URISyntaxException {
+        return new ImpressionsManagerImpl(client, config, impressionsSender, listeners, telemetryRuntimeProducer, impressionsStorageConsumer, impressionsStorageProducer, uniqueKeysTracker);
     }
 
     private ImpressionsManagerImpl(CloseableHttpClient client,
@@ -77,7 +84,8 @@ public class ImpressionsManagerImpl implements ImpressionsManager, Closeable {
                                    List<ImpressionListener> listeners,
                                    TelemetryRuntimeProducer telemetryRuntimeProducer,
                                    ImpressionsStorageConsumer impressionsStorageConsumer,
-                                   ImpressionsStorageProducer impressionsStorageProducer) throws URISyntaxException {
+                                   ImpressionsStorageProducer impressionsStorageProducer,
+                                   UniqueKeysTracker uniqueKeysTracker) throws URISyntaxException {
 
 
         _config = checkNotNull(config);
@@ -99,9 +107,13 @@ public class ImpressionsManagerImpl implements ImpressionsManager, Closeable {
         _addPreviousTimeEnabled = shouldAddPreviousTime();
         _counter = _addPreviousTimeEnabled ? new ImpressionCounter() : null;
         _isOptimized = _counter != null && shouldBeOptimized();
+        _uniqueKeysTracker = uniqueKeysTracker;
         if (_isOptimized) {
             _scheduler.scheduleAtFixedRate(this::sendImpressionCounters, COUNT_INITIAL_DELAY_SECONDS, COUNT_REFRESH_RATE_SECONDS, TimeUnit.SECONDS);
         }
+        ProcessImpressionFactory processImpressionFactory =  new ProcessImpressionFactory();
+        _processImpressionStrategy = processImpressionFactory.createProcessImpression(config.impressionsMode());
+
     }
 
     private boolean shouldQueueImpression(Impression i) {
@@ -116,7 +128,8 @@ public class ImpressionsManagerImpl implements ImpressionsManager, Closeable {
         }
         int totalImpressions = impressions.size();
 
-        impressions = processImpressions(impressions);
+        //impressions = processImpressions(impressions);
+        impressions = _processImpressionStrategy.processImpressions(impressions, _impressionObserver, _counter, _addPreviousTimeEnabled, _uniqueKeysTracker);
 
         if (totalImpressions > impressions.size()) {
             _telemetryRuntimeProducer.recordImpressionStats(ImpressionsDataTypeEnum.IMPRESSIONS_DEDUPED, totalImpressions-impressions.size());

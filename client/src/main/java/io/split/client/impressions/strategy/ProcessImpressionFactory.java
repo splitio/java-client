@@ -2,6 +2,8 @@ package io.split.client.impressions.strategy;
 
 import io.split.client.impressions.ImpressionsManager;
 
+import java.util.Optional;
+
 public class ProcessImpressionFactory {
 
     public ProcessImpressionStrategy createProcessImpression(ImpressionsManager.Mode impressionMode){

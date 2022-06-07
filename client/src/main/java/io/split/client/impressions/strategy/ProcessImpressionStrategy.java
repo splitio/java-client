@@ -3,10 +3,11 @@ package io.split.client.impressions.strategy;
 import io.split.client.impressions.Impression;
 import io.split.client.impressions.ImpressionCounter;
 import io.split.client.impressions.ImpressionObserver;
+import io.split.client.impressions.UniqueKeysTracker;
 
 import java.util.List;
 
 public interface ProcessImpressionStrategy {
 
-    List<Impression> processImpressions(List<Impression> impressions, ImpressionObserver impressionObserver, ImpressionCounter impressionCounter, boolean addPreviousTimeEnabled);
+    List<Impression> processImpressions(List<Impression> impressions, ImpressionObserver impressionObserver, ImpressionCounter impressionCounter, boolean addPreviousTimeEnabled, UniqueKeysTracker uniqueKeysTracker);
 }

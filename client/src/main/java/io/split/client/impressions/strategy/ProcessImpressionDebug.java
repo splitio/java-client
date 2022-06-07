@@ -3,6 +3,7 @@ package io.split.client.impressions.strategy;
 import io.split.client.impressions.Impression;
 import io.split.client.impressions.ImpressionCounter;
 import io.split.client.impressions.ImpressionObserver;
+import io.split.client.impressions.UniqueKeysTracker;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -10,7 +11,7 @@ import java.util.List;
 public class ProcessImpressionDebug implements ProcessImpressionStrategy{
 
     @Override
-    public List<Impression> processImpressions(List<Impression> impressions, ImpressionObserver impressionObserver, ImpressionCounter impressionCounter, boolean addPreviousTimeEnabled) {
+    public List<Impression> processImpressions(List<Impression> impressions, ImpressionObserver impressionObserver, ImpressionCounter impressionCounter, boolean addPreviousTimeEnabled, UniqueKeysTracker uniqueKeysTracker) {
         if(!addPreviousTimeEnabled) { //Only STANDALONE Mode needs to iterate over impressions to add previous time.
             return impressions;
         }

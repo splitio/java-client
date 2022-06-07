@@ -1,9 +1,6 @@
 package io.split.client.impressions.strategy;
 
-import io.split.client.impressions.Impression;
-import io.split.client.impressions.ImpressionCounter;
-import io.split.client.impressions.ImpressionObserver;
-import io.split.client.impressions.ImpressionUtils;
+import io.split.client.impressions.*;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -12,7 +9,7 @@ import java.util.Objects;
 public class ProcessImpressionOptimized implements ProcessImpressionStrategy{
 
     @Override
-    public List<Impression> processImpressions(List<Impression> impressions, ImpressionObserver impressionObserver, ImpressionCounter impressionCounter, boolean addPreviousTimeEnabled) {
+    public List<Impression> processImpressions(List<Impression> impressions, ImpressionObserver impressionObserver, ImpressionCounter impressionCounter, boolean addPreviousTimeEnabled, UniqueKeysTracker uniqueKeysTracker) {
         List<Impression> impressionsToQueue = new ArrayList<>();
         for(Impression impression : impressions) {
             impression = impression.withPreviousTime(impressionObserver.testAndSet(impression));
