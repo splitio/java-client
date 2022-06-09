@@ -8,12 +8,21 @@ import java.util.Objects;
 
 public class ProcessImpressionOptimized implements ProcessImpressionStrategy{
 
+    private final ImpressionObserver _impressionObserver;
+    private final ImpressionCounter _impressionCounter;
+
+
+    public ProcessImpressionOptimized(ImpressionObserver impressionObserver, ImpressionCounter impressionCounter) {
+        _impressionObserver = impressionObserver;
+        _impressionCounter = impressionCounter;
+    }
+
     @Override
-    public List<Impression> processImpressions(List<Impression> impressions, ImpressionObserver impressionObserver, ImpressionCounter impressionCounter, boolean addPreviousTimeEnabled, UniqueKeysTracker uniqueKeysTracker) {
+    public List<Impression> processImpressions(List<Impression> impressions) {
         List<Impression> impressionsToQueue = new ArrayList<>();
         for(Impression impression : impressions) {
-            impression = impression.withPreviousTime(impressionObserver.testAndSet(impression));
-            impressionCounter.inc(impression.split(), impression.time(), 1);
+            impression = impression.withPreviousTime(_impressionObserver.testAndSet(impression));
+            _impressionCounter.inc(impression.split(), impression.time(), 1);
             if(!shouldQueueImpression(impression)) {
                 continue;
             }

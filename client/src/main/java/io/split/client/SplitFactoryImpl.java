@@ -91,7 +91,6 @@ public class SplitFactoryImpl implements SplitFactory {
 
     private final SDKReadinessGates _gates;
     private final ImpressionsManagerImpl _impressionsManager;
-    private final UniqueKeysTracker _uniqueKeysTracker;
     private final Evaluator _evaluator;
     private final String _apiToken;
 
@@ -173,8 +172,7 @@ public class SplitFactoryImpl implements SplitFactory {
                 findPollingPeriod(RANDOM, config.featuresRefreshRate()));
 
         // Impressions
-        _uniqueKeysTracker = new UniqueKeysTrackerImp();
-        _impressionsManager = buildImpressionsManager(config, impressionsStorage, impressionsStorage, _uniqueKeysTracker);
+        _impressionsManager = buildImpressionsManager(config, impressionsStorage, impressionsStorage);
 
         // EventClient
         EventsStorage eventsStorage = new InMemoryEventsStorage(config.eventsQueueSize(), _telemetryStorageProducer);
@@ -276,8 +274,8 @@ public class SplitFactoryImpl implements SplitFactory {
         _gates = new SDKReadinessGates();
 
         _evaluator = new EvaluatorImp(userCustomSplitAdapterConsumer, userCustomSegmentAdapterConsumer);
-        _uniqueKeysTracker = new UniqueKeysTrackerImp();
-        _impressionsManager = buildImpressionsManager(config, userCustomImpressionAdapterConsumer, userCustomImpressionAdapterProducer, _uniqueKeysTracker);
+
+        _impressionsManager = buildImpressionsManager(config, userCustomImpressionAdapterConsumer, userCustomImpressionAdapterProducer);
 
         _telemetrySynchronizer = new TelemetryConsumerSubmitter(customStorageWrapper, _sdkMetadata);
 
@@ -458,7 +456,7 @@ public class SplitFactoryImpl implements SplitFactory {
         return new SplitFetcherImp(splitChangeFetcher, splitParser, splitCacheConsumer, splitCacheProducer, _telemetryStorageProducer);
     }
 
-    private ImpressionsManagerImpl buildImpressionsManager(SplitClientConfig config, ImpressionsStorageConsumer impressionsStorageConsumer, ImpressionsStorageProducer impressionsStorageProducer, UniqueKeysTracker uniqueKeysTracker) throws URISyntaxException {
+    private ImpressionsManagerImpl buildImpressionsManager(SplitClientConfig config, ImpressionsStorageConsumer impressionsStorageConsumer, ImpressionsStorageProducer impressionsStorageProducer) throws URISyntaxException {
         List<ImpressionListener> impressionListeners = new ArrayList<>();
         if (config.integrationsConfig() != null) {
             config.integrationsConfig().getImpressionsListeners(IntegrationsConfig.Execution.ASYNC).stream()
@@ -470,7 +468,7 @@ public class SplitFactoryImpl implements SplitFactory {
                     .collect(Collectors.toCollection(() -> impressionListeners));
         }
 
-        return ImpressionsManagerImpl.instance(_httpclient, config, impressionListeners, _telemetryStorageProducer, impressionsStorageConsumer, impressionsStorageProducer, uniqueKeysTracker);
+        return ImpressionsManagerImpl.instance(_httpclient, config, impressionListeners, _telemetryStorageProducer, impressionsStorageConsumer, impressionsStorageProducer);
     }
 
     private SDKMetadata createSdkMetadata(boolean ipAddressEnabled, String splitSdkVersion) {

@@ -61,9 +61,8 @@ public class ImpressionsManagerImpl implements ImpressionsManager, Closeable {
                                                   List<ImpressionListener> listeners,
                                                   TelemetryRuntimeProducer telemetryRuntimeProducer,
                                                   ImpressionsStorageConsumer impressionsStorageConsumer,
-                                                  ImpressionsStorageProducer impressionsStorageProducer,
-                                                  UniqueKeysTracker uniqueKeysTracker) throws URISyntaxException {
-        return new ImpressionsManagerImpl(client, config, null, listeners, telemetryRuntimeProducer, impressionsStorageConsumer, impressionsStorageProducer, uniqueKeysTracker);
+                                                  ImpressionsStorageProducer impressionsStorageProducer) throws URISyntaxException {
+        return new ImpressionsManagerImpl(client, config, null, listeners, telemetryRuntimeProducer, impressionsStorageConsumer, impressionsStorageProducer);
     }
 
     public static ImpressionsManagerImpl instanceForTest(CloseableHttpClient client,
@@ -72,9 +71,8 @@ public class ImpressionsManagerImpl implements ImpressionsManager, Closeable {
                                                          List<ImpressionListener> listeners,
                                                          TelemetryRuntimeProducer telemetryRuntimeProducer,
                                                          ImpressionsStorageConsumer impressionsStorageConsumer,
-                                                         ImpressionsStorageProducer impressionsStorageProducer,
-                                                         UniqueKeysTracker uniqueKeysTracker) throws URISyntaxException {
-        return new ImpressionsManagerImpl(client, config, impressionsSender, listeners, telemetryRuntimeProducer, impressionsStorageConsumer, impressionsStorageProducer, uniqueKeysTracker);
+                                                         ImpressionsStorageProducer impressionsStorageProducer) throws URISyntaxException {
+        return new ImpressionsManagerImpl(client, config, impressionsSender, listeners, telemetryRuntimeProducer, impressionsStorageConsumer, impressionsStorageProducer);
     }
 
     private ImpressionsManagerImpl(CloseableHttpClient client,
@@ -83,8 +81,7 @@ public class ImpressionsManagerImpl implements ImpressionsManager, Closeable {
                                    List<ImpressionListener> listeners,
                                    TelemetryRuntimeProducer telemetryRuntimeProducer,
                                    ImpressionsStorageConsumer impressionsStorageConsumer,
-                                   ImpressionsStorageProducer impressionsStorageProducer,
-                                   UniqueKeysTracker uniqueKeysTracker) throws URISyntaxException {
+                                   ImpressionsStorageProducer impressionsStorageProducer) throws URISyntaxException {
 
 
         _config = checkNotNull(config);
@@ -106,12 +103,12 @@ public class ImpressionsManagerImpl implements ImpressionsManager, Closeable {
         _addPreviousTimeEnabled = shouldAddPreviousTime();
         _counter = _addPreviousTimeEnabled ? new ImpressionCounter() : null;
         _isOptimized = _counter != null && shouldBeOptimized();
-        _uniqueKeysTracker = uniqueKeysTracker;
+        _uniqueKeysTracker = new UniqueKeysTrackerImp();
         if (_isOptimized) {
             _scheduler.scheduleAtFixedRate(this::sendImpressionCounters, COUNT_INITIAL_DELAY_SECONDS, COUNT_REFRESH_RATE_SECONDS, TimeUnit.SECONDS);
         }
         ProcessImpressionFactory processImpressionFactory =  new ProcessImpressionFactory();
-        _processImpressionStrategy = processImpressionFactory.createProcessImpression(config.impressionsMode());
+        _processImpressionStrategy = processImpressionFactory.createProcessImpression(config.impressionsMode(), _uniqueKeysTracker, _impressionObserver, _counter);
 
     }
 
@@ -128,7 +125,7 @@ public class ImpressionsManagerImpl implements ImpressionsManager, Closeable {
         int totalImpressions = impressions.size();
 
         //impressions = processImpressions(impressions);
-        impressions = _processImpressionStrategy.processImpressions(impressions, _impressionObserver, _counter, _addPreviousTimeEnabled, _uniqueKeysTracker);
+        impressions = _processImpressionStrategy.processImpressions(impressions);
 
         if (totalImpressions > impressions.size()) {
             _telemetryRuntimeProducer.recordImpressionStats(ImpressionsDataTypeEnum.IMPRESSIONS_DEDUPED, totalImpressions-impressions.size());
