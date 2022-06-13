@@ -18,7 +18,7 @@ public class ProcessImpressionOptimized implements ProcessImpressionStrategy{
     }
 
     @Override
-    public List<Impression> processImpressions(List<Impression> impressions) {
+    public ImpressionsResult processImpressions(List<Impression> impressions) {
         List<Impression> impressionsToQueue = new ArrayList<>();
         for(Impression impression : impressions) {
             impression = impression.withPreviousTime(_impressionObserver.testAndSet(impression));
@@ -28,7 +28,7 @@ public class ProcessImpressionOptimized implements ProcessImpressionStrategy{
             }
             impressionsToQueue.add(impression);
         }
-        return impressionsToQueue;
+        return new ImpressionsResult(impressions, impressionsToQueue);
     }
 
     private boolean shouldQueueImpression(Impression i) {

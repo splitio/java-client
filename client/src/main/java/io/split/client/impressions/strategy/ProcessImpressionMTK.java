@@ -1,6 +1,7 @@
 package io.split.client.impressions.strategy;
 
 import io.split.client.impressions.Impression;
+import io.split.client.impressions.ImpressionsResult;
 import io.split.client.impressions.UniqueKeysTracker;
 
 import java.util.List;
@@ -14,11 +15,11 @@ public class ProcessImpressionMTK implements ProcessImpressionStrategy{
     }
 
     @Override
-    public List<Impression> processImpressions(List<Impression> impressions) {
+    public ImpressionsResult processImpressions(List<Impression> impressions) {
 
         for(Impression impression: impressions){
             _uniqueKeysTracker.track(impression.split(),impression.key());
         }
-        return impressions;
+        return new ImpressionsResult(impressions,null);
     }
 }

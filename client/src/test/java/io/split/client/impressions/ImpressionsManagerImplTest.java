@@ -322,7 +322,7 @@ public class ImpressionsManagerImplTest {
         ImpressionsSender senderMock = Mockito.mock(ImpressionsSender.class);
 
         ImpressionsManagerImpl manager = ImpressionsManagerImpl.instanceForTest(null, config, senderMock, null, TELEMETRY_STORAGE, storage, storage);
-        Assert.assertNull(manager.getCounter());
+        Assert.assertNotNull(manager.getCounter());
     }
 
 }
