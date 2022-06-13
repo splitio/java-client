@@ -5,7 +5,13 @@ import io.split.client.dtos.Metadata;
 import io.split.client.events.EventsStorage;
 import io.split.client.events.EventsTask;
 import io.split.client.events.InMemoryEventsStorage;
-import io.split.client.impressions.*;
+import io.split.client.impressions.AsynchronousImpressionListener;
+import io.split.client.impressions.ImpressionListener;
+import io.split.client.impressions.ImpressionsManagerImpl;
+import io.split.client.impressions.ImpressionsStorage;
+import io.split.client.impressions.ImpressionsStorageConsumer;
+import io.split.client.impressions.ImpressionsStorageProducer;
+import io.split.client.impressions.InMemoryImpressionsStorage;
 import io.split.client.interceptors.AuthorizationInterceptorFilter;
 import io.split.client.interceptors.ClientKeyInterceptorFilter;
 import io.split.client.interceptors.GzipDecoderResponseInterceptor;
@@ -274,7 +280,6 @@ public class SplitFactoryImpl implements SplitFactory {
         _gates = new SDKReadinessGates();
 
         _evaluator = new EvaluatorImp(userCustomSplitAdapterConsumer, userCustomSegmentAdapterConsumer);
-
         _impressionsManager = buildImpressionsManager(config, userCustomImpressionAdapterConsumer, userCustomImpressionAdapterProducer);
 
         _telemetrySynchronizer = new TelemetryConsumerSubmitter(customStorageWrapper, _sdkMetadata);
