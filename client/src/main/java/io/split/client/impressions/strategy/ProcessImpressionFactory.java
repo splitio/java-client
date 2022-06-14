@@ -15,7 +15,7 @@ public class ProcessImpressionFactory {
             return new ProcessImpressionDebug(impressionObserver);
         }
         if (impressionMode == ImpressionsManager.Mode.NONE){
-            return new ProcessImpressionMTK(uniqueKeysTracker);
+            return new ProcessImpressionNone(uniqueKeysTracker, impressionCounter);
         }
         return null;
     }

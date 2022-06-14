@@ -107,8 +107,9 @@ public class ImpressionsManagerImpl implements ImpressionsManager, Closeable {
             processImpressionStrategy = processImpressionFactory.createProcessImpression(_config.impressionsMode(), null, impressionObserver, null);
         }
         if (_config.impressionsMode().equals(Mode.NONE)){
+            counter = new ImpressionCounter();
             uniqueKeysTracker = new UniqueKeysTrackerImp();
-            processImpressionStrategy = processImpressionFactory.createProcessImpression(_config.impressionsMode(), uniqueKeysTracker, null, null);
+            processImpressionStrategy = processImpressionFactory.createProcessImpression(_config.impressionsMode(), uniqueKeysTracker, null, counter);
         }
     }
 
@@ -119,7 +120,7 @@ public class ImpressionsManagerImpl implements ImpressionsManager, Closeable {
         }
         int totalImpressions = impressions.size();
 
-        ImpressionsResult impressionsResult = processImpressionStrategy.processImpressions(impressions);
+        ImpressionsResult impressionsResult = processImpressionStrategy.process(impressions);
         List<Impression> impressionsToSend = impressionsResult.getImpressionsToSend();
         List<Impression> impressionsToListener = impressionsResult.getImpressionsToSend();
 

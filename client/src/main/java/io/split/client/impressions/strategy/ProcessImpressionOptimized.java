@@ -18,12 +18,12 @@ public class ProcessImpressionOptimized implements ProcessImpressionStrategy{
     }
 
     @Override
-    public ImpressionsResult processImpressions(List<Impression> impressions) {
+    public ImpressionsResult process(List<Impression> impressions) {
         List<Impression> impressionsToQueue = new ArrayList<>();
         for(Impression impression : impressions) {
             impression = impression.withPreviousTime(_impressionObserver.testAndSet(impression));
             _impressionCounter.inc(impression.split(), impression.time(), 1);
-            if(!shouldQueueImpression(impression)) {
+            if(shouldntQueueImpression(impression)) {
                 continue;
             }
             impressionsToQueue.add(impression);
@@ -31,8 +31,8 @@ public class ProcessImpressionOptimized implements ProcessImpressionStrategy{
         return new ImpressionsResult(impressions, impressionsToQueue);
     }
 
-    private boolean shouldQueueImpression(Impression i) {
-        return Objects.isNull(i.pt()) ||
-                ImpressionUtils.truncateTimeframe(i.pt()) != ImpressionUtils.truncateTimeframe(i.time());
+    private boolean shouldntQueueImpression(Impression i) {
+        return !Objects.isNull(i.pt()) &&
+                ImpressionUtils.truncateTimeframe(i.pt()) == ImpressionUtils.truncateTimeframe(i.time());
     }
 }

@@ -7,5 +7,5 @@ import java.util.List;
 
 public interface ProcessImpressionStrategy {
 
-    ImpressionsResult processImpressions(List<Impression> impressions);
+    ImpressionsResult process(List<Impression> impressions);
 }
