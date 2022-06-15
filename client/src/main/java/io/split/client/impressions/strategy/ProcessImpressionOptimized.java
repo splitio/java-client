@@ -1,6 +1,8 @@
 package io.split.client.impressions.strategy;
 
 import io.split.client.impressions.*;
+import io.split.telemetry.domain.enums.ImpressionsDataTypeEnum;
+import io.split.telemetry.storage.TelemetryRuntimeProducer;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -10,9 +12,13 @@ public class ProcessImpressionOptimized implements ProcessImpressionStrategy{
 
     private final ImpressionObserver _impressionObserver;
     private final ImpressionCounter _impressionCounter;
+    private final TelemetryRuntimeProducer _telemetryRuntimeProducer;
+    private final boolean _listenerEnabled;
 
 
-    public ProcessImpressionOptimized(ImpressionObserver impressionObserver, ImpressionCounter impressionCounter) {
+    public ProcessImpressionOptimized(boolean listenerEnabled, ImpressionObserver impressionObserver, ImpressionCounter impressionCounter, TelemetryRuntimeProducer telemetryRuntimeProducer) {
+        _telemetryRuntimeProducer = telemetryRuntimeProducer;
+        _listenerEnabled = listenerEnabled;
         _impressionObserver = impressionObserver;
         _impressionCounter = impressionCounter;
     }
@@ -28,7 +34,11 @@ public class ProcessImpressionOptimized implements ProcessImpressionStrategy{
             }
             impressionsToQueue.add(impression);
         }
-        return new ImpressionsResult(impressions, impressionsToQueue);
+        List<Impression> impressionForListener =  this._listenerEnabled ? impressions : null;
+
+        _telemetryRuntimeProducer.recordImpressionStats(ImpressionsDataTypeEnum.IMPRESSIONS_DEDUPED, impressions.size()-impressionsToQueue.size());
+
+        return new ImpressionsResult(impressionsToQueue, impressionForListener);
     }
 
     private boolean shouldntQueueImpression(Impression i) {

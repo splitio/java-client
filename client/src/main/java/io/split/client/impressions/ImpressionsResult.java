@@ -5,15 +5,15 @@ import java.util.List;
 public class ImpressionsResult {
 
     private List<Impression> impressionsToListener;
-    private List<Impression> impressionsToSend;
+    private List<Impression> impressionsForLogs;
 
-    public ImpressionsResult(List<Impression> impressionsToListener, List<Impression> impressionsToSend) {
+    public ImpressionsResult(List<Impression> impressionsForLogs, List<Impression> impressionsToListener) {
         this.impressionsToListener = impressionsToListener;
-        this.impressionsToSend=impressionsToSend;
+        this.impressionsForLogs = impressionsForLogs;
     }
 
-    public List<Impression> getImpressionsToSend() {
-        return impressionsToSend;
+    public List<Impression> getImpressionsForLogs() {
+        return impressionsForLogs;
     }
 
     public List<Impression> getImpressionsToListener() {

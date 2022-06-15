@@ -10,8 +10,10 @@ import java.util.List;
 public class ProcessImpressionDebug implements ProcessImpressionStrategy{
 
     private final ImpressionObserver _impressionObserver;
+    private final boolean _listenerEnabled;
 
-    public ProcessImpressionDebug(ImpressionObserver impressionObserver) {
+    public ProcessImpressionDebug(boolean listenerEnabled, ImpressionObserver impressionObserver) {
+        _listenerEnabled = listenerEnabled;
         _impressionObserver = impressionObserver;
     }
 
@@ -22,6 +24,7 @@ public class ProcessImpressionDebug implements ProcessImpressionStrategy{
             impression = impression.withPreviousTime(_impressionObserver.testAndSet(impression));
             impressionsToQueue.add(impression);
         }
-        return new ImpressionsResult(impressionsToQueue, impressionsToQueue);
+        List<Impression> impressionForListener =  this._listenerEnabled ? impressionsToQueue : null;
+        return new ImpressionsResult(impressionsToQueue, impressionForListener);
     }
 }

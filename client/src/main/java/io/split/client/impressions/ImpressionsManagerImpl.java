@@ -5,7 +5,9 @@ import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import io.split.client.SplitClientConfig;
 import io.split.client.dtos.KeyImpression;
 import io.split.client.dtos.TestImpressions;
-import io.split.client.impressions.strategy.ProcessImpressionFactory;
+import io.split.client.impressions.strategy.ProcessImpressionDebug;
+import io.split.client.impressions.strategy.ProcessImpressionNone;
+import io.split.client.impressions.strategy.ProcessImpressionOptimized;
 import io.split.client.impressions.strategy.ProcessImpressionStrategy;
 import io.split.storages.enums.OperationMode;
 import io.split.telemetry.domain.enums.ImpressionsDataTypeEnum;
@@ -45,8 +47,8 @@ public class ImpressionsManagerImpl implements ImpressionsManager, Closeable {
     private final ImpressionsSender _impressionsSender;
     private final ImpressionListener _listener;
     private final ImpressionsManager.Mode _mode;
-    private final TelemetryRuntimeProducer _telemetryRuntimeProducer;
     private final OperationMode _operationMode;
+    private TelemetryRuntimeProducer _telemetryRuntimeProducer;
     private ImpressionObserver impressionObserver;
     private ImpressionCounter counter;
     private ProcessImpressionStrategy processImpressionStrategy;
@@ -82,7 +84,6 @@ public class ImpressionsManagerImpl implements ImpressionsManager, Closeable {
 
         _config = checkNotNull(config);
         _mode = checkNotNull(config.impressionsMode());
-        _telemetryRuntimeProducer = checkNotNull(telemetryRuntimeProducer);
         _impressionsStorageConsumer = checkNotNull(impressionsStorageConsumer);
         _impressionsStorageProducer = checkNotNull(impressionsStorageProducer);
         _impressionsSender = (null != impressionsSender) ? impressionsSender
@@ -92,24 +93,24 @@ public class ImpressionsManagerImpl implements ImpressionsManager, Closeable {
         _scheduler.scheduleAtFixedRate(this::sendImpressions, BULK_INITIAL_DELAY_SECONDS, config.impressionsRefreshRate(), TimeUnit.SECONDS);
 
         _listener = (null != listeners && !listeners.isEmpty()) ? new ImpressionListener.FederatedImpressionListener(listeners)
-                : new ImpressionListener.NoopImpressionListener();
+                : null;
 
+        _telemetryRuntimeProducer = checkNotNull(telemetryRuntimeProducer);
         _operationMode = config.operationMode();
-        ProcessImpressionFactory processImpressionFactory =  new ProcessImpressionFactory();
         if (_config.impressionsMode().equals(Mode.OPTIMIZED)){
             counter = new ImpressionCounter();
             impressionObserver = new ImpressionObserver(LAST_SEEN_CACHE_SIZE);
             _scheduler.scheduleAtFixedRate(this::sendImpressionCounters, COUNT_INITIAL_DELAY_SECONDS, COUNT_REFRESH_RATE_SECONDS, TimeUnit.SECONDS);
-            processImpressionStrategy = processImpressionFactory.createProcessImpression(_config.impressionsMode(), null, impressionObserver, counter);
+            processImpressionStrategy = new ProcessImpressionOptimized(_listener!=null, impressionObserver, counter, _telemetryRuntimeProducer);
         }
         if (_config.impressionsMode().equals(Mode.DEBUG)){
             impressionObserver = new ImpressionObserver(LAST_SEEN_CACHE_SIZE);
-            processImpressionStrategy = processImpressionFactory.createProcessImpression(_config.impressionsMode(), null, impressionObserver, null);
+            processImpressionStrategy = new ProcessImpressionDebug(_listener!=null, impressionObserver);
         }
         if (_config.impressionsMode().equals(Mode.NONE)){
             counter = new ImpressionCounter();
             uniqueKeysTracker = new UniqueKeysTrackerImp();
-            processImpressionStrategy = processImpressionFactory.createProcessImpression(_config.impressionsMode(), uniqueKeysTracker, null, counter);
+            processImpressionStrategy = new ProcessImpressionNone(_listener!=null, uniqueKeysTracker, counter);
         }
     }
 
@@ -118,23 +119,21 @@ public class ImpressionsManagerImpl implements ImpressionsManager, Closeable {
         if (null == impressions) {
             return;
         }
-        int totalImpressions = impressions.size();
 
         ImpressionsResult impressionsResult = processImpressionStrategy.process(impressions);
-        List<Impression> impressionsToSend = impressionsResult.getImpressionsToSend();
-        List<Impression> impressionsToListener = impressionsResult.getImpressionsToSend();
+        List<Impression> impressionsForLogs = impressionsResult.getImpressionsForLogs();
+        List<Impression> impressionsToListener = impressionsResult.getImpressionsForLogs();
 
-        if (totalImpressions > impressionsToSend.size()) {
-            _telemetryRuntimeProducer.recordImpressionStats(ImpressionsDataTypeEnum.IMPRESSIONS_DEDUPED, totalImpressions-impressionsToSend.size());
-            totalImpressions = impressionsToSend.size();
-        }
-        long queued = _impressionsStorageProducer.put(impressionsToSend.stream().map(KeyImpression::fromImpression).collect(Collectors.toList()));
+        int totalImpressions = impressionsForLogs.size();
+        long queued = _impressionsStorageProducer.put(impressionsForLogs.stream().map(KeyImpression::fromImpression).collect(Collectors.toList()));
         if (queued < totalImpressions) {
             _telemetryRuntimeProducer.recordImpressionStats(ImpressionsDataTypeEnum.IMPRESSIONS_DROPPED, totalImpressions-queued);
         }
         _telemetryRuntimeProducer.recordImpressionStats(ImpressionsDataTypeEnum.IMPRESSIONS_QUEUED, queued);
 
-        impressionsToListener.forEach(imp -> _listener.log(imp));
+        if (_listener!=null){
+            impressionsToListener.forEach(imp -> _listener.log(imp));
+        }
     }
 
     @Override
@@ -144,7 +143,6 @@ public class ImpressionsManagerImpl implements ImpressionsManager, Closeable {
             _log.info("Successful shutdown of ImpressionListener");
             _scheduler.shutdown();
             sendImpressions();
-            _scheduler.awaitTermination(_config.waitBeforeShutdown(), TimeUnit.MILLISECONDS);
         } catch (Exception e) {
             _log.warn("Unable to close ImpressionsManager properly", e);
         }

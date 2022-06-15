@@ -5,14 +5,17 @@ import io.split.client.impressions.ImpressionCounter;
 import io.split.client.impressions.ImpressionsResult;
 import io.split.client.impressions.UniqueKeysTracker;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class ProcessImpressionNone implements ProcessImpressionStrategy{
 
     private final UniqueKeysTracker _uniqueKeysTracker;
     private final ImpressionCounter _impressionCounter;
+    private final boolean _listenerEnabled;
 
-    public ProcessImpressionNone(UniqueKeysTracker uniqueKeysTracker, ImpressionCounter impressionCounter) {
+    public ProcessImpressionNone(boolean listenerEnabled,UniqueKeysTracker uniqueKeysTracker, ImpressionCounter impressionCounter) {
+        _listenerEnabled = listenerEnabled;
         _uniqueKeysTracker = uniqueKeysTracker;
         _impressionCounter = impressionCounter;
     }
@@ -24,6 +27,7 @@ public class ProcessImpressionNone implements ProcessImpressionStrategy{
             _impressionCounter.inc(impression.split(), impression.time(), 1);
             _uniqueKeysTracker.track(impression.split(),impression.key());
         }
-        return new ImpressionsResult(impressions,null);
+        List<Impression> impressionForListener =  this._listenerEnabled ? impressions : null;
+        return new ImpressionsResult(new ArrayList<>(), impressionForListener);
     }
 }
