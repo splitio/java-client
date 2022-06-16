@@ -46,7 +46,7 @@ public class ImpressionsManagerImpl implements ImpressionsManager, Closeable {
     private final ScheduledExecutorService _scheduler;
     private final ImpressionsSender _impressionsSender;
     private final ImpressionListener _listener;
-    private final ImpressionsManager.Mode _mode;
+    private final ImpressionsManager.Mode _impressionsMode;
     private final OperationMode _operationMode;
     private TelemetryRuntimeProducer _telemetryRuntimeProducer;
     private ImpressionObserver impressionObserver;
@@ -83,32 +83,34 @@ public class ImpressionsManagerImpl implements ImpressionsManager, Closeable {
 
 
         _config = checkNotNull(config);
-        _mode = checkNotNull(config.impressionsMode());
+        _impressionsMode = checkNotNull(config.impressionsMode());
         _impressionsStorageConsumer = checkNotNull(impressionsStorageConsumer);
         _impressionsStorageProducer = checkNotNull(impressionsStorageProducer);
+        _telemetryRuntimeProducer = checkNotNull(telemetryRuntimeProducer);
         _impressionsSender = (null != impressionsSender) ? impressionsSender
-                : HttpImpressionsSender.create(client, URI.create(config.eventsEndpoint()), _mode, telemetryRuntimeProducer);
+                : HttpImpressionsSender.create(client, URI.create(config.eventsEndpoint()), _impressionsMode, telemetryRuntimeProducer);
 
         _scheduler = buildExecutor();
-        _scheduler.scheduleAtFixedRate(this::sendImpressions, BULK_INITIAL_DELAY_SECONDS, config.impressionsRefreshRate(), TimeUnit.SECONDS);
 
         _listener = (null != listeners && !listeners.isEmpty()) ? new ImpressionListener.FederatedImpressionListener(listeners)
                 : null;
 
-        _telemetryRuntimeProducer = checkNotNull(telemetryRuntimeProducer);
         _operationMode = config.operationMode();
-        switch (_config.impressionsMode()){
+        switch (_impressionsMode){
             case OPTIMIZED:
+                _scheduler.scheduleAtFixedRate(this::sendImpressionCounters, COUNT_INITIAL_DELAY_SECONDS, COUNT_REFRESH_RATE_SECONDS, TimeUnit.SECONDS);
+                _scheduler.scheduleAtFixedRate(this::sendImpressions, BULK_INITIAL_DELAY_SECONDS, config.impressionsRefreshRate(), TimeUnit.SECONDS);
                 counter = new ImpressionCounter();
                 impressionObserver = new ImpressionObserver(LAST_SEEN_CACHE_SIZE);
-                _scheduler.scheduleAtFixedRate(this::sendImpressionCounters, COUNT_INITIAL_DELAY_SECONDS, COUNT_REFRESH_RATE_SECONDS, TimeUnit.SECONDS);
                 processImpressionStrategy = new ProcessImpressionOptimized(_listener!=null, impressionObserver, counter, _telemetryRuntimeProducer);
                 break;
             case DEBUG:
+                _scheduler.scheduleAtFixedRate(this::sendImpressions, BULK_INITIAL_DELAY_SECONDS, config.impressionsRefreshRate(), TimeUnit.SECONDS);
                 impressionObserver = new ImpressionObserver(LAST_SEEN_CACHE_SIZE);
                 processImpressionStrategy = new ProcessImpressionDebug(_listener!=null, impressionObserver);
                 break;
             case NONE:
+                _scheduler.scheduleAtFixedRate(this::sendImpressionCounters, COUNT_INITIAL_DELAY_SECONDS, COUNT_REFRESH_RATE_SECONDS, TimeUnit.SECONDS);
                 counter = new ImpressionCounter();
                 uniqueKeysTracker = new UniqueKeysTrackerImp();
                 processImpressionStrategy = new ProcessImpressionNone(_listener!=null, uniqueKeysTracker, counter);

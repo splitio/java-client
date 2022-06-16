@@ -8,6 +8,7 @@ import io.split.client.impressions.filters.FilterAdapterImpl;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -57,8 +58,13 @@ public class UniqueKeysTrackerImp implements UniqueKeysTracker{
     public void stop() {
 
     }
-    @VisibleForTesting
-    ConcurrentHashMap<String, HashSet<String>> getMtkTracker() {
-        return mtkTracker;
+
+    public HashMap<String,HashSet<String>> popAll(){
+        HashMap<String,HashSet<String>> toReturn = new HashMap<>();
+        for (String key : mtkTracker.keySet()) {
+            HashSet<String> value = mtkTracker.remove(key);
+            toReturn.put(key, value);
+        }
+        return toReturn;
     }
 }

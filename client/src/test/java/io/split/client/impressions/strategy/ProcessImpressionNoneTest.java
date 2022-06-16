@@ -8,8 +8,7 @@ import org.junit.Assert;
 import org.junit.Test;
 import org.mockito.Mockito;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 
 import static io.split.client.impressions.ImpressionTestUtils.keyImpression;
 
@@ -36,13 +35,17 @@ public class ProcessImpressionNoneTest {
         ImpressionsResult impressionsResult1 = processImpressionNone.process(impressions);
         Assert.assertEquals(0,impressionsResult1.getImpressionsToQueue().size());
         Assert.assertEquals(3,impressionsResult1.getImpressionsToListener().size());
+        Assert.assertEquals(2, uniqueKeysTracker.popAll().size());
+
+        HashMap<ImpressionCounter.Key, Integer> counters = counter.popAll();
+        Assert.assertEquals(2, counters.size());
     }
 
     @Test
     public void processImpressionsWithoutListener(){
         boolean listenerEnable = false;
         ImpressionCounter counter = new ImpressionCounter();
-        UniqueKeysTracker uniqueKeysTracker = new UniqueKeysTrackerImp();
+        UniqueKeysTrackerImp uniqueKeysTracker = new UniqueKeysTrackerImp();
         ProcessImpressionNone processImpressionNone = new ProcessImpressionNone(listenerEnable, uniqueKeysTracker, counter);
 
         KeyImpression ki1 = keyImpression("test1", "adil", "on", 1L, null);
@@ -57,5 +60,7 @@ public class ProcessImpressionNoneTest {
         ImpressionsResult impressionsResult1 = processImpressionNone.process(impressions);
         Assert.assertEquals(0,impressionsResult1.getImpressionsToQueue().size());
         Assert.assertNull(impressionsResult1.getImpressionsToListener());
+        Assert.assertEquals(2, uniqueKeysTracker.popAll().size());
+        Assert.assertEquals(2, counter.popAll().size());
     }
 }
