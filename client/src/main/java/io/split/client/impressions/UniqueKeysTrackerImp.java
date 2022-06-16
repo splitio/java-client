@@ -1,6 +1,5 @@
 package io.split.client.impressions;
 
-import com.google.common.annotations.VisibleForTesting;
 import io.split.client.impressions.filters.BloomFilterImp;
 import io.split.client.impressions.filters.Filter;
 import io.split.client.impressions.filters.FilterAdapter;

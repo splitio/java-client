@@ -4,7 +4,6 @@ import io.split.client.impressions.Impression;
 import io.split.client.impressions.ImpressionObserver;
 import io.split.client.impressions.ImpressionsResult;
 
-import java.util.ArrayList;
 import java.util.List;
 
 public class ProcessImpressionDebug implements ProcessImpressionStrategy{
