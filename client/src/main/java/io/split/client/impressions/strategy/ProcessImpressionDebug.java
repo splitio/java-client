@@ -19,12 +19,10 @@ public class ProcessImpressionDebug implements ProcessImpressionStrategy{
 
     @Override
     public ImpressionsResult process(List<Impression> impressions) {
-        List<Impression> impressionsToQueue = new ArrayList<>();
         for(Impression impression : impressions) {
-            impression = impression.withPreviousTime(_impressionObserver.testAndSet(impression));
-            impressionsToQueue.add(impression);
+            impression.withPreviousTime(_impressionObserver.testAndSet(impression));
         }
-        List<Impression> impressionForListener =  this._listenerEnabled ? impressionsToQueue : null;
-        return new ImpressionsResult(impressionsToQueue, impressionForListener);
+        List<Impression> impressionForListener =  this._listenerEnabled ? impressions : null;
+        return new ImpressionsResult(impressions, impressionForListener);
     }
 }

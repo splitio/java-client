@@ -97,20 +97,22 @@ public class ImpressionsManagerImpl implements ImpressionsManager, Closeable {
 
         _telemetryRuntimeProducer = checkNotNull(telemetryRuntimeProducer);
         _operationMode = config.operationMode();
-        if (_config.impressionsMode().equals(Mode.OPTIMIZED)){
-            counter = new ImpressionCounter();
-            impressionObserver = new ImpressionObserver(LAST_SEEN_CACHE_SIZE);
-            _scheduler.scheduleAtFixedRate(this::sendImpressionCounters, COUNT_INITIAL_DELAY_SECONDS, COUNT_REFRESH_RATE_SECONDS, TimeUnit.SECONDS);
-            processImpressionStrategy = new ProcessImpressionOptimized(_listener!=null, impressionObserver, counter, _telemetryRuntimeProducer);
-        }
-        if (_config.impressionsMode().equals(Mode.DEBUG)){
-            impressionObserver = new ImpressionObserver(LAST_SEEN_CACHE_SIZE);
-            processImpressionStrategy = new ProcessImpressionDebug(_listener!=null, impressionObserver);
-        }
-        if (_config.impressionsMode().equals(Mode.NONE)){
-            counter = new ImpressionCounter();
-            uniqueKeysTracker = new UniqueKeysTrackerImp();
-            processImpressionStrategy = new ProcessImpressionNone(_listener!=null, uniqueKeysTracker, counter);
+        switch (_config.impressionsMode()){
+            case OPTIMIZED:
+                counter = new ImpressionCounter();
+                impressionObserver = new ImpressionObserver(LAST_SEEN_CACHE_SIZE);
+                _scheduler.scheduleAtFixedRate(this::sendImpressionCounters, COUNT_INITIAL_DELAY_SECONDS, COUNT_REFRESH_RATE_SECONDS, TimeUnit.SECONDS);
+                processImpressionStrategy = new ProcessImpressionOptimized(_listener!=null, impressionObserver, counter, _telemetryRuntimeProducer);
+                break;
+            case DEBUG:
+                impressionObserver = new ImpressionObserver(LAST_SEEN_CACHE_SIZE);
+                processImpressionStrategy = new ProcessImpressionDebug(_listener!=null, impressionObserver);
+                break;
+            case NONE:
+                counter = new ImpressionCounter();
+                uniqueKeysTracker = new UniqueKeysTrackerImp();
+                processImpressionStrategy = new ProcessImpressionNone(_listener!=null, uniqueKeysTracker, counter);
+                break;
         }
     }
 
@@ -121,8 +123,8 @@ public class ImpressionsManagerImpl implements ImpressionsManager, Closeable {
         }
 
         ImpressionsResult impressionsResult = processImpressionStrategy.process(impressions);
-        List<Impression> impressionsForLogs = impressionsResult.getImpressionsForLogs();
-        List<Impression> impressionsToListener = impressionsResult.getImpressionsForLogs();
+        List<Impression> impressionsForLogs = impressionsResult.getImpressionsToQueue();
+        List<Impression> impressionsToListener = impressionsResult.getImpressionsToQueue();
 
         int totalImpressions = impressionsForLogs.size();
         long queued = _impressionsStorageProducer.put(impressionsForLogs.stream().map(KeyImpression::fromImpression).collect(Collectors.toList()));
