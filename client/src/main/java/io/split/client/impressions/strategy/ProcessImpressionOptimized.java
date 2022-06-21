@@ -1,6 +1,10 @@
 package io.split.client.impressions.strategy;
 
-import io.split.client.impressions.*;
+import io.split.client.impressions.Impression;
+import io.split.client.impressions.ImpressionObserver;
+import io.split.client.impressions.ImpressionUtils;
+import io.split.client.impressions.ImpressionsResult;
+import io.split.client.impressions.ImpressionCounter;
 import io.split.telemetry.domain.enums.ImpressionsDataTypeEnum;
 import io.split.telemetry.storage.TelemetryRuntimeProducer;
 

@@ -1,7 +1,10 @@
 package io.split.client.impressions.strategy;
 
 import io.split.client.dtos.KeyImpression;
-import io.split.client.impressions.*;
+import io.split.client.impressions.Impression;
+import io.split.client.impressions.ImpressionsResult;
+import io.split.client.impressions.UniqueKeysTrackerImp;
+import io.split.client.impressions.ImpressionCounter;
 import io.split.telemetry.storage.InMemoryTelemetryStorage;
 import io.split.telemetry.storage.TelemetryStorage;
 import org.junit.Assert;
