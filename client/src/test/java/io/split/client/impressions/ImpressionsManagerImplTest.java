@@ -26,6 +26,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import static io.split.client.impressions.ImpressionTestUtils.keyImpression;
 import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.assertThat;
 import static org.mockito.Mockito.*;
@@ -166,6 +167,7 @@ public class ImpressionsManagerImplTest {
         ImpressionsStorage storage = new InMemoryImpressionsStorage(config.impressionsQueueSize());
 
         ImpressionsSender senderMock = Mockito.mock(ImpressionsSender.class);
+
         ImpressionsManagerImpl treatmentLog = ImpressionsManagerImpl.instanceForTest(null, config, senderMock, null, TELEMETRY_STORAGE, storage, storage);
 
         // There are no impressions to post.
@@ -227,16 +229,6 @@ public class ImpressionsManagerImplTest {
                 assertThat(keyImpression.previousTime, is(equalTo(keyImpression.time)));
             }
         }
-    }
-
-    private KeyImpression keyImpression(String feature, String key, String treatment, long time, Long changeNumber) {
-        KeyImpression result = new KeyImpression();
-        result.feature = feature;
-        result.keyName = key;
-        result.treatment = treatment;
-        result.time = time;
-        result.changeNumber = changeNumber;
-        return result;
     }
 
     @Test
@@ -321,7 +313,7 @@ public class ImpressionsManagerImplTest {
         ImpressionsSender senderMock = Mockito.mock(ImpressionsSender.class);
 
         ImpressionsManagerImpl manager = ImpressionsManagerImpl.instanceForTest(null, config, senderMock, null, TELEMETRY_STORAGE, storage, storage);
-        Assert.assertNull(manager.getCounter());
+        Assert.assertNotNull(manager.getCounter());
     }
 
 }

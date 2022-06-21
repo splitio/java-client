@@ -6,7 +6,8 @@ public interface ImpressionsManager {
 
     public enum Mode {
         OPTIMIZED,
-        DEBUG
+        DEBUG,
+        NONE
     }
 
     void track(List<Impression> impressions);
