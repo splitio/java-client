@@ -2,6 +2,7 @@ package io.split.storages.pluggable.synchronizer;
 
 import com.google.common.annotations.VisibleForTesting;
 import io.split.client.SplitClientConfig;
+import io.split.client.dtos.UniqueKeys;
 import io.split.client.utils.Json;
 import io.split.client.utils.SDKMetadata;
 import io.split.storages.enums.OperationMode;
@@ -36,6 +37,11 @@ public class TelemetryConsumerSubmitter implements TelemetrySynchronizer {
     @Override
     public void synchronizeStats() {
         //No-op
+    }
+
+    @Override
+    public void synchronizeUniqueKeys(UniqueKeys uniqueKeys) {
+        //TODO implements when we are using redis
     }
 
     @Override

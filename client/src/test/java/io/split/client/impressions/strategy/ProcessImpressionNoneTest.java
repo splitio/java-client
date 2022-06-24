@@ -7,6 +7,8 @@ import io.split.client.impressions.UniqueKeysTrackerImp;
 import io.split.client.impressions.ImpressionCounter;
 import io.split.telemetry.storage.InMemoryTelemetryStorage;
 import io.split.telemetry.storage.TelemetryStorage;
+import io.split.telemetry.synchronizer.TelemetryInMemorySubmitter;
+import io.split.telemetry.synchronizer.TelemetrySynchronizer;
 import org.junit.Assert;
 import org.junit.Test;
 import org.mockito.Mockito;
@@ -23,7 +25,8 @@ public class ProcessImpressionNoneTest {
     public void processImpressionsWithListener(){
         boolean listenerEnable = true;
         ImpressionCounter counter = new ImpressionCounter();
-        UniqueKeysTrackerImp uniqueKeysTracker = new UniqueKeysTrackerImp();
+        TelemetrySynchronizer telemetrySynchronizer = Mockito.mock(TelemetryInMemorySubmitter.class);
+        UniqueKeysTrackerImp uniqueKeysTracker = new UniqueKeysTrackerImp(telemetrySynchronizer);
         ProcessImpressionNone processImpressionNone = new ProcessImpressionNone(listenerEnable, uniqueKeysTracker, counter);
 
         KeyImpression ki1 = keyImpression("test1", "adil", "on", 1L, null);
@@ -48,7 +51,8 @@ public class ProcessImpressionNoneTest {
     public void processImpressionsWithoutListener(){
         boolean listenerEnable = false;
         ImpressionCounter counter = new ImpressionCounter();
-        UniqueKeysTrackerImp uniqueKeysTracker = new UniqueKeysTrackerImp();
+        TelemetrySynchronizer telemetrySynchronizer = Mockito.mock(TelemetryInMemorySubmitter.class);
+        UniqueKeysTrackerImp uniqueKeysTracker = new UniqueKeysTrackerImp(telemetrySynchronizer);
         ProcessImpressionNone processImpressionNone = new ProcessImpressionNone(listenerEnable, uniqueKeysTracker, counter);
 
         KeyImpression ki1 = keyImpression("test1", "adil", "on", 1L, null);
