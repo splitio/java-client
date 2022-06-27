@@ -10,6 +10,7 @@ import io.split.telemetry.synchronizer.TelemetrySynchronizer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -28,22 +29,31 @@ public class UniqueKeysTrackerImp implements UniqueKeysTracker{
     private FilterAdapter filterAdapter;
     private final TelemetrySynchronizer _telemetrySynchronizer;
     private final ScheduledExecutorService _uniqueKeysSyncScheduledExecutorService;
+    private final ScheduledExecutorService _cleanFilterScheduledExecutorService;
     private final ConcurrentHashMap<String,HashSet<String>> uniqueKeysTracker;
     private final int _uniqueKeysRefreshRate;
+    private final int _filterRefreshRate;
     private static final Logger _logger = LoggerFactory.getLogger(UniqueKeysTrackerImp.class);
 
-    public UniqueKeysTrackerImp(TelemetrySynchronizer telemetrySynchronizer, int uniqueKeysRefreshRate) {
+    public UniqueKeysTrackerImp(TelemetrySynchronizer telemetrySynchronizer, int uniqueKeysRefreshRate, int filterRefreshRate) {
         Filter bloomFilter = new BloomFilterImp(MAX_AMOUNT_OF_KEYS, MARGIN_ERROR);
         this.filterAdapter = new FilterAdapterImpl(bloomFilter);
         uniqueKeysTracker = new ConcurrentHashMap<>();
         _telemetrySynchronizer = telemetrySynchronizer;
         _uniqueKeysRefreshRate = uniqueKeysRefreshRate;
+        _filterRefreshRate = filterRefreshRate;
 
         ThreadFactory uniqueKeysSyncThreadFactory = new ThreadFactoryBuilder()
                 .setDaemon(true)
                 .setNameFormat("UniqueKeys-sync-%d")
                 .build();
+        ThreadFactory filterThreadFactory = new ThreadFactoryBuilder()
+                .setDaemon(true)
+                .setNameFormat("Filter-%d")
+                .build();
         _uniqueKeysSyncScheduledExecutorService = Executors.newSingleThreadScheduledExecutor(uniqueKeysSyncThreadFactory);
+        _cleanFilterScheduledExecutorService = Executors.newSingleThreadScheduledExecutor(filterThreadFactory);
+
         try {
             this.start();
         } catch (Exception e) {
@@ -53,6 +63,17 @@ public class UniqueKeysTrackerImp implements UniqueKeysTracker{
 
     @Override
     public synchronized boolean track(String featureName, String key) {
+        if (!filterAdapter.add(featureName, key)) {
+            _logger.debug("The feature " + featureName + " and key " + key + " exist in the UniqueKeysTracker");
+            return false;
+        }
+        HashSet<String> value = new HashSet<>();
+        if(uniqueKeysTracker.containsKey(featureName)){
+            value = uniqueKeysTracker.get(featureName);
+        }
+        value.add(key);
+        uniqueKeysTracker.put(featureName, value);
+        _logger.debug("The feature " + featureName + " and key " + key + " was added");
         if (uniqueKeysTracker.size() == MAX_AMOUNT_OF_TRACKED_UNIQUE_KEYS){
             _logger.warn("The UniqueKeysTracker size reached the maximum limit");
             try {
@@ -60,20 +81,8 @@ public class UniqueKeysTrackerImp implements UniqueKeysTracker{
             } catch (Exception e) {
                 _log.error("Error sending unique keys.", e);
             }
-            return false;
         }
-        if (filterAdapter.add(featureName, key)) {
-            HashSet<String> value = new HashSet<>();
-            if(uniqueKeysTracker.containsKey(featureName)){
-                value = uniqueKeysTracker.get(featureName);
-            }
-            value.add(key);
-            uniqueKeysTracker.put(featureName, value);
-            _logger.debug("The feature " + featureName + " and key " + key + " was added");
-            return true;
-        }
-        _logger.debug("The feature " + featureName + " and key " + key + " exist in the UniqueKeysTracker");
-        return false;
+        return true;
     }
 
     @Override
@@ -82,9 +91,17 @@ public class UniqueKeysTrackerImp implements UniqueKeysTracker{
             try {
                 sendUniqueKeys();
             } catch (Exception e) {
-                _log.warn("Error sending unique keys.");
+                _log.error("Error sending unique keys.", e);
             }
         }, _uniqueKeysRefreshRate, _uniqueKeysRefreshRate, TimeUnit.SECONDS);
+
+        _cleanFilterScheduledExecutorService.scheduleWithFixedDelay(() -> {
+            try {
+                filterAdapter.clear();
+            } catch (Exception e){
+                _log.error("Error cleaning filter");
+            }
+        }, _filterRefreshRate, _filterRefreshRate, TimeUnit.SECONDS);
     }
 
     @Override
@@ -92,7 +109,7 @@ public class UniqueKeysTrackerImp implements UniqueKeysTracker{
         try {
             sendUniqueKeys();
         } catch (Exception e) {
-            _log.warn("Error sending unique keys.");
+            _log.error("Error sending unique keys.");
         }
         _uniqueKeysSyncScheduledExecutorService.shutdown();
     }
@@ -107,9 +124,13 @@ public class UniqueKeysTrackerImp implements UniqueKeysTracker{
     }
 
     private void sendUniqueKeys(){
-        HashMap<String,HashSet<String>> uniqueKeysHashMap = popAll();
+        if (uniqueKeysTracker.size() == 0) {
+           _log.warn("The Unique Keys Tracker is empty");
+           return;
+        }
+        HashMap<String, HashSet<String>> uniqueKeysHashMap = popAll();
         List<UniqueKeys.UniqueKey> uniqueKeysFromPopAll = new ArrayList<>();
-        for(String feature: uniqueKeysHashMap.keySet()){
+        for (String feature : uniqueKeysHashMap.keySet()) {
             UniqueKeys.UniqueKey uniqueKey = new UniqueKeys.UniqueKey(feature, new ArrayList<>(uniqueKeysHashMap.get(feature)));
             uniqueKeysFromPopAll.add(uniqueKey);
         }

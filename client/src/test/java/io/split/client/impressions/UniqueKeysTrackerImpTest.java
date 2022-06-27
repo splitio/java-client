@@ -1,23 +1,20 @@
 package io.split.client.impressions;
 
-import io.split.client.dtos.UniqueKeys;
 import io.split.telemetry.synchronizer.TelemetryInMemorySubmitter;
 import io.split.telemetry.synchronizer.TelemetrySynchronizer;
 import org.junit.Assert;
 import org.junit.Test;
 import org.mockito.Mockito;
 
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.List;
 
 public class UniqueKeysTrackerImpTest {
 
     @Test
     public void addSomeElements(){
         TelemetrySynchronizer telemetrySynchronizer = Mockito.mock(TelemetryInMemorySubmitter.class);
-        UniqueKeysTrackerImp uniqueKeysTrackerImp = new UniqueKeysTrackerImp(telemetrySynchronizer, 10000);
+        UniqueKeysTrackerImp uniqueKeysTrackerImp = new UniqueKeysTrackerImp(telemetrySynchronizer, 10000, 10000);
         Assert.assertTrue(uniqueKeysTrackerImp.track("feature1","key1"));
         Assert.assertTrue(uniqueKeysTrackerImp.track("feature1","key2"));
         Assert.assertTrue(uniqueKeysTrackerImp.track("feature1","key3"));
@@ -42,7 +39,7 @@ public class UniqueKeysTrackerImpTest {
     @Test
     public void addTheSameElements(){
         TelemetrySynchronizer telemetrySynchronizer = Mockito.mock(TelemetryInMemorySubmitter.class);
-        UniqueKeysTrackerImp uniqueKeysTrackerImp = new UniqueKeysTrackerImp(telemetrySynchronizer, 10000);
+        UniqueKeysTrackerImp uniqueKeysTrackerImp = new UniqueKeysTrackerImp(telemetrySynchronizer, 10000, 10000);
         Assert.assertTrue(uniqueKeysTrackerImp.track("feature1","key1"));
         Assert.assertTrue(uniqueKeysTrackerImp.track("feature1","key2"));
         Assert.assertTrue(uniqueKeysTrackerImp.track("feature1","key3"));
@@ -64,7 +61,7 @@ public class UniqueKeysTrackerImpTest {
     @Test
     public void popAllUniqueKeys(){
         TelemetrySynchronizer telemetrySynchronizer = Mockito.mock(TelemetryInMemorySubmitter.class);
-        UniqueKeysTrackerImp uniqueKeysTrackerImp = new UniqueKeysTrackerImp(telemetrySynchronizer, 10000);
+        UniqueKeysTrackerImp uniqueKeysTrackerImp = new UniqueKeysTrackerImp(telemetrySynchronizer, 10000, 10000);
         Assert.assertTrue(uniqueKeysTrackerImp.track("feature1","key1"));
         Assert.assertTrue(uniqueKeysTrackerImp.track("feature1","key2"));
         Assert.assertTrue(uniqueKeysTrackerImp.track("feature2","key3"));
@@ -78,35 +75,28 @@ public class UniqueKeysTrackerImpTest {
     @Test
     public void testSynchronization() throws Exception {
         TelemetrySynchronizer telemetrySynchronizer = Mockito.mock(TelemetryInMemorySubmitter.class);
-        UniqueKeysTrackerImp uniqueKeysTrackerImp = new UniqueKeysTrackerImp(telemetrySynchronizer, 1);
+        UniqueKeysTrackerImp uniqueKeysTrackerImp = new UniqueKeysTrackerImp(telemetrySynchronizer, 1, 3);
         Assert.assertTrue(uniqueKeysTrackerImp.track("feature1","key1"));
         Assert.assertTrue(uniqueKeysTrackerImp.track("feature1","key2"));
         Assert.assertTrue(uniqueKeysTrackerImp.track("feature2","key3"));
 
-        HashMap<String,HashSet<String>> uniqueKeysHashMap = uniqueKeysTrackerImp.popAll();
-        List<UniqueKeys.UniqueKey> uniqueKeysFromPopAll = new ArrayList<>();
-        for(String feature: uniqueKeysHashMap.keySet()){
-            UniqueKeys.UniqueKey uniqueKey = new UniqueKeys.UniqueKey(feature, new ArrayList<>(uniqueKeysHashMap.get(feature)));
-            uniqueKeysFromPopAll.add(uniqueKey);
-        }
-        UniqueKeys uniqueKeys = new UniqueKeys(uniqueKeysFromPopAll);
-
-        Mockito.doNothing().when(telemetrySynchronizer).synchronizeUniqueKeys(uniqueKeys);
         Thread.sleep(2900);
-        Mockito.verify(telemetrySynchronizer, Mockito.times(2)).synchronizeUniqueKeys(Mockito.anyObject());
+        Mockito.verify(telemetrySynchronizer, Mockito.times(1)).synchronizeUniqueKeys(Mockito.anyObject());
+        Thread.sleep(2900);
+        Mockito.verify(telemetrySynchronizer, Mockito.times(1)).synchronizeUniqueKeys(Mockito.anyObject());
     }
 
     @Test
     public void testStopSynchronization() throws Exception {
         TelemetrySynchronizer telemetrySynchronizer = Mockito.mock(TelemetryInMemorySubmitter.class);
-        UniqueKeysTrackerImp uniqueKeysTrackerImp = new UniqueKeysTrackerImp(telemetrySynchronizer, 1);
+        UniqueKeysTrackerImp uniqueKeysTrackerImp = new UniqueKeysTrackerImp(telemetrySynchronizer, 1, 2);
         Assert.assertTrue(uniqueKeysTrackerImp.track("feature1","key1"));
         Assert.assertTrue(uniqueKeysTrackerImp.track("feature1","key2"));
         Assert.assertTrue(uniqueKeysTrackerImp.track("feature2","key3"));
 
         Thread.sleep(2100);
-        Mockito.verify(telemetrySynchronizer, Mockito.times(2)).synchronizeUniqueKeys(Mockito.anyObject());
+        Mockito.verify(telemetrySynchronizer, Mockito.times(1)).synchronizeUniqueKeys(Mockito.anyObject());
         uniqueKeysTrackerImp.stop();
-        Mockito.verify(telemetrySynchronizer, Mockito.times(3)).synchronizeUniqueKeys(Mockito.anyObject());
+        Mockito.verify(telemetrySynchronizer, Mockito.times(1)).synchronizeUniqueKeys(Mockito.anyObject());
     }
 }
