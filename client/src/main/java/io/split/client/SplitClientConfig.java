@@ -58,7 +58,7 @@ public class SplitClientConfig {
     private final int _onDemandFetchRetryDelayMs;
     private final int _onDemandFetchMaxRetries;
     private final int _failedAttemptsBeforeLogging;
-    private final int _uniqueKeysTimeToSend;
+    private final int _uniqueKeysRefreshRate;
     private final boolean _cdnDebugLogging;
     private final OperationMode _operationMode;
     private long _validateAfterInactivityInMillis;
@@ -118,7 +118,7 @@ public class SplitClientConfig {
                               long validateAfterInactivityInMillis,
                               CustomStorageWrapper customStorageWrapper,
                               StorageMode storageMode,
-                              int uniqueKeysTimeToSend) {
+                              int uniqueKeysRefreshRate) {
         _endpoint = endpoint;
         _eventsEndpoint = eventsEndpoint;
         _featuresRefreshRate = pollForFeatureChangesEveryNSeconds;
@@ -151,7 +151,7 @@ public class SplitClientConfig {
         _streamingServiceURL = streamingServiceURL;
         _telemetryURL = telemetryURL;
         _telemetryRefreshRate = telemetryRefreshRate;
-        _uniqueKeysTimeToSend = uniqueKeysTimeToSend;
+        _uniqueKeysRefreshRate = uniqueKeysRefreshRate;
         _onDemandFetchRetryDelayMs = onDemandFetchRetryDelayMs;
         _onDemandFetchMaxRetries = onDemandFetchMaxRetries;
         _failedAttemptsBeforeLogging = failedAttemptsBeforeLogging;
@@ -199,7 +199,7 @@ public class SplitClientConfig {
     }
 
     public int uniqueKeysTimeToSend() {
-        return _uniqueKeysTimeToSend;
+        return _uniqueKeysRefreshRate;
     }
 
     public int impressionsQueueSize() {
@@ -356,7 +356,7 @@ public class SplitClientConfig {
         private String _streamingServiceURL = STREAMING_ENDPOINT;
         private String _telemetryURl = TELEMETRY_ENDPOINT;
         private int _telemetryRefreshRate = 3600;
-        private int _uniqueKeysTimeToSend = 86400;
+        private int _uniqueKeysRefreshRate = 86400;
         private int _onDemandFetchRetryDelayMs = 50;
         private final int _onDemandFetchMaxRetries = 10;
         private final int _failedAttemptsBeforeLogging = 10;
@@ -946,7 +946,7 @@ public class SplitClientConfig {
                     _validateAfterInactivityInMillis,
                     _customStorageWrapper,
                     _storageMode,
-                    _uniqueKeysTimeToSend);
+                    _uniqueKeysRefreshRate);
         }
     }
 }

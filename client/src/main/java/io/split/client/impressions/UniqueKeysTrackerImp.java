@@ -14,7 +14,11 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
-import java.util.concurrent.*;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ThreadFactory;
+import java.util.concurrent.TimeUnit;
 
 public class UniqueKeysTrackerImp implements UniqueKeysTracker{
     private static final Logger _log = LoggerFactory.getLogger(UniqueKeysTrackerImp.class);
@@ -23,22 +27,23 @@ public class UniqueKeysTrackerImp implements UniqueKeysTracker{
     private static final int MAX_AMOUNT_OF_KEYS = 10000000;
     private FilterAdapter filterAdapter;
     private final TelemetrySynchronizer _telemetrySynchronizer;
-    private final ScheduledExecutorService _telemetrySyncScheduledExecutorService;
+    private final ScheduledExecutorService _uniqueKeysSyncScheduledExecutorService;
     private final ConcurrentHashMap<String,HashSet<String>> uniqueKeysTracker;
-    private final int _uniqueKeysTimeToSend;
+    private final int _uniqueKeysRefreshRate;
     private static final Logger _logger = LoggerFactory.getLogger(UniqueKeysTrackerImp.class);
 
-    public UniqueKeysTrackerImp(TelemetrySynchronizer telemetrySynchronizer, int uniqueKeysTimeToSend) {
+    public UniqueKeysTrackerImp(TelemetrySynchronizer telemetrySynchronizer, int uniqueKeysRefreshRate) {
         Filter bloomFilter = new BloomFilterImp(MAX_AMOUNT_OF_KEYS, MARGIN_ERROR);
         this.filterAdapter = new FilterAdapterImpl(bloomFilter);
         uniqueKeysTracker = new ConcurrentHashMap<>();
         _telemetrySynchronizer = telemetrySynchronizer;
-        _uniqueKeysTimeToSend = uniqueKeysTimeToSend;
-        ThreadFactory telemetrySyncThreadFactory = new ThreadFactoryBuilder()
+        _uniqueKeysRefreshRate = uniqueKeysRefreshRate;
+
+        ThreadFactory uniqueKeysSyncThreadFactory = new ThreadFactoryBuilder()
                 .setDaemon(true)
-                .setNameFormat("Telemetry-sync-%d")
+                .setNameFormat("UniqueKeys-sync-%d")
                 .build();
-        _telemetrySyncScheduledExecutorService = Executors.newSingleThreadScheduledExecutor(telemetrySyncThreadFactory);
+        _uniqueKeysSyncScheduledExecutorService = Executors.newSingleThreadScheduledExecutor(uniqueKeysSyncThreadFactory);
         try {
             this.start();
         } catch (Exception e) {
@@ -47,13 +52,13 @@ public class UniqueKeysTrackerImp implements UniqueKeysTracker{
     }
 
     @Override
-    public boolean track(String featureName, String key) {
+    public synchronized boolean track(String featureName, String key) {
         if (uniqueKeysTracker.size() == MAX_AMOUNT_OF_TRACKED_UNIQUE_KEYS){
             _logger.warn("The UniqueKeysTracker size reached the maximum limit");
             try {
                 sendUniqueKeys();
             } catch (Exception e) {
-                _log.error("Error sending telemetry stats.", e);
+                _log.error("Error sending unique keys.", e);
             }
             return false;
         }
@@ -73,13 +78,13 @@ public class UniqueKeysTrackerImp implements UniqueKeysTracker{
 
     @Override
     public void start() {
-        _telemetrySyncScheduledExecutorService.scheduleWithFixedDelay(() -> {
+        _uniqueKeysSyncScheduledExecutorService.scheduleWithFixedDelay(() -> {
             try {
                 sendUniqueKeys();
             } catch (Exception e) {
-                _log.warn("Error sending telemetry stats.");
+                _log.warn("Error sending unique keys.");
             }
-        },_uniqueKeysTimeToSend,  _uniqueKeysTimeToSend, TimeUnit.SECONDS);
+        }, _uniqueKeysRefreshRate, _uniqueKeysRefreshRate, TimeUnit.SECONDS);
     }
 
     @Override
@@ -87,9 +92,9 @@ public class UniqueKeysTrackerImp implements UniqueKeysTracker{
         try {
             sendUniqueKeys();
         } catch (Exception e) {
-            _log.warn("Error sending telemetry stats.");
+            _log.warn("Error sending unique keys.");
         }
-        _telemetrySyncScheduledExecutorService.shutdown();
+        _uniqueKeysSyncScheduledExecutorService.shutdown();
     }
 
     public HashMap<String,HashSet<String>> popAll(){
