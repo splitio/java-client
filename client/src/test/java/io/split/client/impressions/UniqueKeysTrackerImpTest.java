@@ -7,15 +7,17 @@ import org.junit.Assert;
 import org.junit.Test;
 import org.mockito.Mockito;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 
 public class UniqueKeysTrackerImpTest {
 
     @Test
     public void addSomeElements(){
         TelemetrySynchronizer telemetrySynchronizer = Mockito.mock(TelemetryInMemorySubmitter.class);
-        UniqueKeysTrackerImp uniqueKeysTrackerImp = new UniqueKeysTrackerImp(telemetrySynchronizer);
+        UniqueKeysTrackerImp uniqueKeysTrackerImp = new UniqueKeysTrackerImp(telemetrySynchronizer, 10000);
         Assert.assertTrue(uniqueKeysTrackerImp.track("feature1","key1"));
         Assert.assertTrue(uniqueKeysTrackerImp.track("feature1","key2"));
         Assert.assertTrue(uniqueKeysTrackerImp.track("feature1","key3"));
@@ -40,7 +42,7 @@ public class UniqueKeysTrackerImpTest {
     @Test
     public void addTheSameElements(){
         TelemetrySynchronizer telemetrySynchronizer = Mockito.mock(TelemetryInMemorySubmitter.class);
-        UniqueKeysTrackerImp uniqueKeysTrackerImp = new UniqueKeysTrackerImp(telemetrySynchronizer);
+        UniqueKeysTrackerImp uniqueKeysTrackerImp = new UniqueKeysTrackerImp(telemetrySynchronizer, 10000);
         Assert.assertTrue(uniqueKeysTrackerImp.track("feature1","key1"));
         Assert.assertTrue(uniqueKeysTrackerImp.track("feature1","key2"));
         Assert.assertTrue(uniqueKeysTrackerImp.track("feature1","key3"));
@@ -62,7 +64,7 @@ public class UniqueKeysTrackerImpTest {
     @Test
     public void popAllUniqueKeys(){
         TelemetrySynchronizer telemetrySynchronizer = Mockito.mock(TelemetryInMemorySubmitter.class);
-        UniqueKeysTrackerImp uniqueKeysTrackerImp = new UniqueKeysTrackerImp(telemetrySynchronizer);
+        UniqueKeysTrackerImp uniqueKeysTrackerImp = new UniqueKeysTrackerImp(telemetrySynchronizer, 10000);
         Assert.assertTrue(uniqueKeysTrackerImp.track("feature1","key1"));
         Assert.assertTrue(uniqueKeysTrackerImp.track("feature1","key2"));
         Assert.assertTrue(uniqueKeysTrackerImp.track("feature2","key3"));
@@ -81,7 +83,13 @@ public class UniqueKeysTrackerImpTest {
         Assert.assertTrue(uniqueKeysTrackerImp.track("feature1","key2"));
         Assert.assertTrue(uniqueKeysTrackerImp.track("feature2","key3"));
 
-        UniqueKeys uniqueKeys = uniqueKeysTrackerImp.getUniqueKeys();
+        HashMap<String,HashSet<String>> uniqueKeysHashMap = uniqueKeysTrackerImp.popAll();
+        List<UniqueKeys.UniqueKey> uniqueKeysFromPopAll = new ArrayList<>();
+        for(String feature: uniqueKeysHashMap.keySet()){
+            UniqueKeys.UniqueKey uniqueKey = new UniqueKeys.UniqueKey(feature, new ArrayList<>(uniqueKeysHashMap.get(feature)));
+            uniqueKeysFromPopAll.add(uniqueKey);
+        }
+        UniqueKeys uniqueKeys = new UniqueKeys(uniqueKeysFromPopAll);
 
         Mockito.doNothing().when(telemetrySynchronizer).synchronizeUniqueKeys(uniqueKeys);
         Thread.sleep(2900);

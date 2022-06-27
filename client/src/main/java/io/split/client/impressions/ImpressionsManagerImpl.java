@@ -113,7 +113,7 @@ public class ImpressionsManagerImpl implements ImpressionsManager, Closeable {
             case NONE:
                 _scheduler.scheduleAtFixedRate(this::sendImpressionCounters, COUNT_INITIAL_DELAY_SECONDS, COUNT_REFRESH_RATE_SECONDS, TimeUnit.SECONDS);
                 counter = new ImpressionCounter();
-                uniqueKeysTracker = new UniqueKeysTrackerImp(telemetrySynchronizer);
+                uniqueKeysTracker = new UniqueKeysTrackerImp(telemetrySynchronizer, _config.uniqueKeysTimeToSend());
                 processImpressionStrategy = new ProcessImpressionNone(_listener!=null, uniqueKeysTracker, counter);
                 break;
         }

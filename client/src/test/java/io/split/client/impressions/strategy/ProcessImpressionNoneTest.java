@@ -26,7 +26,7 @@ public class ProcessImpressionNoneTest {
         boolean listenerEnable = true;
         ImpressionCounter counter = new ImpressionCounter();
         TelemetrySynchronizer telemetrySynchronizer = Mockito.mock(TelemetryInMemorySubmitter.class);
-        UniqueKeysTrackerImp uniqueKeysTracker = new UniqueKeysTrackerImp(telemetrySynchronizer);
+        UniqueKeysTrackerImp uniqueKeysTracker = new UniqueKeysTrackerImp(telemetrySynchronizer, 10000);
         ProcessImpressionNone processImpressionNone = new ProcessImpressionNone(listenerEnable, uniqueKeysTracker, counter);
 
         KeyImpression ki1 = keyImpression("test1", "adil", "on", 1L, null);
@@ -52,7 +52,7 @@ public class ProcessImpressionNoneTest {
         boolean listenerEnable = false;
         ImpressionCounter counter = new ImpressionCounter();
         TelemetrySynchronizer telemetrySynchronizer = Mockito.mock(TelemetryInMemorySubmitter.class);
-        UniqueKeysTrackerImp uniqueKeysTracker = new UniqueKeysTrackerImp(telemetrySynchronizer);
+        UniqueKeysTrackerImp uniqueKeysTracker = new UniqueKeysTrackerImp(telemetrySynchronizer, 10000);
         ProcessImpressionNone processImpressionNone = new ProcessImpressionNone(listenerEnable, uniqueKeysTracker, counter);
 
         KeyImpression ki1 = keyImpression("test1", "adil", "on", 1L, null);
