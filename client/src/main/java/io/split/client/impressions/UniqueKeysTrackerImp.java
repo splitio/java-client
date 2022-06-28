@@ -10,7 +10,6 @@ import io.split.telemetry.synchronizer.TelemetrySynchronizer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -87,21 +86,18 @@ public class UniqueKeysTrackerImp implements UniqueKeysTracker{
 
     @Override
     public void start() {
-        _uniqueKeysSyncScheduledExecutorService.scheduleWithFixedDelay(() -> {
+        scheduleWithFixedDelay(_uniqueKeysSyncScheduledExecutorService, _uniqueKeysRefreshRate, new ExecuteSendUniqueKeys());
+        scheduleWithFixedDelay(_cleanFilterScheduledExecutorService, _filterRefreshRate, new ExecuteCleanFilter());
+    }
+
+    private void scheduleWithFixedDelay(ScheduledExecutorService scheduledExecutorService, int refreshRate, ExecuteUniqueKeysAction executeUniqueKeysAction) {
+        scheduledExecutorService.scheduleWithFixedDelay(() -> {
             try {
-                sendUniqueKeys();
+                executeUniqueKeysAction.execute();
             } catch (Exception e) {
                 _log.error("Error sending unique keys.", e);
             }
-        }, _uniqueKeysRefreshRate, _uniqueKeysRefreshRate, TimeUnit.SECONDS);
-
-        _cleanFilterScheduledExecutorService.scheduleWithFixedDelay(() -> {
-            try {
-                filterAdapter.clear();
-            } catch (Exception e){
-                _log.error("Error cleaning filter");
-            }
-        }, _filterRefreshRate, _filterRefreshRate, TimeUnit.SECONDS);
+        }, refreshRate, refreshRate, TimeUnit.SECONDS);
     }
 
     @Override
@@ -135,5 +131,24 @@ public class UniqueKeysTrackerImp implements UniqueKeysTracker{
             uniqueKeysFromPopAll.add(uniqueKey);
         }
         _telemetrySynchronizer.synchronizeUniqueKeys(new UniqueKeys(uniqueKeysFromPopAll));
+    }
+
+    private interface ExecuteUniqueKeysAction{
+        void execute();
+    }
+    private class ExecuteCleanFilter implements ExecuteUniqueKeysAction {
+
+        @Override
+        public void execute() {
+            filterAdapter.clear();;
+        }
+    }
+
+    private class ExecuteSendUniqueKeys implements ExecuteUniqueKeysAction {
+
+        @Override
+        public void execute() {
+            sendUniqueKeys();
+        }
     }
 }
