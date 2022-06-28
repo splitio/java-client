@@ -1,10 +1,7 @@
 package io.split.service;
 
 import io.split.client.utils.Utils;
-import io.split.telemetry.domain.enums.HTTPLatenciesEnum;
 import io.split.telemetry.domain.enums.HttpParamsWrapper;
-import io.split.telemetry.domain.enums.LastSynchronizationRecordsEnum;
-import io.split.telemetry.domain.enums.ResourceEnum;
 import io.split.telemetry.storage.TelemetryRuntimeProducer;
 import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
 import org.apache.hc.client5.http.impl.classic.CloseableHttpResponse;

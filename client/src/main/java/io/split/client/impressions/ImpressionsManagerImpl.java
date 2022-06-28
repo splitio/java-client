@@ -12,12 +12,12 @@ import io.split.client.impressions.strategy.ProcessImpressionStrategy;
 import io.split.storages.enums.OperationMode;
 import io.split.telemetry.domain.enums.ImpressionsDataTypeEnum;
 import io.split.telemetry.storage.TelemetryRuntimeProducer;
+import io.split.telemetry.synchronizer.TelemetrySynchronizer;
 import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.Closeable;
-import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.List;
 import java.util.concurrent.Executors;
@@ -59,27 +59,29 @@ public class ImpressionsManagerImpl implements ImpressionsManager, Closeable {
                                                   List<ImpressionListener> listeners,
                                                   TelemetryRuntimeProducer telemetryRuntimeProducer,
                                                   ImpressionsStorageConsumer impressionsStorageConsumer,
-                                                  ImpressionsStorageProducer impressionsStorageProducer) throws URISyntaxException {
-        return new ImpressionsManagerImpl(client, config, null, listeners, telemetryRuntimeProducer, impressionsStorageConsumer, impressionsStorageProducer);
+                                                  ImpressionsStorageProducer impressionsStorageProducer,
+                                                  ImpressionsSender impressionsSender,
+                                                  TelemetrySynchronizer telemetrySynchronizer) throws URISyntaxException {
+        return new ImpressionsManagerImpl(config, impressionsSender, listeners, telemetryRuntimeProducer, impressionsStorageConsumer, impressionsStorageProducer, telemetrySynchronizer);
     }
 
-    public static ImpressionsManagerImpl instanceForTest(CloseableHttpClient client,
-                                                         SplitClientConfig config,
+    public static ImpressionsManagerImpl instanceForTest(SplitClientConfig config,
                                                          ImpressionsSender impressionsSender,
                                                          List<ImpressionListener> listeners,
                                                          TelemetryRuntimeProducer telemetryRuntimeProducer,
                                                          ImpressionsStorageConsumer impressionsStorageConsumer,
-                                                         ImpressionsStorageProducer impressionsStorageProducer) throws URISyntaxException {
-        return new ImpressionsManagerImpl(client, config, impressionsSender, listeners, telemetryRuntimeProducer, impressionsStorageConsumer, impressionsStorageProducer);
+                                                         ImpressionsStorageProducer impressionsStorageProducer,
+                                                         TelemetrySynchronizer telemetrySynchronizer) throws URISyntaxException {
+        return new ImpressionsManagerImpl(config, impressionsSender, listeners, telemetryRuntimeProducer, impressionsStorageConsumer, impressionsStorageProducer, telemetrySynchronizer);
     }
 
-    private ImpressionsManagerImpl(CloseableHttpClient client,
-                                   SplitClientConfig config,
+    private ImpressionsManagerImpl(SplitClientConfig config,
                                    ImpressionsSender impressionsSender,
                                    List<ImpressionListener> listeners,
                                    TelemetryRuntimeProducer telemetryRuntimeProducer,
                                    ImpressionsStorageConsumer impressionsStorageConsumer,
-                                   ImpressionsStorageProducer impressionsStorageProducer) throws URISyntaxException {
+                                   ImpressionsStorageProducer impressionsStorageProducer,
+                                   TelemetrySynchronizer telemetrySynchronizer) throws URISyntaxException {
 
 
         _config = checkNotNull(config);
@@ -87,8 +89,7 @@ public class ImpressionsManagerImpl implements ImpressionsManager, Closeable {
         _impressionsStorageConsumer = checkNotNull(impressionsStorageConsumer);
         _impressionsStorageProducer = checkNotNull(impressionsStorageProducer);
         _telemetryRuntimeProducer = checkNotNull(telemetryRuntimeProducer);
-        _impressionsSender = (null != impressionsSender) ? impressionsSender
-                : HttpImpressionsSender.create(client, URI.create(config.eventsEndpoint()), _impressionsMode, telemetryRuntimeProducer);
+        _impressionsSender = impressionsSender;
 
         _scheduler = buildExecutor();
 
@@ -112,7 +113,7 @@ public class ImpressionsManagerImpl implements ImpressionsManager, Closeable {
             case NONE:
                 _scheduler.scheduleAtFixedRate(this::sendImpressionCounters, COUNT_INITIAL_DELAY_SECONDS, COUNT_REFRESH_RATE_SECONDS, TimeUnit.SECONDS);
                 counter = new ImpressionCounter();
-                uniqueKeysTracker = new UniqueKeysTrackerImp();
+                uniqueKeysTracker = new UniqueKeysTrackerImp(telemetrySynchronizer, _config.uniqueKeysRefreshRate(), _config.filterUniqueKeysRefreshRate());
                 processImpressionStrategy = new ProcessImpressionNone(_listener!=null, uniqueKeysTracker, counter);
                 break;
         }
@@ -143,8 +144,10 @@ public class ImpressionsManagerImpl implements ImpressionsManager, Closeable {
     @Override
     public void close() {
         try {
-            _listener.close();
-            _log.info("Successful shutdown of ImpressionListener");
+            if(_listener!= null){
+                _listener.close();
+                _log.info("Successful shutdown of ImpressionListener");
+            }
             _scheduler.shutdown();
             sendImpressions();
         } catch (Exception e) {

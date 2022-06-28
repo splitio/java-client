@@ -12,7 +12,6 @@ import java.util.List;
 import java.util.Set;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.atomic.AtomicLong;
-import java.util.stream.Collectors;
 
 public class InMemoryTelemetryStorage implements  TelemetryStorage{
     public static final int MAX_LATENCY_BUCKET_COUNT = 23;
