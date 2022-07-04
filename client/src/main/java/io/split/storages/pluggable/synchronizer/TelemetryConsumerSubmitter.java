@@ -3,8 +3,6 @@ package io.split.storages.pluggable.synchronizer;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
-import com.google.gson.JsonPrimitive;
-import com.google.gson.JsonSerializer;
 import io.split.client.SplitClientConfig;
 import io.split.client.dtos.UniqueKeys;
 import io.split.client.utils.Json;
@@ -16,7 +14,6 @@ import io.split.storages.pluggable.domain.SafeUserStorageWrapper;
 import io.split.telemetry.synchronizer.TelemetrySynchronizer;
 import pluggable.CustomStorageWrapper;
 
-import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -30,15 +27,7 @@ public class TelemetryConsumerSubmitter implements TelemetrySynchronizer {
 
     private final SafeUserStorageWrapper _safeUserStorageWrapper;
     private final SDKMetadata _sdkMetadata;
-    private final Gson _json = new GsonBuilder()
-            .serializeNulls()  // Send nulls
-            .excludeFieldsWithModifiers(Modifier.STATIC)
-            .registerTypeAdapter(Double.class, (JsonSerializer<Double>) (src, typeOfSrc, context) -> {
-                if (src == src.longValue())
-                    return new JsonPrimitive(src.longValue());
-                return new JsonPrimitive(src);
-            })
-            .create();
+    private final Gson _json = new GsonBuilder().create();
 
     public TelemetryConsumerSubmitter(CustomStorageWrapper customStorageWrapper, SDKMetadata sdkMetadata) {
         _safeUserStorageWrapper = new SafeUserStorageWrapper(checkNotNull(customStorageWrapper));

@@ -32,14 +32,10 @@ public class RedisImpressionSender implements ImpressionsSender{
     }
 
     @Override
-    public void postCounters(HashMap<ImpressionCounter.Key, Integer> raw) {
-        if (raw.size() == 0){
-            _logger.warn("The counters are empty");
-            return;
-        }
-        for(ImpressionCounter.Key rawKey: raw.keySet()){
-            String key = PrefixAdapter.buildImpressionsCount() + rawKey.featureName() + "::" + rawKey.timeFrame();
-            _safeUserStorageWrapper.increment(key, raw.get(rawKey));
+    public void postCounters(HashMap<ImpressionCounter.Key, Integer> counts) {
+        for(ImpressionCounter.Key countsKey: counts.keySet()){
+            String key = PrefixAdapter.buildImpressionsCount() + countsKey.featureName() + "::" + countsKey.timeFrame();
+            _safeUserStorageWrapper.increment(key, counts.get(countsKey));
         }
     }
 }

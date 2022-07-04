@@ -22,9 +22,7 @@ public class RedisImpressionSenderTest {
         HashMap<ImpressionCounter.Key, Integer> counters =  new HashMap<>();
         ImpressionCounter.Key counterKey1 =  new ImpressionCounter.Key("feature1", 100);
         counters.put(counterKey1,2);
-        ImpressionCounter.Key counterKey2 = new ImpressionCounter.Key("feature2", 200);
-        counters.put(counterKey2, 1);
         redisImpressionSender.postCounters(counters);
-        Mockito.verify(safeUserStorageWrapper, Mockito.times(2)).increment(Mockito.anyString(), Mockito.anyLong());
+        Mockito.verify(safeUserStorageWrapper, Mockito.times(1)).increment(Mockito.eq("SPLITIO.impressions.count.feature1::100"), Mockito.anyLong());
     }
 }

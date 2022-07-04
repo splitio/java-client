@@ -50,7 +50,7 @@ public class TelemetryConsumerSubmitterTest {
         modifiersField.setInt(telemetryConsumerSubmitterHolder, telemetryConsumerSubmitterHolder.getModifiers() & ~Modifier.FINAL);
         telemetryConsumerSubmitterHolder.set(telemetrySynchronizer, safeUserStorageWrapper);
         telemetrySynchronizer.synchronizeConfig(splitClientConfig, 10L, new HashMap<>(), new ArrayList<>());
-        Mockito.verify(safeUserStorageWrapper, Mockito.times(1)).set(Mockito.anyString(), Mockito.anyObject());
+        Mockito.verify(safeUserStorageWrapper, Mockito.times(1)).set(Mockito.eq("SPLITIO.telemetry.init::SDK 4.2.x/testMachine/22.215135.1"), Mockito.anyObject());
     }
 
     @Test
@@ -69,6 +69,6 @@ public class TelemetryConsumerSubmitterTest {
         UniqueKeys uniqueKeysToSend = new UniqueKeys(uniqueKeys);
 
         telemetrySynchronizer.synchronizeUniqueKeys(uniqueKeysToSend);
-        Mockito.verify(safeUserStorageWrapper, Mockito.times(1)).pushItems(Mockito.anyString(), Mockito.anyObject());
+        Mockito.verify(safeUserStorageWrapper, Mockito.times(1)).pushItems(Mockito.eq("SPLITIO.uniquekeys"), Mockito.anyObject());
     }
 }
