@@ -23,6 +23,6 @@ public class RedisImpressionSenderTest {
         ImpressionCounter.Key counterKey1 =  new ImpressionCounter.Key("feature1", 100);
         counters.put(counterKey1,2);
         redisImpressionSender.postCounters(counters);
-        Mockito.verify(safeUserStorageWrapper, Mockito.times(1)).increment(Mockito.eq("SPLITIO.impressions.count.feature1::100"), Mockito.anyLong());
+        Mockito.verify(safeUserStorageWrapper, Mockito.times(1)).increment(Mockito.eq("SPLITIO.impressions.count.feature1::100"), Mockito.eq(2L));
     }
 }
