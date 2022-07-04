@@ -1,6 +1,7 @@
 package redis;
 
 import pluggable.CustomStorageWrapper;
+import pluggable.PipelineWrapper;
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisPool;
 
@@ -216,5 +217,22 @@ class RedisImp implements CustomStorageWrapper {
 
         return key;
     }
-}
 
+    @Override
+    public PipelineWrapper pipelined() throws Exception {
+        try {
+            return new RedisPipeline(this.jedisPool, this.prefix);
+        } catch (Exception ex) {
+            throw new RedisException(ex.getMessage());
+        }
+    }
+
+    @Override
+    public List<Object> exec(PipelineWrapper pipelined) throws Exception {
+        try {
+            return pipelined.exec();
+        } catch (Exception ex) {
+            throw new RedisException(ex.getMessage());
+        }
+    }
+}

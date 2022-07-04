@@ -28,4 +28,7 @@ public interface CustomStorageWrapper {
     List<String> getItems(List<String> keys) throws Exception;
     boolean connect() throws Exception;
     boolean disconnect() throws Exception;
+
+    PipelineWrapper pipelined() throws Exception;
+    List<Object> exec(PipelineWrapper pipeline) throws Exception;
 }

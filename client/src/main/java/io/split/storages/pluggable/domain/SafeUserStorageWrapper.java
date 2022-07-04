@@ -3,6 +3,7 @@ package io.split.storages.pluggable.domain;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import pluggable.CustomStorageWrapper;
+import pluggable.PipelineWrapper;
 
 import java.util.List;
 import java.util.Set;
@@ -200,5 +201,15 @@ public class SafeUserStorageWrapper implements CustomStorageWrapper {
             _log.error(String.format("error trying to disconnect. Error: '%s'" , e.getMessage()));
             return false;
         }
+    }
+
+    @Override
+    public PipelineWrapper pipelined() throws Exception {
+        return _customStorageWrapper.pipelined();
+    }
+
+    @Override
+    public List<Object> exec(PipelineWrapper pipeline) throws Exception {
+        return _customStorageWrapper.exec(pipeline);
     }
 }
