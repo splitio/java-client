@@ -2,6 +2,7 @@ package io.split.storages.pluggable.synchronizer;
 
 import io.split.client.ApiKeyCounter;
 import io.split.client.SplitClientConfig;
+import io.split.client.dtos.UniqueKeys;
 import io.split.client.utils.SDKMetadata;
 import io.split.storages.pluggable.domain.ConfigConsumer;
 import io.split.storages.pluggable.domain.SafeUserStorageWrapper;
@@ -14,6 +15,7 @@ import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -49,5 +51,24 @@ public class TelemetryConsumerSubmitterTest {
         telemetryConsumerSubmitterHolder.set(telemetrySynchronizer, safeUserStorageWrapper);
         telemetrySynchronizer.synchronizeConfig(splitClientConfig, 10L, new HashMap<>(), new ArrayList<>());
         Mockito.verify(safeUserStorageWrapper, Mockito.times(1)).set(Mockito.anyString(), Mockito.anyObject());
+    }
+
+    @Test
+    public void testTestSynchronizeUniqueKeys() throws NoSuchFieldException, IllegalAccessException {
+        SafeUserStorageWrapper safeUserStorageWrapper = Mockito.mock(SafeUserStorageWrapper.class);
+        TelemetryConsumerSubmitter telemetrySynchronizer = new TelemetryConsumerSubmitter(Mockito.mock(CustomStorageWrapper.class), new SDKMetadata("SDK 4.2.x", "22.215135.1", "testMachine"));
+        Field telemetryConsumerSubmitterHolder = TelemetryConsumerSubmitter.class.getDeclaredField("_safeUserStorageWrapper");
+        telemetryConsumerSubmitterHolder.setAccessible(true);
+        telemetryConsumerSubmitterHolder.set(telemetrySynchronizer, safeUserStorageWrapper);
+
+        List<String> keys = new ArrayList<>();
+        keys.add("key-1");
+        keys.add("key-2");
+        List<UniqueKeys.UniqueKey> uniqueKeys = new ArrayList<>();
+        uniqueKeys.add(new UniqueKeys.UniqueKey("feature-1", keys));
+        UniqueKeys uniqueKeysToSend = new UniqueKeys(uniqueKeys);
+
+        telemetrySynchronizer.synchronizeUniqueKeys(uniqueKeysToSend);
+        Mockito.verify(safeUserStorageWrapper, Mockito.times(1)).pushItems(Mockito.anyString(), Mockito.anyObject());
     }
 }

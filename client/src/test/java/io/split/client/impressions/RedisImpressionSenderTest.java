@@ -1,27 +1,30 @@
 package io.split.client.impressions;
 
-import org.junit.Before;
+import io.split.storages.pluggable.domain.SafeUserStorageWrapper;
 import org.junit.Test;
 import org.mockito.Mockito;
+import pluggable.CustomStorageWrapper;
 
+import java.lang.reflect.Field;
 import java.util.HashMap;
 
 public class RedisImpressionSenderTest {
 
-    private RedisImpressionSender _redisImpressionSender;
-    @Before
-    public void setUp() throws NoSuchFieldException, IllegalAccessException {
-        _redisImpressionSender = Mockito.mock(RedisImpressionSender.class);
-    }
-
     @Test
-    public void testPostCounters(){
+    public void testPostCounters() throws NoSuchFieldException, IllegalAccessException {
+        SafeUserStorageWrapper safeUserStorageWrapper = Mockito.mock(SafeUserStorageWrapper.class);
+        RedisImpressionSender redisImpressionSender = RedisImpressionSender.create(Mockito.mock(CustomStorageWrapper.class));
+        Field redisSubmitterHolder = RedisImpressionSender.class.getDeclaredField("_safeUserStorageWrapper");
+        redisSubmitterHolder.setAccessible(true);
+
+        redisSubmitterHolder.set(redisImpressionSender, safeUserStorageWrapper);
+
         HashMap<ImpressionCounter.Key, Integer> counters =  new HashMap<>();
         ImpressionCounter.Key counterKey1 =  new ImpressionCounter.Key("feature1", 100);
         counters.put(counterKey1,2);
         ImpressionCounter.Key counterKey2 = new ImpressionCounter.Key("feature2", 200);
         counters.put(counterKey2, 1);
-        _redisImpressionSender.postCounters(counters);
-        Mockito.verify(_redisImpressionSender, Mockito.times(1)).postCounters(counters);
+        redisImpressionSender.postCounters(counters);
+        Mockito.verify(safeUserStorageWrapper, Mockito.times(2)).increment(Mockito.anyString(), Mockito.anyLong());
     }
 }
