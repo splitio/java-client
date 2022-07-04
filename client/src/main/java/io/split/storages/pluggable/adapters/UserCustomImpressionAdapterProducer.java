@@ -13,7 +13,6 @@ import io.split.storages.pluggable.domain.SafeUserStorageWrapper;
 import pluggable.CustomStorageWrapper;
 
 import java.lang.reflect.Modifier;
-import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 

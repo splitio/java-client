@@ -14,6 +14,7 @@ import io.split.client.impressions.ImpressionsStorage;
 import io.split.client.impressions.ImpressionsStorageConsumer;
 import io.split.client.impressions.ImpressionsStorageProducer;
 import io.split.client.impressions.InMemoryImpressionsStorage;
+import io.split.client.impressions.RedisImpressionSender;
 import io.split.client.interceptors.AuthorizationInterceptorFilter;
 import io.split.client.interceptors.ClientKeyInterceptorFilter;
 import io.split.client.interceptors.GzipDecoderResponseInterceptor;
@@ -286,7 +287,7 @@ public class SplitFactoryImpl implements SplitFactory {
         _gates = new SDKReadinessGates();
 
         _evaluator = new EvaluatorImp(userCustomSplitAdapterConsumer, userCustomSegmentAdapterConsumer);
-        _impressionsSender = null; // TODO instantiate new sender when Redis Implements UniqueKeys
+        _impressionsSender = RedisImpressionSender.create(customStorageWrapper);
         _impressionsManager = buildImpressionsManager(config, userCustomImpressionAdapterConsumer, userCustomImpressionAdapterProducer);
 
         _telemetrySynchronizer = new TelemetryConsumerSubmitter(customStorageWrapper, _sdkMetadata);
