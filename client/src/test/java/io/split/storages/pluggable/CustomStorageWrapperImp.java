@@ -126,13 +126,17 @@ public class CustomStorageWrapperImp implements CustomStorageWrapper {
                     _methodLatencies.get(items[3]).increment(Integer.parseInt(items[4]));
                 }
             }
-
         }
         return 0;
     }
 
     @Override
     public long decrement(String key, long value) throws Exception {
+        return 0;
+    }
+
+    @Override
+    public long hIncrement(String key, String field, long value) throws Exception {
         return 0;
     }
 

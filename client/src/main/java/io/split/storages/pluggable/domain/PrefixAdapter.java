@@ -12,7 +12,7 @@ public class PrefixAdapter {
     private static final String EVENTS = "events";
     private static final String IMPRESSIONS = "impressions";
     private static final String SEGMENT = "segment.";
-    private static final String COUNT = ".count.";
+    private static final String COUNT = ".count";
     private static final String UNIQUE_KEYS = "uniquekeys";
     private static final String TILL = "till";
     private static final String TELEMETRY = "telemetry.";

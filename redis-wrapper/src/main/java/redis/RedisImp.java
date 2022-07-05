@@ -102,6 +102,15 @@ class RedisImp implements CustomStorageWrapper {
     }
 
     @Override
+    public long hIncrement(String key, String field, long value) throws RedisException {
+        try (Jedis jedis = this.jedisPool.getResource()) {
+            return jedis.hincrBy(buildKeyWithPrefix(key), field, value);
+        } catch (Exception ex) {
+            throw new RedisException(ex.getMessage());
+        }
+    }
+
+    @Override
     public long decrement(String key, long value) throws Exception {
         try (Jedis jedis = this.jedisPool.getResource()) {
             return jedis.decrBy(buildKeyWithPrefix(key), value);

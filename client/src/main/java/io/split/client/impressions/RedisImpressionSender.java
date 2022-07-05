@@ -34,8 +34,8 @@ public class RedisImpressionSender implements ImpressionsSender{
     @Override
     public void postCounters(HashMap<ImpressionCounter.Key, Integer> counts) {
         for(ImpressionCounter.Key countsKey: counts.keySet()){
-            String key = PrefixAdapter.buildImpressionsCount() + countsKey.featureName() + "::" + countsKey.timeFrame();
-            _safeUserStorageWrapper.increment(key, counts.get(countsKey));
+            String key = PrefixAdapter.buildImpressionsCount();
+            _safeUserStorageWrapper.hIncrement(key, countsKey.featureName() + "::" + countsKey.timeFrame(), counts.get(countsKey));
         }
     }
 }
