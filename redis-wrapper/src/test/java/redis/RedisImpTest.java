@@ -125,6 +125,21 @@ public class RedisImpTest {
     }
 
     @Test
+    public void testHIncrement() throws Exception {
+        RedisImp storageWrapper = new RedisImp(new JedisPool(), "test-prefix");
+        Map<String, String> map = new HashMap<>();
+        map.put("count", "test::12232");
+        try {
+            long result = storageWrapper.hIncrement("count", "test::12232", 2L);
+            Assert.assertEquals(2L, result);
+            result = storageWrapper.hIncrement("count", "test::12232", 1L);
+            Assert.assertEquals(3L, result);
+        } finally {
+            storageWrapper.delete(new ArrayList<>(map.keySet()));
+        }
+    }
+
+    @Test
     public void testPushAndPopItems() throws Exception {
         Map<String, String> map = new HashMap<>();
         map.put("item-1", "1");
