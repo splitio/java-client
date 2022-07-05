@@ -23,7 +23,7 @@ public class RedisImpressionSender implements ImpressionsSender{
     }
 
     private RedisImpressionSender(CustomStorageWrapper customStorageWrapper) {
-        this._safeUserStorageWrapper = new SafeUserStorageWrapper(checkNotNull(customStorageWrapper));;
+        this._safeUserStorageWrapper = new SafeUserStorageWrapper(checkNotNull(customStorageWrapper));
     }
 
     @Override

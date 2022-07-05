@@ -1,7 +1,6 @@
 package redis;
 
 import org.junit.Assert;
-import org.junit.Ignore;
 import org.junit.Test;
 import pluggable.CustomStorageWrapper;
 import redis.clients.jedis.JedisPool;

@@ -1,8 +1,6 @@
 package io.split.storages.pluggable.synchronizer;
 
 import com.google.common.annotations.VisibleForTesting;
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
 import io.split.client.SplitClientConfig;
 import io.split.client.dtos.UniqueKeys;
 import io.split.client.utils.Json;
@@ -27,7 +25,6 @@ public class TelemetryConsumerSubmitter implements TelemetrySynchronizer {
 
     private final SafeUserStorageWrapper _safeUserStorageWrapper;
     private final SDKMetadata _sdkMetadata;
-    private final Gson _json = new GsonBuilder().create();
 
     public TelemetryConsumerSubmitter(CustomStorageWrapper customStorageWrapper, SDKMetadata sdkMetadata) {
         _safeUserStorageWrapper = new SafeUserStorageWrapper(checkNotNull(customStorageWrapper));
@@ -46,7 +43,7 @@ public class TelemetryConsumerSubmitter implements TelemetrySynchronizer {
 
     @Override
     public void synchronizeUniqueKeys(UniqueKeys uniqueKeys) {
-        List<String> uniqueKeysToSend = new ArrayList<>(Arrays.asList(_json.toJson(uniqueKeys)));
+        List<String> uniqueKeysToSend = new ArrayList<>(Arrays.asList(Json.toJson(uniqueKeys)));
         _safeUserStorageWrapper.pushItems(PrefixAdapter.buildUniqueKeys(), uniqueKeysToSend);
     }
 

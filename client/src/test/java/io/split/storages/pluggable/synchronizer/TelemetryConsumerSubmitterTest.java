@@ -1,7 +1,5 @@
 package io.split.storages.pluggable.synchronizer;
 
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
 import io.split.client.ApiKeyCounter;
 import io.split.client.SplitClientConfig;
 import io.split.client.dtos.UniqueKeys;
@@ -16,7 +14,7 @@ import pluggable.CustomStorageWrapper;
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 import java.util.ArrayList;
-import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -72,8 +70,7 @@ public class TelemetryConsumerSubmitterTest {
         UniqueKeys uniqueKeysToSend = new UniqueKeys(uniqueKeys);
 
         telemetrySynchronizer.synchronizeUniqueKeys(uniqueKeysToSend);
-        Gson gson = new GsonBuilder().create();
-        List<String> uniqueKeysJson = new ArrayList<>(Arrays.asList(gson.toJson(uniqueKeysToSend)));
-        Mockito.verify(safeUserStorageWrapper, Mockito.times(1)).pushItems(Mockito.eq("SPLITIO.uniquekeys"), Mockito.eq(uniqueKeysJson));
+        List<String> uniqueKeysJson = new ArrayList<>(Collections.singletonList("{\"keys\":[{\"f\":\"feature-1\",\"ks\":[\"key-1\",\"key-2\"]}]}"));
+        Mockito.verify(safeUserStorageWrapper).pushItems(Mockito.eq("SPLITIO.uniquekeys"), Mockito.eq(uniqueKeysJson));
     }
 }
