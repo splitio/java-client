@@ -9,7 +9,7 @@
         <version>4.4.5-rc0</version>
     </parent>
 
-    <version>1.0.1-rc0</version>
+    <version>1.0.1-rc1</version>
     <artifactId>pluggable-storage</artifactId>
     <packaging>jar</packaging>
     <name>Package for Pluggable Storage</name>

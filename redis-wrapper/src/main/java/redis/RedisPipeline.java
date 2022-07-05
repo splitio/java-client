@@ -8,35 +8,35 @@ import redis.clients.jedis.Pipeline;
 import java.util.List;
 
 public class RedisPipeline implements PipelineWrapper {
-    private Pipeline pipelined;
-    private final String prefix;
+    private Pipeline _pipelined;
+    private final String _prefix;
 
 
     public RedisPipeline(JedisPool jedisPool, String prefix) {
-        this.prefix = prefix;
+        _prefix = prefix;
         try (Jedis jedis = jedisPool.getResource()) {
-            this.pipelined = jedis.pipelined();
+            _pipelined = jedis.pipelined();
         } catch (Exception ex) {
             System.out.println("err " + ex.getMessage());
         }
     }
 
-        /* package private */ String buildKeyWithPrefix(String key) {
-            if (!key.startsWith(this.prefix)) {
-                key = String.format("%s.%s", prefix, key);
-            }
-    
-            return key;
+    /* package private */ String buildKeyWithPrefix(String key) {
+        if (!key.startsWith(_prefix)) {
+            key = String.format("%s.%s", _prefix, key);
         }
+
+        return key;
+    }
 
     @Override
     public void increment(String key, long value) throws Exception {
-        this.pipelined.incrBy(buildKeyWithPrefix(key), value);
+        _pipelined.incrBy(buildKeyWithPrefix(key), value);
     }
 
     @Override
     public List<Object> exec() throws Exception {
-        return this.pipelined.syncAndReturnAll();
+        return _pipelined.syncAndReturnAll();
     }
 
 }
