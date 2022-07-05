@@ -137,6 +137,7 @@ public class CustomStorageWrapperImp implements CustomStorageWrapper {
 
     @Override
     public long hIncrement(String key, String field, long value) throws Exception {
+        //TODO implement
         return 0;
     }
 
