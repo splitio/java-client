@@ -1,7 +1,6 @@
 package redis;
 
 import org.junit.Assert;
-import org.junit.Ignore;
 import org.junit.Test;
 import pluggable.CustomStorageWrapper;
 import redis.clients.jedis.JedisPool;
@@ -121,6 +120,21 @@ public class RedisImpTest {
             Assert.assertEquals(1L, result);
         }
         finally {
+            storageWrapper.delete(new ArrayList<>(map.keySet()));
+        }
+    }
+
+    @Test
+    public void testHIncrement() throws Exception {
+        RedisImp storageWrapper = new RedisImp(new JedisPool(), "test-prefix");
+        Map<String, String> map = new HashMap<>();
+        map.put("count", "test::12232");
+        try {
+            long result = storageWrapper.hIncrement("count", "test::12232", 2L);
+            Assert.assertEquals(2L, result);
+            result = storageWrapper.hIncrement("count", "test::12232", 1L);
+            Assert.assertEquals(3L, result);
+        } finally {
             storageWrapper.delete(new ArrayList<>(map.keySet()));
         }
     }

@@ -10,16 +10,19 @@ import io.split.client.impressions.ImpressionsStorageProducer;
 import io.split.storages.pluggable.domain.ImpressionConsumer;
 import io.split.storages.pluggable.domain.PrefixAdapter;
 import io.split.storages.pluggable.domain.SafeUserStorageWrapper;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import pluggable.CustomStorageWrapper;
 
 import java.lang.reflect.Modifier;
-import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
 public class UserCustomImpressionAdapterProducer implements ImpressionsStorageProducer {
+
+    private static final Logger _log = LoggerFactory.getLogger(UserCustomImpressionAdapterProducer.class);
 
     private final SafeUserStorageWrapper _safeUserStorageWrapper;
     private final Gson _json = new GsonBuilder()
@@ -41,8 +44,11 @@ public class UserCustomImpressionAdapterProducer implements ImpressionsStoragePr
     @Override
     public long put(List<KeyImpression> imps) {
         //Impression
+        if (imps.isEmpty()){
+            _log.warn("The impression list to send to Redis is empty");
+            return 0;
+        }
         List<String> impressions = imps.stream().map(keyImp -> _json.toJson(new ImpressionConsumer(_metadata, keyImp))).collect(Collectors.toList());
         return _safeUserStorageWrapper.pushItems(PrefixAdapter.buildImpressions(), impressions);
     }
-
 }
