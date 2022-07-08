@@ -9,7 +9,6 @@ import io.split.client.impressions.strategy.ProcessImpressionDebug;
 import io.split.client.impressions.strategy.ProcessImpressionNone;
 import io.split.client.impressions.strategy.ProcessImpressionOptimized;
 import io.split.client.impressions.strategy.ProcessImpressionStrategy;
-import io.split.storages.enums.OperationMode;
 import io.split.telemetry.domain.enums.ImpressionsDataTypeEnum;
 import io.split.telemetry.storage.TelemetryRuntimeProducer;
 import io.split.telemetry.synchronizer.TelemetrySynchronizer;
@@ -47,7 +46,6 @@ public class ImpressionsManagerImpl implements ImpressionsManager, Closeable {
     private final ImpressionsSender _impressionsSender;
     private final ImpressionListener _listener;
     private final ImpressionsManager.Mode _impressionsMode;
-    private final OperationMode _operationMode;
     private TelemetryRuntimeProducer _telemetryRuntimeProducer;
     private ImpressionObserver impressionObserver;
     private ImpressionCounter counter;
@@ -96,7 +94,6 @@ public class ImpressionsManagerImpl implements ImpressionsManager, Closeable {
         _listener = (null != listeners && !listeners.isEmpty()) ? new ImpressionListener.FederatedImpressionListener(listeners)
                 : null;
 
-        _operationMode = config.operationMode();
         switch (_impressionsMode){
             case OPTIMIZED:
                 _scheduler.scheduleAtFixedRate(this::sendImpressionCounters, COUNT_INITIAL_DELAY_SECONDS, COUNT_REFRESH_RATE_SECONDS, TimeUnit.SECONDS);
@@ -148,8 +145,15 @@ public class ImpressionsManagerImpl implements ImpressionsManager, Closeable {
                 _listener.close();
                 _log.info("Successful shutdown of ImpressionListener");
             }
+            if(uniqueKeysTracker != null){
+                uniqueKeysTracker.stop();
+                _log.info("Successful stop of UniqueKeysTracker");
+            }
             _scheduler.shutdown();
             sendImpressions();
+            if(counter != null) {
+                sendImpressionCounters();
+            }
         } catch (Exception e) {
             _log.warn("Unable to close ImpressionsManager properly", e);
         }
