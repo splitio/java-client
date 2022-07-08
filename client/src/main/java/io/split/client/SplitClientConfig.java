@@ -58,7 +58,8 @@ public class SplitClientConfig {
     private final int _onDemandFetchRetryDelayMs;
     private final int _onDemandFetchMaxRetries;
     private final int _failedAttemptsBeforeLogging;
-    private final int _uniqueKeysRefreshRate;
+    private final int _uniqueKeysRefreshRateInMemory;
+    private final int _uniqueKeysRefreshRateRedis;
     private static int _filterUniqueKeysRefreshRate;
     private final boolean _cdnDebugLogging;
     private final OperationMode _operationMode;
@@ -119,7 +120,8 @@ public class SplitClientConfig {
                               long validateAfterInactivityInMillis,
                               CustomStorageWrapper customStorageWrapper,
                               StorageMode storageMode,
-                              int uniqueKeysRefreshRate,
+                              int uniqueKeysRefreshRateInMemory,
+                              int uniqueKeysRefreshRateRedis,
                               int filterUniqueKeysRefreshRate) {
         _endpoint = endpoint;
         _eventsEndpoint = eventsEndpoint;
@@ -153,7 +155,8 @@ public class SplitClientConfig {
         _streamingServiceURL = streamingServiceURL;
         _telemetryURL = telemetryURL;
         _telemetryRefreshRate = telemetryRefreshRate;
-        _uniqueKeysRefreshRate = uniqueKeysRefreshRate;
+        _uniqueKeysRefreshRateInMemory = uniqueKeysRefreshRateInMemory;
+        _uniqueKeysRefreshRateRedis = uniqueKeysRefreshRateRedis;
         _filterUniqueKeysRefreshRate = filterUniqueKeysRefreshRate;
         _onDemandFetchRetryDelayMs = onDemandFetchRetryDelayMs;
         _onDemandFetchMaxRetries = onDemandFetchMaxRetries;
@@ -201,8 +204,11 @@ public class SplitClientConfig {
         return _impressionsRefreshRate;
     }
 
-    public int uniqueKeysRefreshRate() {
-        return _uniqueKeysRefreshRate;
+    public int uniqueKeysRefreshRateInMemory() {
+        return _uniqueKeysRefreshRateInMemory;
+    }
+    public int uniqueKeysRefreshRateRedis() {
+        return _uniqueKeysRefreshRateRedis;
     }
     public static int filterUniqueKeysRefreshRate() {
         return _filterUniqueKeysRefreshRate;
@@ -362,7 +368,8 @@ public class SplitClientConfig {
         private String _streamingServiceURL = STREAMING_ENDPOINT;
         private String _telemetryURl = TELEMETRY_ENDPOINT;
         private int _telemetryRefreshRate = 3600;
-        private final int _uniqueKeysRefreshRate = 900;
+        private final int _uniqueKeysRefreshRateInMemory = 900;
+        private final int _uniqueKeysRefreshRateRedis = 300;
         private final int _filterUniqueKeysRefreshRate = 86400;
         private int _onDemandFetchRetryDelayMs = 50;
         private final int _onDemandFetchMaxRetries = 10;
@@ -953,7 +960,8 @@ public class SplitClientConfig {
                     _validateAfterInactivityInMillis,
                     _customStorageWrapper,
                     _storageMode,
-                    _uniqueKeysRefreshRate,
+                    _uniqueKeysRefreshRateInMemory,
+                    _uniqueKeysRefreshRateRedis,
                     _filterUniqueKeysRefreshRate);
         }
     }

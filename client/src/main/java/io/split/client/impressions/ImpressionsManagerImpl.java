@@ -9,6 +9,7 @@ import io.split.client.impressions.strategy.ProcessImpressionDebug;
 import io.split.client.impressions.strategy.ProcessImpressionNone;
 import io.split.client.impressions.strategy.ProcessImpressionOptimized;
 import io.split.client.impressions.strategy.ProcessImpressionStrategy;
+import io.split.storages.enums.OperationMode;
 import io.split.telemetry.domain.enums.ImpressionsDataTypeEnum;
 import io.split.telemetry.storage.TelemetryRuntimeProducer;
 import io.split.telemetry.synchronizer.TelemetrySynchronizer;
@@ -110,7 +111,9 @@ public class ImpressionsManagerImpl implements ImpressionsManager, Closeable {
             case NONE:
                 _scheduler.scheduleAtFixedRate(this::sendImpressionCounters, COUNT_INITIAL_DELAY_SECONDS, COUNT_REFRESH_RATE_SECONDS, TimeUnit.SECONDS);
                 counter = new ImpressionCounter();
-                uniqueKeysTracker = new UniqueKeysTrackerImp(telemetrySynchronizer, _config.uniqueKeysRefreshRate(), _config.filterUniqueKeysRefreshRate());
+                int uniqueKeysRefreshRate = _config.operationMode().equals(OperationMode.STANDALONE) ? _config.uniqueKeysRefreshRateInMemory()
+                        : _config.uniqueKeysRefreshRateRedis();
+                uniqueKeysTracker = new UniqueKeysTrackerImp(telemetrySynchronizer, uniqueKeysRefreshRate, _config.filterUniqueKeysRefreshRate());
                 processImpressionStrategy = new ProcessImpressionNone(_listener!=null, uniqueKeysTracker, counter);
                 break;
         }
