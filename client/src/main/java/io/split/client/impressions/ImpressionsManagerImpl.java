@@ -47,7 +47,6 @@ public class ImpressionsManagerImpl implements ImpressionsManager, Closeable {
     private final ImpressionsSender _impressionsSender;
     private final ImpressionListener _listener;
     private final ImpressionsManager.Mode _impressionsMode;
-    private final OperationMode _operationMode;
     private TelemetryRuntimeProducer _telemetryRuntimeProducer;
     private ImpressionObserver impressionObserver;
     private ImpressionCounter counter;
@@ -96,7 +95,6 @@ public class ImpressionsManagerImpl implements ImpressionsManager, Closeable {
         _listener = (null != listeners && !listeners.isEmpty()) ? new ImpressionListener.FederatedImpressionListener(listeners)
                 : null;
 
-        _operationMode = config.operationMode();
         switch (_impressionsMode){
             case OPTIMIZED:
                 _scheduler.scheduleAtFixedRate(this::sendImpressionCounters, COUNT_INITIAL_DELAY_SECONDS, COUNT_REFRESH_RATE_SECONDS, TimeUnit.SECONDS);
@@ -113,7 +111,9 @@ public class ImpressionsManagerImpl implements ImpressionsManager, Closeable {
             case NONE:
                 _scheduler.scheduleAtFixedRate(this::sendImpressionCounters, COUNT_INITIAL_DELAY_SECONDS, COUNT_REFRESH_RATE_SECONDS, TimeUnit.SECONDS);
                 counter = new ImpressionCounter();
-                uniqueKeysTracker = new UniqueKeysTrackerImp(telemetrySynchronizer, _config.uniqueKeysRefreshRate(), _config.filterUniqueKeysRefreshRate());
+                int uniqueKeysRefreshRate = _config.operationMode().equals(OperationMode.STANDALONE) ? _config.uniqueKeysRefreshRateInMemory()
+                        : _config.uniqueKeysRefreshRateRedis();
+                uniqueKeysTracker = new UniqueKeysTrackerImp(telemetrySynchronizer, uniqueKeysRefreshRate, _config.filterUniqueKeysRefreshRate());
                 processImpressionStrategy = new ProcessImpressionNone(_listener!=null, uniqueKeysTracker, counter);
                 break;
         }
@@ -148,8 +148,15 @@ public class ImpressionsManagerImpl implements ImpressionsManager, Closeable {
                 _listener.close();
                 _log.info("Successful shutdown of ImpressionListener");
             }
+            if(uniqueKeysTracker != null){
+                uniqueKeysTracker.stop();
+                _log.info("Successful stop of UniqueKeysTracker");
+            }
             _scheduler.shutdown();
             sendImpressions();
+            if(counter != null) {
+                sendImpressionCounters();
+            }
         } catch (Exception e) {
             _log.warn("Unable to close ImpressionsManager properly", e);
         }
