@@ -1,13 +1,14 @@
 package redis;
 
-import pluggable.PipelineWrapper;
+import pluggable.Result;
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisPool;
 import redis.clients.jedis.Pipeline;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
-public class RedisPipeline implements PipelineWrapper {
+public class RedisPipeline implements pluggable.Pipeline {
     private Pipeline _pipelined;
     private final String _prefix;
 
@@ -30,13 +31,14 @@ public class RedisPipeline implements PipelineWrapper {
     }
 
     @Override
-    public void increment(String key, long value) throws Exception {
+    public void increment(String key, long value) throws Exception{
         _pipelined.incrBy(buildKeyWithPrefix(key), value);
     }
 
     @Override
-    public List<Object> exec() throws Exception {
-        return _pipelined.syncAndReturnAll();
+    public List<Result> exec() throws Exception {
+        List<Object> executionResult = _pipelined.syncAndReturnAll();
+        return executionResult.stream().map(i -> new Result(i)).collect(Collectors.toList());
     }
 
 }

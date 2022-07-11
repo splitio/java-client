@@ -21,7 +21,7 @@ import io.split.storages.pluggable.domain.PrefixAdapter;
 import io.split.telemetry.domain.enums.MethodEnum;
 import io.split.telemetry.utils.AtomicLongArray;
 import pluggable.CustomStorageWrapper;
-import pluggable.PipelineWrapper;
+import pluggable.Pipeline;
 
 import java.lang.reflect.Modifier;
 import java.util.ArrayList;
@@ -247,15 +247,5 @@ public class CustomStorageWrapperImp implements CustomStorageWrapper {
 
     public ConfigConsumer get_telemetryInit() {
         return _telemetryInit;
-    }
-
-    @Override
-    public PipelineWrapper pipelined() throws Exception {
-        return null;
-    }
-
-    @Override
-    public List<Object> exec(PipelineWrapper pipeline) throws Exception {
-        return null;
     }
 }

@@ -3,8 +3,9 @@ package io.split.storages.pluggable.domain;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import pluggable.CustomStorageWrapper;
-import pluggable.NotPipelinedIml;
-import pluggable.PipelineWrapper;
+import pluggable.HasPipelineSupport;
+import pluggable.NotPipelinedImpl;
+import pluggable.Pipeline;
 
 import java.util.List;
 import java.util.Set;
@@ -204,17 +205,9 @@ public class SafeUserStorageWrapper implements CustomStorageWrapper {
         }
     }
 
-    @Override
-    public PipelineWrapper pipelined() throws Exception {
-        PipelineWrapper pipelined = _customStorageWrapper.pipelined();
-        if (pipelined != null) {
-            return pipelined;
-        }
-        return new NotPipelinedIml(_customStorageWrapper);
-    }
-
-    @Override
-    public List<Object> exec(PipelineWrapper pipeline) throws Exception {
-        return _customStorageWrapper.exec(pipeline);
+    public Pipeline pipeline() throws Exception {
+        return (_customStorageWrapper instanceof HasPipelineSupport)
+                ? ((HasPipelineSupport) _customStorageWrapper).pipeline()
+                : new NotPipelinedImpl(_customStorageWrapper);
     }
 }
