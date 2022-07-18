@@ -23,7 +23,6 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.LinkedBlockingQueue;
-import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import static com.google.common.base.Preconditions.checkNotNull;
@@ -36,14 +35,16 @@ public class SyncManagerImp implements SyncManager {
     private final PushManager _pushManager;
     private final AtomicBoolean _shutdown;
     private final LinkedBlockingQueue<PushManager.Status> _incomingPushStatus;
-    private final ExecutorService _executorService;
-    private final ExecutorService _startExecutorService;
+    private final ExecutorService _pushMonitorExecutorService;
+    private final ExecutorService _initializationtExecutorService;
     private final SDKReadinessGates _gates;
     private Future<?> _pushStatusMonitorTask;
     private Backoff _backoff;
     private final TelemetryRuntimeProducer _telemetryRuntimeProducer;
     private final TelemetrySynchronizer _telemetrySynchronizer;
     private final SplitClientConfig _config;
+    private static final long STARTING_SYNC_CALL_BACKOFF_BASE_MS = new Long(2000); //backoff base starting at 2 seconds (!)
+    private static final long STARTING_SYNC_ALL_BACKOFF_MAX_WAIT_MS = new Long(10000);
 
     @VisibleForTesting
     /* package private */ SyncManagerImp(boolean streamingEnabledConfig,
@@ -59,12 +60,12 @@ public class SyncManagerImp implements SyncManager {
         _pushManager = checkNotNull(pushManager);
         _shutdown = new AtomicBoolean(false);
         _incomingPushStatus = pushMessages;
-        _executorService = Executors.newSingleThreadExecutor(new ThreadFactoryBuilder()
+        _pushMonitorExecutorService = Executors.newSingleThreadExecutor(new ThreadFactoryBuilder()
                 .setNameFormat("SPLIT-PushStatusMonitor-%d")
                 .setDaemon(true)
                 .build());
-        _startExecutorService = Executors.newSingleThreadExecutor(new ThreadFactoryBuilder()
-                .setNameFormat("SPLIT-PollingMode-%d")
+        _initializationtExecutorService = Executors.newSingleThreadExecutor(new ThreadFactoryBuilder()
+                .setNameFormat("SPLIT-Initialization-%d")
                 .setDaemon(true)
                 .build());
         _backoff = new Backoff(authRetryBackOffBase);
@@ -126,48 +127,46 @@ public class SyncManagerImp implements SyncManager {
 
     @Override
     public void start() {
-        _startExecutorService.submit(() -> {
-            while(!_synchronizer.syncAll() && !_shutdown.get()) {
-                try {
-                    Thread.currentThread().sleep(1000);
+        _initializationtExecutorService.submit(() -> {
+            _backoff = new Backoff(STARTING_SYNC_CALL_BACKOFF_BASE_MS,STARTING_SYNC_ALL_BACKOFF_MAX_WAIT_MS);
+            while(!_synchronizer.syncAll()) {
+                try{
+                    long howLong = _backoff.interval() * 1000;
+                    Thread.currentThread().sleep(howLong);
                 } catch (InterruptedException e) {
-                    _log.warn("Sdk Initializer thread interrupted");
                     Thread.currentThread().interrupt();
+                    break;
                 }
             }
-            if (!_shutdown.get()){
-                _gates.sdkInternalReady();
-                _telemetrySynchronizer.synchronizeConfig(_config, System.currentTimeMillis(), ApiKeyCounter.getApiKeyCounterInstance().getFactoryInstances(), new ArrayList<>());
-                if (_streamingEnabledConfig.get()) {
-                    startStreamingMode();
-                } else {
-                    startPollingMode();
-                }
+            if (_shutdown.get()) {
+                return;
+            }
+            _gates.sdkInternalReady();
+            _telemetrySynchronizer.synchronizeConfig(_config, System.currentTimeMillis(), ApiKeyCounter.getApiKeyCounterInstance().getFactoryInstances(), new ArrayList<>());
+            if (_streamingEnabledConfig.get()) {
+                startStreamingMode();
+            } else {
+                startPollingMode();
             }
         });
     }
 
     @Override
     public void shutdown() {
-        _shutdown.set(true);
-        if(!_startExecutorService.isShutdown()){
-            _startExecutorService.shutdown();
-            try {
-                if (!_startExecutorService.awaitTermination(800, TimeUnit.MILLISECONDS)) {
-                    _startExecutorService.shutdownNow();
-                }
-            } catch (InterruptedException e) {
-                _startExecutorService.shutdownNow();
-            }
+        if(_shutdown.get()) {
+            return;
         }
+        _shutdown.set(true);
+        _initializationtExecutorService.shutdownNow();
         _synchronizer.stopPeriodicFetching();
         _pushManager.stop();
+        _pushMonitorExecutorService.shutdownNow();
     }
 
     private void startStreamingMode() {
         _log.debug("Starting in streaming mode ...");
         if (null == _pushStatusMonitorTask) {
-            _pushStatusMonitorTask = _executorService.submit(this::incomingPushStatusHandler);
+            _pushStatusMonitorTask = _pushMonitorExecutorService.submit(this::incomingPushStatusHandler);
         }
         _pushManager.start();
         _telemetryRuntimeProducer.recordStreamingEvents(new StreamingEvent(StreamEventsEnum.SYNC_MODE_UPDATE.getType(), StreamEventsEnum.SyncModeUpdateValues.STREAMING_EVENT.getValue(), System.currentTimeMillis()));
