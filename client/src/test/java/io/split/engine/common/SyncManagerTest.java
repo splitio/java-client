@@ -160,7 +160,7 @@ public class SyncManagerTest {
         Mockito.when(_synchronizer.syncAll()).thenReturn(false).thenReturn(true);
         SyncManagerImp syncManager = new SyncManagerImp(false, _synchronizer, _pushManager, new LinkedBlockingQueue<>(), BACKOFF_BASE, _gates, telemetryStorage, telemetrySynchronizer, config);
         syncManager.start();
-        Thread.sleep(2000);
+        Thread.sleep(3000);
         Mockito.verify(_synchronizer, Mockito.times(1)).startPeriodicFetching();
         Mockito.verify(_synchronizer, Mockito.times(2)).syncAll();
         Mockito.verify(_pushManager, Mockito.times(0)).start();

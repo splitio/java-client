@@ -131,7 +131,7 @@ public class SyncManagerImp implements SyncManager {
             _backoff = new Backoff(STARTING_SYNC_CALL_BACKOFF_BASE_MS, STARTING_SYNC_ALL_BACKOFF_MAX_WAIT_MS);
             while(!_synchronizer.syncAll()) {
                 try{
-                    long howLong = _backoff.interval() * 1000;
+                    long howLong = _backoff.interval();
                     Thread.currentThread().sleep(howLong);
                 } catch (InterruptedException e) {
                     Thread.currentThread().interrupt();
