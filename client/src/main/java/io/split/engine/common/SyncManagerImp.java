@@ -33,7 +33,7 @@ public class SyncManagerImp implements SyncManager {
     private final AtomicBoolean _streamingEnabledConfig;
     private final Synchronizer _synchronizer;
     private final PushManager _pushManager;
-    private final AtomicBoolean _shutdown;
+    private final AtomicBoolean _shuttedDown;
     private final LinkedBlockingQueue<PushManager.Status> _incomingPushStatus;
     private final ExecutorService _pushMonitorExecutorService;
     private final ExecutorService _initializationtExecutorService;
@@ -44,7 +44,7 @@ public class SyncManagerImp implements SyncManager {
     private final TelemetrySynchronizer _telemetrySynchronizer;
     private final SplitClientConfig _config;
     private static final long STARTING_SYNC_CALL_BACKOFF_BASE_MS = new Long(2000); //backoff base starting at 2 seconds (!)
-    private static final long STARTING_SYNC_ALL_BACKOFF_MAX_WAIT_MS = new Long(10000);
+    private static final long STARTING_SYNC_ALL_BACKOFF_MAX_WAIT_MS = new Long(10000); // 10 seconds max wait
 
     @VisibleForTesting
     /* package private */ SyncManagerImp(boolean streamingEnabledConfig,
@@ -58,7 +58,7 @@ public class SyncManagerImp implements SyncManager {
         _streamingEnabledConfig = new AtomicBoolean(streamingEnabledConfig);
         _synchronizer = checkNotNull(synchronizer);
         _pushManager = checkNotNull(pushManager);
-        _shutdown = new AtomicBoolean(false);
+        _shuttedDown = new AtomicBoolean(false);
         _incomingPushStatus = pushMessages;
         _pushMonitorExecutorService = Executors.newSingleThreadExecutor(new ThreadFactoryBuilder()
                 .setNameFormat("SPLIT-PushStatusMonitor-%d")
@@ -128,7 +128,7 @@ public class SyncManagerImp implements SyncManager {
     @Override
     public void start() {
         _initializationtExecutorService.submit(() -> {
-            _backoff = new Backoff(STARTING_SYNC_CALL_BACKOFF_BASE_MS,STARTING_SYNC_ALL_BACKOFF_MAX_WAIT_MS);
+            _backoff = new Backoff(STARTING_SYNC_CALL_BACKOFF_BASE_MS, STARTING_SYNC_ALL_BACKOFF_MAX_WAIT_MS);
             while(!_synchronizer.syncAll()) {
                 try{
                     long howLong = _backoff.interval() * 1000;
@@ -138,7 +138,7 @@ public class SyncManagerImp implements SyncManager {
                     break;
                 }
             }
-            if (_shutdown.get()) {
+            if (_shuttedDown.get()) {
                 return;
             }
             _gates.sdkInternalReady();
@@ -153,10 +153,10 @@ public class SyncManagerImp implements SyncManager {
 
     @Override
     public void shutdown() {
-        if(_shutdown.get()) {
+        if(_shuttedDown.get()) {
             return;
         }
-        _shutdown.set(true);
+        _shuttedDown.set(true);
         _initializationtExecutorService.shutdownNow();
         _synchronizer.stopPeriodicFetching();
         _pushManager.stop();
