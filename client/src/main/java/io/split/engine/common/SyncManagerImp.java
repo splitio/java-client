@@ -23,6 +23,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import static com.google.common.base.Preconditions.checkNotNull;
@@ -126,7 +127,7 @@ public class SyncManagerImp implements SyncManager {
     @Override
     public void start() {
         _startExecutorService.submit(() -> {
-            while(!_synchronizer.syncAll()) {
+            while(!_synchronizer.syncAll() && !_shutdown.get()) {
                 try {
                     Thread.currentThread().sleep(1000);
                 } catch (InterruptedException e) {
@@ -134,12 +135,14 @@ public class SyncManagerImp implements SyncManager {
                     Thread.currentThread().interrupt();
                 }
             }
-            _gates.sdkInternalReady();
-            _telemetrySynchronizer.synchronizeConfig(_config, System.currentTimeMillis(), ApiKeyCounter.getApiKeyCounterInstance().getFactoryInstances(), new ArrayList<>());
-            if (_streamingEnabledConfig.get()) {
-                startStreamingMode();
-            } else {
-                startPollingMode();
+            if (!_shutdown.get()){
+                _gates.sdkInternalReady();
+                _telemetrySynchronizer.synchronizeConfig(_config, System.currentTimeMillis(), ApiKeyCounter.getApiKeyCounterInstance().getFactoryInstances(), new ArrayList<>());
+                if (_streamingEnabledConfig.get()) {
+                    startStreamingMode();
+                } else {
+                    startPollingMode();
+                }
             }
         });
     }
@@ -147,6 +150,16 @@ public class SyncManagerImp implements SyncManager {
     @Override
     public void shutdown() {
         _shutdown.set(true);
+        if(!_startExecutorService.isShutdown()){
+            _startExecutorService.shutdown();
+            try {
+                if (!_startExecutorService.awaitTermination(800, TimeUnit.MILLISECONDS)) {
+                    _startExecutorService.shutdownNow();
+                }
+            } catch (InterruptedException e) {
+                _startExecutorService.shutdownNow();
+            }
+        }
         _synchronizer.stopPeriodicFetching();
         _pushManager.stop();
     }
