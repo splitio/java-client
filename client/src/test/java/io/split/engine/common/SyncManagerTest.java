@@ -149,7 +149,7 @@ public class SyncManagerTest {
         Thread.sleep(1200);
         Mockito.verify(_synchronizer, Mockito.times(1)).startPeriodicFetching();
         Mockito.verify(_synchronizer, Mockito.times(1)).syncAll();
-        Mockito.verify(_pushManager, Mockito.times(2)).start();
+        Mockito.verify(_pushManager, Mockito.times(1)).start();
     }
 
     @Test
