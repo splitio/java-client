@@ -43,7 +43,7 @@ public class SyncManagerImp implements SyncManager {
     private final TelemetryRuntimeProducer _telemetryRuntimeProducer;
     private final TelemetrySynchronizer _telemetrySynchronizer;
     private final SplitClientConfig _config;
-    private static final long STARTING_SYNC_CALL_BACKOFF_BASE_MS = new Long(2000); //backoff base starting at 2 seconds (!)
+    private final long _startingSyncCallBackoffBaseMs;
     private static final long STARTING_SYNC_ALL_BACKOFF_MAX_WAIT_MS = new Long(10000); // 10 seconds max wait
 
     @VisibleForTesting
@@ -73,6 +73,7 @@ public class SyncManagerImp implements SyncManager {
         _telemetryRuntimeProducer = checkNotNull(telemetryRuntimeProducer);
         _telemetrySynchronizer = checkNotNull(telemetrySynchronizer);
         _config = checkNotNull(config);
+        _startingSyncCallBackoffBaseMs = config.startingSyncCallBackoffBaseMs();
     }
 
     public static SyncManagerImp build(boolean streamingEnabledConfig,
@@ -128,7 +129,7 @@ public class SyncManagerImp implements SyncManager {
     @Override
     public void start() {
         _initializationtExecutorService.submit(() -> {
-            _backoff = new Backoff(STARTING_SYNC_CALL_BACKOFF_BASE_MS, STARTING_SYNC_ALL_BACKOFF_MAX_WAIT_MS);
+            _backoff = new Backoff(_startingSyncCallBackoffBaseMs, STARTING_SYNC_ALL_BACKOFF_MAX_WAIT_MS);
             while(!_synchronizer.syncAll()) {
                 try{
                     long howLong = _backoff.interval();
