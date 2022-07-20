@@ -186,6 +186,8 @@ public class SplitFactoryImpl implements SplitFactory {
                 _eventsRootTarget,
                 config.eventsQueueSize(),
                 config.eventFlushIntervalInMillis(),
+                config.eventConsumeIntervalInMillis(),
+                config.eventSendIntervalInMillis(),
                 config.waitBeforeShutdown(),
                 _telemetryStorageProducer, eventsStorage, eventsStorage);
 

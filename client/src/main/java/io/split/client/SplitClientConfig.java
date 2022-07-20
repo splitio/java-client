@@ -45,6 +45,8 @@ public class SplitClientConfig {
     private final int _waitBeforeShutdown;
     private final int _eventsQueueSize;
     private final long _eventFlushIntervalInMillis;
+    private final long _eventConsumeIntervalInMillis;
+    private final long _eventSendIntervalInMillis;
     private final int _maxStringLength;
     private final boolean _destroyOnShutDown;
     private final String _splitFile;
@@ -99,6 +101,8 @@ public class SplitClientConfig {
                               String proxyPassword,
                               int eventsQueueSize,
                               long eventFlushIntervalInMillis,
+                              long eventConsumeIntervalInMillis,
+                              long eventSendIntervalInMillis,
                               int maxStringLength,
                               boolean destroyOnShutDown,
                               String splitFile,
@@ -139,6 +143,8 @@ public class SplitClientConfig {
         _proxyPassword = proxyPassword;
         _eventsQueueSize = eventsQueueSize;
         _eventFlushIntervalInMillis = eventFlushIntervalInMillis;
+        _eventConsumeIntervalInMillis = eventConsumeIntervalInMillis;
+        _eventSendIntervalInMillis = eventSendIntervalInMillis;
         _maxStringLength = maxStringLength;
         _destroyOnShutDown = destroyOnShutDown;
         _splitFile = splitFile;
@@ -246,6 +252,14 @@ public class SplitClientConfig {
         return _eventFlushIntervalInMillis;
     }
 
+    public long eventConsumeIntervalInMillis() {
+        return _eventConsumeIntervalInMillis;
+    }
+
+    public long eventSendIntervalInMillis() {
+        return _eventSendIntervalInMillis;
+    }
+
     public int eventsQueueSize() {
         return _eventsQueueSize;
     }
@@ -339,6 +353,8 @@ public class SplitClientConfig {
         private String _proxyPassword;
         private int _eventsQueueSize = 500;
         private long _eventFlushIntervalInMillis = 30 * 1000;
+        private long _eventConsumeIntervalMillis = 5 * 1000;
+        private long _eventSendIntervalMillis = 20 * 1000;
         private int _maxStringLength = 250;
         private boolean _destroyOnShutDown = true;
         private String _splitFile = null;
@@ -920,6 +936,8 @@ public class SplitClientConfig {
                     _proxyPassword,
                     _eventsQueueSize,
                     _eventFlushIntervalInMillis,
+                    _eventConsumeIntervalMillis,
+                    _eventSendIntervalMillis,
                     _maxStringLength,
                     _destroyOnShutDown,
                     _splitFile,

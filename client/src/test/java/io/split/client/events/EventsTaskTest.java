@@ -24,7 +24,7 @@ public class EventsTaskTest {
         URI rootTarget = URI.create("https://api.split.io");
         CloseableHttpClient httpClient = HttpClients.custom().build();
         EventsStorage eventsStorage = Mockito.mock(EventsStorage.class);
-        EventsTask fetcher = EventsTask.create(httpClient, rootTarget, 5, 5, 5, TELEMETRY_STORAGE, eventsStorage, eventsStorage);
+        EventsTask fetcher = EventsTask.create(httpClient, rootTarget, 5, 5, 1,3,5, TELEMETRY_STORAGE, eventsStorage, eventsStorage);
         Assert.assertThat(fetcher.getTarget().toString(), Matchers.is(Matchers.equalTo("https://api.split.io/api/events/bulk")));
     }
 
@@ -33,7 +33,7 @@ public class EventsTaskTest {
         URI rootTarget = URI.create("https://kubernetesturl.com");
         CloseableHttpClient httpClient = HttpClients.custom().build();
         EventsStorage eventsStorage = Mockito.mock(EventsStorage.class);
-        EventsTask fetcher = EventsTask.create(httpClient, rootTarget, 5, 5, 5, TELEMETRY_STORAGE, eventsStorage, eventsStorage);
+        EventsTask fetcher = EventsTask.create(httpClient, rootTarget, 5, 5, 1, 3,5, TELEMETRY_STORAGE, eventsStorage, eventsStorage);
         Assert.assertThat(fetcher.getTarget().toString(), Matchers.is(Matchers.equalTo("https://kubernetesturl.com/api/events/bulk")));
     }
 
@@ -42,7 +42,7 @@ public class EventsTaskTest {
         URI rootTarget = URI.create("https://kubernetesturl.com/split/");
         CloseableHttpClient httpClient = HttpClients.custom().build();
         EventsStorage eventsStorage = Mockito.mock(EventsStorage.class);
-        EventsTask fetcher = EventsTask.create(httpClient, rootTarget, 5, 5, 5, TELEMETRY_STORAGE, eventsStorage, eventsStorage);
+        EventsTask fetcher = EventsTask.create(httpClient, rootTarget, 5, 5, 1, 3,5, TELEMETRY_STORAGE, eventsStorage, eventsStorage);
         Assert.assertThat(fetcher.getTarget().toString(), Matchers.is(Matchers.equalTo("https://kubernetesturl.com/split/api/events/bulk")));
     }
 
@@ -51,7 +51,7 @@ public class EventsTaskTest {
         URI rootTarget = URI.create("https://kubernetesturl.com/split");
         CloseableHttpClient httpClient = HttpClients.custom().build();
         EventsStorage eventsStorage = Mockito.mock(EventsStorage.class);
-        EventsTask fetcher = EventsTask.create(httpClient, rootTarget, 5, 5, 5, TELEMETRY_STORAGE, eventsStorage, eventsStorage);
+        EventsTask fetcher = EventsTask.create(httpClient, rootTarget, 5, 5, 1, 3, 5, TELEMETRY_STORAGE, eventsStorage, eventsStorage);
         Assert.assertThat(fetcher.getTarget().toString(), Matchers.is(Matchers.equalTo("https://kubernetesturl.com/split/api/events/bulk")));
     }
 
@@ -65,6 +65,8 @@ public class EventsTaskTest {
                 URI.create("https://kubernetesturl.com/split"),
                 10000, // Long queue so it doesn't flush by # of events
                 100000, // Long period so it doesn't flush by timeout expiration.
+                1000,
+                2000,
                 0, TELEMETRY_STORAGE);
 
         for (int i = 0; i < 159; ++i) {
