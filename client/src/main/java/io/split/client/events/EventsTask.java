@@ -121,7 +121,7 @@ public class EventsTask{
             flush();
             _consumerScheduledExecutorService.shutdownNow();
             _flushScheduledExecutorService.shutdownNow();
-            _senderScheduledExecutorService.awaitTermination(_waitBeforeShutdown, TimeUnit.MILLISECONDS);
+            _senderScheduledExecutorService.shutdown();
         } catch (Exception e) {
             _log.warn("Error when shutting down EventClientImpl", e);
         }
