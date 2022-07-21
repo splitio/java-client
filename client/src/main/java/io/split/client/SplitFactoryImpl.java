@@ -184,12 +184,8 @@ public class SplitFactoryImpl implements SplitFactory {
         EventsStorage eventsStorage = new InMemoryEventsStorage(config.eventsQueueSize(), _telemetryStorageProducer);
         _eventsTask = EventsTask.create(_httpclient,
                 _eventsRootTarget,
-                config.eventsQueueSize(),
-                config.eventFlushIntervalInMillis(),
-                config.eventConsumeIntervalInMillis(),
                 config.eventSendIntervalInMillis(),
-                config.waitBeforeShutdown(),
-                _telemetryStorageProducer, eventsStorage, eventsStorage);
+                _telemetryStorageProducer, eventsStorage);
 
         _telemetrySyncTask = new TelemetrySyncTask(config.get_telemetryRefreshRate(), _telemetrySynchronizer);
 

@@ -102,7 +102,7 @@ public class TelemetryInMemorySubmitter implements TelemetrySynchronizer{
         List<String> impressions = getImpressions(impressionsListeners);
 
         rates.set_telemetry(splitClientConfig.get_telemetryRefreshRate());
-        rates.set_events(splitClientConfig.eventFlushIntervalInMillis());
+        rates.set_events(splitClientConfig.eventSendIntervalInMillis());
         rates.set_impressions(splitClientConfig.impressionsRefreshRate());
         rates.set_segments(splitClientConfig.segmentsRefreshRate());
         rates.set_splits(splitClientConfig.featuresRefreshRate());
