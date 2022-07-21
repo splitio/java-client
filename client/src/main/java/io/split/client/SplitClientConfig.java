@@ -62,6 +62,7 @@ public class SplitClientConfig {
     private final boolean _cdnDebugLogging;
     private final OperationMode _operationMode;
     private long _validateAfterInactivityInMillis;
+    private final long _startingSyncCallBackoffBaseMs;
     private final CustomStorageWrapper _customStorageWrapper;
     private final StorageMode _storageMode;
 
@@ -116,6 +117,7 @@ public class SplitClientConfig {
                               boolean cdnDebugLogging,
                               OperationMode operationMode,
                               long validateAfterInactivityInMillis,
+                              long startingSyncCallBackoffBaseMs,
                               CustomStorageWrapper customStorageWrapper,
                               StorageMode storageMode) {
         _endpoint = endpoint;
@@ -157,6 +159,7 @@ public class SplitClientConfig {
         _operationMode = operationMode;
         _storageMode = storageMode;
         _validateAfterInactivityInMillis = validateAfterInactivityInMillis;
+        _startingSyncCallBackoffBaseMs = startingSyncCallBackoffBaseMs;
         _customStorageWrapper = customStorageWrapper;
 
         Properties props = new Properties();
@@ -306,6 +309,7 @@ public class SplitClientConfig {
     public long validateAfterInactivityInMillis() {
         return _validateAfterInactivityInMillis;
     }
+    public long startingSyncCallBackoffBaseMs(){ return  _startingSyncCallBackoffBaseMs;}
 
     public CustomStorageWrapper customStorageWrapper() {
         return _customStorageWrapper;
@@ -356,6 +360,7 @@ public class SplitClientConfig {
         private final boolean _cdnDebugLogging = true;
         private OperationMode _operationMode = OperationMode.STANDALONE;
         private long _validateAfterInactivityInMillis = 1000;
+        private final long _startingSyncCallBackoffBaseMs = new Long(1000); //backoff base starting at 1 seconds
         private CustomStorageWrapper _customStorageWrapper;
         private StorageMode _storageMode = StorageMode.MEMORY;
 
@@ -937,6 +942,7 @@ public class SplitClientConfig {
                     _cdnDebugLogging,
                     _operationMode,
                     _validateAfterInactivityInMillis,
+                    _startingSyncCallBackoffBaseMs,
                     _customStorageWrapper,
                     _storageMode);
         }
