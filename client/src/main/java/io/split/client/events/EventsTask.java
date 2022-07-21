@@ -95,7 +95,7 @@ public class EventsTask{
         }
     }
 
-    private synchronized void sendEvents(){
+    void sendEvents(){
         if (_eventsStorageConsumer.isFull()) {
             _log.warn("Split SDK events queue is full. Events may have been dropped. Consider increasing capacity.");
         }

@@ -34,17 +34,20 @@ public class HttpPostImp {
         HttpPost request = new HttpPost(uri);
         request.setEntity(entity);
 
-        try (CloseableHttpResponse response = _client.execute(request)) {
+        try {
+            CloseableHttpResponse response = _client.execute(request);
+            if (response != null){
+                int status = response.getCode();
 
-            int status = response.getCode();
-
-            if (status < HttpStatus.SC_OK || status >= HttpStatus.SC_MULTIPLE_CHOICES) {
-                _telemetryRuntimeProducer.recordSyncError(httpParamsWrapper.getResourceEnum(), status);
-                _logger.warn("Response status was: " + status);
-                return;
+                if (status < HttpStatus.SC_OK || status >= HttpStatus.SC_MULTIPLE_CHOICES) {
+                    _telemetryRuntimeProducer.recordSyncError(httpParamsWrapper.getResourceEnum(), status);
+                    _logger.warn("Response status was: " + status);
+                    return;
+                }
+                _telemetryRuntimeProducer.recordSyncLatency(httpParamsWrapper.getHttpLatenciesEnum(), System.currentTimeMillis() - initTime);
+                _telemetryRuntimeProducer.recordSuccessfulSync(httpParamsWrapper.getLastSynchronizationRecordsEnum(), System.currentTimeMillis());
             }
-            _telemetryRuntimeProducer.recordSyncLatency(httpParamsWrapper.getHttpLatenciesEnum(), System.currentTimeMillis() - initTime);
-            _telemetryRuntimeProducer.recordSuccessfulSync(httpParamsWrapper.getLastSynchronizationRecordsEnum(), System.currentTimeMillis());
+
         } catch (Throwable t) {
             _logger.warn("Exception when posting " + posted + object, t);
         }
