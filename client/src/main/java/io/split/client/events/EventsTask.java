@@ -117,8 +117,8 @@ public class EventsTask{
 
     public void close() {
         try {
+            consumeEvents();
             sendEvents();
-            flush();
             _consumerScheduledExecutorService.shutdownNow();
             _flushScheduledExecutorService.shutdownNow();
             _senderScheduledExecutorService.shutdown();
@@ -146,18 +146,18 @@ public class EventsTask{
 
     private synchronized void consumeEvents(){
         WrappedEvent data = _eventsStorageConsumer.pop();
-        if (data == null) {
-            return;
-        }
-        Event event = data.event();
-        eventsList.add(event);
-        sizeAccumulated += data.size();
-        if (eventsList.size() >= _maxQueueSize ||  sizeAccumulated >= MAX_SIZE_BYTES || event == SENTINEL){
-            // Send over the network
-            if (_log.isDebugEnabled()) {
-                _log.debug(String.format("Sending %d events", eventsList.size()));
+        while (data != null){
+            Event event = data.event();
+            eventsList.add(event);
+            sizeAccumulated += data.size();
+            if (eventsList.size() >= _maxQueueSize ||  sizeAccumulated >= MAX_SIZE_BYTES || event == SENTINEL){
+                // Send over the network
+                if (_log.isDebugEnabled()) {
+                    _log.debug(String.format("Sending %d events", eventsList.size()));
+                }
+                sendEvents();
             }
-            sendEvents();
+            data = _eventsStorageConsumer.pop();
         }
     }
 
