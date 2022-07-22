@@ -4,8 +4,6 @@ import com.google.common.annotations.VisibleForTesting;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import io.split.client.dtos.Event;
 import io.split.client.utils.Utils;
-import io.split.telemetry.storage.TelemetryRuntimeProducer;
-import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -31,23 +29,18 @@ public class EventsTask{
 
     private final ScheduledExecutorService _senderScheduledExecutorService;
     private static final Logger _log = LoggerFactory.getLogger(EventsTask.class);
-    private final CloseableHttpClient _httpclient;
     private final URI _target;
-    private final TelemetryRuntimeProducer _telemetryRuntimeProducer;
 
-    public static EventsTask create(CloseableHttpClient httpclient, URI eventsRootTarget,
-                                    long sendIntervalMillis, TelemetryRuntimeProducer telemetryRuntimeProducer, EventsStorageConsumer eventsStorageConsumer) throws URISyntaxException {
+    public static EventsTask create(URI eventsRootTarget,
+                                    long sendIntervalMillis, EventsStorageConsumer eventsStorageConsumer, EventsSender eventsSender) throws URISyntaxException {
         return new EventsTask(eventsStorageConsumer,
-                httpclient,
                 Utils.appendPath(eventsRootTarget, "api/events/bulk"),
                 sendIntervalMillis,
-                telemetryRuntimeProducer);
+                eventsSender);
     }
 
-    EventsTask(EventsStorageConsumer eventsStorageConsumer, CloseableHttpClient httpclient, URI target,
-               long sendIntervalMillis, TelemetryRuntimeProducer telemetryRuntimeProducer) throws URISyntaxException {
-
-        _httpclient = checkNotNull(httpclient);
+    EventsTask(EventsStorageConsumer eventsStorageConsumer, URI target,
+               long sendIntervalMillis, EventsSender eventsSender) throws URISyntaxException {
 
         _target = checkNotNull(target);
 
@@ -55,9 +48,7 @@ public class EventsTask{
 
         _sendIntervalMillis = sendIntervalMillis;
 
-        _telemetryRuntimeProducer = checkNotNull(telemetryRuntimeProducer);
-
-        _eventsSender = EventsSender.create(_httpclient, _target, _telemetryRuntimeProducer);
+        _eventsSender = checkNotNull(eventsSender);
 
         ThreadFactory senderThreadFactory = eventClientThreadFactory("Sender-events-%d");
         _senderScheduledExecutorService = Executors.newSingleThreadScheduledExecutor(senderThreadFactory);
