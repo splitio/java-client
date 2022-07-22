@@ -35,7 +35,9 @@ public class HttpPostImp {
         request.setEntity(entity);
 
         try (CloseableHttpResponse response = _client.execute(request)) {
+
             int status = response.getCode();
+
             if (status < HttpStatus.SC_OK || status >= HttpStatus.SC_MULTIPLE_CHOICES) {
                 _telemetryRuntimeProducer.recordSyncError(httpParamsWrapper.getResourceEnum(), status);
                 _logger.warn("Response status was: " + status);
@@ -43,7 +45,6 @@ public class HttpPostImp {
             }
             _telemetryRuntimeProducer.recordSyncLatency(httpParamsWrapper.getHttpLatenciesEnum(), System.currentTimeMillis() - initTime);
             _telemetryRuntimeProducer.recordSuccessfulSync(httpParamsWrapper.getLastSynchronizationRecordsEnum(), System.currentTimeMillis());
-
         } catch (Throwable t) {
             _logger.warn("Exception when posting " + posted + object, t);
         }
