@@ -2,6 +2,7 @@ package io.split.client;
 
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import io.split.client.dtos.Metadata;
+import io.split.client.events.EventsSender;
 import io.split.client.events.EventsStorage;
 import io.split.client.events.EventsTask;
 import io.split.client.events.InMemoryEventsStorage;
@@ -182,12 +183,10 @@ public class SplitFactoryImpl implements SplitFactory {
 
         // EventClient
         EventsStorage eventsStorage = new InMemoryEventsStorage(config.eventsQueueSize(), _telemetryStorageProducer);
-        _eventsTask = EventsTask.create(_httpclient,
-                _eventsRootTarget,
-                config.eventsQueueSize(),
-                config.eventFlushIntervalInMillis(),
-                config.waitBeforeShutdown(),
-                _telemetryStorageProducer, eventsStorage, eventsStorage);
+        EventsSender eventsSender = EventsSender.create(_httpclient, _eventsRootTarget, _telemetryStorageProducer);
+        _eventsTask = EventsTask.create(_eventsRootTarget,
+                config.eventSendIntervalInMillis(),
+                eventsStorage, eventsSender);
 
         _telemetrySyncTask = new TelemetrySyncTask(config.get_telemetryRefreshRate(), _telemetrySynchronizer);
 
