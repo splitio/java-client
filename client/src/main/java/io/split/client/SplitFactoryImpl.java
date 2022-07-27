@@ -19,6 +19,7 @@ import io.split.client.interceptors.GzipDecoderResponseInterceptor;
 import io.split.client.interceptors.GzipEncoderRequestInterceptor;
 import io.split.client.interceptors.SdkMetadataInterceptorFilter;
 import io.split.client.utils.SDKMetadata;
+import io.split.client.utils.Utils;
 import io.split.engine.SDKReadinessGates;
 import io.split.engine.common.SyncManager;
 import io.split.engine.common.SyncManagerImp;
@@ -183,7 +184,7 @@ public class SplitFactoryImpl implements SplitFactory {
 
         // EventClient
         EventsStorage eventsStorage = new InMemoryEventsStorage(config.eventsQueueSize(), _telemetryStorageProducer);
-        EventsSender eventsSender = EventsSender.create(_httpclient, _eventsRootTarget, _telemetryStorageProducer);
+        EventsSender eventsSender = EventsSender.create(_httpclient, Utils.appendPath(_eventsRootTarget, "api/events/bulk"), _telemetryStorageProducer);
         _eventsTask = EventsTask.create(_eventsRootTarget,
                 config.eventSendIntervalInMillis(),
                 eventsStorage, eventsSender);
