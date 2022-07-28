@@ -1,13 +1,10 @@
 package io.split.client.events;
 
-import com.google.common.annotations.VisibleForTesting;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import io.split.client.dtos.Event;
-import io.split.client.utils.Utils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.List;
@@ -29,20 +26,15 @@ public class EventsTask{
 
     private final ScheduledExecutorService _senderScheduledExecutorService;
     private static final Logger _log = LoggerFactory.getLogger(EventsTask.class);
-    private final URI _target;
 
-    public static EventsTask create(URI eventsRootTarget,
-                                    long sendIntervalMillis, EventsStorageConsumer eventsStorageConsumer, EventsSender eventsSender) throws URISyntaxException {
+    public static EventsTask create(long sendIntervalMillis, EventsStorageConsumer eventsStorageConsumer, EventsSender eventsSender) throws URISyntaxException {
         return new EventsTask(eventsStorageConsumer,
-                Utils.appendPath(eventsRootTarget, "api/events/bulk"),
                 sendIntervalMillis,
                 eventsSender);
     }
 
-    EventsTask(EventsStorageConsumer eventsStorageConsumer, URI target,
-               long sendIntervalMillis, EventsSender eventsSender) throws URISyntaxException {
-
-        _target = checkNotNull(target);
+    EventsTask(EventsStorageConsumer eventsStorageConsumer,
+               long sendIntervalMillis, EventsSender eventsSender) {
 
         _eventsStorageConsumer = checkNotNull(eventsStorageConsumer);
 
@@ -103,10 +95,5 @@ public class EventsTask{
             return;
         }
         _eventsSender.sendEvents(eventsToSend);
-    }
-
-    @VisibleForTesting
-    URI getTarget() {
-        return _target  ;
     }
 }
