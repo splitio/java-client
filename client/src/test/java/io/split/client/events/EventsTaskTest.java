@@ -2,46 +2,15 @@ package io.split.client.events;
 
 import io.split.client.dtos.Event;
 import io.split.telemetry.storage.TelemetryRuntimeProducer;
-import org.hamcrest.Matchers;
 import org.junit.Assert;
 import org.junit.Test;
 import org.mockito.Mockito;
 
 import java.io.IOException;
-import java.net.URI;
 import java.net.URISyntaxException;
 
 public class EventsTaskTest {
-    private static final EventsStorage EVENTS_STORAGE = Mockito.mock(EventsStorage.class);
     private static final EventsSender EVENTS_SENDER = Mockito.mock(EventsSender.class);
-
-    @Test
-    public void testDefaultURL() throws URISyntaxException {
-        URI rootTarget = URI.create("https://api.split.io");
-        EventsTask fetcher = EventsTask.create(rootTarget, 5, EVENTS_STORAGE, EVENTS_SENDER);
-        Assert.assertThat(fetcher.getTarget().toString(), Matchers.is(Matchers.equalTo("https://api.split.io/api/events/bulk")));
-    }
-
-    @Test
-    public void testCustomURLNoPathNoBackslash() throws URISyntaxException {
-        URI rootTarget = URI.create("https://kubernetesturl.com");
-        EventsTask fetcher = EventsTask.create(rootTarget, 5, EVENTS_STORAGE, EVENTS_SENDER);
-        Assert.assertThat(fetcher.getTarget().toString(), Matchers.is(Matchers.equalTo("https://kubernetesturl.com/api/events/bulk")));
-    }
-
-    @Test
-    public void testCustomURLAppendingPath() throws URISyntaxException {
-        URI rootTarget = URI.create("https://kubernetesturl.com/split/");
-        EventsTask fetcher = EventsTask.create(rootTarget, 5, EVENTS_STORAGE, EVENTS_SENDER);
-        Assert.assertThat(fetcher.getTarget().toString(), Matchers.is(Matchers.equalTo("https://kubernetesturl.com/split/api/events/bulk")));
-    }
-
-    @Test
-    public void testCustomURLAppendingPathNoBackslash() throws URISyntaxException {
-        URI rootTarget = URI.create("https://kubernetesturl.com/split");
-        EventsTask fetcher = EventsTask.create(rootTarget, 5, EVENTS_STORAGE, EVENTS_SENDER);
-        Assert.assertThat(fetcher.getTarget().toString(), Matchers.is(Matchers.equalTo("https://kubernetesturl.com/split/api/events/bulk")));
-    }
 
     @Test
     public void testEventsAreSending() throws URISyntaxException, InterruptedException, IOException {
@@ -49,7 +18,6 @@ public class EventsTaskTest {
         EventsStorage eventsStorage = new InMemoryEventsStorage(10000, telemetryRuntimeProducer);
         EventsSender eventsSender = Mockito.mock(EventsSender.class);
         EventsTask eventClient = new EventsTask(eventsStorage,
-                URI.create("https://kubernetesturl.com/split"),
                 2000,
                 eventsSender);
 
@@ -72,7 +40,6 @@ public class EventsTaskTest {
         EventsSender eventsSender = Mockito.mock(EventsSender.class);
         EventsStorage eventsStorage = new InMemoryEventsStorage(10000, telemetryRuntimeProducer);
         EventsTask eventClient = new EventsTask(eventsStorage,
-                URI.create("https://kubernetesturl.com/split"),
                 2000,
                 eventsSender);
 
@@ -91,7 +58,6 @@ public class EventsTaskTest {
         TelemetryRuntimeProducer telemetryRuntimeProducer = Mockito.mock(TelemetryRuntimeProducer.class);
         EventsStorage eventsStorage = new InMemoryEventsStorage(10, telemetryRuntimeProducer);
         EventsTask eventClient = new EventsTask(eventsStorage,
-                URI.create("https://kubernetesturl.com/split"),
                 2000,
                 EVENTS_SENDER);
 
@@ -108,7 +74,6 @@ public class EventsTaskTest {
         EventsSender eventsSender = Mockito.mock(EventsSender.class);
         EventsStorage eventsStorage = new InMemoryEventsStorage(100, telemetryRuntimeProducer);
         EventsTask eventClient = new EventsTask(eventsStorage,
-                URI.create("https://kubernetesturl.com/split"),
                 2000,
                 eventsSender);
 
