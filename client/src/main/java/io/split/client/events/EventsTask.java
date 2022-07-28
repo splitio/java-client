@@ -91,7 +91,6 @@ public class EventsTask{
         }
 
         if (eventsToSend.isEmpty()){
-            _log.warn("The Event List is empty");
             return;
         }
         _eventsSender.sendEvents(eventsToSend);
