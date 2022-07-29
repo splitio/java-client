@@ -53,13 +53,13 @@
             <url>https://oss.sonatype.org/content/repositories/snapshots</url>
         </snapshotRepository>
         <repository>
-            <id>sonatype releases</id>
+            <id>ossrh</id>
             <url>https://oss.sonatype.org/content/repositories/releases</url>
         </repository>
     </distributionManagement>
     <repositories>
         <repository>
-            <id>sonatype releases</id>
+            <id>ossrh</id>
             <url>https://oss.sonatype.org/content/repositories/releases</url>
         </repository>
         <repository>
@@ -174,7 +174,7 @@
                     <url>https://oss.sonatype.org/content/repositories/snapshots</url>
                 </snapshotRepository>
                 <repository>
-                    <id>sonatype releases</id>
+                    <id>ossrh</id>
                     <url>https://oss.sonatype.org/content/repositories/releases</url>
                 </repository>
             </distributionManagement>
