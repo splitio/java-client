@@ -49,6 +49,9 @@
                         <version>1.6.3</version>
                         <extensions>true</extensions>
                         <configuration>
+                            <serverId>ossrh</serverId>
+                            <nexusUrl>https://oss.sonatype.org/</nexusUrl>
+                            <autoReleaseAfterClose>true</autoReleaseAfterClose>
                             <skipNexusStagingDeployMojo>false</skipNexusStagingDeployMojo>
                         </configuration>
                     </plugin>
