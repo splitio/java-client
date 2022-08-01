@@ -4,7 +4,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>io.split.client</groupId>
     <artifactId>java-client-parent</artifactId>
-    <version>4.4.4</version>
+    <version>4.4.5</version>
     <dependencyManagement>
         <dependencies>
             <dependency>
@@ -47,6 +47,16 @@
         <developerConnection>scm:git@github.com:splitio/java-client.git</developerConnection>
         <url>git@github.com:splitio/java-client.git</url>
     </scm>
+    <distributionManagement>
+        <snapshotRepository>
+            <id>ossrh</id>
+            <url>https://oss.sonatype.org/content/repositories/snapshots</url>
+        </snapshotRepository>
+        <repository>
+            <id>sonatype releases</id>
+            <url>https://oss.sonatype.org/content/repositories/releases</url>
+        </repository>
+    </distributionManagement>
     <repositories>
         <repository>
             <id>sonatype releases</id>
@@ -55,9 +65,6 @@
         <repository>
             <id>maven-all-virtual</id>
             <url>https://splitio.jfrog.io/artifactory/maven-all-virtual</url>
-            <snapshots>
-                <updatePolicy>always</updatePolicy>
-            </snapshots>
         </repository>
     </repositories>
     <pluginRepositories>
