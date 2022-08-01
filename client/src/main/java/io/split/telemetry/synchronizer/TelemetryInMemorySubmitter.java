@@ -2,6 +2,7 @@ package io.split.telemetry.synchronizer;
 
 import com.google.common.annotations.VisibleForTesting;
 import io.split.client.SplitClientConfig;
+import io.split.client.dtos.UniqueKeys;
 import io.split.client.impressions.ImpressionListener;
 import io.split.client.impressions.ImpressionsManager;
 import io.split.integrations.IntegrationsConfig;
@@ -54,6 +55,11 @@ public class TelemetryInMemorySubmitter implements TelemetrySynchronizer{
     @Override
     public void synchronizeStats() throws Exception {
         _httpHttpTelemetryMemorySender.postStats(generateStats());
+    }
+
+    @Override
+    public void synchronizeUniqueKeys(UniqueKeys uniqueKeys){
+        _httpHttpTelemetryMemorySender.postUniqueKeys(uniqueKeys);
     }
 
     @Override

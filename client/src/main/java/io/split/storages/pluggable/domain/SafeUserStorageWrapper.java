@@ -98,6 +98,17 @@ public class SafeUserStorageWrapper implements CustomStorageWrapper {
     }
 
     @Override
+    public long hIncrement(String key, String field, long value){
+        try {
+            return _customStorageWrapper.hIncrement(key, field, value);
+        }
+        catch (Exception e) {
+            _log.error(String.format("error incrementing key by field '%s' from storage. Error: '%s'", key, e.getMessage()));
+            return 0L;
+        }
+    }
+
+    @Override
     public long decrement(String key, long value) {
         try {
             return _customStorageWrapper.decrement(key, value);

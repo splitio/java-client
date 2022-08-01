@@ -2,6 +2,7 @@ package io.split.storages.pluggable.synchronizer;
 
 import com.google.common.annotations.VisibleForTesting;
 import io.split.client.SplitClientConfig;
+import io.split.client.dtos.UniqueKeys;
 import io.split.client.utils.Json;
 import io.split.client.utils.SDKMetadata;
 import io.split.storages.enums.OperationMode;
@@ -11,6 +12,8 @@ import io.split.storages.pluggable.domain.SafeUserStorageWrapper;
 import io.split.telemetry.synchronizer.TelemetrySynchronizer;
 import pluggable.CustomStorageWrapper;
 
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
@@ -36,6 +39,12 @@ public class TelemetryConsumerSubmitter implements TelemetrySynchronizer {
     @Override
     public void synchronizeStats() {
         //No-op
+    }
+
+    @Override
+    public void synchronizeUniqueKeys(UniqueKeys uniqueKeys) {
+        List<String> uniqueKeysToSend = new ArrayList<>(Arrays.asList(Json.toJson(uniqueKeys)));
+        _safeUserStorageWrapper.pushItems(PrefixAdapter.buildUniqueKeys(), uniqueKeysToSend);
     }
 
     @Override

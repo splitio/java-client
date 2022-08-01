@@ -15,6 +15,7 @@ public interface CustomStorageWrapper {
     // integer operations
     long increment(String key, long value) throws Exception;
     long decrement(String key, long value) throws Exception;
+    long hIncrement(String key, String field, long value) throws Exception;
 
     // queue operations
     long pushItems(String key, List<String> items) throws Exception;
@@ -28,4 +29,6 @@ public interface CustomStorageWrapper {
     List<String> getItems(List<String> keys) throws Exception;
     boolean connect() throws Exception;
     boolean disconnect() throws Exception;
+
+    //TODO implement pipeline
 }

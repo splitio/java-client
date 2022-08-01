@@ -1,6 +1,8 @@
 package io.split.telemetry.synchronizer;
 
 import io.split.TestHelper;
+import io.split.client.dtos.UniqueKeys;
+import io.split.client.impressions.UniqueKeysTrackerImp;
 import io.split.storages.SegmentCacheConsumer;
 import io.split.storages.SplitCacheConsumer;
 import io.split.client.ApiKeyCounter;
@@ -51,6 +53,22 @@ public class TelemetryInMemorySubmitterTest {
         TelemetrySynchronizer telemetrySynchronizer = getTelemetrySynchronizer(httpClient);
 
         telemetrySynchronizer.synchronizeStats();
+        Mockito.verify(httpClient, Mockito.times(1)).execute(Mockito.any());
+    }
+
+    @Test
+    public void testSynchronizeUniqueKeys() throws Exception {
+        CloseableHttpClient httpClient = TestHelper.mockHttpClient(TELEMETRY_ENDPOINT, HttpStatus.SC_OK);
+        TelemetrySynchronizer telemetrySynchronizer = getTelemetrySynchronizer(httpClient);
+
+        List<String> keys = new ArrayList<>();
+        keys.add("key-1");
+        keys.add("key-2");
+        List<UniqueKeys.UniqueKey> uniqueKeys = new ArrayList<>();
+        uniqueKeys.add(new UniqueKeys.UniqueKey("feature-1", keys));
+        UniqueKeys imp = new UniqueKeys(uniqueKeys);
+
+        telemetrySynchronizer.synchronizeUniqueKeys(imp);
         Mockito.verify(httpClient, Mockito.times(1)).execute(Mockito.any());
     }
 

@@ -8,6 +8,8 @@ import io.split.storages.enums.OperationMode;
 import io.split.telemetry.domain.enums.ImpressionsDataTypeEnum;
 import io.split.telemetry.storage.InMemoryTelemetryStorage;
 import io.split.telemetry.storage.TelemetryStorage;
+import io.split.telemetry.synchronizer.TelemetryInMemorySubmitter;
+import io.split.telemetry.synchronizer.TelemetrySynchronizer;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Ignore;
@@ -26,6 +28,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import static io.split.client.impressions.ImpressionTestUtils.keyImpression;
 import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.assertThat;
 import static org.mockito.Mockito.*;
@@ -58,8 +61,9 @@ public class ImpressionsManagerImplTest {
         ImpressionsStorage storage = new InMemoryImpressionsStorage(config.impressionsQueueSize());
 
         ImpressionsSender senderMock = Mockito.mock(ImpressionsSender.class);
+        TelemetrySynchronizer telemetrySynchronizer = Mockito.mock(TelemetryInMemorySubmitter.class);
 
-        ImpressionsManagerImpl treatmentLog = ImpressionsManagerImpl.instanceForTest(null, config, senderMock, null, TELEMETRY_STORAGE, storage, storage);
+        ImpressionsManagerImpl treatmentLog = ImpressionsManagerImpl.instanceForTest(config, senderMock, null, TELEMETRY_STORAGE, storage, storage, telemetrySynchronizer);
 
         KeyImpression ki1 = keyImpression("test1", "adil", "on", 1L, null);
         KeyImpression ki2 = keyImpression("test1", "adil", "on", 2L, 1L);
@@ -92,8 +96,9 @@ public class ImpressionsManagerImplTest {
         ImpressionsStorage storage = new InMemoryImpressionsStorage(config.impressionsQueueSize());
 
         ImpressionsSender senderMock = Mockito.mock(ImpressionsSender.class);
+        TelemetrySynchronizer telemetrySynchronizer = Mockito.mock(TelemetryInMemorySubmitter.class);
 
-        ImpressionsManagerImpl treatmentLog = ImpressionsManagerImpl.instanceForTest(null, config, senderMock, null, TELEMETRY_STORAGE, storage, storage);
+        ImpressionsManagerImpl treatmentLog = ImpressionsManagerImpl.instanceForTest(config, senderMock, null, TELEMETRY_STORAGE, storage, storage, telemetrySynchronizer);
 
         // These 4 unique test name will cause 4 entries but we are caping at the first 3.
         KeyImpression ki1 = keyImpression("test1", "adil", "on", 1L, null);
@@ -128,8 +133,9 @@ public class ImpressionsManagerImplTest {
         ImpressionsStorage storage = new InMemoryImpressionsStorage(config.impressionsQueueSize());
 
         ImpressionsSender senderMock = Mockito.mock(ImpressionsSender.class);
+        TelemetrySynchronizer telemetrySynchronizer = Mockito.mock(TelemetryInMemorySubmitter.class);
 
-        ImpressionsManagerImpl treatmentLog = ImpressionsManagerImpl.instanceForTest(null, config, senderMock, null, TELEMETRY_STORAGE, storage, storage);
+        ImpressionsManagerImpl treatmentLog = ImpressionsManagerImpl.instanceForTest(config, senderMock, null, TELEMETRY_STORAGE, storage, storage, telemetrySynchronizer);
 
         // These 4 unique test name will cause 4 entries but we are caping at the first 3.
         KeyImpression ki1 = keyImpression("test1", "adil", "on", 1L, 1L);
@@ -166,7 +172,9 @@ public class ImpressionsManagerImplTest {
         ImpressionsStorage storage = new InMemoryImpressionsStorage(config.impressionsQueueSize());
 
         ImpressionsSender senderMock = Mockito.mock(ImpressionsSender.class);
-        ImpressionsManagerImpl treatmentLog = ImpressionsManagerImpl.instanceForTest(null, config, senderMock, null, TELEMETRY_STORAGE, storage, storage);
+        TelemetrySynchronizer telemetrySynchronizer = Mockito.mock(TelemetryInMemorySubmitter.class);
+
+        ImpressionsManagerImpl treatmentLog = ImpressionsManagerImpl.instanceForTest(config, senderMock, null, TELEMETRY_STORAGE, storage, storage, telemetrySynchronizer);
 
         // There are no impressions to post.
 
@@ -187,8 +195,9 @@ public class ImpressionsManagerImplTest {
         ImpressionsStorage storage = new InMemoryImpressionsStorage(config.impressionsQueueSize());
 
         ImpressionsSender senderMock = Mockito.mock(ImpressionsSender.class);
+        TelemetrySynchronizer telemetrySynchronizer = Mockito.mock(TelemetryInMemorySubmitter.class);
 
-        ImpressionsManagerImpl treatmentLog = ImpressionsManagerImpl.instanceForTest(null, config, senderMock, null, TELEMETRY_STORAGE, storage, storage);
+        ImpressionsManagerImpl treatmentLog = ImpressionsManagerImpl.instanceForTest(config, senderMock, null, TELEMETRY_STORAGE, storage, storage, telemetrySynchronizer);
 
         // These 4 unique test name will cause 4 entries but we are caping at the first 3.
         KeyImpression ki1 = keyImpression("test1", "adil", "on", 1L, 1L);
@@ -229,16 +238,6 @@ public class ImpressionsManagerImplTest {
         }
     }
 
-    private KeyImpression keyImpression(String feature, String key, String treatment, long time, Long changeNumber) {
-        KeyImpression result = new KeyImpression();
-        result.feature = feature;
-        result.keyName = key;
-        result.treatment = treatment;
-        result.time = time;
-        result.changeNumber = changeNumber;
-        return result;
-    }
-
     @Test
     public void testImpressionsOptimizedMode() throws URISyntaxException {
         SplitClientConfig config = SplitClientConfig.builder()
@@ -249,8 +248,9 @@ public class ImpressionsManagerImplTest {
         ImpressionsStorage storage = new InMemoryImpressionsStorage(config.impressionsQueueSize());
 
         ImpressionsSender senderMock = Mockito.mock(ImpressionsSender.class);
+        TelemetrySynchronizer telemetrySynchronizer = Mockito.mock(TelemetryInMemorySubmitter.class);
 
-        ImpressionsManagerImpl treatmentLog = ImpressionsManagerImpl.instanceForTest(null, config, senderMock, null, TELEMETRY_STORAGE, storage, storage);
+        ImpressionsManagerImpl treatmentLog = ImpressionsManagerImpl.instanceForTest(config, senderMock, null, TELEMETRY_STORAGE, storage, storage, telemetrySynchronizer);
 
         // These 4 unique test name will cause 4 entries but we are caping at the first 3.
         KeyImpression ki1 = keyImpression("test1", "adil", "on", 1L, 1L);
@@ -302,8 +302,9 @@ public class ImpressionsManagerImplTest {
         ImpressionsStorage storage = new InMemoryImpressionsStorage(config.impressionsQueueSize());
 
         ImpressionsSender senderMock = Mockito.mock(ImpressionsSender.class);
+        TelemetrySynchronizer telemetrySynchronizer = Mockito.mock(TelemetryInMemorySubmitter.class);
 
-        ImpressionsManagerImpl manager = ImpressionsManagerImpl.instanceForTest(null, config, senderMock, null, TELEMETRY_STORAGE, storage, storage);
+        ImpressionsManagerImpl manager = ImpressionsManagerImpl.instanceForTest(config, senderMock, null, TELEMETRY_STORAGE, storage, storage, telemetrySynchronizer);
         Assert.assertNotNull(manager.getCounter());
     }
 
@@ -319,9 +320,10 @@ public class ImpressionsManagerImplTest {
         ImpressionsStorage storage = new InMemoryImpressionsStorage(config.impressionsQueueSize());
 
         ImpressionsSender senderMock = Mockito.mock(ImpressionsSender.class);
+        TelemetrySynchronizer telemetrySynchronizer = Mockito.mock(TelemetryInMemorySubmitter.class);
 
-        ImpressionsManagerImpl manager = ImpressionsManagerImpl.instanceForTest(null, config, senderMock, null, TELEMETRY_STORAGE, storage, storage);
-        Assert.assertNull(manager.getCounter());
+        ImpressionsManagerImpl manager = ImpressionsManagerImpl.instanceForTest(config, senderMock, null, TELEMETRY_STORAGE, storage, storage, telemetrySynchronizer);
+        Assert.assertNotNull(manager.getCounter());
     }
 
 }
