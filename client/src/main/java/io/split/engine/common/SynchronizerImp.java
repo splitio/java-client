@@ -152,7 +152,7 @@ public class SynchronizerImp implements Synchronizer {
                 logCdnHeaders("[splits]", _onDemandFetchMaxRetries , regularResult.remainingAttempts(), captor.get());
             }
             regularResult._fetchResult.getSegments().stream()
-                    .forEach(segmentName -> _segmentSynchronizationTaskImp.initializeSegment(segmentName));
+                    .forEach(segmentName -> forceRefreshSegment(segmentName));
             return;
         }
 
@@ -166,7 +166,7 @@ public class SynchronizerImp implements Synchronizer {
         if (withCDNBypassed.success()) {
             _log.debug(String.format("Refresh completed bypassing the CDN in %s attempts.", withoutCDNAttempts));
             withCDNBypassed._fetchResult.getSegments().stream()
-                    .forEach(segmentName -> _segmentSynchronizationTaskImp.initializeSegment(segmentName));
+                    .forEach(segmentName -> forceRefreshSegment(segmentName));
         } else {
             _log.debug(String.format("No changes fetched after %s attempts with CDN bypassed.", withoutCDNAttempts));
         }
@@ -256,5 +256,10 @@ public class SynchronizerImp implements Synchronizer {
             logCdnHeaders(String.format("[segment/%s]", segmentName), _onDemandFetchMaxRetries + ON_DEMAND_FETCH_BACKOFF_MAX_RETRIES,
                     withCDNBypassed.remainingAttempts(), captor.get());
         }
+    }
+
+    private void forceRefreshSegment(String segmentName){
+        SegmentFetcher segmentFetcher = _segmentSynchronizationTaskImp.getFetcher(segmentName);
+        segmentFetcher.fetchAll();
     }
 }

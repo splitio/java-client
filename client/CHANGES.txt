@@ -1,3 +1,7 @@
+4.4.5 (Jul 29, 2022)
+- Fixed in Synchronizer not properly synchronizing newly referenced segments.
+- Update pom files to have profiles for releases.
+
 4.4.4 (May 24, 2022)
 - Updated `com.google.code.gson` to 2.9.0 for fixing vulnerability.
 
