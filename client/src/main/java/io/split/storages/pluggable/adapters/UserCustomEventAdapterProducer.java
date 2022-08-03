@@ -6,7 +6,7 @@ import io.split.client.events.EventsStorageProducer;
 import io.split.client.utils.Json;
 import io.split.storages.pluggable.domain.EventConsumer;
 import io.split.storages.pluggable.domain.PrefixAdapter;
-import io.split.storages.pluggable.domain.SafeUserStorageWrapper;
+import io.split.storages.pluggable.domain.UserStorageWrapper;
 import pluggable.CustomStorageWrapper;
 
 import java.util.List;
@@ -17,18 +17,18 @@ import static com.google.common.base.Preconditions.checkNotNull;
 
 public class UserCustomEventAdapterProducer implements EventsStorageProducer {
 
-    private final SafeUserStorageWrapper _safeUserStorageWrapper;
+    private final UserStorageWrapper _userStorageWrapper;
     private Metadata _metadata;
 
     public UserCustomEventAdapterProducer(CustomStorageWrapper customStorageWrapper, Metadata metadata) {
-        _safeUserStorageWrapper = new SafeUserStorageWrapper(checkNotNull(customStorageWrapper));
+        _userStorageWrapper = new UserStorageWrapper(checkNotNull(customStorageWrapper));
         _metadata = metadata;
     }
 
     @Override
     public boolean track(Event event, int eventSize) {
         List<String> events = Stream.of(Json.toJson(new EventConsumer(_metadata, event))).collect(Collectors.toList());
-        _safeUserStorageWrapper.pushItems(PrefixAdapter.buildEvent(), events);
+        _userStorageWrapper.pushItems(PrefixAdapter.buildEvent(), events);
         return true;
     }
 }

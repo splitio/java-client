@@ -31,14 +31,17 @@ public class RedisPipeline implements pluggable.Pipeline {
     }
 
     @Override
-    public void increment(String key, long value) throws Exception{
-        _pipelined.incrBy(buildKeyWithPrefix(key), value);
+    public void hIncrement(String key, String field, long value) {
+        _pipelined.hincrBy(buildKeyWithPrefix(key), field, value);
     }
 
     @Override
     public List<Result> exec() throws Exception {
-        List<Object> executionResult = _pipelined.syncAndReturnAll();
-        return executionResult.stream().map(i -> new Result(i)).collect(Collectors.toList());
+        try{
+            List<Object> executionResult = _pipelined.syncAndReturnAll();
+            return executionResult.stream().map(i -> new Result(i)).collect(Collectors.toList());
+        } catch (Exception e) {
+            throw new RedisException(e.getMessage());
+        }
     }
-
 }

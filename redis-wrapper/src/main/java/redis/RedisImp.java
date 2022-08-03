@@ -78,6 +78,7 @@ class RedisImp implements CustomStorageWrapper, HasPipelineSupport {
 
     @Override
     public String getAndSet(String key, String item) throws Exception {
+        //Todo if this method isn't used we should deprecated
         try (Jedis jedis = this.jedisPool.getResource()) {
             return jedis.getSet(buildKeyWithPrefix(key), item);
         } catch (Exception ex) {

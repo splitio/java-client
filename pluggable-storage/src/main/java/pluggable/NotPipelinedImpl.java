@@ -24,7 +24,7 @@ public class NotPipelinedImpl implements Pipeline {
     }
 
     @Override
-    public void increment(String key, long value) throws Exception {
-        _methods.add(() -> { return _storage.increment(key, value);});
+    public void hIncrement(String key, String field, long value) {
+        _methods.add(() -> { return  _storage.hIncrement(key, field, value);});
     }
 }
