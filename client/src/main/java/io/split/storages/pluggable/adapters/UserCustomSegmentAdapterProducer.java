@@ -3,7 +3,7 @@ package io.split.storages.pluggable.adapters;
 import io.split.client.utils.Json;
 import io.split.storages.SegmentCacheProducer;
 import io.split.storages.pluggable.domain.PrefixAdapter;
-import io.split.storages.pluggable.domain.SafeUserStorageWrapper;
+import io.split.storages.pluggable.domain.userStorageWrapper;
 import io.split.storages.pluggable.utils.Helper;
 import pluggable.CustomStorageWrapper;
 
@@ -13,27 +13,27 @@ import static com.google.common.base.Preconditions.checkNotNull;
 
 public class UserCustomSegmentAdapterProducer implements SegmentCacheProducer {
 
-    private final SafeUserStorageWrapper _safeUserStorageWrapper;
+    private final userStorageWrapper _userStorageWrapper;
 
     public UserCustomSegmentAdapterProducer(CustomStorageWrapper customStorageWrapper) {
-        _safeUserStorageWrapper = new SafeUserStorageWrapper(checkNotNull(customStorageWrapper));
+        _userStorageWrapper = new userStorageWrapper(checkNotNull(customStorageWrapper));
     }
     @Override
     public long getChangeNumber(String segmentName) {
-        String wrapperResponse = _safeUserStorageWrapper.get(PrefixAdapter.buildSegment(segmentName));
+        String wrapperResponse = _userStorageWrapper.get(PrefixAdapter.buildSegment(segmentName));
         return Helper.responseToLong(wrapperResponse, -1L);
     }
 
     @Override
     public void updateSegment(String segmentName, List<String> toAdd, List<String> toRemove, long changeNumber) {
         String keySegment = PrefixAdapter.buildSegment(segmentName);
-        _safeUserStorageWrapper.addItems(keySegment, toAdd);
-        _safeUserStorageWrapper.removeItems(keySegment, toRemove);
-        _safeUserStorageWrapper.set(PrefixAdapter.buildSegmentTill(segmentName), Json.toJson(changeNumber));
+        _userStorageWrapper.addItems(keySegment, toAdd);
+        _userStorageWrapper.removeItems(keySegment, toRemove);
+        _userStorageWrapper.set(PrefixAdapter.buildSegmentTill(segmentName), Json.toJson(changeNumber));
     }
 
     @Override
     public void setChangeNumber(String segmentName, long changeNumber) {
-        _safeUserStorageWrapper.set(PrefixAdapter.buildSegmentTill(segmentName), Json.toJson(changeNumber));
+        _userStorageWrapper.set(PrefixAdapter.buildSegmentTill(segmentName), Json.toJson(changeNumber));
     }
 }

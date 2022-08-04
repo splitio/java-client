@@ -5,7 +5,7 @@ import io.split.client.SplitClientConfig;
 import io.split.client.dtos.UniqueKeys;
 import io.split.client.utils.SDKMetadata;
 import io.split.storages.pluggable.domain.ConfigConsumer;
-import io.split.storages.pluggable.domain.SafeUserStorageWrapper;
+import io.split.storages.pluggable.domain.userStorageWrapper;
 import org.junit.Assert;
 import org.junit.Test;
 import org.mockito.Mockito;
@@ -41,26 +41,26 @@ public class TelemetryConsumerSubmitterTest {
 
     @Test
     public void testTestSynchronizeConfig() throws NoSuchFieldException, IllegalAccessException {
-        SafeUserStorageWrapper safeUserStorageWrapper = Mockito.mock(SafeUserStorageWrapper.class);
+        userStorageWrapper userStorageWrapper = Mockito.mock(userStorageWrapper.class);
         TelemetryConsumerSubmitter telemetrySynchronizer = new TelemetryConsumerSubmitter(Mockito.mock(CustomStorageWrapper.class), new SDKMetadata("SDK 4.2.x", "22.215135.1", "testMachine"));
         SplitClientConfig splitClientConfig = SplitClientConfig.builder().build();
-        Field telemetryConsumerSubmitterHolder = TelemetryConsumerSubmitter.class.getDeclaredField("_safeUserStorageWrapper");
+        Field telemetryConsumerSubmitterHolder = TelemetryConsumerSubmitter.class.getDeclaredField("_userStorageWrapper");
         telemetryConsumerSubmitterHolder.setAccessible(true);
         Field modifiersField = Field.class.getDeclaredField("modifiers");
         modifiersField.setAccessible(true);
         modifiersField.setInt(telemetryConsumerSubmitterHolder, telemetryConsumerSubmitterHolder.getModifiers() & ~Modifier.FINAL);
-        telemetryConsumerSubmitterHolder.set(telemetrySynchronizer, safeUserStorageWrapper);
+        telemetryConsumerSubmitterHolder.set(telemetrySynchronizer, userStorageWrapper);
         telemetrySynchronizer.synchronizeConfig(splitClientConfig, 10L, new HashMap<>(), new ArrayList<>());
-        Mockito.verify(safeUserStorageWrapper, Mockito.times(1)).set(Mockito.eq("SPLITIO.telemetry.init::SDK 4.2.x/testMachine/22.215135.1"), Mockito.anyObject());
+        Mockito.verify(userStorageWrapper, Mockito.times(1)).set(Mockito.eq("SPLITIO.telemetry.init::SDK 4.2.x/testMachine/22.215135.1"), Mockito.anyObject());
     }
 
     @Test
     public void testTestSynchronizeUniqueKeys() throws NoSuchFieldException, IllegalAccessException {
-        SafeUserStorageWrapper safeUserStorageWrapper = Mockito.mock(SafeUserStorageWrapper.class);
+        userStorageWrapper userStorageWrapper = Mockito.mock(userStorageWrapper.class);
         TelemetryConsumerSubmitter telemetrySynchronizer = new TelemetryConsumerSubmitter(Mockito.mock(CustomStorageWrapper.class), new SDKMetadata("SDK 4.2.x", "22.215135.1", "testMachine"));
-        Field telemetryConsumerSubmitterHolder = TelemetryConsumerSubmitter.class.getDeclaredField("_safeUserStorageWrapper");
+        Field telemetryConsumerSubmitterHolder = TelemetryConsumerSubmitter.class.getDeclaredField("_userStorageWrapper");
         telemetryConsumerSubmitterHolder.setAccessible(true);
-        telemetryConsumerSubmitterHolder.set(telemetrySynchronizer, safeUserStorageWrapper);
+        telemetryConsumerSubmitterHolder.set(telemetrySynchronizer, userStorageWrapper);
 
         List<String> keys = new ArrayList<>();
         keys.add("key-1");
@@ -71,6 +71,6 @@ public class TelemetryConsumerSubmitterTest {
 
         telemetrySynchronizer.synchronizeUniqueKeys(uniqueKeysToSend);
         List<String> uniqueKeysJson = new ArrayList<>(Collections.singletonList("{\"keys\":[{\"f\":\"feature-1\",\"ks\":[\"key-1\",\"key-2\"]}]}"));
-        Mockito.verify(safeUserStorageWrapper).pushItems(Mockito.eq("SPLITIO.uniquekeys"), Mockito.eq(uniqueKeysJson));
+        Mockito.verify(userStorageWrapper).pushItems(Mockito.eq("SPLITIO.uniquekeys"), Mockito.eq(uniqueKeysJson));
     }
 }
