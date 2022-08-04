@@ -17,6 +17,7 @@ public class SafeUserStorageWrapperTest{
 
     private static final String KEY = "KEY";
     private static final String RESPONSE = "Response";
+    private static final String HASH_COUNT_KEY = "countKey";
     private static final String ITEM = "Item";
     private CustomStorageWrapper _customStorageWrapper;
     private SafeUserStorageWrapper _safeUserStorageWrapper;
@@ -137,6 +138,22 @@ public class SafeUserStorageWrapperTest{
     public void testIncrementException() throws Exception {
         Mockito.when(_customStorageWrapper.increment(Mockito.anyString(), Mockito.anyLong())).thenThrow(Exception.class);
         long result = _safeUserStorageWrapper.increment(KEY, 1);
+        Assert.assertEquals(0L, result);
+        Mockito.verify(_log, Mockito.times(1)).error(Mockito.anyString());
+    }
+
+    @Test
+    public void testHIncrement() throws Exception {
+        long response = 2L;
+        Mockito.when(_customStorageWrapper.hIncrement(Mockito.anyString(), Mockito.anyString(), Mockito.anyLong())).thenReturn(response);
+        long result = _safeUserStorageWrapper.hIncrement(KEY, HASH_COUNT_KEY,1);
+        Assert.assertEquals(response, result);
+    }
+
+    @Test
+    public void testHIncrementException() throws Exception {
+        Mockito.when(_customStorageWrapper.hIncrement(Mockito.anyString(), Mockito.anyString(), Mockito.anyLong())).thenThrow(Exception.class);
+        long result = _safeUserStorageWrapper.hIncrement(KEY, HASH_COUNT_KEY, 1);
         Assert.assertEquals(0L, result);
         Mockito.verify(_log, Mockito.times(1)).error(Mockito.anyString());
     }

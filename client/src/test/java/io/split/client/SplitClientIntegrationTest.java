@@ -3,7 +3,9 @@ package io.split.client;
 import io.split.SSEMockServer;
 import io.split.SplitMockServer;
 import io.split.client.api.SplitView;
+import io.split.client.impressions.Impression;
 import io.split.client.impressions.ImpressionsManager;
+import io.split.client.impressions.ImpressionsManagerImpl;
 import io.split.client.utils.CustomDispatcher;
 import io.split.storages.enums.OperationMode;
 import io.split.storages.enums.StorageMode;
@@ -19,6 +21,7 @@ import org.glassfish.jersey.media.sse.OutboundEvent;
 import org.junit.Assert;
 import org.junit.Ignore;
 import org.junit.Test;
+import org.mockito.Mockito;
 
 import javax.ws.rs.sse.OutboundSseEvent;
 import java.io.IOException;
