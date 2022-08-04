@@ -2,7 +2,7 @@ package io.split.storages.pluggable.adapters;
 
 import io.split.client.utils.SDKMetadata;
 import io.split.storages.pluggable.domain.PrefixAdapter;
-import io.split.storages.pluggable.domain.UserStorageWrapper;
+import io.split.storages.pluggable.domain.SafeUserStorageWrapper;
 import io.split.telemetry.domain.StreamingEvent;
 import io.split.telemetry.domain.enums.EventsDataRecordsEnum;
 import io.split.telemetry.domain.enums.HTTPLatenciesEnum;
@@ -18,11 +18,11 @@ import static com.google.common.base.Preconditions.checkNotNull;
 
 public class UserCustomTelemetryAdapterProducer implements TelemetryStorageProducer {
 
-    private final UserStorageWrapper _userStorageWrapper;
+    private final SafeUserStorageWrapper _safeUserStorageWrapper;
     private SDKMetadata _sdkMetadata;
 
     public UserCustomTelemetryAdapterProducer(CustomStorageWrapper customStorageWrapper, SDKMetadata sdkMetadata) {
-        _userStorageWrapper = new UserStorageWrapper(checkNotNull(customStorageWrapper));
+        _safeUserStorageWrapper = new SafeUserStorageWrapper(checkNotNull(customStorageWrapper));
         _sdkMetadata = sdkMetadata;
     }
 
@@ -38,12 +38,12 @@ public class UserCustomTelemetryAdapterProducer implements TelemetryStorageProdu
 
     @Override
     public void recordLatency(MethodEnum method, long latency) {
-        _userStorageWrapper.increment(PrefixAdapter.buildTelemetryLatenciesPrefix(method.getMethod(), BucketCalculator.getBucketForLatency(latency), _sdkMetadata.getSdkVersion(), _sdkMetadata.getMachineIp(), _sdkMetadata.getMachineName()), 1);
+        _safeUserStorageWrapper.increment(PrefixAdapter.buildTelemetryLatenciesPrefix(method.getMethod(), BucketCalculator.getBucketForLatency(latency), _sdkMetadata.getSdkVersion(), _sdkMetadata.getMachineIp(), _sdkMetadata.getMachineName()), 1);
     }
 
     @Override
     public void recordException(MethodEnum method) {
-        _userStorageWrapper.increment(PrefixAdapter.buildTelemetryExceptionsPrefix(method.getMethod(), _sdkMetadata.getSdkVersion(), _sdkMetadata.getMachineIp(), _sdkMetadata.getMachineName()), 1);
+        _safeUserStorageWrapper.increment(PrefixAdapter.buildTelemetryExceptionsPrefix(method.getMethod(), _sdkMetadata.getSdkVersion(), _sdkMetadata.getMachineIp(), _sdkMetadata.getMachineName()), 1);
     }
 
     @Override

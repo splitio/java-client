@@ -3,7 +3,7 @@ package io.split.client;
 import io.split.client.impressions.ImpressionsManager;
 import io.split.integrations.IntegrationsConfig;
 import io.split.storages.enums.OperationMode;
-import io.split.storages.pluggable.domain.UserStorageWrapper;
+import io.split.storages.pluggable.domain.SafeUserStorageWrapper;
 import io.split.telemetry.storage.TelemetryStorage;
 import io.split.telemetry.synchronizer.TelemetrySynchronizer;
 import junit.framework.TestCase;
@@ -126,7 +126,7 @@ public class SplitFactoryImplTest extends TestCase {
     @Test
     public void testFactoryConsumerInstantiation() throws Exception {
         CustomStorageWrapper customStorageWrapper = Mockito.mock(CustomStorageWrapper.class);
-        UserStorageWrapper safeUserStorageWrapper = Mockito.mock(UserStorageWrapper.class);
+        SafeUserStorageWrapper safeUserStorageWrapper = Mockito.mock(SafeUserStorageWrapper.class);
         TelemetrySynchronizer telemetrySynchronizer = Mockito.mock(TelemetrySynchronizer.class);
         Mockito.when(safeUserStorageWrapper.connect()).thenReturn(true);
 
@@ -142,7 +142,7 @@ public class SplitFactoryImplTest extends TestCase {
                 .customStorageWrapper(customStorageWrapper)
                 .build();
         SplitFactoryImpl splitFactory = new SplitFactoryImpl(API_KEY, splitClientConfig, customStorageWrapper);
-        Field splitFactoryImpl = SplitFactoryImpl.class.getDeclaredField("_userStorageWrapper");
+        Field splitFactoryImpl = SplitFactoryImpl.class.getDeclaredField("_safeUserStorageWrapper");
         splitFactoryImpl.setAccessible(true);
         Field modifiersField = Field.class.getDeclaredField("modifiers");
         modifiersField.setAccessible(true);
@@ -167,7 +167,7 @@ public class SplitFactoryImplTest extends TestCase {
     @Test
     public void testFactoryConsumerInstantiationRetryReadiness() throws Exception {
         CustomStorageWrapper customStorageWrapper = Mockito.mock(CustomStorageWrapper.class);
-        UserStorageWrapper safeUserStorageWrapper = Mockito.mock(UserStorageWrapper.class);
+        SafeUserStorageWrapper safeUserStorageWrapper = Mockito.mock(SafeUserStorageWrapper.class);
         Mockito.when(safeUserStorageWrapper.connect()).thenReturn(false).thenReturn(true);
         SplitClientConfig splitClientConfig = SplitClientConfig.builder()
                 .enableDebug()
@@ -181,7 +181,7 @@ public class SplitFactoryImplTest extends TestCase {
                 .customStorageWrapper(customStorageWrapper)
                 .build();
         SplitFactoryImpl splitFactory = new SplitFactoryImpl(API_KEY, splitClientConfig, customStorageWrapper);
-        Field splitFactoryImpl = SplitFactoryImpl.class.getDeclaredField("_userStorageWrapper");
+        Field splitFactoryImpl = SplitFactoryImpl.class.getDeclaredField("_safeUserStorageWrapper");
         splitFactoryImpl.setAccessible(true);
         Field modifiersField = Field.class.getDeclaredField("modifiers");
         modifiersField.setAccessible(true);
@@ -196,7 +196,7 @@ public class SplitFactoryImplTest extends TestCase {
     @Test
     public void testFactoryConsumerDestroy() throws NoSuchFieldException, URISyntaxException, IllegalAccessException {
         CustomStorageWrapper customStorageWrapper = Mockito.mock(CustomStorageWrapper.class);
-        UserStorageWrapper safeUserStorageWrapper = Mockito.mock(UserStorageWrapper.class);
+        SafeUserStorageWrapper safeUserStorageWrapper = Mockito.mock(SafeUserStorageWrapper.class);
         Mockito.when(safeUserStorageWrapper.connect()).thenReturn(false).thenReturn(true);
         SplitClientConfig splitClientConfig = SplitClientConfig.builder()
                 .enableDebug()
@@ -210,7 +210,7 @@ public class SplitFactoryImplTest extends TestCase {
                 .customStorageWrapper(customStorageWrapper)
                 .build();
         SplitFactoryImpl splitFactory = new SplitFactoryImpl(API_KEY, splitClientConfig, customStorageWrapper);
-        Field splitFactoryImpl = SplitFactoryImpl.class.getDeclaredField("_userStorageWrapper");
+        Field splitFactoryImpl = SplitFactoryImpl.class.getDeclaredField("_safeUserStorageWrapper");
         splitFactoryImpl.setAccessible(true);
         Field modifiersField = Field.class.getDeclaredField("modifiers");
         modifiersField.setAccessible(true);

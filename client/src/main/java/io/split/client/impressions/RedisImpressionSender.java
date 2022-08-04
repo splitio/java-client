@@ -2,7 +2,7 @@ package io.split.client.impressions;
 
 import io.split.client.dtos.TestImpressions;
 import io.split.storages.pluggable.domain.PrefixAdapter;
-import io.split.storages.pluggable.domain.UserStorageWrapper;
+import io.split.storages.pluggable.domain.SafeUserStorageWrapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import pluggable.CustomStorageWrapper;
@@ -15,7 +15,7 @@ import static com.google.common.base.Preconditions.checkNotNull;
 
 public class RedisImpressionSender implements ImpressionsSender{
 
-    private final UserStorageWrapper _userStorageWrapper;;
+    private final SafeUserStorageWrapper _safeUserStorageWrapper;;
     private static final Logger _logger = LoggerFactory.getLogger(RedisImpressionSender.class);
 
     public static RedisImpressionSender create(CustomStorageWrapper customStorageWrapper){
@@ -23,7 +23,7 @@ public class RedisImpressionSender implements ImpressionsSender{
     }
 
     private RedisImpressionSender(CustomStorageWrapper customStorageWrapper) {
-        this._userStorageWrapper = new UserStorageWrapper(checkNotNull(customStorageWrapper));
+        this._safeUserStorageWrapper = new SafeUserStorageWrapper(checkNotNull(customStorageWrapper));
     }
 
     @Override
@@ -34,7 +34,7 @@ public class RedisImpressionSender implements ImpressionsSender{
     @Override
     public void postCounters(HashMap<ImpressionCounter.Key, Integer> counts) {
         try {
-            Pipeline pipelineExecution = _userStorageWrapper.pipeline();
+            Pipeline pipelineExecution = _safeUserStorageWrapper.pipeline();
             for(ImpressionCounter.Key countsKey: counts.keySet()){
                 String key = PrefixAdapter.buildImpressionsCount();
                 pipelineExecution.hIncrement(key, countsKey.featureName() + "::" + countsKey.timeFrame(), counts.get(countsKey));

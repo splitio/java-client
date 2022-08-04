@@ -49,7 +49,7 @@ import io.split.storages.pluggable.adapters.UserCustomImpressionAdapterProducer;
 import io.split.storages.pluggable.adapters.UserCustomSegmentAdapterConsumer;
 import io.split.storages.pluggable.adapters.UserCustomSplitAdapterConsumer;
 import io.split.storages.pluggable.adapters.UserCustomTelemetryAdapterProducer;
-import io.split.storages.pluggable.domain.UserStorageWrapper;
+import io.split.storages.pluggable.domain.SafeUserStorageWrapper;
 import io.split.storages.pluggable.synchronizer.TelemetryConsumerSubmitter;
 import io.split.telemetry.storage.InMemoryTelemetryStorage;
 import io.split.telemetry.storage.TelemetryStorage;
@@ -127,7 +127,7 @@ public class SplitFactoryImpl implements SplitFactory {
     private final EventsTask _eventsTask;
     private final SyncManager _syncManager;
     private final CloseableHttpClient _httpclient;
-    private final UserStorageWrapper _userStorageWrapper;
+    private final SafeUserStorageWrapper _safeUserStorageWrapper;
     private final ImpressionsSender _impressionsSender;
     private final URI _rootTarget;
     private final URI _eventsRootTarget;
@@ -135,7 +135,7 @@ public class SplitFactoryImpl implements SplitFactory {
 
     //Constructor for standalone mode
     public SplitFactoryImpl(String apiToken, SplitClientConfig config) throws URISyntaxException {
-        _userStorageWrapper = null;
+        _safeUserStorageWrapper = null;
         _operationMode = config.operationMode();
         _startTime = System.currentTimeMillis();
         _apiToken = apiToken;
@@ -259,7 +259,7 @@ public class SplitFactoryImpl implements SplitFactory {
         _eventsRootTarget = null;
 
         Metadata metadata = new Metadata(config.ipAddressEnabled(), SplitClientConfig.splitSdkVersion);
-        _userStorageWrapper = new UserStorageWrapper(customStorageWrapper);
+        _safeUserStorageWrapper = new SafeUserStorageWrapper(customStorageWrapper);
         UserCustomSegmentAdapterConsumer userCustomSegmentAdapterConsumer= new UserCustomSegmentAdapterConsumer(customStorageWrapper);
         UserCustomSplitAdapterConsumer userCustomSplitAdapterConsumer = new UserCustomSplitAdapterConsumer(customStorageWrapper);
         UserCustomImpressionAdapterConsumer userCustomImpressionAdapterConsumer = new UserCustomImpressionAdapterConsumer(); // TODO migrate impressions sender to Task instead manager and not instantiate Producer here.
@@ -344,7 +344,7 @@ public class SplitFactoryImpl implements SplitFactory {
                 _log.info("Successful shutdown of httpclient");
                 }
             else if(OperationMode.CONSUMER.equals(_operationMode)) {
-                _userStorageWrapper.disconnect();
+                _safeUserStorageWrapper.disconnect();
             }
         } catch (IOException e) {
             _log.error("We could not shutdown split", e);
@@ -505,7 +505,7 @@ public class SplitFactoryImpl implements SplitFactory {
                 .setDaemon(true)
                 .build());
         executorService.submit(() -> {
-            while(!_userStorageWrapper.connect()) {
+            while(!_safeUserStorageWrapper.connect()) {
                 try {
                     Thread.currentThread().sleep(1000);
                 } catch (InterruptedException e) {
