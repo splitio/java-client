@@ -32,7 +32,7 @@ public class SafeUserStorageWrapperTest{
         Field modifiersField = Field.class.getDeclaredField("modifiers");
         modifiersField.setAccessible(true);
         modifiersField.setInt(safeUserStorageWrapper, safeUserStorageWrapper.getModifiers() & ~Modifier.FINAL);
-        safeUserStorageWrapper.set(this._safeUserStorageWrapper, _log);
+        safeUserStorageWrapper.set(_safeUserStorageWrapper, _log);
     }
 
     @Test

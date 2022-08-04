@@ -15,7 +15,7 @@ import static com.google.common.base.Preconditions.checkNotNull;
 
 public class RedisImpressionSender implements ImpressionsSender{
 
-    private final SafeUserStorageWrapper _safeUserStorageWrapper;;
+    private final SafeUserStorageWrapper _safeUserStorageWrapper;
     private static final Logger _logger = LoggerFactory.getLogger(RedisImpressionSender.class);
 
     public static RedisImpressionSender create(CustomStorageWrapper customStorageWrapper){
