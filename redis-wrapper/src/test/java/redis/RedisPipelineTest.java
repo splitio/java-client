@@ -14,7 +14,7 @@ public class RedisPipelineTest {
 
     @Test
     public void testHincrement() throws Exception {
-        Pipeline redisPipeline =  new RedisPipeline(new JedisPool(), "test-prefix:.");
+        RedisPipeline redisPipeline =  new RedisPipeline(new JedisPool(), "test-prefix:.");
         redisPipeline.hIncrement("test", "key1", 1L);
         redisPipeline.hIncrement("test", "key1", 1L);
 

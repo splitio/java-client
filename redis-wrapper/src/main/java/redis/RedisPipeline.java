@@ -1,5 +1,7 @@
 package redis;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import pluggable.Result;
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisPool;
@@ -13,6 +15,7 @@ public class RedisPipeline implements pluggable.Pipeline {
     private final String _prefix;
     private final JedisPool _jedisPool;
 
+    private static final Logger _log = LoggerFactory.getLogger(RedisPipeline.class);
 
     public RedisPipeline(JedisPool jedisPool, String prefix) {
         _jedisPool = jedisPool;
@@ -20,7 +23,7 @@ public class RedisPipeline implements pluggable.Pipeline {
         try (Jedis jedis = jedisPool.getResource()) {
             _pipelined = jedis.pipelined();
         } catch (Exception ex) {
-            System.out.println("err " + ex.getMessage());
+            _log.warn("Exception when getResource from jedis: ", ex);
         }
     }
 
@@ -37,7 +40,6 @@ public class RedisPipeline implements pluggable.Pipeline {
         _pipelined.hincrBy(buildKeyWithPrefix(key), field, value);
     }
 
-    @Override
     public void delete(List<String> keys){
         if(keys == null || keys.isEmpty()){
             return ;
