@@ -23,7 +23,7 @@ public class RedisPipeline implements pluggable.Pipeline {
         try (Jedis jedis = _jedisPool.getResource()) {
             _pipelined = jedis.pipelined();
         } catch (Exception ex) {
-            _log.warn("Exception when getResource from jedis: ", ex);
+            new RedisException(ex.getMessage());
         }
     }
 
@@ -49,7 +49,7 @@ public class RedisPipeline implements pluggable.Pipeline {
 
             jedis.del(keys.toArray(new String[keys.size()]));
         } catch (Exception ex) {
-            throw ex;
+            new RedisException(ex.getMessage());
         }
     }
 
