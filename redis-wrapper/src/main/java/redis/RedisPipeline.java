@@ -20,7 +20,7 @@ public class RedisPipeline implements pluggable.Pipeline {
     public RedisPipeline(JedisPool jedisPool, String prefix) {
         _jedisPool = jedisPool;
         _prefix = prefix;
-        try (Jedis jedis = jedisPool.getResource()) {
+        try (Jedis jedis = _jedisPool.getResource()) {
             _pipelined = jedis.pipelined();
         } catch (Exception ex) {
             _log.warn("Exception when getResource from jedis: ", ex);
