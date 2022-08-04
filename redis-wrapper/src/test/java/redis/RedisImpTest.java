@@ -244,8 +244,6 @@ public class RedisImpTest {
         Assert.assertTrue(storageWrapper.connect());
     }
 
-
-
     @Test
     public void testDisconnect() throws Exception {
         RedisImp storageWrapper = new RedisImp(new JedisPool(), "test-prefix");

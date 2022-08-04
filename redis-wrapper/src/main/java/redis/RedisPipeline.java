@@ -11,9 +11,11 @@ import java.util.stream.Collectors;
 public class RedisPipeline implements pluggable.Pipeline {
     private Pipeline _pipelined;
     private final String _prefix;
+    private final JedisPool _jedisPool;
 
 
     public RedisPipeline(JedisPool jedisPool, String prefix) {
+        _jedisPool = jedisPool;
         _prefix = prefix;
         try (Jedis jedis = jedisPool.getResource()) {
             _pipelined = jedis.pipelined();
@@ -33,6 +35,20 @@ public class RedisPipeline implements pluggable.Pipeline {
     @Override
     public void hIncrement(String key, String field, long value) {
         _pipelined.hincrBy(buildKeyWithPrefix(key), field, value);
+    }
+
+    @Override
+    public void delete(List<String> keys){
+        if(keys == null || keys.isEmpty()){
+            return ;
+        }
+        try (Jedis jedis = _jedisPool.getResource()) {
+            keys = keys.stream().map(key -> buildKeyWithPrefix(key)).collect(Collectors.toList());
+
+            jedis.del(keys.toArray(new String[keys.size()]));
+        } catch (Exception ex) {
+            throw ex;
+        }
     }
 
     @Override
