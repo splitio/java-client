@@ -4,6 +4,7 @@ import com.google.common.annotations.VisibleForTesting;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import io.split.client.ApiKeyCounter;
 import io.split.client.SplitClientConfig;
+import io.split.client.events.EventsTask;
 import io.split.client.impressions.ImpressionsManager;
 import io.split.engine.SDKReadinessGates;
 import io.split.engine.experiments.SplitFetcher;
@@ -46,6 +47,7 @@ public class SyncManagerImp implements SyncManager {
     private final SplitClientConfig _config;
     private final long _startingSyncCallBackoffBaseMs;
     private final ImpressionsManager _impressionManager;
+    private final EventsTask _eventsTask;
     private static final long STARTING_SYNC_ALL_BACKOFF_MAX_WAIT_MS = new Long(10000); // 10 seconds max wait
 
     @VisibleForTesting
@@ -56,7 +58,8 @@ public class SyncManagerImp implements SyncManager {
                                          int authRetryBackOffBase,
                                          SDKReadinessGates gates, TelemetryRuntimeProducer telemetryRuntimeProducer,
                                          TelemetrySynchronizer telemetrySynchronizer,
-                                         SplitClientConfig config, ImpressionsManager impressionsManager) {
+                                         SplitClientConfig config, ImpressionsManager impressionsManager,
+                                         EventsTask eventsTask) {
         _streamingEnabledConfig = new AtomicBoolean(streamingEnabledConfig);
         _synchronizer = checkNotNull(synchronizer);
         _pushManager = checkNotNull(pushManager);
@@ -77,6 +80,7 @@ public class SyncManagerImp implements SyncManager {
         _config = checkNotNull(config);
         _startingSyncCallBackoffBaseMs = config.startingSyncCallBackoffBaseMs();
         _impressionManager = impressionsManager;
+        _eventsTask = eventsTask;
     }
 
     public static SyncManagerImp build(boolean streamingEnabledConfig,
@@ -98,7 +102,8 @@ public class SyncManagerImp implements SyncManager {
                                        TelemetryRuntimeProducer telemetryRuntimeProducer,
                                        TelemetrySynchronizer telemetrySynchronizer,
                                        SplitClientConfig config,
-                                       ImpressionsManager impressionsManager) {
+                                       ImpressionsManager impressionsManager,
+                                       EventsTask eventsTask) {
         LinkedBlockingQueue<PushManager.Status> pushMessages = new LinkedBlockingQueue<>();
         Synchronizer synchronizer = new SynchronizerImp(splitSynchronizationTask,
                                         splitFetcher,
@@ -128,7 +133,8 @@ public class SyncManagerImp implements SyncManager {
                                   telemetryRuntimeProducer,
                                   telemetrySynchronizer, 
                                   config,
-                                  impressionsManager);
+                                  impressionsManager,
+                                  eventsTask);
     }
 
     @Override
@@ -155,6 +161,11 @@ public class SyncManagerImp implements SyncManager {
                 startPollingMode();
             }
             _impressionManager.start();
+            try {
+                this.start();
+            } catch (Exception e) {
+                _log.error("Error trying to init EventTask synchronizer task.", e);
+            }
         });
     }
 
