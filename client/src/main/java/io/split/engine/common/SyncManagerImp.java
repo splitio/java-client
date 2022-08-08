@@ -162,7 +162,7 @@ public class SyncManagerImp implements SyncManager {
             }
             _impressionManager.start();
             try {
-                this.start();
+                _eventsTask.start();
             } catch (Exception e) {
                 _log.error("Error trying to init EventTask synchronizer task.", e);
             }
