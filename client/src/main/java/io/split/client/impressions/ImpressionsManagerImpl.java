@@ -51,6 +51,7 @@ public class ImpressionsManagerImpl implements ImpressionsManager, Closeable {
     private final boolean _addPreviousTimeEnabled;
     private final boolean _isOptimized;
     private final OperationMode _operationMode;
+    private final int _impressionsRefreshRate;
 
     public static ImpressionsManagerImpl instance(CloseableHttpClient client,
                                                   SplitClientConfig config,
@@ -90,7 +91,7 @@ public class ImpressionsManagerImpl implements ImpressionsManager, Closeable {
                 : HttpImpressionsSender.create(client, URI.create(config.eventsEndpoint()), _mode, telemetryRuntimeProducer);
 
         _scheduler = buildExecutor();
-        _scheduler.scheduleAtFixedRate(this::sendImpressions, BULK_INITIAL_DELAY_SECONDS, config.impressionsRefreshRate(), TimeUnit.SECONDS);
+        _impressionsRefreshRate = config.impressionsRefreshRate();
 
         _listener = (null != listeners && !listeners.isEmpty()) ? new ImpressionListener.FederatedImpressionListener(listeners)
                 : new ImpressionListener.NoopImpressionListener();
@@ -99,6 +100,10 @@ public class ImpressionsManagerImpl implements ImpressionsManager, Closeable {
         _addPreviousTimeEnabled = shouldAddPreviousTime();
         _counter = _addPreviousTimeEnabled ? new ImpressionCounter() : null;
         _isOptimized = _counter != null && shouldBeOptimized();
+    }
+
+    public void start(){
+        _scheduler.scheduleAtFixedRate(this::sendImpressions, BULK_INITIAL_DELAY_SECONDS, _impressionsRefreshRate, TimeUnit.SECONDS);
         if (_isOptimized) {
             _scheduler.scheduleAtFixedRate(this::sendImpressionCounters, COUNT_INITIAL_DELAY_SECONDS, COUNT_REFRESH_RATE_SECONDS, TimeUnit.SECONDS);
         }

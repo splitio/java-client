@@ -10,10 +10,15 @@ public interface ImpressionsManager {
     }
 
     void track(List<Impression> impressions);
+    void start();
 
     final class NoOpImpressionsManager implements ImpressionsManager {
 
         @Override
         public void track(List<Impression> impressions) { /* do nothing */ }
+        @Override
+        public void start(){
+            /* do nothing */
+        }
     }
 }

@@ -4,6 +4,7 @@ import com.google.common.annotations.VisibleForTesting;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import io.split.client.ApiKeyCounter;
 import io.split.client.SplitClientConfig;
+import io.split.client.impressions.ImpressionsManager;
 import io.split.engine.SDKReadinessGates;
 import io.split.engine.experiments.SplitFetcher;
 import io.split.engine.experiments.SplitSynchronizationTask;
@@ -44,6 +45,7 @@ public class SyncManagerImp implements SyncManager {
     private final TelemetrySynchronizer _telemetrySynchronizer;
     private final SplitClientConfig _config;
     private final long _startingSyncCallBackoffBaseMs;
+    private final ImpressionsManager _impressionManager;
     private static final long STARTING_SYNC_ALL_BACKOFF_MAX_WAIT_MS = new Long(10000); // 10 seconds max wait
 
     @VisibleForTesting
@@ -54,7 +56,7 @@ public class SyncManagerImp implements SyncManager {
                                          int authRetryBackOffBase,
                                          SDKReadinessGates gates, TelemetryRuntimeProducer telemetryRuntimeProducer,
                                          TelemetrySynchronizer telemetrySynchronizer,
-                                         SplitClientConfig config) {
+                                         SplitClientConfig config, ImpressionsManager impressionsManager) {
         _streamingEnabledConfig = new AtomicBoolean(streamingEnabledConfig);
         _synchronizer = checkNotNull(synchronizer);
         _pushManager = checkNotNull(pushManager);
@@ -74,6 +76,7 @@ public class SyncManagerImp implements SyncManager {
         _telemetrySynchronizer = checkNotNull(telemetrySynchronizer);
         _config = checkNotNull(config);
         _startingSyncCallBackoffBaseMs = config.startingSyncCallBackoffBaseMs();
+        _impressionManager = impressionsManager;
     }
 
     public static SyncManagerImp build(boolean streamingEnabledConfig,
@@ -94,7 +97,8 @@ public class SyncManagerImp implements SyncManager {
                                        SDKReadinessGates gates,
                                        TelemetryRuntimeProducer telemetryRuntimeProducer,
                                        TelemetrySynchronizer telemetrySynchronizer,
-                                       SplitClientConfig config) {
+                                       SplitClientConfig config,
+                                       ImpressionsManager impressionsManager) {
         LinkedBlockingQueue<PushManager.Status> pushMessages = new LinkedBlockingQueue<>();
         Synchronizer synchronizer = new SynchronizerImp(splitSynchronizationTask,
                                         splitFetcher,
@@ -123,7 +127,8 @@ public class SyncManagerImp implements SyncManager {
                                   gates, 
                                   telemetryRuntimeProducer,
                                   telemetrySynchronizer, 
-                                  config);
+                                  config,
+                                  impressionsManager);
     }
 
     @Override
@@ -149,6 +154,7 @@ public class SyncManagerImp implements SyncManager {
             } else {
                 startPollingMode();
             }
+            _impressionManager.start();
         });
     }
 

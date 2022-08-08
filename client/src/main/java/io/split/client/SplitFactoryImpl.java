@@ -221,7 +221,8 @@ public class SplitFactoryImpl implements SplitFactory {
                 config.streamingRetryDelay(),
                 config.streamingFetchMaxRetries(),
                 config.failedAttemptsBeforeLogging(),
-                config.cdnDebugLogging(), _gates, _telemetryStorageProducer, _telemetrySynchronizer,config);
+                config.cdnDebugLogging(), _gates, _telemetryStorageProducer, _telemetrySynchronizer, config,
+                _impressionsManager);
         _syncManager.start();
 
         // DestroyOnShutDown
