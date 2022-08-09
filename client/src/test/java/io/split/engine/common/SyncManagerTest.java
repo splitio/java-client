@@ -15,7 +15,6 @@ import org.mockito.Mockito;
 import java.util.concurrent.LinkedBlockingQueue;
 
 public class SyncManagerTest {
-    private static final int BACKOFF_BASE = 1;
     private Synchronizer _synchronizer;
     private PushManager _pushManager;
     private SDKReadinessGates _gates;
@@ -38,7 +37,7 @@ public class SyncManagerTest {
         TelemetrySyncTask telemetrySyncTask = Mockito.mock(TelemetrySyncTask.class);
         Mockito.when(_synchronizer.syncAll()).thenReturn(true);
         SyncManagerImp syncManager = new SyncManagerImp(false, _synchronizer, _pushManager, new LinkedBlockingQueue<>(),
-                BACKOFF_BASE, _gates, telemetryStorage, telemetrySynchronizer, config, impressionsManager, eventsTask,
+                _gates, telemetryStorage, telemetrySynchronizer, config, impressionsManager, eventsTask,
                 telemetrySyncTask);
         syncManager.start();
         Thread.sleep(1000);
@@ -57,7 +56,7 @@ public class SyncManagerTest {
         TelemetrySyncTask telemetrySyncTask = Mockito.mock(TelemetrySyncTask.class);
         Mockito.when(_synchronizer.syncAll()).thenReturn(true);
         SyncManager sm = new SyncManagerImp(true, _synchronizer, _pushManager, new LinkedBlockingQueue<>(),
-                BACKOFF_BASE, _gates, telemetryStorage, telemetrySynchronizer, config, impressionsManager, eventsTask,
+                _gates, telemetryStorage, telemetrySynchronizer, config, impressionsManager, eventsTask,
                 telemetrySyncTask);
         sm.start();
         Thread.sleep(1000);
@@ -78,7 +77,7 @@ public class SyncManagerTest {
         SplitClientConfig config = Mockito.mock(SplitClientConfig.class);
 
         SyncManagerImp syncManager = new SyncManagerImp(true, _synchronizer, _pushManager, messages,
-                BACKOFF_BASE, _gates, telemetryStorage, telemetrySynchronizer, config, impressionsManager, eventsTask,
+                _gates, telemetryStorage, telemetrySynchronizer, config, impressionsManager, eventsTask,
                 telemetrySyncTask);
         Thread t = new Thread(syncManager::incomingPushStatusHandler);
         t.start();
@@ -101,7 +100,7 @@ public class SyncManagerTest {
         EventsTask eventsTask = Mockito.mock(EventsTask.class);
         SplitClientConfig config = Mockito.mock(SplitClientConfig.class);
         SyncManagerImp syncManager = new SyncManagerImp(true, _synchronizer, _pushManager, messsages,
-                BACKOFF_BASE, _gates, telemetryStorage, telemetrySynchronizer, config, impressionsManager, eventsTask,
+                _gates, telemetryStorage, telemetrySynchronizer, config, impressionsManager, eventsTask,
                 telemetrySyncTask);
         Thread t = new Thread(syncManager::incomingPushStatusHandler);
         t.start();
@@ -123,7 +122,7 @@ public class SyncManagerTest {
         EventsTask eventsTask = Mockito.mock(EventsTask.class);
         SplitClientConfig config = Mockito.mock(SplitClientConfig.class);
         SyncManagerImp syncManager = new SyncManagerImp(true, _synchronizer, _pushManager, messsages,
-                BACKOFF_BASE, _gates, telemetryStorage, telemetrySynchronizer, config, impressionsManager, eventsTask,
+                _gates, telemetryStorage, telemetrySynchronizer, config, impressionsManager, eventsTask,
                 telemetrySyncTask);
         Thread t = new Thread(syncManager::incomingPushStatusHandler);
         t.start();
@@ -143,7 +142,7 @@ public class SyncManagerTest {
         EventsTask eventsTask = Mockito.mock(EventsTask.class);
         SplitClientConfig config = Mockito.mock(SplitClientConfig.class);
         SyncManagerImp syncManager = new SyncManagerImp(true, _synchronizer, _pushManager, messsages,
-                BACKOFF_BASE, _gates, telemetryStorage, telemetrySynchronizer, config, impressionsManager, eventsTask,
+                _gates, telemetryStorage, telemetrySynchronizer, config, impressionsManager, eventsTask,
                 telemetrySyncTask);
         Thread t = new Thread(syncManager::incomingPushStatusHandler);
         t.start();
@@ -164,7 +163,7 @@ public class SyncManagerTest {
         EventsTask eventsTask = Mockito.mock(EventsTask.class);
         SplitClientConfig config = Mockito.mock(SplitClientConfig.class);
         SyncManagerImp syncManager = new SyncManagerImp(true, _synchronizer, _pushManager, messsages,
-                BACKOFF_BASE, _gates, telemetryStorage, telemetrySynchronizer, config, impressionsManager, eventsTask,
+                _gates, telemetryStorage, telemetrySynchronizer, config, impressionsManager, eventsTask,
                 telemetrySyncTask);
         Thread t = new Thread(syncManager::incomingPushStatusHandler);
         t.start();
@@ -185,7 +184,7 @@ public class SyncManagerTest {
         SplitClientConfig config = Mockito.mock(SplitClientConfig.class);
         Mockito.when(_synchronizer.syncAll()).thenReturn(true);
         SyncManagerImp syncManager = new SyncManagerImp(true, _synchronizer, _pushManager, messsages,
-                BACKOFF_BASE, _gates, telemetryStorage, telemetrySynchronizer, config, impressionsManager, eventsTask,
+                _gates, telemetryStorage, telemetrySynchronizer, config, impressionsManager, eventsTask,
                 telemetrySyncTask);
         syncManager.start();
         messsages.offer(PushManager.Status.STREAMING_BACKOFF);
@@ -205,7 +204,7 @@ public class SyncManagerTest {
         SplitClientConfig config = Mockito.mock(SplitClientConfig.class);
         Mockito.when(_synchronizer.syncAll()).thenReturn(false).thenReturn(true);
         SyncManagerImp syncManager = new SyncManagerImp(false, _synchronizer, _pushManager, new LinkedBlockingQueue<>(),
-                BACKOFF_BASE, _gates, telemetryStorage, telemetrySynchronizer, config, impressionsManager, eventsTask,
+                _gates, telemetryStorage, telemetrySynchronizer, config, impressionsManager, eventsTask,
                 telemetrySyncTask);
         syncManager.start();
         Thread.sleep(2000);

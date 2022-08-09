@@ -57,7 +57,6 @@ public class SyncManagerImp implements SyncManager {
                                          Synchronizer synchronizer,
                                          PushManager pushManager,
                                          LinkedBlockingQueue<PushManager.Status> pushMessages,
-                                         int authRetryBackOffBase,
                                          SDKReadinessGates gates, TelemetryRuntimeProducer telemetryRuntimeProducer,
                                          TelemetrySynchronizer telemetrySynchronizer,
                                          SplitClientConfig config, ImpressionsManager impressionsManager,
@@ -75,7 +74,7 @@ public class SyncManagerImp implements SyncManager {
                 .setNameFormat("SPLIT-Initialization-%d")
                 .setDaemon(true)
                 .build());
-        _backoff = new Backoff(authRetryBackOffBase);
+        _backoff = new Backoff(config.authRetryBackoffBase());
         _gates = checkNotNull(gates);
         _telemetryRuntimeProducer = checkNotNull(telemetryRuntimeProducer);
         _telemetrySynchronizer = checkNotNull(telemetrySynchronizer);
@@ -86,21 +85,13 @@ public class SyncManagerImp implements SyncManager {
         _telemetrySyncTask = telemetrySyncTask;
     }
 
-    public static SyncManagerImp build(boolean streamingEnabledConfig,
-                                       SplitSynchronizationTask splitSynchronizationTask,
+    public static SyncManagerImp build(SplitSynchronizationTask splitSynchronizationTask,
                                        SplitFetcher splitFetcher,
                                        SegmentSynchronizationTaskImp segmentSynchronizationTaskImp,
                                        SplitCacheProducer splitCacheProducer,
-                                       String authUrl,
                                        CloseableHttpClient httpClient,
-                                       String streamingServiceUrl,
-                                       int authRetryBackOffBase,
                                        CloseableHttpClient sseHttpClient,
                                        SegmentCacheProducer segmentCacheProducer,
-                                       int streamingRetryDelay,
-                                       int maxOnDemandFetchRetries,
-                                       int failedAttemptsBeforeLogging,
-                                       boolean cdnDebugLogging,
                                        SDKReadinessGates gates,
                                        TelemetryRuntimeProducer telemetryRuntimeProducer,
                                        TelemetrySynchronizer telemetrySynchronizer,
@@ -114,25 +105,24 @@ public class SyncManagerImp implements SyncManager {
                                         segmentSynchronizationTaskImp,
                                         splitCacheProducer,
                                         segmentCacheProducer,
-                                        streamingRetryDelay,
-                                        maxOnDemandFetchRetries,
-                                        failedAttemptsBeforeLogging,
-                                        cdnDebugLogging,
+                                        config.streamingRetryDelay(),
+                                        config.streamingFetchMaxRetries(),
+                                        config.failedAttemptsBeforeLogging(),
+                                        config.cdnDebugLogging(),
                                         gates);
 
         PushManager pushManager = PushManagerImp.build(synchronizer,
-                                                        streamingServiceUrl,
-                                                        authUrl,
+                                                        config.streamingServiceURL(),
+                                                        config.authServiceURL(),
                                                         httpClient,
                                                         pushMessages,
                                                         sseHttpClient,
                                                         telemetryRuntimeProducer);
 
-        return new SyncManagerImp(streamingEnabledConfig,
+        return new SyncManagerImp(config.streamingEnabled(),
                                   synchronizer,
                                   pushManager,
                                   pushMessages,
-                                  authRetryBackOffBase, 
                                   gates, 
                                   telemetryRuntimeProducer,
                                   telemetrySynchronizer, 
