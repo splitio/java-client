@@ -102,6 +102,7 @@ public class ImpressionsManagerImpl implements ImpressionsManager, Closeable {
         _isOptimized = _counter != null && shouldBeOptimized();
     }
 
+    @Override
     public void start(){
         _scheduler.scheduleAtFixedRate(this::sendImpressions, BULK_INITIAL_DELAY_SECONDS, _impressionsRefreshRate, TimeUnit.SECONDS);
         if (_isOptimized) {

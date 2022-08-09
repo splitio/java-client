@@ -8,8 +8,6 @@ import io.split.client.events.EventsTask;
 import io.split.client.impressions.ImpressionsManager;
 import io.split.engine.SDKReadinessGates;
 import io.split.engine.experiments.SplitFetcher;
-import io.split.engine.experiments.SplitSynchronizationTask;
-import io.split.engine.segments.SegmentSynchronizationTaskImp;
 import io.split.storages.SegmentCacheProducer;
 import io.split.storages.SplitCacheProducer;
 import io.split.telemetry.domain.StreamingEvent;
@@ -53,14 +51,14 @@ public class SyncManagerImp implements SyncManager {
     private static final long STARTING_SYNC_ALL_BACKOFF_MAX_WAIT_MS = new Long(10000); // 10 seconds max wait
 
     @VisibleForTesting
-    /* package private */ SyncManagerImp(boolean streamingEnabledConfig,
+    /* package private */ SyncManagerImp(SplitTasks splitTasks,
+                                         boolean streamingEnabledConfig,
                                          Synchronizer synchronizer,
                                          PushManager pushManager,
                                          LinkedBlockingQueue<PushManager.Status> pushMessages,
                                          SDKReadinessGates gates, TelemetryRuntimeProducer telemetryRuntimeProducer,
                                          TelemetrySynchronizer telemetrySynchronizer,
-                                         SplitClientConfig config, ImpressionsManager impressionsManager,
-                                         EventsTask eventsTask, TelemetrySyncTask telemetrySyncTask) {
+                                         SplitClientConfig config) {
         _streamingEnabledConfig = new AtomicBoolean(streamingEnabledConfig);
         _synchronizer = checkNotNull(synchronizer);
         _pushManager = checkNotNull(pushManager);
@@ -80,14 +78,13 @@ public class SyncManagerImp implements SyncManager {
         _telemetrySynchronizer = checkNotNull(telemetrySynchronizer);
         _config = checkNotNull(config);
         _startingSyncCallBackoffBaseMs = config.startingSyncCallBackoffBaseMs();
-        _impressionManager = impressionsManager;
-        _eventsTask = eventsTask;
-        _telemetrySyncTask = telemetrySyncTask;
+        _impressionManager = checkNotNull(splitTasks.getImpressionManager());
+        _eventsTask = checkNotNull(splitTasks.getEventsTask());
+        _telemetrySyncTask = checkNotNull(splitTasks.getTelemetrySyncTask());
     }
 
-    public static SyncManagerImp build(SplitSynchronizationTask splitSynchronizationTask,
+    public static SyncManagerImp build(SplitTasks splitTasks,
                                        SplitFetcher splitFetcher,
-                                       SegmentSynchronizationTaskImp segmentSynchronizationTaskImp,
                                        SplitCacheProducer splitCacheProducer,
                                        CloseableHttpClient httpClient,
                                        CloseableHttpClient sseHttpClient,
@@ -95,14 +92,11 @@ public class SyncManagerImp implements SyncManager {
                                        SDKReadinessGates gates,
                                        TelemetryRuntimeProducer telemetryRuntimeProducer,
                                        TelemetrySynchronizer telemetrySynchronizer,
-                                       SplitClientConfig config,
-                                       ImpressionsManager impressionsManager,
-                                       EventsTask eventsTask,
-                                       TelemetrySyncTask telemetrySyncTask) {
+                                       SplitClientConfig config) {
         LinkedBlockingQueue<PushManager.Status> pushMessages = new LinkedBlockingQueue<>();
-        Synchronizer synchronizer = new SynchronizerImp(splitSynchronizationTask,
+        Synchronizer synchronizer = new SynchronizerImp(splitTasks.getSplitSynchronizationTask(),
                                         splitFetcher,
-                                        segmentSynchronizationTaskImp,
+                                        splitTasks.getSegmentSynchronizationTask(),
                                         splitCacheProducer,
                                         segmentCacheProducer,
                                         config.streamingRetryDelay(),
@@ -119,17 +113,15 @@ public class SyncManagerImp implements SyncManager {
                                                         sseHttpClient,
                                                         telemetryRuntimeProducer);
 
-        return new SyncManagerImp(config.streamingEnabled(),
+        return new SyncManagerImp(splitTasks,
+                                  config.streamingEnabled(),
                                   synchronizer,
                                   pushManager,
                                   pushMessages,
                                   gates, 
                                   telemetryRuntimeProducer,
                                   telemetrySynchronizer, 
-                                  config,
-                                  impressionsManager,
-                                  eventsTask,
-                                  telemetrySyncTask);
+                                  config);
     }
 
     @Override
@@ -158,10 +150,18 @@ public class SyncManagerImp implements SyncManager {
 
             try {
                 _impressionManager.start();
+            } catch (Exception e) {
+                _log.error("Error trying to init Impression Manager synchronizer task.", e);
+            }
+            try {
                 _eventsTask.start();
+            } catch (Exception e) {
+                _log.error("Error trying to init Events synchronizer task.", e);
+            }
+            try {
                 _telemetrySyncTask.startScheduledTask();
             } catch (Exception e) {
-                _log.error("Error trying to init synchronizer tasks.", e);
+                _log.error("Error trying to Telemetry synchronizer task.", e);
             }
         });
     }

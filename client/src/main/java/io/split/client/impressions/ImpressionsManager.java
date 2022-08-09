@@ -16,6 +16,7 @@ public interface ImpressionsManager {
 
         @Override
         public void track(List<Impression> impressions) { /* do nothing */ }
+
         @Override
         public void start(){
             /* do nothing */

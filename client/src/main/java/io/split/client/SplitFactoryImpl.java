@@ -20,6 +20,7 @@ import io.split.client.interceptors.GzipEncoderRequestInterceptor;
 import io.split.client.interceptors.SdkMetadataInterceptorFilter;
 import io.split.client.utils.SDKMetadata;
 import io.split.engine.SDKReadinessGates;
+import io.split.engine.common.SplitTasks;
 import io.split.engine.common.SyncManager;
 import io.split.engine.common.SyncManagerImp;
 import io.split.engine.evaluator.Evaluator;
@@ -206,17 +207,11 @@ public class SplitFactoryImpl implements SplitFactory {
         _manager = new SplitManagerImpl(splitCache, config, _gates, _telemetryStorageProducer);
 
         // SyncManager
-        _syncManager = SyncManagerImp.build(_splitSynchronizationTask,
-                _splitFetcher,
-                _segmentSynchronizationTaskImp,
-                splitCache,
-                _httpclient,
+        SplitTasks splitTasks = SplitTasks.build(_splitSynchronizationTask, _segmentSynchronizationTaskImp,
+                _impressionsManager, _eventsTask, _telemetrySyncTask);
+        _syncManager = SyncManagerImp.build(splitTasks, _splitFetcher, splitCache, _httpclient,
                 buildSSEdHttpClient(apiToken, config, _sdkMetadata),
-                segmentCache,
-                _gates, _telemetryStorageProducer, _telemetrySynchronizer, config,
-                _impressionsManager,
-                _eventsTask,
-                _telemetrySyncTask);
+                segmentCache, _gates, _telemetryStorageProducer, _telemetrySynchronizer, config);
         _syncManager.start();
 
         // DestroyOnShutDown
