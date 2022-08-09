@@ -165,16 +165,13 @@ public class SyncManagerImp implements SyncManager {
             } else {
                 startPollingMode();
             }
-            _impressionManager.start();
+
             try {
+                _impressionManager.start();
                 _eventsTask.start();
-            } catch (Exception e) {
-                _log.error("Error trying to init EventTask synchronizer task.", e);
-            }
-            try {
                 _telemetrySyncTask.startScheduledTask();
             } catch (Exception e) {
-                _log.warn("Error trying to init telemetry stats synchronizer task.");
+                _log.error("Error trying to init synchronizer tasks.", e);
             }
         });
     }
