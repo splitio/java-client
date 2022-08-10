@@ -15,7 +15,6 @@ import io.split.telemetry.domain.enums.StreamEventsEnum;
 import io.split.telemetry.storage.TelemetryRuntimeProducer;
 import io.split.telemetry.synchronizer.TelemetrySyncTask;
 import io.split.telemetry.synchronizer.TelemetrySynchronizer;
-import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -86,8 +85,7 @@ public class SyncManagerImp implements SyncManager {
     public static SyncManagerImp build(SplitTasks splitTasks,
                                        SplitFetcher splitFetcher,
                                        SplitCacheProducer splitCacheProducer,
-                                       CloseableHttpClient httpClient,
-                                       CloseableHttpClient sseHttpClient,
+                                       SplitAPI splitAPI,
                                        SegmentCacheProducer segmentCacheProducer,
                                        SDKReadinessGates gates,
                                        TelemetryRuntimeProducer telemetryRuntimeProducer,
@@ -108,9 +106,8 @@ public class SyncManagerImp implements SyncManager {
         PushManager pushManager = PushManagerImp.build(synchronizer,
                                                         config.streamingServiceURL(),
                                                         config.authServiceURL(),
-                                                        httpClient,
+                                                        splitAPI,
                                                         pushMessages,
-                                                        sseHttpClient,
                                                         telemetryRuntimeProducer);
 
         return new SyncManagerImp(splitTasks,

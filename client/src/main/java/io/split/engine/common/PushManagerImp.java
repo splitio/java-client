@@ -19,7 +19,6 @@ import io.split.engine.sse.workers.Worker;
 import io.split.telemetry.domain.StreamingEvent;
 import io.split.telemetry.domain.enums.StreamEventsEnum;
 import io.split.telemetry.storage.TelemetryRuntimeProducer;
-import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -70,15 +69,14 @@ public class PushManagerImp implements PushManager {
     public static PushManagerImp build(Synchronizer synchronizer,
                                        String streamingUrl,
                                        String authUrl,
-                                       CloseableHttpClient httpClient,
+                                       SplitAPI splitAPI,
                                        LinkedBlockingQueue<PushManager.Status> statusMessages,
-                                       CloseableHttpClient sseHttpClient,
                                        TelemetryRuntimeProducer telemetryRuntimeProducer) {
         SplitsWorker splitsWorker = new SplitsWorkerImp(synchronizer);
         Worker<SegmentQueueDto> segmentWorker = new SegmentsWorkerImp(synchronizer);
         PushStatusTracker pushStatusTracker = new PushStatusTrackerImp(statusMessages, telemetryRuntimeProducer);
-        return new PushManagerImp(new AuthApiClientImp(authUrl, httpClient, telemetryRuntimeProducer),
-                EventSourceClientImp.build(streamingUrl, splitsWorker, segmentWorker, pushStatusTracker, sseHttpClient, telemetryRuntimeProducer),
+        return new PushManagerImp(new AuthApiClientImp(authUrl, splitAPI.getHttpClient(), telemetryRuntimeProducer),
+                EventSourceClientImp.build(streamingUrl, splitsWorker, segmentWorker, pushStatusTracker, splitAPI.getSseHttpClient(), telemetryRuntimeProducer),
                 splitsWorker,
                 segmentWorker,
                 pushStatusTracker, telemetryRuntimeProducer);
