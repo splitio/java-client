@@ -9,7 +9,7 @@ import io.split.client.dtos.Metadata;
 import io.split.client.impressions.ImpressionsStorageProducer;
 import io.split.storages.pluggable.domain.ImpressionConsumer;
 import io.split.storages.pluggable.domain.PrefixAdapter;
-import io.split.storages.pluggable.domain.SafeUserStorageWrapper;
+import io.split.storages.pluggable.domain.userStorageWrapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import pluggable.CustomStorageWrapper;
@@ -24,7 +24,7 @@ public class UserCustomImpressionAdapterProducer implements ImpressionsStoragePr
 
     private static final Logger _log = LoggerFactory.getLogger(UserCustomImpressionAdapterProducer.class);
 
-    private final SafeUserStorageWrapper _safeUserStorageWrapper;
+    private final userStorageWrapper _userStorageWrapper;
     private final Gson _json = new GsonBuilder()
             .serializeNulls()  // Send nulls
             .excludeFieldsWithModifiers(Modifier.STATIC)
@@ -37,7 +37,7 @@ public class UserCustomImpressionAdapterProducer implements ImpressionsStoragePr
     private Metadata _metadata;
 
     public UserCustomImpressionAdapterProducer(CustomStorageWrapper customStorageWrapper, Metadata metadata) {
-        _safeUserStorageWrapper = new SafeUserStorageWrapper(checkNotNull(customStorageWrapper));
+        _userStorageWrapper = new userStorageWrapper(checkNotNull(customStorageWrapper));
         _metadata = metadata;
     }
 
@@ -48,6 +48,6 @@ public class UserCustomImpressionAdapterProducer implements ImpressionsStoragePr
             return 0;
         }
         List<String> impressions = imps.stream().map(keyImp -> _json.toJson(new ImpressionConsumer(_metadata, keyImp))).collect(Collectors.toList());
-        return _safeUserStorageWrapper.pushItems(PrefixAdapter.buildImpressions(), impressions);
+        return _userStorageWrapper.pushItems(PrefixAdapter.buildImpressions(), impressions);
     }
 }

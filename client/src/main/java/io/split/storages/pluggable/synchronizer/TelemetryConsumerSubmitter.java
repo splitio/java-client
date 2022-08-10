@@ -8,7 +8,7 @@ import io.split.client.utils.SDKMetadata;
 import io.split.storages.enums.OperationMode;
 import io.split.storages.pluggable.domain.ConfigConsumer;
 import io.split.storages.pluggable.domain.PrefixAdapter;
-import io.split.storages.pluggable.domain.SafeUserStorageWrapper;
+import io.split.storages.pluggable.domain.userStorageWrapper;
 import io.split.telemetry.synchronizer.TelemetrySynchronizer;
 import pluggable.CustomStorageWrapper;
 
@@ -23,17 +23,17 @@ public class TelemetryConsumerSubmitter implements TelemetrySynchronizer {
 
     private static final String STORAGE = "PLUGGABLE";
 
-    private final SafeUserStorageWrapper _safeUserStorageWrapper;
+    private final userStorageWrapper _userStorageWrapper;
     private final SDKMetadata _sdkMetadata;
 
     public TelemetryConsumerSubmitter(CustomStorageWrapper customStorageWrapper, SDKMetadata sdkMetadata) {
-        _safeUserStorageWrapper = new SafeUserStorageWrapper(checkNotNull(customStorageWrapper));
+        _userStorageWrapper = new userStorageWrapper(checkNotNull(customStorageWrapper));
         _sdkMetadata = checkNotNull(sdkMetadata);
     }
 
     @Override
     public void synchronizeConfig(SplitClientConfig config, long timeUntilReady, Map<String, Long> factoryInstances, List<String> tags) {
-        _safeUserStorageWrapper.set(PrefixAdapter.buildTelemetryInit(_sdkMetadata.getSdkVersion(), _sdkMetadata.getMachineIp(), _sdkMetadata.getMachineName()), Json.toJson(generateConfig(config, factoryInstances, tags)));
+        _userStorageWrapper.set(PrefixAdapter.buildTelemetryInit(_sdkMetadata.getSdkVersion(), _sdkMetadata.getMachineIp(), _sdkMetadata.getMachineName()), Json.toJson(generateConfig(config, factoryInstances, tags)));
     }
 
     @Override
@@ -44,7 +44,7 @@ public class TelemetryConsumerSubmitter implements TelemetrySynchronizer {
     @Override
     public void synchronizeUniqueKeys(UniqueKeys uniqueKeys) {
         List<String> uniqueKeysToSend = new ArrayList<>(Arrays.asList(Json.toJson(uniqueKeys)));
-        _safeUserStorageWrapper.pushItems(PrefixAdapter.buildUniqueKeys(), uniqueKeysToSend);
+        _userStorageWrapper.pushItems(PrefixAdapter.buildUniqueKeys(), uniqueKeysToSend);
     }
 
     @Override

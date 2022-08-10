@@ -12,13 +12,13 @@ import java.util.Set;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
-public class SafeUserStorageWrapper implements CustomStorageWrapper {
+public class userStorageWrapper implements CustomStorageWrapper {
 
-    private static final Logger _log = LoggerFactory.getLogger(SafeUserStorageWrapper.class);
+    private static final Logger _log = LoggerFactory.getLogger(userStorageWrapper.class);
 
     private final CustomStorageWrapper _customStorageWrapper;
 
-    public SafeUserStorageWrapper(CustomStorageWrapper customStorageWrapper) {
+    public userStorageWrapper(CustomStorageWrapper customStorageWrapper) {
         _customStorageWrapper = checkNotNull(customStorageWrapper);
     }
 

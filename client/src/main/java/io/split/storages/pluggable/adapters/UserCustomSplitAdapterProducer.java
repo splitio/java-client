@@ -5,7 +5,7 @@ import io.split.client.utils.Json;
 import io.split.engine.experiments.ParsedSplit;
 import io.split.storages.SplitCacheProducer;
 import io.split.storages.pluggable.domain.PrefixAdapter;
-import io.split.storages.pluggable.domain.SafeUserStorageWrapper;
+import io.split.storages.pluggable.domain.userStorageWrapper;
 import io.split.storages.pluggable.utils.Helper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -23,21 +23,21 @@ public class UserCustomSplitAdapterProducer implements SplitCacheProducer {
 
     private static final Logger _log = LoggerFactory.getLogger(UserCustomSplitAdapterProducer.class);
 
-    private final SafeUserStorageWrapper _safeUserStorageWrapper;
+    private final userStorageWrapper _userStorageWrapper;
 
     public UserCustomSplitAdapterProducer(CustomStorageWrapper customStorageWrapper) {
-        _safeUserStorageWrapper = new SafeUserStorageWrapper(checkNotNull(customStorageWrapper));
+        _userStorageWrapper = new userStorageWrapper(checkNotNull(customStorageWrapper));
     }
 
     @Override
     public long getChangeNumber() {
-        String wrapperResponse = _safeUserStorageWrapper.get(PrefixAdapter.buildSplitChangeNumber());
+        String wrapperResponse = _userStorageWrapper.get(PrefixAdapter.buildSplitChangeNumber());
         return Helper.responseToLong(wrapperResponse, -1L);
     }
 
     @Override
     public boolean remove(String splitName) {
-        String wrapperResponse = _safeUserStorageWrapper.get(PrefixAdapter.buildSplitKey(splitName));
+        String wrapperResponse = _userStorageWrapper.get(PrefixAdapter.buildSplitKey(splitName));
         if(wrapperResponse == null) {
             return false;
         }
@@ -46,7 +46,7 @@ public class UserCustomSplitAdapterProducer implements SplitCacheProducer {
             _log.info("Could not parse Split.");
             return false;
         }
-        _safeUserStorageWrapper.delete(Stream.of(PrefixAdapter.buildSplitKey(splitName)).collect(Collectors.toList()));
+        _userStorageWrapper.delete(Stream.of(PrefixAdapter.buildSplitKey(splitName)).collect(Collectors.toList()));
          if(split.trafficTypeName != null){
              this.decreaseTrafficType(split.trafficTypeName);
          }
@@ -55,12 +55,12 @@ public class UserCustomSplitAdapterProducer implements SplitCacheProducer {
 
     @Override
     public void setChangeNumber(long changeNumber) {
-        _safeUserStorageWrapper.set(PrefixAdapter.buildSplitChangeNumber(),Json.toJson(changeNumber));
+        _userStorageWrapper.set(PrefixAdapter.buildSplitChangeNumber(),Json.toJson(changeNumber));
     }
 
     @Override
     public void kill(String splitName, String defaultTreatment, long changeNumber) {
-        String wrapperResponse = _safeUserStorageWrapper.get(PrefixAdapter.buildSplitKey(splitName));
+        String wrapperResponse = _userStorageWrapper.get(PrefixAdapter.buildSplitKey(splitName));
         if(wrapperResponse == null) {
             return;
         }
@@ -69,7 +69,7 @@ public class UserCustomSplitAdapterProducer implements SplitCacheProducer {
             _log.info("Could not parse Split.");
             return;
         }
-        _safeUserStorageWrapper.set(PrefixAdapter.buildSplitKey(splitName), Json.toJson(split));
+        _userStorageWrapper.set(PrefixAdapter.buildSplitKey(splitName), Json.toJson(split));
     }
 
     @Override
@@ -80,21 +80,21 @@ public class UserCustomSplitAdapterProducer implements SplitCacheProducer {
     @Override
     public void putMany(List<ParsedSplit> splits) {
         for(ParsedSplit split : splits) {
-            _safeUserStorageWrapper.set(PrefixAdapter.buildSplitKey(split.feature()), Json.toJson(split));
+            _userStorageWrapper.set(PrefixAdapter.buildSplitKey(split.feature()), Json.toJson(split));
             this.increaseTrafficType(PrefixAdapter.buildTrafficTypeExists(split.trafficTypeName()));
         }
     }
 
     @Override
     public void increaseTrafficType(String trafficType) {
-        _safeUserStorageWrapper.increment(PrefixAdapter.buildTrafficTypeExists(trafficType), 1);
+        _userStorageWrapper.increment(PrefixAdapter.buildTrafficTypeExists(trafficType), 1);
     }
 
     @Override
     public void decreaseTrafficType(String trafficType) {
-        long trafficTypeCount = _safeUserStorageWrapper.decrement(PrefixAdapter.buildTrafficTypeExists(trafficType), 1);
+        long trafficTypeCount = _userStorageWrapper.decrement(PrefixAdapter.buildTrafficTypeExists(trafficType), 1);
         if(trafficTypeCount<=0) {
-            _safeUserStorageWrapper.delete(Stream.of(PrefixAdapter.buildTrafficTypeExists(trafficType)).collect(Collectors.toList()));
+            _userStorageWrapper.delete(Stream.of(PrefixAdapter.buildTrafficTypeExists(trafficType)).collect(Collectors.toList()));
         }
     }
 
