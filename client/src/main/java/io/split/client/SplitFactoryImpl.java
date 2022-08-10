@@ -19,8 +19,9 @@ import io.split.client.interceptors.GzipDecoderResponseInterceptor;
 import io.split.client.interceptors.GzipEncoderRequestInterceptor;
 import io.split.client.interceptors.SdkMetadataInterceptorFilter;
 import io.split.client.utils.SDKMetadata;
-import io.split.client.utils.Utils;
 import io.split.engine.SDKReadinessGates;
+import io.split.engine.common.SplitAPI;
+import io.split.engine.common.SplitTasks;
 import io.split.engine.common.SyncManager;
 import io.split.engine.common.SyncManagerImp;
 import io.split.engine.evaluator.Evaluator;
@@ -207,21 +208,12 @@ public class SplitFactoryImpl implements SplitFactory {
         _manager = new SplitManagerImpl(splitCache, config, _gates, _telemetryStorageProducer);
 
         // SyncManager
-        _syncManager = SyncManagerImp.build(config.streamingEnabled(),
-                _splitSynchronizationTask,
-                _splitFetcher,
-                _segmentSynchronizationTaskImp,
-                splitCache,
-                config.authServiceURL(),
-                _httpclient,
-                config.streamingServiceURL(),
-                config.authRetryBackoffBase(),
-                buildSSEdHttpClient(apiToken, config, _sdkMetadata),
-                segmentCache,
-                config.streamingRetryDelay(),
-                config.streamingFetchMaxRetries(),
-                config.failedAttemptsBeforeLogging(),
-                config.cdnDebugLogging(), _gates, _telemetryStorageProducer, _telemetrySynchronizer,config);
+        SplitTasks splitTasks = SplitTasks.build(_splitSynchronizationTask, _segmentSynchronizationTaskImp,
+                _impressionsManager, _eventsTask, _telemetrySyncTask);
+        SplitAPI splitAPI = SplitAPI.build(_httpclient, buildSSEdHttpClient(apiToken, config, _sdkMetadata));
+
+        _syncManager = SyncManagerImp.build(splitTasks, _splitFetcher, splitCache, splitAPI,
+                segmentCache, _gates, _telemetryStorageProducer, _telemetrySynchronizer, config);
         _syncManager.start();
 
         // DestroyOnShutDown

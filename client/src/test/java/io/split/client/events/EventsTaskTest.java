@@ -6,20 +6,18 @@ import org.junit.Assert;
 import org.junit.Test;
 import org.mockito.Mockito;
 
-import java.io.IOException;
-import java.net.URISyntaxException;
-
 public class EventsTaskTest {
     private static final EventsSender EVENTS_SENDER = Mockito.mock(EventsSender.class);
 
     @Test
-    public void testEventsAreSending() throws URISyntaxException, InterruptedException, IOException {
+    public void testEventsAreSending() throws InterruptedException {
         TelemetryRuntimeProducer telemetryRuntimeProducer = Mockito.mock(TelemetryRuntimeProducer.class);
         EventsStorage eventsStorage = new InMemoryEventsStorage(10000, telemetryRuntimeProducer);
         EventsSender eventsSender = Mockito.mock(EventsSender.class);
         EventsTask eventClient = new EventsTask(eventsStorage,
                 2000,
                 eventsSender);
+        eventClient.start();
 
         for (int i = 0; i < 159; ++i) {
             Event event = new Event();
@@ -35,7 +33,7 @@ public class EventsTaskTest {
     }
 
     @Test
-    public void testEventsWhenCloseTask() throws URISyntaxException, InterruptedException, IOException {
+    public void testEventsWhenCloseTask() throws InterruptedException {
         TelemetryRuntimeProducer telemetryRuntimeProducer = Mockito.mock(TelemetryRuntimeProducer.class);
         EventsSender eventsSender = Mockito.mock(EventsSender.class);
         EventsStorage eventsStorage = new InMemoryEventsStorage(10000, telemetryRuntimeProducer);
@@ -54,7 +52,7 @@ public class EventsTaskTest {
     }
 
     @Test
-    public void testCheckQueFull() throws URISyntaxException, InterruptedException, IOException {
+    public void testCheckQueFull() {
         TelemetryRuntimeProducer telemetryRuntimeProducer = Mockito.mock(TelemetryRuntimeProducer.class);
         EventsStorage eventsStorage = new InMemoryEventsStorage(10, telemetryRuntimeProducer);
         EventsTask eventClient = new EventsTask(eventsStorage,
@@ -69,13 +67,14 @@ public class EventsTaskTest {
     }
 
     @Test
-    public void testTimesSendingEvents() throws URISyntaxException, InterruptedException, IOException {
+    public void testTimesSendingEvents() throws InterruptedException {
         TelemetryRuntimeProducer telemetryRuntimeProducer = Mockito.mock(TelemetryRuntimeProducer.class);
         EventsSender eventsSender = Mockito.mock(EventsSender.class);
         EventsStorage eventsStorage = new InMemoryEventsStorage(100, telemetryRuntimeProducer);
         EventsTask eventClient = new EventsTask(eventsStorage,
                 2000,
                 eventsSender);
+        eventClient.start();
 
         for (int i = 0; i < 10; ++i) {
             Event event = new Event();

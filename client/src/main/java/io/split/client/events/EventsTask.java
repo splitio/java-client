@@ -44,12 +44,6 @@ public class EventsTask{
 
         ThreadFactory senderThreadFactory = eventClientThreadFactory("Sender-events-%d");
         _senderScheduledExecutorService = Executors.newSingleThreadScheduledExecutor(senderThreadFactory);
-
-        try {
-            this.start();
-        } catch (Exception e) {
-            _log.error("Error trying to init EventTask synchronizer task.", e);
-        }
     }
 
     ThreadFactory eventClientThreadFactory(final String name) {
