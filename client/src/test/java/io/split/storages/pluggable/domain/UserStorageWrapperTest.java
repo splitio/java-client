@@ -6,6 +6,7 @@ import org.junit.Test;
 import org.mockito.Mockito;
 import org.slf4j.Logger;
 import pluggable.CustomStorageWrapper;
+import pluggable.Pipeline;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;

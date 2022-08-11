@@ -5,6 +5,7 @@ import org.junit.Assert;
 import org.junit.Test;
 import org.mockito.Mockito;
 import pluggable.CustomStorageWrapper;
+import pluggable.HasPipelineSupport;
 
 import java.util.HashMap;
 import java.util.Optional;
@@ -34,6 +35,7 @@ public class RedisImpressionSenderTest {
         counters.put(counterKey1, 2);
         redisImpressionSender.postCounters(counters);
 
+        Assert.assertTrue(customStorageWrapper instanceof HasPipelineSupport);
         ConcurrentMap<String, Long> impressionsCount = customStorageWrapper.getImpressionsCount();
         Assert.assertTrue(impressionsCount.containsKey("feature1::100"));
         String key = "feature1::100";
