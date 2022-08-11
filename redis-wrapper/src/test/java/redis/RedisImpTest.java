@@ -4,6 +4,7 @@ import org.junit.Assert;
 import org.junit.Test;
 import pluggable.CustomStorageWrapper;
 import redis.clients.jedis.JedisPool;
+import redis.common.CommonRedis;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -15,6 +16,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 public class RedisImpTest {
+    private final CommonRedis _commonRedis = CommonRedis.create("test-prefix:");
 
     @Test
     public void testSetAndGet() throws Exception {
@@ -24,7 +26,7 @@ public class RedisImpTest {
         map.put("test-7", "7");
         map.put("test-8", "8");
 
-        CustomStorageWrapper storageWrapper = new RedisImp(new JedisPool(), "test-prefix:.");
+        CustomStorageWrapper storageWrapper = new RedisImp(new JedisPool(), "test-prefix:");
 
         for (Map.Entry<String, String> entry : map.entrySet()) {
             storageWrapper.set(entry.getKey(), entry.getValue());
@@ -45,7 +47,7 @@ public class RedisImpTest {
         map.put("test-7", "7");
         map.put("test-8", "8");
 
-        CustomStorageWrapper storageWrapper = new RedisImp(new JedisPool(), "test-prefix:.");
+        CustomStorageWrapper storageWrapper = new RedisImp(new JedisPool(), "test-prefix:");
 
         for (Map.Entry<String, String> entry : map.entrySet()) {
             storageWrapper.set(entry.getKey(), entry.getValue());
@@ -69,7 +71,7 @@ public class RedisImpTest {
         Map<String, String> map = new HashMap<>();
         map.put(key, "5");
 
-        CustomStorageWrapper storageWrapper = new RedisImp(new JedisPool(), "test-prefix:.");
+        CustomStorageWrapper storageWrapper = new RedisImp(new JedisPool(), "test-prefix:");
         storageWrapper.set(key, "5");
         String result = storageWrapper.getAndSet(key, "7");
         Assert.assertEquals("5", result);
@@ -85,7 +87,7 @@ public class RedisImpTest {
         map.put("item-2", "2");
         map.put("item-3", "3");
         map.put("i-4", "4");
-        RedisImp storageWrapper = new RedisImp(new JedisPool(), "test-prefix");
+        RedisImp storageWrapper = new RedisImp(new JedisPool(), "test-prefix:");
         try {
             for (Map.Entry<String, String> entry : map.entrySet()) {
                 storageWrapper.set(entry.getKey(), entry.getValue());
@@ -94,9 +96,9 @@ public class RedisImpTest {
             Set<String> result = storageWrapper.getKeysByPrefix("item*");
 
             Assert.assertEquals(3, result.size());
-            Assert.assertTrue(result.contains(storageWrapper.buildKeyWithPrefix("item-1")));
-            Assert.assertTrue(result.contains(storageWrapper.buildKeyWithPrefix("item-2")));
-            Assert.assertTrue(result.contains(storageWrapper.buildKeyWithPrefix("item-3")));
+            Assert.assertTrue(result.contains(_commonRedis.buildKeyWithPrefix("item-1")));
+            Assert.assertTrue(result.contains(_commonRedis.buildKeyWithPrefix("item-2")));
+            Assert.assertTrue(result.contains(_commonRedis.buildKeyWithPrefix("item-3")));
         }
         finally {
             storageWrapper.delete(new ArrayList<>(map.keySet()));
@@ -107,7 +109,7 @@ public class RedisImpTest {
     public void testIncrementAndDecrement() throws Exception {
         Map<String, String> map = new HashMap<>();
         map.put("item-1", "2");
-        RedisImp storageWrapper = new RedisImp(new JedisPool(), "test-prefix");
+        RedisImp storageWrapper = new RedisImp(new JedisPool(), "test-prefix:");
         try {
             for (Map.Entry<String, String> entry : map.entrySet()) {
                 storageWrapper.set(entry.getKey(), entry.getValue());
@@ -220,7 +222,7 @@ public class RedisImpTest {
         map.put("item-2", "2");
         map.put("item-3", "3");
         map.put("i-4", "4");
-        RedisImp storageWrapper = new RedisImp(new JedisPool(), "test-prefix");
+        RedisImp storageWrapper = new RedisImp(new JedisPool(), "test-prefix:");
         try {
             for (Map.Entry<String, String> entry : map.entrySet()) {
                 storageWrapper.set(entry.getKey(), entry.getValue());
@@ -229,7 +231,11 @@ public class RedisImpTest {
             Set<String> result = storageWrapper.getKeysByPrefix("item*");
 
             Assert.assertEquals(3, result.size());
-            List<String> items = storageWrapper.getItems(new ArrayList<>(result));
+            List<String> keys = new ArrayList<>();
+            keys.add("item-1");
+            keys.add("item-2");
+            keys.add("item-3");
+            List<String> items = storageWrapper.getItems(new ArrayList<>(keys));
             Assert.assertEquals(3, items.size());
             Assert.assertTrue(items.containsAll(Arrays.asList("1", "2", "3")));
         }
