@@ -5,6 +5,7 @@ import org.slf4j.LoggerFactory;
 import pluggable.Pipeline;
 import pluggable.Result;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class UserPipelineWrapper implements Pipeline{
@@ -19,12 +20,12 @@ public class UserPipelineWrapper implements Pipeline{
     }
 
     @Override
-    public List<Result> exec() throws Exception {
+    public List<Result> exec() {
         try{
             return _pipeline.exec();
         } catch (Exception e) {
             _logger.warn("Exception calling Pipeline exec", e);
-            throw new Exception(e.getMessage());
+            return new ArrayList<>();
         }
     }
 
