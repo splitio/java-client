@@ -311,9 +311,9 @@ public class SplitFactoryImpl implements SplitFactory {
                 long segmentKeyCount = _segmentCache.getKeyCount();
                 _telemetryStorageProducer.recordSessionLength(System.currentTimeMillis() - _startTime);
                 _syncManager.shutdown(splitCount, segmentCount, segmentKeyCount);
+                _log.info("Successful shutdown of syncManager");
                 _httpclient.close();
                 _log.info("Successful shutdown of httpclient");
-                _log.info("Successful shutdown of syncManager");
             } catch (IOException e) {
                 _log.error("We could not shutdown split", e);
             }
