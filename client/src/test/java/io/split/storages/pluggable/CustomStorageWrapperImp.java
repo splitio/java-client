@@ -142,15 +142,15 @@ public class CustomStorageWrapperImp implements CustomStorageWrapper {
     @Override
     public long hIncrement(String key, String field, long value) throws Exception {
         String storageKey = getStorage(key);
+        Long count = 0L;
         if (storageKey.equals(COUNTS)){
-            Long count = 0L;
             if(_impressionsCount.containsKey(field)){
                 count = _impressionsCount.get(field);
             }
             count += value;
             _impressionsCount.put(field, count);
         }
-        return 0;
+        return count;
     }
 
     @Override
@@ -218,18 +218,18 @@ public class CustomStorageWrapperImp implements CustomStorageWrapper {
     private String getStorage(String key) {
         if(key.startsWith(SPLITS))
             return SPLITS;
-        if(key.startsWith(SPLIT))
+        else if(key.startsWith(SPLIT))
             return SPLIT;
-        if(key.startsWith(TELEMETRY))
+        else if(key.startsWith(TELEMETRY))
             return TELEMETRY;
-        if(key.startsWith(SEGMENT))
+        else if(key.startsWith(SEGMENT))
             return SEGMENT;
-        if(key.startsWith(IMPRESSIONS))
-            return IMPRESSIONS;
-        if(key.startsWith(EVENTS))
-            return EVENTS;
-        if(key.startsWith(COUNTS))
+        else if(key.startsWith(COUNTS))
             return  COUNTS;
+        else if(key.startsWith(IMPRESSIONS))
+            return IMPRESSIONS;
+        else if(key.startsWith(EVENTS))
+            return EVENTS;
         return "";
     }
 

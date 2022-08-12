@@ -2,6 +2,7 @@ package io.split.client.impressions;
 
 import io.split.client.dtos.TestImpressions;
 import io.split.storages.pluggable.domain.PrefixAdapter;
+import io.split.storages.pluggable.domain.UserPipelineWrapper;
 import io.split.storages.pluggable.domain.userStorageWrapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -35,7 +36,7 @@ public class RedisImpressionSender implements ImpressionsSender{
     @Override
     public void postCounters(HashMap<ImpressionCounter.Key, Integer> counts) {
         try {
-            Pipeline pipelineExecution = _userStorageWrapper.pipeline();
+            UserPipelineWrapper pipelineExecution = _userStorageWrapper.pipeline();
             for(ImpressionCounter.Key countsKey: counts.keySet()){
                 String key = PrefixAdapter.buildImpressionsCount();
                 pipelineExecution.hIncrement(key, countsKey.featureName() + "::" + countsKey.timeFrame(), counts.get(countsKey));

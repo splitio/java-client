@@ -5,7 +5,6 @@ import org.slf4j.LoggerFactory;
 import pluggable.CustomStorageWrapper;
 import pluggable.HasPipelineSupport;
 import pluggable.NotPipelinedImpl;
-import pluggable.Pipeline;
 
 import java.util.List;
 import java.util.Set;
@@ -216,9 +215,9 @@ public class userStorageWrapper implements CustomStorageWrapper {
         }
     }
 
-    public Pipeline pipeline() throws Exception {
+    public UserPipelineWrapper pipeline() throws Exception {
         return (_customStorageWrapper instanceof HasPipelineSupport)
-                ? ((HasPipelineSupport) _customStorageWrapper).pipeline()
-                : new NotPipelinedImpl(_customStorageWrapper);
+                ? new UserPipelineWrapper(((HasPipelineSupport) _customStorageWrapper).pipeline())
+                : new UserPipelineWrapper(new NotPipelinedImpl(_customStorageWrapper));
     }
 }

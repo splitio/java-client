@@ -142,15 +142,15 @@ public class CustomStorageWrapperHasPipeline implements CustomStorageWrapper, Ha
 
         public long hIncrementToExecute(String key, String field, long value){
             String storageKey = getStorage(key);
+            Long count = 0L;
             if (storageKey.equals(COUNTS)){
-                Long count = 0L;
                 if(_impressionsCount.containsKey(field)){
                     count = _impressionsCount.get(field);
                 }
                 count += value;
                 _impressionsCount.put(field, count);
             }
-            return 0;
+            return count;
         }
 
         private String getStorage(String key) {

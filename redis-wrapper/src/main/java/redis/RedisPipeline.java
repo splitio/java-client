@@ -13,7 +13,6 @@ import java.util.stream.Collectors;
 
 public class RedisPipeline implements pluggable.Pipeline {
     private Pipeline _pipelined;
-    private final String _prefix;
     private final JedisPool _jedisPool;
     private final CommonRedis _commonRedis;
 
@@ -21,7 +20,6 @@ public class RedisPipeline implements pluggable.Pipeline {
 
     public RedisPipeline(JedisPool jedisPool, String prefix) {
         _jedisPool = jedisPool;
-        _prefix = prefix;
         _commonRedis = CommonRedis.create(prefix);
         try (Jedis jedis = _jedisPool.getResource()) {
             _pipelined = jedis.pipelined();
