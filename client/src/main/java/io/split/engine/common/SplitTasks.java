@@ -2,7 +2,6 @@ package io.split.engine.common;
 
 import io.split.client.events.EventsTask;
 import io.split.client.impressions.ImpressionsManager;
-import io.split.client.impressions.ImpressionsManagerImpl;
 import io.split.engine.experiments.SplitSynchronizationTask;
 import io.split.engine.segments.SegmentSynchronizationTask;
 import io.split.engine.segments.SegmentSynchronizationTaskImp;
@@ -31,7 +30,7 @@ public class SplitTasks {
 
     public static SplitTasks build (SplitSynchronizationTask splitSynchronizationTask,
                                     SegmentSynchronizationTaskImp segmentSynchronizationTaskImp,
-                                    ImpressionsManagerImpl impressionsManager,
+                                    ImpressionsManager impressionsManager,
                                     EventsTask eventsTask,
                                     TelemetrySyncTask telemetrySyncTask) {
         return new SplitTasks ( splitSynchronizationTask,
