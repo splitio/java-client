@@ -5,9 +5,11 @@ import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import io.split.client.ApiKeyCounter;
 import io.split.client.SplitClientConfig;
 import io.split.client.events.EventsTask;
-import io.split.client.impressions.ImpressionsManager;
+import io.split.client.impressions.ImpressionsManagerImpl;
 import io.split.engine.SDKReadinessGates;
 import io.split.engine.experiments.SplitFetcher;
+import io.split.engine.experiments.SplitSynchronizationTask;
+import io.split.engine.segments.SegmentSynchronizationTaskImp;
 import io.split.storages.SegmentCacheProducer;
 import io.split.storages.SplitCacheProducer;
 import io.split.telemetry.domain.StreamingEvent;
@@ -44,9 +46,11 @@ public class SyncManagerImp implements SyncManager {
     private final TelemetrySynchronizer _telemetrySynchronizer;
     private final SplitClientConfig _config;
     private final long _startingSyncCallBackoffBaseMs;
-    private final ImpressionsManager _impressionManager;
+    private final ImpressionsManagerImpl _impressionManager;
     private final EventsTask _eventsTask;
     private final TelemetrySyncTask _telemetrySyncTask;
+    private final SegmentSynchronizationTaskImp _segmentSynchronizationTaskImp;
+    private final SplitSynchronizationTask _splitSynchronizationTask;
     private static final long STARTING_SYNC_ALL_BACKOFF_MAX_WAIT_MS = new Long(10000); // 10 seconds max wait
 
     @VisibleForTesting
@@ -80,6 +84,8 @@ public class SyncManagerImp implements SyncManager {
         _impressionManager = checkNotNull(splitTasks.getImpressionManager());
         _eventsTask = checkNotNull(splitTasks.getEventsTask());
         _telemetrySyncTask = checkNotNull(splitTasks.getTelemetrySyncTask());
+        _segmentSynchronizationTaskImp = checkNotNull(splitTasks.getSegmentSynchronizationTask());
+        _splitSynchronizationTask = checkNotNull(splitTasks.getSplitSynchronizationTask());
     }
 
     public static SyncManagerImp build(SplitTasks splitTasks,
@@ -164,7 +170,7 @@ public class SyncManagerImp implements SyncManager {
     }
 
     @Override
-    public void shutdown() {
+    public void shutdown(long splitCount, long segmentCount, long segmentKeyCount) {
         if(_shuttedDown.get()) {
             return;
         }
@@ -173,6 +179,16 @@ public class SyncManagerImp implements SyncManager {
         _synchronizer.stopPeriodicFetching();
         _pushManager.stop();
         _pushMonitorExecutorService.shutdownNow();
+        _impressionManager.close();
+        _log.info("Successful shutdown of impressions manager");
+        _eventsTask.close();
+        _log.info("Successful shutdown of eventsTask");
+        _segmentSynchronizationTaskImp.close();
+        _log.info("Successful shutdown of segment fetchers");
+        _splitSynchronizationTask.close();
+        _log.info("Successful shutdown of splits");
+        _telemetrySyncTask.stopScheduledTask(splitCount, segmentCount, segmentKeyCount);
+        _log.info("Successful shutdown of telemetry sync task");
     }
 
     private void startStreamingMode() {
