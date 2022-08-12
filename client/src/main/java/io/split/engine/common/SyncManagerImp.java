@@ -5,10 +5,12 @@ import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import io.split.client.ApiKeyCounter;
 import io.split.client.SplitClientConfig;
 import io.split.client.events.EventsTask;
+import io.split.client.impressions.ImpressionsManager;
 import io.split.client.impressions.ImpressionsManagerImpl;
 import io.split.engine.SDKReadinessGates;
 import io.split.engine.experiments.SplitFetcher;
 import io.split.engine.experiments.SplitSynchronizationTask;
+import io.split.engine.segments.SegmentSynchronizationTask;
 import io.split.engine.segments.SegmentSynchronizationTaskImp;
 import io.split.storages.SegmentCacheProducer;
 import io.split.storages.SplitCacheProducer;
@@ -46,10 +48,10 @@ public class SyncManagerImp implements SyncManager {
     private final TelemetrySynchronizer _telemetrySynchronizer;
     private final SplitClientConfig _config;
     private final long _startingSyncCallBackoffBaseMs;
-    private final ImpressionsManagerImpl _impressionManager;
+    private final ImpressionsManager _impressionManager;
     private final EventsTask _eventsTask;
     private final TelemetrySyncTask _telemetrySyncTask;
-    private final SegmentSynchronizationTaskImp _segmentSynchronizationTaskImp;
+    private final SegmentSynchronizationTask _segmentSynchronizationTaskImp;
     private final SplitSynchronizationTask _splitSynchronizationTask;
     private static final long STARTING_SYNC_ALL_BACKOFF_MAX_WAIT_MS = new Long(10000); // 10 seconds max wait
 

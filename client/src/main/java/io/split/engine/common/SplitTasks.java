@@ -12,14 +12,14 @@ import static com.google.common.base.Preconditions.checkNotNull;
 
 public class SplitTasks {
     private final SplitSynchronizationTask _splitSynchronizationTask;
-    private final SegmentSynchronizationTaskImp _segmentSynchronizationTask;
-    private final ImpressionsManagerImpl _impressionManager;
+    private final SegmentSynchronizationTask _segmentSynchronizationTask;
+    private final ImpressionsManager _impressionManager;
     private final EventsTask _eventsTask;
     private final TelemetrySyncTask _telemetrySyncTask;
 
     private SplitTasks (SplitSynchronizationTask splitSynchronizationTask,
-                        SegmentSynchronizationTaskImp segmentSynchronizationTaskImp,
-                        ImpressionsManagerImpl impressionsManager,
+                        SegmentSynchronizationTask segmentSynchronizationTaskImp,
+                        ImpressionsManager impressionsManager,
                         EventsTask eventsTask,
                         TelemetrySyncTask telemetrySyncTask){
         _splitSynchronizationTask = splitSynchronizationTask;
@@ -45,11 +45,11 @@ public class SplitTasks {
         return _splitSynchronizationTask;
     }
 
-    public SegmentSynchronizationTaskImp getSegmentSynchronizationTask() {
+    public SegmentSynchronizationTask getSegmentSynchronizationTask() {
         return _segmentSynchronizationTask;
     }
 
-    public ImpressionsManagerImpl getImpressionManager() {
+    public ImpressionsManager getImpressionManager() {
         return _impressionManager;
     }
 
