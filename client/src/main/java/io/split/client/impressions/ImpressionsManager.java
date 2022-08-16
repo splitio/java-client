@@ -11,6 +11,7 @@ public interface ImpressionsManager {
 
     void track(List<Impression> impressions);
     void start();
+    void close();
 
     final class NoOpImpressionsManager implements ImpressionsManager {
 
@@ -19,6 +20,11 @@ public interface ImpressionsManager {
 
         @Override
         public void start(){
+            /* do nothing */
+        }
+
+        @Override
+        public void close() {
             /* do nothing */
         }
     }
