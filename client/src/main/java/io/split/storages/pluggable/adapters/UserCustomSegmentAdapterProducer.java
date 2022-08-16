@@ -3,7 +3,7 @@ package io.split.storages.pluggable.adapters;
 import io.split.client.utils.Json;
 import io.split.storages.SegmentCacheProducer;
 import io.split.storages.pluggable.domain.PrefixAdapter;
-import io.split.storages.pluggable.domain.userStorageWrapper;
+import io.split.storages.pluggable.domain.UserStorageWrapper;
 import io.split.storages.pluggable.utils.Helper;
 import pluggable.CustomStorageWrapper;
 
@@ -13,10 +13,10 @@ import static com.google.common.base.Preconditions.checkNotNull;
 
 public class UserCustomSegmentAdapterProducer implements SegmentCacheProducer {
 
-    private final userStorageWrapper _userStorageWrapper;
+    private final UserStorageWrapper _userStorageWrapper;
 
     public UserCustomSegmentAdapterProducer(CustomStorageWrapper customStorageWrapper) {
-        _userStorageWrapper = new userStorageWrapper(checkNotNull(customStorageWrapper));
+        _userStorageWrapper = new UserStorageWrapper(checkNotNull(customStorageWrapper));
     }
     @Override
     public long getChangeNumber(String segmentName) {

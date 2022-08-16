@@ -5,7 +5,7 @@ import io.split.client.utils.Json;
 import io.split.engine.experiments.ParsedSplit;
 import io.split.storages.SplitCacheProducer;
 import io.split.storages.pluggable.domain.PrefixAdapter;
-import io.split.storages.pluggable.domain.userStorageWrapper;
+import io.split.storages.pluggable.domain.UserStorageWrapper;
 import io.split.storages.pluggable.utils.Helper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -23,10 +23,10 @@ public class UserCustomSplitAdapterProducer implements SplitCacheProducer {
 
     private static final Logger _log = LoggerFactory.getLogger(UserCustomSplitAdapterProducer.class);
 
-    private final userStorageWrapper _userStorageWrapper;
+    private final UserStorageWrapper _userStorageWrapper;
 
     public UserCustomSplitAdapterProducer(CustomStorageWrapper customStorageWrapper) {
-        _userStorageWrapper = new userStorageWrapper(checkNotNull(customStorageWrapper));
+        _userStorageWrapper = new UserStorageWrapper(checkNotNull(customStorageWrapper));
     }
 
     @Override

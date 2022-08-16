@@ -8,7 +8,7 @@ import io.split.client.utils.SDKMetadata;
 import io.split.storages.enums.OperationMode;
 import io.split.storages.pluggable.domain.ConfigConsumer;
 import io.split.storages.pluggable.domain.PrefixAdapter;
-import io.split.storages.pluggable.domain.userStorageWrapper;
+import io.split.storages.pluggable.domain.UserStorageWrapper;
 import io.split.telemetry.synchronizer.TelemetrySynchronizer;
 import pluggable.CustomStorageWrapper;
 
@@ -23,11 +23,11 @@ public class TelemetryConsumerSubmitter implements TelemetrySynchronizer {
 
     private static final String STORAGE = "PLUGGABLE";
 
-    private final userStorageWrapper _userStorageWrapper;
+    private final UserStorageWrapper _userStorageWrapper;
     private final SDKMetadata _sdkMetadata;
 
     public TelemetryConsumerSubmitter(CustomStorageWrapper customStorageWrapper, SDKMetadata sdkMetadata) {
-        _userStorageWrapper = new userStorageWrapper(checkNotNull(customStorageWrapper));
+        _userStorageWrapper = new UserStorageWrapper(checkNotNull(customStorageWrapper));
         _sdkMetadata = checkNotNull(sdkMetadata);
     }
 

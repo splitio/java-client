@@ -1,7 +1,7 @@
 package io.split.storages.pluggable.adapters;
 
 import io.split.client.utils.SDKMetadata;
-import io.split.storages.pluggable.domain.userStorageWrapper;
+import io.split.storages.pluggable.domain.UserStorageWrapper;
 import io.split.telemetry.domain.enums.MethodEnum;
 import org.junit.Before;
 import org.junit.Test;
@@ -14,13 +14,13 @@ import java.lang.reflect.Modifier;
 public class UserCustomTelemetryAdapterProducerTest {
 
     private CustomStorageWrapper _customStorageWrapper;
-    private userStorageWrapper _userStorageWrapper;
+    private UserStorageWrapper _userStorageWrapper;
     private UserCustomTelemetryAdapterProducer _userCustomTelemetryAdapterProducer;
 
     @Before
     public void setUp() throws NoSuchFieldException, IllegalAccessException {
         _customStorageWrapper = Mockito.mock(CustomStorageWrapper.class);
-        _userStorageWrapper = Mockito.mock(userStorageWrapper.class);
+        _userStorageWrapper = Mockito.mock(UserStorageWrapper.class);
         _userCustomTelemetryAdapterProducer = new UserCustomTelemetryAdapterProducer(_customStorageWrapper, Mockito.mock(SDKMetadata.class));
         Field userCustomTelemetryAdapterProducer = UserCustomTelemetryAdapterProducer.class.getDeclaredField("_userStorageWrapper");
         userCustomTelemetryAdapterProducer.setAccessible(true);

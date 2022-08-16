@@ -2,7 +2,7 @@ package io.split.storages.pluggable.adapters;
 
 import io.split.client.dtos.KeyImpression;
 import io.split.client.dtos.Metadata;
-import io.split.storages.pluggable.domain.userStorageWrapper;
+import io.split.storages.pluggable.domain.UserStorageWrapper;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -18,12 +18,12 @@ public class UserCustomImpressionAdapterProducerTest {
 
     private CustomStorageWrapper _customStorageWrapper;
     private UserCustomImpressionAdapterProducer _impressionAdapterProducer;
-    private userStorageWrapper _userStorageWrapper;
+    private UserStorageWrapper _userStorageWrapper;
 
     @Before
     public void setUp() throws NoSuchFieldException, IllegalAccessException {
         _customStorageWrapper = Mockito.mock(CustomStorageWrapper.class);
-        _userStorageWrapper = Mockito.mock(userStorageWrapper.class);
+        _userStorageWrapper = Mockito.mock(UserStorageWrapper.class);
         _impressionAdapterProducer = new UserCustomImpressionAdapterProducer(_customStorageWrapper, Mockito.mock(Metadata.class));
         Field userCustomImpressionAdapterProducer = UserCustomImpressionAdapterProducer.class.getDeclaredField("_userStorageWrapper");
         userCustomImpressionAdapterProducer.setAccessible(true);

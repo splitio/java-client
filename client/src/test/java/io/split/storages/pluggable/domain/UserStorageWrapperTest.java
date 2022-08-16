@@ -6,7 +6,6 @@ import org.junit.Test;
 import org.mockito.Mockito;
 import org.slf4j.Logger;
 import pluggable.CustomStorageWrapper;
-import pluggable.Pipeline;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
@@ -21,15 +20,15 @@ public class UserStorageWrapperTest {
     private static final String HASH_COUNT_KEY = "countKey";
     private static final String ITEM = "Item";
     private CustomStorageWrapper _customStorageWrapper;
-    private userStorageWrapper _userStorageWrapper;
+    private UserStorageWrapper _userStorageWrapper;
     private Logger _log;
 
     @Before
     public void setUp() throws NoSuchFieldException, IllegalAccessException {
         _customStorageWrapper = Mockito.mock(CustomStorageWrapper.class);
         _log = Mockito.mock(Logger.class);
-        _userStorageWrapper = new userStorageWrapper(_customStorageWrapper);
-        Field userStorageWrapper = userStorageWrapper.class.getDeclaredField("_log");
+        _userStorageWrapper = new UserStorageWrapper(_customStorageWrapper);
+        Field userStorageWrapper = UserStorageWrapper.class.getDeclaredField("_log");
         userStorageWrapper.setAccessible(true);
         Field modifiersField = Field.class.getDeclaredField("modifiers");
         modifiersField.setAccessible(true);

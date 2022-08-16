@@ -49,7 +49,7 @@ import io.split.storages.pluggable.adapters.UserCustomImpressionAdapterProducer;
 import io.split.storages.pluggable.adapters.UserCustomSegmentAdapterConsumer;
 import io.split.storages.pluggable.adapters.UserCustomSplitAdapterConsumer;
 import io.split.storages.pluggable.adapters.UserCustomTelemetryAdapterProducer;
-import io.split.storages.pluggable.domain.userStorageWrapper;
+import io.split.storages.pluggable.domain.UserStorageWrapper;
 import io.split.storages.pluggable.synchronizer.TelemetryConsumerSubmitter;
 import io.split.telemetry.storage.InMemoryTelemetryStorage;
 import io.split.telemetry.storage.TelemetryStorage;
@@ -127,7 +127,7 @@ public class SplitFactoryImpl implements SplitFactory {
     private final EventsTask _eventsTask;
     private final SyncManager _syncManager;
     private final CloseableHttpClient _httpclient;
-    private final userStorageWrapper _userStorageWrapper;
+    private final UserStorageWrapper _userStorageWrapper;
     private final ImpressionsSender _impressionsSender;
     private final URI _rootTarget;
     private final URI _eventsRootTarget;
@@ -259,7 +259,7 @@ public class SplitFactoryImpl implements SplitFactory {
         _eventsRootTarget = null;
 
         Metadata metadata = new Metadata(config.ipAddressEnabled(), SplitClientConfig.splitSdkVersion);
-        _userStorageWrapper = new userStorageWrapper(customStorageWrapper);
+        _userStorageWrapper = new UserStorageWrapper(customStorageWrapper);
         UserCustomSegmentAdapterConsumer userCustomSegmentAdapterConsumer= new UserCustomSegmentAdapterConsumer(customStorageWrapper);
         UserCustomSplitAdapterConsumer userCustomSplitAdapterConsumer = new UserCustomSplitAdapterConsumer(customStorageWrapper);
         UserCustomImpressionAdapterConsumer userCustomImpressionAdapterConsumer = new UserCustomImpressionAdapterConsumer(); // TODO migrate impressions sender to Task instead manager and not instantiate Producer here.
