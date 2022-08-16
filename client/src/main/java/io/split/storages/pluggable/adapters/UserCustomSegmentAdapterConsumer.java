@@ -2,7 +2,7 @@ package io.split.storages.pluggable.adapters;
 
 import io.split.storages.SegmentCacheConsumer;
 import io.split.storages.pluggable.domain.PrefixAdapter;
-import io.split.storages.pluggable.domain.userStorageWrapper;
+import io.split.storages.pluggable.domain.UserStorageWrapper;
 import io.split.storages.pluggable.utils.Helper;
 import pluggable.CustomStorageWrapper;
 
@@ -12,10 +12,10 @@ import static com.google.common.base.Preconditions.checkNotNull;
 
 public class UserCustomSegmentAdapterConsumer implements SegmentCacheConsumer {
 
-    private final userStorageWrapper _userStorageWrapper;
+    private final UserStorageWrapper _userStorageWrapper;
 
     public UserCustomSegmentAdapterConsumer(CustomStorageWrapper customStorageWrapper) {
-        _userStorageWrapper = new userStorageWrapper(checkNotNull(customStorageWrapper));
+        _userStorageWrapper = new UserStorageWrapper(checkNotNull(customStorageWrapper));
     }
 
     @Override

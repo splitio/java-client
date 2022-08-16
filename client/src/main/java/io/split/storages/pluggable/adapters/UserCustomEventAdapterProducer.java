@@ -6,7 +6,7 @@ import io.split.client.events.EventsStorageProducer;
 import io.split.client.utils.Json;
 import io.split.storages.pluggable.domain.EventConsumer;
 import io.split.storages.pluggable.domain.PrefixAdapter;
-import io.split.storages.pluggable.domain.userStorageWrapper;
+import io.split.storages.pluggable.domain.UserStorageWrapper;
 import pluggable.CustomStorageWrapper;
 
 import java.util.List;
@@ -17,11 +17,11 @@ import static com.google.common.base.Preconditions.checkNotNull;
 
 public class UserCustomEventAdapterProducer implements EventsStorageProducer {
 
-    private final userStorageWrapper _userStorageWrapper;
+    private final UserStorageWrapper _userStorageWrapper;
     private Metadata _metadata;
 
     public UserCustomEventAdapterProducer(CustomStorageWrapper customStorageWrapper, Metadata metadata) {
-        _userStorageWrapper = new userStorageWrapper(checkNotNull(customStorageWrapper));
+        _userStorageWrapper = new UserStorageWrapper(checkNotNull(customStorageWrapper));
         _metadata = metadata;
     }
 

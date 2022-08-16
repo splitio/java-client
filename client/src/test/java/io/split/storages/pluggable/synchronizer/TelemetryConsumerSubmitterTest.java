@@ -5,7 +5,7 @@ import io.split.client.SplitClientConfig;
 import io.split.client.dtos.UniqueKeys;
 import io.split.client.utils.SDKMetadata;
 import io.split.storages.pluggable.domain.ConfigConsumer;
-import io.split.storages.pluggable.domain.userStorageWrapper;
+import io.split.storages.pluggable.domain.UserStorageWrapper;
 import org.junit.Assert;
 import org.junit.Test;
 import org.mockito.Mockito;
@@ -41,7 +41,7 @@ public class TelemetryConsumerSubmitterTest {
 
     @Test
     public void testTestSynchronizeConfig() throws NoSuchFieldException, IllegalAccessException {
-        userStorageWrapper userStorageWrapper = Mockito.mock(userStorageWrapper.class);
+        UserStorageWrapper userStorageWrapper = Mockito.mock(UserStorageWrapper.class);
         TelemetryConsumerSubmitter telemetrySynchronizer = new TelemetryConsumerSubmitter(Mockito.mock(CustomStorageWrapper.class), new SDKMetadata("SDK 4.2.x", "22.215135.1", "testMachine"));
         SplitClientConfig splitClientConfig = SplitClientConfig.builder().build();
         Field telemetryConsumerSubmitterHolder = TelemetryConsumerSubmitter.class.getDeclaredField("_userStorageWrapper");
@@ -56,7 +56,7 @@ public class TelemetryConsumerSubmitterTest {
 
     @Test
     public void testTestSynchronizeUniqueKeys() throws NoSuchFieldException, IllegalAccessException {
-        userStorageWrapper userStorageWrapper = Mockito.mock(userStorageWrapper.class);
+        UserStorageWrapper userStorageWrapper = Mockito.mock(UserStorageWrapper.class);
         TelemetryConsumerSubmitter telemetrySynchronizer = new TelemetryConsumerSubmitter(Mockito.mock(CustomStorageWrapper.class), new SDKMetadata("SDK 4.2.x", "22.215135.1", "testMachine"));
         Field telemetryConsumerSubmitterHolder = TelemetryConsumerSubmitter.class.getDeclaredField("_userStorageWrapper");
         telemetryConsumerSubmitterHolder.setAccessible(true);

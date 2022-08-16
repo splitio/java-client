@@ -2,7 +2,7 @@ package io.split.storages.pluggable.adapters;
 
 import io.split.client.utils.Json;
 import io.split.storages.pluggable.domain.PrefixAdapter;
-import io.split.storages.pluggable.domain.userStorageWrapper;
+import io.split.storages.pluggable.domain.UserStorageWrapper;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -19,13 +19,13 @@ public class UserCustomSegmentAdapterConsumerTest {
 
     private static final String SEGMENT_NAME = "SegmentName";
     private CustomStorageWrapper _customStorageWrapper;
-    private userStorageWrapper _userStorageWrapper;
+    private UserStorageWrapper _userStorageWrapper;
     private UserCustomSegmentAdapterConsumer _userCustomSegmentAdapterConsumer;
 
     @Before
     public void setUp() throws NoSuchFieldException, IllegalAccessException {
         _customStorageWrapper = Mockito.mock(CustomStorageWrapper.class);
-        _userStorageWrapper = Mockito.mock(userStorageWrapper.class);
+        _userStorageWrapper = Mockito.mock(UserStorageWrapper.class);
         _userCustomSegmentAdapterConsumer = new UserCustomSegmentAdapterConsumer(_customStorageWrapper);
         Field userCustomSegmentAdapterConsumer = UserCustomSegmentAdapterConsumer.class.getDeclaredField("_userStorageWrapper");
         userCustomSegmentAdapterConsumer.setAccessible(true);

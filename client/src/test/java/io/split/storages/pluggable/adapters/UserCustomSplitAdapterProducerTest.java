@@ -10,7 +10,7 @@ import io.split.engine.experiments.ParsedSplit;
 import io.split.engine.experiments.SplitParser;
 import io.split.grammar.Treatments;
 import io.split.storages.pluggable.domain.PrefixAdapter;
-import io.split.storages.pluggable.domain.userStorageWrapper;
+import io.split.storages.pluggable.domain.UserStorageWrapper;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -26,13 +26,13 @@ public class UserCustomSplitAdapterProducerTest{
 
     private static final String SPLIT_NAME = "SplitName";
     private CustomStorageWrapper _customStorageWrapper;
-    private userStorageWrapper _userStorageWrapper;
+    private UserStorageWrapper _userStorageWrapper;
     private UserCustomSplitAdapterProducer _userCustomSplitAdapterProducer;
 
     @Before
     public void setUp() throws NoSuchFieldException, IllegalAccessException {
         _customStorageWrapper = Mockito.mock(CustomStorageWrapper.class);
-        _userStorageWrapper = Mockito.mock(userStorageWrapper.class);
+        _userStorageWrapper = Mockito.mock(UserStorageWrapper.class);
         _userCustomSplitAdapterProducer = new UserCustomSplitAdapterProducer(_customStorageWrapper);
         Field userCustomSplitAdapterProducer = UserCustomSplitAdapterProducer.class.getDeclaredField("_userStorageWrapper");
         userCustomSplitAdapterProducer.setAccessible(true);

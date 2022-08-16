@@ -1,6 +1,8 @@
 package redis;
 
 import pluggable.CustomStorageWrapper;
+import pluggable.HasPipelineSupport;
+import pluggable.Pipeline;
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisPool;
 import redis.common.CommonRedis;
@@ -10,7 +12,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-class RedisImp implements CustomStorageWrapper {
+class RedisImp implements CustomStorageWrapper, HasPipelineSupport {
     private static final String TELEMETRY_INIT = "SPLITIO.telemetry.init" ;
     private static final String EVENTS_KEY = "SPLITIO.events" ;
     private static final String IMPRESSIONS_KEY = "SPLITIO.impressions" ;
@@ -79,6 +81,7 @@ class RedisImp implements CustomStorageWrapper {
 
     @Override
     public String getAndSet(String key, String item) throws Exception {
+        //Todo if this method isn't used we should deprecated
         try (Jedis jedis = this.jedisPool.getResource()) {
             return jedis.getSet(_commonRedis.buildKeyWithPrefix(key), item);
         } catch (Exception ex) {
@@ -220,5 +223,13 @@ class RedisImp implements CustomStorageWrapper {
             throw new RedisException(ex.getMessage());
         }
     }
-}
 
+    @Override
+    public Pipeline pipeline() throws Exception {
+        try {
+            return new RedisPipeline(this.jedisPool, this.prefix);
+        } catch (Exception ex) {
+            throw new RedisException(ex.getMessage());
+        }
+    }
+}

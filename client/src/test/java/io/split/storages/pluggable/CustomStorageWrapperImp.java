@@ -21,6 +21,8 @@ import io.split.storages.pluggable.domain.PrefixAdapter;
 import io.split.telemetry.domain.enums.MethodEnum;
 import io.split.telemetry.utils.AtomicLongArray;
 import pluggable.CustomStorageWrapper;
+import pluggable.NotPipelinedImpl;
+import pluggable.Pipeline;
 
 import java.lang.reflect.Modifier;
 import java.util.ArrayList;
@@ -39,9 +41,11 @@ public class CustomStorageWrapperImp implements CustomStorageWrapper {
     private static final String SEGMENT = "SPLITIO.segment.";
     private static final String IMPRESSIONS = "SPLITIO.impressions";
     private static final String EVENTS = "SPLITIO.events";
+    private static final String COUNTS = "SPLITIO.impressions.counts";
     private Map<String, Split> splitsStorage = new HashMap<>();
     private Map<String, SegmentImp> segmentStorage = new HashMap<>();
     private final ConcurrentMap<String, AtomicLongArray> _methodLatencies = Maps.newConcurrentMap();
+    private final ConcurrentMap<String, Long> _impressionsCount = Maps.newConcurrentMap();
     private ConfigConsumer _telemetryInit = null;
     private List<ImpressionConsumer> imps = new ArrayList<>();
     private List<EventConsumer> events = new ArrayList<>();
@@ -137,8 +141,16 @@ public class CustomStorageWrapperImp implements CustomStorageWrapper {
 
     @Override
     public long hIncrement(String key, String field, long value) throws Exception {
-        //TODO implement
-        return 0;
+        String storageKey = getStorage(key);
+        Long count = 0L;
+        if (storageKey.equals(COUNTS)){
+            if(_impressionsCount.containsKey(field)){
+                count = _impressionsCount.get(field);
+            }
+            count += value;
+            _impressionsCount.put(field, count);
+        }
+        return count;
     }
 
     @Override
@@ -198,6 +210,11 @@ public class CustomStorageWrapperImp implements CustomStorageWrapper {
         return false;
     }
 
+    @Override
+    public Pipeline pipeline() throws Exception {
+        return new NotPipelinedImpl(this);
+    }
+
     private String getStorage(String key) {
         if(key.startsWith(SPLITS))
             return SPLITS;
@@ -207,6 +224,8 @@ public class CustomStorageWrapperImp implements CustomStorageWrapper {
             return TELEMETRY;
         else if(key.startsWith(SEGMENT))
             return SEGMENT;
+        else if(key.startsWith(COUNTS))
+            return  COUNTS;
         else if(key.startsWith(IMPRESSIONS))
             return IMPRESSIONS;
         else if(key.startsWith(EVENTS))
@@ -239,6 +258,10 @@ public class CustomStorageWrapperImp implements CustomStorageWrapper {
 
     public ConcurrentMap<String, AtomicLongArray> get_methodLatencies() {
         return _methodLatencies;
+    }
+
+    public ConcurrentMap<String, Long> get_impressionsCount() {
+        return _impressionsCount;
     }
 
     public List<ImpressionConsumer> getImps() {

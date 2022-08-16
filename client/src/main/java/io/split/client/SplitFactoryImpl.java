@@ -14,7 +14,7 @@ import io.split.client.impressions.ImpressionsStorage;
 import io.split.client.impressions.ImpressionsStorageConsumer;
 import io.split.client.impressions.ImpressionsStorageProducer;
 import io.split.client.impressions.InMemoryImpressionsStorage;
-import io.split.client.impressions.RedisImpressionSender;
+import io.split.client.impressions.PluggableImpressionSender;
 import io.split.client.interceptors.AuthorizationInterceptorFilter;
 import io.split.client.interceptors.ClientKeyInterceptorFilter;
 import io.split.client.interceptors.GzipDecoderResponseInterceptor;
@@ -49,7 +49,7 @@ import io.split.storages.pluggable.adapters.UserCustomImpressionAdapterProducer;
 import io.split.storages.pluggable.adapters.UserCustomSegmentAdapterConsumer;
 import io.split.storages.pluggable.adapters.UserCustomSplitAdapterConsumer;
 import io.split.storages.pluggable.adapters.UserCustomTelemetryAdapterProducer;
-import io.split.storages.pluggable.domain.userStorageWrapper;
+import io.split.storages.pluggable.domain.UserStorageWrapper;
 import io.split.storages.pluggable.synchronizer.TelemetryConsumerSubmitter;
 import io.split.telemetry.storage.InMemoryTelemetryStorage;
 import io.split.telemetry.storage.TelemetryStorage;
@@ -127,7 +127,7 @@ public class SplitFactoryImpl implements SplitFactory {
     private final EventsTask _eventsTask;
     private final SyncManager _syncManager;
     private final CloseableHttpClient _httpclient;
-    private final userStorageWrapper _userStorageWrapper;
+    private final UserStorageWrapper _userStorageWrapper;
     private final ImpressionsSender _impressionsSender;
     private final URI _rootTarget;
     private final URI _eventsRootTarget;
@@ -259,7 +259,7 @@ public class SplitFactoryImpl implements SplitFactory {
         _eventsRootTarget = null;
 
         Metadata metadata = new Metadata(config.ipAddressEnabled(), SplitClientConfig.splitSdkVersion);
-        _userStorageWrapper = new userStorageWrapper(customStorageWrapper);
+        _userStorageWrapper = new UserStorageWrapper(customStorageWrapper);
         UserCustomSegmentAdapterConsumer userCustomSegmentAdapterConsumer= new UserCustomSegmentAdapterConsumer(customStorageWrapper);
         UserCustomSplitAdapterConsumer userCustomSplitAdapterConsumer = new UserCustomSplitAdapterConsumer(customStorageWrapper);
         UserCustomImpressionAdapterConsumer userCustomImpressionAdapterConsumer = new UserCustomImpressionAdapterConsumer(); // TODO migrate impressions sender to Task instead manager and not instantiate Producer here.
@@ -289,7 +289,7 @@ public class SplitFactoryImpl implements SplitFactory {
         _telemetrySynchronizer = new TelemetryConsumerSubmitter(customStorageWrapper, _sdkMetadata);
 
         _evaluator = new EvaluatorImp(userCustomSplitAdapterConsumer, userCustomSegmentAdapterConsumer);
-        _impressionsSender = RedisImpressionSender.create(customStorageWrapper);
+        _impressionsSender = PluggableImpressionSender.create(customStorageWrapper);
         _impressionsManager = buildImpressionsManager(config, userCustomImpressionAdapterConsumer, userCustomImpressionAdapterProducer);
 
         _client = new SplitClientImpl(this,

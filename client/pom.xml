@@ -147,7 +147,7 @@
         <dependency>
             <groupId>io.split.client</groupId>
             <artifactId>pluggable-storage</artifactId>
-            <version>1.0.0</version>
+            <version>1.0.1-rc2</version>
             <scope>compile</scope>
         </dependency>
         <dependency>

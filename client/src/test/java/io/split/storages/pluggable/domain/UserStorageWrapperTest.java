@@ -17,17 +17,18 @@ public class UserStorageWrapperTest {
 
     private static final String KEY = "KEY";
     private static final String RESPONSE = "Response";
+    private static final String HASH_COUNT_KEY = "countKey";
     private static final String ITEM = "Item";
     private CustomStorageWrapper _customStorageWrapper;
-    private userStorageWrapper _userStorageWrapper;
+    private UserStorageWrapper _userStorageWrapper;
     private Logger _log;
 
     @Before
     public void setUp() throws NoSuchFieldException, IllegalAccessException {
         _customStorageWrapper = Mockito.mock(CustomStorageWrapper.class);
         _log = Mockito.mock(Logger.class);
-        _userStorageWrapper = new userStorageWrapper(_customStorageWrapper);
-        Field userStorageWrapper = userStorageWrapper.class.getDeclaredField("_log");
+        _userStorageWrapper = new UserStorageWrapper(_customStorageWrapper);
+        Field userStorageWrapper = UserStorageWrapper.class.getDeclaredField("_log");
         userStorageWrapper.setAccessible(true);
         Field modifiersField = Field.class.getDeclaredField("modifiers");
         modifiersField.setAccessible(true);
@@ -137,6 +138,22 @@ public class UserStorageWrapperTest {
     public void testIncrementException() throws Exception {
         Mockito.when(_customStorageWrapper.increment(Mockito.anyString(), Mockito.anyLong())).thenThrow(Exception.class);
         long result = _userStorageWrapper.increment(KEY, 1);
+        Assert.assertEquals(0L, result);
+        Mockito.verify(_log, Mockito.times(1)).error(Mockito.anyString());
+    }
+
+    @Test
+    public void testHIncrement() throws Exception {
+        long response = 2L;
+        Mockito.when(_customStorageWrapper.hIncrement(Mockito.anyString(), Mockito.anyString(), Mockito.anyLong())).thenReturn(response);
+        long result = _userStorageWrapper.hIncrement(KEY, HASH_COUNT_KEY,1);
+        Assert.assertEquals(response, result);
+    }
+
+    @Test
+    public void testHIncrementException() throws Exception {
+        Mockito.when(_customStorageWrapper.hIncrement(Mockito.anyString(), Mockito.anyString(), Mockito.anyLong())).thenThrow(Exception.class);
+        long result = _userStorageWrapper.hIncrement(KEY, HASH_COUNT_KEY, 1);
         Assert.assertEquals(0L, result);
         Mockito.verify(_log, Mockito.times(1)).error(Mockito.anyString());
     }

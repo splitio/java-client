@@ -3,19 +3,21 @@ package io.split.storages.pluggable.domain;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import pluggable.CustomStorageWrapper;
+import pluggable.HasPipelineSupport;
+import pluggable.NotPipelinedImpl;
 
 import java.util.List;
 import java.util.Set;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
-public class userStorageWrapper implements CustomStorageWrapper {
+public class UserStorageWrapper implements CustomStorageWrapper {
 
-    private static final Logger _log = LoggerFactory.getLogger(userStorageWrapper.class);
+    private static final Logger _log = LoggerFactory.getLogger(UserStorageWrapper.class);
 
     private final CustomStorageWrapper _customStorageWrapper;
 
-    public userStorageWrapper(CustomStorageWrapper customStorageWrapper) {
+    public UserStorageWrapper(CustomStorageWrapper customStorageWrapper) {
         _customStorageWrapper = checkNotNull(customStorageWrapper);
     }
 
@@ -211,5 +213,11 @@ public class userStorageWrapper implements CustomStorageWrapper {
             _log.error(String.format("error trying to disconnect. Error: '%s'" , e.getMessage()));
             return false;
         }
+    }
+
+    public UserPipelineWrapper pipeline() throws Exception {
+        return (_customStorageWrapper instanceof HasPipelineSupport)
+                ? new UserPipelineWrapper(((HasPipelineSupport) _customStorageWrapper).pipeline())
+                : new UserPipelineWrapper(new NotPipelinedImpl(_customStorageWrapper));
     }
 }
