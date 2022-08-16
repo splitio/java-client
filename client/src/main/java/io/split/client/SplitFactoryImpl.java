@@ -14,7 +14,7 @@ import io.split.client.impressions.ImpressionsStorage;
 import io.split.client.impressions.ImpressionsStorageConsumer;
 import io.split.client.impressions.ImpressionsStorageProducer;
 import io.split.client.impressions.InMemoryImpressionsStorage;
-import io.split.client.impressions.RedisImpressionSender;
+import io.split.client.impressions.PluggableImpressionSender;
 import io.split.client.interceptors.AuthorizationInterceptorFilter;
 import io.split.client.interceptors.ClientKeyInterceptorFilter;
 import io.split.client.interceptors.GzipDecoderResponseInterceptor;
@@ -289,7 +289,7 @@ public class SplitFactoryImpl implements SplitFactory {
         _telemetrySynchronizer = new TelemetryConsumerSubmitter(customStorageWrapper, _sdkMetadata);
 
         _evaluator = new EvaluatorImp(userCustomSplitAdapterConsumer, userCustomSegmentAdapterConsumer);
-        _impressionsSender = RedisImpressionSender.create(customStorageWrapper);
+        _impressionsSender = PluggableImpressionSender.create(customStorageWrapper);
         _impressionsManager = buildImpressionsManager(config, userCustomImpressionAdapterConsumer, userCustomImpressionAdapterProducer);
 
         _client = new SplitClientImpl(this,

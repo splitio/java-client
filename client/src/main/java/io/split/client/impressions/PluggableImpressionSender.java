@@ -13,17 +13,17 @@ import java.util.List;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
-public class RedisImpressionSender implements ImpressionsSender{
+public class PluggableImpressionSender implements ImpressionsSender{
 
     private final userStorageWrapper _userStorageWrapper;
 
-    private static final Logger _logger = LoggerFactory.getLogger(RedisImpressionSender.class);
+    private static final Logger _logger = LoggerFactory.getLogger(PluggableImpressionSender.class);
 
-    public static RedisImpressionSender create(CustomStorageWrapper customStorageWrapper){
-        return new RedisImpressionSender(customStorageWrapper);
+    public static PluggableImpressionSender create(CustomStorageWrapper customStorageWrapper){
+        return new PluggableImpressionSender(customStorageWrapper);
     }
 
-    private RedisImpressionSender(CustomStorageWrapper customStorageWrapper) {
+    private PluggableImpressionSender(CustomStorageWrapper customStorageWrapper) {
         this._userStorageWrapper = new userStorageWrapper(checkNotNull(customStorageWrapper));
     }
 

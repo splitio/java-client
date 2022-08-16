@@ -11,12 +11,12 @@ import java.util.HashMap;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentMap;
 
-public class RedisImpressionSenderTest {
+public class PluggableImpressionSenderTest {
 
     @Test
     public void testPostCounters() throws Exception {
         CustomStorageWrapper customStorageWrapper = Mockito.mock(CustomStorageWrapper.class);
-        RedisImpressionSender redisImpressionSender = RedisImpressionSender.create(customStorageWrapper);
+        PluggableImpressionSender redisImpressionSender = PluggableImpressionSender.create(customStorageWrapper);
 
         HashMap<ImpressionCounter.Key, Integer> counters =  new HashMap<>();
         ImpressionCounter.Key counterKey1 =  new ImpressionCounter.Key("feature1", 100);
@@ -28,7 +28,7 @@ public class RedisImpressionSenderTest {
     @Test
     public void testPostCountersHasPipeline() throws Exception {
         CustomStorageWrapperHasPipeline customStorageWrapper = new CustomStorageWrapperHasPipeline();
-        RedisImpressionSender redisImpressionSender = RedisImpressionSender.create(customStorageWrapper);
+        PluggableImpressionSender redisImpressionSender = PluggableImpressionSender.create(customStorageWrapper);
 
         HashMap<ImpressionCounter.Key, Integer> counters =  new HashMap<>();
         ImpressionCounter.Key counterKey1 =  new ImpressionCounter.Key("feature1", 100);
