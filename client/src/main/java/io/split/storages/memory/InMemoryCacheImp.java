@@ -89,6 +89,15 @@ public class InMemoryCacheImp implements SplitCache {
     }
 
     @Override
+    public List<String> splitNames() {
+        List<String> splitNamesList = new ArrayList<>();
+        for (String key: _concurrentMap.keySet()) {
+            splitNamesList.add(_concurrentMap.get(key).feature());
+        }
+        return splitNamesList;
+    }
+
+    @Override
     public void kill(String splitName, String defaultTreatment, long changeNumber) {
         ParsedSplit parsedSplit = _concurrentMap.get(splitName);
 
