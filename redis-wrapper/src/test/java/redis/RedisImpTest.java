@@ -96,9 +96,9 @@ public class RedisImpTest {
             Set<String> result = storageWrapper.getKeysByPrefix("item*");
 
             Assert.assertEquals(3, result.size());
-            Assert.assertTrue(result.contains(_commonRedis.buildKeyWithPrefix("item-1")));
-            Assert.assertTrue(result.contains(_commonRedis.buildKeyWithPrefix("item-2")));
-            Assert.assertTrue(result.contains(_commonRedis.buildKeyWithPrefix("item-3")));
+            Assert.assertTrue(result.contains("item-1"));
+            Assert.assertTrue(result.contains("item-2"));
+            Assert.assertTrue(result.contains("item-3"));
         }
         finally {
             storageWrapper.delete(new ArrayList<>(map.keySet()));
