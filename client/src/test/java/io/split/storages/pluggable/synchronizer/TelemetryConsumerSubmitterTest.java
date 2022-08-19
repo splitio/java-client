@@ -40,7 +40,7 @@ public class TelemetryConsumerSubmitterTest {
     }
 
     @Test
-    public void testTestSynchronizeConfig() throws NoSuchFieldException, IllegalAccessException {
+    public void testTestSynchronizeConfig() throws Exception {
         UserStorageWrapper userStorageWrapper = Mockito.mock(UserStorageWrapper.class);
         TelemetryConsumerSubmitter telemetrySynchronizer = new TelemetryConsumerSubmitter(Mockito.mock(CustomStorageWrapper.class), new SDKMetadata("SDK 4.2.x", "22.215135.1", "testMachine"));
         SplitClientConfig splitClientConfig = SplitClientConfig.builder().build();
@@ -51,7 +51,7 @@ public class TelemetryConsumerSubmitterTest {
         modifiersField.setInt(telemetryConsumerSubmitterHolder, telemetryConsumerSubmitterHolder.getModifiers() & ~Modifier.FINAL);
         telemetryConsumerSubmitterHolder.set(telemetrySynchronizer, userStorageWrapper);
         telemetrySynchronizer.synchronizeConfig(splitClientConfig, 10L, new HashMap<>(), new ArrayList<>());
-        Mockito.verify(userStorageWrapper, Mockito.times(1)).set(Mockito.eq("SPLITIO.telemetry.init::SDK 4.2.x/testMachine/22.215135.1"), Mockito.anyObject());
+        Mockito.verify(userStorageWrapper, Mockito.times(1)).hSet(Mockito.eq("SPLITIO.telemetry.init"), Mockito.eq("SDK 4.2.x/testMachine/22.215135.1"), Mockito.anyString());
     }
 
     @Test

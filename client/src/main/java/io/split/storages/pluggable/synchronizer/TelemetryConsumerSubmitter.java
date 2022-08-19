@@ -10,6 +10,8 @@ import io.split.storages.pluggable.domain.ConfigConsumer;
 import io.split.storages.pluggable.domain.PrefixAdapter;
 import io.split.storages.pluggable.domain.UserStorageWrapper;
 import io.split.telemetry.synchronizer.TelemetrySynchronizer;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import pluggable.CustomStorageWrapper;
 
 import java.util.ArrayList;
@@ -26,6 +28,8 @@ public class TelemetryConsumerSubmitter implements TelemetrySynchronizer {
     private final UserStorageWrapper _userStorageWrapper;
     private final SDKMetadata _sdkMetadata;
 
+    private static final Logger _log = LoggerFactory.getLogger(TelemetryConsumerSubmitter.class);
+
     public TelemetryConsumerSubmitter(CustomStorageWrapper customStorageWrapper, SDKMetadata sdkMetadata) {
         _userStorageWrapper = new UserStorageWrapper(checkNotNull(customStorageWrapper));
         _sdkMetadata = checkNotNull(sdkMetadata);
@@ -33,7 +37,12 @@ public class TelemetryConsumerSubmitter implements TelemetrySynchronizer {
 
     @Override
     public void synchronizeConfig(SplitClientConfig config, long timeUntilReady, Map<String, Long> factoryInstances, List<String> tags) {
-        _userStorageWrapper.set(PrefixAdapter.buildTelemetryInit(_sdkMetadata.getSdkVersion(), _sdkMetadata.getMachineIp(), _sdkMetadata.getMachineName()), Json.toJson(generateConfig(config, factoryInstances, tags)));
+        String key = _sdkMetadata.getSdkVersion() + "/" + _sdkMetadata.getMachineName() + "/" + _sdkMetadata.getMachineIp();
+        try {
+            _userStorageWrapper.hSet(PrefixAdapter.buildTelemetryInit(), key, Json.toJson(generateConfig(config, factoryInstances, tags)));
+        } catch (Exception e) {
+            _log.warn("Exception synchronizing config", e);
+        }
     }
 
     @Override

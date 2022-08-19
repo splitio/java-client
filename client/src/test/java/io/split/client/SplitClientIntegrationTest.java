@@ -22,6 +22,7 @@ import javax.ws.rs.sse.OutboundSseEvent;
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.util.*;
+import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.stream.Collectors;
@@ -701,7 +702,8 @@ public class SplitClientIntegrationTest {
             Assert.assertEquals(Optional.of(1L), Optional.of(latencies.get(key3)));
 
             Thread.sleep(500);
-            Assert.assertNotNull(customStorageWrapper.get_telemetryInit());
+            ConcurrentMap<String, String> configMap = customStorageWrapper.getConfig();
+            Assert.assertEquals(1, configMap.size());
             Assert.assertEquals(StorageMode.PLUGGABLE.name(), customStorageWrapper.get_telemetryInit().get_storage());
 
         } catch (TimeoutException | InterruptedException e) {

@@ -8,6 +8,7 @@ public interface CustomStorageWrapper {
     String get(String key) throws Exception;
     List<String> getMany(List<String> keys) throws Exception;
     void set(String key, String item) throws Exception;
+    void hSet(String key, String field, String json) throws Exception;
     void delete(List<String> keys) throws Exception;
     String getAndSet(String key, String item) throws Exception;
     Set<String> getKeysByPrefix(String prefix) throws Exception;
