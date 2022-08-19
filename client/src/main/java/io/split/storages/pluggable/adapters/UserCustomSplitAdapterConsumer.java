@@ -19,6 +19,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.HashSet;
+import java.util.stream.Collectors;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
@@ -81,6 +82,13 @@ public class UserCustomSplitAdapterConsumer  implements SplitCacheConsumer {
             _log.info("Error getting boolean from String.");
         }
         return false;
+    }
+
+    @Override
+    public List<String> splitNames() {
+        Set<String> splitNamesWithPrefix = _userStorageWrapper.getKeysByPrefix(PrefixAdapter.buildGetAllSplit());
+        splitNamesWithPrefix = splitNamesWithPrefix.stream().map(key -> key.replaceAll(PrefixAdapter.buildSplitsPrefix(), "")).collect(Collectors.toSet());
+        return new ArrayList<>(splitNamesWithPrefix);
     }
 
     @Override
