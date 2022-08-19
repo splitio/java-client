@@ -515,7 +515,6 @@ public class SplitFactoryImpl implements SplitFactory {
             }
             _gates.sdkInternalReady();
             _telemetrySynchronizer.synchronizeConfig(config, System.currentTimeMillis(), ApiKeyCounter.getApiKeyCounterInstance().getFactoryInstances(), new ArrayList<>());
-
         });
     }
 }
