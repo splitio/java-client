@@ -10,8 +10,6 @@ import io.split.storages.enums.StorageMode;
 import io.split.storages.pluggable.CustomStorageWrapperImp;
 import io.split.storages.pluggable.domain.EventConsumer;
 import io.split.storages.pluggable.domain.ImpressionConsumer;
-import io.split.telemetry.domain.enums.MethodEnum;
-import io.split.telemetry.utils.AtomicLongArray;
 import okhttp3.mockwebserver.MockResponse;
 import org.awaitility.Awaitility;
 import org.glassfish.grizzly.utils.Pair;
@@ -689,11 +687,14 @@ public class SplitClientIntegrationTest {
             Assert.assertTrue(impressions.stream().anyMatch(imp -> "first.name".equals(imp.getKeyImpression().feature) && "on".equals(imp.getKeyImpression().treatment)));
             Assert.assertTrue(impressions.stream().anyMatch(imp -> "second.name".equals(imp.getKeyImpression().feature) && "off".equals(imp.getKeyImpression().treatment)));
 
-            Map<String, AtomicLongArray> latencies = customStorageWrapper.get_methodLatencies();
+            Map<String, Long> latencies = customStorageWrapper.getLatencies();
+            String key1 = "java-${project.version}/Nadia-M-MacBook-Pro/192.168.0.10/track/0";
+            String key2 = "java-${project.version}/Nadia-M-MacBook-Pro/192.168.0.10/getTreatment/0";
+            String key3 = "java-${project.version}/Nadia-M-MacBook-Pro/192.168.0.10/getTreatmentWithConfig/0";
 
-            Assert.assertEquals(3, latencies.get(MethodEnum.TRACK.getMethod()).fetchAndClearAll().stream().mapToInt(Long::intValue).sum());
-            Assert.assertEquals(1, latencies.get(MethodEnum.TREATMENT.getMethod()).fetchAndClearAll().stream().mapToInt(Long::intValue).sum());
-            Assert.assertEquals(1, latencies.get(MethodEnum.TREATMENT_WITH_CONFIG.getMethod()).fetchAndClearAll().stream().mapToInt(Long::intValue).sum());
+            Assert.assertEquals(Optional.of(3L), Optional.ofNullable(latencies.get(key1)));
+            Assert.assertEquals(Optional.of(1L), Optional.of(latencies.get(key2)));
+            Assert.assertEquals(Optional.of(1L), Optional.of(latencies.get(key3)));
 
             Thread.sleep(500);
             Assert.assertNotNull(customStorageWrapper.get_telemetryInit());

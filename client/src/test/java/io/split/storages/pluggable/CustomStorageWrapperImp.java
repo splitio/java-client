@@ -36,6 +36,7 @@ public class CustomStorageWrapperImp implements CustomStorageWrapper {
 
     public static final int MAX_LATENCY_BUCKET_COUNT = 23;
     private static final String TELEMETRY = "SPLITIO.telemetry";
+    private static final String LATENCIES = "SPLITIO.telemetry.latencies";
     private static final String SPLIT = "SPLITIO.split.";
     private static final String SPLITS = "SPLITIO.splits.*";
     private static final String SEGMENT = "SPLITIO.segment.";
@@ -45,6 +46,7 @@ public class CustomStorageWrapperImp implements CustomStorageWrapper {
     private Map<String, Split> splitsStorage = new HashMap<>();
     private Map<String, SegmentImp> segmentStorage = new HashMap<>();
     private final ConcurrentMap<String, AtomicLongArray> _methodLatencies = Maps.newConcurrentMap();
+    private final ConcurrentMap<String, Long> _latencies = Maps.newConcurrentMap();
     private final ConcurrentMap<String, Long> _impressionsCount = Maps.newConcurrentMap();
     private ConfigConsumer _telemetryInit = null;
     private List<ImpressionConsumer> imps = new ArrayList<>();
@@ -150,6 +152,13 @@ public class CustomStorageWrapperImp implements CustomStorageWrapper {
             count += value;
             _impressionsCount.put(field, count);
         }
+        if(storageKey.equals(LATENCIES)){
+            if(_latencies.containsKey(field)){
+                count = _latencies.get(field);
+            }
+            count += value;
+            _latencies.put(field, count);
+        }
         return count;
     }
 
@@ -220,6 +229,8 @@ public class CustomStorageWrapperImp implements CustomStorageWrapper {
             return SPLITS;
         else if(key.startsWith(SPLIT))
             return SPLIT;
+        else if (key.startsWith(LATENCIES))
+            return LATENCIES;
         else if(key.startsWith(TELEMETRY))
             return TELEMETRY;
         else if(key.startsWith(SEGMENT))
@@ -258,6 +269,10 @@ public class CustomStorageWrapperImp implements CustomStorageWrapper {
 
     public ConcurrentMap<String, AtomicLongArray> get_methodLatencies() {
         return _methodLatencies;
+    }
+
+    public ConcurrentMap<String, Long> getLatencies() {
+        return _latencies;
     }
 
     public ConcurrentMap<String, Long> get_impressionsCount() {

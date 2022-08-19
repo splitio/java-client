@@ -38,12 +38,17 @@ public class UserCustomTelemetryAdapterProducer implements TelemetryStorageProdu
 
     @Override
     public void recordLatency(MethodEnum method, long latency) {
-        _userStorageWrapper.increment(PrefixAdapter.buildTelemetryLatenciesPrefix(method.getMethod(), BucketCalculator.getBucketForLatency(latency), _sdkMetadata.getSdkVersion(), _sdkMetadata.getMachineIp(), _sdkMetadata.getMachineName()), 1);
+        String key =  _sdkMetadata.getSdkVersion() + "/" + _sdkMetadata.getMachineName() +
+                "/" + _sdkMetadata.getMachineIp() + "/" + method.getMethod() + "/" +
+                BucketCalculator.getBucketForLatency(latency);
+        _userStorageWrapper.hIncrement(PrefixAdapter.buildTelemetryLatenciesPrefix(), key, 1);
     }
 
     @Override
     public void recordException(MethodEnum method) {
-        _userStorageWrapper.increment(PrefixAdapter.buildTelemetryExceptionsPrefix(method.getMethod(), _sdkMetadata.getSdkVersion(), _sdkMetadata.getMachineIp(), _sdkMetadata.getMachineName()), 1);
+        String key = _sdkMetadata.getSdkVersion() + "/" + _sdkMetadata.getMachineName() + "/" +
+                _sdkMetadata.getMachineIp() + "/" + method.getMethod();
+        _userStorageWrapper.hIncrement(PrefixAdapter.buildTelemetryExceptionsPrefix(), key, 1);
     }
 
     @Override
