@@ -24,6 +24,7 @@ import java.net.URISyntaxException;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
+import java.util.stream.Collectors;
 
 public class SplitClientIntegrationTest {
     // TODO: review this test.
@@ -691,9 +692,13 @@ public class SplitClientIntegrationTest {
 
             List<String> keys = new ArrayList<>(latencies.keySet());
 
-            Assert.assertEquals(Optional.of(3L), Optional.ofNullable(latencies.get(keys.get(0))));
-            Assert.assertEquals(Optional.of(1L), Optional.of(latencies.get(keys.get(1))));
-            Assert.assertEquals(Optional.of(1L), Optional.of(latencies.get(keys.get(2))));
+            String key1 = keys.stream().filter(key -> key.contains("track/")).collect(Collectors.toList()).get(0);
+            String key2 = keys.stream().filter(key -> key.contains("getTreatment/")).collect(Collectors.toList()).get(0);
+            String key3 = keys.stream().filter(key -> key.contains("getTreatmentWithConfig/")).collect(Collectors.toList()).get(0);
+
+            Assert.assertEquals(Optional.of(3L), Optional.ofNullable(latencies.get(key1)));
+            Assert.assertEquals(Optional.of(1L), Optional.of(latencies.get(key2)));
+            Assert.assertEquals(Optional.of(1L), Optional.of(latencies.get(key3)));
 
             Thread.sleep(500);
             Assert.assertNotNull(customStorageWrapper.get_telemetryInit());
