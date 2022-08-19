@@ -688,13 +688,12 @@ public class SplitClientIntegrationTest {
             Assert.assertTrue(impressions.stream().anyMatch(imp -> "second.name".equals(imp.getKeyImpression().feature) && "off".equals(imp.getKeyImpression().treatment)));
 
             Map<String, Long> latencies = customStorageWrapper.getLatencies();
-            String key1 = "java-${project.version}/Nadia-M-MacBook-Pro/192.168.0.10/track/0";
-            String key2 = "java-${project.version}/Nadia-M-MacBook-Pro/192.168.0.10/getTreatment/0";
-            String key3 = "java-${project.version}/Nadia-M-MacBook-Pro/192.168.0.10/getTreatmentWithConfig/0";
 
-            Assert.assertEquals(Optional.of(3L), Optional.ofNullable(latencies.get(key1)));
-            Assert.assertEquals(Optional.of(1L), Optional.of(latencies.get(key2)));
-            Assert.assertEquals(Optional.of(1L), Optional.of(latencies.get(key3)));
+            List<String> keys = new ArrayList<>(latencies.keySet());
+
+            Assert.assertEquals(Optional.of(3L), Optional.ofNullable(latencies.get(keys.get(0))));
+            Assert.assertEquals(Optional.of(1L), Optional.of(latencies.get(keys.get(1))));
+            Assert.assertEquals(Optional.of(1L), Optional.of(latencies.get(keys.get(2))));
 
             Thread.sleep(500);
             Assert.assertNotNull(customStorageWrapper.get_telemetryInit());
