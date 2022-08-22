@@ -124,15 +124,6 @@ public class CustomStorageWrapperImp implements CustomStorageWrapper {
 
     @Override
     public long increment(String key, long value) throws Exception {
-        String keyValue = getStorage(key);
-        if(keyValue.equals(TELEMETRY)){
-            if(key.contains("latencies")){
-                String[] items = key.substring(key.indexOf("::")).replace("{", "").replace("}", "").split("/");
-                if(_methodLatencies.containsKey(items[3])) {
-                    _methodLatencies.get(items[3]).increment(Integer.parseInt(items[4]));
-                }
-            }
-        }
         return 0;
     }
 
@@ -151,6 +142,7 @@ public class CustomStorageWrapperImp implements CustomStorageWrapper {
             }
             count += value;
             _impressionsCount.put(field, count);
+            return count;
         }
         if(storageKey.equals(LATENCIES)){
             if(_latencies.containsKey(field)){
