@@ -5,7 +5,7 @@
     <parent>
         <groupId>io.split.client</groupId>
         <artifactId>java-client-parent</artifactId>
-        <version>4.4.6-rc3</version>
+        <version>4.4.6-rc4</version>
     </parent>
     <artifactId>java-client</artifactId>
     <packaging>jar</packaging>
@@ -147,7 +147,7 @@
         <dependency>
             <groupId>io.split.client</groupId>
             <artifactId>pluggable-storage</artifactId>
-            <version>1.0.1-rc6</version>
+            <version>1.0.1-rc7</version>
             <scope>compile</scope>
         </dependency>
         <dependency>

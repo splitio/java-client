@@ -4,7 +4,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>io.split.client</groupId>
     <artifactId>java-client-parent</artifactId>
-    <version>4.4.6-rc3</version>
+    <version>4.4.6-rc4</version>
     <dependencyManagement>
         <dependencies>
             <dependency>
