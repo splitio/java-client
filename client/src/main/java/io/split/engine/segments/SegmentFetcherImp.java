@@ -156,7 +156,7 @@ public class SegmentFetcherImp implements SegmentFetcher {
     }
 
     @Override
-    public void fetchAll() {
+    public void fetchFromTheBeginning() {
         this.fetchAndUpdate(new FetchOptions.Builder().build());
     }
 }

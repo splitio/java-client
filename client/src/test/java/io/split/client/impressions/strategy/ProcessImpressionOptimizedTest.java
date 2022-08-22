@@ -42,7 +42,7 @@ public class ProcessImpressionOptimizedTest {
 
         Assert.assertEquals(2,impressionsResult1.getImpressionsToQueue().size());
         Assert.assertEquals(3,impressionsResult1.getImpressionsToListener().size());
-        Assert.assertEquals(2, counter.popAll().size());
+        Assert.assertEquals(1, counter.popAll().size());
     }
 
     @Test
@@ -64,6 +64,6 @@ public class ProcessImpressionOptimizedTest {
         ImpressionsResult impressionsResult1 = processImpressionOptimized.process(impressions);
         Assert.assertEquals(2,impressionsResult1.getImpressionsToQueue().size());
         Assert.assertNull(impressionsResult1.getImpressionsToListener());
-        Assert.assertEquals(2, counter.popAll().size());
+        Assert.assertEquals(1, counter.popAll().size());
     }
 }

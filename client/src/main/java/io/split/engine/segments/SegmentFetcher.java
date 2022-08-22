@@ -13,5 +13,5 @@ public interface SegmentFetcher {
 
     boolean runWhitCacheHeader();
 
-    void fetchAll();
+    void fetchFromTheBeginning();
 }
