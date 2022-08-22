@@ -49,7 +49,6 @@ public class CustomStorageWrapperImp implements CustomStorageWrapper {
     private final ConcurrentMap<String, Long> _latencies = Maps.newConcurrentMap();
     private final ConcurrentMap<String, Long> _impressionsCount = Maps.newConcurrentMap();
     private ConfigConsumer _telemetryInit = null;
-    private ConcurrentMap<String, String> _config = Maps.newConcurrentMap();
     private List<ImpressionConsumer> imps = new ArrayList<>();
     private List<EventConsumer> events = new ArrayList<>();
     private final Gson _json = new GsonBuilder()
@@ -101,15 +100,6 @@ public class CustomStorageWrapperImp implements CustomStorageWrapper {
             if (key.contains("init")) {
                 _telemetryInit = _json.fromJson(item, ConfigConsumer.class);
             }
-        }
-    }
-
-    @Override
-    public void hSet(String key, String field, String json) throws Exception {
-        String value = getStorage(key);
-        if(value.equals(TELEMETRY)) {
-            _config.put(field, json);
-            _telemetryInit = _json.fromJson(json, ConfigConsumer.class);
         }
     }
 
@@ -277,10 +267,6 @@ public class CustomStorageWrapperImp implements CustomStorageWrapper {
         return split;
     }
 
-    public ConcurrentMap<String, AtomicLongArray> get_methodLatencies() {
-        return _methodLatencies;
-    }
-
     public ConcurrentMap<String, Long> getLatencies() {
         return _latencies;
     }
@@ -299,9 +285,5 @@ public class CustomStorageWrapperImp implements CustomStorageWrapper {
 
     public ConfigConsumer get_telemetryInit() {
         return _telemetryInit;
-    }
-
-    public ConcurrentMap<String, String> getConfig() {
-        return _config;
     }
 }

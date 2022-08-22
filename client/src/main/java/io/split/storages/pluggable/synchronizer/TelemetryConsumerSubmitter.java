@@ -37,12 +37,7 @@ public class TelemetryConsumerSubmitter implements TelemetrySynchronizer {
 
     @Override
     public void synchronizeConfig(SplitClientConfig config, long timeUntilReady, Map<String, Long> factoryInstances, List<String> tags) {
-        String key = _sdkMetadata.getSdkVersion() + "/" + _sdkMetadata.getMachineName() + "/" + _sdkMetadata.getMachineIp();
-        try {
-            _userStorageWrapper.hSet(PrefixAdapter.buildTelemetryInit(), key, Json.toJson(generateConfig(config, factoryInstances, tags)));
-        } catch (Exception e) {
-            _log.warn("Exception synchronizing config", e);
-        }
+        _userStorageWrapper.set(PrefixAdapter.buildTelemetryInit(_sdkMetadata.getSdkVersion(), _sdkMetadata.getMachineIp(), _sdkMetadata.getMachineName()), Json.toJson(generateConfig(config, factoryInstances, tags)));
     }
 
     @Override

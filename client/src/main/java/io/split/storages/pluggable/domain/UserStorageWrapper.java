@@ -54,15 +54,6 @@ public class UserStorageWrapper implements CustomStorageWrapper {
     }
 
     @Override
-    public void hSet(String key, String field, String json) {
-        try {
-            _customStorageWrapper.hSet(key, field, json);
-        } catch (Exception e) {
-            _log.error(String.format("error updating key '%s' from storage. Error: '%s'", key, e.getMessage()));
-        }
-    }
-
-    @Override
     public void delete(List<String> keys) {
         try {
             _customStorageWrapper.delete(keys);

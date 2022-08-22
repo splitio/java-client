@@ -10,6 +10,8 @@ import io.split.storages.enums.StorageMode;
 import io.split.storages.pluggable.CustomStorageWrapperImp;
 import io.split.storages.pluggable.domain.EventConsumer;
 import io.split.storages.pluggable.domain.ImpressionConsumer;
+import io.split.telemetry.domain.enums.MethodEnum;
+import io.split.telemetry.utils.AtomicLongArray;
 import okhttp3.mockwebserver.MockResponse;
 import org.awaitility.Awaitility;
 import org.glassfish.grizzly.utils.Pair;
@@ -702,8 +704,7 @@ public class SplitClientIntegrationTest {
             Assert.assertEquals(Optional.of(1L), Optional.of(latencies.get(key3)));
 
             Thread.sleep(500);
-            ConcurrentMap<String, String> configMap = customStorageWrapper.getConfig();
-            Assert.assertEquals(1, configMap.size());
+            Assert.assertNotNull(customStorageWrapper.get_telemetryInit());
             Assert.assertEquals(StorageMode.PLUGGABLE.name(), customStorageWrapper.get_telemetryInit().get_storage());
 
         } catch (TimeoutException | InterruptedException e) {
