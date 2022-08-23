@@ -36,6 +36,8 @@ public class CustomStorageWrapperImp implements CustomStorageWrapper {
 
     public static final int MAX_LATENCY_BUCKET_COUNT = 23;
     private static final String TELEMETRY = "SPLITIO.telemetry";
+
+    private static final String TELEMETRY_INIT = "SPLITIO.telemetry.init";
     private static final String LATENCIES = "SPLITIO.telemetry.latencies";
     private static final String SPLIT = "SPLITIO.split.";
     private static final String SPLITS = "SPLITIO.splits.*";
@@ -48,6 +50,7 @@ public class CustomStorageWrapperImp implements CustomStorageWrapper {
     private final ConcurrentMap<String, AtomicLongArray> _methodLatencies = Maps.newConcurrentMap();
     private final ConcurrentMap<String, Long> _latencies = Maps.newConcurrentMap();
     private final ConcurrentMap<String, Long> _impressionsCount = Maps.newConcurrentMap();
+    private final ConcurrentMap<String, String> _config = Maps.newConcurrentMap();
     private ConfigConsumer _telemetryInit = null;
     private List<ImpressionConsumer> imps = new ArrayList<>();
     private List<EventConsumer> events = new ArrayList<>();
@@ -95,11 +98,14 @@ public class CustomStorageWrapperImp implements CustomStorageWrapper {
 
     @Override
     public void set(String key, String item) throws Exception {
+
+    }
+
+    @Override
+    public void hSet(String key, String field, String item) {
         String value = getStorage(key);
-        if(value.equals(TELEMETRY)) {
-            if (key.contains("init")) {
-                _telemetryInit = _json.fromJson(item, ConfigConsumer.class);
-            }
+        if (value.equals(TELEMETRY_INIT)){
+            _config.put(field, item);
         }
     }
 
@@ -223,6 +229,8 @@ public class CustomStorageWrapperImp implements CustomStorageWrapper {
             return SPLIT;
         else if (key.startsWith(LATENCIES))
             return LATENCIES;
+        else if (key.startsWith(TELEMETRY_INIT))
+            return TELEMETRY_INIT;
         else if(key.startsWith(TELEMETRY))
             return TELEMETRY;
         else if(key.startsWith(SEGMENT))
@@ -275,7 +283,8 @@ public class CustomStorageWrapperImp implements CustomStorageWrapper {
         return events;
     }
 
-    public ConfigConsumer get_telemetryInit() {
-        return _telemetryInit;
+    public ConcurrentMap <String, String> getConfig() {
+        return _config;
     }
+
 }

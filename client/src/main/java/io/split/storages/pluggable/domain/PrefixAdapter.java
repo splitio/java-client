@@ -84,7 +84,7 @@ public class PrefixAdapter {
         return String.format(DEFAULT_PREFIX+TELEMETRY+EXCEPTIONS);
     }
 
-    public static String buildTelemetryInit(String sdkVersion, String machineIp, String machineName) {
-        return String.format(DEFAULT_PREFIX + TELEMETRY + INIT + "::%s/%s/%s", sdkVersion, machineName, machineIp);
+    public static String buildTelemetryInit() {
+        return String.format(DEFAULT_PREFIX + TELEMETRY + INIT);
     }
 }

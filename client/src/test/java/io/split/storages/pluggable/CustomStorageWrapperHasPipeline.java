@@ -36,6 +36,11 @@ public class CustomStorageWrapperHasPipeline implements CustomStorageWrapper, Ha
     }
 
     @Override
+    public void hSet(String key, String field, String item) {
+
+    }
+
+    @Override
     public void delete(List<String> keys) {
 
     }

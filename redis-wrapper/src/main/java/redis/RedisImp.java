@@ -66,6 +66,15 @@ class RedisImp implements CustomStorageWrapper, HasPipelineSupport {
     }
 
     @Override
+    public void hSet(String key, String field, String item) throws Exception {
+        try (Jedis jedis = this.jedisPool.getResource()) {
+            jedis.hset(_commonRedis.buildKeyWithPrefix(key), field, item);
+        } catch (Exception ex) {
+            throw new RedisException(ex.getMessage());
+        }
+    }
+
+    @Override
     public void delete(List<String> keys) throws Exception {
         if(keys == null || keys.isEmpty()){
             return ;

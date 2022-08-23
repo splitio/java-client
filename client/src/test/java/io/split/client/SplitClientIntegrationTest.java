@@ -704,8 +704,9 @@ public class SplitClientIntegrationTest {
             Assert.assertEquals(Optional.of(1L), Optional.of(latencies.get(key3)));
 
             Thread.sleep(500);
-            Assert.assertNotNull(customStorageWrapper.get_telemetryInit());
-            Assert.assertEquals(StorageMode.PLUGGABLE.name(), customStorageWrapper.get_telemetryInit().get_storage());
+            Assert.assertNotNull(customStorageWrapper.getConfig());
+            String key = customStorageWrapper.getConfig().keySet().stream().collect(Collectors.toList()).get(0);
+            Assert.assertTrue(customStorageWrapper.getConfig().get(key).contains(StorageMode.PLUGGABLE.name()));
 
         } catch (TimeoutException | InterruptedException e) {
         }
