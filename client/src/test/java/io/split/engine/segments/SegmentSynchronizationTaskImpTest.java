@@ -97,10 +97,10 @@ public class SegmentSynchronizationTaskImpTest {
         _segmentFetchers.put("SF", segmentFetcher);
         final SegmentSynchronizationTaskImp fetchers = new SegmentSynchronizationTaskImp(segmentChangeFetcher, 1L, 1,
                 gates, segmentCacheProducer, TELEMETRY_STORAGE, Mockito.mock(SplitCacheConsumer.class));
-        Mockito.doNothing().when(segmentFetcher).callLoopRun(Mockito.anyObject());
+        Mockito.doNothing().when(segmentFetcher).fetchUntil(Mockito.anyObject());
         Mockito.when(segmentFetcher.runWhitCacheHeader()).thenReturn(false);
         Mockito.when(segmentFetcher.fetchAndUpdate(Mockito.anyObject())).thenReturn(false);
-        Mockito.doNothing().when(segmentFetcher).callLoopRun(Mockito.anyObject());
+        Mockito.doNothing().when(segmentFetcher).fetchUntil(Mockito.anyObject());
 
         // Before executing, we'll update the map of segmentFecthers via reflection.
         Field segmentFetchersForced = SegmentSynchronizationTaskImp.class.getDeclaredField("_segmentFetchers");
@@ -132,7 +132,7 @@ public class SegmentSynchronizationTaskImpTest {
         modifiersField.setAccessible(true);
         modifiersField.setInt(segmentFetchersForced, segmentFetchersForced.getModifiers() & ~Modifier.FINAL);
         segmentFetchersForced.set(fetchers, _segmentFetchers);
-        Mockito.doNothing().when(segmentFetcher).callLoopRun(Mockito.anyObject());
+        Mockito.doNothing().when(segmentFetcher).fetchUntil(Mockito.anyObject());
         Mockito.when(segmentFetcher.runWhitCacheHeader()).thenReturn(true);
         Mockito.when(segmentFetcher.fetchAndUpdate(Mockito.anyObject())).thenReturn(true);
         boolean fetch = fetchers.fetchAllSynchronous();

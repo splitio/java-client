@@ -24,10 +24,8 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
-import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertThat;
 import static org.mockito.Mockito.when;
 
 /**
@@ -65,7 +63,7 @@ public class SegmentFetcherImpTest {
 
         // execute the fetcher for a little bit.
         ScheduledExecutorService scheduledExecutorService = Executors.newSingleThreadScheduledExecutor();
-        scheduledExecutorService.scheduleWithFixedDelay(fetcher::fetchFromTheBeginning, 0L, 100, TimeUnit.MICROSECONDS);
+        scheduledExecutorService.scheduleWithFixedDelay(() -> fetcher.fetch(new FetchOptions.Builder().build()), 0L, 100, TimeUnit.MICROSECONDS);
         Thread.currentThread().sleep(5 * 100);
 
         scheduledExecutorService.shutdown();
@@ -104,7 +102,7 @@ public class SegmentFetcherImpTest {
 
         // execute the fetcher for a little bit.
         ScheduledExecutorService scheduledExecutorService = Executors.newSingleThreadScheduledExecutor();
-        scheduledExecutorService.scheduleWithFixedDelay(fetcher::fetchFromTheBeginning, 0L, Integer.MAX_VALUE, TimeUnit.SECONDS);
+        scheduledExecutorService.scheduleWithFixedDelay(() -> fetcher.fetch(new FetchOptions.Builder().build()), 0L, Integer.MAX_VALUE, TimeUnit.SECONDS);
         Thread.currentThread().sleep(5 * 100);
 
         scheduledExecutorService.shutdown();
