@@ -76,15 +76,15 @@ public class PrefixAdapter {
         return String.format(DEFAULT_PREFIX + UNIQUE_KEYS);
     }
 
-    public static String buildTelemetryLatenciesPrefix(String method, int bucketForLatency, String sdkVersion, String machineIp, String machineName) {
-        return String.format(DEFAULT_PREFIX+TELEMETRY+LATENCIES+"::%s/%s/%s/"+"%s/%d", sdkVersion, machineName, machineIp, method, bucketForLatency);
+    public static String buildTelemetryLatenciesPrefix() {
+        return String.format(DEFAULT_PREFIX+TELEMETRY+LATENCIES);
     }
 
-    public static String buildTelemetryExceptionsPrefix(String method, String sdkVersion, String machineIp, String machineName) {
-        return String.format(DEFAULT_PREFIX+TELEMETRY+EXCEPTIONS+"::%s/%s/%s/"+"%s", sdkVersion, machineName, machineIp, method);
+    public static String buildTelemetryExceptionsPrefix() {
+        return String.format(DEFAULT_PREFIX+TELEMETRY+EXCEPTIONS);
     }
 
-    public static String buildTelemetryInit(String sdkVersion, String machineIp, String machineName) {
-        return String.format(DEFAULT_PREFIX+TELEMETRY+INIT+"::%s/%s/%s", sdkVersion, machineName, machineIp);
+    public static String buildTelemetryInit() {
+        return String.format(DEFAULT_PREFIX + TELEMETRY + INIT);
     }
 }
