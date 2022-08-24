@@ -88,14 +88,13 @@ public class SegmentSynchronizationTaskImp implements SegmentSynchronizationTask
                 return;
             }
 
-            segment = new SegmentFetcherImp(segmentName, _segmentChangeFetcher, _gates, _segmentCacheProducer, _telemetryRuntimeProducer);
+            SegmentFetcher finalSegment = new SegmentFetcherImp(segmentName, _segmentChangeFetcher, _gates, _segmentCacheProducer, _telemetryRuntimeProducer);
 
             if (_running.get()) {
-                SegmentFetcher finalSegment = segment;
                 _scheduledExecutorService.submit(() -> finalSegment.fetch(new FetchOptions.Builder().build()));
             }
 
-            _segmentFetchers.putIfAbsent(segmentName, segment);
+            _segmentFetchers.putIfAbsent(segmentName, finalSegment);
         }
     }
 
