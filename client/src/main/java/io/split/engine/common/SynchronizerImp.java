@@ -260,6 +260,6 @@ public class SynchronizerImp implements Synchronizer {
 
     private void forceRefreshSegment(String segmentName){
         SegmentFetcher segmentFetcher = _segmentSynchronizationTaskImp.getFetcher(segmentName);
-        segmentFetcher.fetchAll();
+        segmentFetcher.fetch(new FetchOptions.Builder().build());
     }
 }

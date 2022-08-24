@@ -25,13 +25,14 @@ import java.net.URISyntaxException;
 import java.util.AbstractMap;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import static io.split.client.impressions.ImpressionTestUtils.keyImpression;
-import static org.hamcrest.Matchers.*;
-import static org.junit.Assert.assertThat;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 
 /**
  * Created by patricioe on 6/20/16.
@@ -82,7 +83,7 @@ public class ImpressionsManagerImplTest {
 
         List<TestImpressions> captured = impressionsCaptor.getValue();
 
-        assertThat(captured.size(), is(equalTo(2)));
+        Assert.assertEquals(2, captured.size());
     }
 
     @Test
@@ -118,8 +119,8 @@ public class ImpressionsManagerImplTest {
 
         List<TestImpressions> captured = impressionsCaptor.getValue();
 
-        assertThat(captured.size(), is(equalTo(3)));
-        Mockito.verify(TELEMETRY_STORAGE, times(1)).recordImpressionStats(ImpressionsDataTypeEnum.IMPRESSIONS_DROPPED, 1);
+        Assert.assertEquals(3, captured.size());
+        verify(TELEMETRY_STORAGE, times(1)).recordImpressionStats(ImpressionsDataTypeEnum.IMPRESSIONS_DROPPED, 1);
     }
 
     @Test
@@ -155,10 +156,10 @@ public class ImpressionsManagerImplTest {
 
         List<TestImpressions> captured = impressionsCaptor.getValue();
 
-        assertThat(captured.size(), is(equalTo(1)));
-        assertThat(captured.get(0).keyImpressions.size(), is(equalTo(4)));
-        assertThat(captured.get(0).keyImpressions.get(0), is(equalTo(ki1)));
-        Mockito.verify(TELEMETRY_STORAGE, times(4)).recordImpressionStats(ImpressionsDataTypeEnum.IMPRESSIONS_QUEUED, 1);
+        Assert.assertEquals(1, captured.size());
+        Assert.assertEquals(4, captured.get(0).keyImpressions.size());
+        Assert.assertEquals(ki1, captured.get(0).keyImpressions.get(0));
+        verify(TELEMETRY_STORAGE, times(4)).recordImpressionStats(ImpressionsDataTypeEnum.IMPRESSIONS_QUEUED, 1);
     }
 
     @Test
@@ -216,7 +217,7 @@ public class ImpressionsManagerImplTest {
         List<TestImpressions> captured = impressionsCaptor.getValue();
         for (TestImpressions testImpressions : captured) {
             for (KeyImpression keyImpression : testImpressions.keyImpressions) {
-                assertThat(keyImpression.previousTime, is(equalTo(null)));
+                Assert.assertEquals(null, keyImpression.previousTime);
             }
         }
 
@@ -233,7 +234,7 @@ public class ImpressionsManagerImplTest {
         captured = impressionsCaptor.getValue();
         for (TestImpressions testImpressions : captured) {
             for (KeyImpression keyImpression : testImpressions.keyImpressions) {
-                assertThat(keyImpression.previousTime, is(equalTo(keyImpression.time)));
+                Assert.assertEquals(Optional.of(keyImpression.time), Optional.of(keyImpression.previousTime));
             }
         }
     }
@@ -267,29 +268,26 @@ public class ImpressionsManagerImplTest {
         verify(senderMock).postImpressionsBulk(impressionsCaptor.capture());
 
         List<TestImpressions> captured = impressionsCaptor.getValue();
-        assertThat(captured.get(0).keyImpressions.size(), is(equalTo(2)));
+        Assert.assertEquals(2, captured.get(0).keyImpressions.size());
         for (TestImpressions testImpressions : captured) {
             for (KeyImpression keyImpression : testImpressions.keyImpressions) {
-                assertThat(keyImpression.previousTime, is(equalTo(null)));
+                Assert.assertEquals(null, keyImpression.previousTime);
             }
         }
         // Only the first 2 impressions make it to the server
-        assertThat(captured.get(0).keyImpressions,
-                contains(keyImpression("test1", "adil", "on", 1L, 1L),
-                keyImpression("test1", "pato", "on", 3L, 1L)));
+        Assert.assertTrue(captured.get(0).keyImpressions.contains(keyImpression("test1", "adil", "on", 1L, 1L)));
+        Assert.assertTrue(captured.get(0).keyImpressions.contains(keyImpression("test1", "pato", "on", 3L, 1L)));
 
         treatmentLog.sendImpressionCounters();
         verify(senderMock).postCounters(impressionCountCaptor.capture());
         HashMap<ImpressionCounter.Key, Integer> capturedCounts = impressionCountCaptor.getValue();
-        assertThat(capturedCounts.size(), is(equalTo(1)));
-        assertThat(capturedCounts.entrySet(),
-                contains(new AbstractMap.SimpleEntry<>(new ImpressionCounter.Key("test1", 0), 4)));
-
+        Assert.assertEquals(1, capturedCounts.size());
+        Assert.assertTrue(capturedCounts.entrySet().contains(new AbstractMap.SimpleEntry<>(new ImpressionCounter.Key("test1", 0), 2)));
 
         // Assert that the sender is never called if the counters are empty.
         Mockito.reset(senderMock);
         treatmentLog.sendImpressionCounters();
-        verify(senderMock, Mockito.times(0)).postCounters(Mockito.any());
+        verify(senderMock, times(0)).postCounters(Mockito.any());
     }
 
     @Test
@@ -325,5 +323,4 @@ public class ImpressionsManagerImplTest {
         ImpressionsManagerImpl manager = ImpressionsManagerImpl.instanceForTest(config, senderMock, null, TELEMETRY_STORAGE, storage, storage, telemetrySynchronizer);
         Assert.assertNotNull(manager.getCounter());
     }
-
 }
