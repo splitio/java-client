@@ -34,12 +34,12 @@ public class UserCustomTelemetryAdapterProducerTest {
     @Test
     public void testRecordLatency() {
         _userCustomTelemetryAdapterProducer.recordLatency(MethodEnum.TRACK, 10l);
-        Mockito.verify(_userStorageWrapper, Mockito.times(1)).increment(Mockito.anyString(), Mockito.anyLong());
+        Mockito.verify(_userStorageWrapper, Mockito.times(1)).hIncrement(Mockito.anyString(), Mockito.anyString(), Mockito.anyLong());
     }
 
     @Test
     public void testRecordException() {
         _userCustomTelemetryAdapterProducer.recordException(MethodEnum.TRACK);
-        Mockito.verify(_userStorageWrapper, Mockito.times(1)).increment(Mockito.anyString(), Mockito.anyLong());
+        Mockito.verify(_userStorageWrapper, Mockito.times(1)).hIncrement(Mockito.anyString(), Mockito.anyString(), Mockito.anyLong());
     }
 }
