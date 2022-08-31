@@ -178,7 +178,7 @@ public class SplitFactoryImpl implements SplitFactory {
         // SplitSynchronizationTask
         _splitSynchronizationTask = new SplitSynchronizationTask(_splitFetcher,
                 splitCache,
-                findPollingPeriod(RANDOM, config.featuresRefreshRate()));
+                config.featuresRefreshRate());
 
         // Impressions
         _impressionsManager = buildImpressionsManager(config, impressionsStorage, impressionsStorage);
@@ -417,16 +417,11 @@ public class SplitFactoryImpl implements SplitFactory {
         return  httpClientbuilder;
     }
 
-    private static int findPollingPeriod(Random rand, int max) {
-        int min = max / 2;
-        return rand.nextInt((max - min) + 1) + min;
-    }
-
     private SegmentSynchronizationTaskImp buildSegments(SplitClientConfig config, SegmentCacheProducer segmentCacheProducer, SplitCacheConsumer splitCacheConsumer) throws URISyntaxException {
         SegmentChangeFetcher segmentChangeFetcher = HttpSegmentChangeFetcher.create(_httpclient, _rootTarget, _telemetryStorageProducer);
 
         return new SegmentSynchronizationTaskImp(segmentChangeFetcher,
-                findPollingPeriod(RANDOM, config.segmentsRefreshRate()),
+                config.segmentsRefreshRate(),
                 config.numThreadsForSegmentFetch(),
                 _gates,
                 segmentCacheProducer,
