@@ -39,8 +39,8 @@
                 <version>3.3</version>
                 <inherited>false</inherited>
                 <configuration>
-                    <source>8</source>
-                    <target>8</target>
+                    <source>${maven.compiler.source}</source>
+                    <target>${maven.compiler.target}</target>
                 </configuration>
             </plugin>
             <!-- Shade dependencies to avoid conflicts with other customer's libs -->
@@ -141,6 +141,8 @@
 
     <properties>
         <slf4j.api.version>1.7.36</slf4j.api.version>
+        <maven.compiler.source>8</maven.compiler.source>
+        <maven.compiler.target>8</maven.compiler.target>
     </properties>
 
     <dependencies>
