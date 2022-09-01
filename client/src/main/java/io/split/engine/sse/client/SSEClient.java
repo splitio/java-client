@@ -90,6 +90,10 @@ public class SSEClient {
             }
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
+            if(e.getMessage() == null){
+                _log.info("The thread was interrupted while opening SSEClient");
+                return false;
+            }
             _log.info(e.getMessage());
             return false;
         }

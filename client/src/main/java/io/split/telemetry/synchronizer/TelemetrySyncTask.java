@@ -1,6 +1,5 @@
 package io.split.telemetry.synchronizer;
 
-import com.google.common.annotations.VisibleForTesting;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -27,15 +26,9 @@ public class TelemetrySyncTask {
         _telemetrySynchronizer = checkNotNull(telemetrySynchronizer);
         _telemetryRefreshRate = telemetryRefreshRate;
         _telemetrySyncScheduledExecutorService = Executors.newSingleThreadScheduledExecutor(telemetrySyncThreadFactory);
-        try {
-            this.startScheduledTask();
-        } catch (Exception e) {
-            _log.warn("Error trying to init telemetry stats synchronizer task.");
-        }
     }
 
-    @VisibleForTesting
-    protected void startScheduledTask() {
+    public void startScheduledTask() {
         _telemetrySyncScheduledExecutorService.scheduleWithFixedDelay(() -> {
             try {
                 _telemetrySynchronizer.synchronizeStats();

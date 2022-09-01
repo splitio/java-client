@@ -10,6 +10,7 @@ public class TelemetrySyncTaskTest {
         TelemetrySynchronizer telemetrySynchronizer = Mockito.mock(TelemetryInMemorySubmitter.class);
         Mockito.doNothing().when(telemetrySynchronizer).synchronizeStats();
         TelemetrySyncTask telemetrySyncTask = new TelemetrySyncTask(1, telemetrySynchronizer);
+        telemetrySyncTask.startScheduledTask();
         Thread.sleep(2900);
         Mockito.verify(telemetrySynchronizer, Mockito.times(2)).synchronizeStats();
     }
@@ -19,6 +20,7 @@ public class TelemetrySyncTaskTest {
         TelemetrySynchronizer telemetrySynchronizer = Mockito.mock(TelemetryInMemorySubmitter.class);
 //        Mockito.doNothing().when(telemetrySynchronizer).synchronizeStats();
         TelemetrySyncTask telemetrySyncTask = new TelemetrySyncTask(1, telemetrySynchronizer);
+        telemetrySyncTask.startScheduledTask();
         Thread.sleep(2100);
         Mockito.verify(telemetrySynchronizer, Mockito.times(2)).synchronizeStats();
         telemetrySyncTask.stopScheduledTask(1l, 1l, 1l);

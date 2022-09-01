@@ -8,6 +8,8 @@ import io.split.telemetry.storage.TelemetryRuntimeProducer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 
@@ -34,6 +36,18 @@ public class InMemoryEventsStorage implements EventsStorage{
             _log.warn("Got interrupted while waiting for an event in the queue.");
         }
         return null;
+    }
+
+    @Override
+    public List<WrappedEvent> popAll() {
+        ArrayList<WrappedEvent> popped = new ArrayList<>();
+        _eventQueue.drainTo(popped);
+        return popped;
+    }
+
+    @Override
+    public boolean isFull() {
+        return _eventQueue.remainingCapacity() == 0;
     }
 
     @Override
