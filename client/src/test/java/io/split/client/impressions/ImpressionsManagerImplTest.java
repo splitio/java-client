@@ -30,7 +30,9 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import static io.split.client.impressions.ImpressionTestUtils.keyImpression;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 
 /**
  * Created by patricioe on 6/20/16.
@@ -120,7 +122,7 @@ public class ImpressionsManagerImplTest {
         List<TestImpressions> captured = impressionsCaptor.getValue();
 
         Assert.assertEquals(3, captured.size());
-        Mockito.verify(TELEMETRY_STORAGE, times(1)).recordImpressionStats(ImpressionsDataTypeEnum.IMPRESSIONS_DROPPED, 1);
+        verify(TELEMETRY_STORAGE, times(1)).recordImpressionStats(ImpressionsDataTypeEnum.IMPRESSIONS_DROPPED, 1);
     }
 
     @Test
@@ -160,8 +162,7 @@ public class ImpressionsManagerImplTest {
         Assert.assertEquals(1, captured.size());
         Assert.assertEquals(4, captured.get(0).keyImpressions.size());
         Assert.assertEquals(ki1, captured.get(0).keyImpressions.get(0));
-
-        Mockito.verify(TELEMETRY_STORAGE, times(4)).recordImpressionStats(ImpressionsDataTypeEnum.IMPRESSIONS_QUEUED, 1);
+        verify(TELEMETRY_STORAGE, times(4)).recordImpressionStats(ImpressionsDataTypeEnum.IMPRESSIONS_QUEUED, 1);
     }
 
     @Test
@@ -285,12 +286,12 @@ public class ImpressionsManagerImplTest {
         verify(senderMock).postCounters(impressionCountCaptor.capture());
         HashMap<ImpressionCounter.Key, Integer> capturedCounts = impressionCountCaptor.getValue();
         Assert.assertEquals(1, capturedCounts.size());
-        Assert.assertTrue(capturedCounts.entrySet().contains(new AbstractMap.SimpleEntry<>(new ImpressionCounter.Key("test1", 0), 4)));
+        Assert.assertTrue(capturedCounts.entrySet().contains(new AbstractMap.SimpleEntry<>(new ImpressionCounter.Key("test1", 0), 2)));
 
         // Assert that the sender is never called if the counters are empty.
         Mockito.reset(senderMock);
         treatmentLog.sendImpressionCounters();
-        verify(senderMock, Mockito.times(0)).postCounters(Mockito.any());
+        verify(senderMock, times(0)).postCounters(Mockito.any());
     }
 
     @Test
@@ -328,5 +329,4 @@ public class ImpressionsManagerImplTest {
         manager.start();
         Assert.assertNotNull(manager.getCounter());
     }
-
 }
