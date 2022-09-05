@@ -10,8 +10,6 @@ import io.split.storages.enums.StorageMode;
 import io.split.storages.pluggable.CustomStorageWrapperImp;
 import io.split.storages.pluggable.domain.EventConsumer;
 import io.split.storages.pluggable.domain.ImpressionConsumer;
-import io.split.telemetry.domain.enums.MethodEnum;
-import io.split.telemetry.utils.AtomicLongArray;
 import okhttp3.mockwebserver.MockResponse;
 import org.awaitility.Awaitility;
 import org.glassfish.grizzly.utils.Pair;
@@ -24,7 +22,6 @@ import javax.ws.rs.sse.OutboundSseEvent;
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.util.*;
-import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.stream.Collectors;
@@ -664,7 +661,8 @@ public class SplitClientIntegrationTest {
         SplitClient client = splitFactory.client();
         try {
             client.blockUntilReady();
-            SplitManager splitManager = splitFactory.manager();HashMap<String, Object> properties = new HashMap<>();
+            SplitManager splitManager = splitFactory.manager();
+            HashMap<String, Object> properties = new HashMap<>();
             properties.put("number_property", 123);
             properties.put("object_property", new Object());
 

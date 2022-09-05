@@ -2,6 +2,7 @@ package io.split.client;
 
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import io.split.client.dtos.Metadata;
+import io.split.client.events.EventsSender;
 import io.split.client.events.EventsStorage;
 import io.split.client.events.EventsTask;
 import io.split.client.events.InMemoryEventsStorage;
@@ -22,6 +23,8 @@ import io.split.client.interceptors.GzipEncoderRequestInterceptor;
 import io.split.client.interceptors.SdkMetadataInterceptorFilter;
 import io.split.client.utils.SDKMetadata;
 import io.split.engine.SDKReadinessGates;
+import io.split.engine.common.SplitAPI;
+import io.split.engine.common.SplitTasks;
 import io.split.engine.common.SyncManager;
 import io.split.engine.common.SyncManagerImp;
 import io.split.engine.evaluator.Evaluator;
@@ -179,7 +182,7 @@ public class SplitFactoryImpl implements SplitFactory {
         // SplitSynchronizationTask
         _splitSynchronizationTask = new SplitSynchronizationTask(_splitFetcher,
                 splitCache,
-                findPollingPeriod(RANDOM, config.featuresRefreshRate()));
+                config.featuresRefreshRate());
 
         //ImpressionSender
         _impressionsSender = HttpImpressionsSender.create(_httpclient, URI.create(config.eventsEndpoint()), config.impressionsMode(), _telemetryStorageProducer);
@@ -189,12 +192,8 @@ public class SplitFactoryImpl implements SplitFactory {
 
         // EventClient
         EventsStorage eventsStorage = new InMemoryEventsStorage(config.eventsQueueSize(), _telemetryStorageProducer);
-        _eventsTask = EventsTask.create(_httpclient,
-                _eventsRootTarget,
-                config.eventsQueueSize(),
-                config.eventFlushIntervalInMillis(),
-                config.waitBeforeShutdown(),
-                _telemetryStorageProducer, eventsStorage, eventsStorage);
+        EventsSender eventsSender = EventsSender.create(_httpclient, _eventsRootTarget, _telemetryStorageProducer);
+        _eventsTask = EventsTask.create(config.eventSendIntervalInMillis(), eventsStorage, eventsSender);
 
         _telemetrySyncTask = new TelemetrySyncTask(config.get_telemetryRefreshRate(), _telemetrySynchronizer);
 
@@ -216,21 +215,12 @@ public class SplitFactoryImpl implements SplitFactory {
         _manager = new SplitManagerImpl(splitCache, config, _gates, _telemetryStorageProducer);
 
         // SyncManager
-        _syncManager = SyncManagerImp.build(config.streamingEnabled(),
-                _splitSynchronizationTask,
-                _splitFetcher,
-                _segmentSynchronizationTaskImp,
-                splitCache,
-                config.authServiceURL(),
-                _httpclient,
-                config.streamingServiceURL(),
-                config.authRetryBackoffBase(),
-                buildSSEdHttpClient(apiToken, config, _sdkMetadata),
-                segmentCache,
-                config.streamingRetryDelay(),
-                config.streamingFetchMaxRetries(),
-                config.failedAttemptsBeforeLogging(),
-                config.cdnDebugLogging(), _gates, _telemetryStorageProducer, _telemetrySynchronizer,config);
+        SplitTasks splitTasks = SplitTasks.build(_splitSynchronizationTask, _segmentSynchronizationTaskImp,
+                _impressionsManager, _eventsTask, _telemetrySyncTask);
+        SplitAPI splitAPI = SplitAPI.build(_httpclient, buildSSEdHttpClient(apiToken, config, _sdkMetadata));
+
+        _syncManager = SyncManagerImp.build(splitTasks, _splitFetcher, splitCache, splitAPI,
+                segmentCache, _gates, _telemetryStorageProducer, _telemetrySynchronizer, config);
         _syncManager.start();
 
         // DestroyOnShutDown
@@ -291,6 +281,7 @@ public class SplitFactoryImpl implements SplitFactory {
         _evaluator = new EvaluatorImp(userCustomSplitAdapterConsumer, userCustomSegmentAdapterConsumer);
         _impressionsSender = PluggableImpressionSender.create(customStorageWrapper);
         _impressionsManager = buildImpressionsManager(config, userCustomImpressionAdapterConsumer, userCustomImpressionAdapterProducer);
+        _impressionsManager.start();
 
         _client = new SplitClientImpl(this,
                 userCustomSplitAdapterConsumer,
@@ -329,17 +320,9 @@ public class SplitFactoryImpl implements SplitFactory {
                 long splitCount = _splitCache.getAll().stream().count();
                 long segmentCount = _segmentCache.getSegmentCount();
                 long segmentKeyCount = _segmentCache.getKeyCount();
-                _eventsTask.close();
-                _log.info("Successful shutdown of eventsTask");
-                _segmentSynchronizationTaskImp.close();
-                _log.info("Successful shutdown of segment fetchers");
-                _splitSynchronizationTask.close();
-                _log.info("Successful shutdown of splits");
-                _syncManager.shutdown();
-                _log.info("Successful shutdown of syncManager");
                 _telemetryStorageProducer.recordSessionLength(System.currentTimeMillis() - _startTime);
-                _telemetrySyncTask.stopScheduledTask(splitCount, segmentCount, segmentKeyCount);
-                _log.info("Successful shutdown of telemetry sync task");
+                _syncManager.shutdown(splitCount, segmentCount, segmentKeyCount);
+                _log.info("Successful shutdown of syncManager");
                 _httpclient.close();
                 _log.info("Successful shutdown of httpclient");
                 }
@@ -445,16 +428,11 @@ public class SplitFactoryImpl implements SplitFactory {
         return  httpClientbuilder;
     }
 
-    private static int findPollingPeriod(Random rand, int max) {
-        int min = max / 2;
-        return rand.nextInt((max - min) + 1) + min;
-    }
-
     private SegmentSynchronizationTaskImp buildSegments(SplitClientConfig config, SegmentCacheProducer segmentCacheProducer, SplitCacheConsumer splitCacheConsumer) throws URISyntaxException {
         SegmentChangeFetcher segmentChangeFetcher = HttpSegmentChangeFetcher.create(_httpclient, _rootTarget, _telemetryStorageProducer);
 
         return new SegmentSynchronizationTaskImp(segmentChangeFetcher,
-                findPollingPeriod(RANDOM, config.segmentsRefreshRate()),
+                config.segmentsRefreshRate(),
                 config.numThreadsForSegmentFetch(),
                 _gates,
                 segmentCacheProducer,

@@ -180,4 +180,11 @@ public class SplitClientConfigTest {
                 .streamingReconnectBackoffBase(1)
                 .build();
     }
+
+    @Test
+    public void checkDefaultRateForFeatureAndSegment(){
+        SplitClientConfig config = SplitClientConfig.builder().build();
+        Assert.assertEquals(60, config.featuresRefreshRate());
+        Assert.assertEquals(60, config.segmentsRefreshRate());
+    }
 }

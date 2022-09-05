@@ -25,12 +25,11 @@ import java.net.URISyntaxException;
 import java.util.AbstractMap;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import static io.split.client.impressions.ImpressionTestUtils.keyImpression;
-import static org.hamcrest.Matchers.*;
-import static org.junit.Assert.assertThat;
 import static org.mockito.Mockito.*;
 
 /**
@@ -64,6 +63,7 @@ public class ImpressionsManagerImplTest {
         TelemetrySynchronizer telemetrySynchronizer = Mockito.mock(TelemetryInMemorySubmitter.class);
 
         ImpressionsManagerImpl treatmentLog = ImpressionsManagerImpl.instanceForTest(config, senderMock, null, TELEMETRY_STORAGE, storage, storage, telemetrySynchronizer);
+        treatmentLog.start();
 
         KeyImpression ki1 = keyImpression("test1", "adil", "on", 1L, null);
         KeyImpression ki2 = keyImpression("test1", "adil", "on", 2L, 1L);
@@ -82,7 +82,7 @@ public class ImpressionsManagerImplTest {
 
         List<TestImpressions> captured = impressionsCaptor.getValue();
 
-        assertThat(captured.size(), is(equalTo(2)));
+        Assert.assertEquals(2, captured.size());
     }
 
     @Test
@@ -99,6 +99,7 @@ public class ImpressionsManagerImplTest {
         TelemetrySynchronizer telemetrySynchronizer = Mockito.mock(TelemetryInMemorySubmitter.class);
 
         ImpressionsManagerImpl treatmentLog = ImpressionsManagerImpl.instanceForTest(config, senderMock, null, TELEMETRY_STORAGE, storage, storage, telemetrySynchronizer);
+        treatmentLog.start();
 
         // These 4 unique test name will cause 4 entries but we are caping at the first 3.
         KeyImpression ki1 = keyImpression("test1", "adil", "on", 1L, null);
@@ -118,7 +119,7 @@ public class ImpressionsManagerImplTest {
 
         List<TestImpressions> captured = impressionsCaptor.getValue();
 
-        assertThat(captured.size(), is(equalTo(3)));
+        Assert.assertEquals(3, captured.size());
         Mockito.verify(TELEMETRY_STORAGE, times(1)).recordImpressionStats(ImpressionsDataTypeEnum.IMPRESSIONS_DROPPED, 1);
     }
 
@@ -136,6 +137,7 @@ public class ImpressionsManagerImplTest {
         TelemetrySynchronizer telemetrySynchronizer = Mockito.mock(TelemetryInMemorySubmitter.class);
 
         ImpressionsManagerImpl treatmentLog = ImpressionsManagerImpl.instanceForTest(config, senderMock, null, TELEMETRY_STORAGE, storage, storage, telemetrySynchronizer);
+        treatmentLog.start();
 
         // These 4 unique test name will cause 4 entries but we are caping at the first 3.
         KeyImpression ki1 = keyImpression("test1", "adil", "on", 1L, 1L);
@@ -155,9 +157,10 @@ public class ImpressionsManagerImplTest {
 
         List<TestImpressions> captured = impressionsCaptor.getValue();
 
-        assertThat(captured.size(), is(equalTo(1)));
-        assertThat(captured.get(0).keyImpressions.size(), is(equalTo(4)));
-        assertThat(captured.get(0).keyImpressions.get(0), is(equalTo(ki1)));
+        Assert.assertEquals(1, captured.size());
+        Assert.assertEquals(4, captured.get(0).keyImpressions.size());
+        Assert.assertEquals(ki1, captured.get(0).keyImpressions.get(0));
+
         Mockito.verify(TELEMETRY_STORAGE, times(4)).recordImpressionStats(ImpressionsDataTypeEnum.IMPRESSIONS_QUEUED, 1);
     }
 
@@ -216,7 +219,7 @@ public class ImpressionsManagerImplTest {
         List<TestImpressions> captured = impressionsCaptor.getValue();
         for (TestImpressions testImpressions : captured) {
             for (KeyImpression keyImpression : testImpressions.keyImpressions) {
-                assertThat(keyImpression.previousTime, is(equalTo(null)));
+                Assert.assertEquals(null, keyImpression.previousTime);
             }
         }
 
@@ -233,7 +236,7 @@ public class ImpressionsManagerImplTest {
         captured = impressionsCaptor.getValue();
         for (TestImpressions testImpressions : captured) {
             for (KeyImpression keyImpression : testImpressions.keyImpressions) {
-                assertThat(keyImpression.previousTime, is(equalTo(keyImpression.time)));
+                Assert.assertEquals(Optional.of(keyImpression.time), Optional.of(keyImpression.previousTime));
             }
         }
     }
@@ -251,6 +254,7 @@ public class ImpressionsManagerImplTest {
         TelemetrySynchronizer telemetrySynchronizer = Mockito.mock(TelemetryInMemorySubmitter.class);
 
         ImpressionsManagerImpl treatmentLog = ImpressionsManagerImpl.instanceForTest(config, senderMock, null, TELEMETRY_STORAGE, storage, storage, telemetrySynchronizer);
+        treatmentLog.start();
 
         // These 4 unique test name will cause 4 entries but we are caping at the first 3.
         KeyImpression ki1 = keyImpression("test1", "adil", "on", 1L, 1L);
@@ -267,24 +271,21 @@ public class ImpressionsManagerImplTest {
         verify(senderMock).postImpressionsBulk(impressionsCaptor.capture());
 
         List<TestImpressions> captured = impressionsCaptor.getValue();
-        assertThat(captured.get(0).keyImpressions.size(), is(equalTo(2)));
+        Assert.assertEquals(2, captured.get(0).keyImpressions.size());
         for (TestImpressions testImpressions : captured) {
             for (KeyImpression keyImpression : testImpressions.keyImpressions) {
-                assertThat(keyImpression.previousTime, is(equalTo(null)));
+                Assert.assertEquals(null, keyImpression.previousTime);
             }
         }
         // Only the first 2 impressions make it to the server
-        assertThat(captured.get(0).keyImpressions,
-                contains(keyImpression("test1", "adil", "on", 1L, 1L),
-                keyImpression("test1", "pato", "on", 3L, 1L)));
+        Assert.assertTrue(captured.get(0).keyImpressions.contains(keyImpression("test1", "adil", "on", 1L, 1L)));
+        Assert.assertTrue(captured.get(0).keyImpressions.contains(keyImpression("test1", "pato", "on", 3L, 1L)));
 
         treatmentLog.sendImpressionCounters();
         verify(senderMock).postCounters(impressionCountCaptor.capture());
         HashMap<ImpressionCounter.Key, Integer> capturedCounts = impressionCountCaptor.getValue();
-        assertThat(capturedCounts.size(), is(equalTo(1)));
-        assertThat(capturedCounts.entrySet(),
-                contains(new AbstractMap.SimpleEntry<>(new ImpressionCounter.Key("test1", 0), 4)));
-
+        Assert.assertEquals(1, capturedCounts.size());
+        Assert.assertTrue(capturedCounts.entrySet().contains(new AbstractMap.SimpleEntry<>(new ImpressionCounter.Key("test1", 0), 4)));
 
         // Assert that the sender is never called if the counters are empty.
         Mockito.reset(senderMock);
@@ -305,6 +306,7 @@ public class ImpressionsManagerImplTest {
         TelemetrySynchronizer telemetrySynchronizer = Mockito.mock(TelemetryInMemorySubmitter.class);
 
         ImpressionsManagerImpl manager = ImpressionsManagerImpl.instanceForTest(config, senderMock, null, TELEMETRY_STORAGE, storage, storage, telemetrySynchronizer);
+        manager.start();
         Assert.assertNotNull(manager.getCounter());
     }
 
@@ -323,6 +325,7 @@ public class ImpressionsManagerImplTest {
         TelemetrySynchronizer telemetrySynchronizer = Mockito.mock(TelemetryInMemorySubmitter.class);
 
         ImpressionsManagerImpl manager = ImpressionsManagerImpl.instanceForTest(config, senderMock, null, TELEMETRY_STORAGE, storage, storage, telemetrySynchronizer);
+        manager.start();
         Assert.assertNotNull(manager.getCounter());
     }
 

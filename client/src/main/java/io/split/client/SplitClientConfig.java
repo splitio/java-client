@@ -43,7 +43,7 @@ public class SplitClientConfig {
     private final int _ready;
     private final int _waitBeforeShutdown;
     private final int _eventsQueueSize;
-    private final long _eventFlushIntervalInMillis;
+    private final long _eventSendIntervalInMillis;
     private final int _maxStringLength;
     private final boolean _destroyOnShutDown;
     private final String _splitFile;
@@ -64,6 +64,7 @@ public class SplitClientConfig {
     private final boolean _cdnDebugLogging;
     private final OperationMode _operationMode;
     private long _validateAfterInactivityInMillis;
+    private final long _startingSyncCallBackoffBaseMs;
     private final CustomStorageWrapper _customStorageWrapper;
     private final StorageMode _storageMode;
 
@@ -100,7 +101,7 @@ public class SplitClientConfig {
                               String proxyUsername,
                               String proxyPassword,
                               int eventsQueueSize,
-                              long eventFlushIntervalInMillis,
+                              long eventSendIntervalInMillis,
                               int maxStringLength,
                               boolean destroyOnShutDown,
                               String splitFile,
@@ -118,6 +119,7 @@ public class SplitClientConfig {
                               boolean cdnDebugLogging,
                               OperationMode operationMode,
                               long validateAfterInactivityInMillis,
+                              long startingSyncCallBackoffBaseMs,
                               CustomStorageWrapper customStorageWrapper,
                               StorageMode storageMode,
                               int uniqueKeysRefreshRateInMemory,
@@ -143,7 +145,7 @@ public class SplitClientConfig {
         _proxyUsername = proxyUsername;
         _proxyPassword = proxyPassword;
         _eventsQueueSize = eventsQueueSize;
-        _eventFlushIntervalInMillis = eventFlushIntervalInMillis;
+        _eventSendIntervalInMillis = eventSendIntervalInMillis;
         _maxStringLength = maxStringLength;
         _destroyOnShutDown = destroyOnShutDown;
         _splitFile = splitFile;
@@ -165,6 +167,7 @@ public class SplitClientConfig {
         _operationMode = operationMode;
         _storageMode = storageMode;
         _validateAfterInactivityInMillis = validateAfterInactivityInMillis;
+        _startingSyncCallBackoffBaseMs = startingSyncCallBackoffBaseMs;
         _customStorageWrapper = customStorageWrapper;
 
         Properties props = new Properties();
@@ -260,8 +263,8 @@ public class SplitClientConfig {
         return _proxyPassword;
     }
 
-    public long eventFlushIntervalInMillis() {
-        return _eventFlushIntervalInMillis;
+    public long eventSendIntervalInMillis() {
+        return _eventSendIntervalInMillis;
     }
 
     public int eventsQueueSize() {
@@ -324,6 +327,7 @@ public class SplitClientConfig {
     public long validateAfterInactivityInMillis() {
         return _validateAfterInactivityInMillis;
     }
+    public long startingSyncCallBackoffBaseMs(){ return  _startingSyncCallBackoffBaseMs;}
 
     public CustomStorageWrapper customStorageWrapper() {
         return _customStorageWrapper;
@@ -356,7 +360,7 @@ public class SplitClientConfig {
         private String _proxyUsername;
         private String _proxyPassword;
         private int _eventsQueueSize = 500;
-        private long _eventFlushIntervalInMillis = 30 * 1000;
+        private long _eventSendIntervalInMillis = 30 * 1000;
         private int _maxStringLength = 250;
         private boolean _destroyOnShutDown = true;
         private String _splitFile = null;
@@ -377,6 +381,7 @@ public class SplitClientConfig {
         private final boolean _cdnDebugLogging = true;
         private OperationMode _operationMode = OperationMode.STANDALONE;
         private long _validateAfterInactivityInMillis = 1000;
+        private final long _startingSyncCallBackoffBaseMs = new Long(1000); //backoff base starting at 1 seconds
         private CustomStorageWrapper _customStorageWrapper;
         private StorageMode _storageMode = StorageMode.MEMORY;
 
@@ -418,7 +423,7 @@ public class SplitClientConfig {
          * @return this builder
          */
         public Builder eventFlushIntervalInMillis(long eventFlushIntervalInMillis) {
-            _eventFlushIntervalInMillis = eventFlushIntervalInMillis;
+            _eventSendIntervalInMillis = eventFlushIntervalInMillis;
             return this;
         }
 
@@ -840,8 +845,8 @@ public class SplitClientConfig {
                     break;
             }
 
-            if (_eventFlushIntervalInMillis < 1000) {
-                throw new IllegalArgumentException("_eventFlushIntervalInMillis must be >= 1000: " + _eventFlushIntervalInMillis);
+            if (_eventSendIntervalInMillis < 1000) {
+                throw new IllegalArgumentException("_eventSendIntervalInMillis must be >= 1000: " + _eventSendIntervalInMillis);
             }
 
             if (_metricsRefreshRate < 30) {
@@ -940,7 +945,7 @@ public class SplitClientConfig {
                     _proxyUsername,
                     _proxyPassword,
                     _eventsQueueSize,
-                    _eventFlushIntervalInMillis,
+                    _eventSendIntervalInMillis,
                     _maxStringLength,
                     _destroyOnShutDown,
                     _splitFile,
@@ -958,6 +963,7 @@ public class SplitClientConfig {
                     _cdnDebugLogging,
                     _operationMode,
                     _validateAfterInactivityInMillis,
+                    _startingSyncCallBackoffBaseMs,
                     _customStorageWrapper,
                     _storageMode,
                     _uniqueKeysRefreshRateInMemory,

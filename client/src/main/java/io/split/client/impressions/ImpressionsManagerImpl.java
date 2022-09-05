@@ -52,6 +52,8 @@ public class ImpressionsManagerImpl implements ImpressionsManager, Closeable {
     private ImpressionCounter counter;
     private ProcessImpressionStrategy processImpressionStrategy;
     private UniqueKeysTracker uniqueKeysTracker;
+    private final int _impressionsRefreshRate;
+    private final TelemetrySynchronizer _telemetrySynchronizer;
 
     public static ImpressionsManagerImpl instance(CloseableHttpClient client,
                                                   SplitClientConfig config,
@@ -89,22 +91,27 @@ public class ImpressionsManagerImpl implements ImpressionsManager, Closeable {
         _impressionsStorageProducer = checkNotNull(impressionsStorageProducer);
         _telemetryRuntimeProducer = checkNotNull(telemetryRuntimeProducer);
         _impressionsSender = impressionsSender;
+        _telemetrySynchronizer = telemetrySynchronizer;
 
         _scheduler = buildExecutor();
 
         _listener = (null != listeners && !listeners.isEmpty()) ? new ImpressionListener.FederatedImpressionListener(listeners)
                 : null;
+        _impressionsRefreshRate = config.impressionsRefreshRate();
+    }
 
+    @Override
+    public void start(){
         switch (_impressionsMode){
             case OPTIMIZED:
                 _scheduler.scheduleAtFixedRate(this::sendImpressionCounters, COUNT_INITIAL_DELAY_SECONDS, COUNT_REFRESH_RATE_SECONDS, TimeUnit.SECONDS);
-                _scheduler.scheduleAtFixedRate(this::sendImpressions, BULK_INITIAL_DELAY_SECONDS, config.impressionsRefreshRate(), TimeUnit.SECONDS);
+                _scheduler.scheduleAtFixedRate(this::sendImpressions, BULK_INITIAL_DELAY_SECONDS, _impressionsRefreshRate, TimeUnit.SECONDS);
                 counter = new ImpressionCounter();
                 impressionObserver = new ImpressionObserver(LAST_SEEN_CACHE_SIZE);
                 processImpressionStrategy = new ProcessImpressionOptimized(_listener!=null, impressionObserver, counter, _telemetryRuntimeProducer);
                 break;
             case DEBUG:
-                _scheduler.scheduleAtFixedRate(this::sendImpressions, BULK_INITIAL_DELAY_SECONDS, config.impressionsRefreshRate(), TimeUnit.SECONDS);
+                _scheduler.scheduleAtFixedRate(this::sendImpressions, BULK_INITIAL_DELAY_SECONDS, _impressionsRefreshRate, TimeUnit.SECONDS);
                 impressionObserver = new ImpressionObserver(LAST_SEEN_CACHE_SIZE);
                 processImpressionStrategy = new ProcessImpressionDebug(_listener!=null, impressionObserver);
                 break;
@@ -113,7 +120,7 @@ public class ImpressionsManagerImpl implements ImpressionsManager, Closeable {
                 counter = new ImpressionCounter();
                 int uniqueKeysRefreshRate = _config.operationMode().equals(OperationMode.STANDALONE) ? _config.uniqueKeysRefreshRateInMemory()
                         : _config.uniqueKeysRefreshRateRedis();
-                uniqueKeysTracker = new UniqueKeysTrackerImp(telemetrySynchronizer, uniqueKeysRefreshRate, _config.filterUniqueKeysRefreshRate());
+                uniqueKeysTracker = new UniqueKeysTrackerImp(_telemetrySynchronizer, uniqueKeysRefreshRate, _config.filterUniqueKeysRefreshRate());
                 processImpressionStrategy = new ProcessImpressionNone(_listener!=null, uniqueKeysTracker, counter);
                 break;
         }

@@ -95,7 +95,7 @@ public class UniqueKeysTrackerImp implements UniqueKeysTracker{
             try {
                 executeUniqueKeysAction.execute();
             } catch (Exception e) {
-                _log.error("Error sending unique keys.", e);
+                _log.error("Error executing an Unique Key Action.", e);
             }
         }, refreshRate, refreshRate, TimeUnit.SECONDS);
     }
@@ -140,7 +140,7 @@ public class UniqueKeysTrackerImp implements UniqueKeysTracker{
 
         @Override
         public void execute() {
-            filterAdapter.clear();;
+            filterAdapter.clear();
         }
     }
 
