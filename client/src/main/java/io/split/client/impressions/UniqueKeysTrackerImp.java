@@ -52,12 +52,6 @@ public class UniqueKeysTrackerImp implements UniqueKeysTracker{
                 .build();
         _uniqueKeysSyncScheduledExecutorService = Executors.newSingleThreadScheduledExecutor(uniqueKeysSyncThreadFactory);
         _cleanFilterScheduledExecutorService = Executors.newSingleThreadScheduledExecutor(filterThreadFactory);
-
-        try {
-            this.start();
-        } catch (Exception e) {
-            _log.error("Error trying to init Unique Keys Tracker synchronizer task.", e);
-        }
     }
 
     @Override

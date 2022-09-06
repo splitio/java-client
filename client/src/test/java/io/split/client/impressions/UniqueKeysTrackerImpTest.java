@@ -76,6 +76,7 @@ public class UniqueKeysTrackerImpTest {
     public void testSynchronization() throws Exception {
         TelemetrySynchronizer telemetrySynchronizer = Mockito.mock(TelemetryInMemorySubmitter.class);
         UniqueKeysTrackerImp uniqueKeysTrackerImp = new UniqueKeysTrackerImp(telemetrySynchronizer, 1, 3);
+        uniqueKeysTrackerImp.start();
         Assert.assertTrue(uniqueKeysTrackerImp.track("feature1","key1"));
         Assert.assertTrue(uniqueKeysTrackerImp.track("feature1","key2"));
         Assert.assertTrue(uniqueKeysTrackerImp.track("feature2","key3"));
@@ -90,6 +91,7 @@ public class UniqueKeysTrackerImpTest {
     public void testStopSynchronization() throws Exception {
         TelemetrySynchronizer telemetrySynchronizer = Mockito.mock(TelemetryInMemorySubmitter.class);
         UniqueKeysTrackerImp uniqueKeysTrackerImp = new UniqueKeysTrackerImp(telemetrySynchronizer, 1, 2);
+        uniqueKeysTrackerImp.start();
         Assert.assertTrue(uniqueKeysTrackerImp.track("feature1","key1"));
         Assert.assertTrue(uniqueKeysTrackerImp.track("feature1","key2"));
         Assert.assertTrue(uniqueKeysTrackerImp.track("feature2","key3"));
