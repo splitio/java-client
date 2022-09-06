@@ -1,3 +1,9 @@
+4.4.6 (Sep 6, 2022)
+- Made junit as provided dependency.
+- Fixed destroy logic to stop all the threads in execution.
+- Refactored SyncManager to be able to start/stop tasks and removed that logic from destroy method.
+- Updated EventTask, decoupled Storage logic, and added a new scheduler task in charge of flushing events.
+
 4.4.5 (Jul 29, 2022)
 - Fixed in Synchronizer not properly synchronizing newly referenced segments.
 - Update pom files to have profiles for releases.
