@@ -1,3 +1,11 @@
+4.4.6 (Sep 6, 2022)
+- Moved CHANGES.TXT to the project root.
+- Updated compatible Java to 8 in README.dm.
+- Update in pom file JUnit to be provided.
+- Fixed destroy not stop all threads.
+- Updated SyncManager to start and stop tasks and removed them from destroy.
+- Updated EventTask creating Scheduler Task.
+
 4.4.5 (Jul 29, 2022)
 - Fixed in Synchronizer not properly synchronizing newly referenced segments.
 - Update pom files to have profiles for releases.
