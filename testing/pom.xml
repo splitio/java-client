@@ -6,7 +6,7 @@
     <parent>
         <groupId>io.split.client</groupId>
         <artifactId>java-client-parent</artifactId>
-        <version>4.4.5</version>
+        <version>4.4.6</version>
     </parent>
 
     <artifactId>java-client-testing</artifactId>
@@ -22,6 +22,7 @@
         <dependency>
             <groupId>junit</groupId>
             <artifactId>junit</artifactId>
+            <scope>provided</scope>
         </dependency>
     </dependencies>
 

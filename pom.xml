@@ -4,7 +4,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>io.split.client</groupId>
     <artifactId>java-client-parent</artifactId>
-    <version>4.4.5</version>
+    <version>4.4.6</version>
     <dependencyManagement>
         <dependencies>
             <dependency>
@@ -53,13 +53,13 @@
             <url>https://oss.sonatype.org/content/repositories/snapshots</url>
         </snapshotRepository>
         <repository>
-            <id>sonatype releases</id>
+            <id>ossrh</id>
             <url>https://oss.sonatype.org/content/repositories/releases</url>
         </repository>
     </distributionManagement>
     <repositories>
         <repository>
-            <id>sonatype releases</id>
+            <id>ossrh</id>
             <url>https://oss.sonatype.org/content/repositories/releases</url>
         </repository>
         <repository>
@@ -93,8 +93,8 @@
                 <artifactId>maven-compiler-plugin</artifactId>
                 <version>3.3</version>
                 <configuration>
-                    <source>1.8</source>
-                    <target>1.8</target>
+                    <source>${maven.compiler.source}</source>
+                    <target>${maven.compiler.target}</target>
                 </configuration>
             </plugin>
             <plugin>
@@ -174,7 +174,7 @@
                     <url>https://oss.sonatype.org/content/repositories/snapshots</url>
                 </snapshotRepository>
                 <repository>
-                    <id>sonatype releases</id>
+                    <id>ossrh</id>
                     <url>https://oss.sonatype.org/content/repositories/releases</url>
                 </repository>
             </distributionManagement>
