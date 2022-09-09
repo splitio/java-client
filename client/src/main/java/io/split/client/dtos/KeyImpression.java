@@ -77,6 +77,7 @@ public class KeyImpression {
         ki.changeNumber = i.changeNumber();
         ki.treatment = i.treatment();
         ki.label = i.appliedRule();
+        ki.previousTime = i.pt();
         return ki;
     }
 }
