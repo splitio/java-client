@@ -23,10 +23,12 @@ import java.net.URISyntaxException;
 import java.util.AbstractMap;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import static org.hamcrest.Matchers.*;
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThat;
 import static org.mockito.Mockito.*;
 
@@ -177,7 +179,6 @@ public class ImpressionsManagerImplTest {
     }
 
     @Test
-    @Ignore // TODO: This test needs to be updated
     public void alreadySeenImpressionsAreMarked() throws URISyntaxException {
         SplitClientConfig config = SplitClientConfig.builder()
                 .impressionsQueueSize(10)
@@ -224,7 +225,7 @@ public class ImpressionsManagerImplTest {
         captured = impressionsCaptor.getValue();
         for (TestImpressions testImpressions : captured) {
             for (KeyImpression keyImpression : testImpressions.keyImpressions) {
-                assertThat(keyImpression.previousTime, is(equalTo(keyImpression.time)));
+                assertEquals(Optional.of(keyImpression.previousTime), Optional.of(keyImpression.time));
             }
         }
     }
