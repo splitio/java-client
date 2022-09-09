@@ -5,6 +5,7 @@ import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import io.split.client.SplitClientConfig;
 import io.split.client.dtos.KeyImpression;
 import io.split.client.dtos.TestImpressions;
+import io.split.client.dtos.UniqueKeys;
 import io.split.client.impressions.strategy.ProcessImpressionDebug;
 import io.split.client.impressions.strategy.ProcessImpressionNone;
 import io.split.client.impressions.strategy.ProcessImpressionOptimized;
@@ -51,9 +52,8 @@ public class ImpressionsManagerImpl implements ImpressionsManager, Closeable {
     private ImpressionObserver impressionObserver;
     private ImpressionCounter counter;
     private ProcessImpressionStrategy processImpressionStrategy;
-    private UniqueKeysTracker uniqueKeysTracker;
+    private final UniqueKeysTracker _uniqueKeysTracker;
     private final int _impressionsRefreshRate;
-    private final TelemetrySynchronizer _telemetrySynchronizer;
 
     public static ImpressionsManagerImpl instance(CloseableHttpClient client,
                                                   SplitClientConfig config,
@@ -62,8 +62,8 @@ public class ImpressionsManagerImpl implements ImpressionsManager, Closeable {
                                                   ImpressionsStorageConsumer impressionsStorageConsumer,
                                                   ImpressionsStorageProducer impressionsStorageProducer,
                                                   ImpressionsSender impressionsSender,
-                                                  TelemetrySynchronizer telemetrySynchronizer) throws URISyntaxException {
-        return new ImpressionsManagerImpl(config, impressionsSender, listeners, telemetryRuntimeProducer, impressionsStorageConsumer, impressionsStorageProducer, telemetrySynchronizer);
+                                                  UniqueKeysTracker uniqueKeysTracker) throws URISyntaxException {
+        return new ImpressionsManagerImpl(config, impressionsSender, listeners, telemetryRuntimeProducer, impressionsStorageConsumer, impressionsStorageProducer, uniqueKeysTracker);
     }
 
     public static ImpressionsManagerImpl instanceForTest(SplitClientConfig config,
@@ -72,8 +72,8 @@ public class ImpressionsManagerImpl implements ImpressionsManager, Closeable {
                                                          TelemetryRuntimeProducer telemetryRuntimeProducer,
                                                          ImpressionsStorageConsumer impressionsStorageConsumer,
                                                          ImpressionsStorageProducer impressionsStorageProducer,
-                                                         TelemetrySynchronizer telemetrySynchronizer) throws URISyntaxException {
-        return new ImpressionsManagerImpl(config, impressionsSender, listeners, telemetryRuntimeProducer, impressionsStorageConsumer, impressionsStorageProducer, telemetrySynchronizer);
+                                                         UniqueKeysTracker uniqueKeysTracker) throws URISyntaxException {
+        return new ImpressionsManagerImpl(config, impressionsSender, listeners, telemetryRuntimeProducer, impressionsStorageConsumer, impressionsStorageProducer, uniqueKeysTracker);
     }
 
     private ImpressionsManagerImpl(SplitClientConfig config,
@@ -82,7 +82,7 @@ public class ImpressionsManagerImpl implements ImpressionsManager, Closeable {
                                    TelemetryRuntimeProducer telemetryRuntimeProducer,
                                    ImpressionsStorageConsumer impressionsStorageConsumer,
                                    ImpressionsStorageProducer impressionsStorageProducer,
-                                   TelemetrySynchronizer telemetrySynchronizer) throws URISyntaxException {
+                                   UniqueKeysTracker uniqueKeysTracker) throws URISyntaxException {
 
 
         _config = checkNotNull(config);
@@ -91,7 +91,7 @@ public class ImpressionsManagerImpl implements ImpressionsManager, Closeable {
         _impressionsStorageProducer = checkNotNull(impressionsStorageProducer);
         _telemetryRuntimeProducer = checkNotNull(telemetryRuntimeProducer);
         _impressionsSender = impressionsSender;
-        _telemetrySynchronizer = telemetrySynchronizer;
+        _uniqueKeysTracker = uniqueKeysTracker;
 
         _scheduler = buildExecutor();
 
@@ -118,10 +118,7 @@ public class ImpressionsManagerImpl implements ImpressionsManager, Closeable {
             case NONE:
                 _scheduler.scheduleAtFixedRate(this::sendImpressionCounters, COUNT_INITIAL_DELAY_SECONDS, COUNT_REFRESH_RATE_SECONDS, TimeUnit.SECONDS);
                 counter = new ImpressionCounter();
-                int uniqueKeysRefreshRate = _config.operationMode().equals(OperationMode.STANDALONE) ? _config.uniqueKeysRefreshRateInMemory()
-                        : _config.uniqueKeysRefreshRateRedis();
-                uniqueKeysTracker = new UniqueKeysTrackerImp(_telemetrySynchronizer, uniqueKeysRefreshRate, _config.filterUniqueKeysRefreshRate());
-                processImpressionStrategy = new ProcessImpressionNone(_listener!=null, uniqueKeysTracker, counter);
+                processImpressionStrategy = new ProcessImpressionNone(_listener!=null, _uniqueKeysTracker, counter);
                 break;
         }
     }
@@ -154,10 +151,6 @@ public class ImpressionsManagerImpl implements ImpressionsManager, Closeable {
             if(_listener!= null){
                 _listener.close();
                 _log.info("Successful shutdown of ImpressionListener");
-            }
-            if(uniqueKeysTracker != null){
-                uniqueKeysTracker.stop();
-                _log.info("Successful stop of UniqueKeysTracker");
             }
             _scheduler.shutdown();
             sendImpressions();
