@@ -134,20 +134,24 @@ public class SplitClientIntegrationTest {
     @Test
     public void getTreatmentWithStreamingEnabledAndCheckSegments() throws Exception {
         MockResponse response = new MockResponse().setBody("{\"splits\": [], \"since\":1585948850109, \"till\":1585948850109}");
+        MockResponse response1 = new MockResponse().setBody("{\"splits\": [], \"since\":1585948850109, \"till\":1585948850109}");
         MockResponse response2 = new MockResponse().setBody("{\"splits\": [], \"since\":1585948850110, \"till\":1585948850110}");
         MockResponse response3 = new MockResponse().setBody("{\"splits\": [], \"since\":1585948850111, \"till\":1585948850111}");
 
         Queue responses = new LinkedList<>();
         responses.add(response);
+        Queue responses1 = new LinkedList<>();
+        responses.add(response1);
         Queue responses2 = new LinkedList<>();
         responses2.add(response2);
         Queue responses3 = new LinkedList<>();
         responses3.add(response3);
 
         SplitMockServer splitServer = new SplitMockServer(CustomDispatcher.builder()
-                .path(CustomDispatcher.SINCE_1585948850110, responses)
-                .path(CustomDispatcher.SEGMENT3_INITIAL, responses)
-                .path(CustomDispatcher.SEGMENT3_SINCE_1585948850110, responses2)
+                .path(CustomDispatcher.SINCE_1585948850109, responses)
+                .path(CustomDispatcher.SINCE_1585948850110, responses1)
+                .path(CustomDispatcher.SEGMENT3_INITIAL, responses2)
+                .path(CustomDispatcher.SEGMENT3_SINCE_1585948850110, responses3)
                 .build());
         SSEMockServer.SseEventQueue eventQueue = new SSEMockServer.SseEventQueue();
         SSEMockServer sseServer = buildSSEMockServer(eventQueue);
