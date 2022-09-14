@@ -16,13 +16,12 @@ class RedisImp implements CustomStorageWrapper {
     private static final String IMPRESSIONS_KEY = "SPLITIO.impressions" ;
     private static final long IMPRESSIONS_OR_EVENTS_DEFAULT_TTL = 3600000L;
     private final CommonRedis _commonRedis;
-
     private final JedisPool jedisPool;
-    private final String prefix;
+    private final String _prefix;
 
     public RedisImp(JedisPool jedisPool, String prefix) {
         this.jedisPool = jedisPool;
-        this.prefix = prefix;
+        this._prefix = prefix;
         _commonRedis = CommonRedis.create(prefix);
     }
 
@@ -89,7 +88,9 @@ class RedisImp implements CustomStorageWrapper {
     @Override
     public Set<String> getKeysByPrefix(String prefix) throws Exception {
         try (Jedis jedis = this.jedisPool.getResource()) {
-            return jedis.keys(_commonRedis.buildKeyWithPrefix(prefix));
+            Set<String> keysWithPrefix = jedis.keys(_commonRedis.buildKeyWithPrefix(prefix));
+            keysWithPrefix = keysWithPrefix.stream().map(key -> key.replaceAll(_prefix + ".", "")).collect(Collectors.toSet());
+            return keysWithPrefix;
         } catch (Exception ex) {
             throw new RedisException(ex.getMessage());
         }

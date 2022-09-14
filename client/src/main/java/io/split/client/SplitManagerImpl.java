@@ -85,13 +85,7 @@ public class SplitManagerImpl implements SplitManager {
             _log.warn("splitNames: the SDK is not ready, results may be incorrect. Make sure to wait for SDK readiness before using this method");
             _telemetryConfigProducer.recordNonReadyUsage();
         }}
-        List<String> result = new ArrayList<>();
-        Collection<ParsedSplit> parsedSplits = _splitCacheConsumer.getAll();
-        for (ParsedSplit split : parsedSplits) {
-            result.add(split.feature());
-        }
-
-        return result;
+        return _splitCacheConsumer.splitNames();
     }
 
     @Override

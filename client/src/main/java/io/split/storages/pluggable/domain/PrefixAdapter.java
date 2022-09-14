@@ -30,6 +30,10 @@ public class PrefixAdapter {
         return DEFAULT_PREFIX+SPLIT_PREFIX+"*";
     }
 
+    public static String buildSplitsPrefix(){
+        return DEFAULT_PREFIX+SPLIT_PREFIX;
+    }
+
     public static String buildTrafficTypeExists(String trafficType) {
         return String.format(DEFAULT_PREFIX+TRAFFIC_TYPE_PREFIX+"%s", trafficType);
     }
