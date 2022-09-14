@@ -131,26 +131,23 @@ public class SplitClientIntegrationTest {
         sseServer.stop();
     }
 
-    @Ignore
     @Test
     public void getTreatmentWithStreamingEnabledAndCheckSegments() throws Exception {
-        MockResponse response = new MockResponse().setBody("{\"splits\": [], \"since\":1585948850109, \"till\":1585948850110}");
+        MockResponse response = new MockResponse().setBody("{\"splits\": [], \"since\":1585948850109, \"till\":1585948850109}");
+        MockResponse response2 = new MockResponse().setBody("{\"splits\": [], \"since\":1585948850110, \"till\":1585948850110}");
+        MockResponse response3 = new MockResponse().setBody("{\"splits\": [], \"since\":1585948850111, \"till\":1585948850111}");
 
-        Queue responses0 = new LinkedList<>();
-        responses0.add(response);
         Queue responses = new LinkedList<>();
         responses.add(response);
         Queue responses2 = new LinkedList<>();
-        responses2.add(response);
+        responses2.add(response2);
         Queue responses3 = new LinkedList<>();
-        responses3.add(response);
-
+        responses3.add(response3);
 
         SplitMockServer splitServer = new SplitMockServer(CustomDispatcher.builder()
-                //.path(CustomDispatcher.SINCE_1585948850109, responses0)
                 .path(CustomDispatcher.SINCE_1585948850110, responses)
+                .path(CustomDispatcher.SEGMENT3_INITIAL, responses)
                 .path(CustomDispatcher.SEGMENT3_SINCE_1585948850110, responses2)
-                //.path(CustomDispatcher.SEGMENT3_SINCE_1585948850111, responses3)
                 .build());
         SSEMockServer.SseEventQueue eventQueue = new SSEMockServer.SseEventQueue();
         SSEMockServer sseServer = buildSSEMockServer(eventQueue);
@@ -172,8 +169,8 @@ public class SplitClientIntegrationTest {
         SplitClient client = factory.client();
         client.blockUntilReady();
 
-        //String result = client.getTreatment("test_in_segment", "push_test");
-        //Assert.assertEquals("on_whitelist", result);
+        String result = client.getTreatment("test_in_segment", "push_test");
+        Assert.assertEquals("on", result);
 
         OutboundSseEvent sseEventWithPublishers = new OutboundEvent
                 .Builder()
@@ -197,7 +194,7 @@ public class SplitClientIntegrationTest {
         eventQueue.push(sseEvent2);
 
         Awaitility.await()
-                .atMost(50L, TimeUnit.SECONDS)
+                .atMost(100L, TimeUnit.SECONDS)
                 .until(() -> "in_segment_match".equals(client.getTreatment("test_in_segment", "push_test")));
 
         // SEGMENT_UPDATE should not fetch -> changeNumber < since
