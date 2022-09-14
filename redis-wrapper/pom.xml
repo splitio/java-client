@@ -6,11 +6,11 @@
     <parent>
         <artifactId>java-client-parent</artifactId>
         <groupId>io.split.client</groupId>
-        <version>4.4.7-rc2</version>
+        <version>4.4.7</version>
     </parent>
 
     <artifactId>redis-wrapper</artifactId>
-    <version>1.0.2-rc10</version>
+    <version>1.0.2</version>
     <packaging>jar</packaging>
     <name>Package for Redis Wrapper Implementation</name>
     <description>Implements Redis Pluggable Storage</description>

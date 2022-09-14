@@ -1,3 +1,8 @@
+4.4.7 (Sep 14, 2022)
+- Fixed fromImpression in KeyImpression to map previous time.
+- Updated `org.yaml.snakeyaml` dependence to 1.31 for fixing a vulnerability.
+- Fixed buildKeyWithPrefix and added CommonRedis to share it.
+
 4.4.6 (Sep 6, 2022)
 - Made junit as provided dependency.
 - Fixed destroy logic to stop all the threads in execution.
