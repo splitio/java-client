@@ -12,4 +12,5 @@ public interface SplitCacheConsumer extends SplitCacheCommons{
     Collection<ParsedSplit> getAll();
     Map<String, ParsedSplit> fetchMany(List<String> names);
     boolean trafficTypeExists(String trafficTypeName);
+    List<String> splitNames();
 }
