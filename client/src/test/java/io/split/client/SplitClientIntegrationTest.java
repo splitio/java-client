@@ -17,19 +17,16 @@ import org.awaitility.Awaitility;
 import org.glassfish.grizzly.utils.Pair;
 import org.glassfish.jersey.media.sse.OutboundEvent;
 import org.junit.Assert;
-import org.junit.Ignore;
 import org.junit.Test;
 
 import javax.ws.rs.sse.OutboundSseEvent;
 import java.io.IOException;
-import java.io.InputStream;
 import java.net.URISyntaxException;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
 public class SplitClientIntegrationTest {
-    // TODO: review this test.
 
     @Test
     public void getTreatmentWithStreamingEnabled() throws Exception {
@@ -129,90 +126,6 @@ public class SplitClientIntegrationTest {
         client.destroy();
         splitServer.stop();
         sseServer.stop();
-    }
-
-    @Test
-    public void getTreatmentWithStreamingEnabledAndCheckSegments() throws Exception {
-        MockResponse response = new MockResponse().setBody("{\"splits\": [], \"since\":1585948850109, \"till\":1585948850109}");
-        MockResponse response1 = new MockResponse().setBody("{\"splits\": [], \"since\":1585948850109, \"till\":1585948850109}");
-        MockResponse response2 = new MockResponse().setBody("{\"splits\": [], \"since\":1585948850110, \"till\":1585948850110}");
-        MockResponse response3 = new MockResponse().setBody("{\"splits\": [], \"since\":1585948850111, \"till\":1585948850111}");
-
-        Queue responses = new LinkedList<>();
-        responses.add(response);
-        Queue responses1 = new LinkedList<>();
-        responses.add(response1);
-        Queue responses2 = new LinkedList<>();
-        responses2.add(response2);
-        Queue responses3 = new LinkedList<>();
-        responses3.add(response3);
-
-        SplitMockServer splitServer = new SplitMockServer(CustomDispatcher.builder()
-                .path(CustomDispatcher.SINCE_1585948850109, responses)
-                .path(CustomDispatcher.SINCE_1585948850110, responses1)
-                .path(CustomDispatcher.SEGMENT3_INITIAL, responses2)
-                .path(CustomDispatcher.SEGMENT3_SINCE_1585948850110, responses3)
-                .build());
-        SSEMockServer.SseEventQueue eventQueue = new SSEMockServer.SseEventQueue();
-        SSEMockServer sseServer = buildSSEMockServer(eventQueue);
-
-        splitServer.start();
-        sseServer.start();
-
-        SplitClientConfig config = SplitClientConfig.builder()
-                .setBlockUntilReadyTimeout(10000)
-                .endpoint(splitServer.getUrl(), splitServer.getUrl())
-                .authServiceURL(String.format("%s/api/auth/enabled", splitServer.getUrl()))
-                .streamingServiceURL("http://localhost:" + sseServer.getPort())
-                .featuresRefreshRate(20)
-                .segmentsRefreshRate(30)
-                .streamingEnabled(true)
-                .build();
-
-        SplitFactory factory = SplitFactoryBuilder.build("fake-api-token", config);
-        SplitClient client = factory.client();
-        client.blockUntilReady();
-
-        String result = client.getTreatment("test_in_segment", "push_test");
-        Assert.assertEquals("on", result);
-
-        OutboundSseEvent sseEventWithPublishers = new OutboundEvent
-                .Builder()
-                .name("message")
-                .data("{\"id\":\"22\",\"timestamp\":1588254668328,\"encoding\":\"json\",\"channel\":\"[?occupancy=metrics.publishers]control_pri\",\"data\":\"{\\\"metrics\\\":{\\\"publishers\\\":2}}\",\"name\":\"[meta]occupancy\"}")
-                .build();
-        eventQueue.push(sseEventWithPublishers);
-
-        OutboundSseEvent sseEventWithoutPublishers = new OutboundEvent
-                .Builder()
-                .name("message")
-                .data("{\"id\":\"22\",\"timestamp\":1588254668328,\"encoding\":\"json\",\"channel\":\"[?occupancy=metrics.publishers]control_pri\",\"data\":\"{\\\"metrics\\\":{\\\"publishers\\\":0}}\",\"name\":\"[meta]occupancy\"}")
-                .build();
-        eventQueue.push(sseEventWithoutPublishers);
-
-        OutboundSseEvent sseEvent2 = new OutboundEvent
-                .Builder()
-                .name("message")
-                .data("{\"id\":\"222\",\"clientId\":\"22\",\"timestamp\":1592591696052,\"encoding\":\"json\",\"channel\":\"xxxx_xxxx_segments\",\"data\":\"{\\\"type\\\":\\\"SEGMENT_UPDATE\\\",\\\"changeNumber\\\":1585948850110,\\\"segmentName\\\":\\\"segment3\\\"}\"}")
-                .build();
-        eventQueue.push(sseEvent2);
-
-        Awaitility.await()
-                .atMost(100L, TimeUnit.SECONDS)
-                .until(() -> "in_segment_match".equals(client.getTreatment("test_in_segment", "push_test")));
-
-        // SEGMENT_UPDATE should not fetch -> changeNumber < since
-        OutboundSseEvent sseEvent5 = new OutboundEvent
-                .Builder()
-                .name("message")
-                .data("{\"id\":\"22\",\"clientId\":\"22\",\"timestamp\":1592591696052,\"encoding\":\"json\",\"channel\":\"xxxx_xxxx_segments\",\"data\":\"{\\\"type\\\":\\\"SEGMENT_UPDATE\\\",\\\"changeNumber\\\":1585948850111,\\\"segmentName\\\":\\\"segment3\\\"}\"}")
-                .build();
-        eventQueue.push(sseEvent5);
-
-        Awaitility.await()
-                .atMost(50L, TimeUnit.SECONDS)
-                .until(() -> "in_segment_match".equals(client.getTreatment("test_in_segment", "push_test")));
-
     }
 
     @Test
