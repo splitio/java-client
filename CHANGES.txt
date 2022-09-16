@@ -1,5 +1,6 @@
 4.4.8 (Sep 16, 2022)
 - Updated `org.yaml.snakeyaml` dependence to 1.32 for fixing a vulnerability.
+- Improved SplitClientIntegrationTest removing ignore annotation in some test cases.
 
 4.4.7 (Sep 14, 2022)
 - Fixed fromImpression in KeyImpression to map previous time.
