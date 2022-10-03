@@ -210,12 +210,7 @@ public class SyncManagerImp implements SyncManager {
     private void startStreamingMode() {
         _log.debug("Starting in streaming mode ...");
         if (null == _pushStatusMonitorTask) {
-            try {
                 _pushStatusMonitorTask = _pushMonitorExecutorService.submit(this::incomingPushStatusHandler);
-            } catch (Exception e){
-                System.out.println(e);
-            }
-
         }
         _pushManager.start();
         _telemetryRuntimeProducer.recordStreamingEvents(new StreamingEvent(StreamEventsEnum.SYNC_MODE_UPDATE.getType(), StreamEventsEnum.SyncModeUpdateValues.STREAMING_EVENT.getValue(), System.currentTimeMillis()));
