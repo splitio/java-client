@@ -15,7 +15,6 @@ import org.awaitility.Awaitility;
 import org.glassfish.grizzly.utils.Pair;
 import org.glassfish.jersey.media.sse.OutboundEvent;
 import org.junit.Assert;
-import org.junit.Ignore;
 import org.junit.Test;
 
 import javax.ws.rs.sse.OutboundSseEvent;
@@ -27,12 +26,23 @@ import java.util.concurrent.TimeoutException;
 import java.util.stream.Collectors;
 
 public class SplitClientIntegrationTest {
-    // TODO: review this test.
 
     @Test
-    @Ignore
     public void getTreatmentWithStreamingEnabled() throws Exception {
-        SplitMockServer splitServer = new SplitMockServer(CustomDispatcher.builder().build());
+        MockResponse response = new MockResponse().setBody("{\"splits\": [], \"since\":1585948850109, \"till\":1585948850109}");
+        MockResponse response2 = new MockResponse().setBody("{\"splits\": [], \"since\":1585948850110, \"till\":1585948850110}");
+        MockResponse response3 = new MockResponse().setBody("{\"splits\": [], \"since\":1585948850111, \"till\":1585948850111}");
+        Queue responses = new LinkedList<>();
+        responses.add(response);
+        Queue responses2 = new LinkedList<>();
+        responses2.add(response2);
+        Queue responses3 = new LinkedList<>();
+        responses3.add(response3);
+        SplitMockServer splitServer = new SplitMockServer(CustomDispatcher.builder()
+                .path(CustomDispatcher.SINCE_1585948850109, responses)
+                .path(CustomDispatcher.SINCE_1585948850110, responses2)
+                .path(CustomDispatcher.SINCE_1585948850111, responses3)
+                .build());
         SSEMockServer.SseEventQueue eventQueue = new SSEMockServer.SseEventQueue();
         SSEMockServer sseServer = buildSSEMockServer(eventQueue);
 
@@ -44,6 +54,8 @@ public class SplitClientIntegrationTest {
                 .endpoint(splitServer.getUrl(), splitServer.getUrl())
                 .authServiceURL(String.format("%s/api/auth/enabled", splitServer.getUrl()))
                 .streamingServiceURL("http://localhost:" + sseServer.getPort())
+                .featuresRefreshRate(20)
+                .segmentsRefreshRate(30)
                 .streamingEnabled(true)
                 .build();
 
@@ -55,6 +67,21 @@ public class SplitClientIntegrationTest {
         Assert.assertEquals("on_whitelist", result);
 
         // SPLIT_UPDATED should fetch -> changeNumber > since
+
+        OutboundSseEvent sseEventWithPublishers = new OutboundEvent
+                .Builder()
+                .name("message")
+                .data("{\"id\":\"22\",\"timestamp\":1588254668328,\"encoding\":\"json\",\"channel\":\"[?occupancy=metrics.publishers]control_pri\",\"data\":\"{\\\"metrics\\\":{\\\"publishers\\\":2}}\",\"name\":\"[meta]occupancy\"}")
+                .build();
+        eventQueue.push(sseEventWithPublishers);
+
+        OutboundSseEvent sseEventWithoutPublishers = new OutboundEvent
+                .Builder()
+                .name("message")
+                .data("{\"id\":\"22\",\"timestamp\":1588254668328,\"encoding\":\"json\",\"channel\":\"[?occupancy=metrics.publishers]control_pri\",\"data\":\"{\\\"metrics\\\":{\\\"publishers\\\":0}}\",\"name\":\"[meta]occupancy\"}")
+                .build();
+        eventQueue.push(sseEventWithoutPublishers);
+
         OutboundSseEvent sseEvent1 = new OutboundEvent
                 .Builder()
                 .name("message")
@@ -74,33 +101,14 @@ public class SplitClientIntegrationTest {
                 .build();
         eventQueue.push(sseEvent4);
 
+
         Awaitility.await()
                 .atMost(50L, TimeUnit.SECONDS)
                 .until(() -> "after_notification_received".equals(client.getTreatment("admin", "push_test"))
                     && "on_rollout".equals(client.getTreatment("test_in_segment", "push_test")));
 
-        OutboundSseEvent sseEvent2 = new OutboundEvent
-                .Builder()
-                .name("message")
-                .data("{\"id\":\"22\",\"clientId\":\"22\",\"timestamp\":1592591696052,\"encoding\":\"json\",\"channel\":\"xxxx_xxxx_segments\",\"data\":\"{\\\"type\\\":\\\"SEGMENT_UPDATE\\\",\\\"changeNumber\\\":1585948850111,\\\"segmentName\\\":\\\"segment3\\\"}\"}")
-                .build();
-        eventQueue.push(sseEvent2);
-
-        Awaitility.await()
-                .atMost(50L, TimeUnit.SECONDS)
-                .until(() -> "in_segment_match".equals(client.getTreatment("test_in_segment", "push_test")));
-
-        // SEGMENT_UPDATE should not fetch -> changeNumber < since
-        OutboundSseEvent sseEvent5 = new OutboundEvent
-                .Builder()
-                .name("message")
-                .data("{\"id\":\"22\",\"clientId\":\"22\",\"timestamp\":1592591696052,\"encoding\":\"json\",\"channel\":\"xxxx_xxxx_segments\",\"data\":\"{\\\"type\\\":\\\"SEGMENT_UPDATE\\\",\\\"changeNumber\\\":1585948850109,\\\"segmentName\\\":\\\"segment3\\\"}\"}")
-                .build();
-        eventQueue.push(sseEvent5);
-
-        Awaitility.await()
-                .atMost(50L, TimeUnit.SECONDS)
-                .until(() -> "in_segment_match".equals(client.getTreatment("test_in_segment", "push_test")));
+        eventQueue.push(sseEventWithPublishers);
+        eventQueue.push(sseEventWithoutPublishers);
 
         // SPLIT_KILL should fetch.
         OutboundSseEvent sseEvent3 = new OutboundEvent
@@ -539,11 +547,17 @@ public class SplitClientIntegrationTest {
         sseServer4.stop();
     }
 
-    // TODO: review this test.
     @Test
-    @Ignore
     public void keepAlive() throws Exception {
-        SplitMockServer splitServer = new SplitMockServer(CustomDispatcher.builder().build());
+        MockResponse response = new MockResponse().setBody("{\"splits\": [], \"since\":1585948850109, \"till\":1585948850109}");
+        Queue responses = new LinkedList<>();
+        responses.add(response);
+
+        SplitMockServer splitServer = new SplitMockServer(CustomDispatcher.builder()
+                .path(CustomDispatcher.SINCE_1585948850109, responses)
+                .build());
+
+        //plitMockServer splitServer = new SplitMockServer(CustomDispatcher.builder().build());
         SSEMockServer.SseEventQueue eventQueue = new SSEMockServer.SseEventQueue();
         SSEMockServer sseServer = buildSSEMockServer(eventQueue);
 
@@ -559,7 +573,7 @@ public class SplitClientIntegrationTest {
         Assert.assertEquals("on_whitelist", result);
 
         // wait to check keep alive notification.
-        Thread.sleep(80000);
+        Thread.sleep(50000);
 
         // must reconnect and after the second syncAll the result must be different
         Awaitility.await()
@@ -729,5 +743,4 @@ public class SplitClientIntegrationTest {
                 .streamingEnabled(streamingEnabled)
                 .build();
     }
-
 }

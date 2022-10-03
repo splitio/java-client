@@ -90,7 +90,11 @@ public class InMemoryCacheImp implements SplitCache {
 
     @Override
     public List<String> splitNames() {
-        return new ArrayList<>(_concurrentMap.keySet());
+        List<String> splitNamesList = new ArrayList<>();
+        for (String key: _concurrentMap.keySet()) {
+            splitNamesList.add(_concurrentMap.get(key).feature());
+        }
+        return splitNamesList;
     }
 
     @Override

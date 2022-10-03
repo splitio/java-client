@@ -1,3 +1,18 @@
+4.4.8 (Sep 16, 2022)
+- Updated `org.yaml.snakeyaml` dependence to 1.32 for fixing a vulnerability.
+- Improved SplitClientIntegrationTest removing ignore annotation in some test cases.
+
+4.4.7 (Sep 14, 2022)
+- Fixed fromImpression in KeyImpression to map previous time.
+- Updated `org.yaml.snakeyaml` dependence to 1.31 for fixing a vulnerability.
+- Fixed buildKeyWithPrefix and added CommonRedis to share it.
+
+4.4.6 (Sep 6, 2022)
+- Made junit as provided dependency.
+- Fixed destroy logic to stop all the threads in execution.
+- Refactored SyncManager to be able to start/stop tasks and removed that logic from destroy method.
+- Updated EventTask, decoupled Storage logic, and added a new scheduler task in charge of flushing events.
+
 4.4.5 (Jul 29, 2022)
 - Fixed in Synchronizer not properly synchronizing newly referenced segments.
 - Update pom files to have profiles for releases.
@@ -7,7 +22,7 @@
 
 4.4.3 (May 9, 2022)
 - Updated shaded dependencies: `org.apache`, `org.checkerframework` and `org.yaml.snakeyaml`
-- Updating `org.slf4j` to 1.7.36 for fixing vulnerability.
+- Updated `org.slf4j` to 1.7.36 for fixing vulnerability.
 
 4.4.2 (Feb 22, 2022)
 - Cleaned up log messages in segments logic.

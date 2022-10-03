@@ -17,10 +17,9 @@ class RedisImp implements CustomStorageWrapper, HasPipelineSupport {
     private static final String EVENTS_KEY = "SPLITIO.events" ;
     private static final String IMPRESSIONS_KEY = "SPLITIO.impressions" ;
     private static final long IMPRESSIONS_OR_EVENTS_DEFAULT_TTL = 3600000L;
-
+    private final CommonRedis _commonRedis;
     private final JedisPool jedisPool;
     private final String _prefix;
-    private final CommonRedis _commonRedis;
 
     public RedisImp(JedisPool jedisPool, String prefix) {
         this.jedisPool = jedisPool;
@@ -154,7 +153,7 @@ class RedisImp implements CustomStorageWrapper, HasPipelineSupport {
     @Override
     public List<String> popItems(String key, long count) throws Exception {
         try (Jedis jedis = this.jedisPool.getResource()) {
-            String keyWithPrefix =  _commonRedis.buildKeyWithPrefix(key);
+            String keyWithPrefix = _commonRedis.buildKeyWithPrefix(key);
             List<String> items = jedis.lrange(keyWithPrefix, 0, count-1);
             int fetchedCount = items.size();
             jedis.ltrim(keyWithPrefix, fetchedCount, -1);

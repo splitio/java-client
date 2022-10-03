@@ -33,6 +33,7 @@ import static io.split.client.impressions.ImpressionTestUtils.keyImpression;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
+import static org.junit.Assert.assertEquals;
 
 /**
  * Created by patricioe on 6/20/16.
@@ -240,7 +241,7 @@ public class ImpressionsManagerImplTest {
         captured = impressionsCaptor.getAllValues().get(1);
         for (TestImpressions testImpressions : captured) {
             for (KeyImpression keyImpression : testImpressions.keyImpressions) {
-                Assert.assertEquals(Optional.of(keyImpression.time), Optional.of(keyImpression.previousTime));
+                assertEquals(Optional.of(keyImpression.previousTime), Optional.of(keyImpression.time));
             }
         }
     }
