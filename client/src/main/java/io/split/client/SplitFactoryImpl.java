@@ -8,7 +8,9 @@ import io.split.client.events.EventsTask;
 import io.split.client.events.InMemoryEventsStorage;
 import io.split.client.impressions.AsynchronousImpressionListener;
 import io.split.client.impressions.HttpImpressionsSender;
+import io.split.client.impressions.ImpressionCounter;
 import io.split.client.impressions.ImpressionListener;
+import io.split.client.impressions.ImpressionObserver;
 import io.split.client.impressions.ImpressionsManager;
 import io.split.client.impressions.ImpressionsManagerImpl;
 import io.split.client.impressions.ImpressionsSender;
@@ -19,6 +21,10 @@ import io.split.client.impressions.InMemoryImpressionsStorage;
 import io.split.client.impressions.PluggableImpressionSender;
 import io.split.client.impressions.UniqueKeysTracker;
 import io.split.client.impressions.UniqueKeysTrackerImp;
+import io.split.client.impressions.strategy.ProcessImpressionDebug;
+import io.split.client.impressions.strategy.ProcessImpressionNone;
+import io.split.client.impressions.strategy.ProcessImpressionOptimized;
+import io.split.client.impressions.strategy.ProcessImpressionStrategy;
 import io.split.client.interceptors.AuthorizationInterceptorFilter;
 import io.split.client.interceptors.ClientKeyInterceptorFilter;
 import io.split.client.interceptors.GzipDecoderResponseInterceptor;
@@ -95,6 +101,7 @@ import java.util.List;
 import java.util.Random;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 public class SplitFactoryImpl implements SplitFactory {
@@ -197,7 +204,7 @@ public class SplitFactoryImpl implements SplitFactory {
         // Impressions
         _impressionsManager = buildImpressionsManager(config, impressionsStorage, impressionsStorage);
 
-        _impressionsManager.start();
+        //_impressionsManager.start();
 
         // EventClient
         EventsStorage eventsStorage = new InMemoryEventsStorage(config.eventsQueueSize(), _telemetryStorageProducer);
@@ -483,7 +490,26 @@ public class SplitFactoryImpl implements SplitFactory {
                     .map(IntegrationsConfig.ImpressionListenerWithMeta::listener)
                     .collect(Collectors.toCollection(() -> impressionListeners));
         }
-        return ImpressionsManagerImpl.instance(_httpclient, config, impressionListeners, _telemetryStorageProducer, impressionsStorageConsumer, impressionsStorageProducer, _impressionsSender, _uniqueKeysTracker);
+        ProcessImpressionStrategy processImpressionStrategy = null;
+        ImpressionCounter counter = null;
+        ImpressionListener listener = (null != impressionListeners && !impressionListeners.isEmpty()) ? new ImpressionListener.FederatedImpressionListener(impressionListeners)
+                : null;
+        switch (config.impressionsMode()){
+            case OPTIMIZED:
+                counter = new ImpressionCounter();
+                ImpressionObserver impressionObserver = new ImpressionObserver(config.getLastSeenCacheSize());
+                processImpressionStrategy = new ProcessImpressionOptimized(listener != null, impressionObserver, counter, _telemetryStorageProducer);
+                break;
+            case DEBUG:
+                impressionObserver = new ImpressionObserver(config.getLastSeenCacheSize());
+                processImpressionStrategy = new ProcessImpressionDebug(listener != null, impressionObserver);
+                break;
+            case NONE:
+                counter = new ImpressionCounter();
+                processImpressionStrategy = new ProcessImpressionNone(listener != null, _uniqueKeysTracker, counter);
+                break;
+        }
+        return ImpressionsManagerImpl.instance(_httpclient, config, impressionListeners, _telemetryStorageProducer, impressionsStorageConsumer, impressionsStorageProducer, _impressionsSender, _uniqueKeysTracker, processImpressionStrategy, counter, listener);
     }
 
     private SDKMetadata createSdkMetadata(boolean ipAddressEnabled, String splitSdkVersion) {

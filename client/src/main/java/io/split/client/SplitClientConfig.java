@@ -75,6 +75,7 @@ public class SplitClientConfig {
 
     // To be set during startup
     public static String splitSdkVersion;
+    private final long _lastSeenCacheSize;
 
 
     public static Builder builder() {
@@ -124,7 +125,8 @@ public class SplitClientConfig {
                               StorageMode storageMode,
                               int uniqueKeysRefreshRateInMemory,
                               int uniqueKeysRefreshRateRedis,
-                              int filterUniqueKeysRefreshRate) {
+                              int filterUniqueKeysRefreshRate,
+                              long lastSeenCacheSize) {
         _endpoint = endpoint;
         _eventsEndpoint = eventsEndpoint;
         _featuresRefreshRate = pollForFeatureChangesEveryNSeconds;
@@ -169,6 +171,7 @@ public class SplitClientConfig {
         _validateAfterInactivityInMillis = validateAfterInactivityInMillis;
         _startingSyncCallBackoffBaseMs = startingSyncCallBackoffBaseMs;
         _customStorageWrapper = customStorageWrapper;
+        _lastSeenCacheSize = lastSeenCacheSize;
 
         Properties props = new Properties();
         try {
@@ -335,6 +338,10 @@ public class SplitClientConfig {
 
     public StorageMode storageMode() { return _storageMode;}
 
+    public long getLastSeenCacheSize() {
+        return _lastSeenCacheSize;
+    }
+
     public static final class Builder {
 
         private String _endpoint = SDK_ENDPOINT;
@@ -384,6 +391,7 @@ public class SplitClientConfig {
         private final long _startingSyncCallBackoffBaseMs = new Long(1000); //backoff base starting at 1 seconds
         private CustomStorageWrapper _customStorageWrapper;
         private StorageMode _storageMode = StorageMode.MEMORY;
+        private final long _lastSeenCacheSize = 500000;
 
         public Builder() {
         }
@@ -968,7 +976,8 @@ public class SplitClientConfig {
                     _storageMode,
                     _uniqueKeysRefreshRateInMemory,
                     _uniqueKeysRefreshRateRedis,
-                    _filterUniqueKeysRefreshRate);
+                    _filterUniqueKeysRefreshRate,
+                    _lastSeenCacheSize);
         }
     }
 }

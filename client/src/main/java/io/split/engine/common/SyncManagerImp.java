@@ -151,11 +151,11 @@ public class SyncManagerImp implements SyncManager {
             }
             _gates.sdkInternalReady();
             _telemetrySynchronizer.synchronizeConfig(_config, System.currentTimeMillis(), ApiKeyCounter.getApiKeyCounterInstance().getFactoryInstances(), new ArrayList<>());
-            /*try {
+            try {
                 _impressionManager.start();
             } catch (Exception e) {
                 _log.error("Error trying to init Impression Manager synchronizer task.", e);
-            }*/
+            }
             if (_uniqueKeysTracker != null){
                 try {
                     _uniqueKeysTracker.start();
