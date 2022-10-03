@@ -197,6 +197,8 @@ public class SplitFactoryImpl implements SplitFactory {
         // Impressions
         _impressionsManager = buildImpressionsManager(config, impressionsStorage, impressionsStorage);
 
+        _impressionsManager.start();
+
         // EventClient
         EventsStorage eventsStorage = new InMemoryEventsStorage(config.eventsQueueSize(), _telemetryStorageProducer);
         EventsSender eventsSender = EventsSender.create(_httpclient, _eventsRootTarget, _telemetryStorageProducer);

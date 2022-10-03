@@ -151,17 +151,11 @@ public class SyncManagerImp implements SyncManager {
             }
             _gates.sdkInternalReady();
             _telemetrySynchronizer.synchronizeConfig(_config, System.currentTimeMillis(), ApiKeyCounter.getApiKeyCounterInstance().getFactoryInstances(), new ArrayList<>());
-            if (_streamingEnabledConfig.get()) {
-                startStreamingMode();
-            } else {
-                startPollingMode();
-            }
-
-            try {
+            /*try {
                 _impressionManager.start();
             } catch (Exception e) {
                 _log.error("Error trying to init Impression Manager synchronizer task.", e);
-            }
+            }*/
             if (_uniqueKeysTracker != null){
                 try {
                     _uniqueKeysTracker.start();
@@ -178,6 +172,11 @@ public class SyncManagerImp implements SyncManager {
                 _telemetrySyncTask.startScheduledTask();
             } catch (Exception e) {
                 _log.error("Error trying to Telemetry synchronizer task.", e);
+            }
+            if (_streamingEnabledConfig.get()) {
+                startStreamingMode();
+            } else {
+                startPollingMode();
             }
         });
     }
@@ -211,7 +210,12 @@ public class SyncManagerImp implements SyncManager {
     private void startStreamingMode() {
         _log.debug("Starting in streaming mode ...");
         if (null == _pushStatusMonitorTask) {
-            _pushStatusMonitorTask = _pushMonitorExecutorService.submit(this::incomingPushStatusHandler);
+            try {
+                _pushStatusMonitorTask = _pushMonitorExecutorService.submit(this::incomingPushStatusHandler);
+            } catch (Exception e){
+                System.out.println(e);
+            }
+
         }
         _pushManager.start();
         _telemetryRuntimeProducer.recordStreamingEvents(new StreamingEvent(StreamEventsEnum.SYNC_MODE_UPDATE.getType(), StreamEventsEnum.SyncModeUpdateValues.STREAMING_EVENT.getValue(), System.currentTimeMillis()));
