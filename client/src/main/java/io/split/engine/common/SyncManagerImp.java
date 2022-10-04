@@ -150,12 +150,6 @@ public class SyncManagerImp implements SyncManager {
                 return;
             }
             _gates.sdkInternalReady();
-            _telemetrySynchronizer.synchronizeConfig(_config, System.currentTimeMillis(), ApiKeyCounter.getApiKeyCounterInstance().getFactoryInstances(), new ArrayList<>());
-            if (_streamingEnabledConfig.get()) {
-                startStreamingMode();
-            } else {
-                startPollingMode();
-            }
 
             try {
                 _impressionManager.start();
@@ -174,6 +168,14 @@ public class SyncManagerImp implements SyncManager {
             } catch (Exception e) {
                 _log.error("Error trying to init Events synchronizer task.", e);
             }
+
+            if (_streamingEnabledConfig.get()) {
+                startStreamingMode();
+            } else {
+                startPollingMode();
+            }
+            _telemetrySynchronizer.synchronizeConfig(_config, System.currentTimeMillis(), ApiKeyCounter.getApiKeyCounterInstance().getFactoryInstances(), new ArrayList<>());
+
             try {
                 _telemetrySyncTask.startScheduledTask();
             } catch (Exception e) {
@@ -211,7 +213,7 @@ public class SyncManagerImp implements SyncManager {
     private void startStreamingMode() {
         _log.debug("Starting in streaming mode ...");
         if (null == _pushStatusMonitorTask) {
-            _pushStatusMonitorTask = _pushMonitorExecutorService.submit(this::incomingPushStatusHandler);
+                _pushStatusMonitorTask = _pushMonitorExecutorService.submit(this::incomingPushStatusHandler);
         }
         _pushManager.start();
         _telemetryRuntimeProducer.recordStreamingEvents(new StreamingEvent(StreamEventsEnum.SYNC_MODE_UPDATE.getType(), StreamEventsEnum.SyncModeUpdateValues.STREAMING_EVENT.getValue(), System.currentTimeMillis()));
