@@ -150,7 +150,7 @@ public class SyncManagerImp implements SyncManager {
                 return;
             }
             _gates.sdkInternalReady();
-            _telemetrySynchronizer.synchronizeConfig(_config, System.currentTimeMillis(), ApiKeyCounter.getApiKeyCounterInstance().getFactoryInstances(), new ArrayList<>());
+
             try {
                 _impressionManager.start();
             } catch (Exception e) {
@@ -168,15 +168,18 @@ public class SyncManagerImp implements SyncManager {
             } catch (Exception e) {
                 _log.error("Error trying to init Events synchronizer task.", e);
             }
-            try {
-                _telemetrySyncTask.startScheduledTask();
-            } catch (Exception e) {
-                _log.error("Error trying to Telemetry synchronizer task.", e);
-            }
+
             if (_streamingEnabledConfig.get()) {
                 startStreamingMode();
             } else {
                 startPollingMode();
+            }
+            _telemetrySynchronizer.synchronizeConfig(_config, System.currentTimeMillis(), ApiKeyCounter.getApiKeyCounterInstance().getFactoryInstances(), new ArrayList<>());
+
+            try {
+                _telemetrySyncTask.startScheduledTask();
+            } catch (Exception e) {
+                _log.error("Error trying to Telemetry synchronizer task.", e);
             }
         });
     }
