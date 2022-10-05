@@ -213,8 +213,7 @@ public class SyncManagerImp implements SyncManager {
         _log.info("Successful shutdown of splits");
         _telemetrySyncTask.stopScheduledTask(splitCount, segmentCount, segmentKeyCount);
         _log.info("Successful shutdown of telemetry sync task");
-        _splitAPI.getHttpClient().close();
-        _splitAPI.getSseHttpClient().close();
+        _splitAPI.close();
     }
 
     private void startStreamingMode() {
