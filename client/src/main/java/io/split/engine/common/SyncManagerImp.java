@@ -21,6 +21,7 @@ import io.split.telemetry.synchronizer.TelemetrySynchronizer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -54,6 +55,7 @@ public class SyncManagerImp implements SyncManager {
     private final SplitSynchronizationTask _splitSynchronizationTask;
     private final UniqueKeysTracker _uniqueKeysTracker;
     private static final long STARTING_SYNC_ALL_BACKOFF_MAX_WAIT_MS = new Long(10000); // 10 seconds max wait
+    private  final SplitAPI _splitAPI;
 
     @VisibleForTesting
     /* package private */ SyncManagerImp(SplitTasks splitTasks,
@@ -64,7 +66,8 @@ public class SyncManagerImp implements SyncManager {
                                          SDKReadinessGates gates, TelemetryRuntimeProducer telemetryRuntimeProducer,
                                          TelemetrySynchronizer telemetrySynchronizer,
                                          SplitClientConfig config,
-                                         UniqueKeysTracker uniqueKeysTracker) {
+                                         UniqueKeysTracker uniqueKeysTracker,
+                                         SplitAPI splitAPI) {
         _streamingEnabledConfig = new AtomicBoolean(streamingEnabledConfig);
         _synchronizer = checkNotNull(synchronizer);
         _pushManager = checkNotNull(pushManager);
@@ -90,6 +93,7 @@ public class SyncManagerImp implements SyncManager {
         _segmentSynchronizationTaskImp = checkNotNull(splitTasks.getSegmentSynchronizationTask());
         _splitSynchronizationTask = checkNotNull(splitTasks.getSplitSynchronizationTask());
         _uniqueKeysTracker = uniqueKeysTracker;
+        _splitAPI = splitAPI;
     }
 
     public static SyncManagerImp build(SplitTasks splitTasks,
@@ -130,7 +134,8 @@ public class SyncManagerImp implements SyncManager {
                                   telemetryRuntimeProducer,
                                   telemetrySynchronizer, 
                                   config,
-                                  uniqueKeysTracker);
+                                  uniqueKeysTracker,
+                                  splitAPI);
     }
 
     @Override
@@ -185,7 +190,7 @@ public class SyncManagerImp implements SyncManager {
     }
 
     @Override
-    public void shutdown(long splitCount, long segmentCount, long segmentKeyCount) {
+    public void shutdown(long splitCount, long segmentCount, long segmentKeyCount) throws IOException {
         if(_shuttedDown.get()) {
             return;
         }
@@ -208,6 +213,8 @@ public class SyncManagerImp implements SyncManager {
         _log.info("Successful shutdown of splits");
         _telemetrySyncTask.stopScheduledTask(splitCount, segmentCount, segmentKeyCount);
         _log.info("Successful shutdown of telemetry sync task");
+        _splitAPI.getHttpClient().close();
+        _splitAPI.getSseHttpClient().close();
     }
 
     private void startStreamingMode() {

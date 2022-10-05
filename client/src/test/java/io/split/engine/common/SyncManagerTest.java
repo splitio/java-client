@@ -1,5 +1,6 @@
 package io.split.engine.common;
 
+import io.split.client.SplitClient;
 import io.split.client.SplitClientConfig;
 import io.split.client.events.EventsTask;
 import io.split.client.impressions.ImpressionsManagerImpl;
@@ -50,8 +51,9 @@ public class SyncManagerTest {
                 _impressionsManager, _eventsTask, _telemetrySyncTask);
 
         Mockito.when(_synchronizer.syncAll()).thenReturn(true);
+        SplitAPI splitAPI = Mockito.mock(SplitAPI.class);
         SyncManagerImp syncManager = new SyncManagerImp( splitTasks, false, _synchronizer, _pushManager, new LinkedBlockingQueue<>(),
-                _gates, telemetryStorage, _telemetrySynchronizer, _config, null);
+                _gates, telemetryStorage, _telemetrySynchronizer, _config, null, splitAPI);
         syncManager.start();
         Thread.sleep(1000);
         Mockito.verify(_synchronizer, Mockito.times(1)).startPeriodicFetching();
@@ -66,8 +68,9 @@ public class SyncManagerTest {
                 _impressionsManager, _eventsTask, _telemetrySyncTask);
 
         Mockito.when(_synchronizer.syncAll()).thenReturn(true);
+        SplitAPI splitAPI = Mockito.mock(SplitAPI.class);
         SyncManager sm = new SyncManagerImp(splitTasks, true, _synchronizer, _pushManager, new LinkedBlockingQueue<>(),
-                _gates, telemetryStorage, _telemetrySynchronizer, _config, null);
+                _gates, telemetryStorage, _telemetrySynchronizer, _config, null, splitAPI);
         sm.start();
         Thread.sleep(1000);
         Mockito.verify(_synchronizer, Mockito.times(0)).startPeriodicFetching();
@@ -82,9 +85,10 @@ public class SyncManagerTest {
         LinkedBlockingQueue<PushManager.Status> messages = new LinkedBlockingQueue<>();
         SplitTasks splitTasks = SplitTasks.build(_splitSynchronizationTask, _segmentSynchronizationTaskImp,
                 _impressionsManager, _eventsTask, _telemetrySyncTask);
+        SplitAPI splitAPI = Mockito.mock(SplitAPI.class);
 
         SyncManagerImp syncManager = new SyncManagerImp(splitTasks, true, _synchronizer, _pushManager, messages,
-                _gates, telemetryStorage, _telemetrySynchronizer, _config, null);
+                _gates, telemetryStorage, _telemetrySynchronizer, _config, null, splitAPI);
         Thread t = new Thread(syncManager::incomingPushStatusHandler);
         t.start();
         messages.offer(PushManager.Status.STREAMING_READY);
@@ -102,9 +106,10 @@ public class SyncManagerTest {
         LinkedBlockingQueue<PushManager.Status> messsages = new LinkedBlockingQueue<>();
         SplitTasks splitTasks = SplitTasks.build(_splitSynchronizationTask, _segmentSynchronizationTaskImp,
                 _impressionsManager, _eventsTask, _telemetrySyncTask);
+        SplitAPI splitAPI = Mockito.mock(SplitAPI.class);
 
         SyncManagerImp syncManager = new SyncManagerImp(splitTasks, true, _synchronizer, _pushManager, messsages,
-                _gates, telemetryStorage, _telemetrySynchronizer, _config, null);
+                _gates, telemetryStorage, _telemetrySynchronizer, _config, null, splitAPI);
         Thread t = new Thread(syncManager::incomingPushStatusHandler);
         t.start();
         messsages.offer(PushManager.Status.STREAMING_DOWN);
@@ -121,9 +126,9 @@ public class SyncManagerTest {
         LinkedBlockingQueue<PushManager.Status> messsages = new LinkedBlockingQueue<>();
         SplitTasks splitTasks = SplitTasks.build(_splitSynchronizationTask, _segmentSynchronizationTaskImp,
                 _impressionsManager, _eventsTask, _telemetrySyncTask);
-
+        SplitAPI splitAPI = Mockito.mock(SplitAPI.class);
         SyncManagerImp syncManager = new SyncManagerImp(splitTasks, true, _synchronizer, _pushManager, messsages,
-                _gates, telemetryStorage, _telemetrySynchronizer, _config, null);
+                _gates, telemetryStorage, _telemetrySynchronizer, _config, null,splitAPI);
         Thread t = new Thread(syncManager::incomingPushStatusHandler);
         t.start();
         messsages.offer(PushManager.Status.STREAMING_OFF);
@@ -138,9 +143,10 @@ public class SyncManagerTest {
         LinkedBlockingQueue<PushManager.Status> messsages = new LinkedBlockingQueue<>();
         SplitTasks splitTasks = SplitTasks.build(_splitSynchronizationTask, _segmentSynchronizationTaskImp,
                 _impressionsManager, _eventsTask, _telemetrySyncTask);
+        SplitAPI splitAPI = Mockito.mock(SplitAPI.class);
 
         SyncManagerImp syncManager = new SyncManagerImp(splitTasks, true, _synchronizer, _pushManager, messsages,
-                _gates, telemetryStorage, _telemetrySynchronizer, _config, null);
+                _gates, telemetryStorage, _telemetrySynchronizer, _config, null,splitAPI);
         Thread t = new Thread(syncManager::incomingPushStatusHandler);
         t.start();
         messsages.offer(PushManager.Status.STREAMING_READY);
@@ -156,9 +162,10 @@ public class SyncManagerTest {
         LinkedBlockingQueue<PushManager.Status> messsages = new LinkedBlockingQueue<>();
         SplitTasks splitTasks = SplitTasks.build(_splitSynchronizationTask, _segmentSynchronizationTaskImp,
                 _impressionsManager, _eventsTask, _telemetrySyncTask);
+        SplitAPI splitAPI = Mockito.mock(SplitAPI.class);
 
         SyncManagerImp syncManager = new SyncManagerImp(splitTasks, true, _synchronizer, _pushManager, messsages,
-                _gates, telemetryStorage, _telemetrySynchronizer, _config, null);
+                _gates, telemetryStorage, _telemetrySynchronizer, _config, null, splitAPI);
         Thread t = new Thread(syncManager::incomingPushStatusHandler);
         t.start();
         messsages.offer(PushManager.Status.STREAMING_OFF);
@@ -173,10 +180,11 @@ public class SyncManagerTest {
         LinkedBlockingQueue<PushManager.Status> messsages = new LinkedBlockingQueue<>();
         SplitTasks splitTasks = SplitTasks.build(_splitSynchronizationTask, _segmentSynchronizationTaskImp,
                 _impressionsManager, _eventsTask, _telemetrySyncTask);
+        SplitAPI splitAPI = Mockito.mock(SplitAPI.class);
 
         Mockito.when(_synchronizer.syncAll()).thenReturn(true);
         SyncManagerImp syncManager = new SyncManagerImp(splitTasks, true, _synchronizer, _pushManager, messsages,
-                _gates, telemetryStorage, _telemetrySynchronizer, _config, null);
+                _gates, telemetryStorage, _telemetrySynchronizer, _config, null, splitAPI);
         syncManager.start();
         messsages.offer(PushManager.Status.STREAMING_BACKOFF);
         Thread.sleep(1200);
@@ -190,10 +198,11 @@ public class SyncManagerTest {
         TelemetryStorage telemetryStorage = new InMemoryTelemetryStorage();
         SplitTasks splitTasks = SplitTasks.build(_splitSynchronizationTask, _segmentSynchronizationTaskImp,
                 _impressionsManager, _eventsTask, _telemetrySyncTask);
+        SplitAPI splitAPI = Mockito.mock(SplitAPI.class);
 
         Mockito.when(_synchronizer.syncAll()).thenReturn(false).thenReturn(true);
         SyncManagerImp syncManager = new SyncManagerImp(splitTasks, false, _synchronizer, _pushManager, new LinkedBlockingQueue<>(),
-                _gates, telemetryStorage, _telemetrySynchronizer, _config, null);
+                _gates, telemetryStorage, _telemetrySynchronizer, _config, null, splitAPI);
         syncManager.start();
         Thread.sleep(2000);
         Mockito.verify(_synchronizer, Mockito.times(1)).startPeriodicFetching();
