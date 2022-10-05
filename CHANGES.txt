@@ -78,7 +78,9 @@
 - Fixed fetch retries after received an SPLIT_CHANGE.
 
 4.1.0 (Sep 25, 2020)
-- Add local impressions deduping (enabled by default)
+- Added `OPTIMIZED` and `DEBUG` modes in order to enabling/disabling how impressions are going to be sent into Split servers,
+          - `OPTIMIZED`: will send unique impressions in a timeframe in order to reduce how many times impressions are posted to Split.
+          - `DEBUG`: will send every impression generated to Split.
 
 4.0.1 (Sep 4, 2020)
 - Remove jersey. Use custom SSE implementation
