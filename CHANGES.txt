@@ -1,3 +1,6 @@
+4.5.0 (Oct 5, 2022)
+-  Added a new impressions mode for the SDK called NONE, to be used in factory when there is no desire to capture impressions on an SDK factory to feed Split's analytics engine. Running NONE mode, the SDK will only capture unique keys evaluated for a particular feature flag instead of full blown impressions.
+
 4.4.8 (Sep 16, 2022)
 - Updated `org.yaml.snakeyaml` dependence to 1.32 for fixing a vulnerability.
 - Improved SplitClientIntegrationTest removing ignore annotation in some test cases.
