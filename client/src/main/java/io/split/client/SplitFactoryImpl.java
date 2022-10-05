@@ -338,8 +338,6 @@ public class SplitFactoryImpl implements SplitFactory {
         }
         try {
             _log.info("Shutdown called for split");
-            _impressionsManager.close();
-            _log.info("Successful shutdown of impressions manager");
             if(OperationMode.STANDALONE.equals(_operationMode)) {
                 long splitCount = _splitCache.getAll().stream().count();
                 long segmentCount = _segmentCache.getSegmentCount();
@@ -347,8 +345,6 @@ public class SplitFactoryImpl implements SplitFactory {
                 _telemetryStorageProducer.recordSessionLength(System.currentTimeMillis() - _startTime);
                 _syncManager.shutdown(splitCount, segmentCount, segmentKeyCount);
                 _log.info("Successful shutdown of syncManager");
-                _httpclient.close();
-                _log.info("Successful shutdown of httpclient");
                 }
             else if(OperationMode.CONSUMER.equals(_operationMode)) {
                 _impressionsManager.close();

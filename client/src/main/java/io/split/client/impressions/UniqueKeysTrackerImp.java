@@ -102,6 +102,7 @@ public class UniqueKeysTrackerImp implements UniqueKeysTracker{
             _log.error("Error sending unique keys.");
         }
         _uniqueKeysSyncScheduledExecutorService.shutdown();
+        _cleanFilterScheduledExecutorService.shutdown();
     }
 
     public HashMap<String,HashSet<String>> popAll(){
