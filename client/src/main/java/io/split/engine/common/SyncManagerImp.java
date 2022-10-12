@@ -6,12 +6,11 @@ import io.split.client.ApiKeyCounter;
 import io.split.client.SplitClientConfig;
 import io.split.client.events.EventsTask;
 import io.split.client.impressions.ImpressionsManager;
-import io.split.client.impressions.ImpressionsManagerImpl;
+import io.split.client.impressions.UniqueKeysTracker;
 import io.split.engine.SDKReadinessGates;
 import io.split.engine.experiments.SplitFetcher;
 import io.split.engine.experiments.SplitSynchronizationTask;
 import io.split.engine.segments.SegmentSynchronizationTask;
-import io.split.engine.segments.SegmentSynchronizationTaskImp;
 import io.split.storages.SegmentCacheProducer;
 import io.split.storages.SplitCacheProducer;
 import io.split.telemetry.domain.StreamingEvent;
@@ -22,6 +21,7 @@ import io.split.telemetry.synchronizer.TelemetrySynchronizer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -53,7 +53,9 @@ public class SyncManagerImp implements SyncManager {
     private final TelemetrySyncTask _telemetrySyncTask;
     private final SegmentSynchronizationTask _segmentSynchronizationTaskImp;
     private final SplitSynchronizationTask _splitSynchronizationTask;
+    private final UniqueKeysTracker _uniqueKeysTracker;
     private static final long STARTING_SYNC_ALL_BACKOFF_MAX_WAIT_MS = new Long(10000); // 10 seconds max wait
+    private  final SplitAPI _splitAPI;
 
     @VisibleForTesting
     /* package private */ SyncManagerImp(SplitTasks splitTasks,
@@ -63,7 +65,9 @@ public class SyncManagerImp implements SyncManager {
                                          LinkedBlockingQueue<PushManager.Status> pushMessages,
                                          SDKReadinessGates gates, TelemetryRuntimeProducer telemetryRuntimeProducer,
                                          TelemetrySynchronizer telemetrySynchronizer,
-                                         SplitClientConfig config) {
+                                         SplitClientConfig config,
+                                         UniqueKeysTracker uniqueKeysTracker,
+                                         SplitAPI splitAPI) {
         _streamingEnabledConfig = new AtomicBoolean(streamingEnabledConfig);
         _synchronizer = checkNotNull(synchronizer);
         _pushManager = checkNotNull(pushManager);
@@ -88,6 +92,8 @@ public class SyncManagerImp implements SyncManager {
         _telemetrySyncTask = checkNotNull(splitTasks.getTelemetrySyncTask());
         _segmentSynchronizationTaskImp = checkNotNull(splitTasks.getSegmentSynchronizationTask());
         _splitSynchronizationTask = checkNotNull(splitTasks.getSplitSynchronizationTask());
+        _uniqueKeysTracker = uniqueKeysTracker;
+        _splitAPI = splitAPI;
     }
 
     public static SyncManagerImp build(SplitTasks splitTasks,
@@ -98,7 +104,8 @@ public class SyncManagerImp implements SyncManager {
                                        SDKReadinessGates gates,
                                        TelemetryRuntimeProducer telemetryRuntimeProducer,
                                        TelemetrySynchronizer telemetrySynchronizer,
-                                       SplitClientConfig config) {
+                                       SplitClientConfig config,
+                                       UniqueKeysTracker uniqueKeysTracker) {
         LinkedBlockingQueue<PushManager.Status> pushMessages = new LinkedBlockingQueue<>();
         Synchronizer synchronizer = new SynchronizerImp(splitTasks.getSplitSynchronizationTask(),
                                         splitFetcher,
@@ -126,7 +133,9 @@ public class SyncManagerImp implements SyncManager {
                                   gates, 
                                   telemetryRuntimeProducer,
                                   telemetrySynchronizer, 
-                                  config);
+                                  config,
+                                  uniqueKeysTracker,
+                                  splitAPI);
     }
 
     @Override
@@ -146,23 +155,32 @@ public class SyncManagerImp implements SyncManager {
                 return;
             }
             _gates.sdkInternalReady();
-            _telemetrySynchronizer.synchronizeConfig(_config, System.currentTimeMillis(), ApiKeyCounter.getApiKeyCounterInstance().getFactoryInstances(), new ArrayList<>());
-            if (_streamingEnabledConfig.get()) {
-                startStreamingMode();
-            } else {
-                startPollingMode();
-            }
 
             try {
                 _impressionManager.start();
             } catch (Exception e) {
                 _log.error("Error trying to init Impression Manager synchronizer task.", e);
             }
+            if (_uniqueKeysTracker != null){
+                try {
+                    _uniqueKeysTracker.start();
+                } catch (Exception e) {
+                    _log.error("Error trying to init Unique Keys Tracker synchronizer task.", e);
+                }
+            }
             try {
                 _eventsTask.start();
             } catch (Exception e) {
                 _log.error("Error trying to init Events synchronizer task.", e);
             }
+
+            if (_streamingEnabledConfig.get()) {
+                startStreamingMode();
+            } else {
+                startPollingMode();
+            }
+            _telemetrySynchronizer.synchronizeConfig(_config, System.currentTimeMillis(), ApiKeyCounter.getApiKeyCounterInstance().getFactoryInstances(), new ArrayList<>());
+
             try {
                 _telemetrySyncTask.startScheduledTask();
             } catch (Exception e) {
@@ -172,7 +190,7 @@ public class SyncManagerImp implements SyncManager {
     }
 
     @Override
-    public void shutdown(long splitCount, long segmentCount, long segmentKeyCount) {
+    public void shutdown(long splitCount, long segmentCount, long segmentKeyCount) throws IOException {
         if(_shuttedDown.get()) {
             return;
         }
@@ -183,6 +201,10 @@ public class SyncManagerImp implements SyncManager {
         _pushMonitorExecutorService.shutdownNow();
         _impressionManager.close();
         _log.info("Successful shutdown of impressions manager");
+        if (_uniqueKeysTracker != null){
+            _uniqueKeysTracker.stop();
+            _log.info("Successful stop of UniqueKeysTracker");
+        }
         _eventsTask.close();
         _log.info("Successful shutdown of eventsTask");
         _segmentSynchronizationTaskImp.close();
@@ -191,12 +213,13 @@ public class SyncManagerImp implements SyncManager {
         _log.info("Successful shutdown of splits");
         _telemetrySyncTask.stopScheduledTask(splitCount, segmentCount, segmentKeyCount);
         _log.info("Successful shutdown of telemetry sync task");
+        _splitAPI.close();
     }
 
     private void startStreamingMode() {
         _log.debug("Starting in streaming mode ...");
         if (null == _pushStatusMonitorTask) {
-            _pushStatusMonitorTask = _pushMonitorExecutorService.submit(this::incomingPushStatusHandler);
+                _pushStatusMonitorTask = _pushMonitorExecutorService.submit(this::incomingPushStatusHandler);
         }
         _pushManager.start();
         _telemetryRuntimeProducer.recordStreamingEvents(new StreamingEvent(StreamEventsEnum.SYNC_MODE_UPDATE.getType(), StreamEventsEnum.SyncModeUpdateValues.STREAMING_EVENT.getValue(), System.currentTimeMillis()));

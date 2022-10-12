@@ -21,18 +21,6 @@ public interface ImpressionListener {
      */
     void close();
 
-    final class NoopImpressionListener implements ImpressionListener {
-        @Override
-        public void log(Impression impression) {
-            // noop
-        }
-
-        @Override
-        public void close() {
-            // noop
-        }
-    }
-
     final class FederatedImpressionListener implements ImpressionListener {
         private List<ImpressionListener> _delegates;
 

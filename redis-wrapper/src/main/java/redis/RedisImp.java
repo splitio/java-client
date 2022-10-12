@@ -1,6 +1,8 @@
 package redis;
 
 import pluggable.CustomStorageWrapper;
+import pluggable.HasPipelineSupport;
+import pluggable.Pipeline;
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisPool;
 import redis.common.CommonRedis;
@@ -10,7 +12,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-class RedisImp implements CustomStorageWrapper {
+class RedisImp implements CustomStorageWrapper, HasPipelineSupport {
     private static final String TELEMETRY_INIT = "SPLITIO.telemetry.init" ;
     private static final String EVENTS_KEY = "SPLITIO.events" ;
     private static final String IMPRESSIONS_KEY = "SPLITIO.impressions" ;
@@ -63,6 +65,15 @@ class RedisImp implements CustomStorageWrapper {
     }
 
     @Override
+    public void hSet(String key, String field, String item) throws Exception {
+        try (Jedis jedis = this.jedisPool.getResource()) {
+            jedis.hset(_commonRedis.buildKeyWithPrefix(key), field, item);
+        } catch (Exception ex) {
+            throw new RedisException(ex.getMessage());
+        }
+    }
+
+    @Override
     public void delete(List<String> keys) throws Exception {
         if(keys == null || keys.isEmpty()){
             return ;
@@ -78,6 +89,7 @@ class RedisImp implements CustomStorageWrapper {
 
     @Override
     public String getAndSet(String key, String item) throws Exception {
+        //Todo if this method isn't used we should deprecated
         try (Jedis jedis = this.jedisPool.getResource()) {
             return jedis.getSet(_commonRedis.buildKeyWithPrefix(key), item);
         } catch (Exception ex) {
@@ -100,6 +112,15 @@ class RedisImp implements CustomStorageWrapper {
     public long increment(String key, long value) throws Exception {
         try (Jedis jedis = this.jedisPool.getResource()) {
             return jedis.incrBy(_commonRedis.buildKeyWithPrefix(key), value);
+        } catch (Exception ex) {
+            throw new RedisException(ex.getMessage());
+        }
+    }
+
+    @Override
+    public long hIncrement(String key, String field, long value) throws RedisException {
+        try (Jedis jedis = this.jedisPool.getResource()) {
+            return jedis.hincrBy(_commonRedis.buildKeyWithPrefix(key), field, value);
         } catch (Exception ex) {
             throw new RedisException(ex.getMessage());
         }
@@ -212,5 +233,13 @@ class RedisImp implements CustomStorageWrapper {
             throw new RedisException(ex.getMessage());
         }
     }
-}
 
+    @Override
+    public Pipeline pipeline() throws Exception {
+        try {
+            return new RedisPipeline(this.jedisPool, this._prefix);
+        } catch (Exception ex) {
+            throw new RedisException(ex.getMessage());
+        }
+    }
+}
