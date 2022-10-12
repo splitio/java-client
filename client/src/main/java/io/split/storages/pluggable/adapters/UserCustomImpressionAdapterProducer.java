@@ -9,11 +9,12 @@ import io.split.client.dtos.Metadata;
 import io.split.client.impressions.ImpressionsStorageProducer;
 import io.split.storages.pluggable.domain.ImpressionConsumer;
 import io.split.storages.pluggable.domain.PrefixAdapter;
-import io.split.storages.pluggable.domain.SafeUserStorageWrapper;
+import io.split.storages.pluggable.domain.UserStorageWrapper;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import pluggable.CustomStorageWrapper;
 
 import java.lang.reflect.Modifier;
-import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -21,7 +22,9 @@ import static com.google.common.base.Preconditions.checkNotNull;
 
 public class UserCustomImpressionAdapterProducer implements ImpressionsStorageProducer {
 
-    private final SafeUserStorageWrapper _safeUserStorageWrapper;
+    private static final Logger _log = LoggerFactory.getLogger(UserCustomImpressionAdapterProducer.class);
+
+    private final UserStorageWrapper _userStorageWrapper;
     private final Gson _json = new GsonBuilder()
             .serializeNulls()  // Send nulls
             .excludeFieldsWithModifiers(Modifier.STATIC)
@@ -34,15 +37,17 @@ public class UserCustomImpressionAdapterProducer implements ImpressionsStoragePr
     private Metadata _metadata;
 
     public UserCustomImpressionAdapterProducer(CustomStorageWrapper customStorageWrapper, Metadata metadata) {
-        _safeUserStorageWrapper = new SafeUserStorageWrapper(checkNotNull(customStorageWrapper));
+        _userStorageWrapper = new UserStorageWrapper(checkNotNull(customStorageWrapper));
         _metadata = metadata;
     }
 
     @Override
     public long put(List<KeyImpression> imps) {
         //Impression
+        if (imps.isEmpty()){
+            return 0;
+        }
         List<String> impressions = imps.stream().map(keyImp -> _json.toJson(new ImpressionConsumer(_metadata, keyImp))).collect(Collectors.toList());
-        return _safeUserStorageWrapper.pushItems(PrefixAdapter.buildImpressions(), impressions);
+        return _userStorageWrapper.pushItems(PrefixAdapter.buildImpressions(), impressions);
     }
-
 }

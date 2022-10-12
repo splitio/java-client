@@ -39,7 +39,7 @@ public class SegmentFetcherImp implements SegmentFetcher {
     @Override
     public void fetch(FetchOptions opts){
         try {
-            callLoopRun(opts);
+            fetchUntil(opts);
         } catch (Throwable t) {
             _log.error("RefreshableSegmentFetcher failed: " + t.getMessage());
             if (_log.isDebugEnabled()) {
@@ -115,7 +115,7 @@ public class SegmentFetcherImp implements SegmentFetcher {
     }
 
     @VisibleForTesting
-    void callLoopRun(FetchOptions opts){
+    void fetchUntil(FetchOptions opts){
         final long INITIAL_CN = _segmentCacheProducer.getChangeNumber(_segmentName);
         while (true) {
             long start = _segmentCacheProducer.getChangeNumber(_segmentName);
@@ -143,7 +143,7 @@ public class SegmentFetcherImp implements SegmentFetcher {
     boolean fetchAndUpdate(FetchOptions opts) {
         try {
             // Do this again in case the previous call errored out.
-            callLoopRun(opts);
+            fetchUntil(opts);
             return true;
 
         } catch (Throwable t) {
@@ -153,10 +153,5 @@ public class SegmentFetcherImp implements SegmentFetcher {
             }
             return false;
         }
-    }
-
-    @Override
-    public void fetchAll() {
-        this.fetchAndUpdate(new FetchOptions.Builder().build());
     }
 }

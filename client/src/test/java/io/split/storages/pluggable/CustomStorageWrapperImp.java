@@ -21,6 +21,8 @@ import io.split.storages.pluggable.domain.PrefixAdapter;
 import io.split.telemetry.domain.enums.MethodEnum;
 import io.split.telemetry.utils.AtomicLongArray;
 import pluggable.CustomStorageWrapper;
+import pluggable.NotPipelinedImpl;
+import pluggable.Pipeline;
 
 import java.lang.reflect.Modifier;
 import java.util.ArrayList;
@@ -34,14 +36,21 @@ public class CustomStorageWrapperImp implements CustomStorageWrapper {
 
     public static final int MAX_LATENCY_BUCKET_COUNT = 23;
     private static final String TELEMETRY = "SPLITIO.telemetry";
+
+    private static final String TELEMETRY_INIT = "SPLITIO.telemetry.init";
+    private static final String LATENCIES = "SPLITIO.telemetry.latencies";
     private static final String SPLIT = "SPLITIO.split.";
     private static final String SPLITS = "SPLITIO.splits.*";
     private static final String SEGMENT = "SPLITIO.segment.";
     private static final String IMPRESSIONS = "SPLITIO.impressions";
     private static final String EVENTS = "SPLITIO.events";
+    private static final String COUNTS = "SPLITIO.impressions.counts";
     private Map<String, Split> splitsStorage = new HashMap<>();
     private Map<String, SegmentImp> segmentStorage = new HashMap<>();
     private final ConcurrentMap<String, AtomicLongArray> _methodLatencies = Maps.newConcurrentMap();
+    private final ConcurrentMap<String, Long> _latencies = Maps.newConcurrentMap();
+    private final ConcurrentMap<String, Long> _impressionsCount = Maps.newConcurrentMap();
+    private final ConcurrentMap<String, String> _config = Maps.newConcurrentMap();
     private ConfigConsumer _telemetryInit = null;
     private List<ImpressionConsumer> imps = new ArrayList<>();
     private List<EventConsumer> events = new ArrayList<>();
@@ -89,11 +98,14 @@ public class CustomStorageWrapperImp implements CustomStorageWrapper {
 
     @Override
     public void set(String key, String item) throws Exception {
+
+    }
+
+    @Override
+    public void hSet(String key, String field, String item) {
         String value = getStorage(key);
-        if(value.equals(TELEMETRY)) {
-            if (key.contains("init")) {
-                _telemetryInit = _json.fromJson(item, ConfigConsumer.class);
-            }
+        if (value.equals(TELEMETRY_INIT)){
+            _config.put(field, item);
         }
     }
 
@@ -118,22 +130,34 @@ public class CustomStorageWrapperImp implements CustomStorageWrapper {
 
     @Override
     public long increment(String key, long value) throws Exception {
-        String keyValue = getStorage(key);
-        if(keyValue.equals(TELEMETRY)){
-            if(key.contains("latencies")){
-                String[] items = key.substring(key.indexOf("::")).replace("{", "").replace("}", "").split("/");
-                if(_methodLatencies.containsKey(items[3])) {
-                    _methodLatencies.get(items[3]).increment(Integer.parseInt(items[4]));
-                }
-            }
-
-        }
         return 0;
     }
 
     @Override
     public long decrement(String key, long value) throws Exception {
         return 0;
+    }
+
+    @Override
+    public long hIncrement(String key, String field, long value) throws Exception {
+        String storageKey = getStorage(key);
+        Long count = 0L;
+        if (storageKey.equals(COUNTS)){
+            if(_impressionsCount.containsKey(field)){
+                count = _impressionsCount.get(field);
+            }
+            count += value;
+            _impressionsCount.put(field, count);
+            return count;
+        }
+        if(storageKey.equals(LATENCIES)){
+            if(_latencies.containsKey(field)){
+                count = _latencies.get(field);
+            }
+            count += value;
+            _latencies.put(field, count);
+        }
+        return count;
     }
 
     @Override
@@ -193,15 +217,26 @@ public class CustomStorageWrapperImp implements CustomStorageWrapper {
         return false;
     }
 
+    @Override
+    public Pipeline pipeline() throws Exception {
+        return new NotPipelinedImpl(this);
+    }
+
     private String getStorage(String key) {
         if(key.startsWith(SPLITS))
             return SPLITS;
         else if(key.startsWith(SPLIT))
             return SPLIT;
+        else if (key.startsWith(LATENCIES))
+            return LATENCIES;
+        else if (key.startsWith(TELEMETRY_INIT))
+            return TELEMETRY_INIT;
         else if(key.startsWith(TELEMETRY))
             return TELEMETRY;
         else if(key.startsWith(SEGMENT))
             return SEGMENT;
+        else if(key.startsWith(COUNTS))
+            return  COUNTS;
         else if(key.startsWith(IMPRESSIONS))
             return IMPRESSIONS;
         else if(key.startsWith(EVENTS))
@@ -232,8 +267,12 @@ public class CustomStorageWrapperImp implements CustomStorageWrapper {
         return split;
     }
 
-    public ConcurrentMap<String, AtomicLongArray> get_methodLatencies() {
-        return _methodLatencies;
+    public ConcurrentMap<String, Long> getLatencies() {
+        return _latencies;
+    }
+
+    public ConcurrentMap<String, Long> get_impressionsCount() {
+        return _impressionsCount;
     }
 
     public List<ImpressionConsumer> getImps() {
@@ -244,7 +283,8 @@ public class CustomStorageWrapperImp implements CustomStorageWrapper {
         return events;
     }
 
-    public ConfigConsumer get_telemetryInit() {
-        return _telemetryInit;
+    public ConcurrentMap <String, String> getConfig() {
+        return _config;
     }
+
 }

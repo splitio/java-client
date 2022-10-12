@@ -7,12 +7,24 @@ import io.split.client.events.EventsStorage;
 import io.split.client.events.EventsTask;
 import io.split.client.events.InMemoryEventsStorage;
 import io.split.client.impressions.AsynchronousImpressionListener;
+import io.split.client.impressions.HttpImpressionsSender;
+import io.split.client.impressions.ImpressionCounter;
 import io.split.client.impressions.ImpressionListener;
+import io.split.client.impressions.ImpressionObserver;
+import io.split.client.impressions.ImpressionsManager;
 import io.split.client.impressions.ImpressionsManagerImpl;
+import io.split.client.impressions.ImpressionsSender;
 import io.split.client.impressions.ImpressionsStorage;
 import io.split.client.impressions.ImpressionsStorageConsumer;
 import io.split.client.impressions.ImpressionsStorageProducer;
 import io.split.client.impressions.InMemoryImpressionsStorage;
+import io.split.client.impressions.PluggableImpressionSender;
+import io.split.client.impressions.UniqueKeysTracker;
+import io.split.client.impressions.UniqueKeysTrackerImp;
+import io.split.client.impressions.strategy.ProcessImpressionDebug;
+import io.split.client.impressions.strategy.ProcessImpressionNone;
+import io.split.client.impressions.strategy.ProcessImpressionOptimized;
+import io.split.client.impressions.strategy.ProcessImpressionStrategy;
 import io.split.client.interceptors.AuthorizationInterceptorFilter;
 import io.split.client.interceptors.ClientKeyInterceptorFilter;
 import io.split.client.interceptors.GzipDecoderResponseInterceptor;
@@ -49,7 +61,7 @@ import io.split.storages.pluggable.adapters.UserCustomImpressionAdapterProducer;
 import io.split.storages.pluggable.adapters.UserCustomSegmentAdapterConsumer;
 import io.split.storages.pluggable.adapters.UserCustomSplitAdapterConsumer;
 import io.split.storages.pluggable.adapters.UserCustomTelemetryAdapterProducer;
-import io.split.storages.pluggable.domain.SafeUserStorageWrapper;
+import io.split.storages.pluggable.domain.UserStorageWrapper;
 import io.split.storages.pluggable.synchronizer.TelemetryConsumerSubmitter;
 import io.split.telemetry.storage.InMemoryTelemetryStorage;
 import io.split.telemetry.storage.TelemetryStorage;
@@ -89,6 +101,7 @@ import java.util.List;
 import java.util.Random;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 public class SplitFactoryImpl implements SplitFactory {
@@ -127,14 +140,16 @@ public class SplitFactoryImpl implements SplitFactory {
     private final EventsTask _eventsTask;
     private final SyncManager _syncManager;
     private final CloseableHttpClient _httpclient;
-    private final SafeUserStorageWrapper _safeUserStorageWrapper;
+    private final UserStorageWrapper _userStorageWrapper;
+    private final ImpressionsSender _impressionsSender;
     private final URI _rootTarget;
     private final URI _eventsRootTarget;
+    private final UniqueKeysTracker _uniqueKeysTracker;
 
 
     //Constructor for standalone mode
     public SplitFactoryImpl(String apiToken, SplitClientConfig config) throws URISyntaxException {
-        _safeUserStorageWrapper = null;
+        _userStorageWrapper = null;
         _operationMode = config.operationMode();
         _startTime = System.currentTimeMillis();
         _apiToken = apiToken;
@@ -180,6 +195,12 @@ public class SplitFactoryImpl implements SplitFactory {
                 splitCache,
                 config.featuresRefreshRate());
 
+        //ImpressionSender
+        _impressionsSender = HttpImpressionsSender.create(_httpclient, URI.create(config.eventsEndpoint()), config.impressionsMode(), _telemetryStorageProducer);
+
+        //UniqueKeysTracker
+        _uniqueKeysTracker = createUniqueKeysTracker(config);
+
         // Impressions
         _impressionsManager = buildImpressionsManager(config, impressionsStorage, impressionsStorage);
 
@@ -213,7 +234,7 @@ public class SplitFactoryImpl implements SplitFactory {
         SplitAPI splitAPI = SplitAPI.build(_httpclient, buildSSEdHttpClient(apiToken, config, _sdkMetadata));
 
         _syncManager = SyncManagerImp.build(splitTasks, _splitFetcher, splitCache, splitAPI,
-                segmentCache, _gates, _telemetryStorageProducer, _telemetrySynchronizer, config);
+                segmentCache, _gates, _telemetryStorageProducer, _telemetrySynchronizer, config, _uniqueKeysTracker);
         _syncManager.start();
 
         // DestroyOnShutDown
@@ -242,7 +263,7 @@ public class SplitFactoryImpl implements SplitFactory {
         _eventsRootTarget = null;
 
         Metadata metadata = new Metadata(config.ipAddressEnabled(), SplitClientConfig.splitSdkVersion);
-        _safeUserStorageWrapper = new SafeUserStorageWrapper(customStorageWrapper);
+        _userStorageWrapper = new UserStorageWrapper(customStorageWrapper);
         UserCustomSegmentAdapterConsumer userCustomSegmentAdapterConsumer= new UserCustomSegmentAdapterConsumer(customStorageWrapper);
         UserCustomSplitAdapterConsumer userCustomSplitAdapterConsumer = new UserCustomSplitAdapterConsumer(customStorageWrapper);
         UserCustomImpressionAdapterConsumer userCustomImpressionAdapterConsumer = new UserCustomImpressionAdapterConsumer(); // TODO migrate impressions sender to Task instead manager and not instantiate Producer here.
@@ -269,10 +290,22 @@ public class SplitFactoryImpl implements SplitFactory {
         // SDKReadinessGates
         _gates = new SDKReadinessGates();
 
-        _evaluator = new EvaluatorImp(userCustomSplitAdapterConsumer, userCustomSegmentAdapterConsumer);
-        _impressionsManager = buildImpressionsManager(config, userCustomImpressionAdapterConsumer, userCustomImpressionAdapterProducer);
-
         _telemetrySynchronizer = new TelemetryConsumerSubmitter(customStorageWrapper, _sdkMetadata);
+
+        _evaluator = new EvaluatorImp(userCustomSplitAdapterConsumer, userCustomSegmentAdapterConsumer);
+        _impressionsSender = PluggableImpressionSender.create(customStorageWrapper);
+
+        _uniqueKeysTracker = createUniqueKeysTracker(config);
+
+        _impressionsManager = buildImpressionsManager(config, userCustomImpressionAdapterConsumer, userCustomImpressionAdapterProducer);
+        _impressionsManager.start();
+        if (_uniqueKeysTracker != null){
+            try {
+                _uniqueKeysTracker.start();
+            } catch (Exception e) {
+                _log.error("Error trying to init Unique Keys Tracker synchronizer task.", e);
+            }
+        }
 
         _client = new SplitClientImpl(this,
                 userCustomSplitAdapterConsumer,
@@ -303,23 +336,27 @@ public class SplitFactoryImpl implements SplitFactory {
         if (isTerminated) {
             return;
         }
-        if(OperationMode.STANDALONE.equals(_operationMode)) {
+        try {
             _log.info("Shutdown called for split");
-            try {
+            if(OperationMode.STANDALONE.equals(_operationMode)) {
                 long splitCount = _splitCache.getAll().stream().count();
                 long segmentCount = _segmentCache.getSegmentCount();
                 long segmentKeyCount = _segmentCache.getKeyCount();
                 _telemetryStorageProducer.recordSessionLength(System.currentTimeMillis() - _startTime);
                 _syncManager.shutdown(splitCount, segmentCount, segmentKeyCount);
                 _log.info("Successful shutdown of syncManager");
-                _httpclient.close();
-                _log.info("Successful shutdown of httpclient");
-            } catch (IOException e) {
-                _log.error("We could not shutdown split", e);
+                }
+            else if(OperationMode.CONSUMER.equals(_operationMode)) {
+                _impressionsManager.close();
+                _log.info("Successful shutdown of impressions manager");
+                if (_uniqueKeysTracker != null){
+                    _uniqueKeysTracker.stop();
+                    _log.info("Successful stop of UniqueKeysTracker");
+                }
+                _userStorageWrapper.disconnect();
             }
-        }
-        else if(OperationMode.CONSUMER.equals(_operationMode)) {
-            _safeUserStorageWrapper.disconnect();
+        } catch (IOException e) {
+            _log.error("We could not shutdown split", e);
         }
         _apiKeyCounter.remove(_apiToken);
         isTerminated = true;
@@ -447,8 +484,26 @@ public class SplitFactoryImpl implements SplitFactory {
                     .map(IntegrationsConfig.ImpressionListenerWithMeta::listener)
                     .collect(Collectors.toCollection(() -> impressionListeners));
         }
-
-        return ImpressionsManagerImpl.instance(_httpclient, config, impressionListeners, _telemetryStorageProducer, impressionsStorageConsumer, impressionsStorageProducer);
+        ProcessImpressionStrategy processImpressionStrategy = null;
+        ImpressionCounter counter = null;
+        ImpressionListener listener = (null != impressionListeners && !impressionListeners.isEmpty()) ? new ImpressionListener.FederatedImpressionListener(impressionListeners)
+                : null;
+        switch (config.impressionsMode()){
+            case OPTIMIZED:
+                counter = new ImpressionCounter();
+                ImpressionObserver impressionObserver = new ImpressionObserver(config.getLastSeenCacheSize());
+                processImpressionStrategy = new ProcessImpressionOptimized(listener != null, impressionObserver, counter, _telemetryStorageProducer);
+                break;
+            case DEBUG:
+                impressionObserver = new ImpressionObserver(config.getLastSeenCacheSize());
+                processImpressionStrategy = new ProcessImpressionDebug(listener != null, impressionObserver);
+                break;
+            case NONE:
+                counter = new ImpressionCounter();
+                processImpressionStrategy = new ProcessImpressionNone(listener != null, _uniqueKeysTracker, counter);
+                break;
+        }
+        return ImpressionsManagerImpl.instance(_httpclient, config, impressionListeners, _telemetryStorageProducer, impressionsStorageConsumer, impressionsStorageProducer, _impressionsSender, _uniqueKeysTracker, processImpressionStrategy, counter, listener);
     }
 
     private SDKMetadata createSdkMetadata(boolean ipAddressEnabled, String splitSdkVersion) {
@@ -473,7 +528,7 @@ public class SplitFactoryImpl implements SplitFactory {
                 .setDaemon(true)
                 .build());
         executorService.submit(() -> {
-            while(!_safeUserStorageWrapper.connect()) {
+            while(!_userStorageWrapper.connect()) {
                 try {
                     Thread.currentThread().sleep(1000);
                 } catch (InterruptedException e) {
@@ -484,5 +539,14 @@ public class SplitFactoryImpl implements SplitFactory {
             _gates.sdkInternalReady();
             _telemetrySynchronizer.synchronizeConfig(config, System.currentTimeMillis(), ApiKeyCounter.getApiKeyCounterInstance().getFactoryInstances(), new ArrayList<>());
         });
+    }
+
+    private UniqueKeysTracker createUniqueKeysTracker(SplitClientConfig config){
+        if (config.impressionsMode().equals(ImpressionsManager.Mode.NONE)){
+            int uniqueKeysRefreshRate = config.operationMode().equals(OperationMode.STANDALONE) ? config.uniqueKeysRefreshRateInMemory()
+                    : config.uniqueKeysRefreshRateRedis();
+            return new UniqueKeysTrackerImp(_telemetrySynchronizer, uniqueKeysRefreshRate, config.filterUniqueKeysRefreshRate());
+        }
+        return null;
     }
 }

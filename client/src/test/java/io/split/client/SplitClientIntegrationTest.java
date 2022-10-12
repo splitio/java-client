@@ -10,8 +10,6 @@ import io.split.storages.enums.StorageMode;
 import io.split.storages.pluggable.CustomStorageWrapperImp;
 import io.split.storages.pluggable.domain.EventConsumer;
 import io.split.storages.pluggable.domain.ImpressionConsumer;
-import io.split.telemetry.domain.enums.MethodEnum;
-import io.split.telemetry.utils.AtomicLongArray;
 import okhttp3.mockwebserver.MockResponse;
 import org.awaitility.Awaitility;
 import org.glassfish.grizzly.utils.Pair;
@@ -25,6 +23,7 @@ import java.net.URISyntaxException;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
+import java.util.stream.Collectors;
 
 public class SplitClientIntegrationTest {
 
@@ -676,7 +675,8 @@ public class SplitClientIntegrationTest {
         SplitClient client = splitFactory.client();
         try {
             client.blockUntilReady();
-            SplitManager splitManager = splitFactory.manager();HashMap<String, Object> properties = new HashMap<>();
+            SplitManager splitManager = splitFactory.manager();
+            HashMap<String, Object> properties = new HashMap<>();
             properties.put("number_property", 123);
             properties.put("object_property", new Object());
 
@@ -703,15 +703,22 @@ public class SplitClientIntegrationTest {
             Assert.assertTrue(impressions.stream().anyMatch(imp -> "first.name".equals(imp.getKeyImpression().feature) && "on".equals(imp.getKeyImpression().treatment)));
             Assert.assertTrue(impressions.stream().anyMatch(imp -> "second.name".equals(imp.getKeyImpression().feature) && "off".equals(imp.getKeyImpression().treatment)));
 
-            Map<String, AtomicLongArray> latencies = customStorageWrapper.get_methodLatencies();
+            Map<String, Long> latencies = customStorageWrapper.getLatencies();
 
-            Assert.assertEquals(3, latencies.get(MethodEnum.TRACK.getMethod()).fetchAndClearAll().stream().mapToInt(Long::intValue).sum());
-            Assert.assertEquals(1, latencies.get(MethodEnum.TREATMENT.getMethod()).fetchAndClearAll().stream().mapToInt(Long::intValue).sum());
-            Assert.assertEquals(1, latencies.get(MethodEnum.TREATMENT_WITH_CONFIG.getMethod()).fetchAndClearAll().stream().mapToInt(Long::intValue).sum());
+            List<String> keys = new ArrayList<>(latencies.keySet());
+
+            String key1 = keys.stream().filter(key -> key.contains("track/")).collect(Collectors.toList()).get(0);
+            String key2 = keys.stream().filter(key -> key.contains("getTreatment/")).collect(Collectors.toList()).get(0);
+            String key3 = keys.stream().filter(key -> key.contains("getTreatmentWithConfig/")).collect(Collectors.toList()).get(0);
+
+            Assert.assertEquals(Optional.of(3L), Optional.ofNullable(latencies.get(key1)));
+            Assert.assertEquals(Optional.of(1L), Optional.of(latencies.get(key2)));
+            Assert.assertEquals(Optional.of(1L), Optional.of(latencies.get(key3)));
 
             Thread.sleep(500);
-            Assert.assertNotNull(customStorageWrapper.get_telemetryInit());
-            Assert.assertEquals(StorageMode.PLUGGABLE.name(), customStorageWrapper.get_telemetryInit().get_storage());
+            Assert.assertNotNull(customStorageWrapper.getConfig());
+            String key = customStorageWrapper.getConfig().keySet().stream().collect(Collectors.toList()).get(0);
+            Assert.assertTrue(customStorageWrapper.getConfig().get(key).contains(StorageMode.PLUGGABLE.name()));
 
         } catch (TimeoutException | InterruptedException e) {
         }

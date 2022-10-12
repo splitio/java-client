@@ -1,6 +1,5 @@
 package io.split.client;
 
-
 import io.split.client.impressions.ImpressionListener;
 import io.split.client.impressions.ImpressionsManager;
 import io.split.integrations.IntegrationsConfig;
@@ -59,6 +58,9 @@ public class SplitClientConfig {
     private final int _onDemandFetchRetryDelayMs;
     private final int _onDemandFetchMaxRetries;
     private final int _failedAttemptsBeforeLogging;
+    private final int _uniqueKeysRefreshRateInMemory;
+    private final int _uniqueKeysRefreshRateRedis;
+    private static int _filterUniqueKeysRefreshRate;
     private final boolean _cdnDebugLogging;
     private final OperationMode _operationMode;
     private long _validateAfterInactivityInMillis;
@@ -73,6 +75,7 @@ public class SplitClientConfig {
 
     // To be set during startup
     public static String splitSdkVersion;
+    private final long _lastSeenCacheSize;
 
 
     public static Builder builder() {
@@ -119,7 +122,11 @@ public class SplitClientConfig {
                               long validateAfterInactivityInMillis,
                               long startingSyncCallBackoffBaseMs,
                               CustomStorageWrapper customStorageWrapper,
-                              StorageMode storageMode) {
+                              StorageMode storageMode,
+                              int uniqueKeysRefreshRateInMemory,
+                              int uniqueKeysRefreshRateRedis,
+                              int filterUniqueKeysRefreshRate,
+                              long lastSeenCacheSize) {
         _endpoint = endpoint;
         _eventsEndpoint = eventsEndpoint;
         _featuresRefreshRate = pollForFeatureChangesEveryNSeconds;
@@ -152,6 +159,9 @@ public class SplitClientConfig {
         _streamingServiceURL = streamingServiceURL;
         _telemetryURL = telemetryURL;
         _telemetryRefreshRate = telemetryRefreshRate;
+        _uniqueKeysRefreshRateInMemory = uniqueKeysRefreshRateInMemory;
+        _uniqueKeysRefreshRateRedis = uniqueKeysRefreshRateRedis;
+        _filterUniqueKeysRefreshRate = filterUniqueKeysRefreshRate;
         _onDemandFetchRetryDelayMs = onDemandFetchRetryDelayMs;
         _onDemandFetchMaxRetries = onDemandFetchMaxRetries;
         _failedAttemptsBeforeLogging = failedAttemptsBeforeLogging;
@@ -161,6 +171,7 @@ public class SplitClientConfig {
         _validateAfterInactivityInMillis = validateAfterInactivityInMillis;
         _startingSyncCallBackoffBaseMs = startingSyncCallBackoffBaseMs;
         _customStorageWrapper = customStorageWrapper;
+        _lastSeenCacheSize = lastSeenCacheSize;
 
         Properties props = new Properties();
         try {
@@ -197,6 +208,16 @@ public class SplitClientConfig {
 
     public int impressionsRefreshRate() {
         return _impressionsRefreshRate;
+    }
+
+    public int uniqueKeysRefreshRateInMemory() {
+        return _uniqueKeysRefreshRateInMemory;
+    }
+    public int uniqueKeysRefreshRateRedis() {
+        return _uniqueKeysRefreshRateRedis;
+    }
+    public static int filterUniqueKeysRefreshRate() {
+        return _filterUniqueKeysRefreshRate;
     }
 
     public int impressionsQueueSize() {
@@ -317,6 +338,10 @@ public class SplitClientConfig {
 
     public StorageMode storageMode() { return _storageMode;}
 
+    public long getLastSeenCacheSize() {
+        return _lastSeenCacheSize;
+    }
+
     public static final class Builder {
 
         private String _endpoint = SDK_ENDPOINT;
@@ -354,6 +379,9 @@ public class SplitClientConfig {
         private String _streamingServiceURL = STREAMING_ENDPOINT;
         private String _telemetryURl = TELEMETRY_ENDPOINT;
         private int _telemetryRefreshRate = 3600;
+        private final int _uniqueKeysRefreshRateInMemory = 900;
+        private final int _uniqueKeysRefreshRateRedis = 300;
+        private final int _filterUniqueKeysRefreshRate = 86400;
         private int _onDemandFetchRetryDelayMs = 50;
         private final int _onDemandFetchMaxRetries = 10;
         private final int _failedAttemptsBeforeLogging = 10;
@@ -363,6 +391,7 @@ public class SplitClientConfig {
         private final long _startingSyncCallBackoffBaseMs = new Long(1000); //backoff base starting at 1 seconds
         private CustomStorageWrapper _customStorageWrapper;
         private StorageMode _storageMode = StorageMode.MEMORY;
+        private final long _lastSeenCacheSize = 500000;
 
         public Builder() {
         }
@@ -944,7 +973,11 @@ public class SplitClientConfig {
                     _validateAfterInactivityInMillis,
                     _startingSyncCallBackoffBaseMs,
                     _customStorageWrapper,
-                    _storageMode);
+                    _storageMode,
+                    _uniqueKeysRefreshRateInMemory,
+                    _uniqueKeysRefreshRateRedis,
+                    _filterUniqueKeysRefreshRate,
+                    _lastSeenCacheSize);
         }
     }
 }
