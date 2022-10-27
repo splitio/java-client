@@ -1,5 +1,8 @@
 package io.split.engine.common;
 
+import io.split.client.events.EventsTask;
+import io.split.client.impressions.ImpressionsManager;
+import io.split.client.impressions.UniqueKeysTracker;
 import io.split.engine.segments.SegmentChangeFetcher;
 import io.split.engine.segments.SegmentSynchronizationTaskImp;
 import io.split.storages.*;
@@ -11,6 +14,7 @@ import io.split.engine.experiments.SplitSynchronizationTask;
 import io.split.engine.segments.SegmentFetcher;
 import io.split.engine.segments.SegmentSynchronizationTask;
 import io.split.telemetry.storage.TelemetryRuntimeProducer;
+import io.split.telemetry.synchronizer.TelemetrySyncTask;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -36,6 +40,11 @@ public class SynchronizerTest {
     private Synchronizer _synchronizer;
     private SegmentCacheProducer _segmentCacheProducer;
     private SDKReadinessGates _gates;
+    private SplitTasks _splitTasks;
+    private TelemetrySyncTask _telemetrySyncTask;
+    private ImpressionsManager _impressionsManager;
+    private EventsTask _eventsTask;
+    private UniqueKeysTracker _uniqueKeysTracker;
 
     @Before
     public void beforeMethod() {
@@ -45,8 +54,14 @@ public class SynchronizerTest {
         _splitCacheProducer = Mockito.mock(SplitCacheProducer.class);
         _segmentCacheProducer = Mockito.mock(SegmentCache.class);
         _gates = Mockito.mock(SDKReadinessGates.class);
+        _telemetrySyncTask = Mockito.mock(TelemetrySyncTask.class);
+        _impressionsManager = Mockito.mock(ImpressionsManager.class);
+        _eventsTask = Mockito.mock(EventsTask.class);
+        _uniqueKeysTracker = Mockito.mock(UniqueKeysTracker.class);
 
-        _synchronizer = new SynchronizerImp(_refreshableSplitFetcherTask, _splitFetcher, _segmentFetcher, _splitCacheProducer, _segmentCacheProducer, 50, 10, 5, false, _gates);
+        _splitTasks = SplitTasks.build(_refreshableSplitFetcherTask, _segmentFetcher, _impressionsManager, _eventsTask, _telemetrySyncTask, _uniqueKeysTracker);
+
+        _synchronizer = new SynchronizerImp(_splitTasks, _splitFetcher, _splitCacheProducer, _segmentCacheProducer, 50, 10, 5, false, _gates);
     }
 
     @Test
@@ -136,9 +151,8 @@ public class SynchronizerTest {
     public void testCDNBypassIsRequestedAfterNFailures() throws NoSuchFieldException, IllegalAccessException {
 
         SplitCache cache = new InMemoryCacheImp();
-        Synchronizer imp = new SynchronizerImp(_refreshableSplitFetcherTask,
+        Synchronizer imp = new SynchronizerImp(_splitTasks,
                 _splitFetcher,
-                _segmentFetcher,
                 cache,
                 _segmentCacheProducer,
                 50,
@@ -171,9 +185,8 @@ public class SynchronizerTest {
     public void testCDNBypassRequestLimitAndBackoff() throws NoSuchFieldException, IllegalAccessException {
 
         SplitCache cache = new InMemoryCacheImp();
-        Synchronizer imp = new SynchronizerImp(_refreshableSplitFetcherTask,
+        Synchronizer imp = new SynchronizerImp(_splitTasks,
                 _splitFetcher,
-                _segmentFetcher,
                 cache,
                 _segmentCacheProducer,
                 50,
@@ -229,9 +242,8 @@ public class SynchronizerTest {
     public void testCDNBypassRequestLimitAndForSegmentsBackoff() throws NoSuchFieldException, IllegalAccessException {
 
         SplitCache cache = new InMemoryCacheImp();
-        Synchronizer imp = new SynchronizerImp(_refreshableSplitFetcherTask,
+        Synchronizer imp = new SynchronizerImp(_splitTasks,
                 _splitFetcher,
-                _segmentFetcher,
                 cache,
                 _segmentCacheProducer,
                 50,
@@ -284,5 +296,32 @@ public class SynchronizerTest {
         Assert.assertEquals(calls.get(), 13);
         long minDiffExpected = 1 + 2 + 4 + 8 + 16 + 32 + 64 + 128 + 256;
         Assert.assertTrue((after - before) > minDiffExpected);
+    }
+
+    @Test
+    public void testDataRecording(){
+        SplitCache cache = new InMemoryCacheImp();
+        Synchronizer imp = new SynchronizerImp(_splitTasks,
+                _splitFetcher,
+                cache,
+                _segmentCacheProducer,
+                50,
+                3,
+                1,
+                true,
+                Mockito.mock(SDKReadinessGates.class));
+        imp.startPeriodicDataRecording();
+
+        Mockito.verify(_eventsTask, Mockito.times(1)).start();
+        Mockito.verify(_impressionsManager, Mockito.times(1)).start();
+        Mockito.verify(_uniqueKeysTracker, Mockito.times(1)).start();
+        Mockito.verify(_telemetrySyncTask, Mockito.times(1)).startScheduledTask();
+
+        imp.stopPeriodicDataRecording(3L,1L,1L);
+
+        Mockito.verify(_eventsTask, Mockito.times(1)).close();
+        Mockito.verify(_impressionsManager, Mockito.times(1)).close();
+        Mockito.verify(_uniqueKeysTracker, Mockito.times(1)).stop();
+        Mockito.verify(_telemetrySyncTask, Mockito.times(1)).stopScheduledTask(3L,1L,1L);
     }
 }

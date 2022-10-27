@@ -2,6 +2,9 @@ package io.split.engine.common;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import io.split.client.events.EventsTask;
+import io.split.client.impressions.ImpressionsManager;
+import io.split.client.impressions.UniqueKeysTracker;
 import io.split.engine.SDKReadinessGates;
 import io.split.engine.experiments.FetchResult;
 import io.split.engine.experiments.SplitFetcher;
@@ -10,6 +13,7 @@ import io.split.engine.segments.SegmentFetcher;
 import io.split.engine.segments.SegmentSynchronizationTask;
 import io.split.storages.SegmentCacheProducer;
 import io.split.storages.SplitCacheProducer;
+import io.split.telemetry.synchronizer.TelemetrySyncTask;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -34,16 +38,18 @@ public class SynchronizerImp implements Synchronizer {
     private final SegmentSynchronizationTask _segmentSynchronizationTaskImp;
     private final SplitCacheProducer _splitCacheProducer;
     private final SegmentCacheProducer segmentCacheProducer;
+    private final ImpressionsManager _impressionManager;
+    private final EventsTask _eventsTask;
+    private final TelemetrySyncTask _telemetrySyncTask;
+    private  final UniqueKeysTracker _uniqueKeysTracker;
     private final int _onDemandFetchRetryDelayMs;
     private final int _onDemandFetchMaxRetries;
     private final int _failedAttemptsBeforeLogging;
     private final boolean _cdnResponseHeadersLogging;
-
     private final Gson gson = new GsonBuilder().create();
 
-    public SynchronizerImp(SplitSynchronizationTask splitSynchronizationTask,
+    public SynchronizerImp(SplitTasks splitTasks,
                            SplitFetcher splitFetcher,
-                           SegmentSynchronizationTask segmentSynchronizationTaskImp,
                            SplitCacheProducer splitCacheProducer,
                            SegmentCacheProducer segmentCacheProducer,
                            int onDemandFetchRetryDelayMs,
@@ -51,16 +57,19 @@ public class SynchronizerImp implements Synchronizer {
                            int failedAttemptsBeforeLogging,
                            boolean cdnResponseHeadersLogging,
                            SDKReadinessGates gates) {
-        _splitSynchronizationTask = checkNotNull(splitSynchronizationTask);
+        _splitSynchronizationTask = checkNotNull(splitTasks.getSplitSynchronizationTask());
         _splitFetcher = checkNotNull(splitFetcher);
-        _segmentSynchronizationTaskImp = checkNotNull(segmentSynchronizationTaskImp);
+        _segmentSynchronizationTaskImp = checkNotNull(splitTasks.getSegmentSynchronizationTask());
         _splitCacheProducer = checkNotNull(splitCacheProducer);
         this.segmentCacheProducer = checkNotNull(segmentCacheProducer);
         _onDemandFetchRetryDelayMs = checkNotNull(onDemandFetchRetryDelayMs);
         _cdnResponseHeadersLogging = cdnResponseHeadersLogging;
         _onDemandFetchMaxRetries = onDemandFetchMaxRetries;
         _failedAttemptsBeforeLogging = failedAttemptsBeforeLogging;
-
+        _impressionManager = splitTasks.getImpressionManager();
+        _eventsTask = splitTasks.getEventsTask();
+        _telemetrySyncTask = splitTasks.getTelemetrySyncTask();
+        _uniqueKeysTracker = splitTasks.getUniqueKeysTracker();
     }
 
     @Override
@@ -256,6 +265,46 @@ public class SynchronizerImp implements Synchronizer {
             logCdnHeaders(String.format("[segment/%s]", segmentName), _onDemandFetchMaxRetries + ON_DEMAND_FETCH_BACKOFF_MAX_RETRIES,
                     withCDNBypassed.remainingAttempts(), captor.get());
         }
+    }
+
+    @Override
+    public void startPeriodicDataRecording() {
+        try {
+            _impressionManager.start();
+        } catch (Exception e) {
+            _log.error("Error trying to init Impression Manager synchronizer task.", e);
+        }
+        if (_uniqueKeysTracker != null){
+            try {
+                _uniqueKeysTracker.start();
+            } catch (Exception e) {
+                _log.error("Error trying to init Unique Keys Tracker synchronizer task.", e);
+            }
+        }
+        try {
+            _eventsTask.start();
+        } catch (Exception e) {
+            _log.error("Error trying to init Events synchronizer task.", e);
+        }
+        try {
+            _telemetrySyncTask.startScheduledTask();
+        } catch (Exception e) {
+            _log.error("Error trying to Telemetry synchronizer task.", e);
+        }
+    }
+
+    @Override
+    public void stopPeriodicDataRecording(long splitCount, long segmentCount, long segmentKeyCount) {
+        _impressionManager.close();
+        _log.info("Successful shutdown of impressions manager");
+        if (_uniqueKeysTracker != null){
+            _uniqueKeysTracker.stop();
+            _log.info("Successful stop of UniqueKeysTracker");
+        }
+        _eventsTask.close();
+        _log.info("Successful shutdown of eventsTask");
+        _telemetrySyncTask.stopScheduledTask(splitCount, segmentCount, segmentKeyCount);
+        _log.info("Successful shutdown of telemetry sync task");
     }
 
     private void forceRefreshSegment(String segmentName){
