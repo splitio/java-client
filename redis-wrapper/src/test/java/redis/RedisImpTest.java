@@ -26,7 +26,7 @@ public class RedisImpTest {
         map.put("test-7", "7");
         map.put("test-8", "8");
 
-        CustomStorageWrapper storageWrapper = new RedisImp(new JedisPool(), "test-prefix:");
+        CustomStorageWrapper storageWrapper = new RedisImp(new RedisSingle(new JedisPool()), "test-prefix:");
 
         for (Map.Entry<String, String> entry : map.entrySet()) {
             storageWrapper.set(entry.getKey(), entry.getValue());
@@ -47,7 +47,7 @@ public class RedisImpTest {
         map.put("test-7", "7");
         map.put("test-8", "8");
 
-        CustomStorageWrapper storageWrapper = new RedisImp(new JedisPool(), "test-prefix:");
+        CustomStorageWrapper storageWrapper = new RedisImp(new RedisSingle(new JedisPool()), "test-prefix:");
 
         for (Map.Entry<String, String> entry : map.entrySet()) {
             storageWrapper.set(entry.getKey(), entry.getValue());
@@ -71,7 +71,7 @@ public class RedisImpTest {
         Map<String, String> map = new HashMap<>();
         map.put(key, "5");
 
-        CustomStorageWrapper storageWrapper = new RedisImp(new JedisPool(), "test-prefix:");
+        CustomStorageWrapper storageWrapper = new RedisImp(new RedisSingle(new JedisPool()), "test-prefix:");
         storageWrapper.set(key, "5");
         String result = storageWrapper.getAndSet(key, "7");
         Assert.assertEquals("5", result);
@@ -87,7 +87,7 @@ public class RedisImpTest {
         map.put("item-2", "2");
         map.put("item-3", "3");
         map.put("i-4", "4");
-        RedisImp storageWrapper = new RedisImp(new JedisPool(), "test-prefix:");
+        RedisImp storageWrapper = new RedisImp(new RedisSingle(new JedisPool()), "test-prefix:");
         try {
             for (Map.Entry<String, String> entry : map.entrySet()) {
                 storageWrapper.set(entry.getKey(), entry.getValue());
@@ -109,7 +109,7 @@ public class RedisImpTest {
     public void testIncrementAndDecrement() throws Exception {
         Map<String, String> map = new HashMap<>();
         map.put("item-1", "2");
-        RedisImp storageWrapper = new RedisImp(new JedisPool(), "test-prefix:");
+        RedisImp storageWrapper = new RedisImp(new RedisSingle(new JedisPool()), "test-prefix:");
         try {
             for (Map.Entry<String, String> entry : map.entrySet()) {
                 storageWrapper.set(entry.getKey(), entry.getValue());
@@ -128,7 +128,7 @@ public class RedisImpTest {
 
     @Test
     public void testHIncrement() throws Exception {
-        RedisImp storageWrapper = new RedisImp(new JedisPool(), "test-prefix");
+        RedisImp storageWrapper = new RedisImp(new RedisSingle(new JedisPool()), "test-prefix");
         Map<String, String> map = new HashMap<>();
         map.put("count", "test::12232");
         try {
@@ -145,7 +145,7 @@ public class RedisImpTest {
     public void testPushAndPopItems() throws Exception {
         Map<String, String> map = new HashMap<>();
         map.put("item-1", "1");
-        RedisImp storageWrapper = new RedisImp(new JedisPool(), "test-prefix");
+        RedisImp storageWrapper = new RedisImp(new RedisSingle(new JedisPool()), "test-prefix");
         try {
             long push = storageWrapper.pushItems("item-1", Arrays.asList("1", "2", "3", "4"));
             Assert.assertEquals(4L, push);
@@ -166,7 +166,7 @@ public class RedisImpTest {
     public void testGetItemsCount() throws Exception {
         Map<String, String> map = new HashMap<>();
         map.put("item-1", "1");
-        RedisImp storageWrapper = new RedisImp(new JedisPool(), "test-prefix");
+        RedisImp storageWrapper = new RedisImp(new RedisSingle(new JedisPool()), "test-prefix");
         try {
             storageWrapper.addItems("item-1", Arrays.asList("1", "2", "3", "4"));
             long result = storageWrapper.getItemsCount("item-1");
@@ -182,7 +182,7 @@ public class RedisImpTest {
     public void testItemContains() throws Exception {
         Map<String, String> map = new HashMap<>();
         map.put("item-1", "1");
-        RedisImp storageWrapper = new RedisImp(new JedisPool(), "test-prefix");
+        RedisImp storageWrapper = new RedisImp(new RedisSingle(new JedisPool()), "test-prefix");
         try {
             storageWrapper.addItems("item-1", Arrays.asList("1", "2", "3", "4"));
             boolean result = storageWrapper.itemContains("item-1", "2");
@@ -198,7 +198,7 @@ public class RedisImpTest {
     public void testRemoveItems() throws Exception {
         Map<String, String> map = new HashMap<>();
         map.put("item-1", "1");
-        RedisImp storageWrapper = new RedisImp(new JedisPool(), "test-prefix");
+        RedisImp storageWrapper = new RedisImp(new RedisSingle(new JedisPool()), "test-prefix");
         try {
             storageWrapper.addItems("item-1", Arrays.asList("1", "2", "3", "4"));
             boolean result = storageWrapper.itemContains("item-1", "2");
@@ -222,7 +222,7 @@ public class RedisImpTest {
         map.put("item-2", "2");
         map.put("item-3", "3");
         map.put("i-4", "4");
-        RedisImp storageWrapper = new RedisImp(new JedisPool(), "test-prefix:");
+        RedisImp storageWrapper = new RedisImp(new RedisSingle(new JedisPool()), "test-prefix:");
         try {
             for (Map.Entry<String, String> entry : map.entrySet()) {
                 storageWrapper.set(entry.getKey(), entry.getValue());
@@ -246,13 +246,13 @@ public class RedisImpTest {
 
     @Test
     public void testConnect() throws Exception {
-        RedisImp storageWrapper = new RedisImp(new JedisPool(), "test-prefix");
+        RedisImp storageWrapper = new RedisImp(new RedisSingle(new JedisPool()), "test-prefix");
         Assert.assertTrue(storageWrapper.connect());
     }
 
     @Test
     public void testDisconnect() throws Exception {
-        RedisImp storageWrapper = new RedisImp(new JedisPool(), "test-prefix");
+        RedisImp storageWrapper = new RedisImp(new RedisSingle(new JedisPool()), "test-prefix");
         Assert.assertTrue(storageWrapper.disconnect());
     }
 }
