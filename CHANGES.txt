@@ -1,3 +1,6 @@
+4.5.0 (Oct 12, 2022)
+-  Added a new impressions mode for the SDK called NONE, to be used in factory when there is no desire to capture impressions on an SDK factory to feed Split's analytics engine. Running NONE mode, the SDK will only capture unique keys evaluated for a particular feature flag instead of full blown impressions.
+
 4.4.8 (Sep 16, 2022)
 - Updated `org.yaml.snakeyaml` dependence to 1.32 for fixing a vulnerability.
 - Improved SplitClientIntegrationTest removing ignore annotation in some test cases.
@@ -75,7 +78,9 @@
 - Fixed fetch retries after received an SPLIT_CHANGE.
 
 4.1.0 (Sep 25, 2020)
-- Add local impressions deduping (enabled by default)
+- Added `OPTIMIZED` and `DEBUG` modes in order to enabling/disabling how impressions are going to be sent into Split servers,
+          - `OPTIMIZED`: will send unique impressions in a timeframe in order to reduce how many times impressions are posted to Split.
+          - `DEBUG`: will send every impression generated to Split.
 
 4.0.1 (Sep 4, 2020)
 - Remove jersey. Use custom SSE implementation

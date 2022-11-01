@@ -114,15 +114,6 @@ public class SplitClientConfigTest {
                 .build();
     }
 
-    @Test(expected = IllegalArgumentException.class)
-    public void cannot_set_zero_capacity_on_impression_listener() throws InterruptedException {
-        SplitClientConfig.builder()
-                .integrations(IntegrationsConfig.builder()
-                        .impressionsListener(new ImpressionListener.NoopImpressionListener(), 0)
-                        .build())
-                .build();
-    }
-
     @Test
     public void config_does_not_crash_if_new_relic_class_not_present() {
         SplitClientConfig cfg = SplitClientConfig.builder()

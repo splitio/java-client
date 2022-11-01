@@ -3,6 +3,7 @@ package io.split.engine.segments;
 import com.google.common.collect.Maps;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import io.split.engine.SDKReadinessGates;
+import io.split.engine.common.FetchOptions;
 import io.split.storages.SegmentCacheProducer;
 import io.split.storages.SplitCacheConsumer;
 import io.split.telemetry.storage.TelemetryRuntimeProducer;
@@ -87,13 +88,13 @@ public class SegmentSynchronizationTaskImp implements SegmentSynchronizationTask
                 return;
             }
 
-            segment = new SegmentFetcherImp(segmentName, _segmentChangeFetcher, _gates, _segmentCacheProducer, _telemetryRuntimeProducer);
+            SegmentFetcher newSegment = new SegmentFetcherImp(segmentName, _segmentChangeFetcher, _gates, _segmentCacheProducer, _telemetryRuntimeProducer);
 
             if (_running.get()) {
-                _scheduledExecutorService.submit(segment::fetchAll);
+                _scheduledExecutorService.submit(() -> newSegment.fetch(new FetchOptions.Builder().build()));
             }
 
-            _segmentFetchers.putIfAbsent(segmentName, segment);
+            _segmentFetchers.putIfAbsent(segmentName, newSegment);
         }
     }
 
@@ -160,7 +161,7 @@ public class SegmentSynchronizationTaskImp implements SegmentSynchronizationTask
                 continue;
             }
 
-            _scheduledExecutorService.submit(fetcher::fetchAll);
+            _scheduledExecutorService.submit(() -> fetcher.fetch(new FetchOptions.Builder().build()));
         }
     }
 

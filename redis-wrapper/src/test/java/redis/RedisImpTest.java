@@ -47,7 +47,7 @@ public class RedisImpTest {
         map.put("test-7", "7");
         map.put("test-8", "8");
 
-        CustomStorageWrapper storageWrapper = new RedisImp(new JedisPool(), "test-prefix:.");
+        CustomStorageWrapper storageWrapper = new RedisImp(new JedisPool(), "test-prefix:");
 
         for (Map.Entry<String, String> entry : map.entrySet()) {
             storageWrapper.set(entry.getKey(), entry.getValue());
@@ -71,7 +71,7 @@ public class RedisImpTest {
         Map<String, String> map = new HashMap<>();
         map.put(key, "5");
 
-        CustomStorageWrapper storageWrapper = new RedisImp(new JedisPool(), "test-prefix:.");
+        CustomStorageWrapper storageWrapper = new RedisImp(new JedisPool(), "test-prefix:");
         storageWrapper.set(key, "5");
         String result = storageWrapper.getAndSet(key, "7");
         Assert.assertEquals("5", result);
@@ -109,7 +109,7 @@ public class RedisImpTest {
     public void testIncrementAndDecrement() throws Exception {
         Map<String, String> map = new HashMap<>();
         map.put("item-1", "2");
-        RedisImp storageWrapper = new RedisImp(new JedisPool(), "test-prefix");
+        RedisImp storageWrapper = new RedisImp(new JedisPool(), "test-prefix:");
         try {
             for (Map.Entry<String, String> entry : map.entrySet()) {
                 storageWrapper.set(entry.getKey(), entry.getValue());
@@ -122,6 +122,21 @@ public class RedisImpTest {
             Assert.assertEquals(1L, result);
         }
         finally {
+            storageWrapper.delete(new ArrayList<>(map.keySet()));
+        }
+    }
+
+    @Test
+    public void testHIncrement() throws Exception {
+        RedisImp storageWrapper = new RedisImp(new JedisPool(), "test-prefix");
+        Map<String, String> map = new HashMap<>();
+        map.put("count", "test::12232");
+        try {
+            long result = storageWrapper.hIncrement("count", "test::12232", 2L);
+            Assert.assertEquals(2L, result);
+            result = storageWrapper.hIncrement("count", "test::12232", 1L);
+            Assert.assertEquals(3L, result);
+        } finally {
             storageWrapper.delete(new ArrayList<>(map.keySet()));
         }
     }

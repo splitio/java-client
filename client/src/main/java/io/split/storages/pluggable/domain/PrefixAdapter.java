@@ -12,6 +12,8 @@ public class PrefixAdapter {
     private static final String EVENTS = "events";
     private static final String IMPRESSIONS = "impressions";
     private static final String SEGMENT = "segment.";
+    private static final String COUNT = ".count";
+    private static final String UNIQUE_KEYS = "uniquekeys";
     private static final String TILL = "till";
     private static final String TELEMETRY = "telemetry.";
     private static final String LATENCIES = "latencies";
@@ -66,15 +68,23 @@ public class PrefixAdapter {
         return String.format(DEFAULT_PREFIX+SEGMENT+"%s."+TILL, segmentName);
     }
 
-    public static String buildTelemetryLatenciesPrefix(String method, int bucketForLatency, String sdkVersion, String machineIp, String machineName) {
-        return String.format(DEFAULT_PREFIX+TELEMETRY+LATENCIES+"::%s/%s/%s/"+"%s/%d", sdkVersion, machineName, machineIp, method, bucketForLatency);
+    public static String buildImpressionsCount(){
+        return String.format(DEFAULT_PREFIX + IMPRESSIONS + COUNT);
     }
 
-    public static String buildTelemetryExceptionsPrefix(String method, String sdkVersion, String machineIp, String machineName) {
-        return String.format(DEFAULT_PREFIX+TELEMETRY+EXCEPTIONS+"::%s/%s/%s/"+"%s", sdkVersion, machineName, machineIp, method);
+    public static String buildUniqueKeys() {
+        return String.format(DEFAULT_PREFIX + UNIQUE_KEYS);
     }
 
-    public static String buildTelemetryInit(String sdkVersion, String machineIp, String machineName) {
-        return String.format(DEFAULT_PREFIX+TELEMETRY+INIT+"::%s/%s/%s", sdkVersion, machineName, machineIp);
+    public static String buildTelemetryLatenciesPrefix() {
+        return String.format(DEFAULT_PREFIX+TELEMETRY+LATENCIES);
+    }
+
+    public static String buildTelemetryExceptionsPrefix() {
+        return String.format(DEFAULT_PREFIX+TELEMETRY+EXCEPTIONS);
+    }
+
+    public static String buildTelemetryInit() {
+        return String.format(DEFAULT_PREFIX + TELEMETRY + INIT);
     }
 }

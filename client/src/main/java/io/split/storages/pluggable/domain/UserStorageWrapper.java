@@ -3,19 +3,21 @@ package io.split.storages.pluggable.domain;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import pluggable.CustomStorageWrapper;
+import pluggable.HasPipelineSupport;
+import pluggable.NotPipelinedImpl;
 
 import java.util.List;
 import java.util.Set;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
-public class SafeUserStorageWrapper implements CustomStorageWrapper {
+public class UserStorageWrapper implements CustomStorageWrapper {
 
-    private static final Logger _log = LoggerFactory.getLogger(SafeUserStorageWrapper.class);
+    private static final Logger _log = LoggerFactory.getLogger(UserStorageWrapper.class);
 
     private final CustomStorageWrapper _customStorageWrapper;
 
-    public SafeUserStorageWrapper(CustomStorageWrapper customStorageWrapper) {
+    public UserStorageWrapper(CustomStorageWrapper customStorageWrapper) {
         _customStorageWrapper = checkNotNull(customStorageWrapper);
     }
 
@@ -48,6 +50,16 @@ public class SafeUserStorageWrapper implements CustomStorageWrapper {
         }
         catch (Exception e) {
             _log.error(String.format("error updating key '%s' from storage. Error: '%s'", key, e.getMessage()));
+        }
+    }
+
+    @Override
+    public void hSet(String key, String field, String item) {
+        try {
+            _customStorageWrapper.hSet(key, field, item);
+        }
+        catch (Exception e) {
+            _log.error(String.format("error updating key by field '%s' from storage. Error: '%s'", key, e.getMessage()));
         }
     }
 
@@ -90,6 +102,17 @@ public class SafeUserStorageWrapper implements CustomStorageWrapper {
         }
         catch (Exception e) {
             _log.error(String.format("error incrementing key '%s' from storage. Error: '%s'", key, e.getMessage()));
+            return 0L;
+        }
+    }
+
+    @Override
+    public long hIncrement(String key, String field, long value){
+        try {
+            return _customStorageWrapper.hIncrement(key, field, value);
+        }
+        catch (Exception e) {
+            _log.error(String.format("error incrementing key by field '%s' from storage. Error: '%s'", key, e.getMessage()));
             return 0L;
         }
     }
@@ -200,5 +223,11 @@ public class SafeUserStorageWrapper implements CustomStorageWrapper {
             _log.error(String.format("error trying to disconnect. Error: '%s'" , e.getMessage()));
             return false;
         }
+    }
+
+    public UserPipelineWrapper pipeline() throws Exception {
+        return (_customStorageWrapper instanceof HasPipelineSupport)
+                ? new UserPipelineWrapper(((HasPipelineSupport) _customStorageWrapper).pipeline())
+                : new UserPipelineWrapper(new NotPipelinedImpl(_customStorageWrapper));
     }
 }

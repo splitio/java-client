@@ -1,0 +1,36 @@
+package io.split.storages.pluggable.domain;
+
+import io.split.storages.pluggable.CustomStorageWrapperHasPipeline;
+import io.split.storages.pluggable.CustomStorageWrapperImp;
+import org.junit.Assert;
+import org.junit.Test;
+import pluggable.NotPipelinedImpl;
+import pluggable.Result;
+
+import java.util.List;
+import java.util.Optional;
+
+public class UserPipelineWrapperTest {
+    private static final String KEY = "SPLITIO.impressions.counts";
+    private static final String HASH_COUNT_KEY = "countKey";
+
+    @Test
+    public void testHincrementWithPipeline() throws Exception {
+        CustomStorageWrapperHasPipeline customStorageWrapper = new CustomStorageWrapperHasPipeline();
+        UserPipelineWrapper userPipelineWrapper = new UserPipelineWrapper(customStorageWrapper.pipeline());
+        userPipelineWrapper.hIncrement(KEY, HASH_COUNT_KEY, 1);
+        List<Result> results = userPipelineWrapper.exec();
+        Assert.assertEquals(Optional.of(1L), results.get(0).asLong());
+    }
+
+    @Test
+    public void testHincrementWithoutPipeline() throws Exception {
+        CustomStorageWrapperImp customStorageWrapper = new CustomStorageWrapperImp();
+        NotPipelinedImpl notPipelined = new NotPipelinedImpl(customStorageWrapper);
+        UserPipelineWrapper userPipelineWrapper = new UserPipelineWrapper(notPipelined);
+        userPipelineWrapper.hIncrement(KEY, HASH_COUNT_KEY, 1);
+        List<Result> results = userPipelineWrapper.exec();
+        Assert.assertEquals(Optional.of(1L), results.get(0).asLong());
+    }
+
+}
