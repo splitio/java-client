@@ -39,6 +39,7 @@ public class RedisInstance {
         private int _database = 0;
         private String _prefix = "";
         private JedisPool _jedisPool = null;
+        private JedisCluster _jedisCluster = null;
         private int _maxTotal = GenericObjectPoolConfig.DEFAULT_MAX_TOTAL;
 
         public Builder timeout(int timeout) {
@@ -86,9 +87,17 @@ public class RedisInstance {
             return this;
         }
 
+        public Builder jedisCluster(JedisCluster jedisCluster) {
+            _jedisCluster = jedisCluster;
+            return this;
+        }
+
         public CustomStorageWrapper build() {
             if(_jedisPool != null) {
                 return RedisInstance.getRedisInstance(_jedisPool, _prefix);
+            }
+            if(_jedisCluster != null) {
+                return RedisInstance.getRedisInstance(_jedisCluster, _prefix);
             }
             return RedisInstance.getRedisInstance(_host, _port, _timeout, _user, _password, _database, _prefix, _maxTotal);
         }
