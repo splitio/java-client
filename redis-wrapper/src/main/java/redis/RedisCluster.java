@@ -99,7 +99,7 @@ class RedisCluster implements CustomStorageWrapper {
     public Set<String> getKeysByPrefix(String prefix) throws Exception {
         try {
             Set<String> keysWithPrefix = jedis.keys(_commonRedis.buildKeyWithPrefix(prefix));
-            keysWithPrefix = keysWithPrefix.stream().map(key -> key.replaceAll(_prefix + ".", "")).collect(Collectors.toSet());
+            keysWithPrefix = keysWithPrefix.stream().map(key -> key.replace(_prefix + ".", "")).collect(Collectors.toSet());
             return keysWithPrefix;
         } catch (Exception ex) {
             throw new RedisException(ex.getMessage());
