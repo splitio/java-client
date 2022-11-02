@@ -11,17 +11,11 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 class RedisCluster implements CustomStorageWrapper {
-    private static final String TELEMETRY_INIT = "SPLITIO.telemetry.init" ;
-    private static final String EVENTS_KEY = "SPLITIO.events" ;
-    private static final String IMPRESSIONS_KEY = "SPLITIO.impressions" ;
-    private static final long IMPRESSIONS_OR_EVENTS_DEFAULT_TTL = 3600000L;
     private final CommonRedis _commonRedis;
     private final JedisCluster jedis;
-    private final String _prefix;
 
     public RedisCluster(JedisCluster jedisCluster, String prefix) {
         this.jedis = jedisCluster;
-        this._prefix = prefix;
         _commonRedis = CommonRedis.create(prefix);
     }
 
@@ -51,7 +45,7 @@ class RedisCluster implements CustomStorageWrapper {
     @Override
     public void set(String key, String item) throws Exception {
         try {
-            if(key.contains(TELEMETRY_INIT)) {
+            if(key.contains(_commonRedis.TELEMETRY_INIT)) {
                 String[] splittedKey = key.split("::");
                 jedis.hset(_commonRedis.buildKeyWithPrefix(splittedKey[0]), splittedKey[1], item);
                 return;
@@ -99,7 +93,7 @@ class RedisCluster implements CustomStorageWrapper {
     public Set<String> getKeysByPrefix(String prefix) throws Exception {
         try {
             Set<String> keysWithPrefix = jedis.keys(_commonRedis.buildKeyWithPrefix(prefix));
-            keysWithPrefix = keysWithPrefix.stream().map(key -> key.replace(_prefix + ".", "")).collect(Collectors.toSet());
+            keysWithPrefix = keysWithPrefix.stream().map(key -> key.replace(_commonRedis.getPrefix() + ".", "")).collect(Collectors.toSet());
             return keysWithPrefix;
         } catch (Exception ex) {
             throw new RedisException(ex.getMessage());
@@ -137,9 +131,9 @@ class RedisCluster implements CustomStorageWrapper {
     public long pushItems(String key, List<String> items) throws Exception {
         try {
             long addedItems = jedis.rpush(_commonRedis.buildKeyWithPrefix(key), items.toArray(new String[items.size()]));
-            if(EVENTS_KEY.equals(key) || IMPRESSIONS_KEY.equals(key)) {
+            if(_commonRedis.EVENTS_KEY.equals(key) || _commonRedis.IMPRESSIONS_KEY.equals(key)) {
                 if(addedItems == items.size()) {
-                    jedis.pexpire(key, IMPRESSIONS_OR_EVENTS_DEFAULT_TTL);
+                    jedis.pexpire(key, _commonRedis.IMPRESSIONS_OR_EVENTS_DEFAULT_TTL);
                 }
             }
             return addedItems;
