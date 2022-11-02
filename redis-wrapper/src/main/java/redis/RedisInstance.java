@@ -2,6 +2,7 @@ package redis;
 
 import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
 import pluggable.CustomStorageWrapper;
+import redis.clients.jedis.JedisCluster;
 import redis.clients.jedis.JedisPool;
 import redis.clients.jedis.JedisPoolConfig;
 
@@ -17,11 +18,15 @@ public class RedisInstance {
         JedisPoolConfig poolConfig = new JedisPoolConfig();
         poolConfig.setMaxTotal(maxTotal);
         JedisPool jedisPool = new JedisPool(poolConfig, host, port, timeout, password, database);
-        return new RedisImp(jedisPool, prefix);
+        return new RedisSingle(jedisPool, prefix);
     }
 
     private static CustomStorageWrapper getRedisInstance(JedisPool jedisPool, String prefix) {
-        return new RedisImp(jedisPool, prefix);
+        return new RedisSingle(jedisPool, prefix);
+    }
+
+    private static CustomStorageWrapper getRedisInstance(JedisCluster jedisCluster, String prefix) {
+        return new RedisCluster(jedisCluster, prefix);
     }
 
     public static final class Builder {
@@ -33,6 +38,7 @@ public class RedisInstance {
         private int _database = 0;
         private String _prefix = "";
         private JedisPool _jedisPool = null;
+        private JedisCluster _jedisCluster = null;
         private int _maxTotal = GenericObjectPoolConfig.DEFAULT_MAX_TOTAL;
 
         public Builder timeout(int timeout) {
@@ -75,6 +81,11 @@ public class RedisInstance {
             return this;
         }
 
+        public Builder jedisCluster(JedisCluster jedisCluster) {
+            _jedisCluster = jedisCluster;
+            return this;
+        }
+
         public Builder maxTotal(int _maxTotal) {
             _maxTotal = _maxTotal;
             return this;
@@ -83,6 +94,9 @@ public class RedisInstance {
         public CustomStorageWrapper build() {
             if(_jedisPool != null) {
                 return RedisInstance.getRedisInstance(_jedisPool, _prefix);
+            }
+            if(_jedisCluster != null) {
+                return RedisInstance.getRedisInstance(_jedisCluster, _prefix);
             }
             return RedisInstance.getRedisInstance(_host, _port, _timeout, _user, _password, _database, _prefix, _maxTotal);
         }
