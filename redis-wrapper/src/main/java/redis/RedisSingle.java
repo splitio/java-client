@@ -13,17 +13,11 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 class RedisSingle implements CustomStorageWrapper, HasPipelineSupport {
-    private static final String TELEMETRY_INIT = "SPLITIO.telemetry.init" ;
-    private static final String EVENTS_KEY = "SPLITIO.events" ;
-    private static final String IMPRESSIONS_KEY = "SPLITIO.impressions" ;
-    private static final long IMPRESSIONS_OR_EVENTS_DEFAULT_TTL = 3600000L;
     private final CommonRedis _commonRedis;
     private final JedisPool jedisPool;
-    private final String _prefix;
 
     public RedisSingle(JedisPool jedisPool, String prefix) {
         this.jedisPool = jedisPool;
-        this._prefix = prefix;
         _commonRedis = CommonRedis.create(prefix);
     }
 
@@ -53,7 +47,7 @@ class RedisSingle implements CustomStorageWrapper, HasPipelineSupport {
     @Override
     public void set(String key, String item) throws Exception {
         try (Jedis jedis = this.jedisPool.getResource()) {
-            if(key.contains(TELEMETRY_INIT)) {
+            if(key.contains(_commonRedis.TELEMETRY_INIT)) {
                 String[] splittedKey = key.split("::");
                 jedis.hset(_commonRedis.buildKeyWithPrefix(splittedKey[0]), splittedKey[1], item);
                 return;
@@ -101,7 +95,7 @@ class RedisSingle implements CustomStorageWrapper, HasPipelineSupport {
     public Set<String> getKeysByPrefix(String prefix) throws Exception {
         try (Jedis jedis = this.jedisPool.getResource()) {
             Set<String> keysWithPrefix = jedis.keys(_commonRedis.buildKeyWithPrefix(prefix));
-            keysWithPrefix = keysWithPrefix.stream().map(key -> key.replaceAll(_prefix + ".", "")).collect(Collectors.toSet());
+            keysWithPrefix = keysWithPrefix.stream().map(key -> key.replaceAll(_commonRedis.getPrefix() + ".", "")).collect(Collectors.toSet());
             return keysWithPrefix;
         } catch (Exception ex) {
             throw new RedisException(ex.getMessage());
@@ -139,9 +133,9 @@ class RedisSingle implements CustomStorageWrapper, HasPipelineSupport {
     public long pushItems(String key, List<String> items) throws Exception {
         try (Jedis jedis = this.jedisPool.getResource()) {
             long addedItems = jedis.rpush(_commonRedis.buildKeyWithPrefix(key), items.toArray(new String[items.size()]));
-            if(EVENTS_KEY.equals(key) || IMPRESSIONS_KEY.equals(key)) {
+            if(_commonRedis.EVENTS_KEY.equals(key) || _commonRedis.IMPRESSIONS_KEY.equals(key)) {
                 if(addedItems == items.size()) {
-                    jedis.pexpire(key, IMPRESSIONS_OR_EVENTS_DEFAULT_TTL);
+                    jedis.pexpire(key, _commonRedis.IMPRESSIONS_OR_EVENTS_DEFAULT_TTL);
                 }
             }
             return addedItems;
@@ -237,7 +231,7 @@ class RedisSingle implements CustomStorageWrapper, HasPipelineSupport {
     @Override
     public Pipeline pipeline() throws Exception {
         try {
-            return new RedisPipeline(this.jedisPool, this._prefix);
+            return new RedisPipeline(this.jedisPool, _commonRedis.getPrefix());
         } catch (Exception ex) {
             throw new RedisException(ex.getMessage());
         }
