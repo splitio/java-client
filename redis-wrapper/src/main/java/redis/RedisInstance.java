@@ -25,8 +25,8 @@ public class RedisInstance {
         return new RedisSingle(jedisPool, prefix);
     }
 
-    private static CustomStorageWrapper getRedisInstance(JedisCluster jedisCluster, String prefix) {
-        return new RedisCluster(jedisCluster, prefix);
+    private static CustomStorageWrapper getRedisInstance(JedisCluster jedisCluster, String prefix, String hashtag) {
+        return new RedisCluster(jedisCluster, prefix, hashtag);
     }
 
     public static final class Builder {
@@ -37,6 +37,7 @@ public class RedisInstance {
         private String _password = null;
         private int _database = 0;
         private String _prefix = "";
+        private String _hashtag = "";
         private JedisPool _jedisPool = null;
         private JedisCluster _jedisCluster = null;
         private int _maxTotal = GenericObjectPoolConfig.DEFAULT_MAX_TOTAL;
@@ -76,6 +77,11 @@ public class RedisInstance {
             return this;
         }
 
+        public Builder hashtag(String hashtag) {
+            _hashtag = hashtag;
+            return this;
+        }
+
         public Builder jedisPool(JedisPool jedisPool) {
             _jedisPool = jedisPool;
             return this;
@@ -96,7 +102,7 @@ public class RedisInstance {
                 return RedisInstance.getRedisInstance(_jedisPool, _prefix);
             }
             if(_jedisCluster != null) {
-                return RedisInstance.getRedisInstance(_jedisCluster, _prefix);
+                return RedisInstance.getRedisInstance(_jedisCluster, _prefix, _hashtag);
             }
             return RedisInstance.getRedisInstance(_host, _port, _timeout, _user, _password, _database, _prefix, _maxTotal);
         }

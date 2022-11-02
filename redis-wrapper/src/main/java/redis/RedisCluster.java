@@ -14,9 +14,28 @@ class RedisCluster implements CustomStorageWrapper {
     private final CommonRedis _commonRedis;
     private final JedisCluster jedis;
 
-    public RedisCluster(JedisCluster jedisCluster, String prefix) {
+    public static final String DEFAULT_HASHTAG = "{SPLITIO}" ;
+
+    private String validateHashtag(String hashtag) {
+        if (hashtag == null) {
+            return DEFAULT_HASHTAG;
+        }
+        if (hashtag.length() <= 2) {
+            return DEFAULT_HASHTAG;
+        }
+        if (!hashtag.startsWith("{")) {
+            return DEFAULT_HASHTAG;
+        }
+        if (!hashtag.endsWith("}")) {
+            return DEFAULT_HASHTAG;
+        }
+
+        return hashtag;
+    }
+
+    public RedisCluster(JedisCluster jedisCluster, String prefix, String hashtag) {
         this.jedis = jedisCluster;
-        _commonRedis = CommonRedis.create(prefix);
+        _commonRedis = CommonRedis.create(validateHashtag(hashtag) + prefix);
     }
 
     @Override
