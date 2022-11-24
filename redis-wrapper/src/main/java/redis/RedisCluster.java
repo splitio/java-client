@@ -1,5 +1,7 @@
 package redis;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import pluggable.CustomStorageWrapper;
 import pluggable.Pipeline;
 import redis.clients.jedis.JedisCluster;
@@ -16,17 +18,23 @@ class RedisCluster implements CustomStorageWrapper {
 
     public static final String DEFAULT_HASHTAG = "{SPLITIO}" ;
 
+    private static final Logger _log = LoggerFactory.getLogger(RedisCluster.class);
+
     private String validateHashtag(String hashtag) {
         if (hashtag == null) {
+            _log.warn("The hashtag wasn't set. It's going to use the default hashtag");
             return DEFAULT_HASHTAG;
         }
         if (hashtag.length() <= 2) {
+            _log.warn("The hashtag is too short. It's going to use the default hashtag");
             return DEFAULT_HASHTAG;
         }
         if (!hashtag.startsWith("{")) {
+            _log.warn("The hashtag doesn't have '{'. It's going to use the default hashtag");
             return DEFAULT_HASHTAG;
         }
         if (!hashtag.endsWith("}")) {
+            _log.warn("The hashtag doesn't have '}'. It's going to use the default hashtag");
             return DEFAULT_HASHTAG;
         }
 
