@@ -236,7 +236,7 @@ class RedisCluster implements CustomStorageWrapper {
     @Override
     public boolean connect() throws Exception {
         try {
-            return "PING".equalsIgnoreCase(jedis.echo("PING"));
+            return jedis.getClusterNodes().entrySet().stream().findFirst().map(e -> e.getValue().getResource().isConnected()).orElse(false);
         } catch (Exception ex) {
             throw new RedisException(ex.getMessage());
         }
