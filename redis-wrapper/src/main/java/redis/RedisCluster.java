@@ -228,7 +228,7 @@ class RedisCluster implements CustomStorageWrapper {
     @Override
     public boolean connect() throws Exception {
         try {
-            return "PING".equalsIgnoreCase(jedis.echo("PING"));
+            return jedis.dbSize() >= 0;
         } catch (Exception ex) {
             throw new RedisException(ex.getMessage());
         }
