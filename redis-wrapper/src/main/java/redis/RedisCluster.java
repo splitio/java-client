@@ -228,7 +228,7 @@ class RedisCluster implements CustomStorageWrapper {
     @Override
     public boolean connect() throws Exception {
         try {
-            return jedis.dbSize() >= 0;
+            return jedis.getClusterNodes().entrySet().stream().findFirst().map(e -> e.getValue().getResource().isConnected()).orElse(false);
         } catch (Exception ex) {
             throw new RedisException(ex.getMessage());
         }
