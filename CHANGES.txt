@@ -1,5 +1,6 @@
 4.6.0 (Nov 28, 2022)
-- Added a new option to use when running Redis in cluster mode called `keyHashTags` which receives a list of hashtags from which the SDK will randomly pick one to use on the generated instance.
+- Added support redis cluster by providing JedisClister object.
+- Updated Jedis to 4.3.0 to support tls.
 
 4.5.0 (Oct 12, 2022)
 - Added a new impressions mode for the SDK called NONE, to be used in factory when there is no desire to capture impressions on an SDK factory to feed Split's analytics engine. Running NONE mode, the SDK will only capture unique keys evaluated for a particular feature flag instead of full blown impressions.
