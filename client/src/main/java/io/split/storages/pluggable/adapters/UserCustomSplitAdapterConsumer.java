@@ -87,7 +87,7 @@ public class UserCustomSplitAdapterConsumer  implements SplitCacheConsumer {
     @Override
     public List<String> splitNames() {
         Set<String> splitNamesWithPrefix = _userStorageWrapper.getKeysByPrefix(PrefixAdapter.buildGetAllSplit());
-        splitNamesWithPrefix = splitNamesWithPrefix.stream().map(key -> key.replaceAll(PrefixAdapter.buildSplitsPrefix(), "")).collect(Collectors.toSet());
+        splitNamesWithPrefix = splitNamesWithPrefix.stream().map(key -> key.replace(PrefixAdapter.buildSplitsPrefix(), "")).collect(Collectors.toSet());
         return new ArrayList<>(splitNamesWithPrefix);
     }
 
