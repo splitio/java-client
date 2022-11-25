@@ -1,4 +1,4 @@
-4.6.0 (Nov 25, 2022)
+4.6.0 (Nov 28, 2022)
 - Added a new option to use when running Redis in cluster mode called `keyHashTags` which receives a list of hashtags from which the SDK will randomly pick one to use on the generated instance.
 
 4.5.0 (Oct 12, 2022)
