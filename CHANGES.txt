@@ -1,5 +1,5 @@
 4.6.0 (Nov 28, 2022)
-- Added support redis cluster by providing JedisClister object.
+- Added support redis cluster by providing JedisCluster object.
 - Updated Jedis to 4.3.0 to support tls.
 
 4.5.0 (Oct 12, 2022)
