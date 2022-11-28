@@ -5,7 +5,7 @@ public enum LocalhostSynchronizer implements Synchronizer {
 
     @Override
     public boolean syncAll() {
-        //Todo implement
+        //Todo implement, it's going to use the split and segment fetcher
         return false;
     }
 
