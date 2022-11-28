@@ -6,10 +6,10 @@
     <parent>
         <artifactId>java-client-parent</artifactId>
         <groupId>io.split.client</groupId>
-        <version>4.5.1-rc4</version>
+        <version>4.6.0</version>
     </parent>
     <artifactId>redis-wrapper</artifactId>
-    <version>2.0.0</version>
+    <version>3.0.0</version>
     <packaging>jar</packaging>
     <name>Package for Redis Wrapper Implementation</name>
     <description>Implements Redis Pluggable Storage</description>
@@ -28,7 +28,7 @@
         <dependency>
             <groupId>redis.clients</groupId>
             <artifactId>jedis</artifactId>
-            <version>3.7.0</version>
+            <version>4.3.0</version>
         </dependency>
         <dependency>
             <groupId>junit</groupId>
@@ -64,5 +64,55 @@
             </build>
         </profile>
     </profiles>
-
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-shade-plugin</artifactId>
+                <version>3.2.4</version>
+                <executions>
+                    <execution>
+                    <phase>package</phase>
+                    <goals>
+                        <goal>shade</goal>
+                    </goals>
+                    <configuration>
+                        <minimizeJar>false</minimizeJar>
+                        <promoteTransitiveDependencies>true</promoteTransitiveDependencies>
+                        <artifactSet>
+                            <includes>
+                                <include>redis.clients:*</include>
+                            </includes>
+                        </artifactSet>
+                        <transformers>
+                            <transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer" />
+                            <transformer implementation="org.apache.maven.plugins.shade.resource.ServicesResourceTransformer" />
+                        </transformers>
+                        <relocations>
+                            <relocation>
+                                <pattern>redis.clients.jedis</pattern>
+                                <shadedPattern>redis.clients.jedis</shadedPattern>
+                            </relocation>
+                        </relocations>
+                        <filters>
+                            <filter>
+                            <artifact>*:*</artifact>
+                            <excludes>
+                                <exclude>META-INF/license/**</exclude>
+                                <exclude>META-INF/*</exclude>
+                                <exclude>META-INF/maven/**</exclude>
+                                <exclude>META-INF/services/**</exclude>
+                                <exclude>LICENSE</exclude>
+                                <exclude>NOTICE</exclude>
+                                <exclude>/*.txt</exclude>
+                                <exclude>build.properties</exclude>
+                            </excludes>
+                        </filter>
+                    </filters>
+                </configuration>
+                </execution>
+                </executions>
+            </plugin>
+        </plugins>
+    </build>
 </project>
