@@ -53,7 +53,7 @@ public class SplitSynchronizationTask implements SplitSyncTask, Closeable {
         _running = new AtomicBoolean();
     }
 
-    public void startPeriodicFetching() {
+    public void start() {
         if (_running.getAndSet(true)) {
             _log.debug("Splits PeriodicFetching is running...");
             return;

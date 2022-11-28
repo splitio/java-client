@@ -2,7 +2,7 @@ package io.split.engine.experiments;
 
 public interface SplitSyncTask {
 
-    void startPeriodicFetching();
+    void start();
     void stop();
     void close();
 }

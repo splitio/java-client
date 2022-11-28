@@ -81,7 +81,7 @@ public class SynchronizerImp implements Synchronizer {
     @Override
     public void startPeriodicFetching() {
         _log.debug("Starting Periodic Fetching ...");
-        _splitSynchronizationTask.startPeriodicFetching();
+        _splitSynchronizationTask.start();
         _segmentSynchronizationTaskImp.startPeriodicFetching();
     }
 
