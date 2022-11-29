@@ -24,7 +24,7 @@ import static com.google.common.base.Preconditions.checkNotNull;
  *
  * @author adil
  */
-public class SplitSynchronizationTask implements SplitSyncTask, Closeable {
+public class SplitSynchronizationTask implements SyncTask, Closeable {
     private static final Logger _log = LoggerFactory.getLogger(SplitSynchronizationTask.class);
 
     private final AtomicReference<SplitFetcher> _splitFetcher = new AtomicReference<>();
@@ -102,5 +102,10 @@ public class SplitSynchronizationTask implements SplitSyncTask, Closeable {
             _log.warn("Shutdown hook for split fetchers has been interrupted");
             Thread.currentThread().interrupt();
         }
+    }
+
+    @Override
+    public boolean isRunning() {
+        return _running.get();
     }
 }

@@ -67,12 +67,6 @@ public class SegmentSynchronizationTaskImp implements SegmentSynchronizationTask
         _splitCacheConsumer = checkNotNull(splitCacheConsumer);
     }
 
-    @Override
-    public void run() {
-        this.fetchAll(false);
-    }
-
-    @Override
     public void initializeSegment(String segmentName) {
         SegmentFetcher segment = _segmentFetchers.get(segmentName);
         if (segment != null) {
@@ -98,7 +92,6 @@ public class SegmentSynchronizationTaskImp implements SegmentSynchronizationTask
         }
     }
 
-    @Override
     public SegmentFetcher getFetcher(String segmentName) {
         initializeSegment(segmentName);
 
@@ -106,14 +99,16 @@ public class SegmentSynchronizationTaskImp implements SegmentSynchronizationTask
     }
 
     @Override
-    public void startPeriodicFetching() {
+    public void start() {
         if (_running.getAndSet(true) ) {
             _log.debug("Segments PeriodicFetching is running...");
             return;
         }
 
         _log.debug("Starting PeriodicFetching Segments ...");
-        _scheduledFuture = _scheduledExecutorService.scheduleWithFixedDelay(this, 0L, _refreshEveryNSeconds.get(), TimeUnit.SECONDS);
+        _scheduledFuture = _scheduledExecutorService.scheduleWithFixedDelay(() -> {
+                fetchAll(false);
+            }, 0L, _refreshEveryNSeconds.get(), TimeUnit.SECONDS);
     }
 
     @Override
@@ -147,6 +142,10 @@ public class SegmentSynchronizationTaskImp implements SegmentSynchronizationTask
     }
 
     @Override
+    public boolean isRunning() {
+        return _running.get();
+    }
+
     public void fetchAll(boolean addCacheHeader) {
         _splitCacheConsumer.getSegments().forEach(this::initialize);
         for (Map.Entry<String, SegmentFetcher> entry : _segmentFetchers.entrySet()) {
@@ -165,7 +164,6 @@ public class SegmentSynchronizationTaskImp implements SegmentSynchronizationTask
         }
     }
 
-    @Override
     public boolean fetchAllSynchronous() {
         _splitCacheConsumer.getSegments().forEach(this::initialize);
         List<Future<Boolean>> segmentFetchExecutions = _segmentFetchers.entrySet()

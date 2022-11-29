@@ -1,6 +1,8 @@
 package io.split.engine.segments;
 
-public interface SegmentSynchronizationTask extends Runnable {
+import io.split.engine.experiments.SyncTask;
+
+public interface SegmentSynchronizationTask extends SyncTask {
     /**
      * initializes the segment
      * @param segmentName
@@ -17,7 +19,7 @@ public interface SegmentSynchronizationTask extends Runnable {
     /**
      * starts the fetching
      */
-    void startPeriodicFetching();
+    void start();
 
     /**
      * stops the thread
