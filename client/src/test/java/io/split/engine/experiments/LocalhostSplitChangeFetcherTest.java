@@ -21,5 +21,4 @@ public class LocalhostSplitChangeFetcherTest {
         List<Split> split = splitChange.splits;
         Assert.assertEquals(7, split.size());
     }
-
 }

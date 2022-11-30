@@ -2,7 +2,7 @@
   "splits": [
     {
       "trafficTypeName": "user",
-      "name": "bilal_split",
+      "name": "split_1",
       "trafficAllocation": 100,
       "trafficAllocationSeed": -1364119282,
       "seed": -605938843,
@@ -51,7 +51,7 @@
     },
     {
       "trafficTypeName": "user",
-      "name": "mauro_java",
+      "name": "split_2",
       "trafficAllocation": 100,
       "trafficAllocationSeed": -92391491,
       "seed": -1769377604,
@@ -75,8 +75,8 @@
                 "whitelistMatcherData": {
                   "whitelist": [
                     "admin",
-                    "mauro",
-                    "nico"
+                    "user_1",
+                    "user_2"
                   ]
                 },
                 "unaryNumericMatcherData": null,
@@ -108,7 +108,7 @@
                 "matcherType": "IN_SEGMENT",
                 "negate": false,
                 "userDefinedSegmentMatcherData": {
-                  "segmentName": "maur-2"
+                  "segmentName": "segment_1"
                 },
                 "whitelistMatcherData": null,
                 "unaryNumericMatcherData": null,
@@ -137,7 +137,7 @@
               "size": 0
             }
           ],
-          "label": "in segment maur-2"
+          "label": "in segment segment_1"
         },
         {
           "conditionType": "ROLLOUT",
@@ -185,7 +185,7 @@
     },
     {
       "trafficTypeName": "user",
-      "name": "nadia_poc_java",
+      "name": "split_3",
       "trafficAllocation": 100,
       "trafficAllocationSeed": -670005248,
       "seed": -1297078412,
@@ -273,7 +273,7 @@
     },
     {
       "trafficTypeName": "user",
-      "name": "mauro_test",
+      "name": "split_4",
       "trafficAllocation": 50,
       "trafficAllocationSeed": -1520910077,
       "seed": -1785086567,
@@ -322,7 +322,7 @@
     },
     {
       "trafficTypeName": "user",
-      "name": "poche_test",
+      "name": "split_5",
       "trafficAllocation": 100,
       "trafficAllocationSeed": -3629915,
       "seed": 816031817,
@@ -377,7 +377,7 @@
                 "userDefinedSegmentMatcherData": null,
                 "whitelistMatcherData": {
                   "whitelist": [
-                    "poche"
+                    "user_3"
                   ]
                 },
                 "unaryNumericMatcherData": null,
@@ -434,7 +434,7 @@
     },
     {
       "trafficTypeName": "user",
-      "name": "create_book_whitelist",
+      "name": "split_6",
       "trafficAllocation": 100,
       "trafficAllocationSeed": -970151859,
       "seed": -1258287669,
@@ -514,7 +514,7 @@
     },
     {
       "trafficTypeName": "user",
-      "name": "asfafasf",
+      "name": "split_7",
       "trafficAllocation": 100,
       "trafficAllocationSeed": 291807630,
       "seed": -134149800,
