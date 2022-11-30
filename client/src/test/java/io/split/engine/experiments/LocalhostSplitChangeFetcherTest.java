@@ -13,7 +13,7 @@ public class LocalhostSplitChangeFetcherTest {
 
     @Test
     public void testParseSplitChange(){
-        LocalhostSplitChangeFetcher localhostSplitChangeFetcher = new LocalhostSplitChangeFetcher("src/test/resources", "split_init.json");
+        LocalhostSplitChangeFetcher localhostSplitChangeFetcher = new LocalhostSplitChangeFetcher("src/test/resources/split_init.json");
         FetchOptions fetchOptions = Mockito.mock(FetchOptions.class);
 
         SplitChange splitChange = localhostSplitChangeFetcher.fetch(-1L, fetchOptions);

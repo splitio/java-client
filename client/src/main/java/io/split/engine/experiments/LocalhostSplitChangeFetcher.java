@@ -15,10 +15,8 @@ public class LocalhostSplitChangeFetcher implements SplitChangeFetcher {
     private static final Logger _log = LoggerFactory.getLogger(LocalhostSplitChangeFetcher.class);
     private final File _file;
 
-    public LocalhostSplitChangeFetcher(String directory, String fileName){
-        _file = (directory.length() > 0) ?
-                new File(directory, fileName) :
-                new File(fileName);
+    public LocalhostSplitChangeFetcher(String filePath){
+        _file = new File(filePath);
     }
 
     @Override
