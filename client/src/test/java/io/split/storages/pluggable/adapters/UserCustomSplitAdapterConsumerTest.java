@@ -1,7 +1,10 @@
 package io.split.storages.pluggable.adapters;
 
 import com.google.common.collect.Lists;
-import io.split.client.dtos.*;
+import io.split.client.dtos.Condition;
+import io.split.client.dtos.ConditionType;
+import io.split.client.dtos.Split;
+import io.split.client.dtos.Status;
 import io.split.client.utils.Json;
 import io.split.engine.ConditionsTestUtil;
 import io.split.engine.experiments.ParsedSplit;
