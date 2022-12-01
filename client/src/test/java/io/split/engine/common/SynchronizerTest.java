@@ -100,8 +100,8 @@ public class SynchronizerTest {
     public void startPeriodicFetching() {
         _synchronizer.startPeriodicFetching();
 
-        Mockito.verify(_refreshableSplitFetcherTask, Mockito.times(1)).startPeriodicFetching();
-        Mockito.verify(_segmentFetcher, Mockito.times(1)).startPeriodicFetching();
+        Mockito.verify(_refreshableSplitFetcherTask, Mockito.times(1)).start();
+        Mockito.verify(_segmentFetcher, Mockito.times(1)).start();
     }
 
     @Test
