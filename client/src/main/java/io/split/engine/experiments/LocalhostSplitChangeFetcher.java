@@ -21,10 +21,9 @@ public class LocalhostSplitChangeFetcher implements SplitChangeFetcher {
 
     @Override
     public SplitChange fetch(long since, FetchOptions options) {
-        SplitChange splitChange = null;
         try {
             JsonReader jsonReader = new JsonReader(new FileReader(_file));
-            splitChange = Json.fromJson(jsonReader, SplitChange.class);
+            return Json.fromJson(jsonReader, SplitChange.class);
         } catch (Exception e) {
             _log.warn(String.format("There was no file named %s found. " +
                     "We created a split client that returns default treatments for all features for all of your users. " +
@@ -32,6 +31,6 @@ public class LocalhostSplitChangeFetcher implements SplitChangeFetcher {
                     "treatment name separated by whitespace in %s; one pair per line. Empty lines or lines starting with '#' are considered comments",
                     _file.getPath(), _file.getPath()), e);
         }
-        return splitChange;
+        return null;
     }
 }
