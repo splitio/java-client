@@ -18,7 +18,6 @@ public class SplitSynchronizationTaskTest {
         SplitCacheProducer splitCacheProducer = new InMemoryCacheImp();
         SplitCacheConsumer splitCacheConsumer = Mockito.mock(SplitCacheConsumer.class);
 
-        //SplitChangeFetcher splitChangeFetcher = new LocalhostSplitChangeFetcher("src/test/resources/split_init.json");
         SplitChangeFetcher splitChangeFetcher = Mockito.mock(LocalhostSplitChangeFetcher.class);
         SplitParser splitParser = new SplitParser();
         FetchOptions fetchOptions = new FetchOptions.Builder().build();
