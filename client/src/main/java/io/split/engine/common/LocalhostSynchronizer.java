@@ -11,7 +11,7 @@ public class LocalhostSynchronizer extends SynchronizerImp{
                                  SplitFetcher splitFetcher,
                                  SplitCacheProducer splitCacheProducer,
                                  SegmentCacheProducer segmentCacheProducer){
-        super(splitTasks, splitFetcher, splitCacheProducer, segmentCacheProducer,0,0,0,false);
+        super(splitTasks, splitFetcher, splitCacheProducer, segmentCacheProducer, 0, 0, 0, false);
     }
 
     @Override
