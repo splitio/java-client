@@ -53,7 +53,6 @@ public class SynchronizerTest {
         _splitFetcher = Mockito.mock(SplitFetcherImp.class);
         _splitCacheProducer = Mockito.mock(SplitCacheProducer.class);
         _segmentCacheProducer = Mockito.mock(SegmentCache.class);
-        _gates = Mockito.mock(SDKReadinessGates.class);
         _telemetrySyncTask = Mockito.mock(TelemetrySyncTask.class);
         _impressionsManager = Mockito.mock(ImpressionsManager.class);
         _eventsTask = Mockito.mock(EventsTask.class);
@@ -61,7 +60,7 @@ public class SynchronizerTest {
 
         _splitTasks = SplitTasks.build(_refreshableSplitFetcherTask, _segmentFetcher, _impressionsManager, _eventsTask, _telemetrySyncTask, _uniqueKeysTracker);
 
-        _synchronizer = new SynchronizerImp(_splitTasks, _splitFetcher, _splitCacheProducer, _segmentCacheProducer, 50, 10, 5, false, _gates);
+        _synchronizer = new SynchronizerImp(_splitTasks, _splitFetcher, _splitCacheProducer, _segmentCacheProducer, 50, 10, 5, false);
     }
 
     @Test
@@ -158,8 +157,7 @@ public class SynchronizerTest {
                 50,
                 3,
                 1,
-                true,
-                Mockito.mock(SDKReadinessGates.class));
+                true);
 
         ArgumentCaptor<FetchOptions> optionsCaptor = ArgumentCaptor.forClass(FetchOptions.class);
         AtomicInteger calls = new AtomicInteger();
@@ -192,8 +190,7 @@ public class SynchronizerTest {
                 50,
                 3,
                 1,
-                true,
-                Mockito.mock(SDKReadinessGates.class));
+                true);
 
         ArgumentCaptor<FetchOptions> optionsCaptor = ArgumentCaptor.forClass(FetchOptions.class);
         AtomicInteger calls = new AtomicInteger();
@@ -249,8 +246,7 @@ public class SynchronizerTest {
                 50,
                 3,
                 1,
-                true,
-                Mockito.mock(SDKReadinessGates.class));
+                true);
 
         SegmentFetcher fetcher = Mockito.mock(SegmentFetcher.class);
         when(_segmentFetcher.getFetcher("someSegment")).thenReturn(fetcher);
@@ -308,8 +304,7 @@ public class SynchronizerTest {
                 50,
                 3,
                 1,
-                true,
-                Mockito.mock(SDKReadinessGates.class));
+                true);
         imp.startPeriodicDataRecording();
 
         Mockito.verify(_eventsTask, Mockito.times(1)).start();
