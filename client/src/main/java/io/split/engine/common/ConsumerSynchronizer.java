@@ -34,7 +34,7 @@ public class ConsumerSynchronizer implements Synchronizer{
     }
 
     @Override
-    public void refreshSplits(long targetChangeNumber) {
+    public void refreshSplits(Long targetChangeNumber) {
 
     }
 

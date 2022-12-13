@@ -134,7 +134,7 @@ public class SynchronizerImp implements Synchronizer {
     }
 
     @Override
-    public void refreshSplits(long targetChangeNumber) {
+    public void refreshSplits(Long targetChangeNumber) {
 
         if (targetChangeNumber <= _splitCacheProducer.getChangeNumber()) {
             return;

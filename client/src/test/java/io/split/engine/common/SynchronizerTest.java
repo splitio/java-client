@@ -169,7 +169,7 @@ public class SynchronizerTest {
             return new FetchResult(true, new HashSet<>());
         }).when(_splitFetcher).forceRefresh(optionsCaptor.capture());
 
-        imp.refreshSplits(123);
+        imp.refreshSplits(123L);
 
         List<FetchOptions> options = optionsCaptor.getAllValues();
         Assert.assertEquals(options.size(), 4);
@@ -211,7 +211,7 @@ public class SynchronizerTest {
         backoffBase.set(imp, 1); // 1ms
 
         long before = System.currentTimeMillis();
-        imp.refreshSplits(1);
+        imp.refreshSplits(1L);
         long after = System.currentTimeMillis();
 
         List<FetchOptions> options = optionsCaptor.getAllValues();
