@@ -25,27 +25,27 @@ public class ConsumerSynchronizer implements Synchronizer{
 
     @Override
     public void startPeriodicFetching() {
-
+        //No-Op
     }
 
     @Override
     public void stopPeriodicFetching() {
-
+        //No-Op
     }
 
     @Override
     public void refreshSplits(Long targetChangeNumber) {
-
+        //No-Op
     }
 
     @Override
     public void localKillSplit(String splitName, String defaultTreatment, long newChangeNumber) {
-
+        //No-Op
     }
 
     @Override
     public void refreshSegment(String segmentName, long targetChangeNumber) {
-
+        //No-Op
     }
 
     @Override
