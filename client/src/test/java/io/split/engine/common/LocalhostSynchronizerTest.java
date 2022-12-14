@@ -1,6 +1,6 @@
 package io.split.engine.common;
 
-import io.split.engine.experiments.LocalhostSplitChangeFetcher;
+import io.split.client.LocalhostSplitChangeFetcher;
 import io.split.engine.experiments.SplitChangeFetcher;
 import io.split.engine.experiments.SplitFetcher;
 import io.split.engine.experiments.SplitFetcherImp;
