@@ -297,11 +297,10 @@ public class SplitFactoryImpl implements SplitFactory {
         _impressionsManager = buildImpressionsManager(config, userCustomImpressionAdapterConsumer, userCustomImpressionAdapterProducer);
         _telemetrySyncTask = new TelemetrySyncTask(config.get_telemetryRefreshRate(), _telemetrySynchronizer);
 
-        // SyncManager
         SplitTasks splitTasks = SplitTasks.build(null, null,
                 _impressionsManager, null, _telemetrySyncTask, _uniqueKeysTracker);
 
-        // SplitManager
+        // Synchronizer
         Synchronizer synchronizer = new ConsumerSynchronizer(splitTasks);
 
         _client = new SplitClientImpl(this,
@@ -314,6 +313,8 @@ public class SplitFactoryImpl implements SplitFactory {
                 _telemetryStorageProducer, //TelemetryEvaluation instance
                 _telemetryStorageProducer); //TelemetryConfiguration instance
 
+
+        // SyncManager
         _syncManager = new ConsumerSyncManager(synchronizer);
         _syncManager.start();
 

@@ -103,8 +103,7 @@ public class SyncManagerImp implements SyncManager {
                                         config.streamingRetryDelay(),
                                         config.streamingFetchMaxRetries(),
                                         config.failedAttemptsBeforeLogging(),
-                                        config.cdnDebugLogging(),
-                                        gates);
+                                        config.cdnDebugLogging());
 
         PushManager pushManager = PushManagerImp.build(synchronizer,
                                                         config.streamingServiceURL(),
