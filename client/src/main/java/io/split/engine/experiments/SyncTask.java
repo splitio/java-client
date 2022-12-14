@@ -1,7 +1,5 @@
 package io.split.engine.experiments;
 
-import java.util.concurrent.atomic.AtomicBoolean;
-
 public interface SyncTask {
 
     void start();

@@ -1,11 +1,9 @@
 package io.split.engine.common;
 
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
 import io.split.client.events.EventsTask;
 import io.split.client.impressions.ImpressionsManager;
 import io.split.client.impressions.UniqueKeysTracker;
-import io.split.engine.SDKReadinessGates;
+import io.split.client.utils.Json;
 import io.split.engine.experiments.FetchResult;
 import io.split.engine.experiments.SplitFetcher;
 import io.split.engine.experiments.SplitSynchronizationTask;
@@ -46,7 +44,6 @@ public class SynchronizerImp implements Synchronizer {
     private final int _onDemandFetchMaxRetries;
     private final int _failedAttemptsBeforeLogging;
     private final boolean _cdnResponseHeadersLogging;
-    private final Gson gson = new GsonBuilder().create();
 
     public SynchronizerImp(SplitTasks splitTasks,
                            SplitFetcher splitFetcher,
@@ -55,8 +52,7 @@ public class SynchronizerImp implements Synchronizer {
                            int onDemandFetchRetryDelayMs,
                            int onDemandFetchMaxRetries,
                            int failedAttemptsBeforeLogging,
-                           boolean cdnResponseHeadersLogging,
-                           SDKReadinessGates gates) {
+                           boolean cdnResponseHeadersLogging) {
         _splitSynchronizationTask = checkNotNull(splitTasks.getSplitSynchronizationTask());
         _splitFetcher = checkNotNull(splitFetcher);
         _segmentSynchronizationTaskImp = checkNotNull(splitTasks.getSegmentSynchronizationTask());
@@ -133,12 +129,12 @@ public class SynchronizerImp implements Synchronizer {
 
     private void logCdnHeaders(String prefix, int maxRetries, int remainingAttempts, List<Map<String, String>> headers) {
         if (maxRetries - remainingAttempts > _failedAttemptsBeforeLogging) {
-            _log.info(String.format("%s: CDN Debug headers: %s", prefix, gson.toJson(headers)));
+            _log.info(String.format("%s: CDN Debug headers: %s", prefix, Json.toJson(headers)));
         }
     }
 
     @Override
-    public void refreshSplits(long targetChangeNumber) {
+    public void refreshSplits(Long targetChangeNumber) {
 
         if (targetChangeNumber <= _splitCacheProducer.getChangeNumber()) {
             return;

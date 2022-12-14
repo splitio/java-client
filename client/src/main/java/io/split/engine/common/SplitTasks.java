@@ -29,7 +29,7 @@ public class SplitTasks {
         _impressionManager = impressionsManager;
         _eventsTask = eventsTask;
         _uniqueKeysTracker = uniqueKeysTracker;
-        _telemetrySyncTask = checkNotNull(telemetrySyncTask);
+        _telemetrySyncTask = telemetrySyncTask;
     }
 
     public static SplitTasks build (SplitSynchronizationTask splitSynchronizationTask,
