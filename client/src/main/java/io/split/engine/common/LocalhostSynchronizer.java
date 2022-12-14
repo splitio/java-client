@@ -4,8 +4,6 @@ import io.split.engine.experiments.FetchResult;
 import io.split.engine.experiments.SplitFetcher;
 import io.split.engine.experiments.SplitSynchronizationTask;
 import io.split.engine.segments.SegmentSynchronizationTask;
-import io.split.storages.SegmentCacheProducer;
-import io.split.storages.SplitCacheProducer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

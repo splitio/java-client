@@ -1,5 +1,6 @@
 package io.split.engine.experiments;
 
+import io.split.client.LocalhostSplitChangeFetcher;
 import io.split.engine.common.FetchOptions;
 import io.split.storages.SplitCacheConsumer;
 import io.split.storages.SplitCacheProducer;

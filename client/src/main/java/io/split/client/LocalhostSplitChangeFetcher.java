@@ -1,9 +1,10 @@
-package io.split.engine.experiments;
+package io.split.client;
 
 import com.google.gson.stream.JsonReader;
 import io.split.client.dtos.SplitChange;
 import io.split.client.utils.Json;
 import io.split.engine.common.FetchOptions;
+import io.split.engine.experiments.SplitChangeFetcher;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

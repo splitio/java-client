@@ -221,5 +221,4 @@ public class SplitFactoryImplTest extends TestCase {
         assertTrue(splitFactory.isDestroyed());
         Mockito.verify(userStorageWrapper, Mockito.times(1)).disconnect();
     }
-
 }

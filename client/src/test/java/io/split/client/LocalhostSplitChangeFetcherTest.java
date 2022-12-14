@@ -1,5 +1,6 @@
-package io.split.engine.experiments;
+package io.split.client;
 
+import io.split.client.LocalhostSplitChangeFetcher;
 import io.split.client.dtos.Split;
 import io.split.client.dtos.SplitChange;
 import io.split.engine.common.FetchOptions;
