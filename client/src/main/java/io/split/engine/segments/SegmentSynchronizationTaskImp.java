@@ -63,7 +63,7 @@ public class SegmentSynchronizationTaskImp implements SegmentSynchronizationTask
         _running = new AtomicBoolean(false);
 
         _segmentCacheProducer = checkNotNull(segmentCacheProducer);
-        _telemetryRuntimeProducer = telemetryRuntimeProducer;
+        _telemetryRuntimeProducer = checkNotNull(telemetryRuntimeProducer);
         _splitCacheConsumer = checkNotNull(splitCacheConsumer);
     }
 

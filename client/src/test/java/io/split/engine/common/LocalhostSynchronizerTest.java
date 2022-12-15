@@ -42,7 +42,7 @@ public class LocalhostSynchronizerTest {
 
         SDKReadinessGates sdkReadinessGates = Mockito.mock(SDKReadinessGates.class);
         SegmentSynchronizationTaskImp segmentSynchronizationTaskImp = new SegmentSynchronizationTaskImp(segmentChangeFetcher, 1000, 1, sdkReadinessGates, segmentCacheProducer,
-                null, splitCacheProducer);
+                TELEMETRY_STORAGE_NOOP, splitCacheProducer);
         SplitTasks splitTasks = SplitTasks.build(splitSynchronizationTask, segmentSynchronizationTaskImp, null, null, null, null);
 
         LocalhostSynchronizer localhostSynchronizer = new LocalhostSynchronizer(splitTasks, splitFetcher);
@@ -67,7 +67,7 @@ public class LocalhostSynchronizerTest {
 
         SDKReadinessGates sdkReadinessGates = Mockito.mock(SDKReadinessGates.class);
         SegmentSynchronizationTaskImp segmentSynchronizationTaskImp = new SegmentSynchronizationTaskImp(segmentChangeFetcher, 1000, 1, sdkReadinessGates, segmentCacheProducer,
-                null, splitCacheProducer);
+                TELEMETRY_STORAGE_NOOP, splitCacheProducer);
 
         SplitTasks splitTasks = SplitTasks.build(splitSynchronizationTask, segmentSynchronizationTaskImp, null, null, null, null);
         LocalhostSynchronizer localhostSynchronizer = new LocalhostSynchronizer(splitTasks, splitFetcher);
