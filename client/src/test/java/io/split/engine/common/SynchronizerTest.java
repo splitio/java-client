@@ -270,7 +270,7 @@ public class SynchronizerTest {
         backoffBase.set(imp, 1); // 1ms
 
         long before = System.currentTimeMillis();
-        imp.refreshSegment("someSegment",1);
+        imp.refreshSegment("someSegment",1L);
         long after = System.currentTimeMillis();
 
         List<FetchOptions> options = optionsCaptor.getAllValues();

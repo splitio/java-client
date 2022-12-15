@@ -31,7 +31,7 @@ public class SegmentFetcherImp implements SegmentFetcher {
         _segmentChangeFetcher = checkNotNull(segmentChangeFetcher);
         _segmentCacheProducer = checkNotNull(segmentCacheProducer);
         _gates = checkNotNull(gates);
-        _telemetryRuntimeProducer = checkNotNull(telemetryRuntimeProducer);
+        _telemetryRuntimeProducer = telemetryRuntimeProducer;
 
         _segmentCacheProducer.updateSegment(segmentName, new ArrayList<>(), new ArrayList<>(), -1L);
     }
@@ -90,7 +90,9 @@ public class SegmentFetcherImp implements SegmentFetcher {
                 _log.info(_segmentName + " removed keys: " + summarize(change.removed));
             }
 
-            _telemetryRuntimeProducer.recordSuccessfulSync(LastSynchronizationRecordsEnum.SEGMENTS, System.currentTimeMillis());
+            if (_telemetryRuntimeProducer != null){
+                _telemetryRuntimeProducer.recordSuccessfulSync(LastSynchronizationRecordsEnum.SEGMENTS, System.currentTimeMillis());
+            }
         }
     }
 

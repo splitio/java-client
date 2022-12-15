@@ -1,14 +1,21 @@
 package io.split.engine.common;
 
 import io.split.client.LocalhostSplitChangeFetcher;
+import io.split.client.utils.LocalhostSegmentChangeFetcher;
+import io.split.engine.SDKReadinessGates;
 import io.split.engine.experiments.SplitChangeFetcher;
 import io.split.engine.experiments.SplitFetcher;
 import io.split.engine.experiments.SplitFetcherImp;
 import io.split.engine.experiments.SplitParser;
 import io.split.engine.experiments.SplitSynchronizationTask;
+import io.split.engine.segments.SegmentChangeFetcher;
+import io.split.engine.segments.SegmentSynchronizationTaskImp;
+import io.split.storages.SegmentCacheProducer;
+import io.split.storages.SplitCache;
 import io.split.storages.SplitCacheConsumer;
 import io.split.storages.SplitCacheProducer;
 import io.split.storages.memory.InMemoryCacheImp;
+import io.split.storages.memory.SegmentCacheInMemoryImpl;
 import io.split.telemetry.storage.NoopTelemetryStorage;
 import io.split.telemetry.storage.TelemetryStorage;
 import org.junit.Assert;
@@ -21,7 +28,7 @@ public class LocalhostSynchronizerTest {
 
     @Test
     public void testSyncAll(){
-        SplitCacheProducer splitCacheProducer = new InMemoryCacheImp();
+        SplitCache splitCacheProducer = new InMemoryCacheImp();
         SplitCacheConsumer splitCacheConsumer = Mockito.mock(SplitCacheConsumer.class);
 
         SplitChangeFetcher splitChangeFetcher = new LocalhostSplitChangeFetcher("src/test/resources/split_init.json");
@@ -29,7 +36,14 @@ public class LocalhostSynchronizerTest {
 
         SplitFetcher splitFetcher = new SplitFetcherImp(splitChangeFetcher, splitParser, splitCacheConsumer, splitCacheProducer, TELEMETRY_STORAGE_NOOP);
         SplitSynchronizationTask splitSynchronizationTask = new SplitSynchronizationTask(splitFetcher, splitCacheProducer, 1000L);
-        SplitTasks splitTasks = SplitTasks.build(splitSynchronizationTask, null, null, null, null, null);
+
+        SegmentChangeFetcher segmentChangeFetcher = new LocalhostSegmentChangeFetcher("src/test/resources/");
+        SegmentCacheProducer segmentCacheProducer = new SegmentCacheInMemoryImpl();
+
+        SDKReadinessGates sdkReadinessGates = Mockito.mock(SDKReadinessGates.class);
+        SegmentSynchronizationTaskImp segmentSynchronizationTaskImp = new SegmentSynchronizationTaskImp(segmentChangeFetcher, 1000, 1, sdkReadinessGates, segmentCacheProducer,
+                null, splitCacheProducer);
+        SplitTasks splitTasks = SplitTasks.build(splitSynchronizationTask, segmentSynchronizationTaskImp, null, null, null, null);
 
         LocalhostSynchronizer localhostSynchronizer = new LocalhostSynchronizer(splitTasks, splitFetcher);
 
@@ -38,7 +52,7 @@ public class LocalhostSynchronizerTest {
 
     @Test
     public void testPeriodicFetching() throws InterruptedException {
-        SplitCacheProducer splitCacheProducer = new InMemoryCacheImp();
+        SplitCache splitCacheProducer = new InMemoryCacheImp();
         SplitCacheConsumer splitCacheConsumer = Mockito.mock(SplitCacheConsumer.class);
 
         SplitChangeFetcher splitChangeFetcher = Mockito.mock(LocalhostSplitChangeFetcher.class);
@@ -48,7 +62,14 @@ public class LocalhostSynchronizerTest {
         SplitSynchronizationTask splitSynchronizationTask = new SplitSynchronizationTask(splitFetcher, splitCacheProducer, 1000L);
         FetchOptions fetchOptions = new FetchOptions.Builder().build();
 
-        SplitTasks splitTasks = SplitTasks.build(splitSynchronizationTask, null, null, null, null, null);
+        SegmentChangeFetcher segmentChangeFetcher = Mockito.mock(LocalhostSegmentChangeFetcher.class);
+        SegmentCacheProducer segmentCacheProducer = new SegmentCacheInMemoryImpl();
+
+        SDKReadinessGates sdkReadinessGates = Mockito.mock(SDKReadinessGates.class);
+        SegmentSynchronizationTaskImp segmentSynchronizationTaskImp = new SegmentSynchronizationTaskImp(segmentChangeFetcher, 1000, 1, sdkReadinessGates, segmentCacheProducer,
+                null, splitCacheProducer);
+
+        SplitTasks splitTasks = SplitTasks.build(splitSynchronizationTask, segmentSynchronizationTaskImp, null, null, null, null);
         LocalhostSynchronizer localhostSynchronizer = new LocalhostSynchronizer(splitTasks, splitFetcher);
 
         localhostSynchronizer.startPeriodicFetching();
