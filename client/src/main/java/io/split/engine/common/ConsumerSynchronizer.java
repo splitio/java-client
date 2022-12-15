@@ -44,7 +44,7 @@ public class ConsumerSynchronizer implements Synchronizer{
     }
 
     @Override
-    public void refreshSegment(String segmentName, long targetChangeNumber) {
+    public void refreshSegment(String segmentName, Long targetChangeNumber) {
         //No-Op
     }
 

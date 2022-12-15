@@ -219,7 +219,7 @@ public class SynchronizerImp implements Synchronizer {
     }
 
     @Override
-    public void refreshSegment(String segmentName, long targetChangeNumber) {
+    public void refreshSegment(String segmentName, Long targetChangeNumber) {
 
         if (targetChangeNumber <= segmentCacheProducer.getChangeNumber(segmentName)) {
             return;

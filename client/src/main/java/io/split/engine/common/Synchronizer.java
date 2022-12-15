@@ -6,7 +6,7 @@ public interface Synchronizer {
     void stopPeriodicFetching();
     void refreshSplits(Long targetChangeNumber);
     void localKillSplit(String splitName, String defaultTreatment, long newChangeNumber);
-    void refreshSegment(String segmentName, long targetChangeNumber);
+    void refreshSegment(String segmentName, Long targetChangeNumber);
     void startPeriodicDataRecording();
     void stopPeriodicDataRecording(long splitCount, long segmentCount, long segmentKeyCount);
 }
