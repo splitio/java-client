@@ -250,8 +250,8 @@ public final class SplitClientImpl implements SplitClient {
 
             if (result.treatment.equals(Treatments.CONTROL) && result.label.equals(Labels.DEFINITION_NOT_FOUND) && _gates.isSDKReady()) {
                 _log.warn(
-                        "%s: you passed \"" + split + "\" that does not exist in this environment, " +
-                                "please double check what Splits exist in the web console.", methodEnum.getMethod());
+                        "{}: you passed \"{}\" that does not exist in this environment, " +
+                                "please double check what Splits exist in the web console.", methodEnum.getMethod(), split);
                 return SPLIT_RESULT_CONTROL;
             }
 
@@ -282,7 +282,7 @@ public final class SplitClientImpl implements SplitClient {
     private Map<String, SplitResult> getTreatmentsWithConfigInternal(String matchingKey, String bucketingKey, List<String> splits, Map<String, Object> attributes, MethodEnum methodEnum) {
         long initTime = System.currentTimeMillis();
         if(splits == null) {
-            _log.error("%s: split_names must be a non-empty array", methodEnum.getMethod());
+            _log.error("{}: split_names must be a non-empty array", methodEnum.getMethod());
             return new HashMap<>();
         }
         try{
@@ -300,7 +300,7 @@ public final class SplitClientImpl implements SplitClient {
                 return createMapControl(splits);
             }
             else if(splits.isEmpty()) {
-                _log.error("%s: split_names must be a non-empty array", methodEnum.getMethod());
+                _log.error("{}: split_names must be a non-empty array", methodEnum.getMethod());
                 return new HashMap<>();
             }
             splits = SplitNameValidator.areValid(splits, methodEnum.getMethod());
@@ -310,8 +310,8 @@ public final class SplitClientImpl implements SplitClient {
             evaluatorResult.keySet().forEach(t -> {
                 if (evaluatorResult.get(t).treatment.equals(Treatments.CONTROL) && evaluatorResult.get(t).label.equals(Labels.DEFINITION_NOT_FOUND) && _gates.isSDKReady()) {
                     _log.warn(
-                            "%s: you passed \"" + t + "\" that does not exist in this environment, " +
-                                    "please double check what Splits exist in the web console.", methodEnum.getMethod());
+                            "{}: you passed \"{}\" that does not exist in this environment, " +
+                                    "please double check what Splits exist in the web console.", methodEnum.getMethod(), t);
                     result.put(t, SPLIT_RESULT_CONTROL);
                 }
                 else {
