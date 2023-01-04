@@ -47,6 +47,7 @@ public class SplitClientConfig {
     private final int _maxStringLength;
     private final boolean _destroyOnShutDown;
     private final String _splitFile;
+    private final String _segmentDirectory;
     private final IntegrationsConfig _integrationsConfig;
     private final boolean _streamingEnabled;
     private final int _authRetryBackoffBase;
@@ -106,6 +107,7 @@ public class SplitClientConfig {
                               int maxStringLength,
                               boolean destroyOnShutDown,
                               String splitFile,
+                              String segmentDirectory,
                               IntegrationsConfig integrationsConfig,
                               boolean streamingEnabled,
                               int authRetryBackoffBase,
@@ -151,6 +153,7 @@ public class SplitClientConfig {
         _maxStringLength = maxStringLength;
         _destroyOnShutDown = destroyOnShutDown;
         _splitFile = splitFile;
+        _segmentDirectory = segmentDirectory;
         _integrationsConfig = integrationsConfig;
         _streamingEnabled = streamingEnabled;
         _authRetryBackoffBase = authRetryBackoffBase;
@@ -286,6 +289,10 @@ public class SplitClientConfig {
         return _splitFile;
     }
 
+    public String segmentDirectory() {
+        return _segmentDirectory;
+    }
+
     public IntegrationsConfig integrationsConfig() {
         return _integrationsConfig;
     }
@@ -371,6 +378,7 @@ public class SplitClientConfig {
         private int _maxStringLength = 250;
         private boolean _destroyOnShutDown = true;
         private String _splitFile = null;
+        private String _segmentDirectory = null;
         private IntegrationsConfig _integrationsConfig = null;
         private boolean _streamingEnabled = true;
         private int _authRetryBackoffBase = 1;
@@ -724,6 +732,18 @@ public class SplitClientConfig {
         }
 
         /**
+         * Set the location of the directory where are the segment json files for localhost mode.
+         * This setting is optional.
+         *
+         * @param sementDirectory location
+         * @return this builder
+         */
+        public Builder segmentDirectory(String sementDirectory){
+            _segmentDirectory = sementDirectory;
+            return this;
+        }
+
+        /**
          * Sets up integrations for the Split SDK (Currently Impressions outgoing integrations supported only).
          * @param config
          * @return
@@ -957,6 +977,7 @@ public class SplitClientConfig {
                     _maxStringLength,
                     _destroyOnShutDown,
                     _splitFile,
+                    _segmentDirectory,
                     _integrationsConfig,
                     _streamingEnabled,
                     _authRetryBackoffBase,

@@ -5,10 +5,6 @@ import io.split.client.dtos.SplitChange;
 import io.split.client.dtos.Status;
 import io.split.storages.SplitCacheConsumer;
 import io.split.storages.SplitCacheProducer;
-import io.split.engine.SDKReadinessGates;
-import io.split.engine.matchers.AttributeMatcher;
-import io.split.engine.matchers.UserDefinedSegmentMatcher;
-import io.split.telemetry.domain.enums.HTTPLatenciesEnum;
 import io.split.telemetry.domain.enums.LastSynchronizationRecordsEnum;
 import io.split.telemetry.storage.TelemetryRuntimeProducer;
 import io.split.engine.common.FetchOptions;
@@ -19,8 +15,6 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
