@@ -10,6 +10,7 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.URISyntaxException;
+import java.util.Locale;
 
 /**
  * Builds an instance of SplitClient.
@@ -38,8 +39,9 @@ public class SplitFactoryBuilder {
      */
     public static synchronized SplitFactory build(String apiToken, SplitClientConfig config) throws IOException, URISyntaxException {
         ApiKeyValidator.validate(apiToken);
+        String splitFile = config.splitFile();
         if (LocalhostSplitFactory.LOCALHOST.equals(apiToken)) {
-            if (config.splitFile().endsWith(".json")){
+            if (splitFile.toLowerCase().endsWith(".json")){
                 return new SplitFactoryImpl(config);
             }
             return LocalhostSplitFactory.createLocalhostSplitFactory(config);
