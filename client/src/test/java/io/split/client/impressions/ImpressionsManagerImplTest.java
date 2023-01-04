@@ -71,13 +71,12 @@ public class ImpressionsManagerImplTest {
         ImpressionsStorage storage = new InMemoryImpressionsStorage(config.impressionsQueueSize());
 
         ImpressionsSender senderMock = Mockito.mock(ImpressionsSender.class);
-        UniqueKeysTracker uniqueKeysTracker = Mockito.mock(UniqueKeysTrackerImp.class);
         ImpressionCounter impressionCounter = Mockito.mock(ImpressionCounter.class);
         ImpressionObserver impressionObserver = new ImpressionObserver(200);
 
         ProcessImpressionStrategy processImpressionStrategy = new ProcessImpressionDebug(false, impressionObserver);
 
-        ImpressionsManagerImpl treatmentLog = ImpressionsManagerImpl.instanceForTest(config, senderMock, null, TELEMETRY_STORAGE, storage, storage, uniqueKeysTracker, processImpressionStrategy, impressionCounter, null);
+        ImpressionsManagerImpl treatmentLog = ImpressionsManagerImpl.instanceForTest(config, senderMock, TELEMETRY_STORAGE, storage, storage, processImpressionStrategy, impressionCounter, null);
         treatmentLog.start();
 
         KeyImpression ki1 = keyImpression("test1", "adil", "on", 1L, null);
@@ -111,13 +110,12 @@ public class ImpressionsManagerImplTest {
         ImpressionsStorage storage = new InMemoryImpressionsStorage(config.impressionsQueueSize());
 
         ImpressionsSender senderMock = Mockito.mock(ImpressionsSender.class);
-        UniqueKeysTracker uniqueKeysTracker = Mockito.mock(UniqueKeysTrackerImp.class);
         ImpressionCounter impressionCounter = Mockito.mock(ImpressionCounter.class);
         ImpressionObserver impressionObserver = new ImpressionObserver(200);
 
         ProcessImpressionStrategy processImpressionStrategy = new ProcessImpressionDebug(false, impressionObserver);
 
-        ImpressionsManagerImpl treatmentLog = ImpressionsManagerImpl.instanceForTest(config, senderMock, null, TELEMETRY_STORAGE, storage, storage, uniqueKeysTracker, processImpressionStrategy, impressionCounter, null);
+        ImpressionsManagerImpl treatmentLog = ImpressionsManagerImpl.instanceForTest(config, senderMock, TELEMETRY_STORAGE, storage, storage, processImpressionStrategy, impressionCounter, null);
         treatmentLog.start();
 
         // These 4 unique test name will cause 4 entries but we are caping at the first 3.
@@ -153,13 +151,12 @@ public class ImpressionsManagerImplTest {
         ImpressionsStorage storage = new InMemoryImpressionsStorage(config.impressionsQueueSize());
 
         ImpressionsSender senderMock = Mockito.mock(ImpressionsSender.class);
-        UniqueKeysTracker uniqueKeysTracker = Mockito.mock(UniqueKeysTrackerImp.class);
         ImpressionCounter impressionCounter = Mockito.mock(ImpressionCounter.class);
         ImpressionObserver impressionObserver = new ImpressionObserver(200);
 
         ProcessImpressionStrategy processImpressionStrategy = new ProcessImpressionDebug(false, impressionObserver);
 
-        ImpressionsManagerImpl treatmentLog = ImpressionsManagerImpl.instanceForTest(config, senderMock, null, TELEMETRY_STORAGE, storage, storage, uniqueKeysTracker, processImpressionStrategy, impressionCounter, null);
+        ImpressionsManagerImpl treatmentLog = ImpressionsManagerImpl.instanceForTest(config, senderMock, TELEMETRY_STORAGE, storage, storage, processImpressionStrategy, impressionCounter, null);
         treatmentLog.start();
 
         // These 4 unique test name will cause 4 entries but we are caping at the first 3.
@@ -197,13 +194,12 @@ public class ImpressionsManagerImplTest {
         ImpressionsStorage storage = new InMemoryImpressionsStorage(config.impressionsQueueSize());
 
         ImpressionsSender senderMock = Mockito.mock(ImpressionsSender.class);
-        UniqueKeysTracker uniqueKeysTracker = Mockito.mock(UniqueKeysTrackerImp.class);
         ImpressionCounter impressionCounter = Mockito.mock(ImpressionCounter.class);
         ImpressionObserver impressionObserver = new ImpressionObserver(200);
 
         ProcessImpressionStrategy processImpressionStrategy = new ProcessImpressionDebug(false, impressionObserver);
 
-        ImpressionsManagerImpl treatmentLog = ImpressionsManagerImpl.instanceForTest(config, senderMock, null, TELEMETRY_STORAGE, storage, storage, uniqueKeysTracker, processImpressionStrategy, impressionCounter, null);
+        ImpressionsManagerImpl treatmentLog = ImpressionsManagerImpl.instanceForTest(config, senderMock, TELEMETRY_STORAGE, storage, storage, processImpressionStrategy, impressionCounter, null);
 
         // There are no impressions to post.
 
@@ -223,12 +219,11 @@ public class ImpressionsManagerImplTest {
         ImpressionsStorage storage = new InMemoryImpressionsStorage(config.impressionsQueueSize());
 
         ImpressionsSender senderMock = Mockito.mock(ImpressionsSender.class);
-        UniqueKeysTracker uniqueKeysTracker = Mockito.mock(UniqueKeysTrackerImp.class);
         ImpressionCounter impressionCounter = Mockito.mock(ImpressionCounter.class);
         ImpressionObserver impressionObserver = new ImpressionObserver(200);
 
         ProcessImpressionStrategy processImpressionStrategy = new ProcessImpressionDebug(false, impressionObserver);
-        ImpressionsManagerImpl treatmentLog = ImpressionsManagerImpl.instanceForTest(config, senderMock, null, TELEMETRY_STORAGE, storage, storage, uniqueKeysTracker, processImpressionStrategy, impressionCounter, null);
+        ImpressionsManagerImpl treatmentLog = ImpressionsManagerImpl.instanceForTest(config, senderMock, TELEMETRY_STORAGE, storage, storage, processImpressionStrategy, impressionCounter, null);
         treatmentLog.start();
 
         // These 4 unique test name will cause 4 entries but we are caping at the first 3.
@@ -280,14 +275,13 @@ public class ImpressionsManagerImplTest {
         ImpressionsStorage storage = new InMemoryImpressionsStorage(config.impressionsQueueSize());
 
         ImpressionsSender senderMock = Mockito.mock(ImpressionsSender.class);
-        UniqueKeysTracker uniqueKeysTracker = Mockito.mock(UniqueKeysTrackerImp.class);
         ImpressionCounter impressionCounter = new ImpressionCounter();
         ImpressionObserver impressionObserver = new ImpressionObserver(200);
         TelemetryStorageProducer telemetryStorageProducer = new InMemoryTelemetryStorage();
 
         ProcessImpressionStrategy processImpressionStrategy = new ProcessImpressionOptimized(false, impressionObserver, impressionCounter, telemetryStorageProducer);
 
-        ImpressionsManagerImpl treatmentLog = ImpressionsManagerImpl.instanceForTest(config, senderMock, null, TELEMETRY_STORAGE, storage, storage, uniqueKeysTracker, processImpressionStrategy, impressionCounter, null);
+        ImpressionsManagerImpl treatmentLog = ImpressionsManagerImpl.instanceForTest(config, senderMock, TELEMETRY_STORAGE, storage, storage, processImpressionStrategy, impressionCounter, null);
         treatmentLog.start();
 
         // These 4 unique test name will cause 4 entries but we are caping at the first 3.
@@ -337,12 +331,11 @@ public class ImpressionsManagerImplTest {
         ImpressionsStorage storage = new InMemoryImpressionsStorage(config.impressionsQueueSize());
 
         ImpressionsSender senderMock = Mockito.mock(ImpressionsSender.class);
-        UniqueKeysTracker uniqueKeysTracker = Mockito.mock(UniqueKeysTrackerImp.class);
         ImpressionCounter impressionCounter = Mockito.mock(ImpressionCounter.class);
         ImpressionObserver impressionObserver = new ImpressionObserver(200);
         ProcessImpressionStrategy processImpressionStrategy = new ProcessImpressionDebug(false, impressionObserver);
 
-        ImpressionsManagerImpl treatmentLog = ImpressionsManagerImpl.instanceForTest(config, senderMock, null, TELEMETRY_STORAGE, storage, storage, uniqueKeysTracker, processImpressionStrategy, impressionCounter, null);
+        ImpressionsManagerImpl treatmentLog = ImpressionsManagerImpl.instanceForTest(config, senderMock, TELEMETRY_STORAGE, storage, storage, processImpressionStrategy, impressionCounter, null);
         treatmentLog.start();
 
         // These 4 unique test name will cause 4 entries but we are caping at the first 3.
@@ -393,7 +386,7 @@ public class ImpressionsManagerImplTest {
 
         ProcessImpressionStrategy processImpressionStrategy = new ProcessImpressionNone(false, uniqueKeysTracker, impressionCounter);
 
-        ImpressionsManagerImpl treatmentLog = ImpressionsManagerImpl.instanceForTest(config, senderMock, null, TELEMETRY_STORAGE, storage, storage, uniqueKeysTracker, processImpressionStrategy, impressionCounter, null);
+        ImpressionsManagerImpl treatmentLog = ImpressionsManagerImpl.instanceForTest(config, senderMock, TELEMETRY_STORAGE, storage, storage, processImpressionStrategy, impressionCounter, null);
         treatmentLog.start();
 
         // These 4 unique test name will cause 4 entries but we are caping at the first 3.
@@ -444,13 +437,12 @@ public class ImpressionsManagerImplTest {
         ImpressionsStorage storage = new InMemoryImpressionsStorage(config.impressionsQueueSize());
 
         ImpressionsSender senderMock = Mockito.mock(ImpressionsSender.class);
-        UniqueKeysTracker uniqueKeysTracker = Mockito.mock(UniqueKeysTrackerImp.class);
         ImpressionCounter impressionCounter = new ImpressionCounter();
         ImpressionObserver impressionObserver = new ImpressionObserver(200);
         TelemetryStorageProducer telemetryStorageProducer = new InMemoryTelemetryStorage();
 
         ProcessImpressionStrategy processImpressionStrategy = new ProcessImpressionOptimized(false, impressionObserver, impressionCounter, telemetryStorageProducer);
-        ImpressionsManagerImpl treatmentLog = ImpressionsManagerImpl.instanceForTest(config, senderMock, null, TELEMETRY_STORAGE, storage, storage, uniqueKeysTracker, processImpressionStrategy, impressionCounter, null);
+        ImpressionsManagerImpl treatmentLog = ImpressionsManagerImpl.instanceForTest(config, senderMock, TELEMETRY_STORAGE, storage, storage, processImpressionStrategy, impressionCounter, null);
         treatmentLog.start();
 
         // These 4 unique test name will cause 4 entries but we are caping at the first 3.
@@ -508,7 +500,7 @@ public class ImpressionsManagerImplTest {
         uniqueKeysTracker.start();
         ProcessImpressionStrategy processImpressionStrategy = new ProcessImpressionNone(false, uniqueKeysTracker, impressionCounter);
 
-        ImpressionsManagerImpl treatmentLog = ImpressionsManagerImpl.instanceForTest(config, senderMock, null, TELEMETRY_STORAGE, storage, storage, uniqueKeysTracker, processImpressionStrategy, impressionCounter, null);
+        ImpressionsManagerImpl treatmentLog = ImpressionsManagerImpl.instanceForTest(config, senderMock, TELEMETRY_STORAGE, storage, storage, processImpressionStrategy, impressionCounter, null);
         treatmentLog.start();
 
         // These 4 unique test name will cause 4 entries but we are caping at the first 3.
@@ -559,12 +551,11 @@ public class ImpressionsManagerImplTest {
         ImpressionsStorage storage = new InMemoryImpressionsStorage(config.impressionsQueueSize());
 
         ImpressionsSender senderMock = Mockito.mock(ImpressionsSender.class);
-        UniqueKeysTracker uniqueKeysTracker = Mockito.mock(UniqueKeysTrackerImp.class);
         ImpressionCounter impressionCounter = Mockito.mock(ImpressionCounter.class);
         ImpressionObserver impressionObserver = new ImpressionObserver(200);
         ProcessImpressionStrategy processImpressionStrategy = new ProcessImpressionDebug(false, impressionObserver);
 
-        ImpressionsManagerImpl treatmentLog = ImpressionsManagerImpl.instanceForTest(config, senderMock, null, TELEMETRY_STORAGE, storage, storage, uniqueKeysTracker, processImpressionStrategy, impressionCounter, null);
+        ImpressionsManagerImpl treatmentLog = ImpressionsManagerImpl.instanceForTest(config, senderMock, TELEMETRY_STORAGE, storage, storage, processImpressionStrategy, impressionCounter, null);
         treatmentLog.start();
 
         // These 4 unique test name will cause 4 entries but we are caping at the first 3.
@@ -608,13 +599,12 @@ public class ImpressionsManagerImplTest {
         ImpressionsStorage storage = new InMemoryImpressionsStorage(config.impressionsQueueSize());
 
         ImpressionsSender senderMock = Mockito.mock(ImpressionsSender.class);
-        UniqueKeysTracker uniqueKeysTracker = Mockito.mock(UniqueKeysTrackerImp.class);
         ImpressionCounter impressionCounter = Mockito.mock(ImpressionCounter.class);
         ImpressionObserver impressionObserver = new ImpressionObserver(200);
         TelemetryStorageProducer telemetryStorageProducer = new InMemoryTelemetryStorage();
 
         ProcessImpressionStrategy processImpressionStrategy = new ProcessImpressionOptimized(false, impressionObserver, impressionCounter, telemetryStorageProducer);
-        ImpressionsManagerImpl manager = ImpressionsManagerImpl.instanceForTest(config, senderMock, null, TELEMETRY_STORAGE, storage, storage, uniqueKeysTracker, processImpressionStrategy, impressionCounter, null);
+        ImpressionsManagerImpl manager = ImpressionsManagerImpl.instanceForTest(config, senderMock, TELEMETRY_STORAGE, storage, storage, processImpressionStrategy, impressionCounter, null);
         manager.start();
         Assert.assertNotNull(manager.getCounter());
     }
@@ -628,11 +618,10 @@ public class ImpressionsManagerImplTest {
         ImpressionsStorage storage = new InMemoryImpressionsStorage(config.impressionsQueueSize());
 
         ImpressionsSender senderMock = Mockito.mock(ImpressionsSender.class);
-        UniqueKeysTracker uniqueKeysTracker = Mockito.mock(UniqueKeysTrackerImp.class);
         ImpressionObserver impressionObserver = new ImpressionObserver(200);
         ProcessImpressionStrategy processImpressionStrategy = new ProcessImpressionDebug(false, impressionObserver);
 
-        ImpressionsManagerImpl manager = ImpressionsManagerImpl.instanceForTest(config, senderMock, null, TELEMETRY_STORAGE, storage, storage, uniqueKeysTracker, processImpressionStrategy, null, null);
+        ImpressionsManagerImpl manager = ImpressionsManagerImpl.instanceForTest(config, senderMock, TELEMETRY_STORAGE, storage, storage, processImpressionStrategy, null, null);
         manager.start();
         Assert.assertNull(manager.getCounter());
     }
@@ -647,11 +636,10 @@ public class ImpressionsManagerImplTest {
         ImpressionsStorage storage = new InMemoryImpressionsStorage(config.impressionsQueueSize());
 
         ImpressionsSender senderMock = Mockito.mock(ImpressionsSender.class);
-        UniqueKeysTracker uniqueKeysTracker = Mockito.mock(UniqueKeysTrackerImp.class);
         ProcessImpressionStrategy processImpressionStrategy = Mockito.mock(ProcessImpressionNone.class);
         ImpressionCounter impressionCounter = Mockito.mock(ImpressionCounter.class);
 
-        ImpressionsManagerImpl manager = ImpressionsManagerImpl.instanceForTest(config, senderMock, null, TELEMETRY_STORAGE, storage, storage, uniqueKeysTracker, processImpressionStrategy, impressionCounter, null);
+        ImpressionsManagerImpl manager = ImpressionsManagerImpl.instanceForTest(config, senderMock, TELEMETRY_STORAGE, storage, storage, processImpressionStrategy, impressionCounter, null);
         manager.start();
         Assert.assertNotNull(manager.getCounter());
     }
@@ -668,11 +656,10 @@ public class ImpressionsManagerImplTest {
         ImpressionsStorage storage = new InMemoryImpressionsStorage(config.impressionsQueueSize());
 
         ImpressionsSender senderMock = Mockito.mock(ImpressionsSender.class);
-        UniqueKeysTracker uniqueKeysTracker = Mockito.mock(UniqueKeysTrackerImp.class);
         ProcessImpressionStrategy processImpressionStrategy = Mockito.mock(ProcessImpressionOptimized.class);
         ImpressionCounter impressionCounter = Mockito.mock(ImpressionCounter.class);
 
-        ImpressionsManagerImpl manager = ImpressionsManagerImpl.instanceForTest(config, senderMock, null, TELEMETRY_STORAGE, storage, storage, uniqueKeysTracker, processImpressionStrategy, impressionCounter, null);
+        ImpressionsManagerImpl manager = ImpressionsManagerImpl.instanceForTest(config, senderMock, TELEMETRY_STORAGE, storage, storage, processImpressionStrategy, impressionCounter, null);
         manager.start();
         Assert.assertNotNull(manager.getCounter());
     }
@@ -689,10 +676,9 @@ public class ImpressionsManagerImplTest {
         ImpressionsStorage storage = new InMemoryImpressionsStorage(config.impressionsQueueSize());
 
         ImpressionsSender senderMock = Mockito.mock(ImpressionsSender.class);
-        UniqueKeysTracker uniqueKeysTracker = Mockito.mock(UniqueKeysTrackerImp.class);
         ProcessImpressionStrategy processImpressionStrategy = Mockito.mock(ProcessImpressionDebug.class);
 
-        ImpressionsManagerImpl manager = ImpressionsManagerImpl.instanceForTest(config, senderMock, null, TELEMETRY_STORAGE, storage, storage, uniqueKeysTracker, processImpressionStrategy, null, null);
+        ImpressionsManagerImpl manager = ImpressionsManagerImpl.instanceForTest(config, senderMock, TELEMETRY_STORAGE, storage, storage, processImpressionStrategy, null, null);
         manager.start();
         Assert.assertNull(manager.getCounter());
     }
@@ -710,11 +696,10 @@ public class ImpressionsManagerImplTest {
         ImpressionsStorage storage = new InMemoryImpressionsStorage(config.impressionsQueueSize());
 
         ImpressionsSender senderMock = Mockito.mock(ImpressionsSender.class);
-        UniqueKeysTracker uniqueKeysTracker = Mockito.mock(UniqueKeysTrackerImp.class);
         ProcessImpressionStrategy processImpressionStrategy = Mockito.mock(ProcessImpressionNone.class);
         ImpressionCounter impressionCounter = Mockito.mock(ImpressionCounter.class);
 
-        ImpressionsManagerImpl manager = ImpressionsManagerImpl.instanceForTest(config, senderMock, null, TELEMETRY_STORAGE, storage, storage, uniqueKeysTracker, processImpressionStrategy, impressionCounter, null);
+        ImpressionsManagerImpl manager = ImpressionsManagerImpl.instanceForTest(config, senderMock, TELEMETRY_STORAGE, storage, storage, processImpressionStrategy, impressionCounter, null);
         manager.start();
         Assert.assertNotNull(manager.getCounter());
     }

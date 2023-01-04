@@ -4,7 +4,6 @@ import com.google.common.annotations.VisibleForTesting;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import io.split.client.ApiKeyCounter;
 import io.split.client.SplitClientConfig;
-import io.split.client.impressions.UniqueKeysTracker;
 import io.split.engine.SDKReadinessGates;
 import io.split.engine.experiments.SplitFetcher;
 import io.split.engine.experiments.SplitSynchronizationTask;
@@ -56,10 +55,10 @@ public class SyncManagerImp implements SyncManager {
                                          Synchronizer synchronizer,
                                          PushManager pushManager,
                                          LinkedBlockingQueue<PushManager.Status> pushMessages,
-                                         SDKReadinessGates gates, TelemetryRuntimeProducer telemetryRuntimeProducer,
+                                         SDKReadinessGates gates,
+                                         TelemetryRuntimeProducer telemetryRuntimeProducer,
                                          TelemetrySynchronizer telemetrySynchronizer,
                                          SplitClientConfig config,
-                                         UniqueKeysTracker uniqueKeysTracker,
                                          SplitAPI splitAPI) {
         _streamingEnabledConfig = new AtomicBoolean(streamingEnabledConfig);
         _synchronizer = checkNotNull(synchronizer);
@@ -93,8 +92,7 @@ public class SyncManagerImp implements SyncManager {
                                        SDKReadinessGates gates,
                                        TelemetryRuntimeProducer telemetryRuntimeProducer,
                                        TelemetrySynchronizer telemetrySynchronizer,
-                                       SplitClientConfig config,
-                                       UniqueKeysTracker uniqueKeysTracker) {
+                                       SplitClientConfig config) {
         LinkedBlockingQueue<PushManager.Status> pushMessages = new LinkedBlockingQueue<>();
         Synchronizer synchronizer = new SynchronizerImp(splitTasks,
                                         splitFetcher,
@@ -121,7 +119,6 @@ public class SyncManagerImp implements SyncManager {
                                   telemetryRuntimeProducer,
                                   telemetrySynchronizer, 
                                   config,
-                                  uniqueKeysTracker,
                                   splitAPI);
     }
 
