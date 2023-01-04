@@ -135,9 +135,9 @@ public class SplitFactoryImpl implements SplitFactory {
     private final ApiKeyCounter _apiKeyCounter;
     private final TelemetryStorageProducer _telemetryStorageProducer;
     private final TelemetrySynchronizer _telemetrySynchronizer;
-    private final long _startTime;
+    private long _startTime;
     private final SDKMetadata _sdkMetadata;
-    private final OperationMode _operationMode;
+    private OperationMode _operationMode;
 
     //Depending on mode are not mandatory
     private final TelemetrySyncTask _telemetrySyncTask;
@@ -330,8 +330,6 @@ public class SplitFactoryImpl implements SplitFactory {
     // Localhost
     protected SplitFactoryImpl(SplitClientConfig config) throws URISyntaxException {
         _userStorageWrapper = null;
-        _operationMode = config.operationMode();
-        _startTime = System.currentTimeMillis();
         _apiToken = "localhost";
         _apiKeyCounter = ApiKeyCounter.getApiKeyCounterInstance();
         _apiKeyCounter.add("localhost");
