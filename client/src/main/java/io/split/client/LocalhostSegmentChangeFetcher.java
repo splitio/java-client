@@ -1,7 +1,8 @@
-package io.split.client.utils;
+package io.split.client;
 
 import com.google.gson.stream.JsonReader;
 import io.split.client.dtos.SegmentChange;
+import io.split.client.utils.Json;
 import io.split.engine.common.FetchOptions;
 import io.split.engine.segments.SegmentChangeFetcher;
 import org.slf4j.Logger;

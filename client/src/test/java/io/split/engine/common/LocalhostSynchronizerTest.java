@@ -1,7 +1,7 @@
 package io.split.engine.common;
 
+import io.split.client.LocalhostSegmentChangeFetcher;
 import io.split.client.LocalhostSplitChangeFetcher;
-import io.split.client.utils.LocalhostSegmentChangeFetcher;
 import io.split.engine.SDKReadinessGates;
 import io.split.engine.experiments.SplitChangeFetcher;
 import io.split.engine.experiments.SplitFetcher;
