@@ -393,7 +393,7 @@ public class SplitFactoryImpl implements SplitFactory {
                 _telemetryStorageProducer); //TelemetryConfiguration instance
 
         // Synchronizer
-        Synchronizer synchronizer = new LocalhostSynchronizer(splitTasks, _splitFetcher);
+        Synchronizer synchronizer = new LocalhostSynchronizer(splitTasks, _splitFetcher, config.localhostRefreshEnabled());
 
         // SplitManager
         _manager = new SplitManagerImpl(splitCache, config, _gates, _telemetryStorageProducer);

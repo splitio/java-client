@@ -16,12 +16,15 @@ public class LocalhostSynchronizer implements Synchronizer{
     private final SplitSynchronizationTask _splitSynchronizationTask;
     private final SplitFetcher _splitFetcher;
     private final SegmentSynchronizationTask _segmentSynchronizationTaskImp;
+    private final boolean _refreshEnable;
 
     public LocalhostSynchronizer(SplitTasks splitTasks,
-                                 SplitFetcher splitFetcher){
+                                 SplitFetcher splitFetcher,
+                                 boolean refreshEnable){
         _splitSynchronizationTask = checkNotNull(splitTasks.getSplitSynchronizationTask());
         _splitFetcher = checkNotNull(splitFetcher);
         _segmentSynchronizationTaskImp = splitTasks.getSegmentSynchronizationTask();
+        _refreshEnable = refreshEnable;
     }
 
     @Override
@@ -33,6 +36,10 @@ public class LocalhostSynchronizer implements Synchronizer{
     @Override
     public void startPeriodicFetching() {
         _log.debug("Starting Periodic Fetching ...");
+        if(!_refreshEnable){
+            _log.info("Refresh enable is false. The synchronization tasks are not going to start");
+            return;
+        }
         _splitSynchronizationTask.start();
         _segmentSynchronizationTaskImp.start();
     }
@@ -40,6 +47,9 @@ public class LocalhostSynchronizer implements Synchronizer{
     @Override
     public void stopPeriodicFetching() {
         _log.debug("Stop Periodic Fetching ...");
+        if(!_refreshEnable){
+            return;
+        }
         _splitSynchronizationTask.stop();
         _segmentSynchronizationTaskImp.stop();
     }

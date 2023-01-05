@@ -45,7 +45,7 @@ public class LocalhostSynchronizerTest {
                 TELEMETRY_STORAGE_NOOP, splitCacheProducer);
         SplitTasks splitTasks = SplitTasks.build(splitSynchronizationTask, segmentSynchronizationTaskImp, null, null, null, null);
 
-        LocalhostSynchronizer localhostSynchronizer = new LocalhostSynchronizer(splitTasks, splitFetcher);
+        LocalhostSynchronizer localhostSynchronizer = new LocalhostSynchronizer(splitTasks, splitFetcher, false);
 
         Assert.assertTrue(localhostSynchronizer.syncAll());
     }
@@ -70,7 +70,7 @@ public class LocalhostSynchronizerTest {
                 TELEMETRY_STORAGE_NOOP, splitCacheProducer);
 
         SplitTasks splitTasks = SplitTasks.build(splitSynchronizationTask, segmentSynchronizationTaskImp, null, null, null, null);
-        LocalhostSynchronizer localhostSynchronizer = new LocalhostSynchronizer(splitTasks, splitFetcher);
+        LocalhostSynchronizer localhostSynchronizer = new LocalhostSynchronizer(splitTasks, splitFetcher, true);
 
         localhostSynchronizer.startPeriodicFetching();
 
@@ -89,7 +89,7 @@ public class LocalhostSynchronizerTest {
         SplitFetcher splitFetcher = new SplitFetcherImp(splitChangeFetcher, splitParser, splitCacheConsumer, splitCacheProducer, TELEMETRY_STORAGE_NOOP);
         SplitSynchronizationTask splitSynchronizationTask = new SplitSynchronizationTask(splitFetcher, splitCacheProducer, 1000L);
         SplitTasks splitTasks = SplitTasks.build(splitSynchronizationTask, null, null, null, null, null);
-        LocalhostSynchronizer localhostSynchronizer = new LocalhostSynchronizer(splitTasks, splitFetcher);
+        LocalhostSynchronizer localhostSynchronizer = new LocalhostSynchronizer(splitTasks, splitFetcher, false);
 
         localhostSynchronizer.refreshSplits(null);
 
