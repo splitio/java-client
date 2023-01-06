@@ -40,6 +40,7 @@ public class SplitClientConfig {
     private final boolean _debugEnabled;
     private final boolean _labelsEnabled;
     private final boolean _ipAddressEnabled;
+    private final boolean _localhostRefreshEnabled;
     private final int _ready;
     private final int _waitBeforeShutdown;
     private final int _eventsQueueSize;
@@ -98,6 +99,7 @@ public class SplitClientConfig {
                               boolean debugEnabled,
                               boolean labelsEnabled,
                               boolean ipAddressEnabled,
+                              boolean localhostRefreshEnabled,
                               int waitBeforeShutdown,
                               HttpHost proxy,
                               String proxyUsername,
@@ -144,6 +146,7 @@ public class SplitClientConfig {
         _debugEnabled = debugEnabled;
         _labelsEnabled = labelsEnabled;
         _ipAddressEnabled = ipAddressEnabled;
+        _localhostRefreshEnabled = localhostRefreshEnabled;
         _waitBeforeShutdown = waitBeforeShutdown;
         _proxy = proxy;
         _proxyUsername = proxyUsername;
@@ -248,6 +251,10 @@ public class SplitClientConfig {
     public boolean labelsEnabled() { return _labelsEnabled;}
 
     public boolean ipAddressEnabled() { return _ipAddressEnabled; }
+
+    public boolean localhostRefreshEnabled() {
+        return _localhostRefreshEnabled;
+    }
 
     public int blockUntilReady() {
         return _ready;
@@ -367,7 +374,8 @@ public class SplitClientConfig {
         private int _ready = -1; // -1 means no blocking
         private int _metricsRefreshRate = 60;
         private boolean _labelsEnabled = true;
-        private  boolean _ipAddressEnabled = true;
+        private boolean _ipAddressEnabled = true;
+        private boolean _localhostRefreshEnable = false;
         private int _waitBeforeShutdown = 5000;
         private String _proxyHost = "localhost";
         private int _proxyPort = -1;
@@ -764,6 +772,16 @@ public class SplitClientConfig {
         }
 
         /**
+         * Set if refresh is enabled or not for localhost mode. Default is false.
+         * @param localhostRefreshEnable
+         * @return
+         */
+        public Builder localhostRefreshEnable(boolean localhostRefreshEnable) {
+            _localhostRefreshEnable = localhostRefreshEnable;
+            return this;
+        }
+
+        /**
          * Set how many seconds to wait before re attempting to authenticate for push notifications. Default 1 second. Minimum 1 second.
          * @param authRetryBackoffBase
          * @return
@@ -968,6 +986,7 @@ public class SplitClientConfig {
                     _debugEnabled,
                     _labelsEnabled,
                     _ipAddressEnabled,
+                    _localhostRefreshEnable,
                     _waitBeforeShutdown,
                     proxy(),
                     _proxyUsername,

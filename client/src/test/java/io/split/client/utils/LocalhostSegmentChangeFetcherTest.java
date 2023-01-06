@@ -1,5 +1,6 @@
 package io.split.client.utils;
 
+import io.split.client.LocalhostSegmentChangeFetcher;
 import io.split.client.dtos.SegmentChange;
 import io.split.engine.common.FetchOptions;
 import org.junit.Assert;

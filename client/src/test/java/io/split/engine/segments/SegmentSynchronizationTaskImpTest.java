@@ -1,8 +1,8 @@
 package io.split.engine.segments;
 
 import com.google.common.collect.Maps;
+import io.split.client.LocalhostSegmentChangeFetcher;
 import io.split.client.LocalhostSplitChangeFetcher;
-import io.split.client.utils.LocalhostSegmentChangeFetcher;
 import io.split.engine.SDKReadinessGates;
 import io.split.engine.common.FetchOptions;
 import io.split.engine.experiments.SplitChangeFetcher;

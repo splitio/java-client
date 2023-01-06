@@ -31,7 +31,6 @@ import io.split.client.interceptors.ClientKeyInterceptorFilter;
 import io.split.client.interceptors.GzipDecoderResponseInterceptor;
 import io.split.client.interceptors.GzipEncoderRequestInterceptor;
 import io.split.client.interceptors.SdkMetadataInterceptorFilter;
-import io.split.client.utils.LocalhostSegmentChangeFetcher;
 import io.split.client.utils.SDKMetadata;
 import io.split.engine.SDKReadinessGates;
 import io.split.engine.common.ConsumerSyncManager;
@@ -351,7 +350,11 @@ public class SplitFactoryImpl implements SplitFactory {
         _segmentCache = segmentCache;
 
         //SegmentFetcher
-        SegmentChangeFetcher segmentChangeFetcher = new LocalhostSegmentChangeFetcher(config.segmentDirectory());
+
+        SegmentChangeFetcher segmentChangeFetcher = new LocalhostSegmentFetcherNoop();
+        if(config.segmentDirectory() != null){
+            segmentChangeFetcher = new LocalhostSegmentChangeFetcher(config.segmentDirectory());
+        }
 
        _segmentSynchronizationTaskImp = new SegmentSynchronizationTaskImp(segmentChangeFetcher,
                 config.segmentsRefreshRate(),
@@ -393,11 +396,10 @@ public class SplitFactoryImpl implements SplitFactory {
                 _telemetryStorageProducer); //TelemetryConfiguration instance
 
         // Synchronizer
-        Synchronizer synchronizer = new LocalhostSynchronizer(splitTasks, _splitFetcher);
+        Synchronizer synchronizer = new LocalhostSynchronizer(splitTasks, _splitFetcher, config.localhostRefreshEnabled());
 
         // SplitManager
         _manager = new SplitManagerImpl(splitCache, config, _gates, _telemetryStorageProducer);
-
         // SyncManager
         _syncManager = new LocalhostSyncManager(synchronizer, _gates);
         _syncManager.start();
