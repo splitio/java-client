@@ -353,7 +353,7 @@ public class SplitFactoryImpl implements SplitFactory {
 
         SegmentChangeFetcher segmentChangeFetcher = new LocalhostSegmentFetcherNoop();
         if(config.segmentDirectory() != null){
-            new LocalhostSegmentChangeFetcher(config.segmentDirectory());
+            segmentChangeFetcher = new LocalhostSegmentChangeFetcher(config.segmentDirectory());
         }
 
        _segmentSynchronizationTaskImp = new SegmentSynchronizationTaskImp(segmentChangeFetcher,
@@ -400,7 +400,6 @@ public class SplitFactoryImpl implements SplitFactory {
 
         // SplitManager
         _manager = new SplitManagerImpl(splitCache, config, _gates, _telemetryStorageProducer);
-
         // SyncManager
         _syncManager = new LocalhostSyncManager(synchronizer, _gates);
         _syncManager.start();
