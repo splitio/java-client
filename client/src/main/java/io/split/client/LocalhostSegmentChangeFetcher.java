@@ -25,9 +25,9 @@ public class LocalhostSegmentChangeFetcher implements SegmentChangeFetcher {
         try {
             JsonReader jsonReader = new JsonReader(new FileReader(String.format("%s/%s.json", _file, segmentName)));
             return Json.fromJson(jsonReader, SegmentChange.class);
-        } catch (Exception e) {
-            _log.warn(String.format("There was no file named %s found. ", _file.getPath()), e);
+        } catch (Throwable t) {
+            _log.warn(String.format("There was no file named %s found. ", _file.getPath()), t);
+            throw new IllegalStateException(String.format("Problem fetching segment %s: %s", segmentName, t.getMessage()), t);
         }
-        return null;
     }
 }
