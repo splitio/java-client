@@ -5,7 +5,6 @@ import io.split.storages.SegmentCache;
 import io.split.storages.SegmentCacheProducer;
 import io.split.storages.memory.SegmentCacheInMemoryImpl;
 import io.split.client.dtos.SegmentChange;
-import io.split.engine.SDKReadinessGates;
 import io.split.telemetry.storage.InMemoryTelemetryStorage;
 import io.split.telemetry.storage.TelemetryRuntimeProducer;
 import io.split.telemetry.storage.TelemetryStorage;
@@ -52,14 +51,13 @@ public class SegmentFetcherImpTest {
     @Test
     public void works_when_there_are_no_changes() throws InterruptedException {
         long startingChangeNumber = -1L;
-        SDKReadinessGates gates = new SDKReadinessGates();
         SegmentCache segmentCache = new SegmentCacheInMemoryImpl();
 
         SegmentChangeFetcher segmentChangeFetcher = Mockito.mock(SegmentChangeFetcher.class);
         SegmentChange segmentChange = getSegmentChange(-1L, 10L);
         Mockito.when(segmentChangeFetcher.fetch(Mockito.anyString(), Mockito.anyLong(), Mockito.any())).thenReturn(segmentChange);
 
-        SegmentFetcherImp fetcher = new SegmentFetcherImp(SEGMENT_NAME, segmentChangeFetcher, gates, segmentCache, TELEMETRY_STORAGE);
+        SegmentFetcherImp fetcher = new SegmentFetcherImp(SEGMENT_NAME, segmentChangeFetcher, segmentCache, TELEMETRY_STORAGE);
 
         // execute the fetcher for a little bit.
         ScheduledExecutorService scheduledExecutorService = Executors.newSingleThreadScheduledExecutor();
@@ -86,7 +84,6 @@ public class SegmentFetcherImpTest {
     }
 
     private void works(long startingChangeNumber) throws InterruptedException {
-        SDKReadinessGates gates = new SDKReadinessGates();
         String segmentName = SEGMENT_NAME;
         SegmentCacheProducer segmentCacheProducer = Mockito.mock(SegmentCacheProducer.class);
         Mockito.when(segmentCacheProducer.getChangeNumber(SEGMENT_NAME)).thenReturn(-1L).thenReturn(-1L)
@@ -98,7 +95,7 @@ public class SegmentFetcherImpTest {
         
         Mockito.when(segmentChangeFetcher.fetch(Mockito.eq(SEGMENT_NAME),Mockito.eq( -1L), Mockito.any())).thenReturn(segmentChange);
         Mockito.when(segmentChangeFetcher.fetch(Mockito.eq(SEGMENT_NAME),Mockito.eq( 0L), Mockito.any())).thenReturn(segmentChange);
-        SegmentFetcher fetcher = new SegmentFetcherImp(segmentName, segmentChangeFetcher, gates, segmentCacheProducer, Mockito.mock(TelemetryRuntimeProducer.class));
+        SegmentFetcher fetcher = new SegmentFetcherImp(segmentName, segmentChangeFetcher, segmentCacheProducer, Mockito.mock(TelemetryRuntimeProducer.class));
 
         // execute the fetcher for a little bit.
         ScheduledExecutorService scheduledExecutorService = Executors.newSingleThreadScheduledExecutor();
@@ -124,30 +121,21 @@ public class SegmentFetcherImpTest {
     @Test(expected = NullPointerException.class)
     public void does_not_work_if_segment_change_fetcher_is_null() {
         SegmentCacheProducer segmentCacheProducer = Mockito.mock(SegmentCacheProducer.class);
-        SegmentFetcher fetcher = new SegmentFetcherImp(SEGMENT_NAME, null, new SDKReadinessGates(), segmentCacheProducer, TELEMETRY_STORAGE);
+        SegmentFetcher fetcher = new SegmentFetcherImp(SEGMENT_NAME, null, segmentCacheProducer, TELEMETRY_STORAGE);
     }
 
     @Test(expected = NullPointerException.class)
     public void does_not_work_if_segment_name_is_null() {
         SegmentCacheProducer segmentCacheProducer = Mockito.mock(SegmentCacheProducer.class);
         SegmentChangeFetcher segmentChangeFetcher = Mockito.mock(SegmentChangeFetcher.class);
-        SegmentFetcher fetcher = new SegmentFetcherImp(null, segmentChangeFetcher, new SDKReadinessGates(), segmentCacheProducer, TELEMETRY_STORAGE);
-    }
-
-    @Test(expected = NullPointerException.class)
-    public void does_not_work_if_sdk_readiness_gates_are_null() {
-        SegmentCacheProducer segmentCacheProducer = Mockito.mock(SegmentCacheProducer.class);
-        SegmentChangeFetcher segmentChangeFetcher = Mockito.mock(SegmentChangeFetcher.class);
-        SegmentFetcher fetcher = new SegmentFetcherImp(SEGMENT_NAME, segmentChangeFetcher, null, segmentCacheProducer, TELEMETRY_STORAGE);
+        SegmentFetcher fetcher = new SegmentFetcherImp(null, segmentChangeFetcher, segmentCacheProducer, TELEMETRY_STORAGE);
     }
 
     @Test
     public void testBypassCdnClearedAfterFirstHit() {
         SegmentChangeFetcher mockFetcher = Mockito.mock(SegmentChangeFetcher.class);
-        SegmentSynchronizationTask segmentSynchronizationTaskMock = Mockito.mock(SegmentSynchronizationTask.class);
         SegmentCache segmentCacheMock = new SegmentCacheInMemoryImpl();
-        SDKReadinessGates mockGates = Mockito.mock(SDKReadinessGates.class);
-        SegmentFetcher fetcher = new SegmentFetcherImp("someSegment", mockFetcher, mockGates, segmentCacheMock, Mockito.mock(TelemetryRuntimeProducer.class));
+        SegmentFetcher fetcher = new SegmentFetcherImp("someSegment", mockFetcher, segmentCacheMock, Mockito.mock(TelemetryRuntimeProducer.class));
 
 
         SegmentChange response1 = new SegmentChange();

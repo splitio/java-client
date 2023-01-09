@@ -5,7 +5,6 @@ import io.split.client.dtos.SegmentChange;
 import io.split.client.utils.Json;
 import io.split.client.utils.Utils;
 import io.split.engine.common.FetchOptions;
-import io.split.engine.metrics.Metrics;
 import io.split.engine.segments.SegmentChangeFetcher;
 import io.split.telemetry.domain.enums.HTTPLatenciesEnum;
 import io.split.telemetry.domain.enums.LastSynchronizationRecordsEnum;
@@ -98,7 +97,7 @@ public final class HttpSegmentChangeFetcher implements SegmentChangeFetcher {
                     _log.error("factory instantiation: you passed a browser type api_key, " +
                             "please grab an api key from the Split console that is of type sdk");
                 }
-                throw new IllegalStateException("Could not retrieve segment changes for " + segmentName + "; http return code " + statusCode);
+                throw new IllegalStateException(String.format("Could not retrieve segment changes for %s, since %s; http return code %s", segmentName, since, statusCode));
             }
 
             _telemetryRuntimeProducer.recordSuccessfulSync(LastSynchronizationRecordsEnum.SEGMENTS, System.currentTimeMillis());
@@ -110,7 +109,8 @@ public final class HttpSegmentChangeFetcher implements SegmentChangeFetcher {
 
             return Json.fromJson(json, SegmentChange.class);
         } catch (Throwable t) {
-            throw new IllegalStateException("Problem fetching segmentChanges: " + t.getMessage(), t);
+            throw new IllegalStateException(String.format("Error occurred when trying to sync segment: %s, since: %s. Details: %s",
+                    segmentName, since, t), t);
         } finally {
             _telemetryRuntimeProducer.recordSyncLatency(HTTPLatenciesEnum.SEGMENTS, System.currentTimeMillis()-start);
             Utils.forceClose(response);

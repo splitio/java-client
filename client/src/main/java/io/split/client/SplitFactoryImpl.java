@@ -359,7 +359,6 @@ public class SplitFactoryImpl implements SplitFactory {
        _segmentSynchronizationTaskImp = new SegmentSynchronizationTaskImp(segmentChangeFetcher,
                 config.segmentsRefreshRate(),
                 config.numThreadsForSegmentFetch(),
-                _gates,
                 segmentCache,
                 _telemetryStorageProducer,
                 _splitCache);
@@ -548,7 +547,6 @@ public class SplitFactoryImpl implements SplitFactory {
         return new SegmentSynchronizationTaskImp(segmentChangeFetcher,
                 config.segmentsRefreshRate(),
                 config.numThreadsForSegmentFetch(),
-                _gates,
                 segmentCacheProducer,
                 _telemetryStorageProducer,
                 splitCacheConsumer);
