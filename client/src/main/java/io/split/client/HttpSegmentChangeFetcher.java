@@ -108,9 +108,9 @@ public final class HttpSegmentChangeFetcher implements SegmentChangeFetcher {
             }
 
             return Json.fromJson(json, SegmentChange.class);
-        } catch (Throwable t) {
+        } catch (Exception e) {
             throw new IllegalStateException(String.format("Error occurred when trying to sync segment: %s, since: %s. Details: %s",
-                    segmentName, since, t), t);
+                    segmentName, since, e), e);
         } finally {
             _telemetryRuntimeProducer.recordSyncLatency(HTTPLatenciesEnum.SEGMENTS, System.currentTimeMillis()-start);
             Utils.forceClose(response);

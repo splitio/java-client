@@ -102,8 +102,8 @@ public final class HttpSplitChangeFetcher implements SplitChangeFetcher {
             }
 
             return Json.fromJson(json, SplitChange.class);
-        } catch (Throwable t) {
-            throw new IllegalStateException(String.format("Problem fetching splitChanges since %s: %s", since, t), t);
+        } catch (Exception e) {
+            throw new IllegalStateException(String.format("Problem fetching splitChanges since %s: %s", since, e), e);
         } finally {
             _telemetryRuntimeProducer.recordSyncLatency(HTTPLatenciesEnum.SPLITS, System.currentTimeMillis()-start);
             Utils.forceClose(response);
