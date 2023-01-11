@@ -78,8 +78,11 @@ public class SplitFetcherImp implements SplitFetcher {
             _log.warn("Interrupting split fetcher task");
             Thread.currentThread().interrupt();
             return new FetchResult(false, new HashSet<>());
-        } catch (Throwable t) {
-            _log.error("RefreshableSplitFetcher failed: " + t.getMessage());
+        } catch (Exception e) {
+            _log.error("RefreshableSplitFetcher failed: " + e.getMessage());
+            if (_log.isDebugEnabled()) {
+                _log.debug("Reason:", e);
+            }
             return new FetchResult(false, new HashSet<>());
         }
     }
@@ -135,7 +138,7 @@ public class SplitFetcherImp implements SplitFetcher {
 
                 ParsedSplit parsedSplit = _parser.parse(split);
                 if (parsedSplit == null) {
-                    _log.info("We could not parse the experiment definition for: " + split.name + " so we are removing it completely to be careful");
+                    _log.info(String.format("We could not parse the experiment definition for: %s so we are removing it completely to be careful", split.name));
 
                     _splitCacheProducer.remove(split.name);
                     _log.debug("Deleted feature: " + split.name);

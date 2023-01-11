@@ -40,7 +40,7 @@ public class SplitFactoryBuilder {
         ApiKeyValidator.validate(apiToken);
         String splitFile = config.splitFile();
         if (LocalhostSplitFactory.LOCALHOST.equals(apiToken)) {
-            if (splitFile.toLowerCase().endsWith(".json")){
+            if (splitFile != null && splitFile.toLowerCase().endsWith(".json")){
                 return new SplitFactoryImpl(config);
             }
             return LocalhostSplitFactory.createLocalhostSplitFactory(config);

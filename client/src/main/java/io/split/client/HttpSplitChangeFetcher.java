@@ -6,9 +6,7 @@ import io.split.client.utils.Json;
 import io.split.client.utils.Utils;
 import io.split.engine.common.FetchOptions;
 import io.split.engine.experiments.SplitChangeFetcher;
-import io.split.engine.metrics.Metrics;
 import io.split.telemetry.domain.enums.HTTPLatenciesEnum;
-import io.split.telemetry.domain.enums.LastSynchronizationRecordsEnum;
 import io.split.telemetry.domain.enums.ResourceEnum;
 import io.split.telemetry.storage.TelemetryRuntimeProducer;
 import org.apache.hc.client5.http.classic.methods.HttpGet;
@@ -37,7 +35,6 @@ public final class HttpSplitChangeFetcher implements SplitChangeFetcher {
 
     private static final String SINCE = "since";
     private static final String TILL = "till";
-    private static final String PREFIX = "splitChangeFetcher";
 
     private static final String HEADER_CACHE_CONTROL_NAME = "Cache-Control";
     private static final String HEADER_CACHE_CONTROL_VALUE = "no-cache";
@@ -96,9 +93,8 @@ public final class HttpSplitChangeFetcher implements SplitChangeFetcher {
 
             if (statusCode < HttpStatus.SC_OK || statusCode >= HttpStatus.SC_MULTIPLE_CHOICES) {
                 _telemetryRuntimeProducer.recordSyncError(ResourceEnum.SPLIT_SYNC, statusCode);
-                throw new IllegalStateException("Could not retrieve splitChanges; http return code " + statusCode);
+                throw new IllegalStateException(String.format("Could not retrieve splitChanges since %s; http return code %s", since, statusCode));
             }
-
 
             String json = EntityUtils.toString(response.getEntity(), StandardCharsets.UTF_8);
             if (_log.isDebugEnabled()) {
@@ -106,8 +102,8 @@ public final class HttpSplitChangeFetcher implements SplitChangeFetcher {
             }
 
             return Json.fromJson(json, SplitChange.class);
-        } catch (Throwable t) {
-            throw new IllegalStateException("Problem fetching splitChanges: " + t.getMessage(), t);
+        } catch (Exception e) {
+            throw new IllegalStateException(String.format("Problem fetching splitChanges since %s: %s", since, e), e);
         } finally {
             _telemetryRuntimeProducer.recordSyncLatency(HTTPLatenciesEnum.SPLITS, System.currentTimeMillis()-start);
             Utils.forceClose(response);

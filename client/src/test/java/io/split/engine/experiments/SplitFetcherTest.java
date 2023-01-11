@@ -1,14 +1,12 @@
 package io.split.engine.experiments;
 
 import com.google.common.collect.Lists;
-import io.split.storages.SegmentCacheConsumer;
 import io.split.storages.memory.InMemoryCacheImp;
 import io.split.storages.SegmentCache;
 import io.split.storages.memory.SegmentCacheInMemoryImpl;
 import io.split.storages.SplitCache;
 import io.split.client.dtos.*;
 import io.split.engine.ConditionsTestUtil;
-import io.split.engine.SDKReadinessGates;
 import io.split.engine.common.FetchOptions;
 import io.split.engine.matchers.AllKeysMatcher;
 import io.split.engine.matchers.CombiningMatcher;
@@ -90,7 +88,6 @@ public class SplitFetcherTest {
 
     @Test
     public void when_parser_fails_we_remove_the_experiment() throws InterruptedException {
-        SDKReadinessGates gates = new SDKReadinessGates();
         Split validSplit = new Split();
         validSplit.status = Status.ACTIVE;
         validSplit.seed = (int) -1;
@@ -136,7 +133,7 @@ public class SplitFetcherTest {
         SplitCache cache = new InMemoryCacheImp(-1);
 
         SegmentChangeFetcher segmentChangeFetcher = mock(SegmentChangeFetcher.class);
-        SegmentSynchronizationTask segmentSynchronizationTask = new SegmentSynchronizationTaskImp(segmentChangeFetcher, 1,10, gates, segmentCache, TELEMETRY_STORAGE, cache);
+        SegmentSynchronizationTask segmentSynchronizationTask = new SegmentSynchronizationTaskImp(segmentChangeFetcher, 1,10, segmentCache, TELEMETRY_STORAGE, cache);
         segmentSynchronizationTask.start();
         SplitFetcherImp fetcher = new SplitFetcherImp(splitChangeFetcher, new SplitParser(), cache, cache, TELEMETRY_STORAGE);
 
@@ -150,7 +147,6 @@ public class SplitFetcherTest {
 
     @Test
     public void if_there_is_a_problem_talking_to_split_change_count_down_latch_is_not_decremented() throws Exception {
-        SDKReadinessGates gates = new SDKReadinessGates();
         SplitCache cache = new InMemoryCacheImp(-1);
 
         SplitChangeFetcher splitChangeFetcher = mock(SplitChangeFetcher.class);
@@ -158,7 +154,7 @@ public class SplitFetcherTest {
         SegmentCache segmentCache = new SegmentCacheInMemoryImpl();
 
         SegmentChangeFetcher segmentChangeFetcher = mock(SegmentChangeFetcher.class);
-        SegmentSynchronizationTask segmentSynchronizationTask = new SegmentSynchronizationTaskImp(segmentChangeFetcher, 1,10, gates, segmentCache, TELEMETRY_STORAGE, cache);
+        SegmentSynchronizationTask segmentSynchronizationTask = new SegmentSynchronizationTaskImp(segmentChangeFetcher, 1,10, segmentCache, TELEMETRY_STORAGE, cache);
         segmentSynchronizationTask.start();
         SplitFetcherImp fetcher = new SplitFetcherImp(splitChangeFetcher, new SplitParser(),cache, cache, TELEMETRY_STORAGE);
 
@@ -193,14 +189,13 @@ public class SplitFetcherTest {
         long startingChangeNumber = -1;
         String segmentName = "foosegment";
         AChangePerCallSplitChangeFetcher experimentChangeFetcher = new AChangePerCallSplitChangeFetcher(segmentName);
-        SDKReadinessGates gates = new SDKReadinessGates();
         SplitCache cache = new InMemoryCacheImp(startingChangeNumber);
         SegmentCache segmentCache = new SegmentCacheInMemoryImpl();
 
         SegmentChangeFetcher segmentChangeFetcher = mock(SegmentChangeFetcher.class);
         SegmentChange segmentChange = getSegmentChange(0L, 0L, segmentName);
         when(segmentChangeFetcher.fetch(anyString(), anyLong(), any())).thenReturn(segmentChange);
-        SegmentSynchronizationTask segmentSynchronizationTask = new SegmentSynchronizationTaskImp(segmentChangeFetcher, 1,10, gates, segmentCache, Mockito.mock(TelemetryStorage.class), cache);
+        SegmentSynchronizationTask segmentSynchronizationTask = new SegmentSynchronizationTaskImp(segmentChangeFetcher, 1,10, segmentCache, Mockito.mock(TelemetryStorage.class), cache);
         segmentSynchronizationTask.start();
         SplitFetcherImp fetcher = new SplitFetcherImp(experimentChangeFetcher, new SplitParser(), cache, cache,  TELEMETRY_STORAGE);
 
@@ -220,10 +215,7 @@ public class SplitFetcherTest {
     @Test
     public void testBypassCdnClearedAfterFirstHit() {
         SplitChangeFetcher mockFetcher = Mockito.mock(SplitChangeFetcher.class);
-        SegmentSynchronizationTask segmentSynchronizationTaskMock = Mockito.mock(SegmentSynchronizationTask.class);
-        SegmentCacheConsumer segmentCacheMock = Mockito.mock(SegmentCacheConsumer.class);
         SplitParser mockParser = new SplitParser();
-        SDKReadinessGates mockGates = Mockito.mock(SDKReadinessGates.class);
         SplitCache mockCache = new InMemoryCacheImp();
         SplitFetcherImp fetcher = new SplitFetcherImp(mockFetcher, mockParser, mockCache, mockCache, Mockito.mock(TelemetryRuntimeProducer.class));
 
