@@ -122,7 +122,7 @@ public class SSEClient {
         checkNotNull(uri);
         checkNotNull(signal);
         if (!establishConnection(uri, signal)) {
-            _statusCallback.apply(StatusMessage.NONRETRYABLE_ERROR);
+            _statusCallback.apply(StatusMessage.RETRYABLE_ERROR);
             return;
         }
 

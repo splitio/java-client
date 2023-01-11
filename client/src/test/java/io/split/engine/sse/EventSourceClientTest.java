@@ -52,7 +52,7 @@ public class EventSourceClientTest {
     }
 
     @Test
-    public void startShouldNotConnect() throws IOException {
+    public void startShouldReconnect() throws IOException {
         SSEMockServer.SseEventQueue eventQueue = new SSEMockServer.SseEventQueue();
         SSEMockServer sseServer = buildSSEMockServer(eventQueue);
         TelemetryRuntimeProducer telemetryRuntimeProducer = Mockito.mock(InMemoryTelemetryStorage.class);
@@ -65,7 +65,7 @@ public class EventSourceClientTest {
 
         Awaitility.await()
                 .atMost(50L, TimeUnit.SECONDS)
-                .untilAsserted(() -> Mockito.verify(_pushStatusTracker, Mockito.times(1)).handleSseStatus(SSEClient.StatusMessage.NONRETRYABLE_ERROR));
+                .untilAsserted(() -> Mockito.verify(_pushStatusTracker, Mockito.times(1)).handleSseStatus(SSEClient.StatusMessage.RETRYABLE_ERROR));
     }
 
     @Test
