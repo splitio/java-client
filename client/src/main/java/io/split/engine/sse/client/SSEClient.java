@@ -184,6 +184,7 @@ public class SSEClient {
             _statusCallback.apply(StatusMessage.CONNECTED);
         } catch (IOException exc) {
             _log.error(String.format("Error establishConnection to %s, with this %s", uri, exc));
+            _log.error(exc.getStackTrace().toString());
             return false;
         } finally {
             signal.countDown();
