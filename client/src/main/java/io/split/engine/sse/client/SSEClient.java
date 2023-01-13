@@ -183,8 +183,7 @@ public class SSEClient {
             _state.set(ConnectionState.OPEN);
             _statusCallback.apply(StatusMessage.CONNECTED);
         } catch (IOException exc) {
-            _log.error(String.format("Error establishConnection to %s, with this %s", uri, exc));
-            _log.error(exc.getStackTrace().toString());
+            _log.error(String.format("Error establishConnection to %s", uri), exc);
             return false;
         } finally {
             signal.countDown();
