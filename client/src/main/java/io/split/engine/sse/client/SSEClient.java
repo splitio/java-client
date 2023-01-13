@@ -122,7 +122,7 @@ public class SSEClient {
         checkNotNull(uri);
         checkNotNull(signal);
         if (!establishConnection(uri, signal)) {
-            _statusCallback.apply(StatusMessage.NONRETRYABLE_ERROR);
+            _statusCallback.apply(StatusMessage.RETRYABLE_ERROR);
             return;
         }
 
@@ -175,7 +175,6 @@ public class SSEClient {
 
     private boolean establishConnection(URI uri, CountDownLatch signal) {
         _ongoingRequest.set(new HttpGet(uri));
-
         try {
             _ongoingResponse.set(_client.execute(_ongoingRequest.get()));
             if (_ongoingResponse.get().getCode() != 200) {
@@ -184,7 +183,7 @@ public class SSEClient {
             _state.set(ConnectionState.OPEN);
             _statusCallback.apply(StatusMessage.CONNECTED);
         } catch (IOException exc) {
-            _log.error(String.format("Error establishConnection: %s", exc));
+            _log.error(String.format("Error establishConnection to %s", uri), exc);
             return false;
         } finally {
             signal.countDown();
