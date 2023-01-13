@@ -141,10 +141,10 @@ public class SyncManagerImp implements SyncManager {
     @Override
     public void start() {
         _initializationtExecutorService.submit(() -> {
-            _backoff = new Backoff(_startingSyncCallBackoffBaseMs, STARTING_SYNC_ALL_BACKOFF_MAX_WAIT_MS);
+            Backoff startBackoff = new Backoff(_startingSyncCallBackoffBaseMs, STARTING_SYNC_ALL_BACKOFF_MAX_WAIT_MS);
             while(!_synchronizer.syncAll()) {
                 try{
-                    long howLong = _backoff.interval();
+                    long howLong = startBackoff.interval();
                     Thread.currentThread().sleep(howLong);
                 } catch (InterruptedException e) {
                     Thread.currentThread().interrupt();
@@ -253,12 +253,12 @@ public class SyncManagerImp implements SyncManager {
                         _synchronizer.startPeriodicFetching();
                         break;
                     case STREAMING_BACKOFF:
-                        long howLong = _backoff.interval() * 1000;
-                        _log.info(String.format("Retryable error in streaming subsystem. Switching to polling and retrying in %d seconds", howLong/1000));
+                        long howLong = _backoff.interval();
+                        _log.info(String.format("Retryable error in streaming subsystem. Switching to polling and retrying in %d seconds", howLong));
                         _synchronizer.startPeriodicFetching();
                         _pushManager.stopWorkers();
                         _pushManager.stop();
-                        Thread.sleep(howLong);
+                        Thread.sleep(howLong * 1000);
                         _incomingPushStatus.clear();
                         _pushManager.start();
                         break;
