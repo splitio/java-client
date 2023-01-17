@@ -38,10 +38,9 @@ public class HttpPostImp {
         try (CloseableHttpResponse response = _client.execute(request)) {
 
             int status = response.getCode();
-
             if (status < HttpStatus.SC_OK || status >= HttpStatus.SC_MULTIPLE_CHOICES) {
                 _telemetryRuntimeProducer.recordSyncError(httpParamsWrapper.getResourceEnum(), status);
-                _logger.warn("Response status was: " + status);
+                _logger.warn(String.format("Response status was: %s. The entity: %s", status , response.getEntity().toString()));
                 return;
             }
             _telemetryRuntimeProducer.recordSyncLatency(httpParamsWrapper.getHttpLatenciesEnum(), System.currentTimeMillis() - initTime);
