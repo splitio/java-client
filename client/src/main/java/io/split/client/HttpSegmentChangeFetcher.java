@@ -85,10 +85,15 @@ public final class HttpSegmentChangeFetcher implements SegmentChangeFetcher {
             }
 
             response = _client.execute(request);
+
             options.handleResponseHeaders(Arrays.stream(response.getHeaders())
                     .collect(Collectors.toMap(Header::getName, Header::getValue)));
 
             int statusCode = response.getCode();
+
+            if (_log.isDebugEnabled()) {
+                _log.debug(String.format("[%s] %s. Status code: ", request.getMethod(), uri.toURL(), statusCode));
+            }
 
             if (statusCode < HttpStatus.SC_OK || statusCode >= HttpStatus.SC_MULTIPLE_CHOICES) {
                 _telemetryRuntimeProducer.recordSyncError(ResourceEnum.SEGMENT_SYNC, statusCode);
@@ -103,9 +108,6 @@ public final class HttpSegmentChangeFetcher implements SegmentChangeFetcher {
             _telemetryRuntimeProducer.recordSuccessfulSync(LastSynchronizationRecordsEnum.SEGMENTS, System.currentTimeMillis());
 
             String json = EntityUtils.toString(response.getEntity(), StandardCharsets.UTF_8);
-            if (_log.isDebugEnabled()) {
-                _log.debug("Received json: " + json);
-            }
 
             return Json.fromJson(json, SegmentChange.class);
         } catch (Exception e) {

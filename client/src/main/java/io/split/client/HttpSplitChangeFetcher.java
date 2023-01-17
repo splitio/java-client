@@ -91,15 +91,16 @@ public final class HttpSplitChangeFetcher implements SplitChangeFetcher {
 
             int statusCode = response.getCode();
 
+            if (_log.isDebugEnabled()) {
+                _log.debug(String.format("[%s] %s. Status code: ", request.getMethod(), uri.toURL(), statusCode));
+            }
+
             if (statusCode < HttpStatus.SC_OK || statusCode >= HttpStatus.SC_MULTIPLE_CHOICES) {
                 _telemetryRuntimeProducer.recordSyncError(ResourceEnum.SPLIT_SYNC, statusCode);
                 throw new IllegalStateException(String.format("Could not retrieve splitChanges since %s; http return code %s", since, statusCode));
             }
 
             String json = EntityUtils.toString(response.getEntity(), StandardCharsets.UTF_8);
-            if (_log.isDebugEnabled()) {
-                _log.debug("Received json: " + json);
-            }
 
             return Json.fromJson(json, SplitChange.class);
         } catch (Exception e) {

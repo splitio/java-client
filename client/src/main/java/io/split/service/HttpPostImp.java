@@ -31,6 +31,10 @@ public class HttpPostImp {
         HttpPost request = new HttpPost(uri);
         request.setEntity(entity);
 
+        if (_logger.isDebugEnabled()) {
+            _logger.debug(String.format("[%s] %s", request.getMethod(), uri));
+        }
+
         try (CloseableHttpResponse response = _client.execute(request)) {
 
             int status = response.getCode();
