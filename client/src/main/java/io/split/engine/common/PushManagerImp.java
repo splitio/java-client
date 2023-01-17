@@ -102,6 +102,7 @@ public class PushManagerImp implements PushManager {
 
     @Override
     public synchronized void stop() {
+        _log.info("Stopping PushManagerImp");
         _eventSourceClient.stop();
         stopWorkers();
         if (_nextTokenRefreshTask != null) {

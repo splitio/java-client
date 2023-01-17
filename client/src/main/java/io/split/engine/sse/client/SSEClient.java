@@ -178,6 +178,9 @@ public class SSEClient {
         try {
             _ongoingResponse.set(_client.execute(_ongoingRequest.get()));
             if (_ongoingResponse.get().getCode() != 200) {
+                if (_log.isDebugEnabled()) {
+                    _log.debug(String.format("Establishing connection, code error: %s. The url is %s", _ongoingResponse.get().getCode(), uri.toURL()));
+                }
                 return false;
             }
             _state.set(ConnectionState.OPEN);

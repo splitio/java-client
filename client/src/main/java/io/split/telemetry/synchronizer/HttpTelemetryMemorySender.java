@@ -3,17 +3,22 @@ package io.split.telemetry.synchronizer;
 import com.google.common.annotations.VisibleForTesting;
 import io.split.client.dtos.UniqueKeys;
 import io.split.client.utils.Utils;
+import io.split.engine.segments.SegmentFetcherImp;
 import io.split.service.HttpPostImp;
 import io.split.telemetry.domain.Config;
 import io.split.telemetry.domain.Stats;
 import io.split.telemetry.domain.enums.HttpParamsWrapper;
 import io.split.telemetry.storage.TelemetryRuntimeProducer;
 import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.net.URI;
 import java.net.URISyntaxException;
 
 public class HttpTelemetryMemorySender{
+
+    private static final Logger _log = LoggerFactory.getLogger(HttpTelemetryMemorySender.class);
 
     private static final String CONFIG_ENDPOINT_PATH = "metrics/config";
     private static final String STATS_ENDPOINT_PATH = "metrics/usage";
@@ -45,6 +50,9 @@ public class HttpTelemetryMemorySender{
     }
 
     public void postConfig(Config config) {
+        if (_log.isDebugEnabled()) {
+            _log.debug("Sending init telemetry");
+        }
         _httpPost.post(_impressionConfigTarget, config, CONFIG_METRICS, HttpParamsWrapper.TELEMETRY);
     }
 

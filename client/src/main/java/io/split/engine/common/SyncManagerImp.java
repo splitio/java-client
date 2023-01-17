@@ -138,6 +138,9 @@ public class SyncManagerImp implements SyncManager {
             if (_shuttedDown.get()) {
                 return;
             }
+            if (_log.isDebugEnabled()) {
+                _log.debug("SyncAll Ready");
+            }
             _gates.sdkInternalReady();
             if (_streamingEnabledConfig.get()) {
                 startStreamingMode();
@@ -151,6 +154,7 @@ public class SyncManagerImp implements SyncManager {
 
     @Override
     public void shutdown(long splitCount, long segmentCount, long segmentKeyCount) throws IOException {
+        _log.info("Shutting down SyncManagerImp");
         if(_shuttedDown.get()) {
             return;
         }

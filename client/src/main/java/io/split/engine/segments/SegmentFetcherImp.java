@@ -46,6 +46,9 @@ public class SegmentFetcherImp implements SegmentFetcher {
     }
 
     private void runWithoutExceptionHandling(FetchOptions options) {
+        if (_log.isDebugEnabled()) {
+            _log.debug(String.format("Synchronizing segment %s", _segmentName));
+        }
         SegmentChange change = _segmentChangeFetcher.fetch(_segmentName, _segmentCacheProducer.getChangeNumber(_segmentName), options);
 
         if (change == null) {

@@ -85,6 +85,10 @@ public final class HttpSplitChangeFetcher implements SplitChangeFetcher {
                 request.addHeader(HEADER_FASTLY_DEBUG_NAME, HEADER_FASTLY_DEBUG_VALUE);
             }
 
+            if (_log.isDebugEnabled()) {
+                _log.debug(String.format("[%s] %s", request.getMethod(), uri.toURL()));
+            }
+
             response = _client.execute(request);
             options.handleResponseHeaders(Arrays.stream(response.getHeaders())
                     .collect(Collectors.toMap(Header::getName, Header::getValue)));
@@ -97,9 +101,6 @@ public final class HttpSplitChangeFetcher implements SplitChangeFetcher {
             }
 
             String json = EntityUtils.toString(response.getEntity(), StandardCharsets.UTF_8);
-            if (_log.isDebugEnabled()) {
-                _log.debug("Received json: " + json);
-            }
 
             return Json.fromJson(json, SplitChange.class);
         } catch (Exception e) {
