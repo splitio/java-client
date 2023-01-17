@@ -41,12 +41,12 @@ public class AuthApiClientImp implements AuthApiClient {
             URI uri = new URIBuilder(_target).build();
             HttpGet request = new HttpGet(uri);
 
-            if (_log.isDebugEnabled()) {
-                _log.debug(String.format("[%s] %s", request.getMethod(), uri.toURL()));
-            }
-
             CloseableHttpResponse response = _httpClient.execute(request);
             Integer statusCode = response.getCode();
+
+            if (_log.isDebugEnabled()) {
+                _log.debug(String.format("[%s] %s. Status code: ", request.getMethod(), uri.toURL(), statusCode));
+            }
 
             if (statusCode == HttpStatus.SC_OK) {
                 _log.debug(String.format("Success connection to: %s", _target));
