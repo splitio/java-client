@@ -97,7 +97,7 @@ public final class HttpSegmentChangeFetcher implements SegmentChangeFetcher {
 
             if (statusCode < HttpStatus.SC_OK || statusCode >= HttpStatus.SC_MULTIPLE_CHOICES) {
                 _telemetryRuntimeProducer.recordSyncError(ResourceEnum.SEGMENT_SYNC, statusCode);
-                _log.error(String.format("Response status was: %s. The entity: %s", statusCode , response.getEntity().toString()));
+                _log.error(String.format("Response status was: %s. The entity: %s", statusCode , response.getReasonPhrase()));
                 if (statusCode == HttpStatus.SC_FORBIDDEN) {
                     _log.error("factory instantiation: you passed a browser type api_key, " +
                             "please grab an api key from the Split console that is of type sdk");
