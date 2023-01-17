@@ -45,7 +45,7 @@ public class AuthApiClientImp implements AuthApiClient {
             Integer statusCode = response.getCode();
 
             if (_log.isDebugEnabled()) {
-                _log.debug(String.format("[%s] %s. Status code: ", request.getMethod(), uri.toURL(), statusCode));
+                _log.debug(String.format("[%s] %s. Status code: %s", request.getMethod(), uri.toURL(), statusCode));
             }
 
             if (statusCode == HttpStatus.SC_OK) {

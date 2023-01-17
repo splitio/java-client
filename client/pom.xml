@@ -5,7 +5,7 @@
     <parent>
         <groupId>io.split.client</groupId>
         <artifactId>java-client-parent</artifactId>
-        <version>4.6.1-rc5</version>
+        <version>4.6.1-rc6</version>
     </parent>
     <artifactId>java-client</artifactId>
     <packaging>jar</packaging>
