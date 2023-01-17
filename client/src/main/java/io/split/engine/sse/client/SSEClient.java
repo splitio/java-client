@@ -121,12 +121,13 @@ public class SSEClient {
     private void connectAndLoop(URI uri, CountDownLatch signal) {
         checkNotNull(uri);
         checkNotNull(signal);
-        if (!establishConnection(uri, signal)) {
-            _statusCallback.apply(StatusMessage.RETRYABLE_ERROR);
-            return;
-        }
 
         try {
+            if (!establishConnection(uri, signal)) {
+                _statusCallback.apply(StatusMessage.RETRYABLE_ERROR);
+                return;
+            }
+
             final InputStream stream = _ongoingResponse.get().getEntity().getContent();
             final BufferedReader reader = new BufferedReader(new InputStreamReader(stream));
 
@@ -156,7 +157,6 @@ public class SSEClient {
                 }
             }
         } catch (Exception e) { // Any other error non related to the connection disables streaming altogether
-
             _telemetryRuntimeProducer.recordStreamingEvents(new StreamingEvent(StreamEventsEnum.SSE_CONNECTION_ERROR.getType(), StreamEventsEnum.SseConnectionErrorValues.NON_REQUESTED_CONNECTION_ERROR.getValue(), System.currentTimeMillis()));
             _log.warn(e.getMessage(), e);
             _statusCallback.apply(StatusMessage.NONRETRYABLE_ERROR);
@@ -178,9 +178,7 @@ public class SSEClient {
         try {
             _ongoingResponse.set(_client.execute(_ongoingRequest.get()));
             if (_ongoingResponse.get().getCode() != 200) {
-                if (_log.isDebugEnabled()) {
-                    _log.debug(String.format("Establishing connection, code error: %s. The url is %s", _ongoingResponse.get().getCode(), uri.toURL()));
-                }
+                _log.error(String.format("Establishing connection, code error: %s. The url is %s", _ongoingResponse.get().getCode(), uri.toURL()));
                 return false;
             }
             _state.set(ConnectionState.OPEN);
