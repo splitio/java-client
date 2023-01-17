@@ -40,7 +40,7 @@ public class HttpPostImp {
             int status = response.getCode();
             if (status < HttpStatus.SC_OK || status >= HttpStatus.SC_MULTIPLE_CHOICES) {
                 _telemetryRuntimeProducer.recordSyncError(httpParamsWrapper.getResourceEnum(), status);
-                _logger.warn(String.format("Response status was: %s. Reason: %s", status , response.getEntity().toString()));
+                _logger.warn(String.format("Response status was: %s. Reason: %s", status , response.getReasonPhrase()));
                 return;
             }
             _telemetryRuntimeProducer.recordSyncLatency(httpParamsWrapper.getHttpLatenciesEnum(), System.currentTimeMillis() - initTime);
