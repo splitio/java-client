@@ -1,6 +1,5 @@
 package io.split.client;
 
-import io.split.client.LocalhostSplitChangeFetcher;
 import io.split.client.dtos.Split;
 import io.split.client.dtos.SplitChange;
 import io.split.engine.common.FetchOptions;
@@ -21,7 +20,7 @@ public class LocalhostSplitChangeFetcherTest {
 
         List<Split> split = splitChange.splits;
         Assert.assertEquals(7, split.size());
-        Assert.assertEquals(1660326991072L, splitChange.till);
-        Assert.assertEquals(-1, splitChange.since);
+        Assert.assertEquals(new Long("1660326991072"), splitChange.till);
+        Assert.assertEquals(new Long("-1"), splitChange.since);
     }
 }

@@ -1,0 +1,34 @@
+{
+  "conditionType": "ROLLOUT",
+  "matcherGroup": {
+    "combiner": "AND",
+    "matchers": [
+      {
+        "keySelector": {
+          "trafficType": "user",
+          "attribute": null
+        },
+        "matcherType": "ALL_KEYS",
+        "negate": false,
+        "userDefinedSegmentMatcherData": null,
+        "whitelistMatcherData": null,
+        "unaryNumericMatcherData": null,
+        "betweenMatcherData": null,
+        "booleanMatcherData": null,
+        "dependencyMatcherData": null,
+        "stringMatcherData": null
+      }
+    ]
+  },
+  "partitions": [
+    {
+      "treatment": "on",
+      "size": 0
+    },
+    {
+      "treatment": "off",
+      "size": 100
+    }
+  ],
+  "label": "default rule"
+}
