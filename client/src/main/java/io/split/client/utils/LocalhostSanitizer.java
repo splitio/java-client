@@ -46,7 +46,7 @@ public final class LocalhostSanitizer {
                 if (split.trafficTypeName == null || split.trafficTypeName.isEmpty()) {
                     split.trafficTypeName = TRAFFIC_TYPE_USER;
                 }
-                if (split.trafficAllocation < 0 || split.trafficAllocation > TRAFFIC_ALLOCATION_LIMIT) {
+                if (split.trafficAllocation == null || split.trafficAllocation < 0 || split.trafficAllocation > TRAFFIC_ALLOCATION_LIMIT) {
                     split.trafficAllocation = TRAFFIC_ALLOCATION_LIMIT;
                 }
                 if (split.trafficAllocationSeed == null || split.trafficAllocationSeed == 0) {
