@@ -3,6 +3,7 @@ package io.split.client;
 import com.google.gson.stream.JsonReader;
 import io.split.client.dtos.SplitChange;
 import io.split.client.utils.Json;
+import io.split.client.utils.LocalhostSanitizer;
 import io.split.engine.common.FetchOptions;
 import io.split.engine.experiments.SplitChangeFetcher;
 import org.slf4j.Logger;
@@ -23,9 +24,11 @@ public class LocalhostSplitChangeFetcher implements SplitChangeFetcher {
 
     @Override
     public SplitChange fetch(long since, FetchOptions options) {
+
         try {
             JsonReader jsonReader = new JsonReader(new FileReader(_file));
-            return Json.fromJson(jsonReader, SplitChange.class);
+            SplitChange splitChange = Json.fromJson(jsonReader, SplitChange.class);
+            return LocalhostSanitizer.sanitization(splitChange);
         } catch (FileNotFoundException f){
             _log.warn(String.format("There was no file named %s found. " +
                             "We created a split client that returns default treatments for all features for all of your users. " +

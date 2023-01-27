@@ -1,0 +1,55 @@
+{
+  "splits": [
+    {
+      "trafficTypeName": "user",
+      "name": "test1",
+      "trafficAllocation": 100,
+      "trafficAllocationSeed": -1364119282,
+      "seed": -605938843,
+      "status": "ACTIVE",
+      "killed": false,
+      "defaultTreatment": "off",
+      "changeNumber": 1660326991072,
+      "algo": 2,
+      "configurations": {},
+      "conditions": [
+        {
+          "conditionType": "ROLLOUT",
+          "matcherGroup": {
+            "combiner": "AND",
+            "matchers": [
+              {
+                "keySelector": {
+                  "trafficType": "user",
+                  "attribute": null
+                },
+                "matcherType": "ALL_KEYS",
+                "negate": false,
+                "userDefinedSegmentMatcherData": null,
+                "whitelistMatcherData": null,
+                "unaryNumericMatcherData": null,
+                "betweenMatcherData": null,
+                "booleanMatcherData": null,
+                "dependencyMatcherData": null,
+                "stringMatcherData": null
+              }
+            ]
+          },
+          "partitions": [
+            {
+              "treatment": "on",
+              "size": 0
+            },
+            {
+              "treatment": "off",
+              "size": 100
+            }
+          ],
+          "label": "default rule"
+        }
+      ]
+    }
+  ],
+  "since": 398,
+  "till": 0
+}
