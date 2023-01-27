@@ -40,4 +40,15 @@ public class LocalhostSegmentChangeFetcherTest {
         Assert.assertEquals(0, segmentChange.removed.size());
         Assert.assertEquals(4, segmentChange.added.size());
     }
+
+    @Test
+    public void checkTillAndSince(){
+        LocalhostSegmentChangeFetcher localhostSegmentChangeFetcher = new LocalhostSegmentChangeFetcher("src/test/resources/sanitizer/");
+        FetchOptions fetchOptions = Mockito.mock(FetchOptions.class);
+
+        SegmentChange segmentChange = localhostSegmentChangeFetcher.fetch("segmentChangeSinceTill", -1L, fetchOptions);
+
+        Assert.assertEquals(-1L, segmentChange.till);
+        Assert.assertEquals(-1L, segmentChange.since);
+    }
 }
