@@ -222,13 +222,13 @@ public class SplitFetcherTest {
 
         SplitChange response1 = new SplitChange();
         response1.splits = new ArrayList<>();
-        response1.since = new Long(-1);
-        response1.till = Long.valueOf(1);
+        response1.since = -1;
+        response1.till = 1;
 
         SplitChange response2 = new SplitChange();
         response2.splits = new ArrayList<>();
-        response2.since = new Long(1);
-        response2.till = new Long(1);
+        response2.since = 1 ;
+        response2.till = 1;
 
 
         ArgumentCaptor<FetchOptions> optionsCaptor = ArgumentCaptor.forClass(FetchOptions.class);
