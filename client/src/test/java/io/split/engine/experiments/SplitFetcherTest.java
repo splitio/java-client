@@ -227,7 +227,7 @@ public class SplitFetcherTest {
 
         SplitChange response2 = new SplitChange();
         response2.splits = new ArrayList<>();
-        response2.since = 1 ;
+        response2.since = 1;
         response2.till = 1;
 
 
