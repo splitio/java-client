@@ -1,12 +1,13 @@
 package io.split.client;
 
+import com.google.gson.stream.JsonReader;
 import io.split.client.dtos.SplitChange;
+import io.split.client.utils.Json;
 import io.split.client.utils.LocalhostSanitizer;
 import io.split.engine.common.FetchOptions;
 import io.split.engine.experiments.SplitChangeFetcher;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import com.fasterxml.jackson.databind.ObjectMapper;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -25,8 +26,8 @@ public class LocalhostSplitChangeFetcher implements SplitChangeFetcher {
     public SplitChange fetch(long since, FetchOptions options) {
 
         try {
-            ObjectMapper objectMapper = new ObjectMapper();
-            SplitChange splitChange = objectMapper.readValue(new FileReader(_file), SplitChange.class);
+            JsonReader jsonReader = new JsonReader(new FileReader(_file));
+            SplitChange splitChange = Json.fromJson(jsonReader, SplitChange.class);
             return LocalhostSanitizer.sanitization(splitChange);
         } catch (FileNotFoundException f){
             _log.warn(String.format("There was no file named %s found. " +

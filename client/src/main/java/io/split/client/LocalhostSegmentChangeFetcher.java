@@ -1,7 +1,8 @@
 package io.split.client;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.gson.stream.JsonReader;
 import io.split.client.dtos.SegmentChange;
+import io.split.client.utils.Json;
 import io.split.client.utils.LocalhostSanitizer;
 import io.split.engine.common.FetchOptions;
 import io.split.engine.segments.SegmentChangeFetcher;
@@ -24,8 +25,8 @@ public class LocalhostSegmentChangeFetcher implements SegmentChangeFetcher {
     @Override
     public SegmentChange fetch(String segmentName, long changesSinceThisChangeNumber, FetchOptions options) {
         try {
-            ObjectMapper objectMapper = new ObjectMapper();
-            SegmentChange segmentChange = objectMapper.readValue(new FileReader(String.format("%s/%s.json", _file, segmentName)), SegmentChange.class);
+            JsonReader jsonReader = new JsonReader(new FileReader(String.format("%s/%s.json", _file, segmentName)));
+            SegmentChange segmentChange = Json.fromJson(jsonReader, SegmentChange.class);
             return LocalhostSanitizer.sanitization(segmentChange);
         }  catch (FileNotFoundException f){
             _log.warn(String.format("There was no file named %s/%s found.", _file.getPath(), segmentName), f);
