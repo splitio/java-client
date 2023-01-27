@@ -62,4 +62,19 @@ public class LocalhostSplitChangeFetcherTest {
         Assert.assertEquals("on", split.defaultTreatment);
         Assert.assertEquals(ConditionType.ROLLOUT, split.conditions.get(split.conditions.size() - 1).conditionType);
     }
+
+    @Test
+    public void testSplitChangeSplitsToSanitizeMatchersNull(){
+        LocalhostSplitChangeFetcher localhostSplitChangeFetcher = new LocalhostSplitChangeFetcher("src/test/resources/sanitizer/splitChangerMatchersNull.json");
+        FetchOptions fetchOptions = Mockito.mock(FetchOptions.class);
+
+        SplitChange splitChange = localhostSplitChangeFetcher.fetch(-1L, fetchOptions);
+
+        Assert.assertEquals(1, splitChange.splits.size());
+        Split split = splitChange.splits.get(0);
+        Assert.assertEquals(Optional.of(100), Optional.of(split.trafficAllocation));
+        Assert.assertEquals(Status.ACTIVE, split.status);
+        Assert.assertEquals("off", split.defaultTreatment);
+        Assert.assertEquals(ConditionType.ROLLOUT, split.conditions.get(split.conditions.size() - 1).conditionType);
+    }
 }

@@ -55,11 +55,6 @@ public class SegmentFetcherImp implements SegmentFetcher {
             throw new IllegalStateException("SegmentChange was null");
         }
 
-        if (change.name.isEmpty()){
-            //segment to ignore after sanitization
-            return;
-        }
-
         if (change.till == _segmentCacheProducer.getChangeNumber(_segmentName)) {
             // no change.
             return;

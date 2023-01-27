@@ -77,6 +77,8 @@ public final class LocalhostSanitizer {
                 }
 
                 if (split.conditions.isEmpty() || !condition.conditionType.equals(ConditionType.ROLLOUT) ||
+                        condition.matcherGroup.matchers == null ||
+                        condition.matcherGroup.matchers.isEmpty() ||
                         !condition.matcherGroup.matchers.get(0).matcherType.equals(MatcherType.ALL_KEYS)) {
                     Condition rolloutCondition = new Condition();
                     split.conditions.add(createRolloutCondition(rolloutCondition, split.trafficTypeName));
@@ -90,8 +92,7 @@ public final class LocalhostSanitizer {
     }
      public static SegmentChange sanitization(SegmentChange segmentChange) {
         if (segmentChange.name == null || segmentChange.name.isEmpty()) {
-            segmentChange.name = new String();
-            return segmentChange;
+            return null;
         }
         if (segmentChange.added == null) {
             segmentChange.added =  new ArrayList<>();

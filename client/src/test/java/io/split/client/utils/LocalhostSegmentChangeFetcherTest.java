@@ -27,7 +27,7 @@ public class LocalhostSegmentChangeFetcherTest {
 
         SegmentChange segmentChange = localhostSegmentChangeFetcher.fetch("segmentNameNull", -1L, fetchOptions);
 
-        Assert.assertTrue(segmentChange.name.isEmpty());
+        Assert.assertNull(segmentChange);
     }
 
     @Test
