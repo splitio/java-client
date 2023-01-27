@@ -90,9 +90,8 @@ public final class LocalhostSanitizer {
     }
      public static SegmentChange sanitization(SegmentChange segmentChange) {
         if (segmentChange.name == null || segmentChange.name.isEmpty()) {
-            SegmentChange ignoreSegmentChange = new SegmentChange();
-            ignoreSegmentChange.name = new String();
-            return ignoreSegmentChange;
+            segmentChange.name = new String();
+            return segmentChange;
         }
         if (segmentChange.added == null) {
             segmentChange.added =  new ArrayList<>();
