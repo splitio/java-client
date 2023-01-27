@@ -5,16 +5,16 @@ import java.util.Map;
 
 public class Split {
     public String name;
-    public Integer seed;
+    public int seed;
     public Status status;
-    public Boolean killed;
+    public boolean killed;
     public String defaultTreatment;
     public List<Condition> conditions;
     public String trafficTypeName;
-    public Long changeNumber;
+    public long changeNumber;
     public Integer trafficAllocation;
     public Integer trafficAllocationSeed;
-    public Integer algo;
+    public int algo;
     public Map<String, String> configurations;
 
 

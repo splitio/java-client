@@ -19,4 +19,25 @@ public class LocalhostSegmentChangeFetcherTest {
         Assert.assertEquals("segment_1", segmentChange.name);
         Assert.assertEquals(4, segmentChange.added.size());
     }
+
+    @Test
+    public void testSegmentNameNull(){
+        LocalhostSegmentChangeFetcher localhostSegmentChangeFetcher = new LocalhostSegmentChangeFetcher("src/test/resources/sanitizer/");
+        FetchOptions fetchOptions = Mockito.mock(FetchOptions.class);
+
+        SegmentChange segmentChange = localhostSegmentChangeFetcher.fetch("segmentNameNull", -1L, fetchOptions);
+
+        Assert.assertTrue(segmentChange.name.isEmpty());
+    }
+
+    @Test
+    public void sameInAddedAndRemoved(){
+        LocalhostSegmentChangeFetcher localhostSegmentChangeFetcher = new LocalhostSegmentChangeFetcher("src/test/resources/sanitizer/");
+        FetchOptions fetchOptions = Mockito.mock(FetchOptions.class);
+
+        SegmentChange segmentChange = localhostSegmentChangeFetcher.fetch("sameInAddedAndRemoved", -1L, fetchOptions);
+
+        Assert.assertEquals(0, segmentChange.removed.size());
+        Assert.assertEquals(4, segmentChange.added.size());
+    }
 }

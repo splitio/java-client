@@ -4,6 +4,6 @@ import java.util.List;
 
 public class SplitChange {
     public List<Split> splits;
-    public Long since;
-    public Long till;
+    public long since;
+    public long till;
 }
