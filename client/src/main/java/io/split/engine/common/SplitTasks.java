@@ -2,6 +2,7 @@ package io.split.engine.common;
 
 import io.split.client.events.EventsTask;
 import io.split.client.impressions.ImpressionsManager;
+import io.split.client.impressions.UniqueKeysTracker;
 import io.split.engine.experiments.SplitSynchronizationTask;
 import io.split.engine.segments.SegmentSynchronizationTask;
 import io.split.engine.segments.SegmentSynchronizationTaskImp;
@@ -15,29 +16,34 @@ public class SplitTasks {
     private final ImpressionsManager _impressionManager;
     private final EventsTask _eventsTask;
     private final TelemetrySyncTask _telemetrySyncTask;
+    private final UniqueKeysTracker _uniqueKeysTracker;
 
     private SplitTasks (SplitSynchronizationTask splitSynchronizationTask,
-                        SegmentSynchronizationTask segmentSynchronizationTaskImp,
+                        SegmentSynchronizationTask segmentSynchronizationTask,
                         ImpressionsManager impressionsManager,
                         EventsTask eventsTask,
-                        TelemetrySyncTask telemetrySyncTask){
+                        TelemetrySyncTask telemetrySyncTask,
+                        UniqueKeysTracker uniqueKeysTracker){
         _splitSynchronizationTask = splitSynchronizationTask;
-        _segmentSynchronizationTask = segmentSynchronizationTaskImp;
+        _segmentSynchronizationTask = segmentSynchronizationTask;
         _impressionManager = impressionsManager;
         _eventsTask = eventsTask;
-        _telemetrySyncTask = checkNotNull(telemetrySyncTask);
+        _uniqueKeysTracker = uniqueKeysTracker;
+        _telemetrySyncTask = telemetrySyncTask;
     }
 
     public static SplitTasks build (SplitSynchronizationTask splitSynchronizationTask,
-                                    SegmentSynchronizationTaskImp segmentSynchronizationTaskImp,
+                                    SegmentSynchronizationTask segmentSynchronizationTask,
                                     ImpressionsManager impressionsManager,
                                     EventsTask eventsTask,
-                                    TelemetrySyncTask telemetrySyncTask) {
+                                    TelemetrySyncTask telemetrySyncTask,
+                                    UniqueKeysTracker uniqueKeysTracker) {
         return new SplitTasks ( splitSynchronizationTask,
-                                segmentSynchronizationTaskImp,
+                                segmentSynchronizationTask,
                                 impressionsManager,
                                 eventsTask,
-                                telemetrySyncTask);
+                                telemetrySyncTask,
+                                uniqueKeysTracker);
     }
 
     public SplitSynchronizationTask getSplitSynchronizationTask() {
@@ -58,5 +64,9 @@ public class SplitTasks {
 
     public TelemetrySyncTask getTelemetrySyncTask() {
         return _telemetrySyncTask;
+    }
+
+    public UniqueKeysTracker getUniqueKeysTracker() {
+        return _uniqueKeysTracker;
     }
 }

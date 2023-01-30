@@ -5,16 +5,9 @@ import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import io.split.client.SplitClientConfig;
 import io.split.client.dtos.KeyImpression;
 import io.split.client.dtos.TestImpressions;
-import io.split.client.dtos.UniqueKeys;
-import io.split.client.impressions.strategy.ProcessImpressionDebug;
-import io.split.client.impressions.strategy.ProcessImpressionNone;
-import io.split.client.impressions.strategy.ProcessImpressionOptimized;
 import io.split.client.impressions.strategy.ProcessImpressionStrategy;
-import io.split.storages.enums.OperationMode;
 import io.split.telemetry.domain.enums.ImpressionsDataTypeEnum;
 import io.split.telemetry.storage.TelemetryRuntimeProducer;
-import io.split.telemetry.synchronizer.TelemetrySynchronizer;
-import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -49,43 +42,35 @@ public class ImpressionsManagerImpl implements ImpressionsManager, Closeable {
     private TelemetryRuntimeProducer _telemetryRuntimeProducer;
     private ImpressionCounter _counter;
     private ProcessImpressionStrategy _processImpressionStrategy;
-    private final UniqueKeysTracker _uniqueKeysTracker;
     private final int _impressionsRefreshRate;
 
-    public static ImpressionsManagerImpl instance(CloseableHttpClient client,
-                                                  SplitClientConfig config,
-                                                  List<ImpressionListener> listeners,
+    public static ImpressionsManagerImpl instance(SplitClientConfig config,
                                                   TelemetryRuntimeProducer telemetryRuntimeProducer,
                                                   ImpressionsStorageConsumer impressionsStorageConsumer,
                                                   ImpressionsStorageProducer impressionsStorageProducer,
                                                   ImpressionsSender impressionsSender,
-                                                  UniqueKeysTracker uniqueKeysTracker,
                                                   ProcessImpressionStrategy processImpressionStrategy,
                                                   ImpressionCounter counter,
                                                   ImpressionListener listener) throws URISyntaxException {
-        return new ImpressionsManagerImpl(config, impressionsSender, listeners, telemetryRuntimeProducer, impressionsStorageConsumer, impressionsStorageProducer, uniqueKeysTracker, processImpressionStrategy, counter, listener);
+        return new ImpressionsManagerImpl(config, impressionsSender, telemetryRuntimeProducer, impressionsStorageConsumer, impressionsStorageProducer, processImpressionStrategy, counter, listener);
     }
 
     public static ImpressionsManagerImpl instanceForTest(SplitClientConfig config,
                                                          ImpressionsSender impressionsSender,
-                                                         List<ImpressionListener> listeners,
                                                          TelemetryRuntimeProducer telemetryRuntimeProducer,
                                                          ImpressionsStorageConsumer impressionsStorageConsumer,
                                                          ImpressionsStorageProducer impressionsStorageProducer,
-                                                         UniqueKeysTracker uniqueKeysTracker,
                                                          ProcessImpressionStrategy processImpressionStrategy,
                                                          ImpressionCounter counter,
                                                          ImpressionListener listener) throws URISyntaxException {
-        return new ImpressionsManagerImpl(config, impressionsSender, listeners, telemetryRuntimeProducer, impressionsStorageConsumer, impressionsStorageProducer, uniqueKeysTracker, processImpressionStrategy, counter, listener);
+        return new ImpressionsManagerImpl(config, impressionsSender, telemetryRuntimeProducer, impressionsStorageConsumer, impressionsStorageProducer, processImpressionStrategy, counter, listener);
     }
 
     private ImpressionsManagerImpl(SplitClientConfig config,
                                    ImpressionsSender impressionsSender,
-                                   List<ImpressionListener> listeners,
                                    TelemetryRuntimeProducer telemetryRuntimeProducer,
                                    ImpressionsStorageConsumer impressionsStorageConsumer,
                                    ImpressionsStorageProducer impressionsStorageProducer,
-                                   UniqueKeysTracker uniqueKeysTracker,
                                    ProcessImpressionStrategy processImpressionStrategy,
                                    ImpressionCounter impressionCounter,
                                    ImpressionListener impressionListener) throws URISyntaxException {
@@ -98,7 +83,6 @@ public class ImpressionsManagerImpl implements ImpressionsManager, Closeable {
         _telemetryRuntimeProducer = checkNotNull(telemetryRuntimeProducer);
         _processImpressionStrategy = checkNotNull(processImpressionStrategy);
         _impressionsSender = impressionsSender;
-        _uniqueKeysTracker = uniqueKeysTracker;
         _counter = impressionCounter;
 
         _scheduler = buildExecutor();

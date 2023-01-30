@@ -76,7 +76,7 @@ public class HttpImpressionsSender implements ImpressionsSender {
 
             if (status < HttpStatus.SC_OK || status >= HttpStatus.SC_MULTIPLE_CHOICES) {
                 _telemetryRuntimeProducer.recordSyncError(ResourceEnum.IMPRESSION_SYNC, status);
-                _logger.warn("Response status was: " + status);
+                _logger.warn(String.format("Response status was: %s. Reason: %s", status , response.getReasonPhrase()));
             }
             _telemetryRuntimeProducer.recordSuccessfulSync(LastSynchronizationRecordsEnum.IMPRESSIONS, System.currentTimeMillis());
 
@@ -103,7 +103,7 @@ public class HttpImpressionsSender implements ImpressionsSender {
             int status = response.getCode();
             if (status < HttpStatus.SC_OK || status >= HttpStatus.SC_MULTIPLE_CHOICES) {
                 _telemetryRuntimeProducer.recordSyncError(ResourceEnum.IMPRESSION_COUNT_SYNC, status);
-                _logger.warn("Response status was: " + status);
+                _logger.warn(String.format("Response status was: %s. Reason: %s", status , response.getReasonPhrase()));
             }
             _telemetryRuntimeProducer.recordSyncLatency(HTTPLatenciesEnum.IMPRESSIONS_COUNT, System.currentTimeMillis() - initTime);
             _telemetryRuntimeProducer.recordSuccessfulSync(LastSynchronizationRecordsEnum.IMPRESSIONS_COUNT, System.currentTimeMillis());

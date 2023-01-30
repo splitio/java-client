@@ -6,6 +6,7 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonPrimitive;
 import com.google.gson.JsonSerializationContext;
 import com.google.gson.JsonSerializer;
+import com.google.gson.stream.JsonReader;
 
 import java.lang.reflect.Type;
 import java.util.Arrays;
@@ -38,4 +39,7 @@ public class Json {
         return _json.fromJson(json, clz);
     }
 
+    public static <T> T fromJson(JsonReader json, Class<T> clz) {
+        return _json.fromJson(json, clz);
+    }
 }

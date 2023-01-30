@@ -5,7 +5,6 @@ import io.split.client.dtos.SegmentChange;
 import io.split.client.utils.Json;
 import io.split.client.utils.Utils;
 import io.split.engine.common.FetchOptions;
-import io.split.engine.metrics.Metrics;
 import io.split.engine.segments.SegmentChangeFetcher;
 import io.split.telemetry.domain.enums.HTTPLatenciesEnum;
 import io.split.telemetry.domain.enums.LastSynchronizationRecordsEnum;
@@ -86,31 +85,34 @@ public final class HttpSegmentChangeFetcher implements SegmentChangeFetcher {
             }
 
             response = _client.execute(request);
+
             options.handleResponseHeaders(Arrays.stream(response.getHeaders())
                     .collect(Collectors.toMap(Header::getName, Header::getValue)));
 
             int statusCode = response.getCode();
 
+            if (_log.isDebugEnabled()) {
+                _log.debug(String.format("[%s] %s. Status code: %s", request.getMethod(), uri.toURL(), statusCode));
+            }
+
             if (statusCode < HttpStatus.SC_OK || statusCode >= HttpStatus.SC_MULTIPLE_CHOICES) {
                 _telemetryRuntimeProducer.recordSyncError(ResourceEnum.SEGMENT_SYNC, statusCode);
-                _log.error("Response status was: " + statusCode);
+                _log.error(String.format("Response status was: %s. Reason: %s", statusCode , response.getReasonPhrase()));
                 if (statusCode == HttpStatus.SC_FORBIDDEN) {
                     _log.error("factory instantiation: you passed a browser type api_key, " +
                             "please grab an api key from the Split console that is of type sdk");
                 }
-                throw new IllegalStateException("Could not retrieve segment changes for " + segmentName + "; http return code " + statusCode);
+                throw new IllegalStateException(String.format("Could not retrieve segment changes for %s, since %s; http return code %s", segmentName, since, statusCode));
             }
 
             _telemetryRuntimeProducer.recordSuccessfulSync(LastSynchronizationRecordsEnum.SEGMENTS, System.currentTimeMillis());
 
             String json = EntityUtils.toString(response.getEntity(), StandardCharsets.UTF_8);
-            if (_log.isDebugEnabled()) {
-                _log.debug("Received json: " + json);
-            }
 
             return Json.fromJson(json, SegmentChange.class);
-        } catch (Throwable t) {
-            throw new IllegalStateException("Problem fetching segmentChanges: " + t.getMessage(), t);
+        } catch (Exception e) {
+            throw new IllegalStateException(String.format("Error occurred when trying to sync segment: %s, since: %s. Details: %s",
+                    segmentName, since, e), e);
         } finally {
             _telemetryRuntimeProducer.recordSyncLatency(HTTPLatenciesEnum.SEGMENTS, System.currentTimeMillis()-start);
             Utils.forceClose(response);
