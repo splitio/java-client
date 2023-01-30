@@ -38,7 +38,11 @@ public class SplitFactoryBuilder {
      */
     public static synchronized SplitFactory build(String apiToken, SplitClientConfig config) throws IOException, URISyntaxException {
         ApiKeyValidator.validate(apiToken);
+        String splitFile = config.splitFile();
         if (LocalhostSplitFactory.LOCALHOST.equals(apiToken)) {
+            if (splitFile != null && splitFile.toLowerCase().endsWith(".json")){
+                return new SplitFactoryImpl(config);
+            }
             return LocalhostSplitFactory.createLocalhostSplitFactory(config);
         }
         if (StorageMode.PLUGGABLE.equals(config.storageMode()) || StorageMode.REDIS.equals(config.storageMode())){
