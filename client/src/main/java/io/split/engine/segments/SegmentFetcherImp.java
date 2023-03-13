@@ -2,7 +2,6 @@ package io.split.engine.segments;
 
 import com.google.common.annotations.VisibleForTesting;
 import io.split.client.dtos.SegmentChange;
-import io.split.engine.SDKReadinessGates;
 import io.split.storages.SegmentCacheProducer;
 import io.split.telemetry.domain.enums.LastSynchronizationRecordsEnum;
 import io.split.telemetry.storage.TelemetryRuntimeProducer;
@@ -21,16 +20,14 @@ public class SegmentFetcherImp implements SegmentFetcher {
     private final String _segmentName;
     private final SegmentChangeFetcher _segmentChangeFetcher;
     private final SegmentCacheProducer _segmentCacheProducer;
-    private final SDKReadinessGates _gates;
     private final TelemetryRuntimeProducer _telemetryRuntimeProducer;
 
     private final Object _lock = new Object();
 
-    public SegmentFetcherImp(String segmentName, SegmentChangeFetcher segmentChangeFetcher, SDKReadinessGates gates, SegmentCacheProducer segmentCacheProducer, TelemetryRuntimeProducer telemetryRuntimeProducer) {
+    public SegmentFetcherImp(String segmentName, SegmentChangeFetcher segmentChangeFetcher, SegmentCacheProducer segmentCacheProducer, TelemetryRuntimeProducer telemetryRuntimeProducer) {
         _segmentName = checkNotNull(segmentName);
         _segmentChangeFetcher = checkNotNull(segmentChangeFetcher);
         _segmentCacheProducer = checkNotNull(segmentCacheProducer);
-        _gates = checkNotNull(gates);
         _telemetryRuntimeProducer = checkNotNull(telemetryRuntimeProducer);
 
         _segmentCacheProducer.updateSegment(segmentName, new ArrayList<>(), new ArrayList<>(), -1L);
@@ -40,15 +37,18 @@ public class SegmentFetcherImp implements SegmentFetcher {
     public void fetch(FetchOptions opts){
         try {
             fetchUntil(opts);
-        } catch (Throwable t) {
-            _log.error("RefreshableSegmentFetcher failed: " + t.getMessage());
+        } catch (Exception e){
+            _log.error("RefreshableSegmentFetcher failed: " + e.getMessage());
             if (_log.isDebugEnabled()) {
-                _log.debug("Reason:", t);
+                _log.debug("Reason:", e);
             }
         }
     }
 
     private void runWithoutExceptionHandling(FetchOptions options) {
+        if (_log.isDebugEnabled()) {
+            _log.debug(String.format("Synchronizing segment %s", _segmentName));
+        }
         SegmentChange change = _segmentChangeFetcher.fetch(_segmentName, _segmentCacheProducer.getChangeNumber(_segmentName), options);
 
         if (change == null) {
@@ -146,10 +146,10 @@ public class SegmentFetcherImp implements SegmentFetcher {
             fetchUntil(opts);
             return true;
 
-        } catch (Throwable t) {
-            _log.error("RefreshableSegmentFetcher failed: " + t.getMessage());
+        }  catch (Exception e){
+            _log.error("RefreshableSegmentFetcher failed: " + e.getMessage());
             if (_log.isDebugEnabled()) {
-                _log.debug("Reason:", t);
+                _log.debug("Reason:", e);
             }
             return false;
         }

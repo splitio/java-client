@@ -5,10 +5,6 @@ import io.split.client.dtos.SplitChange;
 import io.split.client.dtos.Status;
 import io.split.storages.SplitCacheConsumer;
 import io.split.storages.SplitCacheProducer;
-import io.split.engine.SDKReadinessGates;
-import io.split.engine.matchers.AttributeMatcher;
-import io.split.engine.matchers.UserDefinedSegmentMatcher;
-import io.split.telemetry.domain.enums.HTTPLatenciesEnum;
 import io.split.telemetry.domain.enums.LastSynchronizationRecordsEnum;
 import io.split.telemetry.storage.TelemetryRuntimeProducer;
 import io.split.engine.common.FetchOptions;
@@ -19,8 +15,6 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
@@ -84,8 +78,11 @@ public class SplitFetcherImp implements SplitFetcher {
             _log.warn("Interrupting split fetcher task");
             Thread.currentThread().interrupt();
             return new FetchResult(false, new HashSet<>());
-        } catch (Throwable t) {
-            _log.error("RefreshableSplitFetcher failed: " + t.getMessage());
+        } catch (Exception e) {
+            _log.error("RefreshableSplitFetcher failed: " + e.getMessage());
+            if (_log.isDebugEnabled()) {
+                _log.debug("Reason:", e);
+            }
             return new FetchResult(false, new HashSet<>());
         }
     }
@@ -141,7 +138,7 @@ public class SplitFetcherImp implements SplitFetcher {
 
                 ParsedSplit parsedSplit = _parser.parse(split);
                 if (parsedSplit == null) {
-                    _log.info("We could not parse the experiment definition for: " + split.name + " so we are removing it completely to be careful");
+                    _log.info(String.format("We could not parse the experiment definition for: %s so we are removing it completely to be careful", split.name));
 
                     _splitCacheProducer.remove(split.name);
                     _log.debug("Deleted feature: " + split.name);

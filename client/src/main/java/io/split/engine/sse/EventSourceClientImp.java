@@ -80,6 +80,7 @@ public class EventSourceClientImp implements EventSourceClient {
 
     @Override
     public void stop() {
+        _log.info("Stopping EventSourceClientImp");
         if (!_sseClient.isOpen()) {
             _log.info("Event Source Client is closed.");
             return;
@@ -118,7 +119,7 @@ public class EventSourceClientImp implements EventSourceClient {
         } catch (EventParsingException ex) {
             _log.debug(String.format("Error parsing the event: %s. Payload: %s", ex.getMessage(), ex.getPayload()));
         } catch (Exception e) {
-            _log.debug(String.format("Error onMessage: %s", e.getMessage()));
+            _log.debug(String.format("Error parsing the event id: %s. OnMessage: %s", event.id(), e.getMessage()), e);
         }
     }
 }

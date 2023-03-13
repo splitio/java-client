@@ -37,21 +37,18 @@ public class SegmentSynchronizationTaskImp implements SegmentSynchronizationTask
     private final Object _lock = new Object();
     private final ConcurrentMap<String, SegmentFetcher> _segmentFetchers = Maps.newConcurrentMap();
     private final SegmentCacheProducer _segmentCacheProducer;
-    private final SDKReadinessGates _gates;
     private final ScheduledExecutorService _scheduledExecutorService;
     private final TelemetryRuntimeProducer _telemetryRuntimeProducer;
     private final SplitCacheConsumer _splitCacheConsumer;
 
     private ScheduledFuture<?> _scheduledFuture;
 
-    public SegmentSynchronizationTaskImp(SegmentChangeFetcher segmentChangeFetcher, long refreshEveryNSeconds, int numThreads, SDKReadinessGates gates, SegmentCacheProducer segmentCacheProducer,
+    public SegmentSynchronizationTaskImp(SegmentChangeFetcher segmentChangeFetcher, long refreshEveryNSeconds, int numThreads, SegmentCacheProducer segmentCacheProducer,
                                          TelemetryRuntimeProducer telemetryRuntimeProducer, SplitCacheConsumer splitCacheConsumer) {
         _segmentChangeFetcher = checkNotNull(segmentChangeFetcher);
 
         checkArgument(refreshEveryNSeconds >= 0L);
         _refreshEveryNSeconds = new AtomicLong(refreshEveryNSeconds);
-
-        _gates = checkNotNull(gates);
 
         ThreadFactory threadFactory = new ThreadFactoryBuilder()
                 .setDaemon(true)
@@ -67,12 +64,6 @@ public class SegmentSynchronizationTaskImp implements SegmentSynchronizationTask
         _splitCacheConsumer = checkNotNull(splitCacheConsumer);
     }
 
-    @Override
-    public void run() {
-        this.fetchAll(false);
-    }
-
-    @Override
     public void initializeSegment(String segmentName) {
         SegmentFetcher segment = _segmentFetchers.get(segmentName);
         if (segment != null) {
@@ -88,7 +79,7 @@ public class SegmentSynchronizationTaskImp implements SegmentSynchronizationTask
                 return;
             }
 
-            SegmentFetcher newSegment = new SegmentFetcherImp(segmentName, _segmentChangeFetcher, _gates, _segmentCacheProducer, _telemetryRuntimeProducer);
+            SegmentFetcher newSegment = new SegmentFetcherImp(segmentName, _segmentChangeFetcher, _segmentCacheProducer, _telemetryRuntimeProducer);
 
             if (_running.get()) {
                 _scheduledExecutorService.submit(() -> newSegment.fetch(new FetchOptions.Builder().build()));
@@ -98,7 +89,6 @@ public class SegmentSynchronizationTaskImp implements SegmentSynchronizationTask
         }
     }
 
-    @Override
     public SegmentFetcher getFetcher(String segmentName) {
         initializeSegment(segmentName);
 
@@ -106,14 +96,16 @@ public class SegmentSynchronizationTaskImp implements SegmentSynchronizationTask
     }
 
     @Override
-    public void startPeriodicFetching() {
+    public void start() {
         if (_running.getAndSet(true) ) {
             _log.debug("Segments PeriodicFetching is running...");
             return;
         }
 
         _log.debug("Starting PeriodicFetching Segments ...");
-        _scheduledFuture = _scheduledExecutorService.scheduleWithFixedDelay(this, 0L, _refreshEveryNSeconds.get(), TimeUnit.SECONDS);
+        _scheduledFuture = _scheduledExecutorService.scheduleWithFixedDelay(() -> {
+                fetchAll(false);
+            }, 0L, _refreshEveryNSeconds.get(), TimeUnit.SECONDS);
     }
 
     @Override
@@ -147,6 +139,10 @@ public class SegmentSynchronizationTaskImp implements SegmentSynchronizationTask
     }
 
     @Override
+    public boolean isRunning() {
+        return _running.get();
+    }
+
     public void fetchAll(boolean addCacheHeader) {
         _splitCacheConsumer.getSegments().forEach(this::initialize);
         for (Map.Entry<String, SegmentFetcher> entry : _segmentFetchers.entrySet()) {
@@ -165,7 +161,6 @@ public class SegmentSynchronizationTaskImp implements SegmentSynchronizationTask
         }
     }
 
-    @Override
     public boolean fetchAllSynchronous() {
         _splitCacheConsumer.getSegments().forEach(this::initialize);
         List<Future<Boolean>> segmentFetchExecutions = _segmentFetchers.entrySet()
@@ -200,7 +195,7 @@ public class SegmentSynchronizationTaskImp implements SegmentSynchronizationTask
                 return;
             }
 
-            segment = new SegmentFetcherImp(segmentName, _segmentChangeFetcher, _gates, _segmentCacheProducer, _telemetryRuntimeProducer);
+            segment = new SegmentFetcherImp(segmentName, _segmentChangeFetcher, _segmentCacheProducer, _telemetryRuntimeProducer);
 
             _segmentFetchers.putIfAbsent(segmentName, segment);
         }
