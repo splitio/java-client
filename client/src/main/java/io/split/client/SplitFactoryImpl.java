@@ -430,18 +430,25 @@ public class SplitFactoryImpl implements SplitFactory {
             return;
         }
         try {
-            long splitCount = _splitCache.getAll().stream().count();
-            long segmentCount = _segmentCache.getSegmentCount();
-            long segmentKeyCount = _segmentCache.getKeyCount();
-            _log.info("Shutdown called for split");
-            _syncManager.shutdown(splitCount, segmentCount, segmentKeyCount);
-            _log.info("Successful shutdown of syncManager");
+            long splitCount = 0;
+            long segmentCount = 0;
+            long segmentKeyCount = 0;
             if(OperationMode.STANDALONE.equals(_operationMode)) {
+                splitCount = _splitCache.getAll().stream().count();
+                segmentCount = _segmentCache.getSegmentCount();
+                segmentKeyCount = _segmentCache.getKeyCount();
+                _log.info("Shutdown called for split");
+                _syncManager.shutdown(splitCount, segmentCount, segmentKeyCount);
+                _log.info("Successful shutdown of syncManager");
                 _telemetryStorageProducer.recordSessionLength(System.currentTimeMillis() - _startTime);
                 }
             else if(OperationMode.CONSUMER.equals(_operationMode)) {
+                _log.info("Shutdown called for split");
+                _syncManager.shutdown(splitCount, segmentCount, segmentKeyCount);
+                _log.info("Successful shutdown of syncManager");
                 _userStorageWrapper.disconnect();
             }
+
         } catch (IOException e) {
             _log.error("We could not shutdown split", e);
         }
