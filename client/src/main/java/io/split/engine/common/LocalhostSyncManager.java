@@ -30,7 +30,7 @@ public class LocalhostSyncManager implements SyncManager {
     }
 
     @Override
-    public void shutdown(long splitCount, long segmentCount, long segmentKeyCount) throws IOException {
+    public void shutdown() throws IOException {
         _localhostSynchronizer.stopPeriodicFetching();
     }
 }

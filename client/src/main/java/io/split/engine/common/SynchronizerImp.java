@@ -290,7 +290,7 @@ public class SynchronizerImp implements Synchronizer {
     }
 
     @Override
-    public void stopPeriodicDataRecording(long splitCount, long segmentCount, long segmentKeyCount) {
+    public void stopPeriodicDataRecording() {
         _impressionManager.close();
         _log.info("Successful shutdown of impressions manager");
         if (_uniqueKeysTracker != null){
@@ -299,7 +299,7 @@ public class SynchronizerImp implements Synchronizer {
         }
         _eventsTask.close();
         _log.info("Successful shutdown of eventsTask");
-        _telemetrySyncTask.stopScheduledTask(splitCount, segmentCount, segmentKeyCount);
+        _telemetrySyncTask.stopScheduledTask();
         _log.info("Successful shutdown of telemetry sync task");
     }
 

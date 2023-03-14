@@ -15,7 +15,7 @@ public class ConsumerSyncManager implements SyncManager {
     }
 
     @Override
-    public void shutdown(long splitCount, long segmentCount, long segmentKeyCount) throws IOException {
-        _redisSynchronizer.stopPeriodicDataRecording(splitCount, segmentCount, segmentKeyCount);
+    public void shutdown() throws IOException {
+        _redisSynchronizer.stopPeriodicDataRecording();
     }
 }

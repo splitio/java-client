@@ -8,5 +8,5 @@ public interface Synchronizer {
     void localKillSplit(String splitName, String defaultTreatment, long newChangeNumber);
     void refreshSegment(String segmentName, Long targetChangeNumber);
     void startPeriodicDataRecording();
-    void stopPeriodicDataRecording(long splitCount, long segmentCount, long segmentKeyCount);
+    void stopPeriodicDataRecording();
 }

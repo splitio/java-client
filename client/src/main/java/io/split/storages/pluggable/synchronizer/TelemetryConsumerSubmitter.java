@@ -56,7 +56,7 @@ public class TelemetryConsumerSubmitter implements TelemetrySynchronizer {
     }
 
     @Override
-    public void finalSynchronization(long splitCount, long segmentCount, long segmentKeyCount) {
+    public void finalSynchronization() {
         //No-Op
     }
 
