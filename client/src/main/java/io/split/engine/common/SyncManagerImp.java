@@ -153,7 +153,7 @@ public class SyncManagerImp implements SyncManager {
     }
 
     @Override
-    public void shutdown(long splitCount, long segmentCount, long segmentKeyCount) throws IOException {
+    public void shutdown() throws IOException {
         _log.info("Shutting down SyncManagerImp");
         if(_shuttedDown.get()) {
             return;
@@ -167,7 +167,7 @@ public class SyncManagerImp implements SyncManager {
         _log.info("Successful shutdown of segment fetchers");
         _splitSynchronizationTask.close();
         _log.info("Successful shutdown of splits");
-        _synchronizer.stopPeriodicDataRecording(splitCount, segmentCount, segmentKeyCount);
+        _synchronizer.stopPeriodicDataRecording();
         _splitAPI.close();
     }
 

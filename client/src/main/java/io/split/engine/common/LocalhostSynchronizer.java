@@ -82,7 +82,7 @@ public class LocalhostSynchronizer implements Synchronizer{
     }
 
     @Override
-    public void stopPeriodicDataRecording(long splitCount, long segmentCount, long segmentKeyCount) {
+    public void stopPeriodicDataRecording() {
         //No-Op
     }
 }

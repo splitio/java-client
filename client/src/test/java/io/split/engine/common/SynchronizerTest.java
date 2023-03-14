@@ -7,7 +7,6 @@ import io.split.engine.segments.SegmentChangeFetcher;
 import io.split.engine.segments.SegmentSynchronizationTaskImp;
 import io.split.storages.*;
 import io.split.storages.memory.InMemoryCacheImp;
-import io.split.engine.SDKReadinessGates;
 import io.split.engine.experiments.FetchResult;
 import io.split.engine.experiments.SplitFetcherImp;
 import io.split.engine.experiments.SplitSynchronizationTask;
@@ -39,7 +38,6 @@ public class SynchronizerTest {
     private SplitCacheProducer _splitCacheProducer;
     private Synchronizer _synchronizer;
     private SegmentCacheProducer _segmentCacheProducer;
-    private SDKReadinessGates _gates;
     private SplitTasks _splitTasks;
     private TelemetrySyncTask _telemetrySyncTask;
     private ImpressionsManager _impressionsManager;
@@ -312,11 +310,11 @@ public class SynchronizerTest {
         Mockito.verify(_uniqueKeysTracker, Mockito.times(1)).start();
         Mockito.verify(_telemetrySyncTask, Mockito.times(1)).startScheduledTask();
 
-        imp.stopPeriodicDataRecording(3L,1L,1L);
+        imp.stopPeriodicDataRecording();
 
         Mockito.verify(_eventsTask, Mockito.times(1)).close();
         Mockito.verify(_impressionsManager, Mockito.times(1)).close();
         Mockito.verify(_uniqueKeysTracker, Mockito.times(1)).stop();
-        Mockito.verify(_telemetrySyncTask, Mockito.times(1)).stopScheduledTask(3L,1L,1L);
+        Mockito.verify(_telemetrySyncTask, Mockito.times(1)).stopScheduledTask();
     }
 }
