@@ -100,12 +100,6 @@ public class SplitFetcherImp implements SplitFetcher {
             throw new IllegalStateException("SplitChange was null");
         }
 
-        //todo remove it
-        if (change.till == _splitCacheProducer.getChangeNumber()) {
-            // no change.
-            return segments;
-        }
-
         if (change.since != _splitCacheProducer.getChangeNumber() || change.till < _splitCacheProducer.getChangeNumber()) {
             // some other thread may have updated the shared state. exit
             return segments;

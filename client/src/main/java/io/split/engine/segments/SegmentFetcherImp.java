@@ -55,11 +55,6 @@ public class SegmentFetcherImp implements SegmentFetcher {
             throw new IllegalStateException("SegmentChange was null");
         }
 
-        if (change.till == _segmentCacheProducer.getChangeNumber(_segmentName)) {
-            // no change.
-            return;
-        }
-
         if (change.since != _segmentCacheProducer.getChangeNumber(_segmentName)
                 || change.since < _segmentCacheProducer.getChangeNumber(_segmentName)) {
             // some other thread may have updated the shared state. exit

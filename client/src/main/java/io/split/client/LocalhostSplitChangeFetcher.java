@@ -15,6 +15,7 @@ import java.io.FileReader;
 import java.io.UnsupportedEncodingException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.util.Arrays;
 
 public class LocalhostSplitChangeFetcher implements SplitChangeFetcher {
 
@@ -22,7 +23,7 @@ public class LocalhostSplitChangeFetcher implements SplitChangeFetcher {
     private final File _file;
     private byte [] lastHash;
 
-    public LocalhostSplitChangeFetcher(String filePath){
+    public LocalhostSplitChangeFetcher(String filePath) {
         _file = new File(filePath);
         lastHash = new byte[0];
     }
@@ -58,11 +59,11 @@ public class LocalhostSplitChangeFetcher implements SplitChangeFetcher {
         String splitJson = splitChange.splits.toString();
         MessageDigest digest = MessageDigest.getInstance("SHA-1");
         digest.reset();
-        digest.update(splitJson.getBytes("utf8"));
+        digest.update(splitJson.getBytes());
         byte [] currHash = digest.digest();
-        if (lastHash.equals(currHash) || splitChangeToProcess.till == -1) {
+        if (Arrays.equals(lastHash, currHash) || splitChangeToProcess.till == -1) {
+            lastHash = currHash;
             splitChangeToProcess.till = changeNumber;
-            //splitChangeToProcess.since = changeNumber;
             return splitChangeToProcess;
         }
         lastHash = currHash;
