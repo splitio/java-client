@@ -1,6 +1,5 @@
 package io.split.client;
 
-import com.google.gson.JsonParser;
 import com.google.gson.stream.JsonReader;
 import io.split.client.dtos.SegmentChange;
 import io.split.client.utils.Json;
@@ -48,7 +47,10 @@ public class LocalhostSegmentChangeFetcher implements SegmentChangeFetcher {
 
     private SegmentChange processSegmentChange(String segmentName, long changeNumber, SegmentChange segmentChange) throws NoSuchAlgorithmException {
         SegmentChange segmentChangeToProcess = LocalhostSanitizer.sanitization(segmentChange);
-        if (segmentChangeToProcess.till < changeNumber && segmentChange.till != -1){
+        if (segmentChangeToProcess == null){
+            return null;
+        }
+        if (segmentChangeToProcess.till < changeNumber && segmentChangeToProcess.till != -1){
             _log.warn("The segmentChange till is lower than the change number or different to -1");
             return null;
         }
@@ -59,10 +61,7 @@ public class LocalhostSegmentChangeFetcher implements SegmentChangeFetcher {
         byte [] currHash = digest.digest();
         if ((lastHash.containsKey(segmentName) && Arrays.equals((byte[]) lastHash.get(segmentName), currHash)) ||
             segmentChangeToProcess.till == -1) {
-            lastHash.put(segmentName, currHash);
-            segmentChangeToProcess.since = changeNumber;
             segmentChangeToProcess.till = changeNumber;
-            return segmentChangeToProcess;
         }
         lastHash.put(segmentName, currHash);
         segmentChangeToProcess.since = changeNumber;
