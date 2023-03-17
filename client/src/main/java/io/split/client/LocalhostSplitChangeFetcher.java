@@ -35,7 +35,6 @@ public class LocalhostSplitChangeFetcher implements SplitChangeFetcher {
             JsonReader jsonReader = new JsonReader(new FileReader(_file));
             SplitChange splitChange = Json.fromJson(jsonReader, SplitChange.class);
             return processSplitChange(splitChange, since);
-            //return LocalhostSanitizer.sanitization(splitChange);
         } catch (FileNotFoundException f){
             _log.warn(String.format("There was no file named %s found. " +
                             "We created a split client that returns default treatments for all features for all of your users. " +
@@ -63,11 +62,12 @@ public class LocalhostSplitChangeFetcher implements SplitChangeFetcher {
         byte [] currHash = digest.digest();
         if (Arrays.equals(lastHash, currHash) || splitChangeToProcess.till == -1) {
             lastHash = currHash;
+            splitChangeToProcess.since = changeNumber;
             splitChangeToProcess.till = changeNumber;
             return splitChangeToProcess;
         }
         lastHash = currHash;
-        //splitChangeToProcess.since = splitChangeToProcess.till;
+        splitChangeToProcess.since = changeNumber;
         return splitChangeToProcess;
     }
 }

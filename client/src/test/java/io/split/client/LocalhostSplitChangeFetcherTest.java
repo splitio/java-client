@@ -136,7 +136,7 @@ public class LocalhostSplitChangeFetcherTest {
         splitChange = localhostSplitChangeFetcher.fetch(2323, fetchOptions);
         Assert.assertEquals(1, splitChange.splits.size());
         Assert.assertEquals(2323, splitChange.till);
-        Assert.assertEquals(-1, splitChange.since);
+        Assert.assertEquals(2323, splitChange.since);
 
         test = TEST_5.getBytes();
         com.google.common.io.Files.write(test, file);
@@ -145,6 +145,6 @@ public class LocalhostSplitChangeFetcherTest {
         splitChange = localhostSplitChangeFetcher.fetch(2323, fetchOptions);
         Assert.assertEquals(2, splitChange.splits.size());
         Assert.assertEquals(2323, splitChange.till);
-        Assert.assertEquals(-1, splitChange.since);
+        Assert.assertEquals(2323, splitChange.since);
     }
 }
