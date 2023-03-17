@@ -50,6 +50,7 @@ public class LocalhostSegmentChangeFetcher implements SegmentChangeFetcher {
         if (segmentChangeToProcess == null){
             return null;
         }
+        // if the till is less than storage CN and different from the default till ignore the change
         if (segmentChangeToProcess.till < changeNumber && segmentChangeToProcess.till != -1){
             _log.warn("The segmentChange till is lower than the change number or different to -1");
             return null;
@@ -58,7 +59,9 @@ public class LocalhostSegmentChangeFetcher implements SegmentChangeFetcher {
         MessageDigest digest = MessageDigest.getInstance("SHA-1");
         digest.reset();
         digest.update(toHash.getBytes());
+        // calculate the json sha
         byte [] currHash = digest.digest();
+        //if sha exist and is equal to before sha, or if till is equal to default till returns the same segmentChange with till equals to storage CN
         if ((lastHash.containsKey(segmentName) && Arrays.equals((byte[]) lastHash.get(segmentName), currHash)) ||
             segmentChangeToProcess.till == -1) {
             segmentChangeToProcess.till = changeNumber;
