@@ -51,6 +51,7 @@ public class LocalhostSplitChangeFetcher implements SplitChangeFetcher {
 
     private SplitChange processSplitChange(SplitChange splitChange, long changeNumber) throws NoSuchAlgorithmException, UnsupportedEncodingException {
         SplitChange splitChangeToProcess = LocalhostSanitizer.sanitization(splitChange);
+        // if the till is less than storage CN and different from the default till ignore the change
         if (splitChangeToProcess.till < changeNumber && splitChangeToProcess.till != -1) {
             _log.warn("The till is lower than the change number or different to -1");
             return null;
@@ -59,7 +60,9 @@ public class LocalhostSplitChangeFetcher implements SplitChangeFetcher {
         MessageDigest digest = MessageDigest.getInstance("SHA-1");
         digest.reset();
         digest.update(splitJson.getBytes());
+        // calculate the json sha
         byte [] currHash = digest.digest();
+        //if sha exist and is equal to before sha, or if till is equal to default till returns the same segmentChange with till equals to storage CN
         if (Arrays.equals(lastHash, currHash) || splitChangeToProcess.till == -1) {
             splitChangeToProcess.till = changeNumber;
         }
