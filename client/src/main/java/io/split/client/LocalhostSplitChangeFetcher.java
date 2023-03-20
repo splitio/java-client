@@ -12,14 +12,20 @@ import org.slf4j.LoggerFactory;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
+import java.io.UnsupportedEncodingException;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
+import java.util.Arrays;
 
 public class LocalhostSplitChangeFetcher implements SplitChangeFetcher {
 
     private static final Logger _log = LoggerFactory.getLogger(LocalhostSplitChangeFetcher.class);
     private final File _file;
+    private byte [] lastHash;
 
-    public LocalhostSplitChangeFetcher(String filePath){
+    public LocalhostSplitChangeFetcher(String filePath) {
         _file = new File(filePath);
+        lastHash = new byte[0];
     }
 
     @Override
@@ -28,7 +34,7 @@ public class LocalhostSplitChangeFetcher implements SplitChangeFetcher {
         try {
             JsonReader jsonReader = new JsonReader(new FileReader(_file));
             SplitChange splitChange = Json.fromJson(jsonReader, SplitChange.class);
-            return LocalhostSanitizer.sanitization(splitChange);
+            return processSplitChange(splitChange, since);
         } catch (FileNotFoundException f){
             _log.warn(String.format("There was no file named %s found. " +
                             "We created a split client that returns default treatments for all features for all of your users. " +
@@ -41,5 +47,27 @@ public class LocalhostSplitChangeFetcher implements SplitChangeFetcher {
                     _file.getPath()), e);
             throw new IllegalStateException("Problem fetching splitChanges: " + e.getMessage(), e);
         }
+    }
+
+    private SplitChange processSplitChange(SplitChange splitChange, long changeNumber) throws NoSuchAlgorithmException, UnsupportedEncodingException {
+        SplitChange splitChangeToProcess = LocalhostSanitizer.sanitization(splitChange);
+        // if the till is less than storage CN and different from the default till ignore the change
+        if (splitChangeToProcess.till < changeNumber && splitChangeToProcess.till != -1) {
+            _log.warn("The till is lower than the change number or different to -1");
+            return null;
+        }
+        String splitJson = splitChange.splits.toString();
+        MessageDigest digest = MessageDigest.getInstance("SHA-1");
+        digest.reset();
+        digest.update(splitJson.getBytes());
+        // calculate the json sha
+        byte [] currHash = digest.digest();
+        //if sha exist and is equal to before sha, or if till is equal to default till returns the same segmentChange with till equals to storage CN
+        if (Arrays.equals(lastHash, currHash) || splitChangeToProcess.till == -1) {
+            splitChangeToProcess.till = changeNumber;
+        }
+        lastHash = currHash;
+        splitChangeToProcess.since = changeNumber;
+        return splitChangeToProcess;
     }
 }
