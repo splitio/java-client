@@ -12,14 +12,22 @@ import org.slf4j.LoggerFactory;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Map;
 
 public class LocalhostSegmentChangeFetcher implements SegmentChangeFetcher {
 
     private static final Logger _log = LoggerFactory.getLogger(LocalhostSegmentChangeFetcher.class);
     private final File _file;
 
+    private Map lastHash;
+
     public LocalhostSegmentChangeFetcher(String filePath){
         _file = new File(filePath);
+        lastHash = new HashMap<String, byte []>();
     }
 
     @Override
@@ -27,7 +35,7 @@ public class LocalhostSegmentChangeFetcher implements SegmentChangeFetcher {
         try {
             JsonReader jsonReader = new JsonReader(new FileReader(String.format("%s/%s.json", _file, segmentName)));
             SegmentChange segmentChange = Json.fromJson(jsonReader, SegmentChange.class);
-            return LocalhostSanitizer.sanitization(segmentChange);
+            return processSegmentChange(segmentName, changesSinceThisChangeNumber, segmentChange);
         }  catch (FileNotFoundException f){
             _log.warn(String.format("There was no file named %s/%s found.", _file.getPath(), segmentName), f);
             throw new IllegalStateException(String.format("Problem fetching segment %s: %s", segmentName, f.getMessage()), f);
@@ -35,5 +43,31 @@ public class LocalhostSegmentChangeFetcher implements SegmentChangeFetcher {
             _log.warn(String.format("Problem to fetch segment change for the segment %s in the directory %s.", segmentName, _file.getPath()), e);
             throw new IllegalStateException(String.format("Problem fetching segment %s: %s", segmentName, e.getMessage()), e);
         }
+    }
+
+    private SegmentChange processSegmentChange(String segmentName, long changeNumber, SegmentChange segmentChange) throws NoSuchAlgorithmException {
+        SegmentChange segmentChangeToProcess = LocalhostSanitizer.sanitization(segmentChange);
+        if (segmentChangeToProcess == null){
+            return null;
+        }
+        // if the till is less than storage CN and different from the default till ignore the change
+        if (segmentChangeToProcess.till < changeNumber && segmentChangeToProcess.till != -1){
+            _log.warn("The segmentChange till is lower than the change number or different to -1");
+            return null;
+        }
+        String toHash = segmentChangeToProcess.added.toString() + segmentChangeToProcess.removed.toString();
+        MessageDigest digest = MessageDigest.getInstance("SHA-1");
+        digest.reset();
+        digest.update(toHash.getBytes());
+        // calculate the json sha
+        byte [] currHash = digest.digest();
+        //if sha exist and is equal to before sha, or if till is equal to default till returns the same segmentChange with till equals to storage CN
+        if ((lastHash.containsKey(segmentName) && Arrays.equals((byte[]) lastHash.get(segmentName), currHash)) ||
+            segmentChangeToProcess.till == -1) {
+            segmentChangeToProcess.till = changeNumber;
+        }
+        lastHash.put(segmentName, currHash);
+        segmentChangeToProcess.since = changeNumber;
+        return segmentChangeToProcess;
     }
 }

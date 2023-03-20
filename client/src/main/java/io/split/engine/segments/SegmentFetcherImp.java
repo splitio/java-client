@@ -61,7 +61,6 @@ public class SegmentFetcherImp implements SegmentFetcher {
             return;
         }
 
-
         if (change.added.isEmpty() && change.removed.isEmpty()) {
             // there are no changes. weird!
             _segmentCacheProducer.setChangeNumber(_segmentName,change.till);
