@@ -121,12 +121,13 @@ public class SSEClient {
     private void connectAndLoop(URI uri, CountDownLatch signal) {
         checkNotNull(uri);
         checkNotNull(signal);
-        if (!establishConnection(uri, signal)) {
-            _statusCallback.apply(StatusMessage.NONRETRYABLE_ERROR);
-            return;
-        }
 
         try {
+            if (!establishConnection(uri, signal)) {
+                _statusCallback.apply(StatusMessage.RETRYABLE_ERROR);
+                return;
+            }
+
             final InputStream stream = _ongoingResponse.get().getEntity().getContent();
             final BufferedReader reader = new BufferedReader(new InputStreamReader(stream));
 
@@ -156,7 +157,6 @@ public class SSEClient {
                 }
             }
         } catch (Exception e) { // Any other error non related to the connection disables streaming altogether
-
             _telemetryRuntimeProducer.recordStreamingEvents(new StreamingEvent(StreamEventsEnum.SSE_CONNECTION_ERROR.getType(), StreamEventsEnum.SseConnectionErrorValues.NON_REQUESTED_CONNECTION_ERROR.getValue(), System.currentTimeMillis()));
             _log.warn(e.getMessage(), e);
             _statusCallback.apply(StatusMessage.NONRETRYABLE_ERROR);
@@ -175,16 +175,16 @@ public class SSEClient {
 
     private boolean establishConnection(URI uri, CountDownLatch signal) {
         _ongoingRequest.set(new HttpGet(uri));
-
         try {
             _ongoingResponse.set(_client.execute(_ongoingRequest.get()));
             if (_ongoingResponse.get().getCode() != 200) {
+                _log.error(String.format("Establishing connection, code error: %s. The url is %s", _ongoingResponse.get().getCode(), uri.toURL()));
                 return false;
             }
             _state.set(ConnectionState.OPEN);
             _statusCallback.apply(StatusMessage.CONNECTED);
         } catch (IOException exc) {
-            _log.error(String.format("Error establishConnection: %s", exc));
+            _log.error(String.format("Error establishConnection to %s", uri), exc);
             return false;
         } finally {
             signal.countDown();

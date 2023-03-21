@@ -70,7 +70,7 @@ public class TelemetryConsumerSubmitterTest {
         UniqueKeys uniqueKeysToSend = new UniqueKeys(uniqueKeys);
 
         telemetrySynchronizer.synchronizeUniqueKeys(uniqueKeysToSend);
-        List<String> uniqueKeysJson = new ArrayList<>(Collections.singletonList("[{\"f\":\"feature-1\",\"ks\":[\"key-1\",\"key-2\"]}]"));
+        List<String> uniqueKeysJson = new ArrayList<>(Collections.singletonList("{\"f\":\"feature-1\",\"ks\":[\"key-1\",\"key-2\"]}"));
         Mockito.verify(userStorageWrapper).pushItems(Mockito.eq("SPLITIO.uniquekeys"), Mockito.eq(uniqueKeysJson));
     }
 }

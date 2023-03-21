@@ -1,3 +1,9 @@
+4.7.0 (Jan 30, 2023)
+- Added support to use JSON files in localhost mode.
+- Improved logs to have more information.
+- Made streaming connection retryable in the case goes down.
+- Fixed the logs messages in SplitClientImpl.
+
 4.6.0 (Nov 28, 2022)
 - Added support redis cluster by providing JedisCluster object.
 - Updated Jedis to 4.3.0 to support tls.

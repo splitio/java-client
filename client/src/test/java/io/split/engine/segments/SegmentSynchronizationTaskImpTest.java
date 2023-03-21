@@ -1,10 +1,21 @@
 package io.split.engine.segments;
 
 import com.google.common.collect.Maps;
-import io.split.engine.SDKReadinessGates;
+import io.split.client.LocalhostSegmentChangeFetcher;
+import io.split.client.LocalhostSplitChangeFetcher;
+import io.split.engine.common.FetchOptions;
+import io.split.engine.experiments.SplitChangeFetcher;
+import io.split.engine.experiments.SplitFetcher;
+import io.split.engine.experiments.SplitFetcherImp;
+import io.split.engine.experiments.SplitParser;
+import io.split.engine.experiments.SplitSynchronizationTask;
 import io.split.storages.SegmentCacheProducer;
+import io.split.storages.SplitCache;
 import io.split.storages.SplitCacheConsumer;
+import io.split.storages.memory.InMemoryCacheImp;
+import io.split.storages.memory.SegmentCacheInMemoryImpl;
 import io.split.telemetry.storage.InMemoryTelemetryStorage;
+import io.split.telemetry.storage.NoopTelemetryStorage;
 import io.split.telemetry.storage.TelemetryStorage;
 import org.junit.Assert;
 import org.junit.Before;
@@ -33,6 +44,7 @@ import static org.junit.Assert.assertThat;
 public class SegmentSynchronizationTaskImpTest {
     private static final Logger _log = LoggerFactory.getLogger(SegmentSynchronizationTaskImpTest.class);
     private static final TelemetryStorage TELEMETRY_STORAGE = Mockito.mock(InMemoryTelemetryStorage.class);
+    private static final TelemetryStorage TELEMETRY_STORAGE_NOOP = Mockito.mock(NoopTelemetryStorage.class);
 
     private AtomicReference<SegmentFetcher> fetcher1 = null;
     private AtomicReference<SegmentFetcher> fetcher2 = null;
@@ -45,11 +57,10 @@ public class SegmentSynchronizationTaskImpTest {
 
     @Test
     public void works() {
-        SDKReadinessGates gates = new SDKReadinessGates();
         SegmentCacheProducer segmentCacheProducer = Mockito.mock(SegmentCacheProducer.class);
 
         SegmentChangeFetcher segmentChangeFetcher = Mockito.mock(SegmentChangeFetcher.class);
-        final SegmentSynchronizationTaskImp fetchers = new SegmentSynchronizationTaskImp(segmentChangeFetcher, 1L, 1, gates, segmentCacheProducer,
+        final SegmentSynchronizationTaskImp fetchers = new SegmentSynchronizationTaskImp(segmentChangeFetcher, 1L, 1, segmentCacheProducer,
                 TELEMETRY_STORAGE, Mockito.mock(SplitCacheConsumer.class));
 
 
@@ -88,7 +99,6 @@ public class SegmentSynchronizationTaskImpTest {
 
     @Test
     public void testFetchAllAsynchronousAndGetFalse() throws NoSuchFieldException, IllegalAccessException {
-        SDKReadinessGates gates = new SDKReadinessGates();
         SegmentCacheProducer segmentCacheProducer = Mockito.mock(SegmentCacheProducer.class);
         ConcurrentMap<String, SegmentFetcher> _segmentFetchers = Maps.newConcurrentMap();
 
@@ -96,7 +106,7 @@ public class SegmentSynchronizationTaskImpTest {
         SegmentFetcherImp segmentFetcher = Mockito.mock(SegmentFetcherImp.class);
         _segmentFetchers.put("SF", segmentFetcher);
         final SegmentSynchronizationTaskImp fetchers = new SegmentSynchronizationTaskImp(segmentChangeFetcher, 1L, 1,
-                gates, segmentCacheProducer, TELEMETRY_STORAGE, Mockito.mock(SplitCacheConsumer.class));
+                segmentCacheProducer, TELEMETRY_STORAGE, Mockito.mock(SplitCacheConsumer.class));
         Mockito.doNothing().when(segmentFetcher).fetchUntil(Mockito.anyObject());
         Mockito.when(segmentFetcher.runWhitCacheHeader()).thenReturn(false);
         Mockito.when(segmentFetcher.fetchAndUpdate(Mockito.anyObject())).thenReturn(false);
@@ -116,13 +126,12 @@ public class SegmentSynchronizationTaskImpTest {
 
     @Test
     public void testFetchAllAsynchronousAndGetTrue() throws NoSuchFieldException, IllegalAccessException {
-        SDKReadinessGates gates = new SDKReadinessGates();
         SegmentCacheProducer segmentCacheProducer = Mockito.mock(SegmentCacheProducer.class);
 
         ConcurrentMap<String, SegmentFetcher> _segmentFetchers = Maps.newConcurrentMap();
         SegmentChangeFetcher segmentChangeFetcher = Mockito.mock(SegmentChangeFetcher.class);
         SegmentFetcherImp segmentFetcher = Mockito.mock(SegmentFetcherImp.class);
-        final SegmentSynchronizationTaskImp fetchers = new SegmentSynchronizationTaskImp(segmentChangeFetcher, 1L, 1, gates, segmentCacheProducer,
+        final SegmentSynchronizationTaskImp fetchers = new SegmentSynchronizationTaskImp(segmentChangeFetcher, 1L, 1, segmentCacheProducer,
                 TELEMETRY_STORAGE, Mockito.mock(SplitCacheConsumer.class));
 
         // Before executing, we'll update the map of segmentFecthers via reflection.
@@ -137,5 +146,35 @@ public class SegmentSynchronizationTaskImpTest {
         Mockito.when(segmentFetcher.fetchAndUpdate(Mockito.anyObject())).thenReturn(true);
         boolean fetch = fetchers.fetchAllSynchronous();
         Assert.assertEquals(true, fetch);
+    }
+
+    @Test
+    public void testLocalhostSegmentChangeFetcher() throws InterruptedException {
+
+        SplitCache splitCacheProducer = new InMemoryCacheImp();
+        SplitCache splitCacheConsumer = new InMemoryCacheImp();
+
+        SplitChangeFetcher splitChangeFetcher = new LocalhostSplitChangeFetcher("src/test/resources/split_init.json");
+        SplitParser splitParser = new SplitParser();
+        FetchOptions fetchOptions = new FetchOptions.Builder().build();
+        SplitFetcher splitFetcher = new SplitFetcherImp(splitChangeFetcher, splitParser, splitCacheConsumer, splitCacheProducer, TELEMETRY_STORAGE_NOOP);
+
+        SplitSynchronizationTask splitSynchronizationTask = new SplitSynchronizationTask(splitFetcher, splitCacheProducer, 1000);
+
+        splitSynchronizationTask.start();
+
+        Thread.sleep(2000);
+
+        SegmentChangeFetcher segmentChangeFetcher = Mockito.mock(LocalhostSegmentChangeFetcher.class);
+        SegmentCacheProducer segmentCacheProducer = new SegmentCacheInMemoryImpl();
+
+        SegmentSynchronizationTaskImp segmentSynchronizationTaskImp = new SegmentSynchronizationTaskImp(segmentChangeFetcher, 1000, 1, segmentCacheProducer,
+                TELEMETRY_STORAGE_NOOP, splitCacheProducer);
+
+        segmentSynchronizationTaskImp.start();
+
+        Thread.sleep(2000);
+
+        Mockito.verify(segmentChangeFetcher, Mockito.times(1)).fetch("segment_1",-1, fetchOptions);
     }
 }
