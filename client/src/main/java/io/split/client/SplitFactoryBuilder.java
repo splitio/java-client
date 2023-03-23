@@ -40,10 +40,11 @@ public class SplitFactoryBuilder {
         ApiKeyValidator.validate(apiToken);
         String splitFile = config.splitFile();
         if (LocalhostSplitFactory.LOCALHOST.equals(apiToken)) {
-            if (splitFile != null && splitFile.toLowerCase().endsWith(".json")){
+            return new SplitFactoryImpl(config);
+            /*if (splitFile != null && splitFile.toLowerCase().endsWith(".json")){
                 return new SplitFactoryImpl(config);
             }
-            return LocalhostSplitFactory.createLocalhostSplitFactory(config);
+            return LocalhostSplitFactory.createLocalhostSplitFactory(config);*/
         }
         if (StorageMode.PLUGGABLE.equals(config.storageMode()) || StorageMode.REDIS.equals(config.storageMode())){
             return new SplitFactoryImpl(apiToken, config, config.customStorageWrapper());

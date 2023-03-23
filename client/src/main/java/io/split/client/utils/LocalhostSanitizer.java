@@ -81,7 +81,7 @@ public final class LocalhostSanitizer {
                         condition.matcherGroup.matchers.isEmpty() ||
                         !condition.matcherGroup.matchers.get(0).matcherType.equals(MatcherType.ALL_KEYS)) {
                     Condition rolloutCondition = new Condition();
-                    split.conditions.add(createRolloutCondition(rolloutCondition, split.trafficTypeName));
+                    split.conditions.add(createRolloutCondition(rolloutCondition, split.trafficTypeName, null));
                 }
             }
             splitChange.splits.removeAll(splitsToRemove);
@@ -112,7 +112,7 @@ public final class LocalhostSanitizer {
         return segmentChange;
     }
 
-    private static Condition createRolloutCondition(Condition condition, String trafficType) {
+    public static Condition createRolloutCondition(Condition condition, String trafficType, String treatment) {
         condition.conditionType = ConditionType.ROLLOUT;
         condition.matcherGroup = new MatcherGroup();
         condition.matcherGroup.combiner = MatcherCombiner.AND;
@@ -127,17 +127,19 @@ public final class LocalhostSanitizer {
         condition.matcherGroup.matchers = new ArrayList<>();
         condition.matcherGroup.matchers.add(matcher);
 
-        Partition partitionOn = new Partition();
-        partitionOn.treatment = TREATMENT_ON;
-        partitionOn.size = 0;
-        Partition partitionOff = new Partition();
-        partitionOff.treatment = TREATMENT_OFF;
-        partitionOff.size = 100;
-
         condition.partitions = new ArrayList<>();
-        condition.partitions.add(partitionOn);
-        condition.partitions.add(partitionOff);
-
+        Partition partition1 = new Partition();
+        Partition partition2 = new Partition();
+        partition1.size = 100;
+        partition2.size = 0;
+        if (treatment != null) {
+            partition1.treatment = treatment;
+        } else {
+            partition1.treatment = TREATMENT_OFF;
+            partition2.treatment = TREATMENT_ON;
+        }
+        condition.partitions.add(partition1);
+        condition.partitions.add(partition2);
         condition.label = DEFAULT_RULE;
 
         return condition;

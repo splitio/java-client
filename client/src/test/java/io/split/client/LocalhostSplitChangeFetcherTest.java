@@ -24,7 +24,7 @@ public class LocalhostSplitChangeFetcherTest {
     private String TEST_5 = "{\"splits\":[{\"trafficTypeName\":\"user\",\"name\":\"SPLIT_1\",\"trafficAllocation\":100,\"trafficAllocationSeed\":-1780071202,\"seed\":-1442762199,\"status\":\"ACTIVE\",\"killed\":false,\"defaultTreatment\":\"off\",\"changeNumber\":1675443537882,\"algo\":2,\"configurations\":{},\"conditions\":[{\"conditionType\":\"ROLLOUT\",\"matcherGroup\":{\"combiner\":\"AND\",\"matchers\":[{\"keySelector\":{\"trafficType\":\"user\",\"attribute\":null},\"matcherType\":\"ALL_KEYS\",\"negate\":false,\"userDefinedSegmentMatcherData\":null,\"whitelistMatcherData\":null,\"unaryNumericMatcherData\":null,\"betweenMatcherData\":null,\"booleanMatcherData\":null,\"dependencyMatcherData\":null,\"stringMatcherData\":null}]},\"partitions\":[{\"treatment\":\"on\",\"size\":0},{\"treatment\":\"off\",\"size\":100}],\"label\":\"default rule\"}]},{\"trafficTypeName\":\"user\",\"name\":\"SPLIT_2\",\"trafficAllocation\":100,\"trafficAllocationSeed\":-1780071202,\"seed\":-1442762199,\"status\":\"ACTIVE\",\"killed\":false,\"defaultTreatment\":\"off\",\"changeNumber\":1675443537882,\"algo\":2,\"configurations\":{},\"conditions\":[{\"conditionType\":\"ROLLOUT\",\"matcherGroup\":{\"combiner\":\"AND\",\"matchers\":[{\"keySelector\":{\"trafficType\":\"user\",\"attribute\":null},\"matcherType\":\"ALL_KEYS\",\"negate\":false,\"userDefinedSegmentMatcherData\":null,\"whitelistMatcherData\":null,\"unaryNumericMatcherData\":null,\"betweenMatcherData\":null,\"booleanMatcherData\":null,\"dependencyMatcherData\":null,\"stringMatcherData\":null}]},\"partitions\":[{\"treatment\":\"on\",\"size\":0},{\"treatment\":\"off\",\"size\":100}],\"label\":\"default rule\"}]}],\"since\":-1,\"till\":-1}";
     @Test
     public void testParseSplitChange(){
-        LocalhostSplitChangeFetcher localhostSplitChangeFetcher = new LocalhostSplitChangeFetcher("src/test/resources/split_init.json");
+        JsonLocalhostSplitChangeFetcher localhostSplitChangeFetcher = new JsonLocalhostSplitChangeFetcher("src/test/resources/split_init.json");
         FetchOptions fetchOptions = Mockito.mock(FetchOptions.class);
 
         SplitChange splitChange = localhostSplitChangeFetcher.fetch(-1L, fetchOptions);
@@ -37,7 +37,7 @@ public class LocalhostSplitChangeFetcherTest {
 
     @Test
     public void testSinceAndTillSanitization(){
-        LocalhostSplitChangeFetcher localhostSplitChangeFetcher = new LocalhostSplitChangeFetcher("src/test/resources/sanitizer/splitChangeTillSanitization.json");
+        JsonLocalhostSplitChangeFetcher localhostSplitChangeFetcher = new JsonLocalhostSplitChangeFetcher("src/test/resources/sanitizer/splitChangeTillSanitization.json");
         FetchOptions fetchOptions = Mockito.mock(FetchOptions.class);
 
         SplitChange splitChange = localhostSplitChangeFetcher.fetch(-1L, fetchOptions);
@@ -48,7 +48,7 @@ public class LocalhostSplitChangeFetcherTest {
 
     @Test
     public void testSplitChangeWithoutSplits(){
-        LocalhostSplitChangeFetcher localhostSplitChangeFetcher = new LocalhostSplitChangeFetcher("src/test/resources/sanitizer/splitChangeWithoutSplits.json");
+        JsonLocalhostSplitChangeFetcher localhostSplitChangeFetcher = new JsonLocalhostSplitChangeFetcher("src/test/resources/sanitizer/splitChangeWithoutSplits.json");
         FetchOptions fetchOptions = Mockito.mock(FetchOptions.class);
 
         SplitChange splitChange = localhostSplitChangeFetcher.fetch(-1L, fetchOptions);
@@ -58,7 +58,7 @@ public class LocalhostSplitChangeFetcherTest {
 
     @Test
     public void testSplitChangeSplitsToSanitize(){
-        LocalhostSplitChangeFetcher localhostSplitChangeFetcher = new LocalhostSplitChangeFetcher("src/test/resources/sanitizer/splitChangeSplitsToSanitize.json");
+        JsonLocalhostSplitChangeFetcher localhostSplitChangeFetcher = new JsonLocalhostSplitChangeFetcher("src/test/resources/sanitizer/splitChangeSplitsToSanitize.json");
         FetchOptions fetchOptions = Mockito.mock(FetchOptions.class);
 
         SplitChange splitChange = localhostSplitChangeFetcher.fetch(-1L, fetchOptions);
@@ -73,7 +73,7 @@ public class LocalhostSplitChangeFetcherTest {
 
     @Test
     public void testSplitChangeSplitsToSanitizeMatchersNull(){
-        LocalhostSplitChangeFetcher localhostSplitChangeFetcher = new LocalhostSplitChangeFetcher("src/test/resources/sanitizer/splitChangerMatchersNull.json");
+        JsonLocalhostSplitChangeFetcher localhostSplitChangeFetcher = new JsonLocalhostSplitChangeFetcher("src/test/resources/sanitizer/splitChangerMatchersNull.json");
         FetchOptions fetchOptions = Mockito.mock(FetchOptions.class);
 
         SplitChange splitChange = localhostSplitChangeFetcher.fetch(-1L, fetchOptions);
@@ -93,7 +93,7 @@ public class LocalhostSplitChangeFetcherTest {
         byte[] test = TEST_0.getBytes();
         com.google.common.io.Files.write(test, file);
 
-        LocalhostSplitChangeFetcher localhostSplitChangeFetcher = new LocalhostSplitChangeFetcher("src/test/resources/splitFetcher/test_0.json");
+        JsonLocalhostSplitChangeFetcher localhostSplitChangeFetcher = new JsonLocalhostSplitChangeFetcher("src/test/resources/splitFetcher/test_0.json");
         FetchOptions fetchOptions = Mockito.mock(FetchOptions.class);
 
         // 0) The CN from storage is -1, till and since are -1, and sha doesn't exist in the hash. It's going to return a split change with updates.
