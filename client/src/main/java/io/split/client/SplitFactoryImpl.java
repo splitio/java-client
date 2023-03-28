@@ -371,7 +371,7 @@ public class SplitFactoryImpl implements SplitFactory {
         } else if (splitFile != null && !splitFile.isEmpty() && (splitFile.endsWith(".yaml") || splitFile.endsWith(".yml"))) {
             splitChangeFetcher = new YamlLocalhostSplitChangeFetcher(splitFile);
         } else {
-            splitChangeFetcher = null; //todo add the last case about legacy 
+            splitChangeFetcher = new LegacyLocalhostSplitChangeFetcher(config.splitFile());
         }
 
         SplitParser splitParser = new SplitParser();

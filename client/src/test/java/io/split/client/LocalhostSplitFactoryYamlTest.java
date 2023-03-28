@@ -1,15 +1,13 @@
 package io.split.client;
 
-import com.google.common.collect.Maps;
+import io.split.client.utils.LocalhostUtils;
 import io.split.grammar.Treatments;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 import org.yaml.snakeyaml.Yaml;
 
-import java.io.BufferedWriter;
 import java.io.File;
-import java.io.FileWriter;
 import java.io.IOException;
 import java.io.StringWriter;
 import java.net.URISyntaxException;
@@ -39,7 +37,6 @@ import static org.junit.Assert.assertEquals;
  * @author patricioe
  */
 public class LocalhostSplitFactoryYamlTest {
-
     @Rule
     public TemporaryFolder folder = new TemporaryFolder();
 
@@ -83,10 +80,11 @@ public class LocalhostSplitFactoryYamlTest {
 
         assertEquals(expectedYaml, writer.toString());
 
-        writeFile(file, writer);
+        LocalhostUtils.writeFile(file, writer);
 
-        LocalhostSplitFactory factory = new LocalhostSplitFactory("", file.getAbsolutePath());
-        SplitClient client = factory.client();
+        SplitClientConfig config = SplitClientConfig.builder().splitFile(file.getAbsolutePath()).build();
+        SplitFactory splitFactory = SplitFactoryBuilder.build("localhost", config);
+        SplitClient client = splitFactory.client();
 
         assertThat(client.getTreatment(null, "foo"), is(equalTo(Treatments.CONTROL)));
         assertThat(client.getTreatment("user_a", "foo"), is(equalTo(Treatments.CONTROL)));
@@ -103,50 +101,9 @@ public class LocalhostSplitFactoryYamlTest {
         assertThat(client.getTreatmentWithConfig("user_a", "split_2").treatment(), is(equalTo("off")));
         assertThat(client.getTreatmentWithConfig("user_a", "split_2").config(), is(equalTo("{ \"size\" : 20 }")));
 
-        // Update
-        Map<SplitAndKey, LocalhostSplit> update = Maps.newHashMap();
-        update.put(SplitAndKey.of("split_2", "user_a"), LocalhostSplit.of("on"));
-        factory.updateFeatureToTreatmentMap(update);
-
-        assertThat(client.getTreatment("user_a", "split_2"), is(equalTo("on")));
-
-        // Make split_1 "legacy" treatment for all keys mines the whitelisted ones.
-        update = Maps.newHashMap();
-        update.put(SplitAndKey.of("split_1", "user_a"), LocalhostSplit.of("off"));
-        update.put(SplitAndKey.of("split_1", "user_b"), LocalhostSplit.of("on"));
-        update.put(SplitAndKey.of("split_1"), LocalhostSplit.of("legacy"));
-        factory.updateFeatureToTreatmentMap(update);
-
         // unchanged
         assertThat(client.getTreatment("user_a", "split_1"), is(equalTo("off")));
         // unchanged
         assertThat(client.getTreatment("user_b", "split_1"), is(equalTo("on")));
-
-        // "legacy" for any other user
-        assertThat(client.getTreatment("user_blah", "split_1"), is(equalTo("legacy")));
-
-        factory.updateFeatureToTreatmentMap(update);
     }
-
-    private void writeFile(File f, StringWriter content) throws IOException {
-        BufferedWriter writer = new BufferedWriter(new FileWriter(f));
-        writer.write(content.toString());
-        writer.flush();
-        writer.close();
-    }
-
-    private String toString(Map.Entry<SplitAndKey, String> entry) {
-        StringBuilder bldr = new StringBuilder();
-        bldr.append(entry.getKey().split());
-        bldr.append(' ');
-        bldr.append(entry.getValue());
-        if (entry.getKey().key() != null) {
-            bldr.append(' ');
-            bldr.append(entry.getKey().key());
-        }
-        bldr.append('\n');
-        return bldr.toString();
-    }
-
-
 }

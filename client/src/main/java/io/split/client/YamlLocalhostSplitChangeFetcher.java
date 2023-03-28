@@ -1,18 +1,10 @@
 package io.split.client;
 
-import com.google.common.base.Preconditions;
 import io.split.client.dtos.Condition;
 import io.split.client.dtos.ConditionType;
-import io.split.client.dtos.KeySelector;
-import io.split.client.dtos.Matcher;
-import io.split.client.dtos.MatcherCombiner;
-import io.split.client.dtos.MatcherGroup;
-import io.split.client.dtos.MatcherType;
-import io.split.client.dtos.Partition;
 import io.split.client.dtos.Split;
 import io.split.client.dtos.SplitChange;
 import io.split.client.dtos.Status;
-import io.split.client.dtos.WhitelistMatcherData;
 import io.split.client.utils.LocalhostSanitizer;
 import io.split.engine.common.FetchOptions;
 import io.split.engine.experiments.SplitChangeFetcher;
@@ -23,16 +15,15 @@ import org.yaml.snakeyaml.Yaml;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 public class YamlLocalhostSplitChangeFetcher implements SplitChangeFetcher {
 
-    private static final Logger _log = LoggerFactory.getLogger(JsonLocalhostSplitChangeFetcher.class);
-    static final String FILENAME = ".split";
+    private static final Logger _log = LoggerFactory.getLogger(YamlLocalhostSplitChangeFetcher.class);
     private final File _splitFile;
 
     public YamlLocalhostSplitChangeFetcher(String filePath) {
@@ -50,22 +41,29 @@ public class YamlLocalhostSplitChangeFetcher implements SplitChangeFetcher {
                 // The outter map is a map with one key, the split name
                 Map.Entry<String, Map<String, Object>> splitAndValues = aSplit.entrySet().iterator().next();
 
-                Split split = new Split();
-
-                String splitName = splitAndValues.getKey();
+                Optional<Split> splitOptional = splitChange.splits.stream().filter(split -> split.name.equals(splitAndValues.getKey())).findFirst();
+                Split split = splitOptional.orElse(null);
+                if(split == null) {
+                    split = new Split();
+                    split.name = splitAndValues.getKey();
+                    split.configurations = new HashMap<>();
+                    split.conditions = new ArrayList<>();
+                } else {
+                    splitChange.splits.remove(split);
+                }
                 String treatment = (String) splitAndValues.getValue().get("treatment");
                 String configurations = splitAndValues.getValue().get("config") != null ? (String) splitAndValues.getValue().get("config") : null;
                 Object keyOrKeys = splitAndValues.getValue().get("keys");
+                split.configurations.put(treatment, configurations);
 
-                split.name = splitName;
-                Map<String, String> configMap = new HashMap<>();
-                configMap.put(treatment, configurations);
-                split.configurations = configMap;
-                Condition condition = createCondition(keyOrKeys, treatment);
-                split.conditions = new ArrayList<>();
-                split.conditions.add(condition);
+                Condition condition = LocalhostSanitizer.createCondition(keyOrKeys, treatment);
+                if(condition.conditionType != ConditionType.ROLLOUT){
+                    split.conditions.add(0, condition);
+                } else {
+                    split.conditions.add(condition);
+                }
                 split.status = Status.ACTIVE;
-                split.defaultTreatment = "on";
+                split.defaultTreatment = treatment;
                 split.trafficTypeName = "user";
                 split.trafficAllocation = 100;
                 split.trafficAllocationSeed = 1;
@@ -87,56 +85,5 @@ public class YamlLocalhostSplitChangeFetcher implements SplitChangeFetcher {
                     _splitFile.getPath()), e);
             throw new IllegalStateException("Problem fetching splitChanges: " + e.getMessage(), e);
         }
-    }
-
-    private Condition createCondition(Object keyOrKeys, String treatment) {
-        Condition condition = new Condition();
-        if (keyOrKeys == null) {
-            return LocalhostSanitizer.createRolloutCondition(condition, "user", treatment);
-        } else {
-            if (keyOrKeys instanceof String) {
-                List keys = new ArrayList<>();
-                keys.add(keyOrKeys);
-                return createWhitelistCondition(condition, "user", treatment, keys);
-            } else {
-                Preconditions.checkArgument(keyOrKeys instanceof List, "'keys' is not a String nor a List.");
-                return createWhitelistCondition(condition, "user", treatment, (List<String>) keyOrKeys);
-            }
-        }
-    }
-
-    private Condition createWhitelistCondition(Condition condition, String trafficType, String treatment, List<String> keys) {
-        condition.conditionType = ConditionType.WHITELIST;
-        condition.matcherGroup = new MatcherGroup();
-        condition.matcherGroup.combiner = MatcherCombiner.AND;
-        Matcher matcher = new Matcher();
-        KeySelector keySelector = new KeySelector();
-        keySelector.trafficType = trafficType;
-
-        matcher.keySelector = keySelector;
-        matcher.matcherType = MatcherType.WHITELIST;
-        matcher.negate = false;
-        matcher.whitelistMatcherData = new WhitelistMatcherData();
-        matcher.whitelistMatcherData.whitelist = new ArrayList<>(keys);
-
-        condition.matcherGroup.matchers = new ArrayList<>();
-        condition.matcherGroup.matchers.add(matcher);
-
-        condition.partitions = new ArrayList<>();
-        Partition partition1 = new Partition();
-        Partition partition2 = new Partition();
-        partition1.size = 100;
-        partition2.size = 0;
-        if (treatment != null) {
-            partition1.treatment = treatment;
-        } else {
-            partition1.treatment = "off";
-            partition2.treatment = "on";
-        }
-        condition.partitions.add(partition1);
-        condition.partitions.add(partition2);
-        condition.label = "default rule";
-
-        return condition;
     }
 }
