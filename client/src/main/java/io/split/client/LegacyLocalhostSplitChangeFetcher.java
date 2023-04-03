@@ -26,7 +26,7 @@ public class LegacyLocalhostSplitChangeFetcher implements SplitChangeFetcher {
     private final File _splitFile;
 
     public LegacyLocalhostSplitChangeFetcher(String directory) {
-        if (directory == null || directory.equals("")){
+        if (directory == null || directory.isEmpty()){
             directory = System.getProperty("user.home");
         }
         _splitFile = new File(directory, FILENAME);
