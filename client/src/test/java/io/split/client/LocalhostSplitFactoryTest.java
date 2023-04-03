@@ -25,7 +25,7 @@ public class LocalhostSplitFactoryTest {
 
     @Test
     public void works() throws IOException, URISyntaxException, InterruptedException {
-        File file = folder.newFile(LocalhostSplitFactory.FILENAME);
+        File file = folder.newFile(LegacyLocalhostSplitChangeFetcher.FILENAME);
 
         Map<SplitAndKey, LocalhostSplit> map = Maps.newHashMap();
         map.put(SplitAndKey.of("onboarding"), LocalhostSplit.of("on"));
