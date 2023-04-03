@@ -364,7 +364,15 @@ public class SplitFactoryImpl implements SplitFactory {
                 _splitCache);
 
         // SplitFetcher
-        SplitChangeFetcher splitChangeFetcher = new LocalhostSplitChangeFetcher(config.splitFile());
+        SplitChangeFetcher splitChangeFetcher;
+        String splitFile = config.splitFile();
+        if (splitFile != null && splitFile.toLowerCase().endsWith(".json")){
+            splitChangeFetcher = new JsonLocalhostSplitChangeFetcher(config.splitFile());
+        } else if (splitFile != null && !splitFile.isEmpty() && (splitFile.endsWith(".yaml") || splitFile.endsWith(".yml"))) {
+            splitChangeFetcher = new YamlLocalhostSplitChangeFetcher(splitFile);
+        } else {
+            splitChangeFetcher = new LegacyLocalhostSplitChangeFetcher(config.splitFile());
+        }
 
         SplitParser splitParser = new SplitParser();
 

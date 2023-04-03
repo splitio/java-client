@@ -17,13 +17,13 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.Arrays;
 
-public class LocalhostSplitChangeFetcher implements SplitChangeFetcher {
+public class JsonLocalhostSplitChangeFetcher implements SplitChangeFetcher {
 
-    private static final Logger _log = LoggerFactory.getLogger(LocalhostSplitChangeFetcher.class);
+    private static final Logger _log = LoggerFactory.getLogger(JsonLocalhostSplitChangeFetcher.class);
     private final File _file;
     private byte [] lastHash;
 
-    public LocalhostSplitChangeFetcher(String filePath) {
+    public JsonLocalhostSplitChangeFetcher(String filePath) {
         _file = new File(filePath);
         lastHash = new byte[0];
     }

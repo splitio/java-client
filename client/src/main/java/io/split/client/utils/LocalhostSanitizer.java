@@ -1,5 +1,6 @@
 package io.split.client.utils;
 
+import com.google.common.base.Preconditions;
 import io.split.client.dtos.Condition;
 import io.split.client.dtos.ConditionType;
 import io.split.client.dtos.KeySelector;
@@ -12,6 +13,7 @@ import io.split.client.dtos.SegmentChange;
 import io.split.client.dtos.Split;
 import io.split.client.dtos.SplitChange;
 import io.split.client.dtos.Status;
+import io.split.client.dtos.WhitelistMatcherData;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -81,7 +83,7 @@ public final class LocalhostSanitizer {
                         condition.matcherGroup.matchers.isEmpty() ||
                         !condition.matcherGroup.matchers.get(0).matcherType.equals(MatcherType.ALL_KEYS)) {
                     Condition rolloutCondition = new Condition();
-                    split.conditions.add(createRolloutCondition(rolloutCondition, split.trafficTypeName));
+                    split.conditions.add(createRolloutCondition(rolloutCondition, split.trafficTypeName, null));
                 }
             }
             splitChange.splits.removeAll(splitsToRemove);
@@ -112,7 +114,7 @@ public final class LocalhostSanitizer {
         return segmentChange;
     }
 
-    private static Condition createRolloutCondition(Condition condition, String trafficType) {
+    public static Condition createRolloutCondition(Condition condition, String trafficType, String treatment) {
         condition.conditionType = ConditionType.ROLLOUT;
         condition.matcherGroup = new MatcherGroup();
         condition.matcherGroup.combiner = MatcherCombiner.AND;
@@ -127,18 +129,71 @@ public final class LocalhostSanitizer {
         condition.matcherGroup.matchers = new ArrayList<>();
         condition.matcherGroup.matchers.add(matcher);
 
-        Partition partitionOn = new Partition();
-        partitionOn.treatment = TREATMENT_ON;
-        partitionOn.size = 0;
-        Partition partitionOff = new Partition();
-        partitionOff.treatment = TREATMENT_OFF;
-        partitionOff.size = 100;
+        condition.partitions = new ArrayList<>();
+        Partition partition1 = new Partition();
+        Partition partition2 = new Partition();
+        partition1.size = 100;
+        partition2.size = 0;
+        if (treatment != null) {
+            partition1.treatment = treatment;
+        } else {
+            partition1.treatment = TREATMENT_OFF;
+            partition2.treatment = TREATMENT_ON;
+        }
+        condition.partitions.add(partition1);
+        condition.partitions.add(partition2);
+        condition.label = DEFAULT_RULE;
+
+        return condition;
+    }
+
+    public static Condition createCondition(Object keyOrKeys, String treatment) {
+        Condition condition = new Condition();
+        if (keyOrKeys == null) {
+            return LocalhostSanitizer.createRolloutCondition(condition, "user", treatment);
+        } else {
+            if (keyOrKeys instanceof String) {
+                List keys = new ArrayList<>();
+                keys.add(keyOrKeys);
+                return createWhitelistCondition(condition, "user", treatment, keys);
+            } else {
+                Preconditions.checkArgument(keyOrKeys instanceof List, "'keys' is not a String nor a List.");
+                return createWhitelistCondition(condition, "user", treatment, (List<String>) keyOrKeys);
+            }
+        }
+    }
+
+    public static Condition createWhitelistCondition(Condition condition, String trafficType, String treatment, List<String> keys) {
+        condition.conditionType = ConditionType.WHITELIST;
+        condition.matcherGroup = new MatcherGroup();
+        condition.matcherGroup.combiner = MatcherCombiner.AND;
+        Matcher matcher = new Matcher();
+        KeySelector keySelector = new KeySelector();
+        keySelector.trafficType = trafficType;
+
+        matcher.keySelector = keySelector;
+        matcher.matcherType = MatcherType.WHITELIST;
+        matcher.negate = false;
+        matcher.whitelistMatcherData = new WhitelistMatcherData();
+        matcher.whitelistMatcherData.whitelist = new ArrayList<>(keys);
+
+        condition.matcherGroup.matchers = new ArrayList<>();
+        condition.matcherGroup.matchers.add(matcher);
 
         condition.partitions = new ArrayList<>();
-        condition.partitions.add(partitionOn);
-        condition.partitions.add(partitionOff);
-
-        condition.label = DEFAULT_RULE;
+        Partition partition1 = new Partition();
+        Partition partition2 = new Partition();
+        partition1.size = 100;
+        partition2.size = 0;
+        if (treatment != null) {
+            partition1.treatment = treatment;
+        } else {
+            partition1.treatment = "off";
+            partition2.treatment = "on";
+        }
+        condition.partitions.add(partition1);
+        condition.partitions.add(partition2);
+        condition.label = "default rule";
 
         return condition;
     }
