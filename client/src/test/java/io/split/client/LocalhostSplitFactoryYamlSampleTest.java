@@ -1,12 +1,10 @@
 package io.split.client;
 
-import com.google.common.collect.Maps;
 import io.split.grammar.Treatments;
 import org.junit.Test;
 
 import java.io.IOException;
 import java.net.URISyntaxException;
-import java.util.Map;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
@@ -25,8 +23,9 @@ public class LocalhostSplitFactoryYamlSampleTest {
 
         String file = getClass().getClassLoader().getResource(SplitClientConfig.LOCALHOST_DEFAULT_FILE).getFile();
 
-        LocalhostSplitFactory factory = new LocalhostSplitFactory("", file);
-        SplitClient client = factory.client();
+        SplitClientConfig config = SplitClientConfig.builder().splitFile(file).build();
+        SplitFactory splitFactory = SplitFactoryBuilder.build("localhost", config);
+        SplitClient client = splitFactory.client();
 
         assertThat(client.getTreatment(null, "foo"), is(equalTo(Treatments.CONTROL)));
         assertThat(client.getTreatment("user_a", "foo"), is(equalTo(Treatments.CONTROL)));
@@ -58,15 +57,5 @@ public class LocalhostSplitFactoryYamlSampleTest {
         assertThat(client.getTreatment("user_random", "splitWithNoKeys"), is(equalTo("v2")));
         assertThat(client.getTreatmentWithConfig("user_random", "splitWithNoKeys").treatment(), is(equalTo("v2")));
         assertThat(client.getTreatmentWithConfig("user_random", "splitWithNoKeys").config(), is(equalTo("{ \"size\" : 999 }")));
-
-        // Update
-
-        Map<SplitAndKey, LocalhostSplit> update = Maps.newHashMap();
-        update.put(SplitAndKey.of("split_2", "user_a"), LocalhostSplit.of("on"));
-
-        factory.updateFeatureToTreatmentMap(update);
-
-        assertThat(client.getTreatment("user_a", "split_2"), is(equalTo("on")));
     }
-
 }

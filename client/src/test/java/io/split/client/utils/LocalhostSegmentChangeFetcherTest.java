@@ -4,13 +4,17 @@ import io.split.client.LocalhostSegmentChangeFetcher;
 import io.split.client.dtos.SegmentChange;
 import io.split.engine.common.FetchOptions;
 import org.junit.Assert;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.TemporaryFolder;
 import org.mockito.Mockito;
 
 import java.io.File;
 import java.io.IOException;
 
 public class LocalhostSegmentChangeFetcherTest {
+    @Rule
+    public TemporaryFolder folder = new TemporaryFolder();
     private String TEST_0 = "{\"name\":\"segment_test\",\"added\":[\"user-1\"],\"removed\":[],\"since\":-1,\"till\":-1}";
     private String TEST_1 = "{\"name\":\"segment_test\",\"added\":[\"user-1\"],\"removed\":[\"user-2\"],\"since\":-1,\"till\":-1}";
     private String TEST_2 = "{\"name\":\"segment_test\",\"added\":[\"user-1\"],\"removed\":[\"user-2\"],\"since\":-1,\"till\":2323}";
@@ -63,12 +67,12 @@ public class LocalhostSegmentChangeFetcherTest {
 
     @Test
     public void testProcessSegmentFetch() throws IOException {
-        File file = new File("src/test/resources/segmentFetcher/segment_test.json");
+        File file = folder.newFile("segment_test.json");
 
         byte[] test = TEST_0.getBytes();
         com.google.common.io.Files.write(test, file);
 
-        LocalhostSegmentChangeFetcher localhostSplitChangeFetcher = new LocalhostSegmentChangeFetcher("src/test/resources/segmentFetcher");
+        LocalhostSegmentChangeFetcher localhostSplitChangeFetcher = new LocalhostSegmentChangeFetcher(folder.getRoot().getAbsolutePath());
         FetchOptions fetchOptions = Mockito.mock(FetchOptions.class);
 
         // 0) The CN from storage is -1, till and since are -1, and sha doesn't exist in the hash. It's going to return a segment change with updates.
