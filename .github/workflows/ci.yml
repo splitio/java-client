@@ -61,7 +61,8 @@ jobs:
       - name: SonarQube Scan (Push)
         if: matrix.jdk == '11' && github.event_name == 'push' && (github.ref == 'refs/heads/master' || github.ref == 'refs/heads/development')
         run: |
-          mvn --batch-mode clean verify sonar:sonar
+          mvn --batch-mode clean verify sonar:sonar \
+            -Dsonar.branch.name=${{ github.ref_name }}
 
       - name: SonarQube Scan (Pull Request)
         if: matrix.jdk == '11' && github.event_name == 'pull_request'
