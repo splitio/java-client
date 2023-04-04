@@ -28,6 +28,7 @@ jobs:
         jdk:
           - '8'
           - '11'
+    if: matrix.jdk != '11' || github.event_name != 'push' || (github.ref != 'refs/heads/master' && github.ref != 'refs/heads/development')
     env:
       ARTIFACTORY_USER: ${{ secrets.ARTIFACTORY_USER }}
       ARTIFACTORY_TOKEN: ${{ secrets.ARTIFACTORY_TOKEN }}
@@ -51,7 +52,7 @@ jobs:
         run: cp .ci.settings.xml ${HOME}/.m2/settings.xml
 
       - name: Test
-        if: matrix.jdk == '8'
+        if: matrix.jdk == '8' && github.event_name == 'pull_request'
         run: |
           mvn --batch-mode clean install
 
