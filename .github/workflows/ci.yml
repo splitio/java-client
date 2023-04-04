@@ -33,8 +33,8 @@ jobs:
       ARTIFACTORY_USER: ${{ secrets.ARTIFACTORY_USER }}
       ARTIFACTORY_TOKEN: ${{ secrets.ARTIFACTORY_TOKEN }}
       SONAR_TOKEN: ${{ secrets.SONARQUBE_TOKEN }}
-      MAVEN_OPTS: "-XX:InitialHeapSize=2G -XX:MaxHeapSize=2G -XX:+PrintCommandLineFlags -XX:ThreadStackSize=65536 -XX:-TieredCompilation -Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=warn"
-      muteProps: "true"
+      # MAVEN_OPTS: "-XX:InitialHeapSize=2G -XX:MaxHeapSize=2G -XX:+PrintCommandLineFlags -XX:ThreadStackSize=65536 -XX:-TieredCompilation -Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=warn"
+      # muteProps: "true"
 
     steps:
       - name: Checkout code
@@ -59,12 +59,12 @@ jobs:
       - name: SonarQube Scan (Push)
         if: matrix.jdk == '11' && github.event_name == 'push'
         run: |
-          mvn --batch-mode clean verify sonar:sonar
+          mvn --batch-mode -T 1C clean verify sonar:sonar
 
       - name: SonarQube Scan (Pull Request)
         if: matrix.jdk == '11' && github.event_name == 'pull_request'
         run: |
-          mvn --batch-mode clean verify sonar:sonar \
+          mvn --batch-mode -T 1C clean verify sonar:sonar \
             -Dsonar.pullrequest.key=${{ github.event.pull_request.number }} \
             -Dsonar.pullrequest.branch=${{ github.event.pull_request.head.ref }} \
             -Dsonar.pullrequest.base=${{ github.event.pull_request.base.ref }}

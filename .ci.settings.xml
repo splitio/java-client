@@ -31,6 +31,7 @@
               <sonar.inclusions>pom.xml,src/main/**</sonar.inclusions>
               <sonar.tests>.</sonar.tests>
               <sonar.test.inclusions>src/test/**</sonar.test.inclusions>
+              <sonar.text.excluded.file.suffixes>.csv</sonar.text.excluded.file.suffixes>
               <sonar.links.ci>https://travis-ci.com/splitio/java-client</sonar.links.ci>
               <sonar.links.scm>https://github.com/splitio/java-client</sonar.links.scm>
             </properties>
