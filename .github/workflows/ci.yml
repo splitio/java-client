@@ -23,6 +23,12 @@ jobs:
         image: redis
         ports:
           - 6379:6379
+    strategy:
+      fail-fast: false
+      matrix:
+        jdk:
+          - '8'
+          - '11'
     env:
       ARTIFACTORY_USER: ${{ secrets.ARTIFACTORY_USER }}
       ARTIFACTORY_TOKEN: ${{ secrets.ARTIFACTORY_TOKEN }}
@@ -40,18 +46,23 @@ jobs:
         uses: actions/setup-java@v3
         with:
           distribution: 'adopt'
-          java-version: '8'
+          java-version: ${{ matrix.jdk }}
 
       - name: Setup Maven
         run: cp .ci.settings.xml ${HOME}/.m2/settings.xml
 
+      - name: Test
+        if: matrix.jdk == '8'
+        run: |
+          mvn --batch-mode clean install
+
       - name: SonarQube Scan (Push)
-        if: github.event_name == 'push'
+        if: matrix.jdk == '11' && github.event_name == 'push'
         run: |
           mvn --batch-mode clean verify sonar:sonar
 
       - name: SonarQube Scan (Pull Request)
-        if: github.event_name == 'pull_request'
+        if: matrix.jdk == '11' && github.event_name == 'pull_request'
         run: |
           mvn --batch-mode clean verify sonar:sonar \
             -Dsonar.pullrequest.key=${{ github.event.pull_request.number }} \
@@ -59,5 +70,5 @@ jobs:
             -Dsonar.pullrequest.base=${{ github.event.pull_request.base.ref }}
 
       - name: Deploy
-        if: github.event_name == 'push' && github.ref != 'refs/heads/main'
+        if: matrix.jdk == '8' && github.event_name == 'push' && github.ref != 'refs/heads/main'
         run: mvn --batch-mode deploy -P test
