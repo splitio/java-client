@@ -48,9 +48,7 @@ jobs:
       - name: SonarQube Scan (Push)
         if: github.event_name == 'push'
         run: |
-          mvn --batch-mode clean verify sonar:sonar \
-            -Dsonar.host.url=${{ secrets.SONARQUBE_HOST }} \
-            -Dsonar.login=${{ secrets.SONARQUBE_TOKEN }}
+          mvn --batch-mode clean verify sonar:sonar
 
       - name: SonarQube Scan (Pull Request)
         if: github.event_name == 'pull_request'

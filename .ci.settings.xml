@@ -14,9 +14,13 @@
             <password>${env.ARTIFACTORY_TOKEN}</password>
         </server>
     </servers>
-    <pluginGroups>
-        <pluginGroup>org.sonarsource.scanner.maven</pluginGroup>
-    </pluginGroups>
+    <plugins>
+        <plugin>
+            <groupId>org.sonarsource.scanner.maven</groupId>
+            <artifactId>sonar-maven-plugin</artifactId>
+            <version>3.6.0.1398</version>
+        </plugin>
+    </plugins>
     <profiles>
         <profile>
             <id>sonar</id>
