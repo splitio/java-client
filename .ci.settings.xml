@@ -27,12 +27,10 @@
               <sonar.projectName>java-client</sonar.projectName>
               <sonar.host.url>https://sonarqube.split-internal.com</sonar.host.url>
               <sonar.login>${env.SONAR_TOKEN}</sonar.login>
-              <sonar.host.url>http://localhost:9000</sonar.host.url>
-              <sonar.login>sqa_46ad91cb0a4bbeeaddb4e75412208d77f4417cae</sonar.login>
               <sonar.sources>.</sonar.sources>
               <sonar.inclusions>pom.xml,src/main/**</sonar.inclusions>
               <sonar.tests>.</sonar.tests>
-              <sonar.tests.inclusions>src/test/**</sonar.tests.inclusions>
+              <sonar.test.inclusions>src/test/**</sonar.test.inclusions>
               <sonar.links.ci>https://travis-ci.com/splitio/java-client</sonar.links.ci>
               <sonar.links.scm>https://github.com/splitio/java-client</sonar.links.scm>
             </properties>
