@@ -34,6 +34,7 @@ jobs:
       ARTIFACTORY_TOKEN: ${{ secrets.ARTIFACTORY_TOKEN }}
       SONAR_TOKEN: ${{ secrets.SONARQUBE_TOKEN }}
       # MAVEN_OPTS: "-XX:InitialHeapSize=2G -XX:MaxHeapSize=2G -XX:+PrintCommandLineFlags -XX:ThreadStackSize=65536 -XX:-TieredCompilation -Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=warn"
+      MAVEN_OPTS: "-Xmx8g -Xms2g -Xmn2g"
       # muteProps: "true"
 
     steps:
@@ -42,7 +43,7 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Setup JDK 8
+      - name: Setup JDK ${{ matrix.jdk }}
         uses: actions/setup-java@v3
         with:
           distribution: 'adopt'
@@ -59,12 +60,12 @@ jobs:
       - name: SonarQube Scan (Push)
         if: matrix.jdk == '11' && github.event_name == 'push'
         run: |
-          mvn --batch-mode -T 1C clean verify sonar:sonar
+          mvn --batch-mode clean install sonar:sonar
 
       - name: SonarQube Scan (Pull Request)
         if: matrix.jdk == '11' && github.event_name == 'pull_request'
         run: |
-          mvn --batch-mode -T 1C clean verify sonar:sonar \
+          mvn --batch-mode clean install sonar:sonar \
             -Dsonar.pullrequest.key=${{ github.event.pull_request.number }} \
             -Dsonar.pullrequest.branch=${{ github.event.pull_request.head.ref }} \
             -Dsonar.pullrequest.base=${{ github.event.pull_request.base.ref }}
