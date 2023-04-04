@@ -28,15 +28,6 @@ jobs:
         jdk:
           - '8'
           - '11'
-        push:
-          - github.event_name == 'push' && (github.ref == 'refs/heads/master' && github.ref == 'refs/heads/development')
-        pull_request:
-          - github.event_name == 'pull_request'
-        exclude:
-          - jdk: '8'
-            pull_request: true
-          - jdk: '11'
-            push: false
     env:
       ARTIFACTORY_USER: ${{ secrets.ARTIFACTORY_USER }}
       ARTIFACTORY_TOKEN: ${{ secrets.ARTIFACTORY_TOKEN }}
@@ -59,10 +50,13 @@ jobs:
       - name: Setup Maven
         run: cp .ci.settings.xml ${HOME}/.m2/settings.xml
 
-      # - name: Test
-      #   if: matrix.jdk == '8' && github.event_name == 'pull_request'
-      #   run: |
-      #     mvn --batch-mode clean install
+      - name: Test
+        if: matrix.jdk == '8' && github.event_name == 'pull_request' && github.ref != 'refs/heads/master' && github.ref != 'refs/heads/development'
+        run: mvn --batch-mode clean install
+
+      - name: Deploy
+        if: matrix.jdk == '8' && github.event_name == 'push' && github.ref != 'refs/heads/master' && github.ref != 'refs/heads/development'
+        run: mvn --batch-mode deploy -P test
 
       - name: SonarQube Scan (Push)
         if: matrix.jdk == '11' && github.event_name == 'push' && (github.ref == 'refs/heads/master' || github.ref == 'refs/heads/development')
@@ -76,7 +70,3 @@ jobs:
             -Dsonar.pullrequest.key=${{ github.event.pull_request.number }} \
             -Dsonar.pullrequest.branch=${{ github.event.pull_request.head.ref }} \
             -Dsonar.pullrequest.base=${{ github.event.pull_request.base.ref }}
-
-      - name: Test and deploy
-        if: matrix.jdk == '8' && github.event_name == 'push'
-        run: mvn --batch-mode deploy -P test
