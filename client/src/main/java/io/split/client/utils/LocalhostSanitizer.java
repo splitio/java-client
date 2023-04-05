@@ -31,7 +31,8 @@ public final class LocalhostSanitizer {
     private static final String TRAFFIC_TYPE_USER = "user";
 
     public static SplitChange sanitization(SplitChange splitChange) {
-        Random random = new Random();
+        long seed = System.currentTimeMillis();
+        Random random = new Random(seed);
         List<Split> splitsToRemove = new ArrayList<>();
         if (splitChange.till < -1 || splitChange.till == 0) {
             splitChange.till = -1L;
