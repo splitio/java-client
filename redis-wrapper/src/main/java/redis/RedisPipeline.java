@@ -1,7 +1,5 @@
 package redis;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import pluggable.Result;
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisPool;
@@ -15,8 +13,6 @@ public class RedisPipeline implements pluggable.Pipeline {
     private Pipeline _pipelined;
     private final JedisPool _jedisPool;
     private final CommonRedis _commonRedis;
-
-    private static final Logger _log = LoggerFactory.getLogger(RedisPipeline.class);
 
     public RedisPipeline(JedisPool jedisPool, String prefix) throws RedisException {
         _jedisPool = jedisPool;

@@ -576,7 +576,7 @@ public class SplitFactoryImpl implements SplitFactory {
         }
         ProcessImpressionStrategy processImpressionStrategy = null;
         ImpressionCounter counter = null;
-        ImpressionListener listener = (null != impressionListeners && !impressionListeners.isEmpty()) ? new ImpressionListener.FederatedImpressionListener(impressionListeners)
+        ImpressionListener listener = !impressionListeners.isEmpty() ? new ImpressionListener.FederatedImpressionListener(impressionListeners)
                 : null;
         switch (config.impressionsMode()){
             case OPTIMIZED:

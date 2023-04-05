@@ -18,7 +18,6 @@ import io.split.client.dtos.WhitelistMatcherData;
 import java.security.SecureRandom;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Random;
 import java.util.stream.Collectors;
 
 public final class LocalhostSanitizer {
@@ -53,7 +52,7 @@ public final class LocalhostSanitizer {
                     split.trafficAllocation = TRAFFIC_ALLOCATION_LIMIT;
                 }
                 if (split.trafficAllocationSeed == null || split.trafficAllocationSeed == 0) {
-                    split.trafficAllocationSeed = new Integer(- random.nextInt(10) * MILLI_SECONDS) ;
+                    split.trafficAllocationSeed = - random.nextInt(10) * MILLI_SECONDS;
                 }
                 if (split.seed == 0) {
                     split.seed = - random.nextInt(10) * MILLI_SECONDS;
