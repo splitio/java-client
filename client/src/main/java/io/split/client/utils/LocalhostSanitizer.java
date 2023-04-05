@@ -30,6 +30,10 @@ public final class LocalhostSanitizer {
     private static final String DEFAULT_RULE = "default rule";
     private static final String TRAFFIC_TYPE_USER = "user";
 
+    private LocalhostSanitizer() {
+        throw new IllegalStateException("Utility class");
+    }
+
     public static SplitChange sanitization(SplitChange splitChange) {
         SecureRandom random = new SecureRandom();
         List<Split> splitsToRemove = new ArrayList<>();

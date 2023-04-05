@@ -36,7 +36,7 @@ public class EvaluatorImp implements Evaluator {
     @Override
     public TreatmentLabelAndChangeNumber evaluateFeature(String matchingKey, String bucketingKey, String split, Map<String, Object> attributes) {
         ParsedSplit parsedSplit = _splitCacheConsumer.get(split);
-        return evaluateParsedSplit(matchingKey, bucketingKey, split, attributes, parsedSplit);
+        return evaluateParsedSplit(matchingKey, bucketingKey, attributes, parsedSplit);
     }
 
     @Override
@@ -46,7 +46,7 @@ public class EvaluatorImp implements Evaluator {
         if(parsedSplits == null) {
             return results;
         }
-        splits.forEach(s -> results.put(s, evaluateParsedSplit(matchingKey, bucketingKey, s, attributes, parsedSplits.get(s))));
+        splits.forEach(s -> results.put(s, evaluateParsedSplit(matchingKey, bucketingKey, attributes, parsedSplits.get(s))));
         return results;
     }
 
@@ -107,7 +107,7 @@ public class EvaluatorImp implements Evaluator {
         }
     }
 
-    private TreatmentLabelAndChangeNumber evaluateParsedSplit(String matchingKey, String bucketingKey, String split, Map<String, Object> attributes, ParsedSplit parsedSplit) {
+    private TreatmentLabelAndChangeNumber evaluateParsedSplit(String matchingKey, String bucketingKey, Map<String, Object> attributes, ParsedSplit parsedSplit) {
         try {
             if (parsedSplit == null) {
                 return new TreatmentLabelAndChangeNumber(Treatments.CONTROL, Labels.DEFINITION_NOT_FOUND);
