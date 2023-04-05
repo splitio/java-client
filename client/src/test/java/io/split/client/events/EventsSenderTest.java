@@ -18,27 +18,27 @@ public class EventsSenderTest {
     public void testDefaultURL() throws URISyntaxException {
         URI rootTarget = URI.create("https://api.split.io");
         EventsSender fetcher = EventsSender.create(CLOSEABLE_HTTP_CLIENT, rootTarget, TELEMETRY_RUNTIME_CONSUMER);
-        Assert.assertEquals(fetcher.getBulkEndpoint().toString(), "https://api.split.io/api/events/bulk");
+        Assert.assertEquals("https://api.split.io/api/events/bulk", fetcher.getBulkEndpoint().toString());
     }
 
     @Test
     public void testCustomURLNoPathNoBackslash() throws URISyntaxException {
         URI rootTarget = URI.create("https://kubernetesturl.com");
         EventsSender fetcher = EventsSender.create(CLOSEABLE_HTTP_CLIENT, rootTarget, TELEMETRY_RUNTIME_CONSUMER);
-        Assert.assertEquals(fetcher.getBulkEndpoint().toString(), "https://kubernetesturl.com/api/events/bulk");
+        Assert.assertEquals("https://kubernetesturl.com/api/events/bulk", fetcher.getBulkEndpoint().toString());
     }
 
     @Test
     public void testCustomURLAppendingPath() throws URISyntaxException {
         URI rootTarget = URI.create("https://kubernetesturl.com/split/");
         EventsSender fetcher = EventsSender.create(CLOSEABLE_HTTP_CLIENT, rootTarget, TELEMETRY_RUNTIME_CONSUMER);
-        Assert.assertEquals(fetcher.getBulkEndpoint().toString(), "https://kubernetesturl.com/split/api/events/bulk");
+        Assert.assertEquals("https://kubernetesturl.com/split/api/events/bulk", fetcher.getBulkEndpoint().toString());
     }
 
     @Test
     public void testCustomURLAppendingPathNoBackslash() throws URISyntaxException {
         URI rootTarget = URI.create("https://kubernetesturl.com/split");
         EventsSender fetcher = EventsSender.create(CLOSEABLE_HTTP_CLIENT, rootTarget, TELEMETRY_RUNTIME_CONSUMER);
-        Assert.assertEquals(fetcher.getBulkEndpoint().toString(), "https://kubernetesturl.com/split/api/events/bulk");
+        Assert.assertEquals("https://kubernetesturl.com/split/api/events/bulk", fetcher.getBulkEndpoint().toString());
     }
 }
