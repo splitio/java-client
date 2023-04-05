@@ -382,7 +382,7 @@ public class SplitClientConfig {
         private String _proxyUsername;
         private String _proxyPassword;
         private int _eventsQueueSize = 500;
-        private long _eventSendIntervalInMillis = 30 * 1000;
+        private long _eventSendIntervalInMillis = 30 * (long)1000;
         private int _maxStringLength = 250;
         private boolean _destroyOnShutDown = true;
         private String _splitFile = null;
@@ -404,7 +404,7 @@ public class SplitClientConfig {
         private final boolean _cdnDebugLogging = true;
         private OperationMode _operationMode = OperationMode.STANDALONE;
         private long _validateAfterInactivityInMillis = 1000;
-        private final long _startingSyncCallBackoffBaseMs = new Long(1000); //backoff base starting at 1 seconds
+        private final long _startingSyncCallBackoffBaseMs = 1000; //backoff base starting at 1 seconds
         private CustomStorageWrapper _customStorageWrapper;
         private StorageMode _storageMode = StorageMode.MEMORY;
         private final long _lastSeenCacheSize = 500000;
