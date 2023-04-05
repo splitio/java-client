@@ -10,11 +10,15 @@ public class RedisInstance {
 
     private static final int TIMEOUT = 1000;
 
+    private RedisInstance() {
+        throw new IllegalStateException("Utility class");
+    }
+
     public static Builder builder() {
         return new Builder();
     }
 
-    private static CustomStorageWrapper getRedisInstance(String host, int port, int timeout, String user, String password, int database, String prefix, int maxTotal) {
+    private static CustomStorageWrapper getRedisInstance(String host, int port, int timeout, String password, int database, String prefix, int maxTotal) {
         JedisPoolConfig poolConfig = new JedisPoolConfig();
         poolConfig.setMaxTotal(maxTotal);
         JedisPool jedisPool = new JedisPool(poolConfig, host, port, timeout, password, database);
@@ -104,7 +108,7 @@ public class RedisInstance {
             if(_jedisCluster != null) {
                 return RedisInstance.getRedisInstance(_jedisCluster, _prefix, _hashtag);
             }
-            return RedisInstance.getRedisInstance(_host, _port, _timeout, _user, _password, _database, _prefix, _maxTotal);
+            return RedisInstance.getRedisInstance(_host, _port, _timeout, _password, _database, _prefix, _maxTotal);
         }
     }
 }

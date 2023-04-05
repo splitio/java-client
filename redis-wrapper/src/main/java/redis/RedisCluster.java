@@ -72,7 +72,7 @@ class RedisCluster implements CustomStorageWrapper {
     @Override
     public void set(String key, String item) throws Exception {
         try {
-            if(key.contains(_commonRedis.TELEMETRY_INIT)) {
+            if(key.contains(CommonRedis.TELEMETRY_INIT)) {
                 String[] splittedKey = key.split("::");
                 jedis.hset(_commonRedis.buildKeyWithPrefix(splittedKey[0]), splittedKey[1], item);
                 return;
@@ -158,9 +158,9 @@ class RedisCluster implements CustomStorageWrapper {
     public long pushItems(String key, List<String> items) throws Exception {
         try {
             long addedItems = jedis.rpush(_commonRedis.buildKeyWithPrefix(key), items.toArray(new String[items.size()]));
-            if(_commonRedis.EVENTS_KEY.equals(key) || _commonRedis.IMPRESSIONS_KEY.equals(key)) {
+            if(CommonRedis.EVENTS_KEY.equals(key) || CommonRedis.IMPRESSIONS_KEY.equals(key)) {
                 if(addedItems == items.size()) {
-                    jedis.pexpire(key, _commonRedis.IMPRESSIONS_OR_EVENTS_DEFAULT_TTL);
+                    jedis.pexpire(key, CommonRedis.IMPRESSIONS_OR_EVENTS_DEFAULT_TTL);
                 }
             }
             return addedItems;
