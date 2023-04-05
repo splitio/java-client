@@ -404,7 +404,7 @@ public class SplitClientConfig {
         private final boolean _cdnDebugLogging = true;
         private OperationMode _operationMode = OperationMode.STANDALONE;
         private long _validateAfterInactivityInMillis = 1000;
-        private static final long _startingSyncCallBackoffBaseMs = 1000; //backoff base starting at 1 seconds
+        private static final long STARTING_SYNC_CALL_BACKOFF_BASE_MS = 1000; //backoff base starting at 1 seconds
         private CustomStorageWrapper _customStorageWrapper;
         private StorageMode _storageMode = StorageMode.MEMORY;
         private final long _lastSeenCacheSize = 500000;
@@ -1011,7 +1011,7 @@ public class SplitClientConfig {
                     _cdnDebugLogging,
                     _operationMode,
                     _validateAfterInactivityInMillis,
-                    _startingSyncCallBackoffBaseMs,
+                    STARTING_SYNC_CALL_BACKOFF_BASE_MS,
                     _customStorageWrapper,
                     _storageMode,
                     _uniqueKeysRefreshRateInMemory,
