@@ -39,15 +39,15 @@ public class LegacyLocalhostSplitChangeFetcher implements SplitChangeFetcher {
             SplitChange splitChange = new SplitChange();
             splitChange.splits = new ArrayList<>();
             for (String line = reader.readLine(); line != null; line = reader.readLine()) {
-                line = line.trim();
-                if (line.isEmpty() || line.startsWith("#")) {
+                String lineTrim = line.trim();
+                if (lineTrim.isEmpty() || lineTrim.startsWith("#")) {
                     continue;
                 }
 
-                String[] feature_treatment = line.split("\\s+");
+                String[] feature_treatment = lineTrim.split("\\s+");
 
                 if (feature_treatment.length < 2 || feature_treatment.length > 3) {
-                    _log.info("Ignoring line since it does not have 2 or 3 columns: " + line);
+                    _log.info("Ignoring line since it does not have 2 or 3 columns: " + lineTrim);
                     continue;
                 }
                 Optional<Split> splitOptional = splitChange.splits.stream().filter(split -> split.name.equals(feature_treatment[0])).findFirst();
