@@ -15,6 +15,7 @@ import io.split.client.dtos.SplitChange;
 import io.split.client.dtos.Status;
 import io.split.client.dtos.WhitelistMatcherData;
 
+import java.security.SecureRandom;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
@@ -31,8 +32,7 @@ public final class LocalhostSanitizer {
     private static final String TRAFFIC_TYPE_USER = "user";
 
     public static SplitChange sanitization(SplitChange splitChange) {
-        long seed = System.currentTimeMillis();
-        Random random = new Random(seed);
+        SecureRandom random = new SecureRandom();
         List<Split> splitsToRemove = new ArrayList<>();
         if (splitChange.till < -1 || splitChange.till == 0) {
             splitChange.till = -1L;

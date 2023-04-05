@@ -92,8 +92,8 @@ public class RedisInstance {
             return this;
         }
 
-        public Builder maxTotal(int _maxTotal) {
-            _maxTotal = _maxTotal;
+        public Builder maxTotal(int maxTotal) {
+            _maxTotal = maxTotal;
             return this;
         }
 
