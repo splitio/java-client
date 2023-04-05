@@ -18,13 +18,13 @@ public class RedisPipeline implements pluggable.Pipeline {
 
     private static final Logger _log = LoggerFactory.getLogger(RedisPipeline.class);
 
-    public RedisPipeline(JedisPool jedisPool, String prefix) {
+    public RedisPipeline(JedisPool jedisPool, String prefix) throws RedisException {
         _jedisPool = jedisPool;
         _commonRedis = CommonRedis.create(prefix);
         try (Jedis jedis = _jedisPool.getResource()) {
             _pipelined = jedis.pipelined();
         } catch (Exception ex) {
-            new RedisException(ex.getMessage());
+            throw new RedisException(ex.getMessage());
         }
     }
 
@@ -33,7 +33,7 @@ public class RedisPipeline implements pluggable.Pipeline {
         _pipelined.hincrBy(_commonRedis.buildKeyWithPrefix(key), field, value);
     }
 
-    public void delete(List<String> keys){
+    public void delete(List<String> keys) throws RedisException {
         if(keys == null || keys.isEmpty()){
             return ;
         }
@@ -42,7 +42,7 @@ public class RedisPipeline implements pluggable.Pipeline {
 
             jedis.del(keys.toArray(new String[keys.size()]));
         } catch (Exception ex) {
-            new RedisException(ex.getMessage());
+            throw new RedisException(ex.getMessage());
         }
     }
 
