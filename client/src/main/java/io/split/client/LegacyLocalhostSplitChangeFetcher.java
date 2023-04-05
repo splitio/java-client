@@ -44,33 +44,33 @@ public class LegacyLocalhostSplitChangeFetcher implements SplitChangeFetcher {
                     continue;
                 }
 
-                String[] feature_treatment = lineTrim.split("\\s+");
+                String[] featureTreatment = lineTrim.split("\\s+");
 
-                if (feature_treatment.length < 2 || feature_treatment.length > 3) {
+                if (featureTreatment.length < 2 || featureTreatment.length > 3) {
                     _log.info("Ignoring line since it does not have 2 or 3 columns: " + lineTrim);
                     continue;
                 }
-                Optional<Split> splitOptional = splitChange.splits.stream().filter(split -> split.name.equals(feature_treatment[0])).findFirst();
+                Optional<Split> splitOptional = splitChange.splits.stream().filter(split -> split.name.equals(featureTreatment[0])).findFirst();
                 Split split = splitOptional.orElse(null);
                 if(split == null) {
                     split = new Split();
-                    split.name = feature_treatment[0];
+                    split.name = featureTreatment[0];
                     split.configurations = new HashMap<>();
                     split.conditions = new ArrayList<>();
                 } else {
                     splitChange.splits.remove(split);
                 }
                 split.status = Status.ACTIVE;
-                split.defaultTreatment = feature_treatment[1];
+                split.defaultTreatment = featureTreatment[1];
                 split.trafficTypeName = "user";
                 split.trafficAllocation = 100;
                 split.trafficAllocationSeed = 1;
 
                 Condition condition;
-                if (feature_treatment.length == 2) {
-                    condition = LocalhostSanitizer.createCondition(null, feature_treatment[1]);
+                if (featureTreatment.length == 2) {
+                    condition = LocalhostSanitizer.createCondition(null, featureTreatment[1]);
                 } else {
-                    condition = LocalhostSanitizer.createCondition(feature_treatment[2], feature_treatment[1]);
+                    condition = LocalhostSanitizer.createCondition(featureTreatment[2], featureTreatment[1]);
                 }
                 if(condition.conditionType != ConditionType.ROLLOUT){
                     split.conditions.add(0, condition);
