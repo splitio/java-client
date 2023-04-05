@@ -158,10 +158,8 @@ class RedisCluster implements CustomStorageWrapper {
     public long pushItems(String key, List<String> items) throws Exception {
         try {
             long addedItems = jedis.rpush(_commonRedis.buildKeyWithPrefix(key), items.toArray(new String[items.size()]));
-            if(CommonRedis.EVENTS_KEY.equals(key) || CommonRedis.IMPRESSIONS_KEY.equals(key)) {
-                if(addedItems == items.size()) {
-                    jedis.pexpire(key, CommonRedis.IMPRESSIONS_OR_EVENTS_DEFAULT_TTL);
-                }
+            if((CommonRedis.EVENTS_KEY.equals(key) || CommonRedis.IMPRESSIONS_KEY.equals(key)) && addedItems == items.size()) {
+                jedis.pexpire(key, CommonRedis.IMPRESSIONS_OR_EVENTS_DEFAULT_TTL);
             }
             return addedItems;
         } catch (Exception ex) {
