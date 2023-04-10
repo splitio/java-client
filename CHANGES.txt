@@ -1,7 +1,7 @@
 4.7.1 (Apr 4, 2023)
 - Added SHA for split and segment fetcher in localhost json.
 - Updated `org.yaml.snakeyaml` dependence to 2.0 for fixing a vulnerability.
-- Fixed Redis, changing []dtos.Key to dtos.Key
+- Fixed Redis integration, changing []dtos.Key to dtos.Key
 - Fixed destroy for consumer mode.
 
 4.7.0 (Jan 30, 2023)
