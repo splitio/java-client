@@ -12,7 +12,7 @@ public class ConsumerSyncManagerTest {
         ConsumerSyncManager imp = new ConsumerSyncManager(redisSynchronizer);
         imp.start();
         Mockito.verify(redisSynchronizer, Mockito.times(1)).startPeriodicDataRecording();
-        imp.shutdown(3L,1L,1L);
-        Mockito.verify(redisSynchronizer, Mockito.times(1)).stopPeriodicDataRecording(3L,1L,1L);
+        imp.shutdown();
+        Mockito.verify(redisSynchronizer, Mockito.times(1)).stopPeriodicDataRecording();
     }
 }

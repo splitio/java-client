@@ -23,9 +23,9 @@ public class TelemetrySyncTaskTest {
         telemetrySyncTask.startScheduledTask();
         Thread.sleep(2100);
         Mockito.verify(telemetrySynchronizer, Mockito.times(2)).synchronizeStats();
-        telemetrySyncTask.stopScheduledTask(1l, 1l, 1l);
+        telemetrySyncTask.stopScheduledTask();
         Mockito.verify(telemetrySynchronizer, Mockito.times(2)).synchronizeStats();
-        Mockito.verify(telemetrySynchronizer, Mockito.times(1)).finalSynchronization(1l, 1l, 1l);
+        Mockito.verify(telemetrySynchronizer, Mockito.times(1)).finalSynchronization();
     }
 
 }

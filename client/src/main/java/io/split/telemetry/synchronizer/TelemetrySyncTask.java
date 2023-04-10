@@ -38,9 +38,9 @@ public class TelemetrySyncTask {
         },_telemetryRefreshRate,  _telemetryRefreshRate, TimeUnit.SECONDS);
     }
 
-    public void stopScheduledTask(long splitCount, long segmentCount, long segmentKeyCount) {
+    public void stopScheduledTask() {
         try {
-            _telemetrySynchronizer.finalSynchronization(splitCount, segmentCount, segmentKeyCount);
+            _telemetrySynchronizer.finalSynchronization();
         } catch (Exception e) {
             _log.warn("Error trying to send telemetry stats.");
         }

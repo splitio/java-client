@@ -70,14 +70,14 @@ public class ConsumerSynchronizer implements Synchronizer{
     }
 
     @Override
-    public void stopPeriodicDataRecording(long splitCount, long segmentCount, long segmentKeyCount) {
+    public void stopPeriodicDataRecording() {
         _impressionManager.close();
         _log.info("Successful shutdown of impressions manager");
         if (_uniqueKeysTracker != null){
             _uniqueKeysTracker.stop();
             _log.info("Successful stop of UniqueKeysTracker");
         }
-        _telemetrySyncTask.stopScheduledTask(splitCount, segmentCount, segmentKeyCount);
+        _telemetrySyncTask.stopScheduledTask();
         _log.info("Successful shutdown of telemetry sync task");
     }
 }

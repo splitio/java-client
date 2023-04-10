@@ -26,8 +26,6 @@ import io.split.engine.matchers.strings.EndsWithAnyOfMatcher;
 import io.split.engine.matchers.strings.RegularExpressionMatcher;
 import io.split.engine.matchers.strings.StartsWithAnyOfMatcher;
 import io.split.engine.matchers.strings.WhitelistMatcher;
-import io.split.engine.segments.SegmentSynchronizationTask;
-import io.split.storages.SegmentCacheConsumer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

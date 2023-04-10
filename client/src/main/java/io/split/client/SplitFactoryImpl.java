@@ -364,7 +364,15 @@ public class SplitFactoryImpl implements SplitFactory {
                 _splitCache);
 
         // SplitFetcher
-        SplitChangeFetcher splitChangeFetcher = new LocalhostSplitChangeFetcher(config.splitFile());
+        SplitChangeFetcher splitChangeFetcher;
+        String splitFile = config.splitFile();
+        if (splitFile != null && splitFile.toLowerCase().endsWith(".json")){
+            splitChangeFetcher = new JsonLocalhostSplitChangeFetcher(config.splitFile());
+        } else if (splitFile != null && !splitFile.isEmpty() && (splitFile.endsWith(".yaml") || splitFile.endsWith(".yml"))) {
+            splitChangeFetcher = new YamlLocalhostSplitChangeFetcher(splitFile);
+        } else {
+            splitChangeFetcher = new LegacyLocalhostSplitChangeFetcher(config.splitFile());
+        }
 
         SplitParser splitParser = new SplitParser();
 
@@ -430,16 +438,12 @@ public class SplitFactoryImpl implements SplitFactory {
             return;
         }
         try {
-            long splitCount = _splitCache.getAll().stream().count();
-            long segmentCount = _segmentCache.getSegmentCount();
-            long segmentKeyCount = _segmentCache.getKeyCount();
             _log.info("Shutdown called for split");
-            _syncManager.shutdown(splitCount, segmentCount, segmentKeyCount);
+            _syncManager.shutdown();
             _log.info("Successful shutdown of syncManager");
             if(OperationMode.STANDALONE.equals(_operationMode)) {
                 _telemetryStorageProducer.recordSessionLength(System.currentTimeMillis() - _startTime);
-                }
-            else if(OperationMode.CONSUMER.equals(_operationMode)) {
+            } else if(OperationMode.CONSUMER.equals(_operationMode)) {
                 _userStorageWrapper.disconnect();
             }
         } catch (IOException e) {
@@ -572,7 +576,7 @@ public class SplitFactoryImpl implements SplitFactory {
         }
         ProcessImpressionStrategy processImpressionStrategy = null;
         ImpressionCounter counter = null;
-        ImpressionListener listener = (null != impressionListeners && !impressionListeners.isEmpty()) ? new ImpressionListener.FederatedImpressionListener(impressionListeners)
+        ImpressionListener listener = !impressionListeners.isEmpty() ? new ImpressionListener.FederatedImpressionListener(impressionListeners)
                 : null;
         switch (config.impressionsMode()){
             case OPTIMIZED:

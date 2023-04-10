@@ -2,7 +2,6 @@ package io.split.engine.segments;
 
 import com.google.common.collect.Maps;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
-import io.split.engine.SDKReadinessGates;
 import io.split.engine.common.FetchOptions;
 import io.split.storages.SegmentCacheProducer;
 import io.split.storages.SplitCacheConsumer;

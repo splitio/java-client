@@ -16,6 +16,8 @@ import java.net.URISyntaxException;
  */
 public class SplitFactoryBuilder {
     private static final Logger _log = LoggerFactory.getLogger(SplitFactoryBuilder.class);
+    static final String LOCALHOST = "localhost";
+
 
     /**
      * Instantiates a SplitFactory with default config
@@ -38,36 +40,13 @@ public class SplitFactoryBuilder {
      */
     public static synchronized SplitFactory build(String apiToken, SplitClientConfig config) throws IOException, URISyntaxException {
         ApiKeyValidator.validate(apiToken);
-        String splitFile = config.splitFile();
-        if (LocalhostSplitFactory.LOCALHOST.equals(apiToken)) {
-            if (splitFile != null && splitFile.toLowerCase().endsWith(".json")){
-                return new SplitFactoryImpl(config);
-            }
-            return LocalhostSplitFactory.createLocalhostSplitFactory(config);
+        if (LOCALHOST.equals(apiToken)) {
+            return new SplitFactoryImpl(config);
         }
         if (StorageMode.PLUGGABLE.equals(config.storageMode()) || StorageMode.REDIS.equals(config.storageMode())){
             return new SplitFactoryImpl(apiToken, config, config.customStorageWrapper());
         }
         return new SplitFactoryImpl(apiToken, config);
-    }
-
-    /**
-     * Instantiates a local Off-The-Grid SplitFactory
-     *
-     * @throws IOException if there were problems reading the override file from disk.
-     */
-    public static SplitFactory local() throws IOException, URISyntaxException {
-        return LocalhostSplitFactory.createLocalhostSplitFactory(SplitClientConfig.builder().build());
-    }
-
-    /**
-     * Instantiates a local Off-The-Grid SplitFactory
-     *
-     * @return config Split config file
-     * @throws IOException if there were problems reading the override file from disk.
-     */
-    public static SplitFactory local(SplitClientConfig config) throws IOException, URISyntaxException {
-        return LocalhostSplitFactory.createLocalhostSplitFactory(config);
     }
 
     public static void main(String... args) throws IOException, URISyntaxException {

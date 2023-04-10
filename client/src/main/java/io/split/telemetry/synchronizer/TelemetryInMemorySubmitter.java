@@ -63,11 +63,11 @@ public class TelemetryInMemorySubmitter implements TelemetrySynchronizer{
     }
 
     @Override
-    public void finalSynchronization(long splitCount, long segmentCount, long segmentKeyCount) throws Exception {
+    public void finalSynchronization() throws Exception {
         Stats stats = generateStats();
-        stats.set_splitCount(splitCount);
-        stats.set_segmentCount(segmentCount);
-        stats.set_segmentKeyCount(segmentKeyCount);
+        stats.set_splitCount(_splitCacheConsumer.getAll().stream().count());
+        stats.set_segmentCount(_segmentCacheConsumer.getSegmentCount());
+        stats.set_segmentKeyCount(_segmentCacheConsumer.getKeyCount());
         _httpHttpTelemetryMemorySender.postStats(stats);
     }
 
