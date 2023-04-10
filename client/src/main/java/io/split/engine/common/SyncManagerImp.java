@@ -46,7 +46,7 @@ public class SyncManagerImp implements SyncManager {
     private final long _startingSyncCallBackoffBaseMs;
     private final SegmentSynchronizationTask _segmentSynchronizationTaskImp;
     private final SplitSynchronizationTask _splitSynchronizationTask;
-    private static final long STARTING_SYNC_ALL_BACKOFF_MAX_WAIT_MS = new Long(10000); // 10 seconds max wait
+    private static final long STARTING_SYNC_ALL_BACKOFF_MAX_WAIT_MS = 10000; // 10 seconds max wait
     private  final SplitAPI _splitAPI;
 
     @VisibleForTesting

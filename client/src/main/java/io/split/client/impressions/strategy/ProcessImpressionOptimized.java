@@ -42,7 +42,7 @@ public class ProcessImpressionOptimized implements ProcessImpressionStrategy{
         }
         List<Impression> impressionForListener =  this._listenerEnabled ? impressions : null;
 
-        _telemetryRuntimeProducer.recordImpressionStats(ImpressionsDataTypeEnum.IMPRESSIONS_DEDUPED, impressions.size()-impressionsToQueue.size());
+        _telemetryRuntimeProducer.recordImpressionStats(ImpressionsDataTypeEnum.IMPRESSIONS_DEDUPED, impressions.size()- (long)impressionsToQueue.size());
 
         return new ImpressionsResult(impressionsToQueue, impressionForListener);
     }

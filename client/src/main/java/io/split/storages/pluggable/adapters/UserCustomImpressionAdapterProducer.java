@@ -10,8 +10,6 @@ import io.split.client.impressions.ImpressionsStorageProducer;
 import io.split.storages.pluggable.domain.ImpressionConsumer;
 import io.split.storages.pluggable.domain.PrefixAdapter;
 import io.split.storages.pluggable.domain.UserStorageWrapper;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import pluggable.CustomStorageWrapper;
 
 import java.lang.reflect.Modifier;
@@ -21,8 +19,6 @@ import java.util.stream.Collectors;
 import static com.google.common.base.Preconditions.checkNotNull;
 
 public class UserCustomImpressionAdapterProducer implements ImpressionsStorageProducer {
-
-    private static final Logger _log = LoggerFactory.getLogger(UserCustomImpressionAdapterProducer.class);
 
     private final UserStorageWrapper _userStorageWrapper;
     private final Gson _json = new GsonBuilder()

@@ -10,8 +10,6 @@ import io.split.storages.pluggable.domain.ConfigConsumer;
 import io.split.storages.pluggable.domain.PrefixAdapter;
 import io.split.storages.pluggable.domain.UserStorageWrapper;
 import io.split.telemetry.synchronizer.TelemetrySynchronizer;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import pluggable.CustomStorageWrapper;
 
 import java.util.ArrayList;
@@ -27,8 +25,6 @@ public class TelemetryConsumerSubmitter implements TelemetrySynchronizer {
 
     private final UserStorageWrapper _userStorageWrapper;
     private final SDKMetadata _sdkMetadata;
-
-    private static final Logger _log = LoggerFactory.getLogger(TelemetryConsumerSubmitter.class);
 
     public TelemetryConsumerSubmitter(CustomStorageWrapper customStorageWrapper, SDKMetadata sdkMetadata) {
         _userStorageWrapper = new UserStorageWrapper(checkNotNull(customStorageWrapper));
