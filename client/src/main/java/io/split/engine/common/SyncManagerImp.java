@@ -26,6 +26,7 @@ import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import static com.google.common.base.Preconditions.checkNotNull;
+import static io.split.client.utils.ExecutorServiceBuilder.*;
 
 public class SyncManagerImp implements SyncManager {
     private static final Logger _log = LoggerFactory.getLogger(SyncManager.class);
@@ -69,10 +70,7 @@ public class SyncManagerImp implements SyncManager {
                 .setNameFormat("SPLIT-PushStatusMonitor-%d")
                 .setDaemon(true)
                 .build());
-        _initializationtExecutorService = Executors.newSingleThreadExecutor(new ThreadFactoryBuilder()
-                .setNameFormat("SPLIT-Initialization-%d")
-                .setDaemon(true)
-                .build());
+        _initializationtExecutorService = buildExecutorService(config, "SPLIT-Initialization-%d");
         _backoff = new Backoff(config.authRetryBackoffBase());
         _gates = checkNotNull(gates);
         _telemetryRuntimeProducer = checkNotNull(telemetryRuntimeProducer);
