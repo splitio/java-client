@@ -2,6 +2,7 @@ package io.split.engine.common;
 
 import io.split.client.LocalhostSegmentChangeFetcher;
 import io.split.client.JsonLocalhostSplitChangeFetcher;
+import io.split.client.SplitClientConfig;
 import io.split.engine.experiments.SplitChangeFetcher;
 import io.split.engine.experiments.SplitFetcher;
 import io.split.engine.experiments.SplitFetcherImp;
@@ -38,9 +39,10 @@ public class LocalhostSynchronizerTest {
 
         SegmentChangeFetcher segmentChangeFetcher = new LocalhostSegmentChangeFetcher("src/test/resources/");
         SegmentCacheProducer segmentCacheProducer = new SegmentCacheInMemoryImpl();
+        SplitClientConfig config = Mockito.mock(SplitClientConfig.class);
 
         SegmentSynchronizationTaskImp segmentSynchronizationTaskImp = new SegmentSynchronizationTaskImp(segmentChangeFetcher, 1000, 1, segmentCacheProducer,
-                TELEMETRY_STORAGE_NOOP, splitCacheProducer);
+                TELEMETRY_STORAGE_NOOP, splitCacheProducer, config);
         SplitTasks splitTasks = SplitTasks.build(splitSynchronizationTask, segmentSynchronizationTaskImp, null, null, null, null);
 
         LocalhostSynchronizer localhostSynchronizer = new LocalhostSynchronizer(splitTasks, splitFetcher, false);
@@ -62,9 +64,10 @@ public class LocalhostSynchronizerTest {
 
         SegmentChangeFetcher segmentChangeFetcher = Mockito.mock(LocalhostSegmentChangeFetcher.class);
         SegmentCacheProducer segmentCacheProducer = new SegmentCacheInMemoryImpl();
+        SplitClientConfig config = Mockito.mock(SplitClientConfig.class);
 
         SegmentSynchronizationTaskImp segmentSynchronizationTaskImp = new SegmentSynchronizationTaskImp(segmentChangeFetcher, 1000, 1, segmentCacheProducer,
-                TELEMETRY_STORAGE_NOOP, splitCacheProducer);
+                TELEMETRY_STORAGE_NOOP, splitCacheProducer, config);
 
         SplitTasks splitTasks = SplitTasks.build(splitSynchronizationTask, segmentSynchronizationTaskImp, null, null, null, null);
         LocalhostSynchronizer localhostSynchronizer = new LocalhostSynchronizer(splitTasks, splitFetcher, true);

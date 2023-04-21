@@ -1,5 +1,6 @@
 package io.split.engine.common;
 
+import io.split.client.SplitClientConfig;
 import io.split.engine.sse.AuthApiClient;
 import io.split.engine.sse.EventSourceClient;
 import io.split.engine.sse.PushStatusTracker;
@@ -14,8 +15,6 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mockito;
-
-import java.util.concurrent.LinkedBlockingQueue;
 
 public class PushManagerTest {
     private AuthApiClient _authApiClient;
@@ -32,11 +31,14 @@ public class PushManagerTest {
         _backoff = Mockito.mock(Backoff.class);
         _pushStatusTracker = Mockito.mock(PushStatusTrackerImp.class);
         _telemetryStorage = new InMemoryTelemetryStorage();
+        SplitClientConfig config = Mockito.mock(SplitClientConfig.class);
         _pushManager = new PushManagerImp(_authApiClient,
                 _eventSourceClient,
                 Mockito.mock(SplitsWorker.class),
                 Mockito.mock(SegmentsWorkerImp.class),
-                _pushStatusTracker, _telemetryStorage);
+                _pushStatusTracker,
+                _telemetryStorage,
+                config);
     }
 
     @Test

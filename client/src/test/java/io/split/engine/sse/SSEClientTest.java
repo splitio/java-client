@@ -1,5 +1,6 @@
 package io.split.engine.sse;
 
+import io.split.client.SplitClientConfig;
 import io.split.engine.sse.client.SSEClient;
 import io.split.telemetry.storage.InMemoryTelemetryStorage;
 import io.split.telemetry.storage.TelemetryRuntimeProducer;
@@ -36,9 +37,10 @@ public class SSEClientTest {
                 .setDefaultRequestConfig(requestConfig);
 
         CloseableHttpClient httpClient =  httpClientbuilder.build();
+        SplitClientConfig config = Mockito.mock(SplitClientConfig.class);
 
         SSEClient sse = new SSEClient(e -> null,
-                s -> null, httpClient, telemetryRuntimeProducer);
+                s -> null, httpClient, telemetryRuntimeProducer, config);
         sse.open(uri);
         Thread.sleep(5000);
         sse.close();

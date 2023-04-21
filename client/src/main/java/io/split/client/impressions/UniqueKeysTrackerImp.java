@@ -1,11 +1,12 @@
 package io.split.client.impressions;
 
-import com.google.common.util.concurrent.ThreadFactoryBuilder;
+import io.split.client.SplitClientConfig;
 import io.split.client.dtos.UniqueKeys;
 import io.split.client.impressions.filters.BloomFilterImp;
 import io.split.client.impressions.filters.Filter;
 import io.split.client.impressions.filters.FilterAdapter;
 import io.split.client.impressions.filters.FilterAdapterImpl;
+import io.split.client.utils.ExecutorServiceBuilder;
 import io.split.telemetry.synchronizer.TelemetrySynchronizer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -15,9 +16,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
 
 public class UniqueKeysTrackerImp implements UniqueKeysTracker{
@@ -34,24 +33,15 @@ public class UniqueKeysTrackerImp implements UniqueKeysTracker{
     private final int _filterRefreshRate;
     private static final Logger _logger = LoggerFactory.getLogger(UniqueKeysTrackerImp.class);
 
-    public UniqueKeysTrackerImp(TelemetrySynchronizer telemetrySynchronizer, int uniqueKeysRefreshRate, int filterRefreshRate) {
+    public UniqueKeysTrackerImp(TelemetrySynchronizer telemetrySynchronizer, int uniqueKeysRefreshRate, int filterRefreshRate, SplitClientConfig config) {
         Filter bloomFilter = new BloomFilterImp(MAX_AMOUNT_OF_KEYS, MARGIN_ERROR);
         this.filterAdapter = new FilterAdapterImpl(bloomFilter);
         uniqueKeysTracker = new ConcurrentHashMap<>();
         _telemetrySynchronizer = telemetrySynchronizer;
         _uniqueKeysRefreshRate = uniqueKeysRefreshRate;
         _filterRefreshRate = filterRefreshRate;
-
-        ThreadFactory uniqueKeysSyncThreadFactory = new ThreadFactoryBuilder()
-                .setDaemon(true)
-                .setNameFormat("UniqueKeys-sync-%d")
-                .build();
-        ThreadFactory filterThreadFactory = new ThreadFactoryBuilder()
-                .setDaemon(true)
-                .setNameFormat("Filter-%d")
-                .build();
-        _uniqueKeysSyncScheduledExecutorService = Executors.newSingleThreadScheduledExecutor(uniqueKeysSyncThreadFactory);
-        _cleanFilterScheduledExecutorService = Executors.newSingleThreadScheduledExecutor(filterThreadFactory);
+        _uniqueKeysSyncScheduledExecutorService = ExecutorServiceBuilder.buildSingleThreadScheduledExecutor(config,"UniqueKeys-sync-%d");
+        _cleanFilterScheduledExecutorService = ExecutorServiceBuilder.buildSingleThreadScheduledExecutor(config,"Filter-%d");
     }
 
     @Override

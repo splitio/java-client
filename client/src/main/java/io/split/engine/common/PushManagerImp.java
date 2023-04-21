@@ -2,6 +2,7 @@ package io.split.engine.common;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
+import io.split.client.SplitClientConfig;
 import io.split.engine.sse.AuthApiClient;
 import io.split.engine.sse.AuthApiClientImp;
 import io.split.engine.sse.EventSourceClient;
@@ -51,7 +52,8 @@ public class PushManagerImp implements PushManager {
                                              SplitsWorker splitsWorker,
                                              Worker<SegmentQueueDto> segmentWorker,
                                              PushStatusTracker pushStatusTracker,
-                                            TelemetryRuntimeProducer telemetryRuntimeProducer) {
+                                             TelemetryRuntimeProducer telemetryRuntimeProducer,
+                                             SplitClientConfig config) {
 
         _authApiClient = checkNotNull(authApiClient);
         _eventSourceClient = checkNotNull(eventSourceClient);
@@ -71,15 +73,18 @@ public class PushManagerImp implements PushManager {
                                        String authUrl,
                                        SplitAPI splitAPI,
                                        LinkedBlockingQueue<PushManager.Status> statusMessages,
-                                       TelemetryRuntimeProducer telemetryRuntimeProducer) {
+                                       TelemetryRuntimeProducer telemetryRuntimeProducer,
+                                       SplitClientConfig config) {
         SplitsWorker splitsWorker = new SplitsWorkerImp(synchronizer);
         Worker<SegmentQueueDto> segmentWorker = new SegmentsWorkerImp(synchronizer);
         PushStatusTracker pushStatusTracker = new PushStatusTrackerImp(statusMessages, telemetryRuntimeProducer);
         return new PushManagerImp(new AuthApiClientImp(authUrl, splitAPI.getHttpClient(), telemetryRuntimeProducer),
-                EventSourceClientImp.build(streamingUrl, splitsWorker, segmentWorker, pushStatusTracker, splitAPI.getSseHttpClient(), telemetryRuntimeProducer),
+                EventSourceClientImp.build(streamingUrl, splitsWorker, segmentWorker, pushStatusTracker, splitAPI.getSseHttpClient(), telemetryRuntimeProducer, config),
                 splitsWorker,
                 segmentWorker,
-                pushStatusTracker, telemetryRuntimeProducer);
+                pushStatusTracker,
+                telemetryRuntimeProducer,
+                config);
     }
 
     @Override

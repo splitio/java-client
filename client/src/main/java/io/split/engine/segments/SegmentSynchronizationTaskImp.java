@@ -1,7 +1,8 @@
 package io.split.engine.segments;
 
 import com.google.common.collect.Maps;
-import com.google.common.util.concurrent.ThreadFactoryBuilder;
+import io.split.client.SplitClientConfig;
+import io.split.client.utils.ExecutorServiceBuilder;
 import io.split.engine.common.FetchOptions;
 import io.split.storages.SegmentCacheProducer;
 import io.split.storages.SplitCacheConsumer;
@@ -14,11 +15,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
-import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicLong;
@@ -43,19 +42,12 @@ public class SegmentSynchronizationTaskImp implements SegmentSynchronizationTask
     private ScheduledFuture<?> _scheduledFuture;
 
     public SegmentSynchronizationTaskImp(SegmentChangeFetcher segmentChangeFetcher, long refreshEveryNSeconds, int numThreads, SegmentCacheProducer segmentCacheProducer,
-                                         TelemetryRuntimeProducer telemetryRuntimeProducer, SplitCacheConsumer splitCacheConsumer) {
+                                         TelemetryRuntimeProducer telemetryRuntimeProducer, SplitCacheConsumer splitCacheConsumer, SplitClientConfig config) {
         _segmentChangeFetcher = checkNotNull(segmentChangeFetcher);
 
         checkArgument(refreshEveryNSeconds >= 0L);
         _refreshEveryNSeconds = new AtomicLong(refreshEveryNSeconds);
-
-        ThreadFactory threadFactory = new ThreadFactoryBuilder()
-                .setDaemon(true)
-                .setNameFormat("split-segmentFetcher-" + "%d")
-                .build();
-
-        _scheduledExecutorService = Executors.newScheduledThreadPool(numThreads, threadFactory);
-
+        _scheduledExecutorService = ExecutorServiceBuilder.buildScheduledExecutorService(config, "split-segmentFetcher-" + "%d", numThreads);
         _running = new AtomicBoolean(false);
 
         _segmentCacheProducer = checkNotNull(segmentCacheProducer);

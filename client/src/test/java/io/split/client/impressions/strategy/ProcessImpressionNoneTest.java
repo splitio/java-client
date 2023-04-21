@@ -1,5 +1,6 @@
 package io.split.client.impressions.strategy;
 
+import io.split.client.SplitClientConfig;
 import io.split.client.dtos.KeyImpression;
 import io.split.client.impressions.Impression;
 import io.split.client.impressions.ImpressionsResult;
@@ -26,7 +27,8 @@ public class ProcessImpressionNoneTest {
         boolean listenerEnable = true;
         ImpressionCounter counter = new ImpressionCounter();
         TelemetrySynchronizer telemetrySynchronizer = Mockito.mock(TelemetryInMemorySubmitter.class);
-        UniqueKeysTrackerImp uniqueKeysTracker = new UniqueKeysTrackerImp(telemetrySynchronizer, 10000, 10000);
+        SplitClientConfig config = Mockito.mock(SplitClientConfig.class);
+        UniqueKeysTrackerImp uniqueKeysTracker = new UniqueKeysTrackerImp(telemetrySynchronizer, 10000, 10000, config);
         ProcessImpressionNone processImpressionNone = new ProcessImpressionNone(listenerEnable, uniqueKeysTracker, counter);
 
         KeyImpression ki1 = keyImpression("test1", "adil", "on", 1L, null);
@@ -52,7 +54,8 @@ public class ProcessImpressionNoneTest {
         boolean listenerEnable = false;
         ImpressionCounter counter = new ImpressionCounter();
         TelemetrySynchronizer telemetrySynchronizer = Mockito.mock(TelemetryInMemorySubmitter.class);
-        UniqueKeysTrackerImp uniqueKeysTracker = new UniqueKeysTrackerImp(telemetrySynchronizer, 10000, 10000);
+        SplitClientConfig config = Mockito.mock(SplitClientConfig.class);
+        UniqueKeysTrackerImp uniqueKeysTracker = new UniqueKeysTrackerImp(telemetrySynchronizer, 10000, 10000, config);
         ProcessImpressionNone processImpressionNone = new ProcessImpressionNone(listenerEnable, uniqueKeysTracker, counter);
 
         KeyImpression ki1 = keyImpression("test1", "adil", "on", 1L, null);

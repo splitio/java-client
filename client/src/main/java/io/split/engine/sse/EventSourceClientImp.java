@@ -1,6 +1,7 @@
 package io.split.engine.sse;
 
 import com.google.common.annotations.VisibleForTesting;
+import io.split.client.SplitClientConfig;
 import io.split.engine.sse.client.RawEvent;
 import io.split.engine.sse.client.SSEClient;
 import io.split.engine.sse.dtos.SegmentQueueDto;
@@ -37,7 +38,8 @@ public class EventSourceClientImp implements EventSourceClient {
                                                NotificationProcessor notificationProcessor,
                                                PushStatusTracker pushStatusTracker,
                                                CloseableHttpClient sseHttpClient,
-                                               TelemetryRuntimeProducer telemetryRuntimeProducer) {
+                                               TelemetryRuntimeProducer telemetryRuntimeProducer,
+                                               SplitClientConfig config) {
         _baseStreamingUrl = checkNotNull(baseStreamingUrl);
         _notificationParser = checkNotNull(notificationParser);
         _notificationProcessor = checkNotNull(notificationProcessor);
@@ -46,7 +48,9 @@ public class EventSourceClientImp implements EventSourceClient {
         _sseClient = new SSEClient(
                 inboundEvent -> { onMessage(inboundEvent); return null; },
                 status -> { _pushStatusTracker.handleSseStatus(status); return null; },
-                sseHttpClient, telemetryRuntimeProducer);
+                sseHttpClient,
+                telemetryRuntimeProducer,
+                config);
         _firstEvent = new AtomicBoolean();
     }
 
@@ -54,13 +58,16 @@ public class EventSourceClientImp implements EventSourceClient {
                                              SplitsWorker splitsWorker,
                                              Worker<SegmentQueueDto> segmentWorker,
                                              PushStatusTracker pushStatusTracker,
-                                             CloseableHttpClient sseHttpClient, TelemetryRuntimeProducer telemetryRuntimeProducer) {
+                                             CloseableHttpClient sseHttpClient,
+                                             TelemetryRuntimeProducer telemetryRuntimeProducer,
+                                             SplitClientConfig config) {
         return new EventSourceClientImp(baseStreamingUrl,
                 new NotificationParserImp(),
                 NotificationProcessorImp.build(splitsWorker, segmentWorker, pushStatusTracker),
                 pushStatusTracker,
                 sseHttpClient,
-                telemetryRuntimeProducer);
+                telemetryRuntimeProducer,
+                config);
     }
 
     @Override

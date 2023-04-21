@@ -1,6 +1,5 @@
 package io.split.client;
 
-import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import io.split.client.dtos.Metadata;
 import io.split.client.events.EventsSender;
 import io.split.client.events.EventsStorage;
@@ -31,6 +30,7 @@ import io.split.client.interceptors.ClientKeyInterceptorFilter;
 import io.split.client.interceptors.GzipDecoderResponseInterceptor;
 import io.split.client.interceptors.GzipEncoderRequestInterceptor;
 import io.split.client.interceptors.SdkMetadataInterceptorFilter;
+import io.split.client.utils.ExecutorServiceBuilder;
 import io.split.client.utils.SDKMetadata;
 import io.split.engine.SDKReadinessGates;
 import io.split.engine.common.ConsumerSyncManager;
@@ -107,8 +107,9 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 import java.util.stream.Collectors;
+
+import static io.split.client.utils.ExecutorServiceBuilder.*;
 
 public class SplitFactoryImpl implements SplitFactory {
     private static final Logger _log = LoggerFactory.getLogger(SplitFactory.class);
@@ -361,7 +362,8 @@ public class SplitFactoryImpl implements SplitFactory {
                 config.numThreadsForSegmentFetch(),
                 segmentCache,
                 _telemetryStorageProducer,
-                _splitCache);
+                _splitCache,
+               config);
 
         // SplitFetcher
         SplitChangeFetcher splitChangeFetcher;
@@ -553,7 +555,8 @@ public class SplitFactoryImpl implements SplitFactory {
                 config.numThreadsForSegmentFetch(),
                 segmentCacheProducer,
                 _telemetryStorageProducer,
-                splitCacheConsumer);
+                splitCacheConsumer,
+                config);
     }
 
     private SplitFetcher buildSplitFetcher(SplitCacheConsumer splitCacheConsumer, SplitCacheProducer splitCacheProducer) throws URISyntaxException {
@@ -613,10 +616,7 @@ public class SplitFactoryImpl implements SplitFactory {
     }
 
     private void manageSdkReady(SplitClientConfig config) {
-        ExecutorService executorService = Executors.newSingleThreadExecutor(new ThreadFactoryBuilder()
-                .setNameFormat("SPLIT-SDKReadyForConsumer-%d")
-                .setDaemon(true)
-                .build());
+        ExecutorService executorService = buildExecutorService(config, "SPLIT-SDKReadyForConsumer-%d");
         executorService.submit(() -> {
             while(!_userStorageWrapper.connect()) {
                 try {
@@ -635,7 +635,7 @@ public class SplitFactoryImpl implements SplitFactory {
         if (config.impressionsMode().equals(ImpressionsManager.Mode.NONE)){
             int uniqueKeysRefreshRate = config.operationMode().equals(OperationMode.STANDALONE) ? config.uniqueKeysRefreshRateInMemory()
                     : config.uniqueKeysRefreshRateRedis();
-            return new UniqueKeysTrackerImp(_telemetrySynchronizer, uniqueKeysRefreshRate, config.filterUniqueKeysRefreshRate());
+            return new UniqueKeysTrackerImp(_telemetrySynchronizer, uniqueKeysRefreshRate, config.filterUniqueKeysRefreshRate(), config);
         }
         return null;
     }

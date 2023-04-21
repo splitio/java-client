@@ -1,7 +1,6 @@
 package io.split.engine.common;
 
 import com.google.common.annotations.VisibleForTesting;
-import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import io.split.client.ApiKeyCounter;
 import io.split.client.SplitClientConfig;
 import io.split.engine.SDKReadinessGates;
@@ -20,7 +19,6 @@ import org.slf4j.LoggerFactory;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -66,10 +64,7 @@ public class SyncManagerImp implements SyncManager {
         _pushManager = checkNotNull(pushManager);
         _shuttedDown = new AtomicBoolean(false);
         _incomingPushStatus = pushMessages;
-        _pushMonitorExecutorService = Executors.newSingleThreadExecutor(new ThreadFactoryBuilder()
-                .setNameFormat("SPLIT-PushStatusMonitor-%d")
-                .setDaemon(true)
-                .build());
+        _pushMonitorExecutorService = buildExecutorService(config, "SPLIT-PushStatusMonitor-%d");
         _initializationtExecutorService = buildExecutorService(config, "SPLIT-Initialization-%d");
         _backoff = new Backoff(config.authRetryBackoffBase());
         _gates = checkNotNull(gates);
@@ -106,7 +101,8 @@ public class SyncManagerImp implements SyncManager {
                                                         config.authServiceURL(),
                                                         splitAPI,
                                                         pushMessages,
-                                                        telemetryRuntimeProducer);
+                                                        telemetryRuntimeProducer,
+                                                        config);
 
         return new SyncManagerImp(splitTasks,
                                   config.streamingEnabled(),
