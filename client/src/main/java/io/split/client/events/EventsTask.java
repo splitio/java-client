@@ -1,14 +1,15 @@
 package io.split.client.events;
 
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
+import io.split.client.SplitClientConfig;
 import io.split.client.dtos.Event;
+import io.split.client.utils.ExecutorServiceBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
@@ -27,23 +28,20 @@ public class EventsTask{
     private final ScheduledExecutorService _senderScheduledExecutorService;
     private static final Logger _log = LoggerFactory.getLogger(EventsTask.class);
 
-    public static EventsTask create(long sendIntervalMillis, EventsStorageConsumer eventsStorageConsumer, EventsSender eventsSender) throws URISyntaxException {
+    public static EventsTask create(long sendIntervalMillis, EventsStorageConsumer eventsStorageConsumer, EventsSender eventsSender, SplitClientConfig config) throws URISyntaxException {
         return new EventsTask(eventsStorageConsumer,
                 sendIntervalMillis,
-                eventsSender);
+                eventsSender,
+                config);
     }
 
     EventsTask(EventsStorageConsumer eventsStorageConsumer,
-               long sendIntervalMillis, EventsSender eventsSender) {
+               long sendIntervalMillis, EventsSender eventsSender, SplitClientConfig config) {
 
         _eventsStorageConsumer = checkNotNull(eventsStorageConsumer);
-
         _sendIntervalMillis = sendIntervalMillis;
-
         _eventsSender = checkNotNull(eventsSender);
-
-        ThreadFactory senderThreadFactory = eventClientThreadFactory("Sender-events-%d");
-        _senderScheduledExecutorService = Executors.newSingleThreadScheduledExecutor(senderThreadFactory);
+        _senderScheduledExecutorService = ExecutorServiceBuilder.buildSingleThreadScheduledExecutor(config, "Sender-events-%d");
     }
 
     ThreadFactory eventClientThreadFactory(final String name) {

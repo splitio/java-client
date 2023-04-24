@@ -1,7 +1,6 @@
 package io.split.engine.common;
 
 import com.google.common.annotations.VisibleForTesting;
-import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import io.split.client.SplitClientConfig;
 import io.split.engine.sse.AuthApiClient;
 import io.split.engine.sse.AuthApiClientImp;
@@ -26,11 +25,11 @@ import org.slf4j.LoggerFactory;
 import java.util.concurrent.Future;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
 
 import static com.google.common.base.Preconditions.checkNotNull;
+import static io.split.client.utils.ExecutorServiceBuilder.buildSingleThreadScheduledExecutor;
 
 public class PushManagerImp implements PushManager {
     private static final Logger _log = LoggerFactory.getLogger(PushManager.class);
@@ -61,10 +60,7 @@ public class PushManagerImp implements PushManager {
         _segmentWorker = segmentWorker;
         _pushStatusTracker = pushStatusTracker;
         _expirationTime = new AtomicLong();
-        _scheduledExecutorService = Executors.newSingleThreadScheduledExecutor(new ThreadFactoryBuilder()
-                .setDaemon(true)
-                .setNameFormat("Split-SSERefreshToken-%d")
-                .build());
+        _scheduledExecutorService = buildSingleThreadScheduledExecutor(config, "Split-SSERefreshToken-%d");
         _telemetryRuntimeProducer = checkNotNull(telemetryRuntimeProducer);
     }
 
