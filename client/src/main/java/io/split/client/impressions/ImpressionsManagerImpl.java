@@ -5,7 +5,7 @@ import io.split.client.SplitClientConfig;
 import io.split.client.dtos.KeyImpression;
 import io.split.client.dtos.TestImpressions;
 import io.split.client.impressions.strategy.ProcessImpressionStrategy;
-import io.split.client.utils.ExecutorServiceBuilder;
+import io.split.client.utils.SplitExecutorFactory;
 import io.split.telemetry.domain.enums.ImpressionsDataTypeEnum;
 import io.split.telemetry.storage.TelemetryRuntimeProducer;
 import org.slf4j.Logger;
@@ -83,7 +83,7 @@ public class ImpressionsManagerImpl implements ImpressionsManager, Closeable {
         _impressionsSender = impressionsSender;
         _counter = impressionCounter;
 
-        _scheduler = ExecutorServiceBuilder.buildScheduledExecutorService(config, "Split-ImpressionsManager-%d", 2);
+        _scheduler = SplitExecutorFactory.buildScheduledExecutorService(config.getThreadFactory(), "Split-ImpressionsManager-%d", 2);
         _listener = impressionListener;
 
         _impressionsRefreshRate = config.impressionsRefreshRate();

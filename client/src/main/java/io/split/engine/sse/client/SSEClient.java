@@ -26,7 +26,7 @@ import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Function;
 
 import static com.google.common.base.Preconditions.checkNotNull;
-import static io.split.client.utils.ExecutorServiceBuilder.*;
+import static io.split.client.utils.SplitExecutorFactory.buildExecutorService;
 
 public class SSEClient {
 
@@ -69,7 +69,7 @@ public class SSEClient {
         _client = client;
         _forcedStop = new AtomicBoolean();
         _telemetryRuntimeProducer = checkNotNull(telemetryRuntimeProducer);
-        _connectionExecutor = buildExecutorService(config, "SPLIT-SSEConnection-%d");
+        _connectionExecutor = buildExecutorService(config.getThreadFactory(), "SPLIT-SSEConnection-%d");
     }
 
     public synchronized boolean open(URI uri) {

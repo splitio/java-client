@@ -29,7 +29,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
 
 import static com.google.common.base.Preconditions.checkNotNull;
-import static io.split.client.utils.ExecutorServiceBuilder.buildSingleThreadScheduledExecutor;
+import static io.split.client.utils.SplitExecutorFactory.buildSingleThreadScheduledExecutor;
 
 public class PushManagerImp implements PushManager {
     private static final Logger _log = LoggerFactory.getLogger(PushManager.class);
@@ -60,7 +60,7 @@ public class PushManagerImp implements PushManager {
         _segmentWorker = segmentWorker;
         _pushStatusTracker = pushStatusTracker;
         _expirationTime = new AtomicLong();
-        _scheduledExecutorService = buildSingleThreadScheduledExecutor(config, "Split-SSERefreshToken-%d");
+        _scheduledExecutorService = buildSingleThreadScheduledExecutor(config.getThreadFactory(), "Split-SSERefreshToken-%d");
         _telemetryRuntimeProducer = checkNotNull(telemetryRuntimeProducer);
     }
 

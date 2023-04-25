@@ -2,7 +2,7 @@ package io.split.engine.segments;
 
 import com.google.common.collect.Maps;
 import io.split.client.SplitClientConfig;
-import io.split.client.utils.ExecutorServiceBuilder;
+import io.split.client.utils.SplitExecutorFactory;
 import io.split.engine.common.FetchOptions;
 import io.split.storages.SegmentCacheProducer;
 import io.split.storages.SplitCacheConsumer;
@@ -47,7 +47,7 @@ public class SegmentSynchronizationTaskImp implements SegmentSynchronizationTask
 
         checkArgument(refreshEveryNSeconds >= 0L);
         _refreshEveryNSeconds = new AtomicLong(refreshEveryNSeconds);
-        _scheduledExecutorService = ExecutorServiceBuilder.buildScheduledExecutorService(config, "split-segmentFetcher-" + "%d", numThreads);
+        _scheduledExecutorService = SplitExecutorFactory.buildScheduledExecutorService(config.getThreadFactory(), "split-segmentFetcher-" + "%d", numThreads);
         _running = new AtomicBoolean(false);
 
         _segmentCacheProducer = checkNotNull(segmentCacheProducer);

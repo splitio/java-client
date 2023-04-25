@@ -6,7 +6,7 @@ import io.split.client.impressions.filters.BloomFilterImp;
 import io.split.client.impressions.filters.Filter;
 import io.split.client.impressions.filters.FilterAdapter;
 import io.split.client.impressions.filters.FilterAdapterImpl;
-import io.split.client.utils.ExecutorServiceBuilder;
+import io.split.client.utils.SplitExecutorFactory;
 import io.split.telemetry.synchronizer.TelemetrySynchronizer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -40,8 +40,8 @@ public class UniqueKeysTrackerImp implements UniqueKeysTracker{
         _telemetrySynchronizer = telemetrySynchronizer;
         _uniqueKeysRefreshRate = uniqueKeysRefreshRate;
         _filterRefreshRate = filterRefreshRate;
-        _uniqueKeysSyncScheduledExecutorService = ExecutorServiceBuilder.buildSingleThreadScheduledExecutor(config,"UniqueKeys-sync-%d");
-        _cleanFilterScheduledExecutorService = ExecutorServiceBuilder.buildSingleThreadScheduledExecutor(config,"Filter-%d");
+        _uniqueKeysSyncScheduledExecutorService = SplitExecutorFactory.buildSingleThreadScheduledExecutor(config.getThreadFactory(),"UniqueKeys-sync-%d");
+        _cleanFilterScheduledExecutorService = SplitExecutorFactory.buildSingleThreadScheduledExecutor(config.getThreadFactory(),"Filter-%d");
     }
 
     @Override

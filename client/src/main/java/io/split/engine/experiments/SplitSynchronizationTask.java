@@ -17,7 +17,7 @@ import java.util.concurrent.atomic.AtomicReference;
 
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
-import static io.split.client.utils.ExecutorServiceBuilder.*;
+import static io.split.client.utils.SplitExecutorFactory.*;
 
 /**
  * Provides an instance of RefreshableExperimentFetcher that is guaranteed to be a singleton.
@@ -42,7 +42,7 @@ public class SplitSynchronizationTask implements SyncTask, Closeable {
         checkArgument(refreshEveryNSeconds >= 0L);
         _refreshEveryNSeconds = new AtomicLong(refreshEveryNSeconds);
 
-        _scheduledExecutorService = buildSingleThreadScheduledExecutor(config, "split-splitFetcher-%d");
+        _scheduledExecutorService = buildSingleThreadScheduledExecutor(config.getThreadFactory(), "split-splitFetcher-%d");
         _executorService.set(_scheduledExecutorService);
 
         _running = new AtomicBoolean();

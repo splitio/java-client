@@ -3,7 +3,7 @@ package io.split.client.events;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import io.split.client.SplitClientConfig;
 import io.split.client.dtos.Event;
-import io.split.client.utils.ExecutorServiceBuilder;
+import io.split.client.utils.SplitExecutorFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -41,7 +41,7 @@ public class EventsTask{
         _eventsStorageConsumer = checkNotNull(eventsStorageConsumer);
         _sendIntervalMillis = sendIntervalMillis;
         _eventsSender = checkNotNull(eventsSender);
-        _senderScheduledExecutorService = ExecutorServiceBuilder.buildSingleThreadScheduledExecutor(config, "Sender-events-%d");
+        _senderScheduledExecutorService = SplitExecutorFactory.buildSingleThreadScheduledExecutor(config.getThreadFactory(), "Sender-events-%d");
     }
 
     ThreadFactory eventClientThreadFactory(final String name) {

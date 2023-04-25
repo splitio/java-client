@@ -24,7 +24,7 @@ import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import static com.google.common.base.Preconditions.checkNotNull;
-import static io.split.client.utils.ExecutorServiceBuilder.*;
+import static io.split.client.utils.SplitExecutorFactory.buildExecutorService;
 
 public class SyncManagerImp implements SyncManager {
     private static final Logger _log = LoggerFactory.getLogger(SyncManager.class);
@@ -64,8 +64,8 @@ public class SyncManagerImp implements SyncManager {
         _pushManager = checkNotNull(pushManager);
         _shuttedDown = new AtomicBoolean(false);
         _incomingPushStatus = pushMessages;
-        _pushMonitorExecutorService = buildExecutorService(config, "SPLIT-PushStatusMonitor-%d");
-        _initializationtExecutorService = buildExecutorService(config, "SPLIT-Initialization-%d");
+        _pushMonitorExecutorService = buildExecutorService(config.getThreadFactory(), "SPLIT-PushStatusMonitor-%d");
+        _initializationtExecutorService = buildExecutorService(config.getThreadFactory(), "SPLIT-Initialization-%d");
         _backoff = new Backoff(config.authRetryBackoffBase());
         _gates = checkNotNull(gates);
         _telemetryRuntimeProducer = checkNotNull(telemetryRuntimeProducer);

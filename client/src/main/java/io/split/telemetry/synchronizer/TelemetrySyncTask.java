@@ -1,7 +1,6 @@
 package io.split.telemetry.synchronizer;
 
 import io.split.client.SplitClientConfig;
-import io.split.client.utils.ExecutorServiceBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -9,7 +8,7 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
 import static com.google.common.base.Preconditions.checkNotNull;
-import static io.split.client.utils.ExecutorServiceBuilder.*;
+import static io.split.client.utils.SplitExecutorFactory.buildSingleThreadScheduledExecutor;
 
 public class TelemetrySyncTask {
 
@@ -21,7 +20,7 @@ public class TelemetrySyncTask {
     public TelemetrySyncTask(int telemetryRefreshRate, TelemetrySynchronizer telemetrySynchronizer, SplitClientConfig config) {
         _telemetrySynchronizer = checkNotNull(telemetrySynchronizer);
         _telemetryRefreshRate = telemetryRefreshRate;
-        _telemetrySyncScheduledExecutorService = buildSingleThreadScheduledExecutor(config, "Telemetry-sync-%d");
+        _telemetrySyncScheduledExecutorService = buildSingleThreadScheduledExecutor(config.getThreadFactory(), "Telemetry-sync-%d");
     }
 
     public void startScheduledTask() {

@@ -30,7 +30,6 @@ import io.split.client.interceptors.ClientKeyInterceptorFilter;
 import io.split.client.interceptors.GzipDecoderResponseInterceptor;
 import io.split.client.interceptors.GzipEncoderRequestInterceptor;
 import io.split.client.interceptors.SdkMetadataInterceptorFilter;
-import io.split.client.utils.ExecutorServiceBuilder;
 import io.split.client.utils.SDKMetadata;
 import io.split.engine.SDKReadinessGates;
 import io.split.engine.common.ConsumerSyncManager;
@@ -109,7 +108,7 @@ import java.util.Random;
 import java.util.concurrent.ExecutorService;
 import java.util.stream.Collectors;
 
-import static io.split.client.utils.ExecutorServiceBuilder.*;
+import static io.split.client.utils.SplitExecutorFactory.buildExecutorService;
 
 public class SplitFactoryImpl implements SplitFactory {
     private static final Logger _log = LoggerFactory.getLogger(SplitFactory.class);
@@ -617,7 +616,7 @@ public class SplitFactoryImpl implements SplitFactory {
     }
 
     private void manageSdkReady(SplitClientConfig config) {
-        ExecutorService executorService = buildExecutorService(config, "SPLIT-SDKReadyForConsumer-%d");
+        ExecutorService executorService = buildExecutorService(config.getThreadFactory(), "SPLIT-SDKReadyForConsumer-%d");
         executorService.submit(() -> {
             while(!_userStorageWrapper.connect()) {
                 try {
