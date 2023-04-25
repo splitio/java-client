@@ -17,7 +17,7 @@ import java.util.concurrent.atomic.AtomicReference;
 
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
-import static io.split.client.utils.SplitExecutorFactory.*;
+import static io.split.client.utils.SplitExecutorFactory.buildSingleThreadScheduledExecutor;
 
 /**
  * Provides an instance of RefreshableExperimentFetcher that is guaranteed to be a singleton.
