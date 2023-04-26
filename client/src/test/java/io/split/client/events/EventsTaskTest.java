@@ -1,6 +1,5 @@
 package io.split.client.events;
 
-import io.split.client.SplitClientConfig;
 import io.split.client.dtos.Event;
 import io.split.telemetry.storage.TelemetryRuntimeProducer;
 import org.junit.Assert;
@@ -9,7 +8,6 @@ import org.mockito.Mockito;
 
 public class EventsTaskTest {
     private static final EventsSender EVENTS_SENDER = Mockito.mock(EventsSender.class);
-    private final SplitClientConfig _config = Mockito.mock(SplitClientConfig.class);
 
     @Test
     public void testEventsAreSending() throws InterruptedException {
@@ -19,7 +17,7 @@ public class EventsTaskTest {
         EventsTask eventClient = new EventsTask(eventsStorage,
                 2000,
                 eventsSender,
-                _config);
+                null);
         eventClient.start();
 
         for (int i = 0; i < 159; ++i) {
@@ -43,7 +41,7 @@ public class EventsTaskTest {
         EventsTask eventClient = new EventsTask(eventsStorage,
                 2000,
                 eventsSender,
-                _config);
+                null);
 
         for (int i = 0; i < 159; ++i) {
             Event event = new Event();
@@ -62,7 +60,7 @@ public class EventsTaskTest {
         EventsTask eventClient = new EventsTask(eventsStorage,
                 2000,
                 EVENTS_SENDER,
-                _config);
+                null);
 
         for (int i = 0; i < 10; ++i) {
             Event event = new Event();
@@ -79,7 +77,7 @@ public class EventsTaskTest {
         EventsTask eventClient = new EventsTask(eventsStorage,
                 2000,
                 eventsSender,
-                _config);
+                null);
         eventClient.start();
 
         for (int i = 0; i < 10; ++i) {

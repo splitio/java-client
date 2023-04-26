@@ -1,6 +1,5 @@
 package io.split.engine.experiments;
 
-import io.split.client.SplitClientConfig;
 import io.split.storages.SplitCacheProducer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -10,6 +9,7 @@ import java.util.List;
 
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
+import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicLong;
@@ -36,13 +36,13 @@ public class SplitSynchronizationTask implements SyncTask, Closeable {
 
     private ScheduledFuture<?> _scheduledFuture;
 
-    public SplitSynchronizationTask(SplitFetcher splitFetcher, SplitCacheProducer splitCachesplitCacheProducer, long refreshEveryNSeconds, SplitClientConfig config) {
+    public SplitSynchronizationTask(SplitFetcher splitFetcher, SplitCacheProducer splitCachesplitCacheProducer, long refreshEveryNSeconds, ThreadFactory threadFactory) {
         _splitFetcher.set(checkNotNull(splitFetcher));
         _splitCacheProducer.set(checkNotNull(splitCachesplitCacheProducer));
         checkArgument(refreshEveryNSeconds >= 0L);
         _refreshEveryNSeconds = new AtomicLong(refreshEveryNSeconds);
 
-        _scheduledExecutorService = buildSingleThreadScheduledExecutor(config.getThreadFactory(), "split-splitFetcher-%d");
+        _scheduledExecutorService = buildSingleThreadScheduledExecutor(threadFactory, "split-splitFetcher-%d");
         _executorService.set(_scheduledExecutorService);
 
         _running = new AtomicBoolean();

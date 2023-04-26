@@ -3,7 +3,6 @@ package io.split.engine.segments;
 import com.google.common.collect.Maps;
 import io.split.client.LocalhostSegmentChangeFetcher;
 import io.split.client.JsonLocalhostSplitChangeFetcher;
-import io.split.client.SplitClientConfig;
 import io.split.engine.common.FetchOptions;
 import io.split.engine.experiments.SplitChangeFetcher;
 import io.split.engine.experiments.SplitFetcher;
@@ -46,7 +45,6 @@ public class SegmentSynchronizationTaskImpTest {
     private static final Logger _log = LoggerFactory.getLogger(SegmentSynchronizationTaskImpTest.class);
     private static final TelemetryStorage TELEMETRY_STORAGE = Mockito.mock(InMemoryTelemetryStorage.class);
     private static final TelemetryStorage TELEMETRY_STORAGE_NOOP = Mockito.mock(NoopTelemetryStorage.class);
-    private final SplitClientConfig _config = Mockito.mock(SplitClientConfig.class);
 
     private AtomicReference<SegmentFetcher> fetcher1 = null;
     private AtomicReference<SegmentFetcher> fetcher2 = null;
@@ -63,7 +61,7 @@ public class SegmentSynchronizationTaskImpTest {
 
         SegmentChangeFetcher segmentChangeFetcher = Mockito.mock(SegmentChangeFetcher.class);
         final SegmentSynchronizationTaskImp fetchers = new SegmentSynchronizationTaskImp(segmentChangeFetcher, 1L, 1, segmentCacheProducer,
-                TELEMETRY_STORAGE, Mockito.mock(SplitCacheConsumer.class), _config);
+                TELEMETRY_STORAGE, Mockito.mock(SplitCacheConsumer.class), null);
 
 
         // create two tasks that will separately call segment and make sure
@@ -108,7 +106,7 @@ public class SegmentSynchronizationTaskImpTest {
         SegmentFetcherImp segmentFetcher = Mockito.mock(SegmentFetcherImp.class);
         _segmentFetchers.put("SF", segmentFetcher);
         final SegmentSynchronizationTaskImp fetchers = new SegmentSynchronizationTaskImp(segmentChangeFetcher, 1L, 1,
-                segmentCacheProducer, TELEMETRY_STORAGE, Mockito.mock(SplitCacheConsumer.class), _config);
+                segmentCacheProducer, TELEMETRY_STORAGE, Mockito.mock(SplitCacheConsumer.class), null);
         Mockito.doNothing().when(segmentFetcher).fetchUntil(Mockito.anyObject());
         Mockito.when(segmentFetcher.runWhitCacheHeader()).thenReturn(false);
         Mockito.when(segmentFetcher.fetchAndUpdate(Mockito.anyObject())).thenReturn(false);
@@ -134,7 +132,7 @@ public class SegmentSynchronizationTaskImpTest {
         SegmentChangeFetcher segmentChangeFetcher = Mockito.mock(SegmentChangeFetcher.class);
         SegmentFetcherImp segmentFetcher = Mockito.mock(SegmentFetcherImp.class);
         final SegmentSynchronizationTaskImp fetchers = new SegmentSynchronizationTaskImp(segmentChangeFetcher, 1L, 1, segmentCacheProducer,
-                TELEMETRY_STORAGE, Mockito.mock(SplitCacheConsumer.class), _config);
+                TELEMETRY_STORAGE, Mockito.mock(SplitCacheConsumer.class),  null);
 
         // Before executing, we'll update the map of segmentFecthers via reflection.
         Field segmentFetchersForced = SegmentSynchronizationTaskImp.class.getDeclaredField("_segmentFetchers");
@@ -161,7 +159,7 @@ public class SegmentSynchronizationTaskImpTest {
         FetchOptions fetchOptions = new FetchOptions.Builder().build();
         SplitFetcher splitFetcher = new SplitFetcherImp(splitChangeFetcher, splitParser, splitCacheConsumer, splitCacheProducer, TELEMETRY_STORAGE_NOOP);
 
-        SplitSynchronizationTask splitSynchronizationTask = new SplitSynchronizationTask(splitFetcher, splitCacheProducer, 1000, _config);
+        SplitSynchronizationTask splitSynchronizationTask = new SplitSynchronizationTask(splitFetcher, splitCacheProducer, 1000, null);
 
         splitSynchronizationTask.start();
 
@@ -169,10 +167,9 @@ public class SegmentSynchronizationTaskImpTest {
 
         SegmentChangeFetcher segmentChangeFetcher = Mockito.mock(LocalhostSegmentChangeFetcher.class);
         SegmentCacheProducer segmentCacheProducer = new SegmentCacheInMemoryImpl();
-        SplitClientConfig config = Mockito.mock(SplitClientConfig.class);
 
         SegmentSynchronizationTaskImp segmentSynchronizationTaskImp = new SegmentSynchronizationTaskImp(segmentChangeFetcher, 1000, 1, segmentCacheProducer,
-                TELEMETRY_STORAGE_NOOP, splitCacheProducer, config);
+                TELEMETRY_STORAGE_NOOP, splitCacheProducer, null);
 
         segmentSynchronizationTaskImp.start();
 

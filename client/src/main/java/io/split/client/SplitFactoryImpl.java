@@ -200,7 +200,7 @@ public class SplitFactoryImpl implements SplitFactory {
         _splitSynchronizationTask = new SplitSynchronizationTask(_splitFetcher,
                 splitCache,
                 config.featuresRefreshRate(),
-                config);
+                config.getThreadFactory());
 
         //ImpressionSender
         _impressionsSender = HttpImpressionsSender.create(_httpclient, URI.create(config.eventsEndpoint()), config.impressionsMode(), _telemetryStorageProducer);
@@ -214,9 +214,9 @@ public class SplitFactoryImpl implements SplitFactory {
         // EventClient
         EventsStorage eventsStorage = new InMemoryEventsStorage(config.eventsQueueSize(), _telemetryStorageProducer);
         EventsSender eventsSender = EventsSender.create(_httpclient, _eventsRootTarget, _telemetryStorageProducer);
-        _eventsTask = EventsTask.create(config.eventSendIntervalInMillis(), eventsStorage, eventsSender, config);
+        _eventsTask = EventsTask.create(config.eventSendIntervalInMillis(), eventsStorage, eventsSender, config.getThreadFactory());
 
-        _telemetrySyncTask = new TelemetrySyncTask(config.get_telemetryRefreshRate(), _telemetrySynchronizer, config);
+        _telemetrySyncTask = new TelemetrySyncTask(config.get_telemetryRefreshRate(), _telemetrySynchronizer, config.getThreadFactory());
 
         // Evaluator
         _evaluator = new EvaluatorImp(splitCache, segmentCache);
@@ -300,7 +300,7 @@ public class SplitFactoryImpl implements SplitFactory {
         _impressionsSender = PluggableImpressionSender.create(customStorageWrapper);
         _uniqueKeysTracker = createUniqueKeysTracker(config);
         _impressionsManager = buildImpressionsManager(config, userCustomImpressionAdapterConsumer, userCustomImpressionAdapterProducer);
-        _telemetrySyncTask = new TelemetrySyncTask(config.get_telemetryRefreshRate(), _telemetrySynchronizer, config);
+        _telemetrySyncTask = new TelemetrySyncTask(config.get_telemetryRefreshRate(), _telemetrySynchronizer, config.getThreadFactory());
 
         SplitTasks splitTasks = SplitTasks.build(null, null,
                 _impressionsManager, null, _telemetrySyncTask, _uniqueKeysTracker);
@@ -328,7 +328,7 @@ public class SplitFactoryImpl implements SplitFactory {
     }
 
     // Localhost
-    protected SplitFactoryImpl(SplitClientConfig config) throws URISyntaxException {
+    protected SplitFactoryImpl(SplitClientConfig config) {
         _userStorageWrapper = null;
         _apiToken = "localhost";
         _apiKeyCounter = ApiKeyCounter.getApiKeyCounterInstance();
@@ -363,7 +363,7 @@ public class SplitFactoryImpl implements SplitFactory {
                 segmentCache,
                 _telemetryStorageProducer,
                 _splitCache,
-               config);
+               config.getThreadFactory());
 
         // SplitFetcher
         SplitChangeFetcher splitChangeFetcher;
@@ -381,7 +381,7 @@ public class SplitFactoryImpl implements SplitFactory {
         _splitFetcher = new SplitFetcherImp(splitChangeFetcher, splitParser, _splitCache, splitCache, _telemetryStorageProducer);
 
         // SplitSynchronizationTask
-        _splitSynchronizationTask = new SplitSynchronizationTask(_splitFetcher, splitCache, config.featuresRefreshRate(), config);
+        _splitSynchronizationTask = new SplitSynchronizationTask(_splitFetcher, splitCache, config.featuresRefreshRate(), config.getThreadFactory());
 
         _impressionsManager = new ImpressionsManager.NoOpImpressionsManager();
 
@@ -556,7 +556,7 @@ public class SplitFactoryImpl implements SplitFactory {
                 segmentCacheProducer,
                 _telemetryStorageProducer,
                 splitCacheConsumer,
-                config);
+                config.getThreadFactory());
     }
 
     private SplitFetcher buildSplitFetcher(SplitCacheConsumer splitCacheConsumer, SplitCacheProducer splitCacheProducer) throws URISyntaxException {
@@ -635,7 +635,7 @@ public class SplitFactoryImpl implements SplitFactory {
         if (config.impressionsMode().equals(ImpressionsManager.Mode.NONE)){
             int uniqueKeysRefreshRate = config.operationMode().equals(OperationMode.STANDALONE) ? config.uniqueKeysRefreshRateInMemory()
                     : config.uniqueKeysRefreshRateRedis();
-            return new UniqueKeysTrackerImp(_telemetrySynchronizer, uniqueKeysRefreshRate, config.filterUniqueKeysRefreshRate(), config);
+            return new UniqueKeysTrackerImp(_telemetrySynchronizer, uniqueKeysRefreshRate, config.filterUniqueKeysRefreshRate(), config.getThreadFactory());
         }
         return null;
     }

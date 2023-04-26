@@ -1,6 +1,5 @@
 package io.split.engine.common;
 
-import io.split.client.SplitClientConfig;
 import io.split.engine.sse.AuthApiClient;
 import io.split.engine.sse.EventSourceClient;
 import io.split.engine.sse.PushStatusTracker;
@@ -31,14 +30,13 @@ public class PushManagerTest {
         _backoff = Mockito.mock(Backoff.class);
         _pushStatusTracker = Mockito.mock(PushStatusTrackerImp.class);
         _telemetryStorage = new InMemoryTelemetryStorage();
-        SplitClientConfig config = Mockito.mock(SplitClientConfig.class);
         _pushManager = new PushManagerImp(_authApiClient,
                 _eventSourceClient,
                 Mockito.mock(SplitsWorker.class),
                 Mockito.mock(SegmentsWorkerImp.class),
                 _pushStatusTracker,
                 _telemetryStorage,
-                config);
+                null);
     }
 
     @Test

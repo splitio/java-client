@@ -1,7 +1,6 @@
 package io.split.client.events;
 
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
-import io.split.client.SplitClientConfig;
 import io.split.client.dtos.Event;
 import io.split.client.utils.SplitExecutorFactory;
 import org.slf4j.Logger;
@@ -28,20 +27,20 @@ public class EventsTask{
     private final ScheduledExecutorService _senderScheduledExecutorService;
     private static final Logger _log = LoggerFactory.getLogger(EventsTask.class);
 
-    public static EventsTask create(long sendIntervalMillis, EventsStorageConsumer eventsStorageConsumer, EventsSender eventsSender, SplitClientConfig config) throws URISyntaxException {
+    public static EventsTask create(long sendIntervalMillis, EventsStorageConsumer eventsStorageConsumer, EventsSender eventsSender, ThreadFactory threadFactory) throws URISyntaxException {
         return new EventsTask(eventsStorageConsumer,
                 sendIntervalMillis,
                 eventsSender,
-                config);
+                threadFactory);
     }
 
     EventsTask(EventsStorageConsumer eventsStorageConsumer,
-               long sendIntervalMillis, EventsSender eventsSender, SplitClientConfig config) {
+               long sendIntervalMillis, EventsSender eventsSender, ThreadFactory threadFactory) {
 
         _eventsStorageConsumer = checkNotNull(eventsStorageConsumer);
         _sendIntervalMillis = sendIntervalMillis;
         _eventsSender = checkNotNull(eventsSender);
-        _senderScheduledExecutorService = SplitExecutorFactory.buildSingleThreadScheduledExecutor(config.getThreadFactory(), "Sender-events-%d");
+        _senderScheduledExecutorService = SplitExecutorFactory.buildSingleThreadScheduledExecutor(threadFactory, "Sender-events-%d");
     }
 
     ThreadFactory eventClientThreadFactory(final String name) {

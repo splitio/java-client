@@ -1,7 +1,6 @@
 package io.split.engine.experiments;
 
 import io.split.client.JsonLocalhostSplitChangeFetcher;
-import io.split.client.SplitClientConfig;
 import io.split.engine.common.FetchOptions;
 import io.split.storages.SplitCacheConsumer;
 import io.split.storages.SplitCacheProducer;
@@ -14,7 +13,6 @@ import org.mockito.Mockito;
 public class SplitSynchronizationTaskTest {
 
     private static final TelemetryStorage TELEMETRY_STORAGE_NOOP = Mockito.mock(NoopTelemetryStorage.class);
-    private final SplitClientConfig _config = Mockito.mock(SplitClientConfig.class);
 
     @Test
     public void testLocalhost() throws InterruptedException {
@@ -26,7 +24,7 @@ public class SplitSynchronizationTaskTest {
         FetchOptions fetchOptions = new FetchOptions.Builder().build();
         SplitFetcher splitFetcher = new SplitFetcherImp(splitChangeFetcher, splitParser, splitCacheConsumer, splitCacheProducer, TELEMETRY_STORAGE_NOOP);
 
-        SplitSynchronizationTask splitSynchronizationTask = new SplitSynchronizationTask(splitFetcher, splitCacheProducer, 1000, _config);
+        SplitSynchronizationTask splitSynchronizationTask = new SplitSynchronizationTask(splitFetcher, splitCacheProducer, 1000, null);
 
         splitSynchronizationTask.start();
 
@@ -39,7 +37,7 @@ public class SplitSynchronizationTaskTest {
     public void testStartAndStop() throws InterruptedException {
         SplitCacheProducer splitCacheProducer = new InMemoryCacheImp();
         SplitFetcherImp splitFetcherImp = Mockito.mock(SplitFetcherImp.class);
-        SplitSynchronizationTask splitSynchronizationTask = new SplitSynchronizationTask(splitFetcherImp, splitCacheProducer, 1000, _config);
+        SplitSynchronizationTask splitSynchronizationTask = new SplitSynchronizationTask(splitFetcherImp, splitCacheProducer, 1000, null);
         splitSynchronizationTask.start();
 
         Thread.sleep(2000);

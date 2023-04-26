@@ -1,7 +1,6 @@
 package io.split.engine.common;
 
 import com.google.common.annotations.VisibleForTesting;
-import io.split.client.SplitClientConfig;
 import io.split.engine.sse.AuthApiClient;
 import io.split.engine.sse.AuthApiClientImp;
 import io.split.engine.sse.EventSourceClient;
@@ -25,6 +24,7 @@ import org.slf4j.LoggerFactory;
 import java.util.concurrent.Future;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
 
@@ -47,12 +47,12 @@ public class PushManagerImp implements PushManager {
 
     @VisibleForTesting
     /* package private */ PushManagerImp(AuthApiClient authApiClient,
-                                             EventSourceClient eventSourceClient,
-                                             SplitsWorker splitsWorker,
-                                             Worker<SegmentQueueDto> segmentWorker,
-                                             PushStatusTracker pushStatusTracker,
-                                             TelemetryRuntimeProducer telemetryRuntimeProducer,
-                                             SplitClientConfig config) {
+                                         EventSourceClient eventSourceClient,
+                                         SplitsWorker splitsWorker,
+                                         Worker<SegmentQueueDto> segmentWorker,
+                                         PushStatusTracker pushStatusTracker,
+                                         TelemetryRuntimeProducer telemetryRuntimeProducer,
+                                         ThreadFactory threadFactory) {
 
         _authApiClient = checkNotNull(authApiClient);
         _eventSourceClient = checkNotNull(eventSourceClient);
@@ -60,7 +60,7 @@ public class PushManagerImp implements PushManager {
         _segmentWorker = segmentWorker;
         _pushStatusTracker = pushStatusTracker;
         _expirationTime = new AtomicLong();
-        _scheduledExecutorService = buildSingleThreadScheduledExecutor(config.getThreadFactory(), "Split-SSERefreshToken-%d");
+        _scheduledExecutorService = buildSingleThreadScheduledExecutor(threadFactory, "Split-SSERefreshToken-%d");
         _telemetryRuntimeProducer = checkNotNull(telemetryRuntimeProducer);
     }
 
@@ -70,17 +70,17 @@ public class PushManagerImp implements PushManager {
                                        SplitAPI splitAPI,
                                        LinkedBlockingQueue<PushManager.Status> statusMessages,
                                        TelemetryRuntimeProducer telemetryRuntimeProducer,
-                                       SplitClientConfig config) {
+                                       ThreadFactory threadFactory) {
         SplitsWorker splitsWorker = new SplitsWorkerImp(synchronizer);
         Worker<SegmentQueueDto> segmentWorker = new SegmentsWorkerImp(synchronizer);
         PushStatusTracker pushStatusTracker = new PushStatusTrackerImp(statusMessages, telemetryRuntimeProducer);
         return new PushManagerImp(new AuthApiClientImp(authUrl, splitAPI.getHttpClient(), telemetryRuntimeProducer),
-                EventSourceClientImp.build(streamingUrl, splitsWorker, segmentWorker, pushStatusTracker, splitAPI.getSseHttpClient(), telemetryRuntimeProducer, config),
+                EventSourceClientImp.build(streamingUrl, splitsWorker, segmentWorker, pushStatusTracker, splitAPI.getSseHttpClient(), telemetryRuntimeProducer, threadFactory),
                 splitsWorker,
                 segmentWorker,
                 pushStatusTracker,
                 telemetryRuntimeProducer,
-                config);
+                threadFactory);
     }
 
     @Override

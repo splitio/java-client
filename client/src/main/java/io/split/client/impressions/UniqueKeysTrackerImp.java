@@ -1,6 +1,5 @@
 package io.split.client.impressions;
 
-import io.split.client.SplitClientConfig;
 import io.split.client.dtos.UniqueKeys;
 import io.split.client.impressions.filters.BloomFilterImp;
 import io.split.client.impressions.filters.Filter;
@@ -17,6 +16,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
 
 public class UniqueKeysTrackerImp implements UniqueKeysTracker{
@@ -33,15 +33,15 @@ public class UniqueKeysTrackerImp implements UniqueKeysTracker{
     private final int _filterRefreshRate;
     private static final Logger _logger = LoggerFactory.getLogger(UniqueKeysTrackerImp.class);
 
-    public UniqueKeysTrackerImp(TelemetrySynchronizer telemetrySynchronizer, int uniqueKeysRefreshRate, int filterRefreshRate, SplitClientConfig config) {
+    public UniqueKeysTrackerImp(TelemetrySynchronizer telemetrySynchronizer, int uniqueKeysRefreshRate, int filterRefreshRate, ThreadFactory threadFactory) {
         Filter bloomFilter = new BloomFilterImp(MAX_AMOUNT_OF_KEYS, MARGIN_ERROR);
         this.filterAdapter = new FilterAdapterImpl(bloomFilter);
         uniqueKeysTracker = new ConcurrentHashMap<>();
         _telemetrySynchronizer = telemetrySynchronizer;
         _uniqueKeysRefreshRate = uniqueKeysRefreshRate;
         _filterRefreshRate = filterRefreshRate;
-        _uniqueKeysSyncScheduledExecutorService = SplitExecutorFactory.buildSingleThreadScheduledExecutor(config.getThreadFactory(),"UniqueKeys-sync-%d");
-        _cleanFilterScheduledExecutorService = SplitExecutorFactory.buildSingleThreadScheduledExecutor(config.getThreadFactory(),"Filter-%d");
+        _uniqueKeysSyncScheduledExecutorService = SplitExecutorFactory.buildSingleThreadScheduledExecutor(threadFactory,"UniqueKeys-sync-%d");
+        _cleanFilterScheduledExecutorService = SplitExecutorFactory.buildSingleThreadScheduledExecutor(threadFactory,"Filter-%d");
     }
 
     @Override

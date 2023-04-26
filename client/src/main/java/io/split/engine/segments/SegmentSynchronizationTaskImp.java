@@ -1,7 +1,6 @@
 package io.split.engine.segments;
 
 import com.google.common.collect.Maps;
-import io.split.client.SplitClientConfig;
 import io.split.client.utils.SplitExecutorFactory;
 import io.split.engine.common.FetchOptions;
 import io.split.storages.SegmentCacheProducer;
@@ -18,6 +17,7 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
+import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicLong;
@@ -42,12 +42,12 @@ public class SegmentSynchronizationTaskImp implements SegmentSynchronizationTask
     private ScheduledFuture<?> _scheduledFuture;
 
     public SegmentSynchronizationTaskImp(SegmentChangeFetcher segmentChangeFetcher, long refreshEveryNSeconds, int numThreads, SegmentCacheProducer segmentCacheProducer,
-                                         TelemetryRuntimeProducer telemetryRuntimeProducer, SplitCacheConsumer splitCacheConsumer, SplitClientConfig config) {
+                                         TelemetryRuntimeProducer telemetryRuntimeProducer, SplitCacheConsumer splitCacheConsumer, ThreadFactory threadFactory) {
         _segmentChangeFetcher = checkNotNull(segmentChangeFetcher);
 
         checkArgument(refreshEveryNSeconds >= 0L);
         _refreshEveryNSeconds = new AtomicLong(refreshEveryNSeconds);
-        _scheduledExecutorService = SplitExecutorFactory.buildScheduledExecutorService(config.getThreadFactory(), "split-segmentFetcher-" + "%d", numThreads);
+        _scheduledExecutorService = SplitExecutorFactory.buildScheduledExecutorService(threadFactory, "split-segmentFetcher-" + "%d", numThreads);
         _running = new AtomicBoolean(false);
 
         _segmentCacheProducer = checkNotNull(segmentCacheProducer);

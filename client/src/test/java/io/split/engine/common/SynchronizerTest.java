@@ -1,6 +1,5 @@
 package io.split.engine.common;
 
-import io.split.client.SplitClientConfig;
 import io.split.client.events.EventsTask;
 import io.split.client.impressions.ImpressionsManager;
 import io.split.client.impressions.UniqueKeysTracker;
@@ -77,7 +76,7 @@ public class SynchronizerTest {
     public void testSyncAllSegments() throws InterruptedException, NoSuchFieldException, IllegalAccessException {
         SegmentSynchronizationTask segmentSynchronizationTask = new SegmentSynchronizationTaskImp(Mockito.mock(SegmentChangeFetcher.class),
                 20L, 1, _segmentCacheProducer, Mockito.mock(TelemetryRuntimeProducer.class),
-                Mockito.mock(SplitCacheConsumer.class), Mockito.mock(SplitClientConfig.class));
+                Mockito.mock(SplitCacheConsumer.class), null);
         Field synchronizerSegmentFetcher = SynchronizerImp.class.getDeclaredField("_segmentSynchronizationTaskImp");
         synchronizerSegmentFetcher.setAccessible(true);
         Field modifiersField = Field.class.getDeclaredField("modifiers");

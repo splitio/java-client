@@ -1,7 +1,6 @@
 package io.split.engine.sse.client;
 
 import com.google.common.base.Strings;
-import io.split.client.SplitClientConfig;
 import io.split.telemetry.domain.StreamingEvent;
 import io.split.telemetry.domain.enums.StreamEventsEnum;
 import io.split.telemetry.storage.TelemetryRuntimeProducer;
@@ -20,6 +19,7 @@ import java.net.SocketException;
 import java.net.URI;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
+import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
@@ -63,13 +63,13 @@ public class SSEClient {
                      Function<StatusMessage, Void> statusCallback,
                      CloseableHttpClient client,
                      TelemetryRuntimeProducer telemetryRuntimeProducer,
-                     SplitClientConfig config) {
+                     ThreadFactory threadFactory) {
         _eventCallback = eventCallback;
         _statusCallback = statusCallback;
         _client = client;
         _forcedStop = new AtomicBoolean();
         _telemetryRuntimeProducer = checkNotNull(telemetryRuntimeProducer);
-        _connectionExecutor = buildExecutorService(config.getThreadFactory(), "SPLIT-SSEConnection-%d");
+        _connectionExecutor = buildExecutorService(threadFactory, "SPLIT-SSEConnection-%d");
     }
 
     public synchronized boolean open(URI uri) {

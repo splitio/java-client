@@ -102,7 +102,7 @@ public class SyncManagerImp implements SyncManager {
                                                         splitAPI,
                                                         pushMessages,
                                                         telemetryRuntimeProducer,
-                                                        config);
+                                                        config.getThreadFactory());
 
         return new SyncManagerImp(splitTasks,
                                   config.streamingEnabled(),
