@@ -10,13 +10,7 @@ import java.util.concurrent.ThreadFactory;
 public class SplitExecutorFactory {
 
     public static ScheduledExecutorService buildScheduledExecutorService(ThreadFactory threadFactory, String name, Integer size) {
-        ThreadFactoryBuilder threadFactoryBuilder = new ThreadFactoryBuilder()
-                .setDaemon(true)
-                .setNameFormat(name);
-        if (threadFactory != null) {
-            threadFactoryBuilder.setThreadFactory(threadFactory);
-        }
-        return  Executors.newScheduledThreadPool(size, threadFactoryBuilder.build());
+        return  Executors.newScheduledThreadPool(size, buildThreadFactory(threadFactory, name));
     }
 
     public static ScheduledExecutorService buildSingleThreadScheduledExecutor(ThreadFactory threadFactory, String name){
