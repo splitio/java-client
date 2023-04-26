@@ -1,6 +1,7 @@
 package io.split.engine.sse;
 
 import com.google.common.annotations.VisibleForTesting;
+import com.google.common.base.Strings;
 import io.split.engine.sse.client.RawEvent;
 import io.split.engine.sse.client.SSEClient;
 import io.split.engine.sse.dtos.SegmentQueueDto;
@@ -110,7 +111,7 @@ public class EventSourceClientImp implements EventSourceClient {
             if(_firstEvent.compareAndSet(false, true) && !ERROR.equals(type)){
                 _pushStatusTracker.handleSseStatus(SSEClient.StatusMessage.FIRST_EVENT);
             }
-            if (payload != null && !payload.isEmpty()) {
+            if (!Strings.isNullOrEmpty(payload)) {
                 _log.debug(String.format("Payload received: %s", payload));
                 switch (type) {
                     case MESSAGE:
