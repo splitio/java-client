@@ -10,18 +10,13 @@ import java.util.concurrent.ThreadFactory;
 public class SplitExecutorFactory {
 
     public static ScheduledExecutorService buildScheduledExecutorService(ThreadFactory threadFactory, String name, Integer size) {
+        ThreadFactoryBuilder threadFactoryBuilder = new ThreadFactoryBuilder()
+                .setDaemon(true)
+                .setNameFormat(name);
         if (threadFactory != null) {
-            return Executors.newScheduledThreadPool(size, new ThreadFactoryBuilder()
-                    .setThreadFactory(threadFactory)
-                    .setDaemon(true)
-                    .setNameFormat(name)
-                    .build());
-        } else {
-            return Executors.newScheduledThreadPool(size, new ThreadFactoryBuilder()
-                    .setDaemon(true)
-                    .setNameFormat(name)
-                    .build());
+            threadFactoryBuilder.setThreadFactory(threadFactory);
         }
+        return  Executors.newScheduledThreadPool(size, threadFactoryBuilder.build());
     }
 
     public static ScheduledExecutorService buildSingleThreadScheduledExecutor(ThreadFactory threadFactory, String name){
@@ -33,17 +28,12 @@ public class SplitExecutorFactory {
     }
 
     private static ThreadFactory buildThreadFactory(ThreadFactory threadFactory, String name) {
+        ThreadFactoryBuilder threadFactoryBuilder = new ThreadFactoryBuilder()
+                .setDaemon(true)
+                .setNameFormat(name);
         if (threadFactory != null) {
-            return new ThreadFactoryBuilder()
-                    .setThreadFactory(threadFactory)
-                    .setDaemon(true)
-                    .setNameFormat(name)
-                    .build();
-        } else {
-            return new ThreadFactoryBuilder()
-                    .setDaemon(true)
-                    .setNameFormat(name)
-                    .build();
+            threadFactoryBuilder.setThreadFactory(threadFactory);
         }
+        return  threadFactoryBuilder.build();
     }
 }
