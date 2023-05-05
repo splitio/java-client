@@ -1,11 +1,11 @@
 package io.split.client.impressions;
 
 import com.google.common.annotations.VisibleForTesting;
-import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import io.split.client.SplitClientConfig;
 import io.split.client.dtos.KeyImpression;
 import io.split.client.dtos.TestImpressions;
 import io.split.client.impressions.strategy.ProcessImpressionStrategy;
+import io.split.client.utils.SplitExecutorFactory;
 import io.split.telemetry.domain.enums.ImpressionsDataTypeEnum;
 import io.split.telemetry.storage.TelemetryRuntimeProducer;
 import org.slf4j.Logger;
@@ -14,9 +14,7 @@ import org.slf4j.LoggerFactory;
 import java.io.Closeable;
 import java.net.URISyntaxException;
 import java.util.List;
-import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
@@ -85,7 +83,7 @@ public class ImpressionsManagerImpl implements ImpressionsManager, Closeable {
         _impressionsSender = impressionsSender;
         _counter = impressionCounter;
 
-        _scheduler = buildExecutor();
+        _scheduler = SplitExecutorFactory.buildScheduledExecutorService(config.getThreadFactory(), "Split-ImpressionsManager-%d", 2);
         _listener = impressionListener;
 
         _impressionsRefreshRate = config.impressionsRefreshRate();
@@ -171,14 +169,6 @@ public class ImpressionsManagerImpl implements ImpressionsManager, Closeable {
         if (!_counter.isEmpty()) {
             _impressionsSender.postCounters(_counter.popAll());
         }
-    }
-
-    private ScheduledExecutorService buildExecutor() {
-        ThreadFactory threadFactory = new ThreadFactoryBuilder()
-                .setDaemon(true)
-                .setNameFormat("Split-ImpressionsManager-%d")
-                .build();
-        return Executors.newScheduledThreadPool(2, threadFactory);
     }
 
     @VisibleForTesting
