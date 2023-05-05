@@ -5,6 +5,7 @@ import io.split.client.dtos.ConditionType;
 import io.split.client.dtos.Split;
 import io.split.client.dtos.SplitChange;
 import io.split.client.dtos.Status;
+import io.split.client.utils.LocalhostConstants;
 import io.split.client.utils.LocalhostSanitizer;
 import io.split.engine.common.FetchOptions;
 import io.split.engine.experiments.SplitChangeFetcher;
@@ -62,9 +63,9 @@ public class LegacyLocalhostSplitChangeFetcher implements SplitChangeFetcher {
                 }
                 split.status = Status.ACTIVE;
                 split.defaultTreatment = featureTreatment[1];
-                split.trafficTypeName = "user";
-                split.trafficAllocation = 100;
-                split.trafficAllocationSeed = 1;
+                split.trafficTypeName = LocalhostConstants.USER;
+                split.trafficAllocation = LocalhostConstants.SIZE_100;
+                split.trafficAllocationSeed = LocalhostConstants.SIZE_1;
 
                 Condition condition;
                 if (featureTreatment.length == 2) {
