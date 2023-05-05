@@ -1,3 +1,6 @@
+4.8.0 (May, XX)
+- Added ThreadFactoryBuilder config in SDK to allow using Virtual Threading instantiation from java 19 and above.
+
 4.7.1 (Apr 10, 2023)
 - Added SHA for split and segment fetcher in localhost json.
 - Updated `org.yaml.snakeyaml` dependence to 2.0 for fixing a vulnerability.
