@@ -9,7 +9,7 @@ public class TelemetrySyncTaskTest {
     public void testSynchronizationTask() throws Exception {
         TelemetrySynchronizer telemetrySynchronizer = Mockito.mock(TelemetryInMemorySubmitter.class);
         Mockito.doNothing().when(telemetrySynchronizer).synchronizeStats();
-        TelemetrySyncTask telemetrySyncTask = new TelemetrySyncTask(1, telemetrySynchronizer);
+        TelemetrySyncTask telemetrySyncTask = new TelemetrySyncTask(1, telemetrySynchronizer, null);
         telemetrySyncTask.startScheduledTask();
         Thread.sleep(2900);
         Mockito.verify(telemetrySynchronizer, Mockito.times(2)).synchronizeStats();
@@ -19,7 +19,7 @@ public class TelemetrySyncTaskTest {
     public void testStopSynchronizationTask() throws Exception {
         TelemetrySynchronizer telemetrySynchronizer = Mockito.mock(TelemetryInMemorySubmitter.class);
 //        Mockito.doNothing().when(telemetrySynchronizer).synchronizeStats();
-        TelemetrySyncTask telemetrySyncTask = new TelemetrySyncTask(1, telemetrySynchronizer);
+        TelemetrySyncTask telemetrySyncTask = new TelemetrySyncTask(1, telemetrySynchronizer, null);
         telemetrySyncTask.startScheduledTask();
         Thread.sleep(2100);
         Mockito.verify(telemetrySynchronizer, Mockito.times(2)).synchronizeStats();

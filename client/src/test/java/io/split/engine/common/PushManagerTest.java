@@ -15,8 +15,6 @@ import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mockito;
 
-import java.util.concurrent.LinkedBlockingQueue;
-
 public class PushManagerTest {
     private AuthApiClient _authApiClient;
     private EventSourceClient _eventSourceClient;
@@ -36,7 +34,9 @@ public class PushManagerTest {
                 _eventSourceClient,
                 Mockito.mock(SplitsWorker.class),
                 Mockito.mock(SegmentsWorkerImp.class),
-                _pushStatusTracker, _telemetryStorage);
+                _pushStatusTracker,
+                _telemetryStorage,
+                null);
     }
 
     @Test

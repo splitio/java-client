@@ -16,7 +16,8 @@ public class EventsTaskTest {
         EventsSender eventsSender = Mockito.mock(EventsSender.class);
         EventsTask eventClient = new EventsTask(eventsStorage,
                 2000,
-                eventsSender);
+                eventsSender,
+                null);
         eventClient.start();
 
         for (int i = 0; i < 159; ++i) {
@@ -39,7 +40,8 @@ public class EventsTaskTest {
         EventsStorage eventsStorage = new InMemoryEventsStorage(10000, telemetryRuntimeProducer);
         EventsTask eventClient = new EventsTask(eventsStorage,
                 2000,
-                eventsSender);
+                eventsSender,
+                null);
 
         for (int i = 0; i < 159; ++i) {
             Event event = new Event();
@@ -57,7 +59,8 @@ public class EventsTaskTest {
         EventsStorage eventsStorage = new InMemoryEventsStorage(10, telemetryRuntimeProducer);
         EventsTask eventClient = new EventsTask(eventsStorage,
                 2000,
-                EVENTS_SENDER);
+                EVENTS_SENDER,
+                null);
 
         for (int i = 0; i < 10; ++i) {
             Event event = new Event();
@@ -73,7 +76,8 @@ public class EventsTaskTest {
         EventsStorage eventsStorage = new InMemoryEventsStorage(100, telemetryRuntimeProducer);
         EventsTask eventClient = new EventsTask(eventsStorage,
                 2000,
-                eventsSender);
+                eventsSender,
+                null);
         eventClient.start();
 
         for (int i = 0; i < 10; ++i) {

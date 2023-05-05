@@ -38,7 +38,7 @@ public class SSEClientTest {
         CloseableHttpClient httpClient =  httpClientbuilder.build();
 
         SSEClient sse = new SSEClient(e -> null,
-                s -> null, httpClient, telemetryRuntimeProducer);
+                s -> null, httpClient, telemetryRuntimeProducer, null);
         sse.open(uri);
         Thread.sleep(5000);
         sse.close();

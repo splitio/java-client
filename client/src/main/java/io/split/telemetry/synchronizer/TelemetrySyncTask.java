@@ -1,15 +1,15 @@
 package io.split.telemetry.synchronizer;
 
-import com.google.common.util.concurrent.ThreadFactoryBuilder;
+import io.split.client.SplitClientConfig;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
 
 import static com.google.common.base.Preconditions.checkNotNull;
+import static io.split.client.utils.SplitExecutorFactory.buildSingleThreadScheduledExecutor;
 
 public class TelemetrySyncTask {
 
@@ -18,14 +18,10 @@ public class TelemetrySyncTask {
     private final TelemetrySynchronizer _telemetrySynchronizer;
     private final int _telemetryRefreshRate;
 
-    public TelemetrySyncTask(int telemetryRefreshRate, TelemetrySynchronizer telemetrySynchronizer) {
-        ThreadFactory telemetrySyncThreadFactory = new ThreadFactoryBuilder()
-                .setDaemon(true)
-                .setNameFormat("Telemetry-sync-%d")
-                .build();
+    public TelemetrySyncTask(int telemetryRefreshRate, TelemetrySynchronizer telemetrySynchronizer, ThreadFactory threadFactory) {
         _telemetrySynchronizer = checkNotNull(telemetrySynchronizer);
         _telemetryRefreshRate = telemetryRefreshRate;
-        _telemetrySyncScheduledExecutorService = Executors.newSingleThreadScheduledExecutor(telemetrySyncThreadFactory);
+        _telemetrySyncScheduledExecutorService = buildSingleThreadScheduledExecutor(threadFactory, "Telemetry-sync-%d");
     }
 
     public void startScheduledTask() {

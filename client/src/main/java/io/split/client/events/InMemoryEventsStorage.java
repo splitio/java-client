@@ -1,6 +1,5 @@
 package io.split.client.events;
 
-
 import com.google.common.annotations.VisibleForTesting;
 import io.split.client.dtos.Event;
 import io.split.telemetry.domain.enums.EventsDataRecordsEnum;

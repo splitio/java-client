@@ -24,7 +24,7 @@ public class SplitSynchronizationTaskTest {
         FetchOptions fetchOptions = new FetchOptions.Builder().build();
         SplitFetcher splitFetcher = new SplitFetcherImp(splitChangeFetcher, splitParser, splitCacheConsumer, splitCacheProducer, TELEMETRY_STORAGE_NOOP);
 
-        SplitSynchronizationTask splitSynchronizationTask = new SplitSynchronizationTask(splitFetcher, splitCacheProducer, 1000);
+        SplitSynchronizationTask splitSynchronizationTask = new SplitSynchronizationTask(splitFetcher, splitCacheProducer, 1000, null);
 
         splitSynchronizationTask.start();
 
@@ -37,7 +37,7 @@ public class SplitSynchronizationTaskTest {
     public void testStartAndStop() throws InterruptedException {
         SplitCacheProducer splitCacheProducer = new InMemoryCacheImp();
         SplitFetcherImp splitFetcherImp = Mockito.mock(SplitFetcherImp.class);
-        SplitSynchronizationTask splitSynchronizationTask = new SplitSynchronizationTask(splitFetcherImp, splitCacheProducer, 1000);
+        SplitSynchronizationTask splitSynchronizationTask = new SplitSynchronizationTask(splitFetcherImp, splitCacheProducer, 1000, null);
         splitSynchronizationTask.start();
 
         Thread.sleep(2000);
