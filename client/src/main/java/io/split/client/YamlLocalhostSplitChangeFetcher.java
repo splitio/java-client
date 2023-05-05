@@ -63,7 +63,7 @@ public class YamlLocalhostSplitChangeFetcher implements SplitChangeFetcher {
                     split.conditions.add(condition);
                 }
                 split.status = Status.ACTIVE;
-                split.defaultTreatment = treatment;
+                split.defaultTreatment = "control";
                 split.trafficTypeName = "user";
                 split.trafficAllocation = 100;
                 split.trafficAllocationSeed = 1;
