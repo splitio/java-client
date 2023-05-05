@@ -28,7 +28,7 @@ jobs:
         jdk:
           - '8'
           - '11'
-          - '20'
+          - '19'
     env:
       ARTIFACTORY_USER: ${{ secrets.ARTIFACTORY_USER }}
       ARTIFACTORY_TOKEN: ${{ secrets.ARTIFACTORY_TOKEN }}
