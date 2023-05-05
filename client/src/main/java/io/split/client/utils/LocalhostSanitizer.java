@@ -26,6 +26,7 @@ public final class LocalhostSanitizer {
     private static final int ALGO = 2;
     private static final int TRAFFIC_ALLOCATION_LIMIT = 100;
     private static final String TREATMENT_ON = "on";
+    private static final String CONTROL = "control";
     private static final String TREATMENT_OFF = "off";
     private static final String DEFAULT_RULE = "default rule";
     private static final String TRAFFIC_TYPE_USER = "user";
@@ -65,7 +66,7 @@ public final class LocalhostSanitizer {
                     split.status = Status.ACTIVE;
                 }
                 if (split.defaultTreatment == null || split.defaultTreatment.isEmpty()) {
-                    split.defaultTreatment = TREATMENT_ON;
+                    split.defaultTreatment = CONTROL;
                 }
                 if (split.changeNumber < 0) {
                     split.changeNumber = 0;
