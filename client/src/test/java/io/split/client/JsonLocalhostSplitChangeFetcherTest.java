@@ -71,7 +71,7 @@ public class JsonLocalhostSplitChangeFetcherTest {
         Split split = splitChange.splits.get(0);
         Assert.assertEquals(Optional.of(100), Optional.of(split.trafficAllocation));
         Assert.assertEquals(Status.ACTIVE, split.status);
-        Assert.assertEquals("on", split.defaultTreatment);
+        Assert.assertEquals("control", split.defaultTreatment);
         Assert.assertEquals(ConditionType.ROLLOUT, split.conditions.get(split.conditions.size() - 1).conditionType);
     }
 

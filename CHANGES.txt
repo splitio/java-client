@@ -1,5 +1,6 @@
 4.8.0 (May, XX)
-- Added ThreadFactoryBuilder config in SDK to allow using Virtual Threading instantiation from java 19 and above.
+- Added ThreadFactory config in SDK to allow using Virtual Threading instantiation from java 19 and above.
+- Updated default treatment to be control for yaml and json localhost.
 
 4.7.1 (Apr 10, 2023)
 - Added SHA for split and segment fetcher in localhost json.
