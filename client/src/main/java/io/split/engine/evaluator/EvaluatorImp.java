@@ -1,6 +1,5 @@
 package io.split.engine.evaluator;
 
-
 import io.split.client.dtos.ConditionType;
 import io.split.client.exceptions.ChangeNumberExceptionWrapper;
 import io.split.engine.experiments.ParsedCondition;
@@ -34,19 +33,19 @@ public class EvaluatorImp implements Evaluator {
     }
 
     @Override
-    public TreatmentLabelAndChangeNumber evaluateFeature(String matchingKey, String bucketingKey, String split, Map<String, Object> attributes) {
-        ParsedSplit parsedSplit = _splitCacheConsumer.get(split);
+    public TreatmentLabelAndChangeNumber evaluateFeature(String matchingKey, String bucketingKey, String featureFlag, Map<String, Object> attributes) {
+        ParsedSplit parsedSplit = _splitCacheConsumer.get(featureFlag);
         return evaluateParsedSplit(matchingKey, bucketingKey, attributes, parsedSplit);
     }
 
     @Override
-    public Map<String, TreatmentLabelAndChangeNumber> evaluateFeatures(String matchingKey, String bucketingKey, List<String> splits, Map<String, Object> attributes) {
+    public Map<String, TreatmentLabelAndChangeNumber> evaluateFeatures(String matchingKey, String bucketingKey, List<String> featureFlags, Map<String, Object> attributes) {
         Map<String, TreatmentLabelAndChangeNumber> results = new HashMap<>();
-        Map<String, ParsedSplit> parsedSplits = _splitCacheConsumer.fetchMany(splits);
-        if(parsedSplits == null) {
+        Map<String, ParsedSplit> parsedSplits = _splitCacheConsumer.fetchMany(featureFlags);
+        if (parsedSplits == null) {
             return results;
         }
-        splits.forEach(s -> results.put(s, evaluateParsedSplit(matchingKey, bucketingKey, attributes, parsedSplits.get(s))));
+        featureFlags.forEach(s -> results.put(s, evaluateParsedSplit(matchingKey, bucketingKey, attributes, parsedSplits.get(s))));
         return results;
     }
 
@@ -114,8 +113,7 @@ public class EvaluatorImp implements Evaluator {
             }
 
             return getTreatment(matchingKey, bucketingKey, parsedSplit, attributes);
-        }
-        catch (ChangeNumberExceptionWrapper e) {
+        } catch (ChangeNumberExceptionWrapper e) {
             _log.error("Evaluator Exception", e.wrappedException());
             return new EvaluatorImp.TreatmentLabelAndChangeNumber(Treatments.CONTROL, Labels.EXCEPTION, e.changeNumber());
         } catch (Exception e) {
