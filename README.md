@@ -22,7 +22,7 @@ public  class App {
         SplitClientConfig config = SplitClientConfig.builder()
                 .setBlockUntilReadyTimeout(10000)
                 .build();
-        SplitFactory splitFactory = SplitFactoryBuilder.build("SDK_API_KEY", config);
+        SplitFactory splitFactory = SplitFactoryBuilder.build("YOUR_SDK_KEY", config);
         SplitClient client = splitFactory.client();
         try {
             client.blockUntilReady();
@@ -30,11 +30,11 @@ public  class App {
             // log & handle
         }
 
-        String treatment = client.getTreatment("CUSTOMER_ID", "SPLIT_NAME");
+        String treatment = client.getTreatment("CUSTOMER_ID", "FEATURE_FLAG_NAME");
         if (treatment.equals("on")) {
-            // Feature is enabled for this user!
+            // Feature flag is enabled for this user!
         } else if (treatment.equals("off")) {
-            // Feature is disabled for this user!
+            // Feature flag is disabled for this user!
         } else {
             // Unable to perform evaluation.
         }
