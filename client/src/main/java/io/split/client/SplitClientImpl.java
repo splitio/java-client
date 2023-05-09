@@ -105,13 +105,13 @@ public final class SplitClientImpl implements SplitClient {
     }
 
     @Override
-    public Map<String, String> getTreatments(String key, List<String> featureFlag) {
-        return getTreatments(key, featureFlag, Collections.emptyMap());
+    public Map<String, String> getTreatments(String key, List<String> featureFlags) {
+        return getTreatments(key, featureFlags, Collections.emptyMap());
     }
 
     @Override
-    public Map<String, String> getTreatments(String key, List<String> featureFlag, Map<String, Object> attributes) {
-        return getTreatmentsWithConfigInternal(key, null, featureFlag, attributes, MethodEnum.TREATMENTS)
+    public Map<String, String> getTreatments(String key, List<String> featureFlags, Map<String, Object> attributes) {
+        return getTreatmentsWithConfigInternal(key, null, featureFlags, attributes, MethodEnum.TREATMENTS)
                 .entrySet().stream()
                 .collect(Collectors.toMap(Map.Entry::getKey, e -> e.getValue().treatment()));
     }

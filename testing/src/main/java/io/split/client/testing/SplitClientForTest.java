@@ -73,18 +73,18 @@ public class SplitClientForTest implements SplitClient {
     }
 
     @Override
-    public Map<String, String> getTreatments(String key, List<String> featureFlag) {
+    public Map<String, String> getTreatments(String key, List<String> featureFlags) {
         Map<String, String> treatments = new HashMap<>();
-        for (String split : featureFlag) {
+        for (String split : featureFlags) {
             treatments.put(split, _tests.containsKey(split) ? _tests.get(split) : Treatments.CONTROL);
         }
         return treatments;
     }
 
     @Override
-    public Map<String, String> getTreatments(String key, List<String> featureFlag, Map<String, Object> attributes){
+    public Map<String, String> getTreatments(String key, List<String> featureFlags, Map<String, Object> attributes){
         Map<String, String> treatments = new HashMap<>();
-        for (String split : featureFlag) {
+        for (String split : featureFlags) {
             treatments.put(split, _tests.containsKey(split) ? _tests.get(split) : Treatments.CONTROL);
         }
         return treatments;

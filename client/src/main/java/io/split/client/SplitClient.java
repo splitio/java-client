@@ -167,10 +167,10 @@ public interface SplitClient {
      * This method does not throw any exceptions. It also never returns null.
      *
      * @param key      a unique key of your customer (e.g. user_id, user_email, account_id, etc.) MUST not be null.
-     * @param featureFlag the features flag we want to evaluate. MUST NOT be null.
+     * @param featureFlags the features flag we want to evaluate. MUST NOT be null.
      * @return for each feature flag the evaluated treatment, the default treatment for each feature flag, or 'control'.
      */
-    Map<String, String> getTreatments(String key, List<String> featureFlag);
+    Map<String, String> getTreatments(String key, List<String> featureFlags);
 
     /**
      * This method is useful when you want to determine the treatments to show
@@ -183,11 +183,11 @@ public interface SplitClient {
      * to users created after a certain date.
      *
      * @param key         a unique key of your customer (e.g. user_id, user_email, account_id, etc.) MUST not be null.
-     * @param featureFlag    the feature flags we want to evaluate. MUST NOT be null.
+     * @param featureFlags    the feature flags we want to evaluate. MUST NOT be null.
      * @param attributes of the customer (user, account etc.) to use in evaluation. Can be null or empty.
      * @return the evaluated treatment, the default treatment of this feature flag, or 'control'.
      */
-    Map<String, String> getTreatments(String key, List<String> featureFlag, Map<String, Object> attributes);
+    Map<String, String> getTreatments(String key, List<String> featureFlags, Map<String, Object> attributes);
 
     /**
      * To understand why this method is useful, consider the following simple Feature Flag as an example:
