@@ -45,18 +45,18 @@ public class UniqueKeysTrackerImp implements UniqueKeysTracker{
     }
 
     @Override
-    public synchronized boolean track(String featureName, String key) {
-        if (!filterAdapter.add(featureName, key)) {
-            _logger.debug("The feature " + featureName + " and key " + key + " exist in the UniqueKeysTracker");
+    public synchronized boolean track(String featureFlagName, String key) {
+        if (!filterAdapter.add(featureFlagName, key)) {
+            _logger.debug("The feature flag " + featureFlagName + " and key " + key + " exist in the UniqueKeysTracker");
             return false;
         }
         HashSet<String> value = new HashSet<>();
-        if(uniqueKeysTracker.containsKey(featureName)){
-            value = uniqueKeysTracker.get(featureName);
+        if(uniqueKeysTracker.containsKey(featureFlagName)){
+            value = uniqueKeysTracker.get(featureFlagName);
         }
         value.add(key);
-        uniqueKeysTracker.put(featureName, value);
-        _logger.debug("The feature " + featureName + " and key " + key + " was added");
+        uniqueKeysTracker.put(featureFlagName, value);
+        _logger.debug("The feature flag" + featureFlagName + " and key " + key + " was added");
         if (uniqueKeysTracker.size() == MAX_AMOUNT_OF_TRACKED_UNIQUE_KEYS){
             _logger.warn("The UniqueKeysTracker size reached the maximum limit");
             try {
@@ -111,8 +111,8 @@ public class UniqueKeysTrackerImp implements UniqueKeysTracker{
         }
         HashMap<String, HashSet<String>> uniqueKeysHashMap = popAll();
         List<UniqueKeys.UniqueKey> uniqueKeysFromPopAll = new ArrayList<>();
-        for (String feature : uniqueKeysHashMap.keySet()) {
-            UniqueKeys.UniqueKey uniqueKey = new UniqueKeys.UniqueKey(feature, new ArrayList<>(uniqueKeysHashMap.get(feature)));
+        for (String featureFlag : uniqueKeysHashMap.keySet()) {
+            UniqueKeys.UniqueKey uniqueKey = new UniqueKeys.UniqueKey(featureFlag, new ArrayList<>(uniqueKeysHashMap.get(featureFlag)));
             uniqueKeysFromPopAll.add(uniqueKey);
         }
         _telemetrySynchronizer.synchronizeUniqueKeys(new UniqueKeys(uniqueKeysFromPopAll));
