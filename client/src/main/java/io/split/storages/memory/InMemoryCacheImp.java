@@ -75,7 +75,7 @@ public class InMemoryCacheImp implements SplitCache {
     @Override
     public void setChangeNumber(long changeNumber) {
         if (changeNumber < _changeNumber.get()) {
-            _log.error("ChangeNumber for splits cache is less than previous");
+            _log.error("ChangeNumber for feature flags cache is less than previous");
         }
 
         _changeNumber.set(changeNumber);
