@@ -105,13 +105,13 @@ public final class SplitClientImpl implements SplitClient {
     }
 
     @Override
-    public Map<String, String> getTreatments(String key, List<String> featureFlags) {
-        return getTreatments(key, featureFlags, Collections.emptyMap());
+    public Map<String, String> getTreatments(String key, List<String> featureFlag) {
+        return getTreatments(key, featureFlag, Collections.emptyMap());
     }
 
     @Override
-    public Map<String, String> getTreatments(String key, List<String> featureFlags, Map<String, Object> attributes) {
-        return getTreatmentsWithConfigInternal(key, null, featureFlags, attributes, MethodEnum.TREATMENTS)
+    public Map<String, String> getTreatments(String key, List<String> featureFlag, Map<String, Object> attributes) {
+        return getTreatmentsWithConfigInternal(key, null, featureFlag, attributes, MethodEnum.TREATMENTS)
                 .entrySet().stream()
                 .collect(Collectors.toMap(Map.Entry::getKey, e -> e.getValue().treatment()));
     }
@@ -251,7 +251,7 @@ public final class SplitClientImpl implements SplitClient {
             if (result.treatment.equals(Treatments.CONTROL) && result.label.equals(Labels.DEFINITION_NOT_FOUND) && _gates.isSDKReady()) {
                 _log.warn(String.format(
                         "%s: you passed \"%s\" that does not exist in this environment, " +
-                                "please double check what feature flags exist in the web console.", methodEnum.getMethod(), featureFlag));
+                                "please double check what feature flags exist in the Split user interface.", methodEnum.getMethod(), featureFlag));
                 return SPLIT_RESULT_CONTROL;
             }
 
@@ -310,7 +310,7 @@ public final class SplitClientImpl implements SplitClient {
             evaluatorResult.keySet().forEach(t -> {
                 if (evaluatorResult.get(t).treatment.equals(Treatments.CONTROL) && evaluatorResult.get(t).label.equals(Labels.DEFINITION_NOT_FOUND) && _gates.isSDKReady()) {
                     _log.warn(String.format(
-                            "%s: you passed \"%s\" that does not exist in this environment please double check what feature flags exist in the web console.", methodEnum.getMethod(), t));
+                            "%s: you passed \"%s\" that does not exist in this environment please double check what feature flags exist in the Split user interface.", methodEnum.getMethod(), t));
                     result.put(t, SPLIT_RESULT_CONTROL);
                 }
                 else {
