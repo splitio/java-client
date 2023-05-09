@@ -71,7 +71,7 @@ public class SplitManagerImpl implements SplitManager {
         if (parsedSplit == null) {
             if (_gates.isSDKReady()) {
                 _log.warn("split: you passed \"" + featureName + "\" that does not exist in this environment, " +
-                        "please double check what Splits exist in the web console.");
+                        "please double check what Feature Flags exist in the Split user interface.");
             }
             return null;
         }
