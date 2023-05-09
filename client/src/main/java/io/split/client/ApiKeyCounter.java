@@ -29,7 +29,7 @@ public class ApiKeyCounter {
     public void add(String apiKey) {
         String message;
         if (USED_API_KEYS.contains(apiKey)) {
-            message = String.format("factory instantiation: You already have %s with this API Key. " +
+            message = String.format("factory instantiation: You already have %s with this SDK Key. " +
                             "We recommend keeping only one instance of the factory at all times (Singleton pattern) and reusing " +
                             "it throughout your application.",
                     USED_API_KEYS.count(apiKey) == 1 ? "1 factory" : String.format("%s factories", USED_API_KEYS.count(apiKey)));

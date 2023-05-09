@@ -99,8 +99,8 @@ public final class HttpSegmentChangeFetcher implements SegmentChangeFetcher {
                 _telemetryRuntimeProducer.recordSyncError(ResourceEnum.SEGMENT_SYNC, statusCode);
                 _log.error(String.format("Response status was: %s. Reason: %s", statusCode , response.getReasonPhrase()));
                 if (statusCode == HttpStatus.SC_FORBIDDEN) {
-                    _log.error("factory instantiation: you passed a browser type api_key, " +
-                            "please grab an api key from the Split console that is of type sdk");
+                    _log.error("factory instantiation: you passed a client side type sdk_key, " +
+                            "please grab an sdk key from the Split user interface that is of type server side");
                 }
                 throw new IllegalStateException(String.format("Could not retrieve segment changes for %s, since %s; http return code %s", segmentName, since, statusCode));
             }
