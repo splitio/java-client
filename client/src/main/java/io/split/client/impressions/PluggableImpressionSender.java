@@ -38,7 +38,7 @@ public class PluggableImpressionSender implements ImpressionsSender{
             UserPipelineWrapper pipelineExecution = _userStorageWrapper.pipeline();
             for(ImpressionCounter.Key countsKey: counts.keySet()){
                 String key = PrefixAdapter.buildImpressionsCount();
-                pipelineExecution.hIncrement(key, countsKey.featureName() + "::" + countsKey.timeFrame(), counts.get(countsKey));
+                pipelineExecution.hIncrement(key, countsKey.featureFlagName() + "::" + countsKey.timeFrame(), counts.get(countsKey));
             }
             pipelineExecution.exec();
         } catch (Exception e){
