@@ -10,20 +10,20 @@ import static com.google.common.base.Preconditions.checkNotNull;
 public class ImpressionCounter {
 
     public static class Key {
-        private final String _featureName;
+        private final String _featureFlagName;
         private final long _timeFrame;
 
-        public Key(String featureName, long timeframe) {
-            _featureName = checkNotNull(featureName);
+        public Key(String featureFlagName, long timeframe) {
+            _featureFlagName = checkNotNull(featureFlagName);
             _timeFrame = timeframe;
         }
 
-        public String featureName() { return  _featureName; }
+        public String featureFlagName() { return _featureFlagName; }
         public long timeFrame() { return  _timeFrame; }
 
         @Override
         public int hashCode() {
-            return Objects.hash(_featureName, _timeFrame);
+            return Objects.hash(_featureFlagName, _timeFrame);
         }
 
         @Override
@@ -32,7 +32,7 @@ public class ImpressionCounter {
             if (o == null || getClass() != o.getClass()) return false;
 
             Key key = (Key) o;
-            return Objects.equals(_featureName, key._featureName) && Objects.equals(_timeFrame, key._timeFrame);
+            return Objects.equals(_featureFlagName, key._featureFlagName) && Objects.equals(_timeFrame, key._timeFrame);
         }
     }
 
@@ -43,8 +43,8 @@ public class ImpressionCounter {
         _counts = new ConcurrentHashMap<>();
     }
 
-    public void inc(String featureName, long timeFrame, int amount) {
-        Key key = new Key(featureName, ImpressionUtils.truncateTimeframe(timeFrame));
+    public void inc(String featureFlagName, long timeFrame, int amount) {
+        Key key = new Key(featureFlagName, ImpressionUtils.truncateTimeframe(timeFrame));
         AtomicInteger count = _counts.get(key);
         if (Objects.isNull(count)) {
             count = new AtomicInteger();
