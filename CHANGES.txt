@@ -3,7 +3,7 @@
 - Updated default treatment to be control for yaml and json localhost.
 
 4.7.1 (Apr 10, 2023)
-- Added SHA for split and segment fetcher in localhost json.
+- Added SHA for feature flag and segment fetcher in localhost json.
 - Updated `org.yaml.snakeyaml` dependence to 2.0 for fixing a vulnerability.
 - Fixed Redis integration, changing []dtos.Key to dtos.Key
 - Fixed destroy for consumer mode.
@@ -57,7 +57,7 @@
 
 4.4.0 (Jan 11, 2022)
 - Added support for Redis to keep consistency across multiple SDK instances.
-- Added logic to fetch multiple splits at once on GetTreatments/GetTreatmentsWithChanges.
+- Added logic to fetch multiple feature flags at once on GetTreatments/GetTreatmentsWithChanges.
 
 4.3.0 (Oct 19, 2021)
 - Added support for the SDK to run with a custom implementation of it's internal storage modules, enabling customers to implement this caching in any storage technology of choice and connect it to the SDK instance itself which will use it instead of the in-memory structures.
@@ -71,7 +71,7 @@
 4.2.0 (Jun 7, 2021)
 - Updated SDK telemetry storage, metrics and updater to be more effective and send less often.
 - Improved the synchronization flow to be more reliable in the event of an edge case generating delay in cache purge propagation, keeping the SDK cache properly synced.
-- Fixed issue where the SDK was validating no Split had over 50 conditions (legacy code).
+- Fixed issue where the SDK was validating no Feature flag had over 50 conditions (legacy code).
 - Bumped guava version to 30.
 
 4.1.6 (Apr 15, 2021)
@@ -84,7 +84,7 @@
 - Updated Internal cache structure refactor.
 - Updated Streaming revamp with several bugfixes and improved log messages.
 - Added Cache-Control header for on-demand requests to sdk-server.
-- Updated Localhost Client revamp & bugfix for missing splits.
+- Updated Localhost Client revamp & bugfix for missing feature flags.
 
 4.1.3 (Dec 2, 2020)
 - Fix Issue when closing SSE Connection
@@ -115,7 +115,7 @@
 - Added Impression observer.
 
 3.3.3 (Apr 7, 2020)
- - Fix issue regarding special characters come from split/segments fetchers.
+ - Fix issue regarding special characters come from feature flags/segments fetchers.
 
 3.3.2 (Jan 24, 2020)
  - Shade com.google.guava as well
@@ -134,7 +134,7 @@
 - allow to push impressions more often than one every 30 seconds and events flush rate is now customizable
 
 3.2.2
-- log warn and not error when Split doesn't exist in the environment
+- log warn and not error when Feature flag doesn't exist in the environment
 
 3.2.1 (May 29, 2019)
 - Fix issue with events not forwarding the value when sending properties as well.
@@ -151,7 +151,7 @@
 - Support Yaml files for localhost mode
 
 3.0.9 (Mar 21, 2019)
-- Validate split names on getTreatment and manager calls
+- Validate feature flag names on getTreatment and manager calls
 - Validate traffic type name when calling track
 - Check for multiple factories instantiated
 
@@ -205,7 +205,7 @@
 
 2.1.0 (July 19th, 2017)
 - Add support for new boolean and regular expression matchers
-- Support for Dependency matcher: 'in split "xxx" treatments ["xxx","yyy"]'
+- Support for Dependency matcher: 'in feature flag "xxx" treatments ["xxx","yyy"]'
 
 2.0.4 (June 2nd, 2017)
 - Support to destroy all clients and background processes before shutdown via splitFactory.destroy() or splitClient.destroy()
@@ -264,7 +264,7 @@
 
 1.0.7
 - Implement Factory pattern and expose Split manager
-- Stop parsing a Split when there are more than 50 conditions to prevent DDOS.
+- Stop parsing a Feature flag when there are more than 50 conditions to prevent DDOS.
 
 1.0.6
 - Replaced Jersey with HttpComponents

@@ -20,8 +20,8 @@ public class SDKReadinessGates {
     /**
      * Returns true if the SDK is ready. The SDK is ready when:
      * <ol>
-     * <li>It has fetched Split definitions the first time.</li>
-     * <li>It has downloaded segment memberships for segments in use in the initial split definitions</li>
+     * <li>It has fetched Feature flag definitions the first time.</li>
+     * <li>It has downloaded segment memberships for segments in use in the initial Feature flag definitions</li>
      * </ol>
      * <p/>
      * This operation will block until the SDK is ready or 'milliseconds' have passed. If the milliseconds

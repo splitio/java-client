@@ -65,7 +65,7 @@ public class EvaluatorImp implements Evaluator {
             }
 
             /*
-             * There are three parts to a single Split: 1) Whitelists 2) Traffic Allocation
+             * There are three parts to a single Feature flag: 1) Whitelists 2) Traffic Allocation
              * 3) Rollout. The flag inRollout is there to understand when we move into the Rollout
              * section. This is because we need to make sure that the Traffic Allocation
              * computation happens after the whitelist but before the rollout.
@@ -85,7 +85,7 @@ public class EvaluatorImp implements Evaluator {
                         if (bucket > parsedSplit.trafficAllocation()) {
                             // out of split
                             String config = parsedSplit.configurations() != null ? parsedSplit.configurations().get(parsedSplit.defaultTreatment()) : null;
-                            return new TreatmentLabelAndChangeNumber(parsedSplit.defaultTreatment(), Labels.NOT_IN_SPLIT, parsedSplit.changeNumber(), config);
+                            return new TreatmentLabelAndChangeNumber(parsedSplit.defaultTreatment(), Labels.NOT_IN_FEATURE_FLAG, parsedSplit.changeNumber(), config);
                         }
 
                     }

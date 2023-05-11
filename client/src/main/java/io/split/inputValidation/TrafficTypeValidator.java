@@ -26,8 +26,8 @@ public class TrafficTypeValidator {
         }
 
         if (!splitCacheConsumer.trafficTypeExists(trafficTypeName)) {
-            _log.warn(String.format("%s: Traffic Type %s does not have any corresponding Splits in this environment, " +
-                    "make sure you’re tracking your events to a valid traffic type defined in the Split console.", method, trafficTypeName));
+            _log.warn(String.format("%s: Traffic Type %s does not have any corresponding Feature flags in this environment, " +
+                    "make sure you’re tracking your events to a valid traffic type defined in the Split user interface.", method, trafficTypeName));
         }
 
         return Optional.of(trafficTypeName);

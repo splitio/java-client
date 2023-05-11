@@ -94,7 +94,7 @@ public class EvaluatorIntegrationTest {
         Assert.assertEquals(DEFAULT_TREATMENT_VALUE, result.treatment);
         Long changeNumberExpected = 223366555L;
         Assert.assertEquals(changeNumberExpected, result.changeNumber);
-        Assert.assertEquals(Labels.NOT_IN_SPLIT, result.label);
+        Assert.assertEquals(Labels.NOT_IN_FEATURE_FLAG, result.label);
     }
 
     @Test

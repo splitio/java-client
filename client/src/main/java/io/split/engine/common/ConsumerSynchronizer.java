@@ -39,7 +39,7 @@ public class ConsumerSynchronizer implements Synchronizer{
     }
 
     @Override
-    public void localKillSplit(String splitName, String defaultTreatment, long newChangeNumber) {
+    public void localKillSplit(String featureFlagName, String defaultTreatment, long newChangeNumber) {
         //No-Op
     }
 

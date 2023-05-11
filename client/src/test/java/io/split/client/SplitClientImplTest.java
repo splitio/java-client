@@ -2,7 +2,6 @@ package io.split.client;
 
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
-import com.google.common.reflect.TypeToken;
 import io.split.client.api.Key;
 import io.split.client.api.SplitResult;
 import io.split.client.dtos.ConditionType;
@@ -47,8 +46,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.TimeoutException;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.is;
@@ -713,7 +710,7 @@ public class SplitClientImplTest {
 
     @Test
     public void not_in_split_if_no_allocation() {
-        traffic_allocation("pato@split.io", 0, 123, "off", "not in split");
+        traffic_allocation("pato@split.io", 0, 123, "off", "not in feature flag");
     }
 
     /**
@@ -732,7 +729,7 @@ public class SplitClientImplTest {
         String key = "pato@split.io";
         int i = 0;
         for (; i <= 9; i++) {
-            traffic_allocation(key, i, 123, "off", "not in split");
+            traffic_allocation(key, i, 123, "off", "not in feature flag");
         }
 
         for (; i <= 100; i++) {
@@ -748,7 +745,7 @@ public class SplitClientImplTest {
 
         //All these others should not be in split
         for (int offset = 0; offset <= 100; offset++) {
-            traffic_allocation("pato" + String.valueOf(offset), 1, 123, "off", "not in split");
+            traffic_allocation("pato" + String.valueOf(offset), 1, 123, "off", "not in feature flag");
         }
 
     }
@@ -853,7 +850,7 @@ public class SplitClientImplTest {
         assertNotNull(impressionCaptor.getValue());
         assertEquals(1, impressionCaptor.getValue().size());
         Impression impression = (Impression) impressionCaptor.getValue().get(0);
-        assertThat(impression.appliedRule(), is(equalTo("not in split")));
+        assertThat(impression.appliedRule(), is(equalTo("not in feature flag")));
     }
 
 
