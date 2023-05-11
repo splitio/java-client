@@ -33,7 +33,7 @@ public class ProcessImpressionOptimized implements ProcessImpressionStrategy{
         for(Impression impression : impressions) {
             impression = impression.withPreviousTime(_impressionObserver.testAndSet(impression));
             if(!Objects.isNull(impression.pt()) && impression.pt() != 0){
-                _impressionCounter.inc(impression.split(), impression.time(), 1);
+                _impressionCounter.inc(impression.featureFlag(), impression.time(), 1);
             }
             if(shouldntQueueImpression(impression)) {
                 continue;

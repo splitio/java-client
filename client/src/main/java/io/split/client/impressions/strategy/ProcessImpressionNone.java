@@ -24,8 +24,8 @@ public class ProcessImpressionNone implements ProcessImpressionStrategy{
     public ImpressionsResult process(List<Impression> impressions) {
 
         for(Impression impression: impressions){
-            _impressionCounter.inc(impression.split(), impression.time(), 1);
-            _uniqueKeysTracker.track(impression.split(),impression.key());
+            _impressionCounter.inc(impression.featureFlag(), impression.time(), 1);
+            _uniqueKeysTracker.track(impression.featureFlag(),impression.key());
         }
         List<Impression> impressionForListener =  this._listenerEnabled ? impressions : null;
         return new ImpressionsResult(new ArrayList<>(), impressionForListener);

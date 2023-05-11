@@ -21,7 +21,7 @@ public class ImpressionHasher {
         }
         return MurmurHash3.hash128x64(String.format(HASHABLE_FORMAT,
                 unknownIfNull(impression.key()),
-                unknownIfNull(impression.split()),
+                unknownIfNull(impression.featureFlag()),
                 unknownIfNull(impression.treatment()),
                 unknownIfNull(impression.appliedRule()),
                 zeroIfNull(impression.changeNumber())).getBytes())[0];
