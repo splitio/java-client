@@ -56,21 +56,21 @@ public class SplitManagerImpl implements SplitManager {
     }
 
     @Override
-    public SplitView split(String featureName) {
+    public SplitView split(String featureFlagName) {
         if (!_gates.isSDKReady()) { {
             _log.warn("split: the SDK is not ready, results may be incorrect. Make sure to wait for SDK readiness before using this method");
             _telemetryConfigProducer.recordNonReadyUsage();
         }}
-        Optional<String> result = SplitNameValidator.isValid(featureName, "split");
+        Optional<String> result = SplitNameValidator.isValid(featureFlagName, "split");
         if (!result.isPresent()) {
             return null;
         }
-        featureName = result.get();
+        featureFlagName = result.get();
 
-        ParsedSplit parsedSplit = _splitCacheConsumer.get(featureName);
+        ParsedSplit parsedSplit = _splitCacheConsumer.get(featureFlagName);
         if (parsedSplit == null) {
             if (_gates.isSDKReady()) {
-                _log.warn("split: you passed \"" + featureName + "\" that does not exist in this environment, " +
+                _log.warn("split: you passed \"" + featureFlagName + "\" that does not exist in this environment, " +
                         "please double check what Feature Flags exist in the Split user interface.");
             }
             return null;
