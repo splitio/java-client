@@ -22,7 +22,7 @@ public class LocalhostSyncManager implements SyncManager {
     @Override
     public void start() {
         if(!_localhostSynchronizer.syncAll()){
-            _log.error("Could not synchronize split and segment files");
+            _log.error("Could not synchronize feature flag and segment files");
             return;
         }
         _gates.sdkInternalReady();

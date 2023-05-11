@@ -183,9 +183,9 @@ public class SynchronizerImp implements Synchronizer {
     }
 
     @Override
-    public void localKillSplit(String splitName, String defaultTreatment, long newChangeNumber) {
+    public void localKillSplit(String featureFlagName, String defaultTreatment, long newChangeNumber) {
         if (newChangeNumber > _splitCacheProducer.getChangeNumber()) {
-            _splitCacheProducer.kill(splitName, defaultTreatment, newChangeNumber);
+            _splitCacheProducer.kill(featureFlagName, defaultTreatment, newChangeNumber);
             refreshSplits(newChangeNumber);
         }
     }
