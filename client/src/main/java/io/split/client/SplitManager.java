@@ -22,7 +22,7 @@ public interface SplitManager {
      *
      * @return SplitView or null
      */
-    SplitView split(String featureName);
+    SplitView split(String featureFlagName);
 
     /**
      * Returns the names of feature flags registered with the SDK.
