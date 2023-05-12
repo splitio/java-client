@@ -18,7 +18,7 @@ public class ImpressionCounter {
             _timeFrame = timeframe;
         }
 
-        public String featureFlagName() { return _featureFlagName; }
+        public String featureName() { return _featureFlagName; }
         public long timeFrame() { return  _timeFrame; }
 
         @Override

@@ -20,7 +20,7 @@ public class ImpressionCount {
 
     public static ImpressionCount fromImpressionCounterData(Map<ImpressionCounter.Key, Integer> raw) {
         return new ImpressionCount(raw.entrySet().stream()
-                .map(e -> new CountPerFeature(e.getKey().featureFlagName(), e.getKey().timeFrame(), e.getValue()))
+                .map(e -> new CountPerFeature(e.getKey().featureName(), e.getKey().timeFrame(), e.getValue()))
                 .collect(Collectors.toList()));
     }
 
