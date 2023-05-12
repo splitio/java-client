@@ -70,7 +70,7 @@ public class KeyImpression {
 
     public static KeyImpression fromImpression(Impression i) {
         KeyImpression ki = new KeyImpression();
-        ki.feature = i.featureFlag();
+        ki.feature = i.split();
         ki.keyName = i.key();
         ki.bucketingKey = i.bucketingKey();
         ki.time = i.time();

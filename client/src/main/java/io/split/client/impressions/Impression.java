@@ -37,7 +37,7 @@ public class Impression {
         return _bucketingKey;
     }
 
-    public String featureFlag() {
+    public String split() {
         return _featureFlag;
     }
 

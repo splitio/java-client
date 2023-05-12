@@ -31,7 +31,7 @@ public class NewRelicListener implements ImpressionListener {
     @Override
     public void log(Impression impression) {
         try {
-            String entryKey = String.format("split.%s", impression.featureFlag());
+            String entryKey = String.format("split.%s", impression.split());
             _addCustomParameterMethodHandle.invokeExact("split_key", impression.key());
             _addCustomParameterMethodHandle.invokeExact(entryKey, impression.treatment());
         } catch (Throwable e) {
