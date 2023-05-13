@@ -9,7 +9,7 @@ public class Impression {
     
     private final String _key;
     private final String _bucketingKey;
-    private final String _featureFlag;
+    private final String _split;
     private final String _treatment;
     private final long _time;
     private final String _appliedRule;
@@ -21,7 +21,7 @@ public class Impression {
     public Impression(String key, String bucketingKey, String featureFlag, String treatment, long time, String appliedRule, Long changeNumber, Map<String, Object> atributes) {
         _key = key;
         _bucketingKey = bucketingKey;
-        _featureFlag = featureFlag;
+        _split = featureFlag;
         _treatment = treatment;
         _time = time;
         _appliedRule = appliedRule;
@@ -38,7 +38,7 @@ public class Impression {
     }
 
     public String split() {
-        return _featureFlag;
+        return _split;
     }
 
     public String treatment() {
