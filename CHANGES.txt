@@ -1,7 +1,7 @@
 4.8.0 (May 15, 2023)
 - Added ThreadFactory config in SDK to allow using Virtual Threading instantiation from java 19 and above.
 - Updated default treatment to be control for yaml and json localhost.
-- Updated terminology on the SDKs codebase to be more aligned with current standard without causing a breaking change. The core change is the term split for feature flag on things like logs and godoc comments.
+- Updated terminology on the SDKs codebase to be more aligned with current standard without causing a breaking change. The core change is the term split for feature flag on things like logs and javadoc comments.
 
 4.7.1 (Apr 10, 2023)
 - Added SHA for feature flag and segment fetcher in localhost json.
