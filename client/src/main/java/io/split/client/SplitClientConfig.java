@@ -871,11 +871,6 @@ public class SplitClientConfig {
             return this;
         }
 
-        public Builder threadFactory(ThreadFactory threadFactory) {
-            _threadFactory = threadFactory;
-            return this;
-        }
-
         /**
          * Storage wrapper
          *

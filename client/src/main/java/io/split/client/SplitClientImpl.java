@@ -75,67 +75,67 @@ public final class SplitClientImpl implements SplitClient {
     }
 
     @Override
-    public String getTreatment(String key, String split) {
-        return getTreatment(key, split, Collections.<String, Object>emptyMap());
+    public String getTreatment(String key, String featureFlagName) {
+        return getTreatment(key, featureFlagName, Collections.<String, Object>emptyMap());
     }
 
     @Override
-    public String getTreatment(String key, String split, Map<String, Object> attributes) {
-        return getTreatmentWithConfigInternal(key, null, split, attributes, MethodEnum.TREATMENT).treatment();
+    public String getTreatment(String key, String featureFlagName, Map<String, Object> attributes) {
+        return getTreatmentWithConfigInternal(key, null, featureFlagName, attributes, MethodEnum.TREATMENT).treatment();
     }
 
     @Override
-    public String getTreatment(Key key, String split, Map<String, Object> attributes) {
-        return getTreatmentWithConfigInternal(key.matchingKey(), key.bucketingKey(), split, attributes, MethodEnum.TREATMENT).treatment();
+    public String getTreatment(Key key, String featureFlagName, Map<String, Object> attributes) {
+        return getTreatmentWithConfigInternal(key.matchingKey(), key.bucketingKey(), featureFlagName, attributes, MethodEnum.TREATMENT).treatment();
     }
 
     @Override
-    public SplitResult getTreatmentWithConfig(String key, String split) {
-        return getTreatmentWithConfigInternal(key, null, split, Collections.<String, Object>emptyMap(), MethodEnum.TREATMENT_WITH_CONFIG);
+    public SplitResult getTreatmentWithConfig(String key, String featureFlagName) {
+        return getTreatmentWithConfigInternal(key, null, featureFlagName, Collections.<String, Object>emptyMap(), MethodEnum.TREATMENT_WITH_CONFIG);
     }
 
     @Override
-    public SplitResult getTreatmentWithConfig(String key, String split, Map<String, Object> attributes) {
-        return getTreatmentWithConfigInternal(key, null, split, attributes, MethodEnum.TREATMENT_WITH_CONFIG);
+    public SplitResult getTreatmentWithConfig(String key, String featureFlagName, Map<String, Object> attributes) {
+        return getTreatmentWithConfigInternal(key, null, featureFlagName, attributes, MethodEnum.TREATMENT_WITH_CONFIG);
     }
 
     @Override
-    public SplitResult getTreatmentWithConfig(Key key, String split, Map<String, Object> attributes) {
-        return getTreatmentWithConfigInternal(key.matchingKey(), key.bucketingKey(), split, attributes, MethodEnum.TREATMENT_WITH_CONFIG);
+    public SplitResult getTreatmentWithConfig(Key key, String featureFlagName, Map<String, Object> attributes) {
+        return getTreatmentWithConfigInternal(key.matchingKey(), key.bucketingKey(), featureFlagName, attributes, MethodEnum.TREATMENT_WITH_CONFIG);
     }
 
     @Override
-    public Map<String, String> getTreatments(String key, List<String> splits) {
-        return getTreatments(key, splits, Collections.emptyMap());
+    public Map<String, String> getTreatments(String key, List<String> featureFlagNames) {
+        return getTreatments(key, featureFlagNames, Collections.emptyMap());
     }
 
     @Override
-    public Map<String, String> getTreatments(String key, List<String> splits, Map<String, Object> attributes) {
-        return getTreatmentsWithConfigInternal(key, null, splits, attributes, MethodEnum.TREATMENTS)
+    public Map<String, String> getTreatments(String key, List<String> featureFlagNames, Map<String, Object> attributes) {
+        return getTreatmentsWithConfigInternal(key, null, featureFlagNames, attributes, MethodEnum.TREATMENTS)
                 .entrySet().stream()
                 .collect(Collectors.toMap(Map.Entry::getKey, e -> e.getValue().treatment()));
     }
 
     @Override
-    public Map<String, String> getTreatments(Key key, List<String> splits, Map<String, Object> attributes) {
-        return getTreatmentsWithConfigInternal(key.matchingKey(), key.bucketingKey(), splits, attributes, MethodEnum.TREATMENTS)
+    public Map<String, String> getTreatments(Key key, List<String> featureFlagNames, Map<String, Object> attributes) {
+        return getTreatmentsWithConfigInternal(key.matchingKey(), key.bucketingKey(), featureFlagNames, attributes, MethodEnum.TREATMENTS)
                 .entrySet().stream()
                 .collect(Collectors.toMap(Map.Entry::getKey, e -> e.getValue().treatment()));
     }
 
     @Override
-    public Map<String, SplitResult> getTreatmentsWithConfig(String key, List<String> splits) {
-        return getTreatmentsWithConfigInternal(key, null, splits, Collections.<String, Object>emptyMap(), MethodEnum.TREATMENTS_WITH_CONFIG);
+    public Map<String, SplitResult> getTreatmentsWithConfig(String key, List<String> featureFlagNames) {
+        return getTreatmentsWithConfigInternal(key, null, featureFlagNames, Collections.<String, Object>emptyMap(), MethodEnum.TREATMENTS_WITH_CONFIG);
     }
 
     @Override
-    public Map<String, SplitResult> getTreatmentsWithConfig(String key, List<String> splits, Map<String, Object> attributes) {
-        return getTreatmentsWithConfigInternal(key, null, splits, attributes, MethodEnum.TREATMENTS_WITH_CONFIG);
+    public Map<String, SplitResult> getTreatmentsWithConfig(String key, List<String> featureFlagNames, Map<String, Object> attributes) {
+        return getTreatmentsWithConfigInternal(key, null, featureFlagNames, attributes, MethodEnum.TREATMENTS_WITH_CONFIG);
     }
 
     @Override
-    public Map<String, SplitResult> getTreatmentsWithConfig(Key key, List<String> splits, Map<String, Object> attributes) {
-        return getTreatmentsWithConfigInternal(key.matchingKey(), key.bucketingKey(), splits, attributes, MethodEnum.TREATMENTS_WITH_CONFIG);
+    public Map<String, SplitResult> getTreatmentsWithConfig(Key key, List<String> featureFlagNames, Map<String, Object> attributes) {
+        return getTreatmentsWithConfigInternal(key.matchingKey(), key.bucketingKey(), featureFlagNames, attributes, MethodEnum.TREATMENTS_WITH_CONFIG);
     }
 
     @Override
@@ -174,7 +174,7 @@ public final class SplitClientImpl implements SplitClient {
             throw new IllegalArgumentException("setBlockUntilReadyTimeout must be positive but in config was: " + _config.blockUntilReady());
         }
         if (!_gates.waitUntilInternalReady(_config.blockUntilReady())) {
-            throw new TimeoutException("SDK was not ready in " + _config.blockUntilReady()+ " milliseconds");
+            throw new TimeoutException("SDK was not ready in " + _config.blockUntilReady() + " milliseconds");
         }
         _log.debug(String.format("Split SDK ready in %d ms", (System.currentTimeMillis() - startTime)));
     }
@@ -220,7 +220,7 @@ public final class SplitClientImpl implements SplitClient {
         return _eventsStorageProducer.track(event, propertiesResult.getEventSize());
     }
 
-    private SplitResult getTreatmentWithConfigInternal(String matchingKey, String bucketingKey, String split, Map<String, Object> attributes, MethodEnum methodEnum) {
+    private SplitResult getTreatmentWithConfigInternal(String matchingKey, String bucketingKey, String featureFlag, Map<String, Object> attributes, MethodEnum methodEnum) {
         long initTime = System.currentTimeMillis();
         try {
             checkSDKReady(methodEnum);
@@ -238,27 +238,27 @@ public final class SplitClientImpl implements SplitClient {
                 return SPLIT_RESULT_CONTROL;
             }
 
-            Optional<String> splitNameResult = SplitNameValidator.isValid(split, methodEnum.getMethod());
+            Optional<String> splitNameResult = SplitNameValidator.isValid(featureFlag, methodEnum.getMethod());
             if (!splitNameResult.isPresent()) {
                 return SPLIT_RESULT_CONTROL;
             }
-            split = splitNameResult.get();
+            featureFlag = splitNameResult.get();
 
             long start = System.currentTimeMillis();
 
-            EvaluatorImp.TreatmentLabelAndChangeNumber result = _evaluator.evaluateFeature(matchingKey, bucketingKey, split, attributes);
+            EvaluatorImp.TreatmentLabelAndChangeNumber result = _evaluator.evaluateFeature(matchingKey, bucketingKey, featureFlag, attributes);
 
             if (result.treatment.equals(Treatments.CONTROL) && result.label.equals(Labels.DEFINITION_NOT_FOUND) && _gates.isSDKReady()) {
                 _log.warn(String.format(
                         "%s: you passed \"%s\" that does not exist in this environment, " +
-                                "please double check what Splits exist in the web console.", methodEnum.getMethod(), split));
+                                "please double check what feature flags exist in the Split user interface.", methodEnum.getMethod(), featureFlag));
                 return SPLIT_RESULT_CONTROL;
             }
 
             recordStats(
                     matchingKey,
                     bucketingKey,
-                    split,
+                    featureFlag,
                     start,
                     result.treatment,
                     String.format("sdk.%s", methodEnum.getMethod()),
@@ -266,7 +266,7 @@ public final class SplitClientImpl implements SplitClient {
                     result.changeNumber,
                     attributes
             );
-            _telemetryEvaluationProducer.recordLatency(methodEnum, System.currentTimeMillis()-initTime);
+            _telemetryEvaluationProducer.recordLatency(methodEnum, System.currentTimeMillis() - initTime);
             return new SplitResult(result.treatment, result.configurations);
         } catch (Exception e) {
             try {
@@ -279,49 +279,47 @@ public final class SplitClientImpl implements SplitClient {
         }
     }
 
-    private Map<String, SplitResult> getTreatmentsWithConfigInternal(String matchingKey, String bucketingKey, List<String> splits, Map<String, Object> attributes, MethodEnum methodEnum) {
+    private Map<String, SplitResult> getTreatmentsWithConfigInternal(String matchingKey, String bucketingKey, List<String> featureFlagNames, Map<String, Object> attributes, MethodEnum methodEnum) {
         long initTime = System.currentTimeMillis();
-        if(splits == null) {
-            _log.error(String.format("%s: split_names must be a non-empty array", methodEnum.getMethod()));
+        if (featureFlagNames == null) {
+            _log.error(String.format("%s: featureFlagNames must be a non-empty array", methodEnum.getMethod()));
             return new HashMap<>();
         }
-        try{
+        try {
             checkSDKReady(methodEnum);
             if (_container.isDestroyed()) {
                 _log.error("Client has already been destroyed - no calls possible");
-                return createMapControl(splits);
+                return createMapControl(featureFlagNames);
             }
 
             if (!KeyValidator.isValid(matchingKey, "matchingKey", _config.maxStringLength(), methodEnum.getMethod())) {
-                return createMapControl(splits);
+                return createMapControl(featureFlagNames);
             }
 
             if (!KeyValidator.bucketingKeyIsValid(bucketingKey, _config.maxStringLength(), methodEnum.getMethod())) {
-                return createMapControl(splits);
-            }
-            else if(splits.isEmpty()) {
-                _log.error(String.format("%s: split_names must be a non-empty array", methodEnum.getMethod()));
+                return createMapControl(featureFlagNames);
+            } else if (featureFlagNames.isEmpty()) {
+                _log.error(String.format("%s: featureFlagNames must be a non-empty array", methodEnum.getMethod()));
                 return new HashMap<>();
             }
-            splits = SplitNameValidator.areValid(splits, methodEnum.getMethod());
-            Map<String, EvaluatorImp.TreatmentLabelAndChangeNumber> evaluatorResult = _evaluator.evaluateFeatures(matchingKey, bucketingKey, splits, attributes);
+            featureFlagNames = SplitNameValidator.areValid(featureFlagNames, methodEnum.getMethod());
+            Map<String, EvaluatorImp.TreatmentLabelAndChangeNumber> evaluatorResult = _evaluator.evaluateFeatures(matchingKey, bucketingKey, featureFlagNames, attributes);
             List<Impression> impressions = new ArrayList<>();
             Map<String, SplitResult> result = new HashMap<>();
             evaluatorResult.keySet().forEach(t -> {
                 if (evaluatorResult.get(t).treatment.equals(Treatments.CONTROL) && evaluatorResult.get(t).label.equals(Labels.DEFINITION_NOT_FOUND) && _gates.isSDKReady()) {
                     _log.warn(String.format(
-                            "%s: you passed \"%s\" that does not exist in this environment please double check what Splits exist in the web console.", methodEnum.getMethod(), t));
+                            "%s: you passed \"%s\" that does not exist in this environment please double check what feature flags exist in the Split user interface.", methodEnum.getMethod(), t));
                     result.put(t, SPLIT_RESULT_CONTROL);
-                }
-                else {
-                    result.put(t,new SplitResult(evaluatorResult.get(t).treatment, evaluatorResult.get(t).configurations));
+                } else {
+                    result.put(t, new SplitResult(evaluatorResult.get(t).treatment, evaluatorResult.get(t).configurations));
                     impressions.add(new Impression(matchingKey, bucketingKey, t, evaluatorResult.get(t).treatment, System.currentTimeMillis(), evaluatorResult.get(t).label, evaluatorResult.get(t).changeNumber, attributes));
                 }
             });
 
-            _telemetryEvaluationProducer.recordLatency(methodEnum, System.currentTimeMillis()-initTime);
+            _telemetryEvaluationProducer.recordLatency(methodEnum, System.currentTimeMillis() - initTime);
             //Track of impressions
-            if(impressions.size() > 0) {
+            if (impressions.size() > 0) {
                 _impressionManager.track(impressions);
             }
             return result;
@@ -332,14 +330,14 @@ public final class SplitClientImpl implements SplitClient {
             } catch (Exception e1) {
                 // ignore
             }
-            return createMapControl(splits);
+            return createMapControl(featureFlagNames);
         }
     }
 
-    private void recordStats(String matchingKey, String bucketingKey, String split, long start, String result,
+    private void recordStats(String matchingKey, String bucketingKey, String featureFlagName, long start, String result,
                              String operation, String label, Long changeNumber, Map<String, Object> attributes) {
         try {
-            _impressionManager.track(Stream.of(new Impression(matchingKey, bucketingKey, split, result, System.currentTimeMillis(), label, changeNumber, attributes)).collect(Collectors.toList()));
+            _impressionManager.track(Stream.of(new Impression(matchingKey, bucketingKey, featureFlagName, result, System.currentTimeMillis(), label, changeNumber, attributes)).collect(Collectors.toList()));
         } catch (Throwable t) {
             _log.error("Exception", t);
         }
@@ -355,16 +353,16 @@ public final class SplitClientImpl implements SplitClient {
     }
 
     private void checkSDKReady(MethodEnum methodEnum) {
-        if(!_gates.isSDKReady()){
+        if (!_gates.isSDKReady()) {
             _log.warn(String.format(
                     "%s: the SDK is not ready, results may be incorrect. Make sure to wait for SDK readiness before using this method", methodEnum.getMethod()));
             _telemetryConfigProducer.recordNonReadyUsage();
         }
     }
 
-    private Map<String, SplitResult> createMapControl(List<String> splits) {
+    private Map<String, SplitResult> createMapControl(List<String> featureFlags) {
         Map<String, SplitResult> result = new HashMap<>();
-        splits.forEach(s -> result.put(s, SPLIT_RESULT_CONTROL));
+        featureFlags.forEach(s -> result.put(s, SPLIT_RESULT_CONTROL));
         return result;
     }
 }

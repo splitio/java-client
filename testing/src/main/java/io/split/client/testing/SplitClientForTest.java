@@ -33,76 +33,76 @@ public class SplitClientForTest implements SplitClient {
         _tests.put(feature, treatment);
     }
 
-    public String getTreatment(String key, String split) {
-        return _tests.containsKey(split)
-                ? _tests.get(split)
+    public String getTreatment(String key, String featureFlagName) {
+        return _tests.containsKey(featureFlagName)
+                ? _tests.get(featureFlagName)
                 : Treatments.CONTROL;
     }
 
-    public String getTreatment(String key, String split, Map<String, Object> attributes) {
-        return _tests.containsKey(split)
-                ? _tests.get(split)
+    public String getTreatment(String key, String featureFlagName, Map<String, Object> attributes) {
+        return _tests.containsKey(featureFlagName)
+                ? _tests.get(featureFlagName)
                 : Treatments.CONTROL;
     }
 
-    public String getTreatment(Key key, String split, Map<String, Object> attributes) {
-        return _tests.containsKey(split)
-                ? _tests.get(split)
+    public String getTreatment(Key key, String featureFlagName, Map<String, Object> attributes) {
+        return _tests.containsKey(featureFlagName)
+                ? _tests.get(featureFlagName)
                 : Treatments.CONTROL;
     }
 
     @Override
-    public SplitResult getTreatmentWithConfig(String key, String split) {
-        return new SplitResult(_tests.containsKey(split)
-                ? _tests.get(split)
+    public SplitResult getTreatmentWithConfig(String key, String featureFlagName) {
+        return new SplitResult(_tests.containsKey(featureFlagName)
+                ? _tests.get(featureFlagName)
                 : Treatments.CONTROL, null);
     }
 
     @Override
-    public SplitResult getTreatmentWithConfig(String key, String split, Map<String, Object> attributes) {
-        return new SplitResult(_tests.containsKey(split)
-                ? _tests.get(split)
+    public SplitResult getTreatmentWithConfig(String key, String featureFlagName, Map<String, Object> attributes) {
+        return new SplitResult(_tests.containsKey(featureFlagName)
+                ? _tests.get(featureFlagName)
                 : Treatments.CONTROL, null);
     }
 
     @Override
-    public SplitResult getTreatmentWithConfig(Key key, String split, Map<String, Object> attributes) {
-        return new SplitResult(_tests.containsKey(split)
-                ? _tests.get(split)
+    public SplitResult getTreatmentWithConfig(Key key, String featureFlagName, Map<String, Object> attributes) {
+        return new SplitResult(_tests.containsKey(featureFlagName)
+                ? _tests.get(featureFlagName)
                 : Treatments.CONTROL, null);
     }
 
     @Override
-    public Map<String, String> getTreatments(String key, List<String> splits) {
+    public Map<String, String> getTreatments(String key, List<String> featureFlagNames) {
         Map<String, String> treatments = new HashMap<>();
-        for (String split : splits) {
+        for (String split : featureFlagNames) {
             treatments.put(split, _tests.containsKey(split) ? _tests.get(split) : Treatments.CONTROL);
         }
         return treatments;
     }
 
     @Override
-    public Map<String, String> getTreatments(String key, List<String> splits, Map<String, Object> attributes){
+    public Map<String, String> getTreatments(String key, List<String> featureFlagNames, Map<String, Object> attributes){
         Map<String, String> treatments = new HashMap<>();
-        for (String split : splits) {
+        for (String split : featureFlagNames) {
             treatments.put(split, _tests.containsKey(split) ? _tests.get(split) : Treatments.CONTROL);
         }
         return treatments;
     }
 
     @Override
-    public Map<String, String> getTreatments(Key key, List<String> splits, Map<String, Object> attributes) {
+    public Map<String, String> getTreatments(Key key, List<String> featureFlagNames, Map<String, Object> attributes) {
         Map<String, String> treatments = new HashMap<>();
-        for (String split : splits) {
+        for (String split : featureFlagNames) {
             treatments.put(split, _tests.containsKey(split) ? _tests.get(split) : Treatments.CONTROL);
         }
         return treatments;
     }
 
     @Override
-    public Map<String, SplitResult> getTreatmentsWithConfig(String key, List<String> splits) {
+    public Map<String, SplitResult> getTreatmentsWithConfig(String key, List<String> featureFlagNames) {
         Map<String, SplitResult> treatments = new HashMap<>();
-        for (String split : splits) {
+        for (String split : featureFlagNames) {
             treatments.put(split, new SplitResult(_tests.containsKey(split)
             ? _tests.get(split)
             : Treatments.CONTROL, null));
@@ -111,9 +111,9 @@ public class SplitClientForTest implements SplitClient {
     }
 
     @Override
-    public Map<String, SplitResult> getTreatmentsWithConfig(String key, List<String> splits, Map<String, Object> attributes) {
+    public Map<String, SplitResult> getTreatmentsWithConfig(String key, List<String> featureFlagNames, Map<String, Object> attributes) {
         Map<String, SplitResult> treatments = new HashMap<>();
-        for (String split : splits) {
+        for (String split : featureFlagNames) {
             treatments.put(split, new SplitResult(_tests.containsKey(split)
             ? _tests.get(split)
             : Treatments.CONTROL, null));
@@ -122,9 +122,9 @@ public class SplitClientForTest implements SplitClient {
     }
 
     @Override
-    public Map<String, SplitResult> getTreatmentsWithConfig(Key key, List<String> splits, Map<String, Object> attributes) {
+    public Map<String, SplitResult> getTreatmentsWithConfig(Key key, List<String> featureFlagNames, Map<String, Object> attributes) {
         Map<String, SplitResult> treatments = new HashMap<>();
-        for (String split : splits) {
+        for (String split : featureFlagNames) {
             treatments.put(split, new SplitResult(_tests.containsKey(split)
             ? _tests.get(split)
             : Treatments.CONTROL, null));

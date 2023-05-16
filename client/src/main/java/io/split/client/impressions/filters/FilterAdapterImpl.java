@@ -9,13 +9,13 @@ public class FilterAdapterImpl implements FilterAdapter {
     }
 
     @Override
-    public boolean add(String featureName, String key) {
-        return filter.add(featureName + key);
+    public boolean add(String featureFlagName, String key) {
+        return filter.add(featureFlagName + key);
     }
 
     @Override
-    public boolean contains(String featureName, String key) {
-        return filter.contains(featureName + key);
+    public boolean contains(String featureFlagName, String key) {
+        return filter.contains(featureFlagName + key);
     }
 
     @Override

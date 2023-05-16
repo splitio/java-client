@@ -54,7 +54,7 @@ public class SplitSynchronizationTask implements SyncTask, Closeable {
             return;
         }
 
-        _log.debug("Starting PeriodicFetching Splits ...");
+        _log.debug("Starting PeriodicFetching Feature flags ...");
         _scheduledFuture = _scheduledExecutorService.scheduleWithFixedDelay(_splitFetcher.get(), 0L, _refreshEveryNSeconds.get(), TimeUnit.SECONDS);
     }
 
@@ -65,7 +65,7 @@ public class SplitSynchronizationTask implements SyncTask, Closeable {
         }
 
         _scheduledFuture.cancel(false);
-        _log.debug("Stopped PeriodicFetching Splits ...");
+        _log.debug("Stopped PeriodicFetching Feature flags ...");
     }
 
     @Override
@@ -94,7 +94,7 @@ public class SplitSynchronizationTask implements SyncTask, Closeable {
             }
         } catch (InterruptedException e) {
             // reset the interrupt.
-            _log.warn("Shutdown hook for split fetchers has been interrupted");
+            _log.warn("Shutdown hook for feature flag fetchers has been interrupted");
             Thread.currentThread().interrupt();
         }
     }

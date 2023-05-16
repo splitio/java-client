@@ -54,7 +54,7 @@ public class SplitFetcherImp implements SplitFetcher {
 
     @Override
     public FetchResult forceRefresh(FetchOptions options) {
-        _log.debug("Force Refresh splits starting ...");
+        _log.debug("Force Refresh feature flags starting ...");
         final long INITIAL_CN = _splitCacheProducer.getChangeNumber();
         Set<String> segments = new HashSet<>();
         try {

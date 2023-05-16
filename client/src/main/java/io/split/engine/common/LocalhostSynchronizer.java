@@ -58,7 +58,7 @@ public class LocalhostSynchronizer implements Synchronizer{
     public void refreshSplits(Long targetChangeNumber) {
         FetchResult fetchResult = _splitFetcher.forceRefresh(new FetchOptions.Builder().cacheControlHeaders(true).build());
         if (fetchResult.isSuccess()){
-            _log.debug("Refresh splits completed");
+            _log.debug("Refresh feature flags completed");
             fetchResult.getSegments().stream().forEach(segmentName -> refreshSegment(segmentName, null));
         } else {
             _log.debug("No changes fetched");
@@ -66,7 +66,7 @@ public class LocalhostSynchronizer implements Synchronizer{
     }
 
     @Override
-    public void localKillSplit(String splitName, String defaultTreatment, long newChangeNumber) {
+    public void localKillSplit(String featureFlagName, String defaultTreatment, long newChangeNumber) {
         //No-Op
     }
 

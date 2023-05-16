@@ -2,7 +2,7 @@
 ![Build Status](https://github.com/splitio/java-client/actions/workflows/ci-cd.yml/badge.svg?branch=master)
 
 ## Overview
-This SDK is designed to work with Split, the platform for controlled rollouts, serving features to your users via the Split feature flag to manage your complete customer experience.
+This SDK is designed to work with Split, the platform for controlled rollouts, serving features to your users via feature flags to manage your complete customer experience.
 
 [![Twitter Follow](https://img.shields.io/twitter/follow/splitsoftware.svg?style=social&label=Follow&maxAge=1529000)](https://twitter.com/intent/follow?screen_name=splitsoftware)
 
@@ -22,7 +22,7 @@ public  class App {
         SplitClientConfig config = SplitClientConfig.builder()
                 .setBlockUntilReadyTimeout(10000)
                 .build();
-        SplitFactory splitFactory = SplitFactoryBuilder.build("SDK_API_KEY", config);
+        SplitFactory splitFactory = SplitFactoryBuilder.build("YOUR_SDK_KEY", config);
         SplitClient client = splitFactory.client();
         try {
             client.blockUntilReady();
@@ -30,11 +30,11 @@ public  class App {
             // log & handle
         }
 
-        String treatment = client.getTreatment("CUSTOMER_ID", "SPLIT_NAME");
+        String treatment = client.getTreatment("CUSTOMER_ID", "FEATURE_FLAG_NAME");
         if (treatment.equals("on")) {
-            // Feature is enabled for this user!
+            // Feature flag is enabled for this user!
         } else if (treatment.equals("off")) {
-            // Feature is disabled for this user!
+            // Feature flag is disabled for this user!
         } else {
             // Unable to perform evaluation.
         }
@@ -61,7 +61,8 @@ To learn more about Split, contact hello@split.io, or get started with feature f
 Split has built and maintains SDKs for:
 
 * Java [Github](https://github.com/splitio/java-client) [Docs](https://help.split.io/hc/en-us/articles/360020405151-Java-SDK)
-* Javascript [Github](https://github.com/splitio/javascript-client) [Docs](https://help.split.io/hc/en-us/articles/360020448791-JavaScript-SDK)
+* JavaScript [Github](https://github.com/splitio/javascript-client) [Docs](https://help.split.io/hc/en-us/articles/360020448791-JavaScript-SDK)
+* JavaScript for Browser [Github](https://github.com/splitio/javascript-browser-client) [Docs](https://help.split.io/hc/en-us/articles/360058730852-Browser-SDK)
 * Node [Github](https://github.com/splitio/javascript-client) [Docs](https://help.split.io/hc/en-us/articles/360020564931-Node-js-SDK)
 * .NET [Github](https://github.com/splitio/dotnet-client) [Docs](https://help.split.io/hc/en-us/articles/360020240172--NET-SDK)
 * Ruby [Github](https://github.com/splitio/ruby-client) [Docs](https://help.split.io/hc/en-us/articles/360020673251-Ruby-SDK)
@@ -70,6 +71,10 @@ Split has built and maintains SDKs for:
 * GO [Github](https://github.com/splitio/go-client) [Docs](https://help.split.io/hc/en-us/articles/360020093652-Go-SDK)
 * Android [Github](https://github.com/splitio/android-client) [Docs](https://help.split.io/hc/en-us/articles/360020343291-Android-SDK)
 * iOS [Github](https://github.com/splitio/ios-client) [Docs](https://help.split.io/hc/en-us/articles/360020401491-iOS-SDK)
+* Angular [Github](https://github.com/splitio/angular-sdk-plugin) [Docs](https://help.split.io/hc/en-us/articles/6495326064397-Angular-utilities)
+* React [Github](https://github.com/splitio/react-client) [Docs](https://help.split.io/hc/en-us/articles/360038825091-React-SDK)
+* React Native [Github](https://github.com/splitio/react-native-client) [Docs](https://help.split.io/hc/en-us/articles/4406066357901-React-Native-SDK)
+* Redux [Github](https://github.com/splitio/redux-client) [Docs](https://help.split.io/hc/en-us/articles/360038851551-Redux-SDK)
 
 For a comprehensive list of open source projects visit our [Github page](https://github.com/splitio?utf8=%E2%9C%93&query=%20only%3Apublic%20).
 
