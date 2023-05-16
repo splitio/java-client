@@ -85,7 +85,7 @@ public class EvaluatorImp implements Evaluator {
                         if (bucket > parsedSplit.trafficAllocation()) {
                             // out of split
                             String config = parsedSplit.configurations() != null ? parsedSplit.configurations().get(parsedSplit.defaultTreatment()) : null;
-                            return new TreatmentLabelAndChangeNumber(parsedSplit.defaultTreatment(), Labels.NOT_IN_FEATURE_FLAG, parsedSplit.changeNumber(), config);
+                            return new TreatmentLabelAndChangeNumber(parsedSplit.defaultTreatment(), Labels.NOT_IN_SPLIT, parsedSplit.changeNumber(), config);
                         }
 
                     }

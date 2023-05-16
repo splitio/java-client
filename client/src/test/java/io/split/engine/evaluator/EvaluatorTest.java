@@ -101,7 +101,7 @@ public class EvaluatorTest {
         EvaluatorImp.TreatmentLabelAndChangeNumber result = _evaluator.evaluateFeature(MATCHING_KEY, BUCKETING_KEY, SPLIT_NAME, null);
 
         assertEquals(DEFAULT_TREATMENT_VALUE, result.treatment);
-        assertEquals("not in feature flag", result.label);
+        assertEquals("not in split", result.label);
         assertEquals(CHANGE_NUMBER, result.changeNumber);
     }
 

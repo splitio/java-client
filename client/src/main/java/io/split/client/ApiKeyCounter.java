@@ -26,13 +26,13 @@ public class ApiKeyCounter {
         private static final ApiKeyCounter INSTANCE = new ApiKeyCounter();
     }
 
-    public void add(String apiKey) {
+    public void add(String sdkKey) {
         String message;
-        if (USED_API_KEYS.contains(apiKey)) {
+        if (USED_API_KEYS.contains(sdkKey)) {
             message = String.format("factory instantiation: You already have %s with this SDK Key. " +
                             "We recommend keeping only one instance of the factory at all times (Singleton pattern) and reusing " +
                             "it throughout your application.",
-                    USED_API_KEYS.count(apiKey) == 1 ? "1 factory" : String.format("%s factories", USED_API_KEYS.count(apiKey)));
+                    USED_API_KEYS.count(sdkKey) == 1 ? "1 factory" : String.format("%s factories", USED_API_KEYS.count(sdkKey)));
             _log.warn(message);
         } else if (!USED_API_KEYS.isEmpty()) {
              message = "factory instantiation: You already have an instance of the Split factory. " +
@@ -40,31 +40,31 @@ public class ApiKeyCounter {
                     "the factory at all times (Singleton pattern) and reusing it throughout your application.“";
             _log.warn(message);
         }
-        USED_API_KEYS.add(apiKey);
+        USED_API_KEYS.add(sdkKey);
     }
 
-    public void remove(String apiKey) {
-        USED_API_KEYS.remove(apiKey);
-    }
-
-    /**
-     * Just for test
-     * @param apiKey
-     * @return
-     */
-    @VisibleForTesting
-    boolean isApiKeyPresent(String apiKey) {
-        return USED_API_KEYS.contains(apiKey);
+    public void remove(String sdkKey) {
+        USED_API_KEYS.remove(sdkKey);
     }
 
     /**
      * Just for test
-     * @param apiKey
+     * @param sdkKey
      * @return
      */
     @VisibleForTesting
-    int getCount(String apiKey) {
-        return USED_API_KEYS.count(apiKey);
+    boolean isApiKeyPresent(String sdkKey) {
+        return USED_API_KEYS.contains(sdkKey);
+    }
+
+    /**
+     * Just for test
+     * @param sdkKey
+     * @return
+     */
+    @VisibleForTesting
+    int getCount(String sdkKey) {
+        return USED_API_KEYS.count(sdkKey);
     }
 
     public Map<String, Long> getFactoryInstances() {

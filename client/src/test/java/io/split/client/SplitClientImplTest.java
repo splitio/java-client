@@ -710,7 +710,7 @@ public class SplitClientImplTest {
 
     @Test
     public void not_in_split_if_no_allocation() {
-        traffic_allocation("pato@split.io", 0, 123, "off", "not in feature flag");
+        traffic_allocation("pato@split.io", 0, 123, "off", "not in split");
     }
 
     /**
@@ -729,7 +729,7 @@ public class SplitClientImplTest {
         String key = "pato@split.io";
         int i = 0;
         for (; i <= 9; i++) {
-            traffic_allocation(key, i, 123, "off", "not in feature flag");
+            traffic_allocation(key, i, 123, "off", "not in split");
         }
 
         for (; i <= 100; i++) {
@@ -745,7 +745,7 @@ public class SplitClientImplTest {
 
         //All these others should not be in split
         for (int offset = 0; offset <= 100; offset++) {
-            traffic_allocation("pato" + String.valueOf(offset), 1, 123, "off", "not in feature flag");
+            traffic_allocation("pato" + String.valueOf(offset), 1, 123, "off", "not in split");
         }
 
     }
@@ -850,7 +850,7 @@ public class SplitClientImplTest {
         assertNotNull(impressionCaptor.getValue());
         assertEquals(1, impressionCaptor.getValue().size());
         Impression impression = (Impression) impressionCaptor.getValue().get(0);
-        assertThat(impression.appliedRule(), is(equalTo("not in feature flag")));
+        assertThat(impression.appliedRule(), is(equalTo("not in split")));
     }
 
 

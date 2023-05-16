@@ -38,11 +38,11 @@ public interface SplitClient {
      * <p/>
      * This method does not throw any exceptions. It also never returns null.
      *
-     * @param key      a unique key of your customer (e.g. user_id, user_email, account_id, etc.) MUST not be null.
-     * @param featureFlag the feature flag we want to evaluate. MUST NOT be null.
+     * @param key a unique key of your customer (e.g. user_id, user_email, account_id, etc.) MUST not be null.
+     * @param featureFlagName the name of the feature flag we want to evaluate. MUST NOT be null.
      * @return the evaluated treatment, the default treatment of this feature flag, or 'control'.
      */
-    String getTreatment(String key, String featureFlag);
+    String getTreatment(String key, String featureFlagName);
 
     /**
      * This method is useful when you want to determine the treatment to show
@@ -54,12 +54,12 @@ public interface SplitClient {
      * vs. premium plan. Another example is to show a different treatment
      * to users created after a certain date.
      *
-     * @param key         a unique key of your customer (e.g. user_id, user_email, account_id, etc.) MUST not be null.
-     * @param featureFlag    the feature flag we want to evaluate. MUST NOT be null.
+     * @param key a unique key of your customer (e.g. user_id, user_email, account_id, etc.) MUST not be null.
+     * @param featureFlagName the name of the feature flag we want to evaluate. MUST NOT be null.
      * @param attributes of the customer (user, account etc.) to use in evaluation. Can be null or empty.
      * @return the evaluated treatment, the default treatment of this feature flag, or 'control'.
      */
-    String getTreatment(String key, String featureFlag, Map<String, Object> attributes);
+    String getTreatment(String key, String featureFlagName, Map<String, Object> attributes);
 
     /**
      * To understand why this method is useful, consider the following simple Feature Flag as an example:
@@ -87,12 +87,12 @@ public interface SplitClient {
      *
      *
      * @param key the matching and bucketing keys. MUST NOT be null.
-     * @param featureFlag the feature flag we want to evaluate. MUST NOT be null.
+     * @param featureFlagName the name of the feature flag we want to evaluate. MUST NOT be null.
      * @param attributes of the entity (user, account etc.) to use in evaluation. Can be null or empty.
      *
      * @return the evaluated treatment, the default treatment of this feature flag, or 'control'.
      */
-    String getTreatment(Key key, String featureFlag, Map<String, Object> attributes);
+    String getTreatment(Key key, String featureFlagName, Map<String, Object> attributes);
 
     /**
      * Same as {@link #getTreatment(String, String)} but it returns the configuration associated to the
@@ -103,12 +103,12 @@ public interface SplitClient {
      * vs. premium plan. Another example is to show a different treatment
      * to users created after a certain date.
      *
-     * @param key         a unique key of your customer (e.g. user_id, user_email, account_id, etc.) MUST not be null.
-     * @param featureFlag    the feature flag we want to evaluate. MUST NOT be null.
+     * @param key a unique key of your customer (e.g. user_id, user_email, account_id, etc.) MUST not be null.
+     * @param featureFlagName the name of the feature flag we want to evaluate. MUST NOT be null.
      * @return SplitResult containing the evaluated treatment (the default treatment of this feature flag, or 'control') and
      *         a configuration associated to this treatment if set.
      */
-    SplitResult getTreatmentWithConfig(String key, String featureFlag);
+    SplitResult getTreatmentWithConfig(String key, String featureFlagName);
 
     /**
      * Same as {@link #getTreatment(String, String, Map)} but it returns the configuration associated to the
@@ -119,26 +119,26 @@ public interface SplitClient {
      * vs. premium plan. Another example is to show a different treatment
      * to users created after a certain date.
      *
-     * @param key         a unique key of your customer (e.g. user_id, user_email, account_id, etc.) MUST not be null.
-     * @param featureFlag    the feature flag we want to evaluate. MUST NOT be null.
+     * @param key a unique key of your customer (e.g. user_id, user_email, account_id, etc.) MUST not be null.
+     * @param featureFlagName the name of the feature flag we want to evaluate. MUST NOT be null.
      * @param attributes of the customer (user, account etc.) to use in evaluation. Can be null or empty.
      * @return SplitResult containing the evaluated treatment (the default treatment of this feature flag, or 'control') and
      *         a configuration associated to this treatment if set.
      */
-    SplitResult getTreatmentWithConfig(String key, String featureFlag, Map<String, Object> attributes);
+    SplitResult getTreatmentWithConfig(String key, String featureFlagName, Map<String, Object> attributes);
 
     /**
      * Same as {@link #getTreatment(Key, String, Map)} but it returns the configuration associated to the
      * matching treatment if any. Otherwise {@link SplitResult.configurations()} will be null.
      *
      * @param key the matching and bucketing keys. MUST NOT be null.
-     * @param featureFlag the feature flag we want to evaluate. MUST NOT be null.
+     * @param featureFlagName the name of the feature flag we want to evaluate. MUST NOT be null.
      * @param attributes of the entity (user, account etc.) to use in evaluation. Can be null or empty.
      *
      * @return SplitResult containing the evaluated treatment (the default treatment of this feature flag, or 'control') and
      *         a configuration associated to this treatment if set.
      */
-    SplitResult getTreatmentWithConfig(Key key, String featureFlag, Map<String, Object> attributes);
+    SplitResult getTreatmentWithConfig(Key key, String featureFlagName, Map<String, Object> attributes);
 
     /**
      * Returns a map of feature flag name and treatments to show this key for these feature flags. The set of treatments
@@ -166,11 +166,11 @@ public interface SplitClient {
      * <p/>
      * This method does not throw any exceptions. It also never returns null.
      *
-     * @param key      a unique key of your customer (e.g. user_id, user_email, account_id, etc.) MUST not be null.
-     * @param featureFlags the features flag we want to evaluate. MUST NOT be null.
+     * @param key a unique key of your customer (e.g. user_id, user_email, account_id, etc.) MUST not be null.
+     * @param featureFlagNames the names of the feature flags we want to evaluate. MUST NOT be null.
      * @return for each feature flag the evaluated treatment, the default treatment for each feature flag, or 'control'.
      */
-    Map<String, String> getTreatments(String key, List<String> featureFlags);
+    Map<String, String> getTreatments(String key, List<String> featureFlagNames);
 
     /**
      * This method is useful when you want to determine the treatments to show
@@ -182,12 +182,12 @@ public interface SplitClient {
      * vs. premium plan. Another example is to show different treatments
      * to users created after a certain date.
      *
-     * @param key         a unique key of your customer (e.g. user_id, user_email, account_id, etc.) MUST not be null.
-     * @param featureFlags    the feature flags we want to evaluate. MUST NOT be null.
+     * @param key a unique key of your customer (e.g. user_id, user_email, account_id, etc.) MUST not be null.
+     * @param featureFlagNames the names of the feature flags we want to evaluate. MUST NOT be null.
      * @param attributes of the customer (user, account etc.) to use in evaluation. Can be null or empty.
      * @return the evaluated treatment, the default treatment of this feature flag, or 'control'.
      */
-    Map<String, String> getTreatments(String key, List<String> featureFlags, Map<String, Object> attributes);
+    Map<String, String> getTreatments(String key, List<String> featureFlagNames, Map<String, Object> attributes);
 
     /**
      * To understand why this method is useful, consider the following simple Feature Flag as an example:
@@ -215,12 +215,12 @@ public interface SplitClient {
      *
      *
      * @param key the matching and bucketing keys. MUST NOT be null.
-     * @param featureFlags the feature flags we want to evaluate. MUST NOT be null.
+     * @param featureFlagNames the names of the feature flags we want to evaluate. MUST NOT be null.
      * @param attributes of the entity (user, account etc.) to use in evaluation. Can be null or empty.
      *
      * @return for each feature flag the evaluated treatment, the default treatment of the feature flag, or 'control'.
      */
-    Map<String, String> getTreatments(Key key, List<String> featureFlags, Map<String, Object> attributes);
+    Map<String, String> getTreatments(Key key, List<String> featureFlagNames, Map<String, Object> attributes);
 
     /**
      * Same as {@link #getTreatments(String, List<String>)} but it returns the configuration associated to the
@@ -231,12 +231,12 @@ public interface SplitClient {
      * vs. premium plan. Another example is to show a different treatment
      * to users created after a certain date.
      *
-     * @param key         a unique key of your customer (e.g. user_id, user_email, account_id, etc.) MUST not be null.
-     * @param featureFlags    the feature flags we want to evaluate. MUST NOT be null.
+     * @param key a unique key of your customer (e.g. user_id, user_email, account_id, etc.) MUST not be null.
+     * @param featureFlagNames the names of the feature flags we want to evaluate. MUST NOT be null.
      * @return Map<String, SplitResult> containing for each feature flag the evaluated treatment (the default treatment of this feature flag, or 'control') and
      *         a configuration associated to this treatment if set.
      */
-    Map<String, SplitResult> getTreatmentsWithConfig(String key, List<String> featureFlags);
+    Map<String, SplitResult> getTreatmentsWithConfig(String key, List<String> featureFlagNames);
 
     /**
      * Same as {@link #getTreatments(String, List<String>, Map)} but it returns for each feature flag the configuration associated to the
@@ -247,26 +247,26 @@ public interface SplitClient {
      * vs. premium plan. Another example is to show a different treatment
      * to users created after a certain date.
      *
-     * @param key         a unique key of your customer (e.g. user_id, user_email, account_id, etc.) MUST not be null.
-     * @param featureFlags    the feature flags we want to evaluate. MUST NOT be null.
+     * @param key a unique key of your customer (e.g. user_id, user_email, account_id, etc.) MUST not be null.
+     * @param featureFlagNames the names of the feature flags we want to evaluate. MUST NOT be null.
      * @param attributes of the customer (user, account etc.) to use in evaluation. Can be null or empty.
      * @return for each feature flag a SplitResult containing the evaluated treatment (the default treatment of this feature flag, or 'control') and
      *         a configuration associated to this treatment if set.
      */
-    Map<String, SplitResult> getTreatmentsWithConfig(String key, List<String> featureFlags, Map<String, Object> attributes);
+    Map<String, SplitResult> getTreatmentsWithConfig(String key, List<String> featureFlagNames, Map<String, Object> attributes);
 
     /**
      * Same as {@link #getTreatments(Key, List<String>, Map)} but it returns for each feature flag the configuration associated to the
      * matching treatment if any. Otherwise {@link SplitResult.configurations()} will be null.
      *
      * @param key the matching and bucketing keys. MUST NOT be null.
-     * @param featureFlags the feature flags we want to evaluate. MUST NOT be null.
+     * @param featureFlagNames the names of the feature flags we want to evaluate. MUST NOT be null.
      * @param attributes of the entity (user, account etc.) to use in evaluation. Can be null or empty.
      *
      * @return for each feature flag a SplitResult containing the evaluated treatment (the default treatment of this feature flag, or 'control') and
      *         a configuration associated to this treatment if set.
      */
-    Map<String, SplitResult> getTreatmentsWithConfig(Key key, List<String> featureFlags, Map<String, Object> attributes);
+    Map<String, SplitResult> getTreatmentsWithConfig(Key key, List<String> featureFlagNames, Map<String, Object> attributes);
 
     /**
      * Destroys the background processes and clears the cache, releasing the resources used by

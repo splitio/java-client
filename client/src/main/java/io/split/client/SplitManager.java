@@ -27,7 +27,7 @@ public interface SplitManager {
     /**
      * Returns the names of feature flags registered with the SDK.
      *
-     * @return a List of String (Split Feature Flag Names) or empty
+     * @return a List of String (Feature Flag Names) or empty
      */
     List<String> splitNames();
 
