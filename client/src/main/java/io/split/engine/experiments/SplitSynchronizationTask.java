@@ -1,23 +1,23 @@
 package io.split.engine.experiments;
 
-import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import io.split.storages.SplitCacheProducer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.Closeable;
 import java.util.List;
-import java.util.concurrent.Executors;
+
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
-import java.util.concurrent.TimeUnit;
 import java.util.concurrent.ThreadFactory;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.AtomicReference;
 
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
+import static io.split.client.utils.SplitExecutorFactory.buildSingleThreadScheduledExecutor;
 
 /**
  * Provides an instance of RefreshableExperimentFetcher that is guaranteed to be a singleton.
@@ -36,18 +36,13 @@ public class SplitSynchronizationTask implements SyncTask, Closeable {
 
     private ScheduledFuture<?> _scheduledFuture;
 
-    public SplitSynchronizationTask(SplitFetcher splitFetcher, SplitCacheProducer splitCachesplitCacheProducer, long refreshEveryNSeconds) {
+    public SplitSynchronizationTask(SplitFetcher splitFetcher, SplitCacheProducer splitCachesplitCacheProducer, long refreshEveryNSeconds, ThreadFactory threadFactory) {
         _splitFetcher.set(checkNotNull(splitFetcher));
         _splitCacheProducer.set(checkNotNull(splitCachesplitCacheProducer));
         checkArgument(refreshEveryNSeconds >= 0L);
         _refreshEveryNSeconds = new AtomicLong(refreshEveryNSeconds);
 
-        ThreadFactory threadFactory = new ThreadFactoryBuilder()
-                .setDaemon(true)
-                .setNameFormat("split-splitFetcher-%d")
-                .build();
-
-        _scheduledExecutorService = Executors.newSingleThreadScheduledExecutor(threadFactory);
+        _scheduledExecutorService = buildSingleThreadScheduledExecutor(threadFactory, "split-splitFetcher-%d");
         _executorService.set(_scheduledExecutorService);
 
         _running = new AtomicBoolean();
@@ -59,7 +54,7 @@ public class SplitSynchronizationTask implements SyncTask, Closeable {
             return;
         }
 
-        _log.debug("Starting PeriodicFetching Splits ...");
+        _log.debug("Starting PeriodicFetching Feature flags ...");
         _scheduledFuture = _scheduledExecutorService.scheduleWithFixedDelay(_splitFetcher.get(), 0L, _refreshEveryNSeconds.get(), TimeUnit.SECONDS);
     }
 
@@ -70,7 +65,7 @@ public class SplitSynchronizationTask implements SyncTask, Closeable {
         }
 
         _scheduledFuture.cancel(false);
-        _log.debug("Stopped PeriodicFetching Splits ...");
+        _log.debug("Stopped PeriodicFetching Feature flags ...");
     }
 
     @Override
@@ -99,7 +94,7 @@ public class SplitSynchronizationTask implements SyncTask, Closeable {
             }
         } catch (InterruptedException e) {
             // reset the interrupt.
-            _log.warn("Shutdown hook for split fetchers has been interrupted");
+            _log.warn("Shutdown hook for feature flag fetchers has been interrupted");
             Thread.currentThread().interrupt();
         }
     }

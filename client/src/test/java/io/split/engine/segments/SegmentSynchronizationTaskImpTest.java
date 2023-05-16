@@ -61,7 +61,7 @@ public class SegmentSynchronizationTaskImpTest {
 
         SegmentChangeFetcher segmentChangeFetcher = Mockito.mock(SegmentChangeFetcher.class);
         final SegmentSynchronizationTaskImp fetchers = new SegmentSynchronizationTaskImp(segmentChangeFetcher, 1L, 1, segmentCacheProducer,
-                TELEMETRY_STORAGE, Mockito.mock(SplitCacheConsumer.class));
+                TELEMETRY_STORAGE, Mockito.mock(SplitCacheConsumer.class), null);
 
 
         // create two tasks that will separately call segment and make sure
@@ -106,7 +106,7 @@ public class SegmentSynchronizationTaskImpTest {
         SegmentFetcherImp segmentFetcher = Mockito.mock(SegmentFetcherImp.class);
         _segmentFetchers.put("SF", segmentFetcher);
         final SegmentSynchronizationTaskImp fetchers = new SegmentSynchronizationTaskImp(segmentChangeFetcher, 1L, 1,
-                segmentCacheProducer, TELEMETRY_STORAGE, Mockito.mock(SplitCacheConsumer.class));
+                segmentCacheProducer, TELEMETRY_STORAGE, Mockito.mock(SplitCacheConsumer.class), null);
         Mockito.doNothing().when(segmentFetcher).fetchUntil(Mockito.anyObject());
         Mockito.when(segmentFetcher.runWhitCacheHeader()).thenReturn(false);
         Mockito.when(segmentFetcher.fetchAndUpdate(Mockito.anyObject())).thenReturn(false);
@@ -132,7 +132,7 @@ public class SegmentSynchronizationTaskImpTest {
         SegmentChangeFetcher segmentChangeFetcher = Mockito.mock(SegmentChangeFetcher.class);
         SegmentFetcherImp segmentFetcher = Mockito.mock(SegmentFetcherImp.class);
         final SegmentSynchronizationTaskImp fetchers = new SegmentSynchronizationTaskImp(segmentChangeFetcher, 1L, 1, segmentCacheProducer,
-                TELEMETRY_STORAGE, Mockito.mock(SplitCacheConsumer.class));
+                TELEMETRY_STORAGE, Mockito.mock(SplitCacheConsumer.class),  null);
 
         // Before executing, we'll update the map of segmentFecthers via reflection.
         Field segmentFetchersForced = SegmentSynchronizationTaskImp.class.getDeclaredField("_segmentFetchers");
@@ -159,7 +159,7 @@ public class SegmentSynchronizationTaskImpTest {
         FetchOptions fetchOptions = new FetchOptions.Builder().build();
         SplitFetcher splitFetcher = new SplitFetcherImp(splitChangeFetcher, splitParser, splitCacheConsumer, splitCacheProducer, TELEMETRY_STORAGE_NOOP);
 
-        SplitSynchronizationTask splitSynchronizationTask = new SplitSynchronizationTask(splitFetcher, splitCacheProducer, 1000);
+        SplitSynchronizationTask splitSynchronizationTask = new SplitSynchronizationTask(splitFetcher, splitCacheProducer, 1000, null);
 
         splitSynchronizationTask.start();
 
@@ -169,7 +169,7 @@ public class SegmentSynchronizationTaskImpTest {
         SegmentCacheProducer segmentCacheProducer = new SegmentCacheInMemoryImpl();
 
         SegmentSynchronizationTaskImp segmentSynchronizationTaskImp = new SegmentSynchronizationTaskImp(segmentChangeFetcher, 1000, 1, segmentCacheProducer,
-                TELEMETRY_STORAGE_NOOP, splitCacheProducer);
+                TELEMETRY_STORAGE_NOOP, splitCacheProducer, null);
 
         segmentSynchronizationTaskImp.start();
 

@@ -5,7 +5,7 @@ import io.split.client.dtos.ConditionType;
 import io.split.client.dtos.Split;
 import io.split.client.dtos.SplitChange;
 import io.split.client.dtos.Status;
-import io.split.client.utils.LocalhostSanitizer;
+import io.split.client.utils.LocalhostConstants;
 import io.split.engine.common.FetchOptions;
 import io.split.engine.experiments.SplitChangeFetcher;
 import org.slf4j.Logger;
@@ -20,6 +20,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+
+import static io.split.client.utils.LocalhostSanitizer.createCondition;
+
 
 public class YamlLocalhostSplitChangeFetcher implements SplitChangeFetcher {
 
@@ -56,17 +59,17 @@ public class YamlLocalhostSplitChangeFetcher implements SplitChangeFetcher {
                 Object keyOrKeys = splitAndValues.getValue().get("keys");
                 split.configurations.put(treatment, configurations);
 
-                Condition condition = LocalhostSanitizer.createCondition(keyOrKeys, treatment);
+                Condition condition = createCondition(keyOrKeys, treatment);
                 if(condition.conditionType != ConditionType.ROLLOUT){
                     split.conditions.add(0, condition);
                 } else {
                     split.conditions.add(condition);
                 }
                 split.status = Status.ACTIVE;
-                split.defaultTreatment = treatment;
-                split.trafficTypeName = "user";
-                split.trafficAllocation = 100;
-                split.trafficAllocationSeed = 1;
+                split.defaultTreatment = LocalhostConstants.CONTROL;
+                split.trafficTypeName = LocalhostConstants.USER;
+                split.trafficAllocation = LocalhostConstants.SIZE_100;
+                split.trafficAllocationSeed = LocalhostConstants.SIZE_1;
 
                 splitChange.splits.add(split);
             }
@@ -75,8 +78,8 @@ public class YamlLocalhostSplitChangeFetcher implements SplitChangeFetcher {
             return splitChange;
         } catch (FileNotFoundException f) {
             _log.warn(String.format("There was no file named %s found. " +
-                            "We created a split client that returns default treatments for all features for all of your users. " +
-                            "If you wish to return a specific treatment for a feature, enter the name of that feature name and " +
+                            "We created a split client that returns default treatments for all feature flags for all of your users. " +
+                            "If you wish to return a specific treatment for a feature flag, enter the name of that feature flag name and " +
                             "treatment name separated by whitespace in %s; one pair per line. Empty lines or lines starting with '#' are considered comments",
                     _splitFile.getPath(), _splitFile.getPath()), f);
             throw new IllegalStateException("Problem fetching splitChanges: " + f.getMessage(), f);

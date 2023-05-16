@@ -381,7 +381,7 @@ public class ImpressionsManagerImplTest {
         ImpressionsSender senderMock = Mockito.mock(ImpressionsSender.class);
         TelemetrySynchronizer telemetrySynchronizer = Mockito.mock(TelemetryInMemorySubmitter.class);
         ImpressionCounter impressionCounter = new ImpressionCounter();
-        UniqueKeysTracker uniqueKeysTracker = new UniqueKeysTrackerImp(telemetrySynchronizer, 1000, 1000);
+        UniqueKeysTracker uniqueKeysTracker = new UniqueKeysTrackerImp(telemetrySynchronizer, 1000, 1000, null);
         uniqueKeysTracker.start();
 
         ProcessImpressionStrategy processImpressionStrategy = new ProcessImpressionNone(false, uniqueKeysTracker, impressionCounter);
@@ -496,7 +496,7 @@ public class ImpressionsManagerImplTest {
         ImpressionsSender senderMock = Mockito.mock(ImpressionsSender.class);
         TelemetrySynchronizer telemetrySynchronizer = Mockito.mock(TelemetryInMemorySubmitter.class);
         ImpressionCounter impressionCounter = new ImpressionCounter();
-        UniqueKeysTracker uniqueKeysTracker = new UniqueKeysTrackerImp(telemetrySynchronizer, 1000, 1000);
+        UniqueKeysTracker uniqueKeysTracker = new UniqueKeysTrackerImp(telemetrySynchronizer, 1000, 1000, null);
         uniqueKeysTracker.start();
         ProcessImpressionStrategy processImpressionStrategy = new ProcessImpressionNone(false, uniqueKeysTracker, impressionCounter);
 

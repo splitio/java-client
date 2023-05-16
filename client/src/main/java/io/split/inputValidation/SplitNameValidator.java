@@ -13,26 +13,26 @@ public class SplitNameValidator {
 
     public static Optional<String> isValid(String name, String method) {
         if (name == null) {
-            _log.error(String.format("%s: you passed a null split name, split name must be a non-empty string", method));
+            _log.error(String.format("%s: you passed a null feature flag name, feature flag name must be a non-empty string", method));
             return Optional.empty();
         }
 
         if (name.isEmpty()) {
-            _log.error(String.format("%s: you passed an empty split name, split name must be a non-empty string", method));
+            _log.error(String.format("%s: you passed an empty feature flag name, feature flag name must be a non-empty string", method));
             return Optional.empty();
         }
 
         String trimmed = name.trim();
         if (!trimmed.equals(name)) {
-            _log.warn(String.format("%s: split name %s has extra whitespace, trimming", method, name));
+            _log.warn(String.format("%s: feature flag name %s has extra whitespace, trimming", method, name));
             name = trimmed;
         }
 
         return Optional.of(name);
     }
 
-    public static List<String> areValid(List<String> splits, String method) {
-        return splits.stream().distinct()
+    public static List<String> areValid(List<String> featureFlags, String method) {
+        return featureFlags.stream().distinct()
                 .map(s -> isValid(s, method).orElse(null))
                 .filter(Objects::nonNull)
                 .collect(Collectors.toList());

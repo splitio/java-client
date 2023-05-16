@@ -5,6 +5,7 @@ import io.split.client.dtos.ConditionType;
 import io.split.client.dtos.Split;
 import io.split.client.dtos.SplitChange;
 import io.split.client.dtos.Status;
+import io.split.client.utils.LocalhostConstants;
 import io.split.client.utils.LocalhostSanitizer;
 import io.split.engine.common.FetchOptions;
 import io.split.engine.experiments.SplitChangeFetcher;
@@ -62,9 +63,9 @@ public class LegacyLocalhostSplitChangeFetcher implements SplitChangeFetcher {
                 }
                 split.status = Status.ACTIVE;
                 split.defaultTreatment = featureTreatment[1];
-                split.trafficTypeName = "user";
-                split.trafficAllocation = 100;
-                split.trafficAllocationSeed = 1;
+                split.trafficTypeName = LocalhostConstants.USER;
+                split.trafficAllocation = LocalhostConstants.SIZE_100;
+                split.trafficAllocationSeed = LocalhostConstants.SIZE_1;
 
                 Condition condition;
                 if (featureTreatment.length == 2) {
@@ -84,8 +85,8 @@ public class LegacyLocalhostSplitChangeFetcher implements SplitChangeFetcher {
             return splitChange;
         } catch (FileNotFoundException f) {
             _log.warn("There was no file named " + _splitFile.getPath() + " found. " +
-                    "We created a split client that returns default treatments for all features for all of your users. " +
-                    "If you wish to return a specific treatment for a feature, enter the name of that feature name and " +
+                    "We created a split client that returns default treatments for all feature flags for all of your users. " +
+                    "If you wish to return a specific treatment for a feature flag, enter the name of that feature flag name and " +
                     "treatment name separated by whitespace in " + _splitFile.getPath() +
                     "; one pair per line. Empty lines or lines starting with '#' are considered comments", f);
             throw new IllegalStateException("Problem fetching splitChanges: " + f.getMessage(), f);

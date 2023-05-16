@@ -1,11 +1,11 @@
 package io.split.client.impressions;
 
-import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import io.split.client.dtos.UniqueKeys;
 import io.split.client.impressions.filters.BloomFilterImp;
 import io.split.client.impressions.filters.Filter;
 import io.split.client.impressions.filters.FilterAdapter;
 import io.split.client.impressions.filters.FilterAdapterImpl;
+import io.split.client.utils.SplitExecutorFactory;
 import io.split.telemetry.synchronizer.TelemetrySynchronizer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -15,7 +15,6 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
@@ -34,39 +33,30 @@ public class UniqueKeysTrackerImp implements UniqueKeysTracker{
     private final int _filterRefreshRate;
     private static final Logger _logger = LoggerFactory.getLogger(UniqueKeysTrackerImp.class);
 
-    public UniqueKeysTrackerImp(TelemetrySynchronizer telemetrySynchronizer, int uniqueKeysRefreshRate, int filterRefreshRate) {
+    public UniqueKeysTrackerImp(TelemetrySynchronizer telemetrySynchronizer, int uniqueKeysRefreshRate, int filterRefreshRate, ThreadFactory threadFactory) {
         Filter bloomFilter = new BloomFilterImp(MAX_AMOUNT_OF_KEYS, MARGIN_ERROR);
         this.filterAdapter = new FilterAdapterImpl(bloomFilter);
         uniqueKeysTracker = new ConcurrentHashMap<>();
         _telemetrySynchronizer = telemetrySynchronizer;
         _uniqueKeysRefreshRate = uniqueKeysRefreshRate;
         _filterRefreshRate = filterRefreshRate;
-
-        ThreadFactory uniqueKeysSyncThreadFactory = new ThreadFactoryBuilder()
-                .setDaemon(true)
-                .setNameFormat("UniqueKeys-sync-%d")
-                .build();
-        ThreadFactory filterThreadFactory = new ThreadFactoryBuilder()
-                .setDaemon(true)
-                .setNameFormat("Filter-%d")
-                .build();
-        _uniqueKeysSyncScheduledExecutorService = Executors.newSingleThreadScheduledExecutor(uniqueKeysSyncThreadFactory);
-        _cleanFilterScheduledExecutorService = Executors.newSingleThreadScheduledExecutor(filterThreadFactory);
+        _uniqueKeysSyncScheduledExecutorService = SplitExecutorFactory.buildSingleThreadScheduledExecutor(threadFactory,"UniqueKeys-sync-%d");
+        _cleanFilterScheduledExecutorService = SplitExecutorFactory.buildSingleThreadScheduledExecutor(threadFactory,"Filter-%d");
     }
 
     @Override
-    public synchronized boolean track(String featureName, String key) {
-        if (!filterAdapter.add(featureName, key)) {
-            _logger.debug("The feature " + featureName + " and key " + key + " exist in the UniqueKeysTracker");
+    public synchronized boolean track(String featureFlagName, String key) {
+        if (!filterAdapter.add(featureFlagName, key)) {
+            _logger.debug("The feature flag " + featureFlagName + " and key " + key + " exist in the UniqueKeysTracker");
             return false;
         }
         HashSet<String> value = new HashSet<>();
-        if(uniqueKeysTracker.containsKey(featureName)){
-            value = uniqueKeysTracker.get(featureName);
+        if(uniqueKeysTracker.containsKey(featureFlagName)){
+            value = uniqueKeysTracker.get(featureFlagName);
         }
         value.add(key);
-        uniqueKeysTracker.put(featureName, value);
-        _logger.debug("The feature " + featureName + " and key " + key + " was added");
+        uniqueKeysTracker.put(featureFlagName, value);
+        _logger.debug("The feature flag" + featureFlagName + " and key " + key + " was added");
         if (uniqueKeysTracker.size() == MAX_AMOUNT_OF_TRACKED_UNIQUE_KEYS){
             _logger.warn("The UniqueKeysTracker size reached the maximum limit");
             try {
@@ -121,8 +111,8 @@ public class UniqueKeysTrackerImp implements UniqueKeysTracker{
         }
         HashMap<String, HashSet<String>> uniqueKeysHashMap = popAll();
         List<UniqueKeys.UniqueKey> uniqueKeysFromPopAll = new ArrayList<>();
-        for (String feature : uniqueKeysHashMap.keySet()) {
-            UniqueKeys.UniqueKey uniqueKey = new UniqueKeys.UniqueKey(feature, new ArrayList<>(uniqueKeysHashMap.get(feature)));
+        for (String featureFlag : uniqueKeysHashMap.keySet()) {
+            UniqueKeys.UniqueKey uniqueKey = new UniqueKeys.UniqueKey(featureFlag, new ArrayList<>(uniqueKeysHashMap.get(featureFlag)));
             uniqueKeysFromPopAll.add(uniqueKey);
         }
         _telemetrySynchronizer.synchronizeUniqueKeys(new UniqueKeys(uniqueKeysFromPopAll));

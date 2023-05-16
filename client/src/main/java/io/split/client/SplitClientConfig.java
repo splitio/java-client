@@ -10,6 +10,7 @@ import pluggable.CustomStorageWrapper;
 
 import java.io.IOException;
 import java.util.Properties;
+import java.util.concurrent.ThreadFactory;
 
 /**
  * Configurations for the SplitClient.
@@ -69,6 +70,7 @@ public class SplitClientConfig {
     private final long _startingSyncCallBackoffBaseMs;
     private final CustomStorageWrapper _customStorageWrapper;
     private final StorageMode _storageMode;
+    private final ThreadFactory _threadFactory;
 
     // Proxy configs
     private final HttpHost _proxy;
@@ -130,7 +132,8 @@ public class SplitClientConfig {
                               int uniqueKeysRefreshRateInMemory,
                               int uniqueKeysRefreshRateRedis,
                               int filterUniqueKeysRefreshRate,
-                              long lastSeenCacheSize) {
+                              long lastSeenCacheSize,
+                              ThreadFactory threadFactory) {
         _endpoint = endpoint;
         _eventsEndpoint = eventsEndpoint;
         _featuresRefreshRate = pollForFeatureChangesEveryNSeconds;
@@ -178,6 +181,8 @@ public class SplitClientConfig {
         _startingSyncCallBackoffBaseMs = startingSyncCallBackoffBaseMs;
         _customStorageWrapper = customStorageWrapper;
         _lastSeenCacheSize = lastSeenCacheSize;
+        _threadFactory = threadFactory;
+
 
         Properties props = new Properties();
         try {
@@ -355,6 +360,9 @@ public class SplitClientConfig {
     public long getLastSeenCacheSize() {
         return _lastSeenCacheSize;
     }
+    public ThreadFactory getThreadFactory() {
+        return _threadFactory;
+    }
 
     public static final class Builder {
 
@@ -408,6 +416,7 @@ public class SplitClientConfig {
         private CustomStorageWrapper _customStorageWrapper;
         private StorageMode _storageMode = StorageMode.MEMORY;
         private final long _lastSeenCacheSize = 500000;
+        private ThreadFactory _threadFactory;
 
         public Builder() {
         }
@@ -1017,7 +1026,8 @@ public class SplitClientConfig {
                     _uniqueKeysRefreshRateInMemory,
                     _uniqueKeysRefreshRateRedis,
                     _filterUniqueKeysRefreshRate,
-                    _lastSeenCacheSize);
+                    _lastSeenCacheSize,
+                    _threadFactory);
         }
     }
 }

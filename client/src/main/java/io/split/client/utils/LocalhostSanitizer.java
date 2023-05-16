@@ -21,14 +21,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 public final class LocalhostSanitizer {
-
-    private static final int MILLI_SECONDS = 1000;
-    private static final int ALGO = 2;
-    private static final int TRAFFIC_ALLOCATION_LIMIT = 100;
-    private static final String TREATMENT_ON = "on";
-    private static final String TREATMENT_OFF = "off";
     private static final String DEFAULT_RULE = "default rule";
-    private static final String TRAFFIC_TYPE_USER = "user";
 
     private LocalhostSanitizer() {
         throw new IllegalStateException("Utility class");
@@ -37,10 +30,10 @@ public final class LocalhostSanitizer {
     public static SplitChange sanitization(SplitChange splitChange) {
         SecureRandom random = new SecureRandom();
         List<Split> splitsToRemove = new ArrayList<>();
-        if (splitChange.till < -1 || splitChange.till == 0) {
-            splitChange.till = -1L;
+        if (splitChange.till < LocalhostConstants.DEFAULT_TS || splitChange.till == 0) {
+            splitChange.till = LocalhostConstants.DEFAULT_TS;
         }
-        if (splitChange.since < -1 || splitChange.since > splitChange.till) {
+        if (splitChange.since < LocalhostConstants.DEFAULT_TS || splitChange.since > splitChange.till) {
             splitChange.since = splitChange.till;
         }
         if (splitChange.splits != null) {
@@ -50,28 +43,28 @@ public final class LocalhostSanitizer {
                     continue;
                 }
                 if (split.trafficTypeName == null || split.trafficTypeName.isEmpty()) {
-                    split.trafficTypeName = TRAFFIC_TYPE_USER;
+                    split.trafficTypeName = LocalhostConstants.USER;
                 }
-                if (split.trafficAllocation == null || split.trafficAllocation < 0 || split.trafficAllocation > TRAFFIC_ALLOCATION_LIMIT) {
-                    split.trafficAllocation = TRAFFIC_ALLOCATION_LIMIT;
+                if (split.trafficAllocation == null || split.trafficAllocation < 0 || split.trafficAllocation > LocalhostConstants.SIZE_100) {
+                    split.trafficAllocation = LocalhostConstants.SIZE_100;
                 }
                 if (split.trafficAllocationSeed == null || split.trafficAllocationSeed == 0) {
-                    split.trafficAllocationSeed = - random.nextInt(10) * MILLI_SECONDS;
+                    split.trafficAllocationSeed = - random.nextInt(10) * LocalhostConstants.MILLI_SECONDS;
                 }
                 if (split.seed == 0) {
-                    split.seed = - random.nextInt(10) * MILLI_SECONDS;
+                    split.seed = - random.nextInt(10) * LocalhostConstants.MILLI_SECONDS;
                 }
                 if (split.status == null || split.status != Status.ACTIVE && split.status != Status.ARCHIVED) {
                     split.status = Status.ACTIVE;
                 }
                 if (split.defaultTreatment == null || split.defaultTreatment.isEmpty()) {
-                    split.defaultTreatment = TREATMENT_ON;
+                    split.defaultTreatment = LocalhostConstants.CONTROL;
                 }
                 if (split.changeNumber < 0) {
                     split.changeNumber = 0;
                 }
-                if (split.algo != ALGO){
-                    split.algo = ALGO;
+                if (split.algo != LocalhostConstants.ALGO){
+                    split.algo = LocalhostConstants.ALGO;
                 }
                 if (split.conditions == null) {
                     split.conditions = new ArrayList<>();
@@ -109,10 +102,10 @@ public final class LocalhostSanitizer {
         List<String> addedToRemoved = segmentChange.added.stream().filter(add -> segmentChange.removed.contains(add)).collect(Collectors.toList());
         segmentChange.removed.removeAll(addedToRemoved);
 
-        if (segmentChange.till <-1 || segmentChange.till == 0){
-            segmentChange.till = -1L;
+        if (segmentChange.till < LocalhostConstants.DEFAULT_TS || segmentChange.till == 0){
+            segmentChange.till = LocalhostConstants.DEFAULT_TS;
         }
-        if (segmentChange.since < -1 || segmentChange.since > segmentChange.till) {
+        if (segmentChange.since < LocalhostConstants.DEFAULT_TS || segmentChange.since > segmentChange.till) {
             segmentChange.since = segmentChange.till;
         }
         return segmentChange;
@@ -136,13 +129,13 @@ public final class LocalhostSanitizer {
         condition.partitions = new ArrayList<>();
         Partition partition1 = new Partition();
         Partition partition2 = new Partition();
-        partition1.size = 100;
-        partition2.size = 0;
+        partition1.size = LocalhostConstants.SIZE_100;
+        partition2.size = LocalhostConstants.SIZE_0;
         if (treatment != null) {
             partition1.treatment = treatment;
         } else {
-            partition1.treatment = TREATMENT_OFF;
-            partition2.treatment = TREATMENT_ON;
+            partition1.treatment = LocalhostConstants.TREATMENT_OFF;
+            partition2.treatment = LocalhostConstants.TREATMENT_ON;
         }
         condition.partitions.add(partition1);
         condition.partitions.add(partition2);
@@ -187,13 +180,13 @@ public final class LocalhostSanitizer {
         condition.partitions = new ArrayList<>();
         Partition partition1 = new Partition();
         Partition partition2 = new Partition();
-        partition1.size = 100;
-        partition2.size = 0;
+        partition1.size = LocalhostConstants.SIZE_100;
+        partition2.size = LocalhostConstants.SIZE_0;
         if (treatment != null) {
             partition1.treatment = treatment;
         } else {
-            partition1.treatment = "off";
-            partition2.treatment = "on";
+            partition1.treatment = LocalhostConstants.TREATMENT_OFF;
+            partition2.treatment = LocalhostConstants.TREATMENT_ON;
         }
         condition.partitions.add(partition1);
         condition.partitions.add(partition2);

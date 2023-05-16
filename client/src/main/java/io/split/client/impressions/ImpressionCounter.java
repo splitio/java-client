@@ -13,12 +13,12 @@ public class ImpressionCounter {
         private final String _featureName;
         private final long _timeFrame;
 
-        public Key(String featureName, long timeframe) {
-            _featureName = checkNotNull(featureName);
+        public Key(String featureFlagName, long timeframe) {
+            _featureName = checkNotNull(featureFlagName);
             _timeFrame = timeframe;
         }
 
-        public String featureName() { return  _featureName; }
+        public String featureName() { return _featureName; }
         public long timeFrame() { return  _timeFrame; }
 
         @Override
@@ -43,8 +43,8 @@ public class ImpressionCounter {
         _counts = new ConcurrentHashMap<>();
     }
 
-    public void inc(String featureName, long timeFrame, int amount) {
-        Key key = new Key(featureName, ImpressionUtils.truncateTimeframe(timeFrame));
+    public void inc(String featureFlagName, long timeFrame, int amount) {
+        Key key = new Key(featureFlagName, ImpressionUtils.truncateTimeframe(timeFrame));
         AtomicInteger count = _counts.get(key);
         if (Objects.isNull(count)) {
             count = new AtomicInteger();
