@@ -22,7 +22,7 @@ public class NotificationParserTest {
         IncomingNotification result = notificationParser.parseMessage(payload);
         assertEquals(IncomingNotification.Type.SPLIT_UPDATE, result.getType());
         assertEquals("xxxx_xxxx_splits", result.getChannel());
-        assertEquals(1592590435115L, ((SplitChangeNotification) result).getChangeNumber());
+        assertEquals(1592590435115L, ((FeatureFlagChangeNotification) result).getChangeNumber());
     }
 
     @Test
