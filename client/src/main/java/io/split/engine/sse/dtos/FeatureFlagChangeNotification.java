@@ -5,16 +5,16 @@ import io.split.engine.sse.enums.CompressType;
 
 public class FeatureFlagChangeNotification extends IncomingNotification {
     private final long changeNumber;
-    private final long pcn;
-    private final String d;
-    private CompressType c;
+    private final long previousChangeNumber;
+    private final String data;
+    private CompressType compressType;
 
     public FeatureFlagChangeNotification(GenericNotificationData genericNotificationData) {
         super(Type.SPLIT_UPDATE, genericNotificationData.getChannel());
         this.changeNumber = genericNotificationData.getChangeNumber();
-        pcn = genericNotificationData.getPcn();
-        d = genericNotificationData.getD();
-        c = genericNotificationData.getC();
+        previousChangeNumber = genericNotificationData.getPreviousChangeNumber();
+        data = genericNotificationData.getData();
+        compressType = genericNotificationData.getCompressType();
     }
 
     public long getChangeNumber() {

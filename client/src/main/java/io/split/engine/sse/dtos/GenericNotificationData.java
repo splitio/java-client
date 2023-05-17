@@ -11,9 +11,9 @@ public class GenericNotificationData {
     private final String segmentName;
     private final IncomingNotification.Type type;
     private String channel;
-    private final Long pcn;
-    private final String d;
-    private final CompressType c;
+    private final Long previousChangeNumber;
+    private final String data;
+    private final CompressType compressType;
 
     public GenericNotificationData (Long changeNumber,
                                     String defaultTreatment,
@@ -34,9 +34,9 @@ public class GenericNotificationData {
         this.segmentName = segmentName;
         this.type = type;
         this.channel = channel;
-        this.pcn = pcn;
-        this.d = d;
-        this.c = c;
+        this.previousChangeNumber = pcn;
+        this.data = d;
+        this.compressType = c;
     }
 
     public long getChangeNumber() {
@@ -68,16 +68,16 @@ public class GenericNotificationData {
     }
 
     public String getChannel() { return channel; }
-    public Long getPcn() {
-        return pcn;
+    public Long getPreviousChangeNumber() {
+        return previousChangeNumber;
     }
 
-    public String getD() {
-        return d;
+    public String getData() {
+        return data;
     }
 
-    public CompressType getC() {
-        return c;
+    public CompressType getCompressType() {
+        return compressType;
     }
 
     public void setChannel(String channel) {
