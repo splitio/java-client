@@ -31,6 +31,9 @@ public enum CompressType {
      * @return CompressType
      */
     public static CompressType from(Integer value) {
+        if (value == null || _map.size() <= value){
+            return null;
+        }
         return _map.get(value);
     }
 }
