@@ -42,7 +42,7 @@ public class NotificationParserImp implements NotificationParser {
     private IncomingNotification parseNotification(GenericNotificationData genericNotificationData) throws Exception {
         switch (genericNotificationData.getType()) {
             case SPLIT_UPDATE:
-                return new SplitChangeNotification(genericNotificationData);
+                return new FeatureFlagChangeNotification(genericNotificationData);
             case SPLIT_KILL:
                 return new SplitKillNotification(genericNotificationData);
             case SEGMENT_UPDATE:

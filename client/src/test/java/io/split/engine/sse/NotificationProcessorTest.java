@@ -27,8 +27,8 @@ public class NotificationProcessorTest {
     public void processSplitUpdateAddToQueueInWorker() {
         long changeNumber = 1585867723838L;
         String channel = "splits";
-        GenericNotificationData genericNotificationData = new GenericNotificationData(changeNumber, null, null, null, null, null, null, channel);
-        SplitChangeNotification splitChangeNotification = new SplitChangeNotification(genericNotificationData);
+        GenericNotificationData genericNotificationData = new GenericNotificationData(changeNumber, null, null, null, null, null, null, channel, null, null, null);
+        FeatureFlagChangeNotification splitChangeNotification = new FeatureFlagChangeNotification(genericNotificationData);
 
         _notificationProcessor.process(splitChangeNotification);
 
@@ -41,7 +41,7 @@ public class NotificationProcessorTest {
         String defaultTreatment = "off";
         String splitName = "test-split";
         String channel = "splits";
-        GenericNotificationData genericNotificationData = new GenericNotificationData(changeNumber, defaultTreatment, splitName, null, null, null, null, channel);
+        GenericNotificationData genericNotificationData = new GenericNotificationData(changeNumber, defaultTreatment, splitName, null, null, null, null, channel, null, null, null);
         SplitKillNotification splitKillNotification = new SplitKillNotification(genericNotificationData);
 
         _notificationProcessor.process(splitKillNotification);
@@ -55,7 +55,7 @@ public class NotificationProcessorTest {
         long changeNumber = 1585867723838L;
         String segmentName = "segment-test";
         String channel = "segments";
-        GenericNotificationData genericNotificationData = new GenericNotificationData(changeNumber, null, null, null, null, segmentName, null, channel);
+        GenericNotificationData genericNotificationData = new GenericNotificationData(changeNumber, null, null, null, null, segmentName, null, channel, null, null, null);
         SegmentChangeNotification segmentChangeNotification = new SegmentChangeNotification(genericNotificationData);
 
         _notificationProcessor.process(segmentChangeNotification);
@@ -75,7 +75,7 @@ public class NotificationProcessorTest {
 
     @Test
     public void processOccupancyNotification() {
-        GenericNotificationData genericNotificationData = new GenericNotificationData(null, null, null, null, null, null, null, "control_pri");
+        GenericNotificationData genericNotificationData = new GenericNotificationData(null, null, null, null, null, null, null, "control_pri", null, null, null);
         OccupancyNotification occupancyNotification = new OccupancyNotification(genericNotificationData);
 
         _notificationProcessor.process(occupancyNotification);
