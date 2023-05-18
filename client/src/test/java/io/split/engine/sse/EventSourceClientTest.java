@@ -44,7 +44,7 @@ public class EventSourceClientTest {
 
         EventSourceClient eventSourceClient = new EventSourceClientImp("http://localhost:" + sseServer.getPort(), _notificationParser, _notificationProcessor, _pushStatusTracker, buildHttpClient(), telemetryRuntimeProducer, null);
 
-        boolean result = eventSourceClient.start("channel-test","token-test");
+        boolean result = eventSourceClient.start("channel-test", "token-test");
 
         Assert.assertTrue(result);
 
@@ -59,7 +59,7 @@ public class EventSourceClientTest {
         sseServer.start();
         EventSourceClient eventSourceClient = new EventSourceClientImp("http://fake:" + sseServer.getPort(), _notificationParser, _notificationProcessor, _pushStatusTracker, buildHttpClient(), telemetryRuntimeProducer, null);
 
-        boolean result = eventSourceClient.start("channel-test","token-test");
+        boolean result = eventSourceClient.start("channel-test", "token-test");
 
         Assert.assertFalse(result);
 
@@ -76,7 +76,7 @@ public class EventSourceClientTest {
         sseServer.start();
         EventSourceClient eventSourceClient = new EventSourceClientImp("http://localhost:" + sseServer.getPort(), _notificationParser, _notificationProcessor, _pushStatusTracker, buildHttpClient(), telemetryRuntimeProducer, null);
 
-        boolean result = eventSourceClient.start("channel-test","token-test");
+        boolean result = eventSourceClient.start("channel-test", "token-test");
 
         Assert.assertTrue(result);
 

@@ -1,5 +1,6 @@
 package io.split.engine.sse.dtos;
 
+import com.google.gson.annotations.SerializedName;
 import io.split.engine.sse.enums.CompressType;
 
 public class GenericNotificationData {
@@ -11,9 +12,12 @@ public class GenericNotificationData {
     private final String segmentName;
     private final IncomingNotification.Type type;
     private String channel;
-    private final Long previousChangeNumber;
-    private final String data;
-    private final CompressType compressType;
+    @SerializedName("pcn")
+    private Long previousChangeNumber;
+    @SerializedName("d")
+    private String data;
+    @SerializedName("c")
+    private Integer compressType;
 
     public GenericNotificationData (Long changeNumber,
                                     String defaultTreatment,
@@ -23,9 +27,9 @@ public class GenericNotificationData {
                                     String segmentName,
                                     IncomingNotification.Type type,
                                     String channel,
-                                    Long pcn,
-                                    String d,
-                                    CompressType c) {
+                                    Long previousChangeNumber,
+                                    String data,
+                                    Integer compressType) {
         this.changeNumber = changeNumber;
         this.defaultTreatment = defaultTreatment;
         this.splitName = splitName;
@@ -34,9 +38,9 @@ public class GenericNotificationData {
         this.segmentName = segmentName;
         this.type = type;
         this.channel = channel;
-        this.previousChangeNumber = pcn;
-        this.data = d;
-        this.compressType = c;
+        this.previousChangeNumber = previousChangeNumber;
+        this.data = data;
+        this.compressType = compressType;
     }
 
     public long getChangeNumber() {
@@ -76,7 +80,7 @@ public class GenericNotificationData {
         return data;
     }
 
-    public CompressType getCompressType() {
+    public Integer getCompressType() {
         return compressType;
     }
 
