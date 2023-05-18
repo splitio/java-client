@@ -1,7 +1,6 @@
 package io.split.engine.sse.dtos;
 
 import com.google.gson.annotations.SerializedName;
-import io.split.engine.sse.enums.CompressType;
 
 public class GenericNotificationData {
     private final Long changeNumber;
@@ -15,7 +14,7 @@ public class GenericNotificationData {
     @SerializedName("pcn")
     private Long previousChangeNumber;
     @SerializedName("d")
-    private String data;
+    private String featureFlagDefinition;
     @SerializedName("c")
     private Integer compressType;
 
@@ -39,7 +38,7 @@ public class GenericNotificationData {
         this.type = type;
         this.channel = channel;
         this.previousChangeNumber = previousChangeNumber;
-        this.data = data;
+        this.featureFlagDefinition = data;
         this.compressType = compressType;
     }
 
@@ -76,8 +75,8 @@ public class GenericNotificationData {
         return previousChangeNumber;
     }
 
-    public String getData() {
-        return data;
+    public String getFeatureFlagDefinition() {
+        return featureFlagDefinition;
     }
 
     public Integer getCompressType() {
