@@ -3,7 +3,7 @@ package io.split.engine.sse;
 import io.split.SSEMockServer;
 import io.split.engine.sse.client.SSEClient;
 import io.split.engine.sse.dtos.ErrorNotification;
-import io.split.engine.sse.dtos.SplitChangeNotification;
+import io.split.engine.sse.dtos.FeatureFlagChangeNotification;
 import io.split.telemetry.storage.InMemoryTelemetryStorage;
 import io.split.telemetry.storage.TelemetryRuntimeProducer;
 import org.apache.hc.client5.http.config.RequestConfig;
@@ -44,7 +44,7 @@ public class EventSourceClientTest {
 
         EventSourceClient eventSourceClient = new EventSourceClientImp("http://localhost:" + sseServer.getPort(), _notificationParser, _notificationProcessor, _pushStatusTracker, buildHttpClient(), telemetryRuntimeProducer, null);
 
-        boolean result = eventSourceClient.start("channel-test","token-test");
+        boolean result = eventSourceClient.start("channel-test", "token-test");
 
         Assert.assertTrue(result);
 
@@ -59,7 +59,7 @@ public class EventSourceClientTest {
         sseServer.start();
         EventSourceClient eventSourceClient = new EventSourceClientImp("http://fake:" + sseServer.getPort(), _notificationParser, _notificationProcessor, _pushStatusTracker, buildHttpClient(), telemetryRuntimeProducer, null);
 
-        boolean result = eventSourceClient.start("channel-test","token-test");
+        boolean result = eventSourceClient.start("channel-test", "token-test");
 
         Assert.assertFalse(result);
 
@@ -76,7 +76,7 @@ public class EventSourceClientTest {
         sseServer.start();
         EventSourceClient eventSourceClient = new EventSourceClientImp("http://localhost:" + sseServer.getPort(), _notificationParser, _notificationProcessor, _pushStatusTracker, buildHttpClient(), telemetryRuntimeProducer, null);
 
-        boolean result = eventSourceClient.start("channel-test","token-test");
+        boolean result = eventSourceClient.start("channel-test", "token-test");
 
         Assert.assertTrue(result);
 
@@ -95,7 +95,7 @@ public class EventSourceClientTest {
 
         Awaitility.await()
                 .atMost(50L, TimeUnit.SECONDS)
-                .untilAsserted(() -> Mockito.verify(_notificationProcessor, Mockito.times(1)).process(Mockito.any(SplitChangeNotification.class)));
+                .untilAsserted(() -> Mockito.verify(_notificationProcessor, Mockito.times(1)).process(Mockito.any(FeatureFlagChangeNotification.class)));
 
         OutboundSseEvent sseEventError = new OutboundEvent
                 .Builder()

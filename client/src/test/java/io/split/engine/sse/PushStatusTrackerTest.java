@@ -10,12 +10,6 @@ import org.junit.Test;
 import org.mockito.Mockito;
 
 import java.util.concurrent.LinkedBlockingQueue;
-import java.util.concurrent.atomic.AtomicLong;
-import java.util.concurrent.atomic.AtomicReference;
-
-import static org.hamcrest.Matchers.equalTo;
-import static org.hamcrest.Matchers.is;
-import static org.junit.Assert.assertThat;
 
 public class PushStatusTrackerTest {
     private static final String CONTROL_PRI = "control_pri";
@@ -28,8 +22,8 @@ public class PushStatusTrackerTest {
         PushStatusTracker pushStatusTracker = new PushStatusTrackerImp(messages, telemetryStorage);
 
         pushStatusTracker.handleIncomingControlEvent(controlNotification);
-        assertThat(messages.size(), is(equalTo(1)));
-        assertThat(messages.peek(), is(equalTo(PushManager.Status.STREAMING_DOWN)));
+        Assert.assertEquals(1, messages.size());
+        Assert.assertEquals(PushManager.Status.STREAMING_DOWN, messages.peek());
     }
 
     @Test
@@ -40,9 +34,9 @@ public class PushStatusTrackerTest {
 
         pushStatusTracker.handleIncomingControlEvent(buildControlNotification(ControlType.STREAMING_PAUSED));
         pushStatusTracker.handleIncomingControlEvent(buildControlNotification(ControlType.STREAMING_RESUMED));
-        assertThat(messages.size(), is(equalTo(2)));
-        assertThat(messages.take(), is(equalTo(PushManager.Status.STREAMING_DOWN)));
-        assertThat(messages.take(), is(equalTo(PushManager.Status.STREAMING_READY)));
+        Assert.assertEquals(2, messages.size());
+        Assert.assertEquals(PushManager.Status.STREAMING_DOWN, messages.take());
+        Assert.assertEquals(PushManager.Status.STREAMING_READY, messages.take());
     }
 
     @Test
@@ -57,8 +51,8 @@ public class PushStatusTrackerTest {
         pushStatusTracker.handleIncomingControlEvent(controlNotification);
 
         pushStatusTracker.handleIncomingControlEvent(controlNotification);
-        assertThat(messages.size(), is(equalTo(1)));
-        assertThat(messages.peek(), is(equalTo(PushManager.Status.STREAMING_DOWN)));
+        Assert.assertEquals(1, messages.size());
+        Assert.assertEquals(PushManager.Status.STREAMING_DOWN, messages.peek());
         Assert.assertEquals(1, telemetryStorage.popStreamingEvents().size());
     }
 
@@ -72,8 +66,8 @@ public class PushStatusTrackerTest {
         pushStatusTracker.handleIncomingControlEvent(controlNotification);
 
         pushStatusTracker.handleIncomingControlEvent(controlNotification);
-        assertThat(messages.size(), is(equalTo(1)));
-        assertThat(messages.peek(), is(equalTo(PushManager.Status.STREAMING_OFF)));
+        Assert.assertEquals(1, messages.size());
+        Assert.assertEquals(PushManager.Status.STREAMING_OFF, messages.peek());
     }
 
     @Test
@@ -84,7 +78,7 @@ public class PushStatusTrackerTest {
 
         PushStatusTracker pushStatusTracker = new PushStatusTrackerImp(messages, telemetryStorage);
         pushStatusTracker.handleIncomingOccupancyEvent(occupancyNotification);
-        assertThat(messages.size(), is(equalTo(0)));
+        Assert.assertEquals(0, messages.size());
         Assert.assertEquals(1, telemetryStorage.popStreamingEvents().size());
     }
 
@@ -96,12 +90,12 @@ public class PushStatusTrackerTest {
         pushStatusTracker.handleIncomingOccupancyEvent(buildOccupancyNotification(0, null));
         pushStatusTracker.handleIncomingOccupancyEvent(buildOccupancyNotification(2, null));
 
-        assertThat(messages.size(), is(equalTo(2)));
+        Assert.assertEquals(2, messages.size());
         PushManager.Status m1 = messages.take();
-        assertThat(m1, is(equalTo(PushManager.Status.STREAMING_DOWN)));
+        Assert.assertEquals(PushManager.Status.STREAMING_DOWN, m1);
 
         PushManager.Status m2 = messages.take();
-        assertThat(m2, is(equalTo(PushManager.Status.STREAMING_READY)));
+        Assert.assertEquals(PushManager.Status.STREAMING_READY, m2);
     }
 
     @Test
@@ -112,12 +106,12 @@ public class PushStatusTrackerTest {
         pushStatusTracker.handleIncomingOccupancyEvent(buildOccupancyNotification(0, "control_pri"));
         pushStatusTracker.handleIncomingOccupancyEvent(buildOccupancyNotification(2, "control_sec"));
 
-        assertThat(messages.size(), is(equalTo(2)));
+        Assert.assertEquals(2, messages.size());
         PushManager.Status m1 = messages.take();
-        assertThat(m1, is(equalTo(PushManager.Status.STREAMING_DOWN)));
+        Assert.assertEquals(PushManager.Status.STREAMING_DOWN, m1);
 
         PushManager.Status m2 = messages.take();
-        assertThat(m2, is(equalTo(PushManager.Status.STREAMING_READY)));
+        Assert.assertEquals(PushManager.Status.STREAMING_READY, m2);
     }
 
     @Test
@@ -151,13 +145,12 @@ public class PushStatusTrackerTest {
         pushStatusTracker.handleSseStatus(SSEClient.StatusMessage.RETRYABLE_ERROR);
         pushStatusTracker.handleSseStatus(SSEClient.StatusMessage.RETRYABLE_ERROR);
 
-
-        assertThat(messages.size(), is(equalTo(2)));
+        Assert.assertEquals(2, messages.size());
         PushManager.Status m1 = messages.take();
-        assertThat(m1, is(equalTo(PushManager.Status.STREAMING_BACKOFF)));
+        Assert.assertEquals(PushManager.Status.STREAMING_BACKOFF, m1);
 
         PushManager.Status m2 = messages.take();
-        assertThat(m2, is(equalTo(PushManager.Status.STREAMING_BACKOFF)));
+        Assert.assertEquals(PushManager.Status.STREAMING_BACKOFF, m2);
     }
 
     private ControlNotification buildControlNotification(ControlType controlType) {
@@ -177,6 +170,9 @@ public class PushStatusTrackerTest {
                 publishers != null ? new OccupancyMetrics(publishers) : null,
                 null,
                 type,
-                channel == null ? "channel-test" : channel);
+                channel == null ? "channel-test" : channel,
+                null,
+                null,
+                null);
     }
 }

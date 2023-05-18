@@ -1,5 +1,7 @@
 package io.split.engine.sse.dtos;
 
+import com.google.gson.annotations.SerializedName;
+
 public class GenericNotificationData {
     private final Long changeNumber;
     private final String defaultTreatment;
@@ -9,6 +11,12 @@ public class GenericNotificationData {
     private final String segmentName;
     private final IncomingNotification.Type type;
     private String channel;
+    @SerializedName("pcn")
+    private Long previousChangeNumber;
+    @SerializedName("d")
+    private String featureFlagDefinition;
+    @SerializedName("c")
+    private Integer compressType;
 
     public GenericNotificationData (Long changeNumber,
                                     String defaultTreatment,
@@ -17,7 +25,10 @@ public class GenericNotificationData {
                                     OccupancyMetrics occupancyMetrics,
                                     String segmentName,
                                     IncomingNotification.Type type,
-                                    String channel) {
+                                    String channel,
+                                    Long previousChangeNumber,
+                                    String data,
+                                    Integer compressType) {
         this.changeNumber = changeNumber;
         this.defaultTreatment = defaultTreatment;
         this.splitName = splitName;
@@ -26,6 +37,9 @@ public class GenericNotificationData {
         this.segmentName = segmentName;
         this.type = type;
         this.channel = channel;
+        this.previousChangeNumber = previousChangeNumber;
+        this.featureFlagDefinition = data;
+        this.compressType = compressType;
     }
 
     public long getChangeNumber() {
@@ -57,6 +71,17 @@ public class GenericNotificationData {
     }
 
     public String getChannel() { return channel; }
+    public Long getPreviousChangeNumber() {
+        return previousChangeNumber;
+    }
+
+    public String getFeatureFlagDefinition() {
+        return featureFlagDefinition;
+    }
+
+    public Integer getCompressType() {
+        return compressType;
+    }
 
     public void setChannel(String channel) {
         this.channel = channel;
