@@ -1,23 +1,42 @@
 package io.split.engine.sse.dtos;
 
+import io.split.client.dtos.Split;
+import io.split.client.utils.Json;
 import io.split.engine.sse.NotificationProcessor;
 import io.split.engine.sse.enums.CompressType;
+
+import java.io.UnsupportedEncodingException;
+import java.util.Base64;
+
+import static io.split.engine.sse.utils.DecompressionUtil.gZipDecompress;
+import static io.split.engine.sse.utils.DecompressionUtil.zLibDecompress;
 
 public class FeatureFlagChangeNotification extends IncomingNotification {
     private final long changeNumber;
     private long previousChangeNumber;
-    private String featureFlagDefinition;
+    private Split featureFlagDefinition;
     private CompressType compressType;
 
 
-    public FeatureFlagChangeNotification(GenericNotificationData genericNotificationData) {
+    public FeatureFlagChangeNotification(GenericNotificationData genericNotificationData) throws UnsupportedEncodingException {
         super(Type.SPLIT_UPDATE, genericNotificationData.getChannel());
         changeNumber = genericNotificationData.getChangeNumber();
         if(genericNotificationData.getPreviousChangeNumber() != null) {
             previousChangeNumber = genericNotificationData.getPreviousChangeNumber();
         }
-        featureFlagDefinition = genericNotificationData.getFeatureFlagDefinition();
         compressType =  CompressType.from(genericNotificationData.getCompressType());
+        if (compressType != null && genericNotificationData.getFeatureFlagDefinition() != null) {
+            byte[] decodedBytes = Base64.getDecoder().decode(genericNotificationData.getFeatureFlagDefinition());
+            switch (compressType) {
+                case GZIP:
+                    decodedBytes = gZipDecompress(decodedBytes);
+                    break;
+                case ZLIB:
+                    decodedBytes = zLibDecompress(decodedBytes);
+                    break;
+            }
+            featureFlagDefinition = Json.fromJson(new String(decodedBytes, 0, decodedBytes.length, "UTF-8"),Split.class);
+        }
     }
 
     public long getChangeNumber() {
@@ -27,7 +46,7 @@ public class FeatureFlagChangeNotification extends IncomingNotification {
         return previousChangeNumber;
     }
 
-    public String getFeatureFlagDefinition() {
+    public Split getFeatureFlagDefinition() {
         return featureFlagDefinition;
     }
 

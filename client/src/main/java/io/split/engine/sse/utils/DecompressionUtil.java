@@ -1,12 +1,15 @@
 package io.split.engine.sse.utils;
 
+import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 import java.util.zip.DataFormatException;
+import java.util.zip.GZIPInputStream;
 import java.util.zip.Inflater;
 
 public class DecompressionUtil {
 
-    public static byte[] zLibDecompress(byte[] toDecompress){
+    public static byte[] zLibDecompress(byte[] toDecompress) {
         ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream(toDecompress.length);
         Inflater decompressor = new Inflater();
         try {
@@ -22,5 +25,23 @@ public class DecompressionUtil {
             decompressor.end();
         }
         return byteArrayOutputStream.toByteArray();
+    }
+
+    public static byte[] gZipDecompress(byte[] toDecompress) {
+        ByteArrayOutputStream out = new ByteArrayOutputStream();
+        try {
+            GZIPInputStream gzipInputStream = new GZIPInputStream(new ByteArrayInputStream(toDecompress));
+            int res = 0;
+            byte buf[] = new byte[toDecompress.length];
+            while (res >= 0) {
+                res = gzipInputStream.read(buf, 0, buf.length);
+                if (res > 0) {
+                    out.write(buf, 0, res);
+                }
+            }
+        } catch(IOException e){
+            throw new RuntimeException(e);
+        }
+        return out.toByteArray();
     }
 }

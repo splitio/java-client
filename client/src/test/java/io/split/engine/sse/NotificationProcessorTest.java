@@ -1,12 +1,20 @@
 package io.split.engine.sse;
 
-import io.split.engine.sse.dtos.*;
+import io.split.engine.sse.dtos.ControlNotification;
+import io.split.engine.sse.dtos.FeatureFlagChangeNotification;
+import io.split.engine.sse.dtos.GenericNotificationData;
+import io.split.engine.sse.dtos.OccupancyNotification;
+import io.split.engine.sse.dtos.SegmentChangeNotification;
+import io.split.engine.sse.dtos.SegmentQueueDto;
+import io.split.engine.sse.dtos.SplitKillNotification;
 import io.split.engine.sse.workers.SegmentsWorkerImp;
 import io.split.engine.sse.workers.SplitsWorker;
 import io.split.engine.sse.workers.Worker;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mockito;
+
+import java.io.UnsupportedEncodingException;
 
 public class NotificationProcessorTest {
     private SplitsWorker _splitsWorker;
@@ -24,7 +32,7 @@ public class NotificationProcessorTest {
     }
 
     @Test
-    public void processSplitUpdateAddToQueueInWorker() {
+    public void processSplitUpdateAddToQueueInWorker() throws UnsupportedEncodingException {
         long changeNumber = 1585867723838L;
         String channel = "splits";
         GenericNotificationData genericNotificationData = new GenericNotificationData(changeNumber, null, null, null, null, null, null, channel, null, null, null);

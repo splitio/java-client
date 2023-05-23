@@ -1,11 +1,18 @@
 package io.split.engine.sse;
 
-import io.split.engine.sse.dtos.*;
+import io.split.engine.sse.dtos.ControlNotification;
+import io.split.engine.sse.dtos.ControlType;
+import io.split.engine.sse.dtos.ErrorNotification;
+import io.split.engine.sse.dtos.FeatureFlagChangeNotification;
+import io.split.engine.sse.dtos.IncomingNotification;
+import io.split.engine.sse.dtos.OccupancyNotification;
+import io.split.engine.sse.dtos.SegmentChangeNotification;
+import io.split.engine.sse.dtos.SplitKillNotification;
 import io.split.engine.sse.exceptions.EventParsingException;
 import org.junit.Before;
 import org.junit.Test;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
 
 public class NotificationParserTest {
     private NotificationParser notificationParser;
