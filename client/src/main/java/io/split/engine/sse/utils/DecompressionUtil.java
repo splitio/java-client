@@ -19,8 +19,6 @@ public class DecompressionUtil {
                 int count = decompressor.inflate(buf);
                 byteArrayOutputStream.write(buf, 0, count);
             }
-        } catch (DataFormatException e) {
-            throw e;
         } finally {
             decompressor.end();
         }
@@ -29,8 +27,7 @@ public class DecompressionUtil {
 
     public static byte[] gZipDecompress(byte[] toDecompress) throws IOException {
         ByteArrayOutputStream out = new ByteArrayOutputStream();
-        try {
-            GZIPInputStream gzipInputStream = new GZIPInputStream(new ByteArrayInputStream(toDecompress));
+        try (GZIPInputStream gzipInputStream = new GZIPInputStream(new ByteArrayInputStream(toDecompress))){
             int res = 0;
             byte buf[] = new byte[toDecompress.length];
             while (res >= 0) {
@@ -39,8 +36,6 @@ public class DecompressionUtil {
                     out.write(buf, 0, res);
                 }
             }
-        } catch(IOException e){
-            throw e;
         }
         return out.toByteArray();
     }

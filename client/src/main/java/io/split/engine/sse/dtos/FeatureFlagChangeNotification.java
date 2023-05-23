@@ -30,27 +30,26 @@ public class FeatureFlagChangeNotification extends IncomingNotification {
             previousChangeNumber = genericNotificationData.getPreviousChangeNumber();
         }
         compressType =  CompressType.from(genericNotificationData.getCompressType());
-        if (compressType != null && genericNotificationData.getFeatureFlagDefinition() != null) {
-            try {
-                byte[] decodedBytes = Base64.getDecoder().decode(genericNotificationData.getFeatureFlagDefinition());
-                switch (compressType) {
-                    case GZIP:
-                        decodedBytes = gZipDecompress(decodedBytes);
-                        break;
-                    case ZLIB:
-                        decodedBytes = zLibDecompress(decodedBytes);
-                        break;
-                }
-                featureFlagDefinition = Json.fromJson(new String(decodedBytes, 0, decodedBytes.length, "UTF-8"), Split.class);
-            } catch (UnsupportedEncodingException u) {
-                _log.warn("Could not encode feature flag definition", u);
-            } catch (IllegalArgumentException i) {
-                _log.warn("Could not decode feature flag definition", i);
-            } catch (DataFormatException d) {
-                _log.warn("Could not decompress feature flag definition with zlib algorithm", d);
-            } catch (IOException i) {
-                _log.warn("Could not decompress feature flag definition with gzip algorithm", i);
+        if (compressType == null || genericNotificationData.getFeatureFlagDefinition() == null) {
+            return;
+        }
+        try {
+            byte[] decodedBytes = Base64.getDecoder().decode(genericNotificationData.getFeatureFlagDefinition());
+            switch (compressType) {
+                case GZIP:
+                    decodedBytes = gZipDecompress(decodedBytes);
+                    break;
+                case ZLIB:
+                    decodedBytes = zLibDecompress(decodedBytes);
+                    break;
             }
+            featureFlagDefinition = Json.fromJson(new String(decodedBytes, 0, decodedBytes.length, "UTF-8"), Split.class);
+        } catch (UnsupportedEncodingException | IllegalArgumentException e) {
+            _log.warn("Could not encode feature flag definition", e);
+        } catch (DataFormatException d) {
+            _log.warn("Could not decompress feature flag definition with zlib algorithm", d);
+        } catch (IOException i) {
+            _log.warn("Could not decompress feature flag definition with gzip algorithm", i);
         }
     }
 
