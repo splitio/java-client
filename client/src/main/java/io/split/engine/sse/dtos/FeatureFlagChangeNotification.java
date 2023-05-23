@@ -35,7 +35,7 @@ public class FeatureFlagChangeNotification extends IncomingNotification {
                     decodedBytes = zLibDecompress(decodedBytes);
                     break;
             }
-            featureFlagDefinition = Json.fromJson(new String(decodedBytes, 0, decodedBytes.length, "UTF-8"),Split.class);
+            featureFlagDefinition = Json.fromJson(new String(decodedBytes, 0, decodedBytes.length, "UTF-8"), Split.class);
         }
     }
 
