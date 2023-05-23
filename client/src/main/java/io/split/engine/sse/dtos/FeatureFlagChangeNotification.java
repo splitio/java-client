@@ -8,8 +8,10 @@ import io.split.engine.sse.enums.CompressType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.util.Base64;
+import java.util.zip.DataFormatException;
 
 import static io.split.engine.sse.utils.DecompressionUtil.gZipDecompress;
 import static io.split.engine.sse.utils.DecompressionUtil.zLibDecompress;
@@ -40,12 +42,14 @@ public class FeatureFlagChangeNotification extends IncomingNotification {
                         break;
                 }
                 featureFlagDefinition = Json.fromJson(new String(decodedBytes, 0, decodedBytes.length, "UTF-8"), Split.class);
-            } catch (UnsupportedEncodingException e) {
-                _log.warn("Could not encode feature flag definition", e);
-            } catch (IllegalArgumentException e) {
-                _log.warn("Could not decode feature flag definition", e);
-            } catch (RuntimeException e) {
-                _log.warn("Could not  decompress feature flag definition", e);
+            } catch (UnsupportedEncodingException u) {
+                _log.warn("Could not encode feature flag definition", u);
+            } catch (IllegalArgumentException i) {
+                _log.warn("Could not decode feature flag definition", i);
+            } catch (DataFormatException d) {
+                _log.warn("Could not decompress feature flag definition with zlib algorithm", d);
+            } catch (IOException i) {
+                _log.warn("Could not decompress feature flag definition with gzip algorithm", i);
             }
         }
     }

@@ -9,7 +9,7 @@ import java.util.zip.Inflater;
 
 public class DecompressionUtil {
 
-    public static byte[] zLibDecompress(byte[] toDecompress) {
+    public static byte[] zLibDecompress(byte[] toDecompress) throws DataFormatException {
         ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream(toDecompress.length);
         Inflater decompressor = new Inflater();
         try {
@@ -20,14 +20,14 @@ public class DecompressionUtil {
                 byteArrayOutputStream.write(buf, 0, count);
             }
         } catch (DataFormatException e) {
-            throw new RuntimeException(e);
+            throw e;
         } finally {
             decompressor.end();
         }
         return byteArrayOutputStream.toByteArray();
     }
 
-    public static byte[] gZipDecompress(byte[] toDecompress) {
+    public static byte[] gZipDecompress(byte[] toDecompress) throws IOException {
         ByteArrayOutputStream out = new ByteArrayOutputStream();
         try {
             GZIPInputStream gzipInputStream = new GZIPInputStream(new ByteArrayInputStream(toDecompress));
@@ -40,7 +40,7 @@ public class DecompressionUtil {
                 }
             }
         } catch(IOException e){
-            throw new RuntimeException(e);
+            throw e;
         }
         return out.toByteArray();
     }
