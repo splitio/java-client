@@ -45,7 +45,7 @@ public class FeatureFlagChangeNotification extends IncomingNotification {
             }
             featureFlagDefinition = Json.fromJson(new String(decodedBytes, 0, decodedBytes.length, "UTF-8"), Split.class);
         } catch (UnsupportedEncodingException | IllegalArgumentException e) {
-            _log.warn("Could not decode feature flag definition", e);
+            _log.warn("Could not decode base64 data in flag definition", e);
         } catch (DataFormatException d) {
             _log.warn("Could not decompress feature flag definition with zlib algorithm", d);
         } catch (IOException i) {
