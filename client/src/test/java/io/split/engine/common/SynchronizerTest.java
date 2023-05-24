@@ -3,8 +3,12 @@ package io.split.engine.common;
 import io.split.client.events.EventsTask;
 import io.split.client.impressions.ImpressionsManager;
 import io.split.client.impressions.UniqueKeysTracker;
+import io.split.client.utils.Json;
 import io.split.engine.segments.SegmentChangeFetcher;
 import io.split.engine.segments.SegmentSynchronizationTaskImp;
+import io.split.engine.sse.dtos.FeatureFlagChangeNotification;
+import io.split.engine.sse.dtos.GenericNotificationData;
+import io.split.engine.sse.dtos.RawMessageNotification;
 import io.split.storages.*;
 import io.split.storages.memory.InMemoryCacheImp;
 import io.split.engine.experiments.FetchResult;
@@ -113,7 +117,8 @@ public class SynchronizerTest {
     public void streamingRetryOnSplit() {
         when(_splitCacheProducer.getChangeNumber()).thenReturn(0l).thenReturn(0l).thenReturn(1l);
         when(_splitFetcher.forceRefresh(Mockito.anyObject())).thenReturn(new FetchResult(true, new HashSet<>()));
-        _synchronizer.refreshSplits(1l);
+        _synchronizer.refreshSplits(new FeatureFlagChangeNotification(new GenericNotificationData(1l, null,
+                null, null, null, null, null, null, null, null, null)));
 
         Mockito.verify(_splitCacheProducer, Mockito.times(3)).getChangeNumber();
     }
@@ -138,7 +143,9 @@ public class SynchronizerTest {
         SegmentFetcher fetcher = Mockito.mock(SegmentFetcher.class);
         when(_segmentCacheProducer.getChangeNumber(Mockito.anyString())).thenReturn(0l).thenReturn(0l).thenReturn(1l);
         when(_segmentFetcher.getFetcher(Mockito.anyString())).thenReturn(fetcher);
-        _synchronizer.refreshSplits(1l);
+        _synchronizer.refreshSplits(new FeatureFlagChangeNotification(new GenericNotificationData(1l, null,
+        null, null, null, null, null, null, null,
+                null, null)));
 
         Mockito.verify(_splitCacheProducer, Mockito.times(3)).getChangeNumber();
         Mockito.verify(_segmentFetcher, Mockito.times(2)).getFetcher(Mockito.anyString());
@@ -167,7 +174,8 @@ public class SynchronizerTest {
             return new FetchResult(true, new HashSet<>());
         }).when(_splitFetcher).forceRefresh(optionsCaptor.capture());
 
-        imp.refreshSplits(123L);
+        imp.refreshSplits(new FeatureFlagChangeNotification(new GenericNotificationData(123L, null,
+                null, null, null, null, null, null, null, null, null)));
 
         List<FetchOptions> options = optionsCaptor.getAllValues();
         Assert.assertEquals(options.size(), 4);
@@ -209,7 +217,8 @@ public class SynchronizerTest {
         backoffBase.set(imp, 1); // 1ms
 
         long before = System.currentTimeMillis();
-        imp.refreshSplits(1L);
+        imp.refreshSplits(new FeatureFlagChangeNotification(new GenericNotificationData(1L, null, null, null, null, null, null,
+                null, null, null, null)));
         long after = System.currentTimeMillis();
 
         List<FetchOptions> options = optionsCaptor.getAllValues();
@@ -316,5 +325,15 @@ public class SynchronizerTest {
         Mockito.verify(_impressionsManager, Mockito.times(1)).close();
         Mockito.verify(_uniqueKeysTracker, Mockito.times(1)).stop();
         Mockito.verify(_telemetrySyncTask, Mockito.times(1)).stopScheduledTask();
+    }
+
+    @Test
+    public void testRefreshSplitsWithCorrectFF(){
+        String notification = "{\"id\":\"vQQ61wzBRO:0:0\",\"clientId\":\"pri:MTUxNzg3MDg1OQ==\",\"timestamp\":1684265694676,\"encoding\":\"json\",\"channel\":\"NzM2MDI5Mzc0_MjkyNTIzNjczMw==_splits\",\"data\":\"{\\\"type\\\":\\\"SPLIT_UPDATE\\\",\\\"changeNumber\\\":1684265694505,\\\"pcn\\\":0,\\\"c\\\":2,\\\"d\\\":\\\"eJzMk99u2kwQxV8lOtdryQZj8N6hD5QPlThSTVNVEUKDPYZt1jZar1OlyO9emf8lVFWv2ss5zJyd82O8hTWUZSqZvW04opwhUVdsIKBSSKR+10vS1HWW7pIdz2NyBjRwHS8IXEopTLgbQqDYT+ZUm3LxlV4J4mg81LpMyKqygPRc94YeM6eQTtjphp4fegLVXvD6Qdjt9wPXF6gs2bqCxPC/2eRpDIEXpXXblpGuWCDljGptZ4bJ5lxYSJRZBoFkTcWKozpfsoH0goHfCXpB6PfcngDpVQnZEUjKIlOr2uwWqiC3zU5L1aF+3p7LFhUkPv8/mY2nk3gGgZxssmZzb8p6A9n25ktVtA9iGI3ODXunQ3HDp+AVWT6F+rZWlrWq7MN+YkSWWvuTDvkMSnNV7J6oTdl6qKTEvGnmjcCGjL2IYC/ovPYgUKnvvPtbmrmApiVryLM7p2jE++AfH6fTx09/HvuF32LWnNjStM0Xh3c8ukZcsZlEi3h8/zCObsBpJ0acqYLTmFdtqitK1V6NzrfpdPBbLmVx4uK26e27izpDu/r5yf/16AXun2Cr4u6w591xw7+LfDidLj6Mv8TXwP8xbofv/c7UmtHMmx8BAAD//0fclvU=\\\"}\"}";
+        RawMessageNotification rawMessageNotification = Json.fromJson(notification, RawMessageNotification.class);
+        GenericNotificationData genericNotificationData = Json.fromJson(rawMessageNotification.getData(), GenericNotificationData.class);
+        FeatureFlagChangeNotification featureFlagChangeNotification = new FeatureFlagChangeNotification(genericNotificationData);
+        _synchronizer.refreshSplits(featureFlagChangeNotification);
+        Mockito.verify(_splitCacheProducer, Mockito.times(1)).updateFeatureFlag(Mockito.anyObject());
     }
 }

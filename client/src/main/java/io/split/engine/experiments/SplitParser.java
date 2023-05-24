@@ -176,6 +176,4 @@ public final class SplitParser {
 
         return new AttributeMatcher(attribute, delegate, negate);
     }
-
-
 }

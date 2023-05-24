@@ -1,10 +1,14 @@
 package io.split.engine.sse.workers;
 
 import io.split.engine.common.Synchronizer;
+import io.split.engine.sse.dtos.FeatureFlagChangeNotification;
+import io.split.engine.sse.dtos.GenericNotificationData;
+import io.split.engine.sse.dtos.SplitKillNotification;
 import org.junit.Test;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mockito;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -16,32 +20,41 @@ public class SplitsWorkerTest {
     public void addToQueueWithoutElementsWShouldNotTriggerFetch() throws InterruptedException {
         Synchronizer splitFetcherMock = Mockito.mock(Synchronizer.class);
 
-        SplitsWorker splitsWorker = new SplitsWorkerImp(splitFetcherMock);
-        splitsWorker.start();
+        FeatureFlagsWorker featureFlagsWorker = new FeatureFlagWorkerImp(splitFetcherMock);
+        featureFlagsWorker.start();
 
         Thread.sleep(500);
-        Mockito.verify(splitFetcherMock, Mockito.never()).refreshSplits(Mockito.anyLong());
-        splitsWorker.stop();
+        Mockito.verify(splitFetcherMock, Mockito.never()).refreshSplits(Mockito.anyObject());
+        featureFlagsWorker.stop();
     }
 
     @Test
     public void addToQueueWithElementsWShouldTriggerFetch() throws InterruptedException {
         Synchronizer syncMock = Mockito.mock(Synchronizer.class);
 
-        SplitsWorker splitsWorker = new SplitsWorkerImp(syncMock);
-        splitsWorker.start();
+        FeatureFlagsWorker featureFlagsWorker = new FeatureFlagWorkerImp(syncMock);
+        featureFlagsWorker.start();
 
-        ArgumentCaptor<Long> cnCaptor = ArgumentCaptor.forClass(Long.class);
-        splitsWorker.addToQueue(1585956698457L);
-        splitsWorker.addToQueue(1585956698467L);
-        splitsWorker.addToQueue(1585956698477L);
-        splitsWorker.addToQueue(1585956698476L);
+        ArgumentCaptor<FeatureFlagChangeNotification> cnCaptor = ArgumentCaptor.forClass(FeatureFlagChangeNotification.class);
+
+        featureFlagsWorker.addToQueue(new FeatureFlagChangeNotification(new GenericNotificationData(1585956698457L ,
+                null, null, null, null, null, null, null, null, null, null)));
+        featureFlagsWorker.addToQueue(new FeatureFlagChangeNotification(new GenericNotificationData(1585956698467L ,
+                null, null, null, null, null, null, null, null, null, null)));
+        featureFlagsWorker.addToQueue(new FeatureFlagChangeNotification(new GenericNotificationData(1585956698477L ,
+                null, null, null, null, null, null, null, null, null, null)));
+        featureFlagsWorker.addToQueue(new FeatureFlagChangeNotification(new GenericNotificationData(1585956698476L ,
+                null, null, null, null, null, null, null, null, null, null)));
         Thread.sleep(1000);
 
         Mockito.verify(syncMock, Mockito.times(4)).refreshSplits(cnCaptor.capture());
-        List<Long> captured = cnCaptor.getAllValues();
-        assertThat(captured, contains(1585956698457L, 1585956698467L, 1585956698477L, 1585956698476L));
-        splitsWorker.stop();
+        List<FeatureFlagChangeNotification> captured = cnCaptor.getAllValues();
+        List<Long> changeNumbers = new ArrayList<>();
+        for (FeatureFlagChangeNotification ffNotification: captured) {
+            changeNumbers.add(ffNotification.getChangeNumber());
+        }
+        assertThat(changeNumbers, contains(1585956698457L, 1585956698467L, 1585956698477L, 1585956698476L));
+        featureFlagsWorker.stop();
     }
 
     @Test
@@ -51,34 +64,40 @@ public class SplitsWorkerTest {
         String defaultTreatment = "off";
 
         Synchronizer syncMock = Mockito.mock(Synchronizer.class);
-        SplitsWorker splitsWorker = new SplitsWorkerImp(syncMock);
-        splitsWorker.start();
+        FeatureFlagsWorker featureFlagsWorker = new FeatureFlagWorkerImp(syncMock) {
+        };
+        featureFlagsWorker.start();
+        SplitKillNotification splitKillNotification = new SplitKillNotification(new GenericNotificationData(changeNumber, defaultTreatment, splitName,
+                null, null,null, null, null, null, null, null));
 
-        splitsWorker.killSplit(changeNumber, splitName, defaultTreatment);
-        Mockito.verify(syncMock, Mockito.times(1)).localKillSplit(splitName, defaultTreatment, changeNumber);
-        splitsWorker.stop();
+        featureFlagsWorker.kill(splitKillNotification);
+        Mockito.verify(syncMock, Mockito.times(1)).localKillSplit(splitKillNotification);
+        featureFlagsWorker.stop();
     }
 
     @Test
     public void messagesNotProcessedWhenWorkerStopped() throws InterruptedException {
         Synchronizer syncMock = Mockito.mock(Synchronizer.class);
-        SplitsWorker splitsWorker = new SplitsWorkerImp(syncMock);
-        splitsWorker.start();
-        splitsWorker.addToQueue(1585956698457L);
+        FeatureFlagsWorker featureFlagsWorker = new FeatureFlagWorkerImp(syncMock);
+        featureFlagsWorker.start();
+        featureFlagsWorker.addToQueue(new FeatureFlagChangeNotification(new GenericNotificationData(1585956698457L, null,
+                null, null, null, null, null, null, null, null, null)));
         Thread.sleep(500);
 
 
-        splitsWorker.stop();
+        featureFlagsWorker.stop();
         Thread.sleep(500);
 
-        splitsWorker.addToQueue(1585956698467L);
-        Mockito.verify(syncMock, Mockito.times(1)).refreshSplits(1585956698457L); // Previous one!
+        featureFlagsWorker.addToQueue(new FeatureFlagChangeNotification(new GenericNotificationData(1585956698467L, null,
+                null, null, null, null, null, null, null, null, null)));
+        Mockito.verify(syncMock, Mockito.times(1)).refreshSplits(Mockito.anyObject()); // Previous one!
 
         Mockito.reset(syncMock);
-        splitsWorker.start();
-        splitsWorker.addToQueue(1585956698477L);
+        featureFlagsWorker.start();
+        featureFlagsWorker.addToQueue(new FeatureFlagChangeNotification(new GenericNotificationData(1585956698477L, null,
+                null, null, null, null, null, null, null, null, null)));
         Thread.sleep(500);
-        Mockito.verify(syncMock, Mockito.times(1)).refreshSplits(1585956698477L);
-        splitsWorker.stop();
+        Mockito.verify(syncMock, Mockito.times(1)).refreshSplits(Mockito.anyObject());
+        featureFlagsWorker.stop();
     }
 }

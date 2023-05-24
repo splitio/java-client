@@ -6,9 +6,13 @@ import io.split.client.impressions.UniqueKeysTracker;
 import io.split.client.utils.Json;
 import io.split.engine.experiments.FetchResult;
 import io.split.engine.experiments.SplitFetcher;
+import io.split.engine.experiments.SplitParser;
 import io.split.engine.experiments.SplitSynchronizationTask;
 import io.split.engine.segments.SegmentFetcher;
 import io.split.engine.segments.SegmentSynchronizationTask;
+import io.split.engine.sse.dtos.FeatureFlagChangeNotification;
+import io.split.engine.sse.dtos.GenericNotificationData;
+import io.split.engine.sse.dtos.SplitKillNotification;
 import io.split.storages.SegmentCacheProducer;
 import io.split.storages.SplitCacheProducer;
 import io.split.telemetry.synchronizer.TelemetrySyncTask;
@@ -134,9 +138,16 @@ public class SynchronizerImp implements Synchronizer {
     }
 
     @Override
-    public void refreshSplits(Long targetChangeNumber) {
+    public void refreshSplits(FeatureFlagChangeNotification featureFlagChangeNotification) {
 
-        if (targetChangeNumber <= _splitCacheProducer.getChangeNumber()) {
+        if (featureFlagChangeNotification.getChangeNumber() <= _splitCacheProducer.getChangeNumber()) {
+            return;
+        }
+
+        if (featureFlagChangeNotification.getFeatureFlagDefinition() != null &&
+            featureFlagChangeNotification.getPreviousChangeNumber() == _splitCacheProducer.getChangeNumber()){
+            SplitParser splitParser = new SplitParser();
+            _splitCacheProducer.updateFeatureFlag(splitParser.parse(featureFlagChangeNotification.getFeatureFlagDefinition()));
             return;
         }
 
@@ -147,7 +158,7 @@ public class SynchronizerImp implements Synchronizer {
                 .responseHeadersCallback(_cdnResponseHeadersLogging ? captor::handle : null)
                 .build();
 
-        SyncResult regularResult = attemptSplitsSync(targetChangeNumber, opts,
+        SyncResult regularResult = attemptSplitsSync(featureFlagChangeNotification.getChangeNumber(), opts,
                 (discard) -> (long) _onDemandFetchRetryDelayMs, _onDemandFetchMaxRetries);
 
         int attempts =  _onDemandFetchMaxRetries - regularResult.remainingAttempts();
@@ -162,9 +173,9 @@ public class SynchronizerImp implements Synchronizer {
         }
 
         _log.info(String.format("No changes fetched after %s attempts. Will retry bypassing CDN.", attempts));
-        FetchOptions withCdnBypass = new FetchOptions.Builder(opts).targetChangeNumber(targetChangeNumber).build();
+        FetchOptions withCdnBypass = new FetchOptions.Builder(opts).targetChangeNumber(featureFlagChangeNotification.getChangeNumber()).build();
         Backoff backoff = new Backoff(ON_DEMAND_FETCH_BACKOFF_BASE_MS, ON_DEMAND_FETCH_BACKOFF_MAX_WAIT_MS);
-        SyncResult withCDNBypassed = attemptSplitsSync(targetChangeNumber, withCdnBypass,
+        SyncResult withCDNBypassed = attemptSplitsSync(featureFlagChangeNotification.getChangeNumber(), withCdnBypass,
                 (discard) -> backoff.interval(), ON_DEMAND_FETCH_BACKOFF_MAX_RETRIES);
 
         int withoutCDNAttempts = ON_DEMAND_FETCH_BACKOFF_MAX_RETRIES - withCDNBypassed._remainingAttempts;
@@ -183,10 +194,11 @@ public class SynchronizerImp implements Synchronizer {
     }
 
     @Override
-    public void localKillSplit(String featureFlagName, String defaultTreatment, long newChangeNumber) {
-        if (newChangeNumber > _splitCacheProducer.getChangeNumber()) {
-            _splitCacheProducer.kill(featureFlagName, defaultTreatment, newChangeNumber);
-            refreshSplits(newChangeNumber);
+    public void localKillSplit(SplitKillNotification splitKillNotification) {
+        if (splitKillNotification.getChangeNumber() > _splitCacheProducer.getChangeNumber()) {
+            _splitCacheProducer.kill(splitKillNotification.getSplitName(), splitKillNotification.getDefaultTreatment(), splitKillNotification.getChangeNumber());
+            refreshSplits(new FeatureFlagChangeNotification(new GenericNotificationData(splitKillNotification.getChangeNumber(), null,
+                    null, null, null, null, null, null, null, null, null)));
         }
     }
 

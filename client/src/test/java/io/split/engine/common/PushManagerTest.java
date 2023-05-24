@@ -7,7 +7,7 @@ import io.split.engine.sse.PushStatusTrackerImp;
 import io.split.engine.sse.client.SSEClient;
 import io.split.engine.sse.dtos.AuthenticationResponse;
 import io.split.engine.sse.workers.SegmentsWorkerImp;
-import io.split.engine.sse.workers.SplitsWorker;
+import io.split.engine.sse.workers.FeatureFlagsWorker;
 import io.split.telemetry.storage.InMemoryTelemetryStorage;
 import io.split.telemetry.storage.TelemetryStorage;
 import org.junit.Assert;
@@ -32,7 +32,7 @@ public class PushManagerTest {
         _telemetryStorage = new InMemoryTelemetryStorage();
         _pushManager = new PushManagerImp(_authApiClient,
                 _eventSourceClient,
-                Mockito.mock(SplitsWorker.class),
+                Mockito.mock(FeatureFlagsWorker.class),
                 Mockito.mock(SegmentsWorkerImp.class),
                 _pushStatusTracker,
                 _telemetryStorage,

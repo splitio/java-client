@@ -142,7 +142,12 @@ public class InMemoryCacheImp implements SplitCache {
     public void decreaseTrafficType(String trafficType) {
         _concurrentTrafficTypeNameSet.remove(trafficType);
     }
-    
+
+    @Override
+    public void updateFeatureFlag(ParsedSplit parsedSplit) {
+        _concurrentMap.put(parsedSplit.feature(), parsedSplit);
+    }
+
     public Set<String> getSegments() {
         return _concurrentMap.values().stream()
                 .flatMap(parsedSplit -> parsedSplit.getSegmentsNames().stream()).collect(Collectors.toSet());
