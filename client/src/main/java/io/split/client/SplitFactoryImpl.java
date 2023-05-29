@@ -240,8 +240,10 @@ public class SplitFactoryImpl implements SplitFactory {
                 _impressionsManager, _eventsTask, _telemetrySyncTask, _uniqueKeysTracker);
         SplitAPI splitAPI = SplitAPI.build(_httpclient, buildSSEdHttpClient(apiToken, config, _sdkMetadata));
 
+        SplitParser splitParser = new SplitParser();
+
         _syncManager = SyncManagerImp.build(splitTasks, _splitFetcher, splitCache, splitAPI,
-                segmentCache, _gates, _telemetryStorageProducer, _telemetrySynchronizer, config);
+                segmentCache, _gates, _telemetryStorageProducer, _telemetrySynchronizer, config, splitParser);
         _syncManager.start();
 
         // DestroyOnShutDown

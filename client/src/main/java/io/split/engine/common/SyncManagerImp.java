@@ -5,6 +5,7 @@ import io.split.client.ApiKeyCounter;
 import io.split.client.SplitClientConfig;
 import io.split.engine.SDKReadinessGates;
 import io.split.engine.experiments.SplitFetcher;
+import io.split.engine.experiments.SplitParser;
 import io.split.engine.experiments.SplitSynchronizationTask;
 import io.split.engine.segments.SegmentSynchronizationTask;
 import io.split.storages.SegmentCacheProducer;
@@ -85,7 +86,8 @@ public class SyncManagerImp implements SyncManager {
                                        SDKReadinessGates gates,
                                        TelemetryRuntimeProducer telemetryRuntimeProducer,
                                        TelemetrySynchronizer telemetrySynchronizer,
-                                       SplitClientConfig config) {
+                                       SplitClientConfig config,
+                                       SplitParser splitParser) {
         LinkedBlockingQueue<PushManager.Status> pushMessages = new LinkedBlockingQueue<>();
         Synchronizer synchronizer = new SynchronizerImp(splitTasks,
                                         splitFetcher,
@@ -94,7 +96,8 @@ public class SyncManagerImp implements SyncManager {
                                         config.streamingRetryDelay(),
                                         config.streamingFetchMaxRetries(),
                                         config.failedAttemptsBeforeLogging(),
-                                        config.cdnDebugLogging());
+                                        config.cdnDebugLogging(),
+                                        splitParser);
 
         PushManager pushManager = PushManagerImp.build(synchronizer,
                                                         config.streamingServiceURL(),

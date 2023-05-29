@@ -14,8 +14,6 @@ import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mockito;
 
-import java.io.UnsupportedEncodingException;
-
 public class NotificationProcessorTest {
     private FeatureFlagsWorker _featureFlagsWorker;
     private Worker<SegmentQueueDto> _segmentWorker;
@@ -32,10 +30,13 @@ public class NotificationProcessorTest {
     }
 
     @Test
-    public void processSplitUpdateAddToQueueInWorker() throws UnsupportedEncodingException {
+    public void processSplitUpdateAddToQueueInWorker() {
         long changeNumber = 1585867723838L;
         String channel = "splits";
-        GenericNotificationData genericNotificationData = new GenericNotificationData(changeNumber, null, null, null, null, null, null, channel, null, null, null);
+        GenericNotificationData genericNotificationData = GenericNotificationData.builder()
+                .changeNumber(changeNumber)
+                .channel(channel)
+                .build();
         FeatureFlagChangeNotification splitChangeNotification = new FeatureFlagChangeNotification(genericNotificationData);
 
         _notificationProcessor.process(splitChangeNotification);
@@ -49,7 +50,12 @@ public class NotificationProcessorTest {
         String defaultTreatment = "off";
         String splitName = "test-split";
         String channel = "splits";
-        GenericNotificationData genericNotificationData = new GenericNotificationData(changeNumber, defaultTreatment, splitName, null, null, null, null, channel, null, null, null);
+        GenericNotificationData genericNotificationData = GenericNotificationData.builder()
+                .changeNumber(changeNumber)
+                .defaultTreatment(defaultTreatment)
+                .featureFlagName(splitName)
+                .channel(channel)
+                .build();
         SplitKillNotification splitKillNotification = new SplitKillNotification(genericNotificationData);
 
         _notificationProcessor.process(splitKillNotification);
@@ -63,7 +69,11 @@ public class NotificationProcessorTest {
         long changeNumber = 1585867723838L;
         String segmentName = "segment-test";
         String channel = "segments";
-        GenericNotificationData genericNotificationData = new GenericNotificationData(changeNumber, null, null, null, null, segmentName, null, channel, null, null, null);
+        GenericNotificationData genericNotificationData = GenericNotificationData.builder()
+                .changeNumber(changeNumber)
+                .segmentName(segmentName)
+                .channel(channel)
+                .build();
         SegmentChangeNotification segmentChangeNotification = new SegmentChangeNotification(genericNotificationData);
 
         _notificationProcessor.process(segmentChangeNotification);
@@ -83,7 +93,9 @@ public class NotificationProcessorTest {
 
     @Test
     public void processOccupancyNotification() {
-        GenericNotificationData genericNotificationData = new GenericNotificationData(null, null, null, null, null, null, null, "control_pri", null, null, null);
+        GenericNotificationData genericNotificationData = GenericNotificationData.builder()
+                .channel("control_pri")
+                .build();
         OccupancyNotification occupancyNotification = new OccupancyNotification(genericNotificationData);
 
         _notificationProcessor.process(occupancyNotification);

@@ -43,8 +43,10 @@ public class NotificationProcessorImp implements NotificationProcessor {
     @Override
     public void processSplitKill(SplitKillNotification splitKillNotification) {
         _featureFlagsWorker.kill(splitKillNotification);
-        _featureFlagsWorker.addToQueue(new FeatureFlagChangeNotification(new GenericNotificationData(splitKillNotification.getChangeNumber(), null,
-                null, null, null, null, null, splitKillNotification.getChannel(), null, null, null)));
+        _featureFlagsWorker.addToQueue(new FeatureFlagChangeNotification(GenericNotificationData.builder()
+                .changeNumber(splitKillNotification.getChangeNumber())
+                .channel(splitKillNotification.getChannel())
+                .build()));
     }
 
     @Override

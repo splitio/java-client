@@ -4,6 +4,7 @@ import io.split.client.events.EventsTask;
 import io.split.client.impressions.ImpressionsManager;
 import io.split.client.impressions.UniqueKeysTracker;
 import io.split.client.utils.Json;
+import io.split.engine.experiments.SplitParser;
 import io.split.engine.segments.SegmentChangeFetcher;
 import io.split.engine.segments.SegmentSynchronizationTaskImp;
 import io.split.engine.sse.dtos.FeatureFlagChangeNotification;
@@ -47,6 +48,7 @@ public class SynchronizerTest {
     private ImpressionsManager _impressionsManager;
     private EventsTask _eventsTask;
     private UniqueKeysTracker _uniqueKeysTracker;
+    private SplitParser _splitParser;
 
     @Before
     public void beforeMethod() {
@@ -59,10 +61,11 @@ public class SynchronizerTest {
         _impressionsManager = Mockito.mock(ImpressionsManager.class);
         _eventsTask = Mockito.mock(EventsTask.class);
         _uniqueKeysTracker = Mockito.mock(UniqueKeysTracker.class);
+        _splitParser = new SplitParser();
 
         _splitTasks = SplitTasks.build(_refreshableSplitFetcherTask, _segmentFetcher, _impressionsManager, _eventsTask, _telemetrySyncTask, _uniqueKeysTracker);
 
-        _synchronizer = new SynchronizerImp(_splitTasks, _splitFetcher, _splitCacheProducer, _segmentCacheProducer, 50, 10, 5, false);
+        _synchronizer = new SynchronizerImp(_splitTasks, _splitFetcher, _splitCacheProducer, _segmentCacheProducer, 50, 10, 5, false, _splitParser);
     }
 
     @Test
@@ -117,8 +120,9 @@ public class SynchronizerTest {
     public void streamingRetryOnSplit() {
         when(_splitCacheProducer.getChangeNumber()).thenReturn(0l).thenReturn(0l).thenReturn(1l);
         when(_splitFetcher.forceRefresh(Mockito.anyObject())).thenReturn(new FetchResult(true, new HashSet<>()));
-        _synchronizer.refreshSplits(new FeatureFlagChangeNotification(new GenericNotificationData(1l, null,
-                null, null, null, null, null, null, null, null, null)));
+        _synchronizer.refreshSplits(new FeatureFlagChangeNotification(GenericNotificationData.builder()
+                .changeNumber(1L)
+                .build()));
 
         Mockito.verify(_splitCacheProducer, Mockito.times(3)).getChangeNumber();
     }
@@ -143,18 +147,19 @@ public class SynchronizerTest {
         SegmentFetcher fetcher = Mockito.mock(SegmentFetcher.class);
         when(_segmentCacheProducer.getChangeNumber(Mockito.anyString())).thenReturn(0l).thenReturn(0l).thenReturn(1l);
         when(_segmentFetcher.getFetcher(Mockito.anyString())).thenReturn(fetcher);
-        _synchronizer.refreshSplits(new FeatureFlagChangeNotification(new GenericNotificationData(1l, null,
-        null, null, null, null, null, null, null,
-                null, null)));
+        _synchronizer.refreshSplits(new FeatureFlagChangeNotification(GenericNotificationData.builder()
+                .changeNumber(1L)
+                .build()));
 
         Mockito.verify(_splitCacheProducer, Mockito.times(3)).getChangeNumber();
         Mockito.verify(_segmentFetcher, Mockito.times(2)).getFetcher(Mockito.anyString());
     }
 
     @Test
-    public void testCDNBypassIsRequestedAfterNFailures() throws NoSuchFieldException, IllegalAccessException {
+    public void testCDNBypassIsRequestedAfterNFailures() {
 
         SplitCache cache = new InMemoryCacheImp();
+        SplitParser splitParser = new SplitParser();
         Synchronizer imp = new SynchronizerImp(_splitTasks,
                 _splitFetcher,
                 cache,
@@ -162,7 +167,8 @@ public class SynchronizerTest {
                 50,
                 3,
                 1,
-                true);
+                true,
+                splitParser);
 
         ArgumentCaptor<FetchOptions> optionsCaptor = ArgumentCaptor.forClass(FetchOptions.class);
         AtomicInteger calls = new AtomicInteger();
@@ -174,8 +180,9 @@ public class SynchronizerTest {
             return new FetchResult(true, new HashSet<>());
         }).when(_splitFetcher).forceRefresh(optionsCaptor.capture());
 
-        imp.refreshSplits(new FeatureFlagChangeNotification(new GenericNotificationData(123L, null,
-                null, null, null, null, null, null, null, null, null)));
+        imp.refreshSplits(new FeatureFlagChangeNotification(GenericNotificationData.builder()
+                .changeNumber(123L)
+                .build()));
 
         List<FetchOptions> options = optionsCaptor.getAllValues();
         Assert.assertEquals(options.size(), 4);
@@ -189,6 +196,7 @@ public class SynchronizerTest {
     public void testCDNBypassRequestLimitAndBackoff() throws NoSuchFieldException, IllegalAccessException {
 
         SplitCache cache = new InMemoryCacheImp();
+        SplitParser splitParser = new SplitParser();
         Synchronizer imp = new SynchronizerImp(_splitTasks,
                 _splitFetcher,
                 cache,
@@ -196,7 +204,8 @@ public class SynchronizerTest {
                 50,
                 3,
                 1,
-                true);
+                true,
+                splitParser);
 
         ArgumentCaptor<FetchOptions> optionsCaptor = ArgumentCaptor.forClass(FetchOptions.class);
         AtomicInteger calls = new AtomicInteger();
@@ -217,8 +226,9 @@ public class SynchronizerTest {
         backoffBase.set(imp, 1); // 1ms
 
         long before = System.currentTimeMillis();
-        imp.refreshSplits(new FeatureFlagChangeNotification(new GenericNotificationData(1L, null, null, null, null, null, null,
-                null, null, null, null)));
+        imp.refreshSplits(new FeatureFlagChangeNotification(GenericNotificationData.builder()
+                .changeNumber(1L)
+                .build()));
         long after = System.currentTimeMillis();
 
         List<FetchOptions> options = optionsCaptor.getAllValues();
@@ -246,6 +256,7 @@ public class SynchronizerTest {
     public void testCDNBypassRequestLimitAndForSegmentsBackoff() throws NoSuchFieldException, IllegalAccessException {
 
         SplitCache cache = new InMemoryCacheImp();
+        SplitParser splitParser = new SplitParser();
         Synchronizer imp = new SynchronizerImp(_splitTasks,
                 _splitFetcher,
                 cache,
@@ -253,7 +264,8 @@ public class SynchronizerTest {
                 50,
                 3,
                 1,
-                true);
+                true,
+                splitParser);
 
         SegmentFetcher fetcher = Mockito.mock(SegmentFetcher.class);
         when(_segmentFetcher.getFetcher("someSegment")).thenReturn(fetcher);
@@ -304,6 +316,7 @@ public class SynchronizerTest {
     @Test
     public void testDataRecording(){
         SplitCache cache = new InMemoryCacheImp();
+        SplitParser splitParser = new SplitParser();
         Synchronizer imp = new SynchronizerImp(_splitTasks,
                 _splitFetcher,
                 cache,
@@ -311,7 +324,8 @@ public class SynchronizerTest {
                 50,
                 3,
                 1,
-                true);
+                true,
+                splitParser);
         imp.startPeriodicDataRecording();
 
         Mockito.verify(_eventsTask, Mockito.times(1)).start();

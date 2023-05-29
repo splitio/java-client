@@ -11,7 +11,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import pluggable.CustomStorageWrapper;
 
-import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -101,9 +101,7 @@ public class UserCustomSplitAdapterProducer implements SplitCacheProducer {
 
     @Override
     public void updateFeatureFlag(ParsedSplit parsedSplit) {
-        List<ParsedSplit> parsedSplits = new ArrayList<>();
-        parsedSplits.add(parsedSplit);
-        putMany(parsedSplits);
+        putMany(Collections.singletonList(parsedSplit));
     }
 
     @Override

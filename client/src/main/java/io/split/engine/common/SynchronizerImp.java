@@ -48,6 +48,7 @@ public class SynchronizerImp implements Synchronizer {
     private final int _onDemandFetchMaxRetries;
     private final int _failedAttemptsBeforeLogging;
     private final boolean _cdnResponseHeadersLogging;
+    private final SplitParser _splitParser;
 
     public SynchronizerImp(SplitTasks splitTasks,
                            SplitFetcher splitFetcher,
@@ -56,7 +57,8 @@ public class SynchronizerImp implements Synchronizer {
                            int onDemandFetchRetryDelayMs,
                            int onDemandFetchMaxRetries,
                            int failedAttemptsBeforeLogging,
-                           boolean cdnResponseHeadersLogging) {
+                           boolean cdnResponseHeadersLogging,
+                           SplitParser splitParser) {
         _splitSynchronizationTask = checkNotNull(splitTasks.getSplitSynchronizationTask());
         _splitFetcher = checkNotNull(splitFetcher);
         _segmentSynchronizationTaskImp = checkNotNull(splitTasks.getSegmentSynchronizationTask());
@@ -70,6 +72,7 @@ public class SynchronizerImp implements Synchronizer {
         _eventsTask = splitTasks.getEventsTask();
         _telemetrySyncTask = splitTasks.getTelemetrySyncTask();
         _uniqueKeysTracker = splitTasks.getUniqueKeysTracker();
+        _splitParser = splitParser;
     }
 
     @Override
@@ -146,8 +149,7 @@ public class SynchronizerImp implements Synchronizer {
 
         if (featureFlagChangeNotification.getFeatureFlagDefinition() != null &&
             featureFlagChangeNotification.getPreviousChangeNumber() == _splitCacheProducer.getChangeNumber()){
-            SplitParser splitParser = new SplitParser();
-            _splitCacheProducer.updateFeatureFlag(splitParser.parse(featureFlagChangeNotification.getFeatureFlagDefinition()));
+            _splitCacheProducer.updateFeatureFlag(_splitParser.parse(featureFlagChangeNotification.getFeatureFlagDefinition()));
             return;
         }
 
@@ -197,8 +199,9 @@ public class SynchronizerImp implements Synchronizer {
     public void localKillSplit(SplitKillNotification splitKillNotification) {
         if (splitKillNotification.getChangeNumber() > _splitCacheProducer.getChangeNumber()) {
             _splitCacheProducer.kill(splitKillNotification.getSplitName(), splitKillNotification.getDefaultTreatment(), splitKillNotification.getChangeNumber());
-            refreshSplits(new FeatureFlagChangeNotification(new GenericNotificationData(splitKillNotification.getChangeNumber(), null,
-                    null, null, null, null, null, null, null, null, null)));
+            refreshSplits(new FeatureFlagChangeNotification(GenericNotificationData.builder()
+                    .changeNumber(splitKillNotification.getChangeNumber())
+                    .build()));
         }
     }
 
