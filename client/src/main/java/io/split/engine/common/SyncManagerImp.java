@@ -96,8 +96,7 @@ public class SyncManagerImp implements SyncManager {
                                         config.streamingRetryDelay(),
                                         config.streamingFetchMaxRetries(),
                                         config.failedAttemptsBeforeLogging(),
-                                        config.cdnDebugLogging(),
-                                        splitParser);
+                                        config.cdnDebugLogging());
 
         PushManager pushManager = PushManagerImp.build(synchronizer,
                                                         config.streamingServiceURL(),
@@ -105,7 +104,9 @@ public class SyncManagerImp implements SyncManager {
                                                         splitAPI,
                                                         pushMessages,
                                                         telemetryRuntimeProducer,
-                                                        config.getThreadFactory());
+                                                        config.getThreadFactory(),
+                                                        splitParser,
+                                                        splitCacheProducer);
 
         return new SyncManagerImp(splitTasks,
                                   config.streamingEnabled(),

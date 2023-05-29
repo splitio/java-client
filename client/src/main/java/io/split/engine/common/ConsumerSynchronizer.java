@@ -2,7 +2,6 @@ package io.split.engine.common;
 
 import io.split.client.impressions.ImpressionsManager;
 import io.split.client.impressions.UniqueKeysTracker;
-import io.split.engine.sse.dtos.FeatureFlagChangeNotification;
 import io.split.engine.sse.dtos.SplitKillNotification;
 import io.split.telemetry.synchronizer.TelemetrySyncTask;
 import org.slf4j.Logger;
@@ -36,7 +35,7 @@ public class ConsumerSynchronizer implements Synchronizer{
     }
 
     @Override
-    public void refreshSplits(FeatureFlagChangeNotification featureFlagChangeNotification) {
+    public void refreshSplits(Long targetChangeNumber) {
         //No-Op
     }
 

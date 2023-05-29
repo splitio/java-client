@@ -1,14 +1,17 @@
 package io.split.engine.sse.workers;
 
+import io.split.client.utils.Json;
 import io.split.engine.common.Synchronizer;
+import io.split.engine.experiments.SplitParser;
 import io.split.engine.sse.dtos.FeatureFlagChangeNotification;
 import io.split.engine.sse.dtos.GenericNotificationData;
+import io.split.engine.sse.dtos.RawMessageNotification;
 import io.split.engine.sse.dtos.SplitKillNotification;
+import io.split.storages.SplitCacheProducer;
 import org.junit.Test;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mockito;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -19,8 +22,10 @@ public class SplitsWorkerTest {
     @Test
     public void addToQueueWithoutElementsWShouldNotTriggerFetch() throws InterruptedException {
         Synchronizer splitFetcherMock = Mockito.mock(Synchronizer.class);
+        SplitParser splitParser = new SplitParser();
+        SplitCacheProducer splitCacheProducer = Mockito.mock(SplitCacheProducer.class);
 
-        FeatureFlagsWorker featureFlagsWorker = new FeatureFlagWorkerImp(splitFetcherMock);
+        FeatureFlagsWorker featureFlagsWorker = new FeatureFlagWorkerImp(splitFetcherMock, splitParser, splitCacheProducer);
         featureFlagsWorker.start();
 
         Thread.sleep(500);
@@ -31,11 +36,13 @@ public class SplitsWorkerTest {
     @Test
     public void addToQueueWithElementsWShouldTriggerFetch() throws InterruptedException {
         Synchronizer syncMock = Mockito.mock(Synchronizer.class);
+        SplitParser splitParser = new SplitParser();
+        SplitCacheProducer splitCacheProducer = Mockito.mock(SplitCacheProducer.class);
 
-        FeatureFlagsWorker featureFlagsWorker = new FeatureFlagWorkerImp(syncMock);
+        FeatureFlagsWorker featureFlagsWorker = new FeatureFlagWorkerImp(syncMock, splitParser, splitCacheProducer);
         featureFlagsWorker.start();
 
-        ArgumentCaptor<FeatureFlagChangeNotification> cnCaptor = ArgumentCaptor.forClass(FeatureFlagChangeNotification.class);
+        ArgumentCaptor<Long> cnCaptor = ArgumentCaptor.forClass(Long.class);
 
         featureFlagsWorker.addToQueue(new FeatureFlagChangeNotification(GenericNotificationData.builder()
                 .changeNumber(1585956698457L)
@@ -52,12 +59,8 @@ public class SplitsWorkerTest {
         Thread.sleep(1000);
 
         Mockito.verify(syncMock, Mockito.times(4)).refreshSplits(cnCaptor.capture());
-        List<FeatureFlagChangeNotification> captured = cnCaptor.getAllValues();
-        List<Long> changeNumbers = new ArrayList<>();
-        for (FeatureFlagChangeNotification ffNotification: captured) {
-            changeNumbers.add(ffNotification.getChangeNumber());
-        }
-        assertThat(changeNumbers, contains(1585956698457L, 1585956698467L, 1585956698477L, 1585956698476L));
+        List<Long> captured = cnCaptor.getAllValues();
+        assertThat(captured, contains(1585956698457L, 1585956698467L, 1585956698477L, 1585956698476L));
         featureFlagsWorker.stop();
     }
 
@@ -68,7 +71,9 @@ public class SplitsWorkerTest {
         String defaultTreatment = "off";
 
         Synchronizer syncMock = Mockito.mock(Synchronizer.class);
-        FeatureFlagsWorker featureFlagsWorker = new FeatureFlagWorkerImp(syncMock) {
+        SplitParser splitParser = new SplitParser();
+        SplitCacheProducer splitCacheProducer = Mockito.mock(SplitCacheProducer.class);
+        FeatureFlagsWorker featureFlagsWorker = new FeatureFlagWorkerImp(syncMock, splitParser, splitCacheProducer) {
         };
         featureFlagsWorker.start();
         SplitKillNotification splitKillNotification = new SplitKillNotification(GenericNotificationData.builder()
@@ -85,7 +90,9 @@ public class SplitsWorkerTest {
     @Test
     public void messagesNotProcessedWhenWorkerStopped() throws InterruptedException {
         Synchronizer syncMock = Mockito.mock(Synchronizer.class);
-        FeatureFlagsWorker featureFlagsWorker = new FeatureFlagWorkerImp(syncMock);
+        SplitParser splitParser = new SplitParser();
+        SplitCacheProducer splitCacheProducer = Mockito.mock(SplitCacheProducer.class);
+        FeatureFlagsWorker featureFlagsWorker = new FeatureFlagWorkerImp(syncMock, splitParser, splitCacheProducer);
         featureFlagsWorker.start();
         featureFlagsWorker.addToQueue(new FeatureFlagChangeNotification(GenericNotificationData.builder()
                 .changeNumber(1585956698457L)

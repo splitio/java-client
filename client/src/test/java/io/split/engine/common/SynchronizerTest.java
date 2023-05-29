@@ -3,14 +3,13 @@ package io.split.engine.common;
 import io.split.client.events.EventsTask;
 import io.split.client.impressions.ImpressionsManager;
 import io.split.client.impressions.UniqueKeysTracker;
-import io.split.client.utils.Json;
-import io.split.engine.experiments.SplitParser;
 import io.split.engine.segments.SegmentChangeFetcher;
 import io.split.engine.segments.SegmentSynchronizationTaskImp;
-import io.split.engine.sse.dtos.FeatureFlagChangeNotification;
-import io.split.engine.sse.dtos.GenericNotificationData;
-import io.split.engine.sse.dtos.RawMessageNotification;
-import io.split.storages.*;
+import io.split.storages.SegmentCache;
+import io.split.storages.SegmentCacheProducer;
+import io.split.storages.SplitCache;
+import io.split.storages.SplitCacheConsumer;
+import io.split.storages.SplitCacheProducer;
 import io.split.storages.memory.InMemoryCacheImp;
 import io.split.engine.experiments.FetchResult;
 import io.split.engine.experiments.SplitFetcherImp;
@@ -48,7 +47,6 @@ public class SynchronizerTest {
     private ImpressionsManager _impressionsManager;
     private EventsTask _eventsTask;
     private UniqueKeysTracker _uniqueKeysTracker;
-    private SplitParser _splitParser;
 
     @Before
     public void beforeMethod() {
@@ -61,11 +59,10 @@ public class SynchronizerTest {
         _impressionsManager = Mockito.mock(ImpressionsManager.class);
         _eventsTask = Mockito.mock(EventsTask.class);
         _uniqueKeysTracker = Mockito.mock(UniqueKeysTracker.class);
-        _splitParser = new SplitParser();
 
         _splitTasks = SplitTasks.build(_refreshableSplitFetcherTask, _segmentFetcher, _impressionsManager, _eventsTask, _telemetrySyncTask, _uniqueKeysTracker);
 
-        _synchronizer = new SynchronizerImp(_splitTasks, _splitFetcher, _splitCacheProducer, _segmentCacheProducer, 50, 10, 5, false, _splitParser);
+        _synchronizer = new SynchronizerImp(_splitTasks, _splitFetcher, _splitCacheProducer, _segmentCacheProducer, 50, 10, 5, false);
     }
 
     @Test
@@ -120,9 +117,7 @@ public class SynchronizerTest {
     public void streamingRetryOnSplit() {
         when(_splitCacheProducer.getChangeNumber()).thenReturn(0l).thenReturn(0l).thenReturn(1l);
         when(_splitFetcher.forceRefresh(Mockito.anyObject())).thenReturn(new FetchResult(true, new HashSet<>()));
-        _synchronizer.refreshSplits(new FeatureFlagChangeNotification(GenericNotificationData.builder()
-                .changeNumber(1L)
-                .build()));
+        _synchronizer.refreshSplits(1L);
 
         Mockito.verify(_splitCacheProducer, Mockito.times(3)).getChangeNumber();
     }
@@ -147,9 +142,7 @@ public class SynchronizerTest {
         SegmentFetcher fetcher = Mockito.mock(SegmentFetcher.class);
         when(_segmentCacheProducer.getChangeNumber(Mockito.anyString())).thenReturn(0l).thenReturn(0l).thenReturn(1l);
         when(_segmentFetcher.getFetcher(Mockito.anyString())).thenReturn(fetcher);
-        _synchronizer.refreshSplits(new FeatureFlagChangeNotification(GenericNotificationData.builder()
-                .changeNumber(1L)
-                .build()));
+        _synchronizer.refreshSplits(1L);
 
         Mockito.verify(_splitCacheProducer, Mockito.times(3)).getChangeNumber();
         Mockito.verify(_segmentFetcher, Mockito.times(2)).getFetcher(Mockito.anyString());
@@ -159,7 +152,6 @@ public class SynchronizerTest {
     public void testCDNBypassIsRequestedAfterNFailures() {
 
         SplitCache cache = new InMemoryCacheImp();
-        SplitParser splitParser = new SplitParser();
         Synchronizer imp = new SynchronizerImp(_splitTasks,
                 _splitFetcher,
                 cache,
@@ -167,8 +159,7 @@ public class SynchronizerTest {
                 50,
                 3,
                 1,
-                true,
-                splitParser);
+                true);
 
         ArgumentCaptor<FetchOptions> optionsCaptor = ArgumentCaptor.forClass(FetchOptions.class);
         AtomicInteger calls = new AtomicInteger();
@@ -180,9 +171,7 @@ public class SynchronizerTest {
             return new FetchResult(true, new HashSet<>());
         }).when(_splitFetcher).forceRefresh(optionsCaptor.capture());
 
-        imp.refreshSplits(new FeatureFlagChangeNotification(GenericNotificationData.builder()
-                .changeNumber(123L)
-                .build()));
+        imp.refreshSplits(123L);
 
         List<FetchOptions> options = optionsCaptor.getAllValues();
         Assert.assertEquals(options.size(), 4);
@@ -196,7 +185,6 @@ public class SynchronizerTest {
     public void testCDNBypassRequestLimitAndBackoff() throws NoSuchFieldException, IllegalAccessException {
 
         SplitCache cache = new InMemoryCacheImp();
-        SplitParser splitParser = new SplitParser();
         Synchronizer imp = new SynchronizerImp(_splitTasks,
                 _splitFetcher,
                 cache,
@@ -204,8 +192,7 @@ public class SynchronizerTest {
                 50,
                 3,
                 1,
-                true,
-                splitParser);
+                true);
 
         ArgumentCaptor<FetchOptions> optionsCaptor = ArgumentCaptor.forClass(FetchOptions.class);
         AtomicInteger calls = new AtomicInteger();
@@ -226,9 +213,7 @@ public class SynchronizerTest {
         backoffBase.set(imp, 1); // 1ms
 
         long before = System.currentTimeMillis();
-        imp.refreshSplits(new FeatureFlagChangeNotification(GenericNotificationData.builder()
-                .changeNumber(1L)
-                .build()));
+        imp.refreshSplits(1L);
         long after = System.currentTimeMillis();
 
         List<FetchOptions> options = optionsCaptor.getAllValues();
@@ -256,7 +241,6 @@ public class SynchronizerTest {
     public void testCDNBypassRequestLimitAndForSegmentsBackoff() throws NoSuchFieldException, IllegalAccessException {
 
         SplitCache cache = new InMemoryCacheImp();
-        SplitParser splitParser = new SplitParser();
         Synchronizer imp = new SynchronizerImp(_splitTasks,
                 _splitFetcher,
                 cache,
@@ -264,8 +248,7 @@ public class SynchronizerTest {
                 50,
                 3,
                 1,
-                true,
-                splitParser);
+                true);
 
         SegmentFetcher fetcher = Mockito.mock(SegmentFetcher.class);
         when(_segmentFetcher.getFetcher("someSegment")).thenReturn(fetcher);
@@ -316,7 +299,6 @@ public class SynchronizerTest {
     @Test
     public void testDataRecording(){
         SplitCache cache = new InMemoryCacheImp();
-        SplitParser splitParser = new SplitParser();
         Synchronizer imp = new SynchronizerImp(_splitTasks,
                 _splitFetcher,
                 cache,
@@ -324,8 +306,7 @@ public class SynchronizerTest {
                 50,
                 3,
                 1,
-                true,
-                splitParser);
+                true);
         imp.startPeriodicDataRecording();
 
         Mockito.verify(_eventsTask, Mockito.times(1)).start();
@@ -339,15 +320,5 @@ public class SynchronizerTest {
         Mockito.verify(_impressionsManager, Mockito.times(1)).close();
         Mockito.verify(_uniqueKeysTracker, Mockito.times(1)).stop();
         Mockito.verify(_telemetrySyncTask, Mockito.times(1)).stopScheduledTask();
-    }
-
-    @Test
-    public void testRefreshSplitsWithCorrectFF(){
-        String notification = "{\"id\":\"vQQ61wzBRO:0:0\",\"clientId\":\"pri:MTUxNzg3MDg1OQ==\",\"timestamp\":1684265694676,\"encoding\":\"json\",\"channel\":\"NzM2MDI5Mzc0_MjkyNTIzNjczMw==_splits\",\"data\":\"{\\\"type\\\":\\\"SPLIT_UPDATE\\\",\\\"changeNumber\\\":1684265694505,\\\"pcn\\\":0,\\\"c\\\":2,\\\"d\\\":\\\"eJzMk99u2kwQxV8lOtdryQZj8N6hD5QPlThSTVNVEUKDPYZt1jZar1OlyO9emf8lVFWv2ss5zJyd82O8hTWUZSqZvW04opwhUVdsIKBSSKR+10vS1HWW7pIdz2NyBjRwHS8IXEopTLgbQqDYT+ZUm3LxlV4J4mg81LpMyKqygPRc94YeM6eQTtjphp4fegLVXvD6Qdjt9wPXF6gs2bqCxPC/2eRpDIEXpXXblpGuWCDljGptZ4bJ5lxYSJRZBoFkTcWKozpfsoH0goHfCXpB6PfcngDpVQnZEUjKIlOr2uwWqiC3zU5L1aF+3p7LFhUkPv8/mY2nk3gGgZxssmZzb8p6A9n25ktVtA9iGI3ODXunQ3HDp+AVWT6F+rZWlrWq7MN+YkSWWvuTDvkMSnNV7J6oTdl6qKTEvGnmjcCGjL2IYC/ovPYgUKnvvPtbmrmApiVryLM7p2jE++AfH6fTx09/HvuF32LWnNjStM0Xh3c8ukZcsZlEi3h8/zCObsBpJ0acqYLTmFdtqitK1V6NzrfpdPBbLmVx4uK26e27izpDu/r5yf/16AXun2Cr4u6w591xw7+LfDidLj6Mv8TXwP8xbofv/c7UmtHMmx8BAAD//0fclvU=\\\"}\"}";
-        RawMessageNotification rawMessageNotification = Json.fromJson(notification, RawMessageNotification.class);
-        GenericNotificationData genericNotificationData = Json.fromJson(rawMessageNotification.getData(), GenericNotificationData.class);
-        FeatureFlagChangeNotification featureFlagChangeNotification = new FeatureFlagChangeNotification(genericNotificationData);
-        _synchronizer.refreshSplits(featureFlagChangeNotification);
-        Mockito.verify(_splitCacheProducer, Mockito.times(1)).updateFeatureFlag(Mockito.anyObject());
     }
 }

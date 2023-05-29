@@ -6,12 +6,9 @@ import io.split.client.impressions.UniqueKeysTracker;
 import io.split.client.utils.Json;
 import io.split.engine.experiments.FetchResult;
 import io.split.engine.experiments.SplitFetcher;
-import io.split.engine.experiments.SplitParser;
 import io.split.engine.experiments.SplitSynchronizationTask;
 import io.split.engine.segments.SegmentFetcher;
 import io.split.engine.segments.SegmentSynchronizationTask;
-import io.split.engine.sse.dtos.FeatureFlagChangeNotification;
-import io.split.engine.sse.dtos.GenericNotificationData;
 import io.split.engine.sse.dtos.SplitKillNotification;
 import io.split.storages.SegmentCacheProducer;
 import io.split.storages.SplitCacheProducer;
@@ -48,7 +45,6 @@ public class SynchronizerImp implements Synchronizer {
     private final int _onDemandFetchMaxRetries;
     private final int _failedAttemptsBeforeLogging;
     private final boolean _cdnResponseHeadersLogging;
-    private final SplitParser _splitParser;
 
     public SynchronizerImp(SplitTasks splitTasks,
                            SplitFetcher splitFetcher,
@@ -57,8 +53,7 @@ public class SynchronizerImp implements Synchronizer {
                            int onDemandFetchRetryDelayMs,
                            int onDemandFetchMaxRetries,
                            int failedAttemptsBeforeLogging,
-                           boolean cdnResponseHeadersLogging,
-                           SplitParser splitParser) {
+                           boolean cdnResponseHeadersLogging) {
         _splitSynchronizationTask = checkNotNull(splitTasks.getSplitSynchronizationTask());
         _splitFetcher = checkNotNull(splitFetcher);
         _segmentSynchronizationTaskImp = checkNotNull(splitTasks.getSegmentSynchronizationTask());
@@ -72,7 +67,6 @@ public class SynchronizerImp implements Synchronizer {
         _eventsTask = splitTasks.getEventsTask();
         _telemetrySyncTask = splitTasks.getTelemetrySyncTask();
         _uniqueKeysTracker = splitTasks.getUniqueKeysTracker();
-        _splitParser = splitParser;
     }
 
     @Override
@@ -141,15 +135,9 @@ public class SynchronizerImp implements Synchronizer {
     }
 
     @Override
-    public void refreshSplits(FeatureFlagChangeNotification featureFlagChangeNotification) {
+    public void refreshSplits(Long targetChangeNumber) {
 
-        if (featureFlagChangeNotification.getChangeNumber() <= _splitCacheProducer.getChangeNumber()) {
-            return;
-        }
-
-        if (featureFlagChangeNotification.getFeatureFlagDefinition() != null &&
-            featureFlagChangeNotification.getPreviousChangeNumber() == _splitCacheProducer.getChangeNumber()){
-            _splitCacheProducer.updateFeatureFlag(_splitParser.parse(featureFlagChangeNotification.getFeatureFlagDefinition()));
+        if (targetChangeNumber <= _splitCacheProducer.getChangeNumber()) {
             return;
         }
 
@@ -160,7 +148,7 @@ public class SynchronizerImp implements Synchronizer {
                 .responseHeadersCallback(_cdnResponseHeadersLogging ? captor::handle : null)
                 .build();
 
-        SyncResult regularResult = attemptSplitsSync(featureFlagChangeNotification.getChangeNumber(), opts,
+        SyncResult regularResult = attemptSplitsSync(targetChangeNumber, opts,
                 (discard) -> (long) _onDemandFetchRetryDelayMs, _onDemandFetchMaxRetries);
 
         int attempts =  _onDemandFetchMaxRetries - regularResult.remainingAttempts();
@@ -175,9 +163,9 @@ public class SynchronizerImp implements Synchronizer {
         }
 
         _log.info(String.format("No changes fetched after %s attempts. Will retry bypassing CDN.", attempts));
-        FetchOptions withCdnBypass = new FetchOptions.Builder(opts).targetChangeNumber(featureFlagChangeNotification.getChangeNumber()).build();
+        FetchOptions withCdnBypass = new FetchOptions.Builder(opts).targetChangeNumber(targetChangeNumber).build();
         Backoff backoff = new Backoff(ON_DEMAND_FETCH_BACKOFF_BASE_MS, ON_DEMAND_FETCH_BACKOFF_MAX_WAIT_MS);
-        SyncResult withCDNBypassed = attemptSplitsSync(featureFlagChangeNotification.getChangeNumber(), withCdnBypass,
+        SyncResult withCDNBypassed = attemptSplitsSync(targetChangeNumber, withCdnBypass,
                 (discard) -> backoff.interval(), ON_DEMAND_FETCH_BACKOFF_MAX_RETRIES);
 
         int withoutCDNAttempts = ON_DEMAND_FETCH_BACKOFF_MAX_RETRIES - withCDNBypassed._remainingAttempts;
@@ -199,9 +187,7 @@ public class SynchronizerImp implements Synchronizer {
     public void localKillSplit(SplitKillNotification splitKillNotification) {
         if (splitKillNotification.getChangeNumber() > _splitCacheProducer.getChangeNumber()) {
             _splitCacheProducer.kill(splitKillNotification.getSplitName(), splitKillNotification.getDefaultTreatment(), splitKillNotification.getChangeNumber());
-            refreshSplits(new FeatureFlagChangeNotification(GenericNotificationData.builder()
-                    .changeNumber(splitKillNotification.getChangeNumber())
-                    .build()));
+            refreshSplits(splitKillNotification.getChangeNumber());
         }
     }
 

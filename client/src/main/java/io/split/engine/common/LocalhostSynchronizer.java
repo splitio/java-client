@@ -5,7 +5,6 @@ import io.split.engine.experiments.SplitFetcher;
 import io.split.engine.experiments.SplitSynchronizationTask;
 import io.split.engine.segments.SegmentFetcher;
 import io.split.engine.segments.SegmentSynchronizationTask;
-import io.split.engine.sse.dtos.FeatureFlagChangeNotification;
 import io.split.engine.sse.dtos.SplitKillNotification;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -57,7 +56,7 @@ public class LocalhostSynchronizer implements Synchronizer{
     }
 
     @Override
-    public void refreshSplits(FeatureFlagChangeNotification featureFlagChangeNotification) {
+    public void refreshSplits(Long targetChangeNumber) {
         FetchResult fetchResult = _splitFetcher.forceRefresh(new FetchOptions.Builder().cacheControlHeaders(true).build());
         if (fetchResult.isSuccess()){
             _log.debug("Refresh feature flags completed");
