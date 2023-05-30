@@ -8,39 +8,40 @@ import io.split.engine.sse.dtos.SegmentChangeNotification;
 import io.split.engine.sse.dtos.SegmentQueueDto;
 import io.split.engine.sse.dtos.SplitKillNotification;
 import io.split.engine.sse.workers.SegmentsWorkerImp;
-import io.split.engine.sse.workers.SplitsWorker;
+import io.split.engine.sse.workers.FeatureFlagsWorker;
 import io.split.engine.sse.workers.Worker;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mockito;
 
-import java.io.UnsupportedEncodingException;
-
 public class NotificationProcessorTest {
-    private SplitsWorker _splitsWorker;
+    private FeatureFlagsWorker _featureFlagsWorker;
     private Worker<SegmentQueueDto> _segmentWorker;
     private NotificationProcessor _notificationProcessor;
     private PushStatusTracker _pushStatusTracker;
 
     @Before
     public void setUp() {
-        _splitsWorker = Mockito.mock(SplitsWorker.class);
+        _featureFlagsWorker = Mockito.mock(FeatureFlagsWorker.class);
         _segmentWorker = Mockito.mock(SegmentsWorkerImp.class);
         _pushStatusTracker = Mockito.mock(PushStatusTracker.class);
 
-        _notificationProcessor = new NotificationProcessorImp(_splitsWorker, _segmentWorker, _pushStatusTracker);
+        _notificationProcessor = new NotificationProcessorImp(_featureFlagsWorker, _segmentWorker, _pushStatusTracker);
     }
 
     @Test
-    public void processSplitUpdateAddToQueueInWorker() throws UnsupportedEncodingException {
+    public void processSplitUpdateAddToQueueInWorker() {
         long changeNumber = 1585867723838L;
         String channel = "splits";
-        GenericNotificationData genericNotificationData = new GenericNotificationData(changeNumber, null, null, null, null, null, null, channel, null, null, null);
+        GenericNotificationData genericNotificationData = GenericNotificationData.builder()
+                .changeNumber(changeNumber)
+                .channel(channel)
+                .build();
         FeatureFlagChangeNotification splitChangeNotification = new FeatureFlagChangeNotification(genericNotificationData);
 
         _notificationProcessor.process(splitChangeNotification);
 
-        Mockito.verify(_splitsWorker, Mockito.times(1)).addToQueue(splitChangeNotification.getChangeNumber());
+        Mockito.verify(_featureFlagsWorker, Mockito.times(1)).addToQueue(Mockito.anyObject());
     }
 
     @Test
@@ -49,13 +50,18 @@ public class NotificationProcessorTest {
         String defaultTreatment = "off";
         String splitName = "test-split";
         String channel = "splits";
-        GenericNotificationData genericNotificationData = new GenericNotificationData(changeNumber, defaultTreatment, splitName, null, null, null, null, channel, null, null, null);
+        GenericNotificationData genericNotificationData = GenericNotificationData.builder()
+                .changeNumber(changeNumber)
+                .defaultTreatment(defaultTreatment)
+                .featureFlagName(splitName)
+                .channel(channel)
+                .build();
         SplitKillNotification splitKillNotification = new SplitKillNotification(genericNotificationData);
 
         _notificationProcessor.process(splitKillNotification);
 
-        Mockito.verify(_splitsWorker, Mockito.times(1)).killSplit(splitKillNotification.getChangeNumber(), splitKillNotification.getSplitName(), splitKillNotification.getDefaultTreatment());
-        Mockito.verify(_splitsWorker, Mockito.times(1)).addToQueue(splitKillNotification.getChangeNumber());
+        Mockito.verify(_featureFlagsWorker, Mockito.times(1)).kill(splitKillNotification);
+        Mockito.verify(_featureFlagsWorker, Mockito.times(1)).addToQueue(Mockito.anyObject());
     }
 
     @Test
@@ -63,7 +69,11 @@ public class NotificationProcessorTest {
         long changeNumber = 1585867723838L;
         String segmentName = "segment-test";
         String channel = "segments";
-        GenericNotificationData genericNotificationData = new GenericNotificationData(changeNumber, null, null, null, null, segmentName, null, channel, null, null, null);
+        GenericNotificationData genericNotificationData = GenericNotificationData.builder()
+                .changeNumber(changeNumber)
+                .segmentName(segmentName)
+                .channel(channel)
+                .build();
         SegmentChangeNotification segmentChangeNotification = new SegmentChangeNotification(genericNotificationData);
 
         _notificationProcessor.process(segmentChangeNotification);
@@ -83,7 +93,9 @@ public class NotificationProcessorTest {
 
     @Test
     public void processOccupancyNotification() {
-        GenericNotificationData genericNotificationData = new GenericNotificationData(null, null, null, null, null, null, null, "control_pri", null, null, null);
+        GenericNotificationData genericNotificationData = GenericNotificationData.builder()
+                .channel("control_pri")
+                .build();
         OccupancyNotification occupancyNotification = new OccupancyNotification(genericNotificationData);
 
         _notificationProcessor.process(occupancyNotification);

@@ -70,7 +70,7 @@ public class FeatureFlagChangeNotification extends IncomingNotification {
 
     @Override
     public void handler(NotificationProcessor notificationProcessor) {
-        notificationProcessor.processSplitUpdate(getChangeNumber());
+        notificationProcessor.processSplitUpdate(this);
     }
 
     @Override

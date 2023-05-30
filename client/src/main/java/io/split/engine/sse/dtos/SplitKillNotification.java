@@ -28,7 +28,7 @@ public class SplitKillNotification extends IncomingNotification {
 
     @Override
     public void handler(NotificationProcessor notificationProcessor) {
-        notificationProcessor.processSplitKill(getChangeNumber(), getSplitName(), getDefaultTreatment());
+        notificationProcessor.processSplitKill(this);
     }
 
     @Override

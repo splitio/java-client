@@ -162,17 +162,11 @@ public class PushStatusTrackerTest {
     }
 
     private GenericNotificationData buildGenericData(ControlType controlType, IncomingNotification.Type type, Integer publishers, String channel) {
-        return new GenericNotificationData(
-                null,
-                null,
-                null,
-                controlType,
-                publishers != null ? new OccupancyMetrics(publishers) : null,
-                null,
-                type,
-                channel == null ? "channel-test" : channel,
-                null,
-                null,
-                null);
+        return GenericNotificationData.builder()
+                .controlType(controlType)
+                .metrics(publishers != null ? new OccupancyMetrics(publishers) : null)
+                .type(type)
+                .channel(channel == null ? "channel-test" : channel)
+                .build();
     }
 }

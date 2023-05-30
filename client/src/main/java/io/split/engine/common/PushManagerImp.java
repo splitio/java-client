@@ -1,6 +1,7 @@
 package io.split.engine.common;
 
 import com.google.common.annotations.VisibleForTesting;
+import io.split.engine.experiments.SplitParser;
 import io.split.engine.sse.AuthApiClient;
 import io.split.engine.sse.AuthApiClientImp;
 import io.split.engine.sse.EventSourceClient;
@@ -11,10 +12,11 @@ import io.split.engine.sse.client.SSEClient;
 import io.split.engine.sse.dtos.AuthenticationResponse;
 import io.split.engine.sse.dtos.SegmentQueueDto;
 import io.split.engine.sse.workers.SegmentsWorkerImp;
-import io.split.engine.sse.workers.SplitsWorker;
-import io.split.engine.sse.workers.SplitsWorkerImp;
+import io.split.engine.sse.workers.FeatureFlagsWorker;
+import io.split.engine.sse.workers.FeatureFlagWorkerImp;
 import io.split.engine.sse.workers.Worker;
 
+import io.split.storages.SplitCacheProducer;
 import io.split.telemetry.domain.StreamingEvent;
 import io.split.telemetry.domain.enums.StreamEventsEnum;
 import io.split.telemetry.storage.TelemetryRuntimeProducer;
@@ -36,7 +38,7 @@ public class PushManagerImp implements PushManager {
 
     private final AuthApiClient _authApiClient;
     private final EventSourceClient _eventSourceClient;
-    private final SplitsWorker _splitsWorker;
+    private final FeatureFlagsWorker _featureFlagsWorker;
     private final Worker<SegmentQueueDto> _segmentWorker;
     private final PushStatusTracker _pushStatusTracker;
 
@@ -48,7 +50,7 @@ public class PushManagerImp implements PushManager {
     @VisibleForTesting
     /* package private */ PushManagerImp(AuthApiClient authApiClient,
                                          EventSourceClient eventSourceClient,
-                                         SplitsWorker splitsWorker,
+                                         FeatureFlagsWorker featureFlagsWorker,
                                          Worker<SegmentQueueDto> segmentWorker,
                                          PushStatusTracker pushStatusTracker,
                                          TelemetryRuntimeProducer telemetryRuntimeProducer,
@@ -56,7 +58,7 @@ public class PushManagerImp implements PushManager {
 
         _authApiClient = checkNotNull(authApiClient);
         _eventSourceClient = checkNotNull(eventSourceClient);
-        _splitsWorker = splitsWorker;
+        _featureFlagsWorker = featureFlagsWorker;
         _segmentWorker = segmentWorker;
         _pushStatusTracker = pushStatusTracker;
         _expirationTime = new AtomicLong();
@@ -70,13 +72,15 @@ public class PushManagerImp implements PushManager {
                                        SplitAPI splitAPI,
                                        LinkedBlockingQueue<PushManager.Status> statusMessages,
                                        TelemetryRuntimeProducer telemetryRuntimeProducer,
-                                       ThreadFactory threadFactory) {
-        SplitsWorker splitsWorker = new SplitsWorkerImp(synchronizer);
+                                       ThreadFactory threadFactory,
+                                       SplitParser splitParser,
+                                       SplitCacheProducer splitCacheProducer) {
+        FeatureFlagsWorker featureFlagsWorker = new FeatureFlagWorkerImp(synchronizer, splitParser, splitCacheProducer);
         Worker<SegmentQueueDto> segmentWorker = new SegmentsWorkerImp(synchronizer);
         PushStatusTracker pushStatusTracker = new PushStatusTrackerImp(statusMessages, telemetryRuntimeProducer);
         return new PushManagerImp(new AuthApiClientImp(authUrl, splitAPI.getHttpClient(), telemetryRuntimeProducer),
-                EventSourceClientImp.build(streamingUrl, splitsWorker, segmentWorker, pushStatusTracker, splitAPI.getSseHttpClient(), telemetryRuntimeProducer, threadFactory),
-                splitsWorker,
+                EventSourceClientImp.build(streamingUrl, featureFlagsWorker, segmentWorker, pushStatusTracker, splitAPI.getSseHttpClient(), telemetryRuntimeProducer, threadFactory),
+                featureFlagsWorker,
                 segmentWorker,
                 pushStatusTracker,
                 telemetryRuntimeProducer,
@@ -134,13 +138,13 @@ public class PushManagerImp implements PushManager {
 
     @Override
     public synchronized void startWorkers() {
-        _splitsWorker.start();
+        _featureFlagsWorker.start();
         _segmentWorker.start();
     }
 
     @Override
     public synchronized void stopWorkers() {
-        _splitsWorker.stop();
+        _featureFlagsWorker.stop();
         _segmentWorker.stop();
     }
 }
