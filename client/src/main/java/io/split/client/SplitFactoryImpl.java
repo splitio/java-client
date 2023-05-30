@@ -152,7 +152,6 @@ public class SplitFactoryImpl implements SplitFactory {
     private final URI _eventsRootTarget;
     private final UniqueKeysTracker _uniqueKeysTracker;
 
-
     //Constructor for standalone mode
     public SplitFactoryImpl(String apiToken, SplitClientConfig config) throws URISyntaxException {
         _userStorageWrapper = null;
@@ -188,13 +187,14 @@ public class SplitFactoryImpl implements SplitFactory {
         ImpressionsStorage impressionsStorage = new InMemoryImpressionsStorage(config.impressionsQueueSize());
         _splitCache = splitCache;
         _segmentCache = segmentCache;
-        _telemetrySynchronizer = new TelemetryInMemorySubmitter(_httpclient, URI.create(config.telemetryURL()), telemetryStorage, splitCache, segmentCache, telemetryStorage, _startTime);
+        _telemetrySynchronizer = new TelemetryInMemorySubmitter(_httpclient, URI.create(config.telemetryURL()), telemetryStorage, splitCache, _segmentCache, telemetryStorage, _startTime);
 
         // Segments
         _segmentSynchronizationTaskImp = buildSegments(config, segmentCache, splitCache);
 
+        SplitParser splitParser = new SplitParser();
         // SplitFetcher
-        _splitFetcher = buildSplitFetcher(splitCache, splitCache);
+        _splitFetcher = buildSplitFetcher(splitCache, splitCache, splitParser);
 
         // SplitSynchronizationTask
         _splitSynchronizationTask = new SplitSynchronizationTask(_splitFetcher,
@@ -240,8 +240,6 @@ public class SplitFactoryImpl implements SplitFactory {
                 _impressionsManager, _eventsTask, _telemetrySyncTask, _uniqueKeysTracker);
         SplitAPI splitAPI = SplitAPI.build(_httpclient, buildSSEdHttpClient(apiToken, config, _sdkMetadata));
 
-        SplitParser splitParser = new SplitParser();
-
         _syncManager = SyncManagerImp.build(splitTasks, _splitFetcher, splitCache, splitAPI,
                 segmentCache, _gates, _telemetryStorageProducer, _telemetrySynchronizer, config, splitParser);
         _syncManager.start();
@@ -256,7 +254,6 @@ public class SplitFactoryImpl implements SplitFactory {
             Runtime.getRuntime().addShutdownHook(shutdown);
         }
     }
-
 
     //Constructor for consumer mode
     protected SplitFactoryImpl(String apiToken, SplitClientConfig config, CustomStorageWrapper customStorageWrapper) throws URISyntaxException {
@@ -561,9 +558,8 @@ public class SplitFactoryImpl implements SplitFactory {
                 config.getThreadFactory());
     }
 
-    private SplitFetcher buildSplitFetcher(SplitCacheConsumer splitCacheConsumer, SplitCacheProducer splitCacheProducer) throws URISyntaxException {
+    private SplitFetcher buildSplitFetcher(SplitCacheConsumer splitCacheConsumer, SplitCacheProducer splitCacheProducer, SplitParser splitParser) throws URISyntaxException {
         SplitChangeFetcher splitChangeFetcher = HttpSplitChangeFetcher.create(_httpclient, _rootTarget, _telemetryStorageProducer);
-        SplitParser splitParser = new SplitParser();
 
         return new SplitFetcherImp(splitChangeFetcher, splitParser, splitCacheConsumer, splitCacheProducer, _telemetryStorageProducer);
     }
