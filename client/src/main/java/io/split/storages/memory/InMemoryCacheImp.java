@@ -144,8 +144,15 @@ public class InMemoryCacheImp implements SplitCache {
     }
 
     @Override
-    public void updateFeatureFlag(ParsedSplit parsedSplit) {
-        _concurrentMap.put(parsedSplit.feature(), parsedSplit);
+    public void update(List<ParsedSplit> toAdd, List<ParsedSplit> toRemove) {
+        if(toAdd != null) {
+            putMany(toAdd);
+        }
+        if(toRemove != null) {
+            for(ParsedSplit featureFlag : toRemove) {
+                remove(featureFlag.feature());
+            }
+        }
     }
 
     public Set<String> getSegments() {

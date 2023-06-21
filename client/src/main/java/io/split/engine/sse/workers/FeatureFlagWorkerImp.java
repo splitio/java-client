@@ -1,12 +1,15 @@
 package io.split.engine.sse.workers;
 
 import io.split.engine.common.Synchronizer;
+import io.split.engine.experiments.ParsedSplit;
 import io.split.engine.experiments.SplitParser;
 import io.split.engine.sse.dtos.FeatureFlagChangeNotification;
 import io.split.engine.sse.dtos.SplitKillNotification;
 import io.split.storages.SplitCacheProducer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.util.Collections;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
@@ -48,8 +51,13 @@ public class FeatureFlagWorkerImp extends Worker<FeatureFlagChangeNotification> 
         }
         try {
             if (featureFlagChangeNotification.getFeatureFlagDefinition() != null &&
-                    featureFlagChangeNotification.getPreviousChangeNumber() == _splitCacheProducer.getChangeNumber()){
-                _splitCacheProducer.updateFeatureFlag(_splitParser.parse(featureFlagChangeNotification.getFeatureFlagDefinition()));
+                    featureFlagChangeNotification.getPreviousChangeNumber() == _splitCacheProducer.getChangeNumber()) {
+                ParsedSplit parsedSplit = _splitParser.parse(featureFlagChangeNotification.getFeatureFlagDefinition());
+                if (parsedSplit == null) {
+                    _splitCacheProducer.remove(featureFlagChangeNotification.getFeatureFlagDefinition().name);
+                } else {
+                    _splitCacheProducer.update(Collections.singletonList(parsedSplit), null);
+                }
                 _splitCacheProducer.setChangeNumber(featureFlagChangeNotification.getChangeNumber());
                 return true;
             }
