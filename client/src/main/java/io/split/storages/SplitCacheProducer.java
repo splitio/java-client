@@ -12,5 +12,5 @@ public interface SplitCacheProducer extends  SplitCacheCommons{
     void putMany(List<ParsedSplit> splits);
     void increaseTrafficType(String trafficType);
     void decreaseTrafficType(String trafficType);
-    void update(List<ParsedSplit> toAdd, List<ParsedSplit> toRemove);
+    void update(List<ParsedSplit> toAdd, List<String> toRemove, long changeNumber);
 }

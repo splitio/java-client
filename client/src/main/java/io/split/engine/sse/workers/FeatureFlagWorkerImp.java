@@ -56,12 +56,11 @@ public class FeatureFlagWorkerImp extends Worker<FeatureFlagChangeNotification> 
                     featureFlagChangeNotification.getPreviousChangeNumber() == _splitCacheProducer.getChangeNumber()) {
                 Split featureFlag = featureFlagChangeNotification.getFeatureFlagDefinition();
                 if (featureFlag.status == Status.ARCHIVED) {
-                    _splitCacheProducer.remove(featureFlag.name);
+                    _splitCacheProducer.update(null, Collections.singletonList(featureFlag.name), featureFlagChangeNotification.getChangeNumber());
                 } else {
                     ParsedSplit parsedSplit = _splitParser.parse(featureFlagChangeNotification.getFeatureFlagDefinition());
-                    _splitCacheProducer.update(Collections.singletonList(parsedSplit), null);
+                    _splitCacheProducer.update(Collections.singletonList(parsedSplit), null, featureFlagChangeNotification.getChangeNumber());
                 }
-                _splitCacheProducer.setChangeNumber(featureFlagChangeNotification.getChangeNumber());
                 return true;
             }
         } catch (Exception e) {
