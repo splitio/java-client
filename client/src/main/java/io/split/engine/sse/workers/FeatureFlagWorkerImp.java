@@ -1,5 +1,7 @@
 package io.split.engine.sse.workers;
 
+import io.split.client.dtos.Split;
+import io.split.client.dtos.Status;
 import io.split.engine.common.Synchronizer;
 import io.split.engine.experiments.ParsedSplit;
 import io.split.engine.experiments.SplitParser;
@@ -52,10 +54,11 @@ public class FeatureFlagWorkerImp extends Worker<FeatureFlagChangeNotification> 
         try {
             if (featureFlagChangeNotification.getFeatureFlagDefinition() != null &&
                     featureFlagChangeNotification.getPreviousChangeNumber() == _splitCacheProducer.getChangeNumber()) {
-                ParsedSplit parsedSplit = _splitParser.parse(featureFlagChangeNotification.getFeatureFlagDefinition());
-                if (parsedSplit == null) {
-                    _splitCacheProducer.remove(featureFlagChangeNotification.getFeatureFlagDefinition().name);
+                Split featureFlag = featureFlagChangeNotification.getFeatureFlagDefinition();
+                if (featureFlag.status == Status.ARCHIVED) {
+                    _splitCacheProducer.remove(featureFlag.name);
                 } else {
+                    ParsedSplit parsedSplit = _splitParser.parse(featureFlagChangeNotification.getFeatureFlagDefinition());
                     _splitCacheProducer.update(Collections.singletonList(parsedSplit), null);
                 }
                 _splitCacheProducer.setChangeNumber(featureFlagChangeNotification.getChangeNumber());
