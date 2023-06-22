@@ -11,7 +11,10 @@ import io.split.storages.SplitCacheProducer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.sql.Array;
+import java.util.ArrayList;
 import java.util.Collections;
+import java.util.List;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
@@ -55,12 +58,15 @@ public class FeatureFlagWorkerImp extends Worker<FeatureFlagChangeNotification> 
             if (featureFlagChangeNotification.getFeatureFlagDefinition() != null &&
                     featureFlagChangeNotification.getPreviousChangeNumber() == _splitCacheProducer.getChangeNumber()) {
                 Split featureFlag = featureFlagChangeNotification.getFeatureFlagDefinition();
+                List<ParsedSplit> toAdd = new ArrayList<>();
+                List<String> toRemove = new ArrayList<>();
                 if (featureFlag.status == Status.ARCHIVED) {
-                    _splitCacheProducer.update(null, Collections.singletonList(featureFlag.name), featureFlagChangeNotification.getChangeNumber());
+                    toRemove.add(featureFlag.name);
                 } else {
                     ParsedSplit parsedSplit = _splitParser.parse(featureFlagChangeNotification.getFeatureFlagDefinition());
-                    _splitCacheProducer.update(Collections.singletonList(parsedSplit), null, featureFlagChangeNotification.getChangeNumber());
+                    toAdd.add(parsedSplit);
                 }
+                _splitCacheProducer.update(toAdd, toRemove, featureFlagChangeNotification.getChangeNumber());
                 return true;
             }
         } catch (Exception e) {
