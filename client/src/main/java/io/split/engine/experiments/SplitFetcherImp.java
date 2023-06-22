@@ -119,7 +119,8 @@ public class SplitFetcherImp implements SplitFetcher {
                 return segments;
             }
 
-            List<ParsedSplit> parsedSplits = new ArrayList<>();
+            List<ParsedSplit> toAdd = new ArrayList<>();
+            List<String> toRemove = new ArrayList<>();
             for (Split split : change.splits) {
                 if (Thread.currentThread().isInterrupted()) {
                     throw new InterruptedException();
@@ -127,38 +128,23 @@ public class SplitFetcherImp implements SplitFetcher {
 
                 if (split.status != Status.ACTIVE) {
                     // archive.
-                    _splitCacheProducer.remove(split.name);
+                    toRemove.add(split.name);
                     continue;
                 }
 
                 ParsedSplit parsedSplit = _parser.parse(split);
                 if (parsedSplit == null) {
                     _log.info(String.format("We could not parse the experiment definition for: %s so we are removing it completely to be careful", split.name));
-
-                    _splitCacheProducer.remove(split.name);
-                    _log.debug("Deleted feature: " + split.name);
-
+                    toRemove.add(split.name);
                     continue;
                 }
                 segments.addAll(parsedSplit.getSegmentsNames());
 
-                // If the split already exists, this is either an update, or the split has been
-                // deleted and recreated (possibly with a different traffic type).
-                // If it's an update, the traffic type should NOT be increased.
-                // If it's deleted & recreated, the old one should be decreased and the new one increased.
-                // To handle both cases, we simply delete the old one if the split is present.
-                // The new one is always increased.
-                ParsedSplit current = _splitCacheConsumer.get(split.name); // TODO (lecheverz): implement UPDATE method at Split Cache
-                if (current != null) {
-                    _splitCacheProducer.remove(split.name);
-                }
-
-                parsedSplits.add(parsedSplit);
+                toAdd.add(parsedSplit);
                 _log.debug("Updated feature: " + parsedSplit.feature());
             }
 
-            _splitCacheProducer.putMany(parsedSplits);
-            _splitCacheProducer.setChangeNumber(change.till);
+            _splitCacheProducer.update(toAdd, toRemove, change.till);
             _telemetryRuntimeProducer.recordSuccessfulSync(LastSynchronizationRecordsEnum.SPLITS, System.currentTimeMillis());
         }
         return segments;
