@@ -62,7 +62,9 @@ public class FeatureFlagWorkerImp extends Worker<FeatureFlagChangeNotification> 
                     toRemove.add(featureFlag.name);
                 } else {
                     ParsedSplit parsedSplit = _splitParser.parse(featureFlagChangeNotification.getFeatureFlagDefinition());
-                    toAdd.add(parsedSplit);
+                    if (parsedSplit != null) {
+                        toAdd.add(parsedSplit);
+                    }
                 }
                 _splitCacheProducer.update(toAdd, toRemove, featureFlagChangeNotification.getChangeNumber());
                 return true;
