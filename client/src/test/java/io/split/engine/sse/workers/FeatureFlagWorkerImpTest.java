@@ -3,26 +3,14 @@ package io.split.engine.sse.workers;
 import io.split.client.utils.Json;
 import io.split.engine.common.Synchronizer;
 import io.split.engine.common.SynchronizerImp;
-import io.split.engine.experiments.ParsedSplit;
 import io.split.engine.experiments.SplitParser;
 import io.split.engine.sse.dtos.FeatureFlagChangeNotification;
 import io.split.engine.sse.dtos.GenericNotificationData;
 import io.split.engine.sse.dtos.RawMessageNotification;
 import io.split.storages.SplitCacheProducer;
 import io.split.storages.memory.InMemoryCacheImp;
-import org.junit.Assert;
 import org.junit.Test;
 import org.mockito.Mockito;
-
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-
-import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.anyCollection;
-import static org.mockito.Matchers.anyObject;
-import static org.mockito.Matchers.anyString;
-import static org.mockito.Matchers.eq;
 
 public class FeatureFlagWorkerImpTest {
 
