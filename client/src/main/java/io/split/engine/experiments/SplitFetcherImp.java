@@ -3,7 +3,6 @@ package io.split.engine.experiments;
 import io.split.client.dtos.Split;
 import io.split.client.dtos.SplitChange;
 import io.split.client.dtos.Status;
-import io.split.storages.SplitCacheConsumer;
 import io.split.storages.SplitCacheProducer;
 import io.split.telemetry.domain.enums.LastSynchronizationRecordsEnum;
 import io.split.telemetry.storage.TelemetryRuntimeProducer;
@@ -29,7 +28,6 @@ public class SplitFetcherImp implements SplitFetcher {
 
     private final SplitParser _parser;
     private final SplitChangeFetcher _splitChangeFetcher;
-    private final SplitCacheConsumer _splitCacheConsumer;
     private final SplitCacheProducer _splitCacheProducer;
     private final Object _lock = new Object();
     private final TelemetryRuntimeProducer _telemetryRuntimeProducer;
@@ -44,10 +42,9 @@ public class SplitFetcherImp implements SplitFetcher {
      * an ARCHIVED split is received, we know if we need to remove a traffic type from the multiset.
      */
 
-    public SplitFetcherImp(SplitChangeFetcher splitChangeFetcher, SplitParser parser, SplitCacheConsumer splitCacheConsumer, SplitCacheProducer splitCacheProducer, TelemetryRuntimeProducer telemetryRuntimeProducer) {
+    public SplitFetcherImp(SplitChangeFetcher splitChangeFetcher, SplitParser parser, SplitCacheProducer splitCacheProducer, TelemetryRuntimeProducer telemetryRuntimeProducer) {
         _splitChangeFetcher = checkNotNull(splitChangeFetcher);
         _parser = checkNotNull(parser);
-        _splitCacheConsumer = checkNotNull(splitCacheConsumer);
         _splitCacheProducer = checkNotNull(splitCacheProducer);
         _telemetryRuntimeProducer = checkNotNull(telemetryRuntimeProducer);
     }
