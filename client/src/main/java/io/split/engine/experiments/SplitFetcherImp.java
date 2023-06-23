@@ -1,8 +1,8 @@
 package io.split.engine.experiments;
 
-import io.split.client.dtos.Split;
 import io.split.client.dtos.SplitChange;
-import io.split.client.dtos.Status;
+import io.split.client.utils.FeatureFlagProcessor;
+import io.split.client.utils.FeatureFlagsToUpdate;
 import io.split.storages.SplitCacheProducer;
 import io.split.telemetry.domain.enums.LastSynchronizationRecordsEnum;
 import io.split.telemetry.storage.TelemetryRuntimeProducer;
@@ -10,12 +10,11 @@ import io.split.engine.common.FetchOptions;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.ArrayList;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 
 import static com.google.common.base.Preconditions.checkNotNull;
+import static io.split.client.utils.FeatureFlagProcessor.*;
 
 /**
  * An ExperimentFetcher that refreshes experiment definitions periodically.
@@ -116,32 +115,9 @@ public class SplitFetcherImp implements SplitFetcher {
                 return segments;
             }
 
-            List<ParsedSplit> toAdd = new ArrayList<>();
-            List<String> toRemove = new ArrayList<>();
-            for (Split split : change.splits) {
-                if (Thread.currentThread().isInterrupted()) {
-                    throw new InterruptedException();
-                }
-
-                if (split.status != Status.ACTIVE) {
-                    // archive.
-                    toRemove.add(split.name);
-                    continue;
-                }
-
-                ParsedSplit parsedSplit = _parser.parse(split);
-                if (parsedSplit == null) {
-                    _log.info(String.format("We could not parse the experiment definition for: %s so we are removing it completely to be careful", split.name));
-                    toRemove.add(split.name);
-                    continue;
-                }
-                segments.addAll(parsedSplit.getSegmentsNames());
-
-                toAdd.add(parsedSplit);
-                _log.debug("Updated feature: " + parsedSplit.feature());
-            }
-
-            _splitCacheProducer.update(toAdd, toRemove, change.till);
+            FeatureFlagsToUpdate featureFlagsToUpdate = processFeatureFlagChanges(_parser, change.splits);
+            segments = featureFlagsToUpdate.getSegments();
+            _splitCacheProducer.update(featureFlagsToUpdate.getToAdd(), featureFlagsToUpdate.getToRemove(), change.till);
             _telemetryRuntimeProducer.recordSuccessfulSync(LastSynchronizationRecordsEnum.SPLITS, System.currentTimeMillis());
         }
         return segments;
