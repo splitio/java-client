@@ -1,7 +1,6 @@
 package io.split.engine.experiments;
 
 import io.split.client.dtos.SplitChange;
-import io.split.client.utils.FeatureFlagProcessor;
 import io.split.client.utils.FeatureFlagsToUpdate;
 import io.split.storages.SplitCacheProducer;
 import io.split.telemetry.domain.enums.LastSynchronizationRecordsEnum;
@@ -14,7 +13,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 import static com.google.common.base.Preconditions.checkNotNull;
-import static io.split.client.utils.FeatureFlagProcessor.*;
+import static io.split.client.utils.FeatureFlagProcessor.processFeatureFlagChanges;
 
 /**
  * An ExperimentFetcher that refreshes experiment definitions periodically.

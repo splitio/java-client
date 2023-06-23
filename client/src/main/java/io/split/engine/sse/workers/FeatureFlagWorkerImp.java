@@ -13,7 +13,7 @@ import org.slf4j.LoggerFactory;
 import java.util.Collections;
 
 import static com.google.common.base.Preconditions.checkNotNull;
-import static io.split.client.utils.FeatureFlagProcessor.*;
+import static io.split.client.utils.FeatureFlagProcessor.processFeatureFlagChanges;
 
 public class FeatureFlagWorkerImp extends Worker<FeatureFlagChangeNotification> implements FeatureFlagsWorker {
     private static final Logger _log = LoggerFactory.getLogger(FeatureFlagWorkerImp.class);

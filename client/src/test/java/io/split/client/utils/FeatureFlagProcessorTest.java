@@ -8,7 +8,7 @@ import org.junit.Test;
 import java.util.ArrayList;
 import java.util.List;
 
-import static io.split.client.utils.FeatureFlagProcessor.*;
+import static io.split.client.utils.FeatureFlagProcessor.processFeatureFlagChanges;
 
 public class FeatureFlagProcessorTest {
 
