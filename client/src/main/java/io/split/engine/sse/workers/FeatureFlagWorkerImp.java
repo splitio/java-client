@@ -1,5 +1,7 @@
 package io.split.engine.sse.workers;
 
+import io.split.client.dtos.Split;
+import io.split.client.utils.FeatureFlagsToUpdate;
 import io.split.engine.common.Synchronizer;
 import io.split.engine.experiments.SplitParser;
 import io.split.engine.sse.dtos.FeatureFlagChangeNotification;
@@ -8,7 +10,10 @@ import io.split.storages.SplitCacheProducer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.Collections;
+
 import static com.google.common.base.Preconditions.checkNotNull;
+import static io.split.client.utils.FeatureFlagProcessor.processFeatureFlagChanges;
 
 public class FeatureFlagWorkerImp extends Worker<FeatureFlagChangeNotification> implements FeatureFlagsWorker {
     private static final Logger _log = LoggerFactory.getLogger(FeatureFlagWorkerImp.class);
@@ -48,9 +53,10 @@ public class FeatureFlagWorkerImp extends Worker<FeatureFlagChangeNotification> 
         }
         try {
             if (featureFlagChangeNotification.getFeatureFlagDefinition() != null &&
-                    featureFlagChangeNotification.getPreviousChangeNumber() == _splitCacheProducer.getChangeNumber()){
-                _splitCacheProducer.updateFeatureFlag(_splitParser.parse(featureFlagChangeNotification.getFeatureFlagDefinition()));
-                _splitCacheProducer.setChangeNumber(featureFlagChangeNotification.getChangeNumber());
+                    featureFlagChangeNotification.getPreviousChangeNumber() == _splitCacheProducer.getChangeNumber()) {
+                Split featureFlag = featureFlagChangeNotification.getFeatureFlagDefinition();
+                FeatureFlagsToUpdate featureFlagsToUpdate = processFeatureFlagChanges(_splitParser, Collections.singletonList(featureFlag));
+                _splitCacheProducer.update(featureFlagsToUpdate.getToAdd(), featureFlagsToUpdate.getToRemove(), featureFlagChangeNotification.getChangeNumber());
                 return true;
             }
         } catch (Exception e) {
