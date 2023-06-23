@@ -1,9 +1,8 @@
 package io.split.engine.sse.workers;
 
 import io.split.client.dtos.Split;
-import io.split.client.dtos.Status;
+import io.split.client.utils.FeatureFlagsToUpdate;
 import io.split.engine.common.Synchronizer;
-import io.split.engine.experiments.ParsedSplit;
 import io.split.engine.experiments.SplitParser;
 import io.split.engine.sse.dtos.FeatureFlagChangeNotification;
 import io.split.engine.sse.dtos.SplitKillNotification;
@@ -11,10 +10,10 @@ import io.split.storages.SplitCacheProducer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.Collections;
 
 import static com.google.common.base.Preconditions.checkNotNull;
+import static io.split.client.utils.FeatureFlagProcessor.processFeatureFlagChanges;
 
 public class FeatureFlagWorkerImp extends Worker<FeatureFlagChangeNotification> implements FeatureFlagsWorker {
     private static final Logger _log = LoggerFactory.getLogger(FeatureFlagWorkerImp.class);
@@ -56,17 +55,8 @@ public class FeatureFlagWorkerImp extends Worker<FeatureFlagChangeNotification> 
             if (featureFlagChangeNotification.getFeatureFlagDefinition() != null &&
                     featureFlagChangeNotification.getPreviousChangeNumber() == _splitCacheProducer.getChangeNumber()) {
                 Split featureFlag = featureFlagChangeNotification.getFeatureFlagDefinition();
-                List<ParsedSplit> toAdd = new ArrayList<>();
-                List<String> toRemove = new ArrayList<>();
-                if (featureFlag.status == Status.ARCHIVED) {
-                    toRemove.add(featureFlag.name);
-                } else {
-                    ParsedSplit parsedSplit = _splitParser.parse(featureFlagChangeNotification.getFeatureFlagDefinition());
-                    if (parsedSplit != null) {
-                        toAdd.add(parsedSplit);
-                    }
-                }
-                _splitCacheProducer.update(toAdd, toRemove, featureFlagChangeNotification.getChangeNumber());
+                FeatureFlagsToUpdate featureFlagsToUpdate = processFeatureFlagChanges(_splitParser, Collections.singletonList(featureFlag));
+                _splitCacheProducer.update(featureFlagsToUpdate.getToAdd(), featureFlagsToUpdate.getToRemove(), featureFlagChangeNotification.getChangeNumber());
                 return true;
             }
         } catch (Exception e) {

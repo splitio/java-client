@@ -104,7 +104,6 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Random;
 import java.util.concurrent.ExecutorService;
 import java.util.stream.Collectors;
 
@@ -114,8 +113,6 @@ public class SplitFactoryImpl implements SplitFactory {
     private static final Logger _log = LoggerFactory.getLogger(SplitFactory.class);
     private final static long SSE_CONNECT_TIMEOUT = 30000;
     private final static long SSE_SOCKET_TIMEOUT = 70000;
-
-    private static Random RANDOM = new Random();
 
     private final SDKReadinessGates _gates;
     private final ImpressionsManager _impressionsManager;
@@ -194,7 +191,7 @@ public class SplitFactoryImpl implements SplitFactory {
 
         SplitParser splitParser = new SplitParser();
         // SplitFetcher
-        _splitFetcher = buildSplitFetcher(splitCache, splitCache, splitParser);
+        _splitFetcher = buildSplitFetcher(splitCache, splitParser);
 
         // SplitSynchronizationTask
         _splitSynchronizationTask = new SplitSynchronizationTask(_splitFetcher,
@@ -377,7 +374,7 @@ public class SplitFactoryImpl implements SplitFactory {
 
         SplitParser splitParser = new SplitParser();
 
-        _splitFetcher = new SplitFetcherImp(splitChangeFetcher, splitParser, _splitCache, splitCache, _telemetryStorageProducer);
+        _splitFetcher = new SplitFetcherImp(splitChangeFetcher, splitParser, splitCache, _telemetryStorageProducer);
 
         // SplitSynchronizationTask
         _splitSynchronizationTask = new SplitSynchronizationTask(_splitFetcher, splitCache, config.featuresRefreshRate(), config.getThreadFactory());
@@ -558,10 +555,10 @@ public class SplitFactoryImpl implements SplitFactory {
                 config.getThreadFactory());
     }
 
-    private SplitFetcher buildSplitFetcher(SplitCacheConsumer splitCacheConsumer, SplitCacheProducer splitCacheProducer, SplitParser splitParser) throws URISyntaxException {
+    private SplitFetcher buildSplitFetcher(SplitCacheProducer splitCacheProducer, SplitParser splitParser) throws URISyntaxException {
         SplitChangeFetcher splitChangeFetcher = HttpSplitChangeFetcher.create(_httpclient, _rootTarget, _telemetryStorageProducer);
 
-        return new SplitFetcherImp(splitChangeFetcher, splitParser, splitCacheConsumer, splitCacheProducer, _telemetryStorageProducer);
+        return new SplitFetcherImp(splitChangeFetcher, splitParser, splitCacheProducer, _telemetryStorageProducer);
     }
 
     private ImpressionsManagerImpl buildImpressionsManager(SplitClientConfig config, ImpressionsStorageConsumer impressionsStorageConsumer, ImpressionsStorageProducer impressionsStorageProducer) throws URISyntaxException {
