@@ -11,4 +11,5 @@ public interface Synchronizer {
     void refreshSegment(String segmentName, Long targetChangeNumber);
     void startPeriodicDataRecording();
     void stopPeriodicDataRecording();
+    void forceRefreshSegment(String segmentName);
 }

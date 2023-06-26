@@ -1,8 +1,24 @@
 package io.split.telemetry.storage;
 
 import com.google.common.collect.Maps;
-import io.split.telemetry.domain.*;
-import io.split.telemetry.domain.enums.*;
+
+import io.split.telemetry.domain.HTTPErrors;
+import io.split.telemetry.domain.HTTPLatencies;
+import io.split.telemetry.domain.LastSynchronization;
+import io.split.telemetry.domain.MethodExceptions;
+import io.split.telemetry.domain.MethodLatencies;
+import io.split.telemetry.domain.StreamingEvent;
+import io.split.telemetry.domain.UpdatesFromSSE;
+import io.split.telemetry.domain.enums.EventsDataRecordsEnum;
+import io.split.telemetry.domain.enums.FactoryCountersEnum;
+import io.split.telemetry.domain.enums.HTTPLatenciesEnum;
+import io.split.telemetry.domain.enums.ImpressionsDataTypeEnum;
+import io.split.telemetry.domain.enums.LastSynchronizationRecordsEnum;
+import io.split.telemetry.domain.enums.MethodEnum;
+import io.split.telemetry.domain.enums.PushCountersEnum;
+import io.split.telemetry.domain.enums.ResourceEnum;
+import io.split.telemetry.domain.enums.SdkRecordsEnum;
+import io.split.telemetry.domain.enums.UpdatesFromSSEEnum;
 import io.split.telemetry.utils.AtomicLongArray;
 import io.split.telemetry.utils.BucketCalculator;
 
@@ -13,7 +29,7 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.atomic.AtomicLong;
 
-public class InMemoryTelemetryStorage implements  TelemetryStorage{
+public class InMemoryTelemetryStorage implements TelemetryStorage{
     public static final int MAX_LATENCY_BUCKET_COUNT = 23;
     public static final int MAX_STREAMING_EVENTS = 20;
     public static final int MAX_TAGS = 10;
@@ -32,6 +48,7 @@ public class InMemoryTelemetryStorage implements  TelemetryStorage{
     private final ConcurrentMap<EventsDataRecordsEnum, AtomicLong> _eventsDataRecords = Maps.newConcurrentMap();
     private final ConcurrentMap<LastSynchronizationRecordsEnum, AtomicLong> _lastSynchronizationRecords = Maps.newConcurrentMap();
     private final ConcurrentMap<SdkRecordsEnum, AtomicLong> _sdkRecords = Maps.newConcurrentMap();
+    private final ConcurrentMap<UpdatesFromSSEEnum, AtomicLong> _updatesFromSSERecords = Maps.newConcurrentMap();
 
     //HTTPErrors
     private final ConcurrentMap<ResourceEnum, ConcurrentMap<Long, Long>> _httpErrors = Maps.newConcurrentMap();
@@ -55,6 +72,7 @@ public class InMemoryTelemetryStorage implements  TelemetryStorage{
         initSdkRecords();
         initLastSynchronizationRecords();
         initEventDataRecords();
+        initUpdatesFromSEE();
     }
 
     @Override
@@ -210,6 +228,14 @@ public class InMemoryTelemetryStorage implements  TelemetryStorage{
     }
 
     @Override
+    public UpdatesFromSSE popUpdatesFromSSE() {
+        UpdatesFromSSE updatesFromSSE = new UpdatesFromSSE();
+        updatesFromSSE.setSplits(_updatesFromSSERecords.get(UpdatesFromSSEEnum.SPLITS).get());
+        _updatesFromSSERecords.replace(UpdatesFromSSEEnum.SPLITS, new AtomicLong());
+        return updatesFromSSE;
+    }
+
+    @Override
     public void addTag(String tag) {
         synchronized (_tagsLock) {
             if(_tags.size() < MAX_TAGS) {
@@ -269,6 +295,11 @@ public class InMemoryTelemetryStorage implements  TelemetryStorage{
     @Override
     public void recordSessionLength(long sessionLength) {
         _sdkRecords.replace(SdkRecordsEnum.SESSION, new AtomicLong(sessionLength));
+    }
+
+    @Override
+    public void recordUpdatesFromSSE(UpdatesFromSSEEnum updatesFromSSEEnum) {
+        _updatesFromSSERecords.get(UpdatesFromSSEEnum.SPLITS).incrementAndGet();
     }
 
     private void initMethodLatencies() {
@@ -340,5 +371,9 @@ public class InMemoryTelemetryStorage implements  TelemetryStorage{
     private void initEventDataRecords() {
         _eventsDataRecords.put(EventsDataRecordsEnum.EVENTS_DROPPED, new AtomicLong());
         _eventsDataRecords.put(EventsDataRecordsEnum.EVENTS_QUEUED, new AtomicLong());
+    }
+
+    private void initUpdatesFromSEE() {
+        _updatesFromSSERecords.put(UpdatesFromSSEEnum.SPLITS, new AtomicLong());
     }
 }
