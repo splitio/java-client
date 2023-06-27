@@ -230,8 +230,7 @@ public class InMemoryTelemetryStorage implements TelemetryStorage{
     @Override
     public UpdatesFromSSE popUpdatesFromSSE() {
         UpdatesFromSSE updatesFromSSE = new UpdatesFromSSE();
-        updatesFromSSE.setSplits(_updatesFromSSERecords.get(UpdatesFromSSEEnum.SPLITS).get());
-        _updatesFromSSERecords.replace(UpdatesFromSSEEnum.SPLITS, new AtomicLong());
+        updatesFromSSE.setSplits(_updatesFromSSERecords.get(UpdatesFromSSEEnum.SPLITS).getAndSet(0L));
         return updatesFromSSE;
     }
 

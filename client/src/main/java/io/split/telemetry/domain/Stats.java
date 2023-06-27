@@ -23,7 +23,7 @@ public class Stats {
     /* package private */ static final String FIELD_EVENTS_DROPPED = "eD";
     /* package private */ static final String FIELD_STREAMING_EVENT = "sE";
     /* package private */ static final String FIELD_TAGS = "t";
-    /* package private */ static final String UPDATES_FROM_SSE = "ufs";
+    /* package private */ static final String FIELD_UPDATES_FROM_SSE = "ufs";
 
     @SerializedName(FIELD_LAST_SYNCHRONIZATION)
     private LastSynchronization _lastSynchronization;
@@ -61,7 +61,7 @@ public class Stats {
     private List<StreamingEvent> _streamingEvents;
     @SerializedName(FIELD_TAGS)
     private List<String> _tags;
-    @SerializedName(UPDATES_FROM_SSE)
+    @SerializedName(FIELD_UPDATES_FROM_SSE)
     private UpdatesFromSSE _updatesFromSSE;
 
     public LastSynchronization get_lastSynchronization() {
