@@ -81,4 +81,9 @@ public class ConsumerSynchronizer implements Synchronizer{
         _telemetrySyncTask.stopScheduledTask();
         _log.info("Successful shutdown of telemetry sync task");
     }
+
+    @Override
+    public void forceRefreshSegment(String segmentName) {
+        //No-Op
+    }
 }

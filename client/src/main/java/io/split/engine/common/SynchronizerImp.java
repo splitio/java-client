@@ -304,7 +304,8 @@ public class SynchronizerImp implements Synchronizer {
         _log.info("Successful shutdown of telemetry sync task");
     }
 
-    private void forceRefreshSegment(String segmentName){
+    @Override
+    public void forceRefreshSegment(String segmentName){
         SegmentFetcher segmentFetcher = _segmentSynchronizationTaskImp.getFetcher(segmentName);
         segmentFetcher.fetch(new FetchOptions.Builder().build());
     }

@@ -1,13 +1,13 @@
 package io.split.engine.sse.workers;
 
-import io.split.client.utils.Json;
 import io.split.engine.common.Synchronizer;
 import io.split.engine.experiments.SplitParser;
 import io.split.engine.sse.dtos.FeatureFlagChangeNotification;
 import io.split.engine.sse.dtos.GenericNotificationData;
-import io.split.engine.sse.dtos.RawMessageNotification;
 import io.split.engine.sse.dtos.SplitKillNotification;
 import io.split.storages.SplitCacheProducer;
+import io.split.telemetry.storage.InMemoryTelemetryStorage;
+import io.split.telemetry.storage.TelemetryRuntimeProducer;
 import org.junit.Test;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mockito;
@@ -24,8 +24,9 @@ public class SplitsWorkerTest {
         Synchronizer splitFetcherMock = Mockito.mock(Synchronizer.class);
         SplitParser splitParser = new SplitParser();
         SplitCacheProducer splitCacheProducer = Mockito.mock(SplitCacheProducer.class);
+        TelemetryRuntimeProducer telemetryRuntimeProducer = Mockito.mock(InMemoryTelemetryStorage.class);
 
-        FeatureFlagsWorker featureFlagsWorker = new FeatureFlagWorkerImp(splitFetcherMock, splitParser, splitCacheProducer);
+        FeatureFlagsWorker featureFlagsWorker = new FeatureFlagWorkerImp(splitFetcherMock, splitParser, splitCacheProducer, telemetryRuntimeProducer);
         featureFlagsWorker.start();
 
         Thread.sleep(500);
@@ -38,8 +39,9 @@ public class SplitsWorkerTest {
         Synchronizer syncMock = Mockito.mock(Synchronizer.class);
         SplitParser splitParser = new SplitParser();
         SplitCacheProducer splitCacheProducer = Mockito.mock(SplitCacheProducer.class);
+        TelemetryRuntimeProducer telemetryRuntimeProducer = Mockito.mock(InMemoryTelemetryStorage.class);
 
-        FeatureFlagsWorker featureFlagsWorker = new FeatureFlagWorkerImp(syncMock, splitParser, splitCacheProducer);
+        FeatureFlagsWorker featureFlagsWorker = new FeatureFlagWorkerImp(syncMock, splitParser, splitCacheProducer, telemetryRuntimeProducer);
         featureFlagsWorker.start();
 
         ArgumentCaptor<Long> cnCaptor = ArgumentCaptor.forClass(Long.class);
@@ -73,7 +75,8 @@ public class SplitsWorkerTest {
         Synchronizer syncMock = Mockito.mock(Synchronizer.class);
         SplitParser splitParser = new SplitParser();
         SplitCacheProducer splitCacheProducer = Mockito.mock(SplitCacheProducer.class);
-        FeatureFlagsWorker featureFlagsWorker = new FeatureFlagWorkerImp(syncMock, splitParser, splitCacheProducer) {
+        TelemetryRuntimeProducer telemetryRuntimeProducer = Mockito.mock(InMemoryTelemetryStorage.class);
+        FeatureFlagsWorker featureFlagsWorker = new FeatureFlagWorkerImp(syncMock, splitParser, splitCacheProducer, telemetryRuntimeProducer) {
         };
         featureFlagsWorker.start();
         SplitKillNotification splitKillNotification = new SplitKillNotification(GenericNotificationData.builder()
@@ -92,7 +95,8 @@ public class SplitsWorkerTest {
         Synchronizer syncMock = Mockito.mock(Synchronizer.class);
         SplitParser splitParser = new SplitParser();
         SplitCacheProducer splitCacheProducer = Mockito.mock(SplitCacheProducer.class);
-        FeatureFlagsWorker featureFlagsWorker = new FeatureFlagWorkerImp(syncMock, splitParser, splitCacheProducer);
+        TelemetryRuntimeProducer telemetryRuntimeProducer = Mockito.mock(InMemoryTelemetryStorage.class);
+        FeatureFlagsWorker featureFlagsWorker = new FeatureFlagWorkerImp(syncMock, splitParser, splitCacheProducer, telemetryRuntimeProducer);
         featureFlagsWorker.start();
         featureFlagsWorker.addToQueue(new FeatureFlagChangeNotification(GenericNotificationData.builder()
                 .changeNumber(1585956698457L)

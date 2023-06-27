@@ -86,4 +86,9 @@ public class LocalhostSynchronizer implements Synchronizer{
     public void stopPeriodicDataRecording() {
         //No-Op
     }
+
+    @Override
+    public void forceRefreshSegment(String segmentName) {
+        //No-Op
+    }
 }
