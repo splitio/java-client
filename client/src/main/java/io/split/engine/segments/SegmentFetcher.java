@@ -9,7 +9,7 @@ public interface SegmentFetcher {
     /**
      * fetch
      */
-    void fetch(FetchOptions opts);
+    boolean fetch(FetchOptions opts);
 
     boolean runWhitCacheHeader();
 }
