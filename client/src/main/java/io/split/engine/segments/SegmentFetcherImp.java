@@ -1,6 +1,5 @@
 package io.split.engine.segments;
 
-import com.google.common.annotations.VisibleForTesting;
 import io.split.client.dtos.SegmentChange;
 import io.split.storages.SegmentCacheProducer;
 import io.split.telemetry.domain.enums.LastSynchronizationRecordsEnum;
@@ -35,14 +34,27 @@ public class SegmentFetcherImp implements SegmentFetcher {
     }
 
     @Override
-    public void fetch(FetchOptions opts){
+    public boolean fetch(FetchOptions opts){
         try {
-            fetchUntil(opts);
+            final long INITIAL_CN = _segmentCacheProducer.getChangeNumber(_segmentName);
+            while (true) {
+                long start = _segmentCacheProducer.getChangeNumber(_segmentName);
+                runWithoutExceptionHandling(opts);
+                if (INITIAL_CN == start) {
+                    opts = new FetchOptions.Builder(opts).targetChangeNumber(FetchOptions.DEFAULT_TARGET_CHANGENUMBER).build();
+                }
+                long end = _segmentCacheProducer.getChangeNumber(_segmentName);
+                if (start >= end) {
+                    break;
+                }
+            }
+            return true;
         } catch (Exception e){
             _log.error("RefreshableSegmentFetcher failed: " + e.getMessage());
             if (_log.isDebugEnabled()) {
                 _log.debug("Reason:", e);
             }
+            return false;
         }
     }
 
@@ -109,44 +121,8 @@ public class SegmentFetcherImp implements SegmentFetcher {
         return bldr.toString();
     }
 
-    @VisibleForTesting
-    void fetchUntil(FetchOptions opts){
-        final long INITIAL_CN = _segmentCacheProducer.getChangeNumber(_segmentName);
-        while (true) {
-            long start = _segmentCacheProducer.getChangeNumber(_segmentName);
-            runWithoutExceptionHandling(opts);
-            if (INITIAL_CN == start) {
-                opts = new FetchOptions.Builder(opts).targetChangeNumber(FetchOptions.DEFAULT_TARGET_CHANGENUMBER).build();
-            }
-            long end = _segmentCacheProducer.getChangeNumber(_segmentName);
-            if (start >= end) {
-                break;
-            }
-        }
-    }
-
     @Override
     public boolean runWhitCacheHeader(){
-       return this.fetchAndUpdate(new FetchOptions.Builder().cacheControlHeaders(true).build());
-    }
-
-    /**
-     * Calls callLoopRun and after fetchs segment.
-     * @param opts contains all soft of options used when issuing the fetch request
-     */
-    @VisibleForTesting
-    boolean fetchAndUpdate(FetchOptions opts) {
-        try {
-            // Do this again in case the previous call errored out.
-            fetchUntil(opts);
-            return true;
-
-        }  catch (Exception e){
-            _log.error("RefreshableSegmentFetcher failed: " + e.getMessage());
-            if (_log.isDebugEnabled()) {
-                _log.debug("Reason:", e);
-            }
-            return false;
-        }
+       return this.fetch(new FetchOptions.Builder().cacheControlHeaders(true).build());
     }
 }

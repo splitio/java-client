@@ -1,6 +1,5 @@
 package io.split.engine.segments;
 
-import com.google.common.collect.Sets;
 import io.split.storages.SegmentCache;
 import io.split.storages.SegmentCacheProducer;
 import io.split.storages.memory.SegmentCacheInMemoryImpl;
@@ -18,7 +17,6 @@ import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Set;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
@@ -45,7 +43,6 @@ public class SegmentFetcherImpTest {
     @Test
     public void works_when_we_start_with_state() throws InterruptedException {
         works(20L);
-
     }
 
     @Test
@@ -76,11 +73,8 @@ public class SegmentFetcherImpTest {
             Thread.currentThread().interrupt();
         }
 
-        Set<String> expected = Sets.newHashSet("" + (startingChangeNumber + 1));
-
         assertNotNull(segmentCache.getChangeNumber(SEGMENT_NAME));
         assertEquals(10L, segmentCache.getChangeNumber(SEGMENT_NAME));
-
     }
 
     private void works(long startingChangeNumber) throws InterruptedException {
@@ -114,7 +108,6 @@ public class SegmentFetcherImpTest {
             Thread.currentThread().interrupt();
         }
         Mockito.verify(segmentChangeFetcher, Mockito.times(2)).fetch(Mockito.anyString(), Mockito.anyLong(), Mockito.anyObject());
-
     }
 
 
@@ -150,7 +143,7 @@ public class SegmentFetcherImpTest {
         response2.added = new ArrayList<>();
         response2.removed = new ArrayList<>();
         response2.since = 1;
-        response1.till = 1;
+        response2.till = 1;
 
         ArgumentCaptor<FetchOptions> optionsCaptor = ArgumentCaptor.forClass(FetchOptions.class);
         ArgumentCaptor<Long> cnCaptor = ArgumentCaptor.forClass(Long.class);
