@@ -42,7 +42,8 @@ public class HttpImpressionsSender implements ImpressionsSender {
     private final ImpressionsManager.Mode _mode;
     private final TelemetryRuntimeProducer _telemetryRuntimeProducer;
 
-    public static HttpImpressionsSender create(CloseableHttpClient client, URI eventsRootEndpoint, ImpressionsManager.Mode mode, TelemetryRuntimeProducer telemetryRuntimeProducer) throws URISyntaxException {
+    public static HttpImpressionsSender create(CloseableHttpClient client, URI eventsRootEndpoint, ImpressionsManager.Mode mode,
+                                               TelemetryRuntimeProducer telemetryRuntimeProducer) throws URISyntaxException {
         return new HttpImpressionsSender(client,
                 Utils.appendPath(eventsRootEndpoint, BULK_ENDPOINT_PATH),
                 Utils.appendPath(eventsRootEndpoint, COUNT_ENDPOINT_PATH),
@@ -50,7 +51,8 @@ public class HttpImpressionsSender implements ImpressionsSender {
                 telemetryRuntimeProducer);
     }
 
-    private HttpImpressionsSender(CloseableHttpClient client, URI impressionBulkTarget, URI impressionCountTarget, ImpressionsManager.Mode mode, TelemetryRuntimeProducer telemetryRuntimeProducer) {
+    private HttpImpressionsSender(CloseableHttpClient client, URI impressionBulkTarget, URI impressionCountTarget, ImpressionsManager.Mode mode,
+                                  TelemetryRuntimeProducer telemetryRuntimeProducer) {
         _client = client;
         _mode = mode;
         _impressionBulkTarget = impressionBulkTarget;

@@ -50,7 +50,8 @@ public class ImpressionsManagerImpl implements ImpressionsManager, Closeable {
                                                   ProcessImpressionStrategy processImpressionStrategy,
                                                   ImpressionCounter counter,
                                                   ImpressionListener listener) throws URISyntaxException {
-        return new ImpressionsManagerImpl(config, impressionsSender, telemetryRuntimeProducer, impressionsStorageConsumer, impressionsStorageProducer, processImpressionStrategy, counter, listener);
+        return new ImpressionsManagerImpl(config, impressionsSender, telemetryRuntimeProducer, impressionsStorageConsumer,
+                impressionsStorageProducer, processImpressionStrategy, counter, listener);
     }
 
     public static ImpressionsManagerImpl instanceForTest(SplitClientConfig config,
@@ -61,7 +62,8 @@ public class ImpressionsManagerImpl implements ImpressionsManager, Closeable {
                                                          ProcessImpressionStrategy processImpressionStrategy,
                                                          ImpressionCounter counter,
                                                          ImpressionListener listener) throws URISyntaxException {
-        return new ImpressionsManagerImpl(config, impressionsSender, telemetryRuntimeProducer, impressionsStorageConsumer, impressionsStorageProducer, processImpressionStrategy, counter, listener);
+        return new ImpressionsManagerImpl(config, impressionsSender, telemetryRuntimeProducer, impressionsStorageConsumer,
+                impressionsStorageProducer, processImpressionStrategy, counter, listener);
     }
 
     private ImpressionsManagerImpl(SplitClientConfig config,
@@ -93,14 +95,16 @@ public class ImpressionsManagerImpl implements ImpressionsManager, Closeable {
     public void start(){
         switch (_impressionsMode){
             case OPTIMIZED:
-                _scheduler.scheduleAtFixedRate(this::sendImpressionCounters, COUNT_INITIAL_DELAY_SECONDS, COUNT_REFRESH_RATE_SECONDS, TimeUnit.SECONDS);
+                _scheduler.scheduleAtFixedRate(this::sendImpressionCounters, COUNT_INITIAL_DELAY_SECONDS, COUNT_REFRESH_RATE_SECONDS,
+                        TimeUnit.SECONDS);
                 _scheduler.scheduleAtFixedRate(this::sendImpressions, BULK_INITIAL_DELAY_SECONDS, _impressionsRefreshRate, TimeUnit.SECONDS);
                 break;
             case DEBUG:
                 _scheduler.scheduleAtFixedRate(this::sendImpressions, BULK_INITIAL_DELAY_SECONDS, _impressionsRefreshRate, TimeUnit.SECONDS);
                 break;
             case NONE:
-                _scheduler.scheduleAtFixedRate(this::sendImpressionCounters, COUNT_INITIAL_DELAY_SECONDS, COUNT_REFRESH_RATE_SECONDS, TimeUnit.SECONDS);
+                _scheduler.scheduleAtFixedRate(this::sendImpressionCounters, COUNT_INITIAL_DELAY_SECONDS, COUNT_REFRESH_RATE_SECONDS,
+                        TimeUnit.SECONDS);
                 break;
         }
     }

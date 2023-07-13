@@ -75,7 +75,8 @@ public class PushManagerImp implements PushManager {
         Worker<SegmentQueueDto> segmentWorker = new SegmentsWorkerImp(synchronizer);
         PushStatusTracker pushStatusTracker = new PushStatusTrackerImp(statusMessages, telemetryRuntimeProducer);
         return new PushManagerImp(new AuthApiClientImp(authUrl, splitAPI.getHttpClient(), telemetryRuntimeProducer),
-                EventSourceClientImp.build(streamingUrl, splitsWorker, segmentWorker, pushStatusTracker, splitAPI.getSseHttpClient(), telemetryRuntimeProducer, threadFactory),
+                EventSourceClientImp.build(streamingUrl, splitsWorker, segmentWorker, pushStatusTracker, splitAPI.getSseHttpClient(),
+                        telemetryRuntimeProducer, threadFactory),
                 splitsWorker,
                 segmentWorker,
                 pushStatusTracker,
@@ -89,7 +90,8 @@ public class PushManagerImp implements PushManager {
         _log.debug(String.format("Auth service response pushEnabled: %s", response.isPushEnabled()));
         if (response.isPushEnabled() && startSse(response.getToken(), response.getChannels())) {
             _expirationTime.set(response.getExpiration());
-            _telemetryRuntimeProducer.recordStreamingEvents(new StreamingEvent(StreamEventsEnum.TOKEN_REFRESH.getType(), response.getExpiration(), System.currentTimeMillis()));
+            _telemetryRuntimeProducer.recordStreamingEvents(new StreamingEvent(StreamEventsEnum.TOKEN_REFRESH.getType(),
+                    response.getExpiration(), System.currentTimeMillis()));
             return;
         }
 

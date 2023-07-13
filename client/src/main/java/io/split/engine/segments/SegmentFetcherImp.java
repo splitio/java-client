@@ -24,7 +24,8 @@ public class SegmentFetcherImp implements SegmentFetcher {
 
     private final Object _lock = new Object();
 
-    public SegmentFetcherImp(String segmentName, SegmentChangeFetcher segmentChangeFetcher, SegmentCacheProducer segmentCacheProducer, TelemetryRuntimeProducer telemetryRuntimeProducer) {
+    public SegmentFetcherImp(String segmentName, SegmentChangeFetcher segmentChangeFetcher, SegmentCacheProducer segmentCacheProducer,
+                             TelemetryRuntimeProducer telemetryRuntimeProducer) {
         _segmentName = checkNotNull(segmentName);
         _segmentChangeFetcher = checkNotNull(segmentChangeFetcher);
         _segmentCacheProducer = checkNotNull(segmentCacheProducer);

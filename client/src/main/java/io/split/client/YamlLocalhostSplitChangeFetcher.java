@@ -77,10 +77,10 @@ public class YamlLocalhostSplitChangeFetcher implements SplitChangeFetcher {
             splitChange.since = since;
             return splitChange;
         } catch (FileNotFoundException f) {
-            _log.warn(String.format("There was no file named %s found. " +
-                            "We created a split client that returns default treatments for all feature flags for all of your users. " +
-                            "If you wish to return a specific treatment for a feature flag, enter the name of that feature flag name and " +
-                            "treatment name separated by whitespace in %s; one pair per line. Empty lines or lines starting with '#' are considered comments",
+            _log.warn(String.format("There was no file named %s found. We created a split client that returns default treatments " +
+                            "for all feature flags for all of your users. If you wish to return a specific treatment for a feature flag, " +
+                            "enter the name of that feature flag name and treatment name separated by whitespace in %s; one pair per line. " +
+                            "Empty lines or lines starting with '#' are considered comments",
                     _splitFile.getPath(), _splitFile.getPath()), f);
             throw new IllegalStateException("Problem fetching splitChanges: " + f.getMessage(), f);
         } catch (Exception e) {

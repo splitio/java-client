@@ -46,7 +46,8 @@ public final class HttpSplitChangeFetcher implements SplitChangeFetcher {
     private final URI _target;
     private final TelemetryRuntimeProducer _telemetryRuntimeProducer;
 
-    public static HttpSplitChangeFetcher create(CloseableHttpClient client, URI root, TelemetryRuntimeProducer telemetryRuntimeProducer) throws URISyntaxException {
+    public static HttpSplitChangeFetcher create(CloseableHttpClient client, URI root, TelemetryRuntimeProducer telemetryRuntimeProducer)
+            throws URISyntaxException {
         return new HttpSplitChangeFetcher(client, Utils.appendPath(root, "api/splitChanges"), telemetryRuntimeProducer);
     }
 

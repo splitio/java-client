@@ -233,8 +233,8 @@ public interface SplitClient {
      *
      * @param key a unique key of your customer (e.g. user_id, user_email, account_id, etc.) MUST not be null.
      * @param featureFlagNames the names of the feature flags we want to evaluate. MUST NOT be null.
-     * @return Map<String, SplitResult> containing for each feature flag the evaluated treatment (the default treatment of this feature flag, or 'control') and
-     *         a configuration associated to this treatment if set.
+     * @return Map<String, SplitResult> containing for each feature flag the evaluated treatment (the default treatment of
+     * this feature flag, or 'control') and a configuration associated to this treatment if set.
      */
     Map<String, SplitResult> getTreatmentsWithConfig(String key, List<String> featureFlagNames);
 

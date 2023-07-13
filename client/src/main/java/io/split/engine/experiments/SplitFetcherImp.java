@@ -44,7 +44,8 @@ public class SplitFetcherImp implements SplitFetcher {
      * an ARCHIVED split is received, we know if we need to remove a traffic type from the multiset.
      */
 
-    public SplitFetcherImp(SplitChangeFetcher splitChangeFetcher, SplitParser parser, SplitCacheConsumer splitCacheConsumer, SplitCacheProducer splitCacheProducer, TelemetryRuntimeProducer telemetryRuntimeProducer) {
+    public SplitFetcherImp(SplitChangeFetcher splitChangeFetcher, SplitParser parser, SplitCacheConsumer splitCacheConsumer,
+                           SplitCacheProducer splitCacheProducer, TelemetryRuntimeProducer telemetryRuntimeProducer) {
         _splitChangeFetcher = checkNotNull(splitChangeFetcher);
         _parser = checkNotNull(parser);
         _splitCacheConsumer = checkNotNull(splitCacheConsumer);
@@ -133,7 +134,8 @@ public class SplitFetcherImp implements SplitFetcher {
 
                 ParsedSplit parsedSplit = _parser.parse(split);
                 if (parsedSplit == null) {
-                    _log.info(String.format("We could not parse the experiment definition for: %s so we are removing it completely to be careful", split.name));
+                    _log.info(String.format("We could not parse the experiment definition for: %s so we are removing it completely " +
+                            "to be careful", split.name));
 
                     _splitCacheProducer.remove(split.name);
                     _log.debug("Deleted feature: " + split.name);

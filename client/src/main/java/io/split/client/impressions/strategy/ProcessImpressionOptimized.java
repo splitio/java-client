@@ -20,7 +20,8 @@ public class ProcessImpressionOptimized implements ProcessImpressionStrategy{
     private final boolean _listenerEnabled;
 
 
-    public ProcessImpressionOptimized(boolean listenerEnabled, ImpressionObserver impressionObserver, ImpressionCounter impressionCounter, TelemetryRuntimeProducer telemetryRuntimeProducer) {
+    public ProcessImpressionOptimized(boolean listenerEnabled, ImpressionObserver impressionObserver, ImpressionCounter impressionCounter,
+                                      TelemetryRuntimeProducer telemetryRuntimeProducer) {
         _telemetryRuntimeProducer = telemetryRuntimeProducer;
         _listenerEnabled = listenerEnabled;
         _impressionObserver = impressionObserver;
@@ -42,7 +43,8 @@ public class ProcessImpressionOptimized implements ProcessImpressionStrategy{
         }
         List<Impression> impressionForListener =  this._listenerEnabled ? impressions : null;
 
-        _telemetryRuntimeProducer.recordImpressionStats(ImpressionsDataTypeEnum.IMPRESSIONS_DEDUPED, impressions.size()- (long)impressionsToQueue.size());
+        _telemetryRuntimeProducer.recordImpressionStats(ImpressionsDataTypeEnum.IMPRESSIONS_DEDUPED, impressions.size()-
+                (long)impressionsToQueue.size());
 
         return new ImpressionsResult(impressionsToQueue, impressionForListener);
     }

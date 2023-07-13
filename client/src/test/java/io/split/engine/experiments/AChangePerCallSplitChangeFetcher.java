@@ -37,7 +37,8 @@ public class AChangePerCallSplitChangeFetcher implements SplitChangeFetcher {
         Condition condition = null;
 
         if (_segmentName != null) {
-            condition = ConditionsTestUtil.makeUserDefinedSegmentCondition(ConditionType.ROLLOUT, _segmentName, Lists.newArrayList(ConditionsTestUtil.partition("on", 10)));
+            condition = ConditionsTestUtil.makeUserDefinedSegmentCondition(ConditionType.ROLLOUT, _segmentName,
+                    Lists.newArrayList(ConditionsTestUtil.partition("on", 10)));
         } else {
             condition = ConditionsTestUtil.makeAllKeysCondition(Lists.newArrayList(ConditionsTestUtil.partition("on", 10)));
         }

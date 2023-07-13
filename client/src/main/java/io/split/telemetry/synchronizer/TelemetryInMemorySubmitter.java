@@ -38,8 +38,9 @@ public class TelemetryInMemorySubmitter implements TelemetrySynchronizer{
     private SegmentCacheConsumer _segmentCacheConsumer;
     private final long _initStartTime;
 
-    public TelemetryInMemorySubmitter(CloseableHttpClient client, URI telemetryRootEndpoint, TelemetryStorageConsumer telemetryStorageConsumer, SplitCacheConsumer splitCacheConsumer,
-                                      SegmentCacheConsumer segmentCacheConsumer, TelemetryRuntimeProducer telemetryRuntimeProducer, long initStartTime) throws URISyntaxException {
+    public TelemetryInMemorySubmitter(CloseableHttpClient client, URI telemetryRootEndpoint, TelemetryStorageConsumer telemetryStorageConsumer,
+                                      SplitCacheConsumer splitCacheConsumer, SegmentCacheConsumer segmentCacheConsumer,
+                                      TelemetryRuntimeProducer telemetryRuntimeProducer, long initStartTime) throws URISyntaxException {
         _httpHttpTelemetryMemorySender = HttpTelemetryMemorySender.create(client, telemetryRootEndpoint, telemetryRuntimeProducer);
         _teleTelemetryStorageConsumer = checkNotNull(telemetryStorageConsumer);
         _splitCacheConsumer = checkNotNull(splitCacheConsumer);
