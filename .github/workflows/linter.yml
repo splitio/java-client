@@ -33,3 +33,4 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           LINTER_RULES_PATH: .github/linter
           JAVA_FILE_NAME: google-java-style.xml
+          FILTER_REGEX_EXCLUDE: .*test/.*
