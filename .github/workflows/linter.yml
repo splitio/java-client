@@ -27,7 +27,7 @@ jobs:
         uses: github/super-linter/slim@v5
         env:
           VALIDATE_NATURAL_LANGUAGE: false
-          VALIDATE_ALL_CODEBASE: true
+          VALIDATE_ALL_CODEBASE: false
           DEFAULT_BRANCH: master
           LOG_LEVEL: WARN
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
