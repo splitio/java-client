@@ -10,6 +10,7 @@ import io.split.telemetry.domain.enums.ImpressionsDataTypeEnum;
 import io.split.telemetry.domain.enums.LastSynchronizationRecordsEnum;
 import io.split.telemetry.domain.enums.MethodEnum;
 import io.split.telemetry.domain.enums.ResourceEnum;
+import io.split.telemetry.domain.enums.UpdatesFromSSEEnum;
 import io.split.telemetry.storage.TelemetryStorageProducer;
 import io.split.telemetry.utils.BucketCalculator;
 import pluggable.CustomStorageWrapper;
@@ -97,6 +98,11 @@ public class UserCustomTelemetryAdapterProducer implements TelemetryStorageProdu
 
     @Override
     public void recordSessionLength(long sessionLength) {
+        //No-op
+    }
+
+    @Override
+    public void recordUpdatesFromSSE(UpdatesFromSSEEnum updatesFromSSEEnum) {
         //No-op
     }
 }

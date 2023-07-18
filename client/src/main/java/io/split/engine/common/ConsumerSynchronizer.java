@@ -2,6 +2,7 @@ package io.split.engine.common;
 
 import io.split.client.impressions.ImpressionsManager;
 import io.split.client.impressions.UniqueKeysTracker;
+import io.split.engine.sse.dtos.SplitKillNotification;
 import io.split.telemetry.synchronizer.TelemetrySyncTask;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -39,7 +40,7 @@ public class ConsumerSynchronizer implements Synchronizer{
     }
 
     @Override
-    public void localKillSplit(String featureFlagName, String defaultTreatment, long newChangeNumber) {
+    public void localKillSplit(SplitKillNotification splitKillNotification) {
         //No-Op
     }
 
@@ -79,5 +80,10 @@ public class ConsumerSynchronizer implements Synchronizer{
         }
         _telemetrySyncTask.stopScheduledTask();
         _log.info("Successful shutdown of telemetry sync task");
+    }
+
+    @Override
+    public void forceRefreshSegment(String segmentName) {
+        //No-Op
     }
 }

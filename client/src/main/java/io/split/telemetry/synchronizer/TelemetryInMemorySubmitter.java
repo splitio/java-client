@@ -92,6 +92,7 @@ public class TelemetryInMemorySubmitter implements TelemetrySynchronizer{
         stats.set_eventsDropped(_teleTelemetryStorageConsumer.getEventStats(EventsDataRecordsEnum.EVENTS_DROPPED));
         stats.set_streamingEvents(_teleTelemetryStorageConsumer.popStreamingEvents());
         stats.set_tags(_teleTelemetryStorageConsumer.popTags());
+        stats.set_updatesFromSSE(_teleTelemetryStorageConsumer.popUpdatesFromSSE());
         return stats;
     }
 

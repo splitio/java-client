@@ -9,6 +9,7 @@ import io.split.engine.experiments.SplitFetcher;
 import io.split.engine.experiments.SplitSynchronizationTask;
 import io.split.engine.segments.SegmentFetcher;
 import io.split.engine.segments.SegmentSynchronizationTask;
+import io.split.engine.sse.dtos.SplitKillNotification;
 import io.split.storages.SegmentCacheProducer;
 import io.split.storages.SplitCacheProducer;
 import io.split.telemetry.synchronizer.TelemetrySyncTask;
@@ -183,10 +184,10 @@ public class SynchronizerImp implements Synchronizer {
     }
 
     @Override
-    public void localKillSplit(String featureFlagName, String defaultTreatment, long newChangeNumber) {
-        if (newChangeNumber > _splitCacheProducer.getChangeNumber()) {
-            _splitCacheProducer.kill(featureFlagName, defaultTreatment, newChangeNumber);
-            refreshSplits(newChangeNumber);
+    public void localKillSplit(SplitKillNotification splitKillNotification) {
+        if (splitKillNotification.getChangeNumber() > _splitCacheProducer.getChangeNumber()) {
+            _splitCacheProducer.kill(splitKillNotification.getSplitName(), splitKillNotification.getDefaultTreatment(), splitKillNotification.getChangeNumber());
+            refreshSplits(splitKillNotification.getChangeNumber());
         }
     }
 
@@ -303,7 +304,8 @@ public class SynchronizerImp implements Synchronizer {
         _log.info("Successful shutdown of telemetry sync task");
     }
 
-    private void forceRefreshSegment(String segmentName){
+    @Override
+    public void forceRefreshSegment(String segmentName){
         SegmentFetcher segmentFetcher = _segmentSynchronizationTaskImp.getFetcher(segmentName);
         segmentFetcher.fetch(new FetchOptions.Builder().build());
     }

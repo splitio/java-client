@@ -2,7 +2,6 @@ package io.split.engine.experiments;
 
 import io.split.client.JsonLocalhostSplitChangeFetcher;
 import io.split.engine.common.FetchOptions;
-import io.split.storages.SplitCacheConsumer;
 import io.split.storages.SplitCacheProducer;
 import io.split.storages.memory.InMemoryCacheImp;
 import io.split.telemetry.storage.NoopTelemetryStorage;
@@ -18,12 +17,11 @@ public class SplitFetcherImpTest {
     @Test
     public void testLocalHost(){
         SplitCacheProducer splitCacheProducer = new InMemoryCacheImp();
-        SplitCacheConsumer splitCacheConsumer = Mockito.mock(SplitCacheConsumer.class);
 
         SplitChangeFetcher splitChangeFetcher = new JsonLocalhostSplitChangeFetcher("src/test/resources/split_init.json");
         SplitParser splitParser = new SplitParser();
         FetchOptions fetchOptions = new FetchOptions.Builder().build();
-        SplitFetcher splitFetcher = new SplitFetcherImp(splitChangeFetcher, splitParser, splitCacheConsumer, splitCacheProducer, TELEMETRY_STORAGE_NOOP);
+        SplitFetcher splitFetcher = new SplitFetcherImp(splitChangeFetcher, splitParser, splitCacheProducer, TELEMETRY_STORAGE_NOOP);
 
         FetchResult fetchResult = splitFetcher.forceRefresh(fetchOptions);
 
