@@ -6,7 +6,7 @@ import io.split.engine.sse.client.RawEvent;
 import io.split.engine.sse.client.SSEClient;
 import io.split.engine.sse.dtos.SegmentQueueDto;
 import io.split.engine.sse.exceptions.EventParsingException;
-import io.split.engine.sse.workers.SplitsWorker;
+import io.split.engine.sse.workers.FeatureFlagsWorker;
 import io.split.engine.sse.workers.Worker;
 import io.split.telemetry.storage.TelemetryRuntimeProducer;
 import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
@@ -56,7 +56,7 @@ public class EventSourceClientImp implements EventSourceClient {
     }
 
     public static EventSourceClientImp build(String baseStreamingUrl,
-                                             SplitsWorker splitsWorker,
+                                             FeatureFlagsWorker featureFlagsWorker,
                                              Worker<SegmentQueueDto> segmentWorker,
                                              PushStatusTracker pushStatusTracker,
                                              CloseableHttpClient sseHttpClient,
@@ -64,7 +64,7 @@ public class EventSourceClientImp implements EventSourceClient {
                                              ThreadFactory threadFactory) {
         return new EventSourceClientImp(baseStreamingUrl,
                 new NotificationParserImp(),
-                NotificationProcessorImp.build(splitsWorker, segmentWorker, pushStatusTracker),
+                NotificationProcessorImp.build(featureFlagsWorker, segmentWorker, pushStatusTracker),
                 pushStatusTracker,
                 sseHttpClient,
                 telemetryRuntimeProducer,

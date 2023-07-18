@@ -1,7 +1,21 @@
 package io.split.telemetry.storage;
 
-import io.split.telemetry.domain.*;
-import io.split.telemetry.domain.enums.*;
+
+import io.split.telemetry.domain.HTTPErrors;
+import io.split.telemetry.domain.HTTPLatencies;
+import io.split.telemetry.domain.LastSynchronization;
+import io.split.telemetry.domain.MethodExceptions;
+import io.split.telemetry.domain.MethodLatencies;
+import io.split.telemetry.domain.StreamingEvent;
+import io.split.telemetry.domain.UpdatesFromSSE;
+
+import io.split.telemetry.domain.enums.EventsDataRecordsEnum;
+import io.split.telemetry.domain.enums.HTTPLatenciesEnum;
+import io.split.telemetry.domain.enums.ImpressionsDataTypeEnum;
+import io.split.telemetry.domain.enums.LastSynchronizationRecordsEnum;
+import io.split.telemetry.domain.enums.MethodEnum;
+import io.split.telemetry.domain.enums.ResourceEnum;
+import io.split.telemetry.domain.enums.UpdatesFromSSEEnum;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -10,7 +24,7 @@ import java.util.List;
 public class InMemoryTelemetryStorageTest{
 
     @Test
-    public void testInMemoryTelemetryStorage() throws Exception {
+    public void testInMemoryTelemetryStorage() {
         InMemoryTelemetryStorage telemetryStorage = new InMemoryTelemetryStorage();
 
         //MethodLatencies
@@ -215,5 +229,12 @@ public class InMemoryTelemetryStorageTest{
         tags = telemetryStorage.popTags();
         Assert.assertEquals(0, tags.size());
 
+        //UpdatesFromSSE
+        telemetryStorage.recordUpdatesFromSSE(UpdatesFromSSEEnum.SPLITS);
+        telemetryStorage.recordUpdatesFromSSE(UpdatesFromSSEEnum.SPLITS);
+        telemetryStorage.recordUpdatesFromSSE(UpdatesFromSSEEnum.SPLITS);
+
+        UpdatesFromSSE updatesFromSSE = telemetryStorage.popUpdatesFromSSE();
+        Assert.assertEquals(3, updatesFromSSE.getSplits());
     }
 }

@@ -2,7 +2,6 @@ package io.split.telemetry.synchronizer;
 
 import io.split.TestHelper;
 import io.split.client.dtos.UniqueKeys;
-import io.split.client.impressions.UniqueKeysTrackerImp;
 import io.split.storages.SegmentCacheConsumer;
 import io.split.storages.SplitCacheConsumer;
 import io.split.client.ApiKeyCounter;
@@ -73,7 +72,7 @@ public class TelemetryInMemorySubmitterTest {
     }
 
     @Test
-    public void testConfig() throws InvocationTargetException, NoSuchMethodException, IllegalAccessException, IOException, URISyntaxException, NoSuchFieldException, ClassNotFoundException {
+    public void testConfig() throws InvocationTargetException, NoSuchMethodException, IllegalAccessException, IOException, URISyntaxException, NoSuchFieldException {
         ApiKeyCounter.getApiKeyCounterInstance().clearApiKeys();
         ApiKeyCounter.getApiKeyCounterInstance().add(FIRST_KEY);
         ApiKeyCounter.getApiKeyCounterInstance().add(FIRST_KEY);
@@ -154,9 +153,10 @@ public class TelemetryInMemorySubmitterTest {
         Assert.assertEquals(290, streamingEvents.get(0).get_data());
         Assert.assertEquals(1, streamingEvents.get(0).get_type());
         Assert.assertEquals(91218, streamingEvents.get(0).getTimestamp());
+        Assert.assertEquals(1, stats.get_updatesFromSSE().getSplits());
     }
 
-    private TelemetryInMemorySubmitter getTelemetrySynchronizer(CloseableHttpClient httpClient) throws URISyntaxException, InvocationTargetException, NoSuchMethodException, IllegalAccessException, IOException {
+    private TelemetryInMemorySubmitter getTelemetrySynchronizer(CloseableHttpClient httpClient) throws URISyntaxException {
         TelemetryStorageConsumer consumer = Mockito.mock(InMemoryTelemetryStorage.class);
         TelemetryRuntimeProducer telemetryRuntimeProducer = Mockito.mock(TelemetryRuntimeProducer.class);
         SplitCacheConsumer splitCacheConsumer = Mockito.mock(SplitCacheConsumer.class);
@@ -229,6 +229,7 @@ public class TelemetryInMemorySubmitterTest {
 
         StreamingEvent streamingEvent = new StreamingEvent(1, 290, 91218);
         telemetryStorage.recordStreamingEvents(streamingEvent);
+        telemetryStorage.recordUpdatesFromSSE(UpdatesFromSSEEnum.SPLITS);
     }
 
     private void populateConfig(TelemetryStorage telemetryStorage) {
@@ -238,5 +239,4 @@ public class TelemetryInMemorySubmitterTest {
         telemetryStorage.recordNonReadyUsage();
         telemetryStorage.recordNonReadyUsage();
     }
-
 }
