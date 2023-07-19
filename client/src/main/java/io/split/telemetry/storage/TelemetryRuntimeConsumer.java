@@ -4,6 +4,7 @@ import io.split.telemetry.domain.HTTPErrors;
 import io.split.telemetry.domain.HTTPLatencies;
 import io.split.telemetry.domain.LastSynchronization;
 import io.split.telemetry.domain.StreamingEvent;
+import io.split.telemetry.domain.UpdatesFromSSE;
 import io.split.telemetry.domain.enums.EventsDataRecordsEnum;
 import io.split.telemetry.domain.enums.ImpressionsDataTypeEnum;
 
@@ -20,4 +21,5 @@ public interface TelemetryRuntimeConsumer {
     List<StreamingEvent> popStreamingEvents();
     List<String> popTags();
     long getSessionLength();
+    UpdatesFromSSE popUpdatesFromSSE();
 }

@@ -5,7 +5,11 @@ import io.split.client.impressions.ImpressionsManager;
 import io.split.client.impressions.UniqueKeysTracker;
 import io.split.engine.segments.SegmentChangeFetcher;
 import io.split.engine.segments.SegmentSynchronizationTaskImp;
-import io.split.storages.*;
+import io.split.storages.SegmentCache;
+import io.split.storages.SegmentCacheProducer;
+import io.split.storages.SplitCache;
+import io.split.storages.SplitCacheConsumer;
+import io.split.storages.SplitCacheProducer;
 import io.split.storages.memory.InMemoryCacheImp;
 import io.split.engine.experiments.FetchResult;
 import io.split.engine.experiments.SplitFetcherImp;
@@ -113,7 +117,7 @@ public class SynchronizerTest {
     public void streamingRetryOnSplit() {
         when(_splitCacheProducer.getChangeNumber()).thenReturn(0l).thenReturn(0l).thenReturn(1l);
         when(_splitFetcher.forceRefresh(Mockito.anyObject())).thenReturn(new FetchResult(true, new HashSet<>()));
-        _synchronizer.refreshSplits(1l);
+        _synchronizer.refreshSplits(1L);
 
         Mockito.verify(_splitCacheProducer, Mockito.times(3)).getChangeNumber();
     }
@@ -138,14 +142,14 @@ public class SynchronizerTest {
         SegmentFetcher fetcher = Mockito.mock(SegmentFetcher.class);
         when(_segmentCacheProducer.getChangeNumber(Mockito.anyString())).thenReturn(0l).thenReturn(0l).thenReturn(1l);
         when(_segmentFetcher.getFetcher(Mockito.anyString())).thenReturn(fetcher);
-        _synchronizer.refreshSplits(1l);
+        _synchronizer.refreshSplits(1L);
 
         Mockito.verify(_splitCacheProducer, Mockito.times(3)).getChangeNumber();
         Mockito.verify(_segmentFetcher, Mockito.times(2)).getFetcher(Mockito.anyString());
     }
 
     @Test
-    public void testCDNBypassIsRequestedAfterNFailures() throws NoSuchFieldException, IllegalAccessException {
+    public void testCDNBypassIsRequestedAfterNFailures() {
 
         SplitCache cache = new InMemoryCacheImp();
         Synchronizer imp = new SynchronizerImp(_splitTasks,

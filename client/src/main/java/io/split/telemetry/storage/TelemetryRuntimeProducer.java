@@ -1,6 +1,7 @@
 package io.split.telemetry.storage;
 
 import io.split.telemetry.domain.StreamingEvent;
+import io.split.telemetry.domain.UpdatesFromSSE;
 import io.split.telemetry.domain.enums.*;
 
 public interface TelemetryRuntimeProducer {
@@ -14,4 +15,5 @@ public interface TelemetryRuntimeProducer {
     void recordTokenRefreshes();
     void recordStreamingEvents(StreamingEvent streamingEvent);
     void recordSessionLength(long sessionLength);
+    void recordUpdatesFromSSE(UpdatesFromSSEEnum updatesFromSSEEnum);
 }

@@ -11,7 +11,6 @@ import io.split.engine.segments.SegmentChangeFetcher;
 import io.split.engine.segments.SegmentSynchronizationTaskImp;
 import io.split.storages.SegmentCacheProducer;
 import io.split.storages.SplitCache;
-import io.split.storages.SplitCacheConsumer;
 import io.split.storages.SplitCacheProducer;
 import io.split.storages.memory.InMemoryCacheImp;
 import io.split.storages.memory.SegmentCacheInMemoryImpl;
@@ -26,14 +25,13 @@ public class LocalhostSynchronizerTest {
     private static final TelemetryStorage TELEMETRY_STORAGE_NOOP = Mockito.mock(NoopTelemetryStorage.class);
 
     @Test
-    public void testSyncAll(){
+    public void testSyncAll() {
         SplitCache splitCacheProducer = new InMemoryCacheImp();
-        SplitCacheConsumer splitCacheConsumer = Mockito.mock(SplitCacheConsumer.class);
 
         SplitChangeFetcher splitChangeFetcher = new JsonLocalhostSplitChangeFetcher("src/test/resources/split_init.json");
         SplitParser splitParser = new SplitParser();
 
-        SplitFetcher splitFetcher = new SplitFetcherImp(splitChangeFetcher, splitParser, splitCacheConsumer, splitCacheProducer, TELEMETRY_STORAGE_NOOP);
+        SplitFetcher splitFetcher = new SplitFetcherImp(splitChangeFetcher, splitParser, splitCacheProducer, TELEMETRY_STORAGE_NOOP);
         SplitSynchronizationTask splitSynchronizationTask = new SplitSynchronizationTask(splitFetcher, splitCacheProducer, 1000L, null);
 
         SegmentChangeFetcher segmentChangeFetcher = new LocalhostSegmentChangeFetcher("src/test/resources/");
@@ -51,12 +49,11 @@ public class LocalhostSynchronizerTest {
     @Test
     public void testPeriodicFetching() throws InterruptedException {
         SplitCache splitCacheProducer = new InMemoryCacheImp();
-        SplitCacheConsumer splitCacheConsumer = Mockito.mock(SplitCacheConsumer.class);
 
         SplitChangeFetcher splitChangeFetcher = Mockito.mock(JsonLocalhostSplitChangeFetcher.class);
         SplitParser splitParser = new SplitParser();
 
-        SplitFetcher splitFetcher = new SplitFetcherImp(splitChangeFetcher, splitParser, splitCacheConsumer, splitCacheProducer, TELEMETRY_STORAGE_NOOP);
+        SplitFetcher splitFetcher = new SplitFetcherImp(splitChangeFetcher, splitParser, splitCacheProducer, TELEMETRY_STORAGE_NOOP);
         SplitSynchronizationTask splitSynchronizationTask = new SplitSynchronizationTask(splitFetcher, splitCacheProducer, 1000L, null);
         FetchOptions fetchOptions = new FetchOptions.Builder().build();
 
@@ -77,13 +74,12 @@ public class LocalhostSynchronizerTest {
     }
 
     @Test
-    public void testRefreshSplits(){
+    public void testRefreshSplits() {
         SplitCacheProducer splitCacheProducer = new InMemoryCacheImp();
-        SplitCacheConsumer splitCacheConsumer = Mockito.mock(SplitCacheConsumer.class);
         SplitChangeFetcher splitChangeFetcher = Mockito.mock(SplitChangeFetcher.class);
         SplitParser splitParser = new SplitParser();
 
-        SplitFetcher splitFetcher = new SplitFetcherImp(splitChangeFetcher, splitParser, splitCacheConsumer, splitCacheProducer, TELEMETRY_STORAGE_NOOP);
+        SplitFetcher splitFetcher = new SplitFetcherImp(splitChangeFetcher, splitParser, splitCacheProducer, TELEMETRY_STORAGE_NOOP);
         SplitSynchronizationTask splitSynchronizationTask = new SplitSynchronizationTask(splitFetcher, splitCacheProducer, 1000L, null);
         SplitTasks splitTasks = SplitTasks.build(splitSynchronizationTask, null, null, null, null, null);
         LocalhostSynchronizer localhostSynchronizer = new LocalhostSynchronizer(splitTasks, splitFetcher, false);

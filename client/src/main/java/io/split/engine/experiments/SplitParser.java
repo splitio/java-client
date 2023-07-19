@@ -6,7 +6,6 @@ import io.split.client.dtos.Matcher;
 import io.split.client.dtos.MatcherGroup;
 import io.split.client.dtos.Partition;
 import io.split.client.dtos.Split;
-import io.split.client.dtos.Status;
 import io.split.engine.matchers.AllKeysMatcher;
 import io.split.engine.matchers.AttributeMatcher;
 import io.split.engine.matchers.BetweenMatcher;
@@ -56,10 +55,6 @@ public final class SplitParser {
     }
 
     private ParsedSplit parseWithoutExceptionHandling(Split split) {
-        if (split.status != Status.ACTIVE) {
-            return null;
-        }
-
         List<ParsedCondition> parsedConditionList = Lists.newArrayList();
 
         for (Condition condition : split.conditions) {
@@ -177,6 +172,4 @@ public final class SplitParser {
 
         return new AttributeMatcher(attribute, delegate, negate);
     }
-
-
 }

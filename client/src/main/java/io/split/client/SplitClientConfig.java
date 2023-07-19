@@ -402,7 +402,7 @@ public class SplitClientConfig {
         private String _authServiceURL = AUTH_ENDPOINT;
         private String _streamingServiceURL = STREAMING_ENDPOINT;
         private String _telemetryURl = TELEMETRY_ENDPOINT;
-        private int _telemetryRefreshRate = 3600;
+        private int _telemetryRefreshRate = 600;
         private final int _uniqueKeysRefreshRateInMemory = 900;
         private final int _uniqueKeysRefreshRateRedis = 300;
         private final int _filterUniqueKeysRefreshRate = 86400;

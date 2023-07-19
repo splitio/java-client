@@ -1,3 +1,8 @@
+4.8.0 (Jul 18, 2023)
+- Improved streaming architecture implementation to apply feature flag updates from the notification received which is now enhanced, improving efficiency and reliability of the whole update system.
+- Updated `com.google.guava` dependence to 32.0.1 for fixing a vulnerability.
+- Updated SegmentFetcher for better readability.
+
 4.7.2 (May 16, 2023)
 - Updated default treatment to be control for yaml and json localhost.
 - Updated terminology on the SDKs codebase to be more aligned with current standard without causing a breaking change. The core change is the term split for feature flag on things like logs and javadoc comments.
