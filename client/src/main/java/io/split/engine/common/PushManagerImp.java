@@ -79,7 +79,8 @@ public class PushManagerImp implements PushManager {
         Worker<SegmentQueueDto> segmentWorker = new SegmentsWorkerImp(synchronizer);
         PushStatusTracker pushStatusTracker = new PushStatusTrackerImp(statusMessages, telemetryRuntimeProducer);
         return new PushManagerImp(new AuthApiClientImp(authUrl, splitAPI.getHttpClient(), telemetryRuntimeProducer),
-                EventSourceClientImp.build(streamingUrl, featureFlagsWorker, segmentWorker, pushStatusTracker, splitAPI.getSseHttpClient(), telemetryRuntimeProducer, threadFactory),
+                EventSourceClientImp.build(streamingUrl, featureFlagsWorker, segmentWorker, pushStatusTracker, splitAPI.getSseHttpClient(),
+                        telemetryRuntimeProducer, threadFactory),
                 featureFlagsWorker,
                 segmentWorker,
                 pushStatusTracker,

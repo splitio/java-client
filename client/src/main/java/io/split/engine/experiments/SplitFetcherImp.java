@@ -41,7 +41,8 @@ public class SplitFetcherImp implements SplitFetcher {
      */
 
 
-    public SplitFetcherImp(SplitChangeFetcher splitChangeFetcher, SplitParser parser, SplitCacheProducer splitCacheProducer, TelemetryRuntimeProducer telemetryRuntimeProducer) {
+    public SplitFetcherImp(SplitChangeFetcher splitChangeFetcher, SplitParser parser, SplitCacheProducer splitCacheProducer,
+                           TelemetryRuntimeProducer telemetryRuntimeProducer) {
         _splitChangeFetcher = checkNotNull(splitChangeFetcher);
         _parser = checkNotNull(parser);
         _splitCacheProducer = checkNotNull(splitCacheProducer);

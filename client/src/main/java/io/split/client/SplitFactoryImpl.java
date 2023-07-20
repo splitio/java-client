@@ -184,7 +184,8 @@ public class SplitFactoryImpl implements SplitFactory {
         ImpressionsStorage impressionsStorage = new InMemoryImpressionsStorage(config.impressionsQueueSize());
         _splitCache = splitCache;
         _segmentCache = segmentCache;
-        _telemetrySynchronizer = new TelemetryInMemorySubmitter(_httpclient, URI.create(config.telemetryURL()), telemetryStorage, splitCache, _segmentCache, telemetryStorage, _startTime);
+        _telemetrySynchronizer = new TelemetryInMemorySubmitter(_httpclient, URI.create(config.telemetryURL()), telemetryStorage,
+                splitCache, _segmentCache, telemetryStorage, _startTime);
 
         // Segments
         _segmentSynchronizationTaskImp = buildSegments(config, segmentCache, splitCache);
