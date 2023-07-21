@@ -32,7 +32,8 @@ public class HttpTelemetryMemorySender{
     private final URI _uniqueKeysTarget;
     private final HttpPostImp _httpPost;
 
-    public static HttpTelemetryMemorySender create(CloseableHttpClient client, URI telemetryRootEndpoint, TelemetryRuntimeProducer telemetryRuntimeProducer) throws URISyntaxException {
+    public static HttpTelemetryMemorySender create(CloseableHttpClient client, URI telemetryRootEndpoint,
+                                                   TelemetryRuntimeProducer telemetryRuntimeProducer) throws URISyntaxException {
         return new HttpTelemetryMemorySender(client,
                 Utils.appendPath(telemetryRootEndpoint,CONFIG_ENDPOINT_PATH),
                 Utils.appendPath(telemetryRootEndpoint, STATS_ENDPOINT_PATH),
@@ -42,7 +43,8 @@ public class HttpTelemetryMemorySender{
     }
 
     @VisibleForTesting
-    HttpTelemetryMemorySender(CloseableHttpClient client, URI impressionConfigTarget, URI impressionStatsTarget, URI uniqueKeysTarget,TelemetryRuntimeProducer telemetryRuntimeProducer) {
+    HttpTelemetryMemorySender(CloseableHttpClient client, URI impressionConfigTarget, URI impressionStatsTarget,
+                              URI uniqueKeysTarget,TelemetryRuntimeProducer telemetryRuntimeProducer) {
         _httpPost = new HttpPostImp(client, telemetryRuntimeProducer);
         _impressionConfigTarget = impressionConfigTarget;
         _impressionStatsTarget = impressionStatsTarget;

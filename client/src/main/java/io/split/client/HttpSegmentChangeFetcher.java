@@ -47,7 +47,8 @@ public final class HttpSegmentChangeFetcher implements SegmentChangeFetcher {
     private final URI _target;
     private final TelemetryRuntimeProducer _telemetryRuntimeProducer;
 
-    public static HttpSegmentChangeFetcher create(CloseableHttpClient client, URI root, TelemetryRuntimeProducer telemetryRuntimeProducer) throws URISyntaxException {
+    public static HttpSegmentChangeFetcher create(CloseableHttpClient client, URI root, TelemetryRuntimeProducer telemetryRuntimeProducer)
+            throws URISyntaxException {
         return new HttpSegmentChangeFetcher(client, Utils.appendPath(root, "api/segmentChanges"), telemetryRuntimeProducer);
     }
 
@@ -102,7 +103,8 @@ public final class HttpSegmentChangeFetcher implements SegmentChangeFetcher {
                     _log.error("factory instantiation: you passed a client side type sdkKey, " +
                             "please grab an sdk key from the Split user interface that is of type server side");
                 }
-                throw new IllegalStateException(String.format("Could not retrieve segment changes for %s, since %s; http return code %s", segmentName, since, statusCode));
+                throw new IllegalStateException(String.format("Could not retrieve segment changes for %s, since %s; http return code %s",
+                        segmentName, since, statusCode));
             }
 
             _telemetryRuntimeProducer.recordSuccessfulSync(LastSynchronizationRecordsEnum.SEGMENTS, System.currentTimeMillis());

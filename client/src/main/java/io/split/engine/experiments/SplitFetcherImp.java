@@ -40,7 +40,9 @@ public class SplitFetcherImp implements SplitFetcher {
      * an ARCHIVED split is received, we know if we need to remove a traffic type from the multiset.
      */
 
-    public SplitFetcherImp(SplitChangeFetcher splitChangeFetcher, SplitParser parser, SplitCacheProducer splitCacheProducer, TelemetryRuntimeProducer telemetryRuntimeProducer) {
+
+    public SplitFetcherImp(SplitChangeFetcher splitChangeFetcher, SplitParser parser, SplitCacheProducer splitCacheProducer,
+                           TelemetryRuntimeProducer telemetryRuntimeProducer) {
         _splitChangeFetcher = checkNotNull(splitChangeFetcher);
         _parser = checkNotNull(parser);
         _splitCacheProducer = checkNotNull(splitCacheProducer);
@@ -113,7 +115,6 @@ public class SplitFetcherImp implements SplitFetcher {
                 // some other thread may have updated the shared state. exit
                 return segments;
             }
-
             FeatureFlagsToUpdate featureFlagsToUpdate = processFeatureFlagChanges(_parser, change.splits);
             segments = featureFlagsToUpdate.getSegments();
             _splitCacheProducer.update(featureFlagsToUpdate.getToAdd(), featureFlagsToUpdate.getToRemove(), change.till);

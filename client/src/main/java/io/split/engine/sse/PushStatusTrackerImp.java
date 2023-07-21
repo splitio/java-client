@@ -52,7 +52,8 @@ public class PushStatusTrackerImp implements PushStatusTracker {
             case FIRST_EVENT:
                 if (SSEClient.StatusMessage.CONNECTED.equals(_sseStatus.get())) {
                     _statusMessages.offer(PushManager.Status.STREAMING_READY);
-                    _telemetryRuntimeProducer.recordStreamingEvents(new StreamingEvent(StreamEventsEnum.CONNECTION_ESTABLISHED.getType(),0l, System.currentTimeMillis()));
+                    _telemetryRuntimeProducer.recordStreamingEvents(new StreamingEvent(StreamEventsEnum.CONNECTION_ESTABLISHED.getType(),
+                            0l, System.currentTimeMillis()));
                 }
             case CONNECTED:
                 _sseStatus.compareAndSet(SSEClient.StatusMessage.INITIALIZATION_IN_PROGRESS, SSEClient.StatusMessage.CONNECTED);
@@ -98,14 +99,16 @@ public class PushStatusTrackerImp implements PushStatusTracker {
                 }
                 break;
             case STREAMING_PAUSED:
-                _telemetryRuntimeProducer.recordStreamingEvents(new StreamingEvent(StreamEventsEnum.STREAMING_STATUS.getType(), StreamEventsEnum.StreamingStatusValues.STREAMING_PAUSED.getValue(), System.currentTimeMillis()));
+                _telemetryRuntimeProducer.recordStreamingEvents(new StreamingEvent(StreamEventsEnum.STREAMING_STATUS.getType(),
+                        StreamEventsEnum.StreamingStatusValues.STREAMING_PAUSED.getValue(), System.currentTimeMillis()));
                 if (_backendStatus.compareAndSet(ControlType.STREAMING_RESUMED, ControlType.STREAMING_PAUSED) && _publishersOnline.get()) {
                     // If there are no publishers online, the STREAMING_DOWN message should have already been sent
                     _statusMessages.offer(PushManager.Status.STREAMING_DOWN);
                 }
                 break;
             case STREAMING_DISABLED:
-                _telemetryRuntimeProducer.recordStreamingEvents(new StreamingEvent(StreamEventsEnum.STREAMING_STATUS.getType(), StreamEventsEnum.StreamingStatusValues.STREAMING_DISABLED.getValue(), System.currentTimeMillis()));
+                _telemetryRuntimeProducer.recordStreamingEvents(new StreamingEvent(StreamEventsEnum.STREAMING_STATUS.getType(),
+                        StreamEventsEnum.StreamingStatusValues.STREAMING_DISABLED.getValue(), System.currentTimeMillis()));
                 _backendStatus.set(ControlType.STREAMING_DISABLED);
                 _statusMessages.offer(PushManager.Status.STREAMING_OFF);
                 break;
@@ -130,7 +133,8 @@ public class PushStatusTrackerImp implements PushStatusTracker {
     @Override
     public void handleIncomingAblyError(ErrorNotification notification) {
         _log.debug(String.format("handleIncomingAblyError: %s", notification.getMessage()));
-        _telemetryRuntimeProducer.recordStreamingEvents(new StreamingEvent(StreamEventsEnum.ABLY_ERROR.getType(), notification.getCode(), System.currentTimeMillis()));
+        _telemetryRuntimeProducer.recordStreamingEvents(new StreamingEvent(StreamEventsEnum.ABLY_ERROR.getType(), notification.getCode(),
+                System.currentTimeMillis()));
         if (_backendStatus.get().equals(ControlType.STREAMING_DISABLED)) {
             return; // Ignore
         }
@@ -164,10 +168,12 @@ public class PushStatusTrackerImp implements PushStatusTracker {
 
     private void recordTelemetryOcuppancy(OccupancyNotification occupancyNotification, int publishers) {
         if (CONTROL_PRI_CHANNEL.equals(occupancyNotification.getChannel())) {
-            _telemetryRuntimeProducer.recordStreamingEvents(new StreamingEvent(StreamEventsEnum.OCCUPANCY_PRI.getType(), publishers, System.currentTimeMillis()));
+            _telemetryRuntimeProducer.recordStreamingEvents(new StreamingEvent(StreamEventsEnum.OCCUPANCY_PRI.getType(),
+                    publishers, System.currentTimeMillis()));
         }
         else if (CONTROL_SEC_CHANNEL.equals(occupancyNotification.getChannel())){
-            _telemetryRuntimeProducer.recordStreamingEvents(new StreamingEvent(StreamEventsEnum.OCCUPANCY_SEC.getType(), publishers, System.currentTimeMillis()));
+            _telemetryRuntimeProducer.recordStreamingEvents(new StreamingEvent(StreamEventsEnum.OCCUPANCY_SEC.getType(),
+                    publishers, System.currentTimeMillis()));
         }
 
     }

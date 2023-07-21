@@ -146,7 +146,8 @@ public class SyncManagerImp implements SyncManager {
                 startPollingMode();
             }
             _synchronizer.startPeriodicDataRecording();
-            _telemetrySynchronizer.synchronizeConfig(_config, System.currentTimeMillis(), ApiKeyCounter.getApiKeyCounterInstance().getFactoryInstances(), new ArrayList<>());
+            _telemetrySynchronizer.synchronizeConfig(_config, System.currentTimeMillis(), ApiKeyCounter.getApiKeyCounterInstance().
+                    getFactoryInstances(), new ArrayList<>());
         });
     }
 
@@ -175,13 +176,15 @@ public class SyncManagerImp implements SyncManager {
                 _pushStatusMonitorTask = _pushMonitorExecutorService.submit(this::incomingPushStatusHandler);
         }
         _pushManager.start();
-        _telemetryRuntimeProducer.recordStreamingEvents(new StreamingEvent(StreamEventsEnum.SYNC_MODE_UPDATE.getType(), StreamEventsEnum.SyncModeUpdateValues.STREAMING_EVENT.getValue(), System.currentTimeMillis()));
+        _telemetryRuntimeProducer.recordStreamingEvents(new StreamingEvent(StreamEventsEnum.SYNC_MODE_UPDATE.getType(),
+                StreamEventsEnum.SyncModeUpdateValues.STREAMING_EVENT.getValue(), System.currentTimeMillis()));
     }
 
     private void startPollingMode() {
         _log.debug("Starting in polling mode ...");
         _synchronizer.startPeriodicFetching();
-        _telemetryRuntimeProducer.recordStreamingEvents(new StreamingEvent(StreamEventsEnum.SYNC_MODE_UPDATE.getType(), StreamEventsEnum.SyncModeUpdateValues.POLLING_EVENT.getValue(), System.currentTimeMillis()));
+        _telemetryRuntimeProducer.recordStreamingEvents(new StreamingEvent(StreamEventsEnum.SYNC_MODE_UPDATE.getType(),
+                StreamEventsEnum.SyncModeUpdateValues.POLLING_EVENT.getValue(), System.currentTimeMillis()));
     }
 
     @VisibleForTesting
@@ -197,7 +200,8 @@ public class SyncManagerImp implements SyncManager {
                         _pushManager.startWorkers();
                         _pushManager.scheduleConnectionReset();
                         _backoff.reset();
-                        _telemetryRuntimeProducer.recordStreamingEvents(new StreamingEvent(StreamEventsEnum.STREAMING_STATUS.getType(), StreamEventsEnum.StreamingStatusValues.STREAMING_ENABLED.getValue(), System.currentTimeMillis()));
+                        _telemetryRuntimeProducer.recordStreamingEvents(new StreamingEvent(StreamEventsEnum.STREAMING_STATUS.getType(),
+                                StreamEventsEnum.StreamingStatusValues.STREAMING_ENABLED.getValue(), System.currentTimeMillis()));
                         _log.info("Streaming up and running.");
                         break;
                     case STREAMING_DOWN:

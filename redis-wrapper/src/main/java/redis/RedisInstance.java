@@ -18,7 +18,8 @@ public class RedisInstance {
         return new Builder();
     }
 
-    private static CustomStorageWrapper getRedisInstance(String host, int port, int timeout, String password, int database, String prefix, int maxTotal) {
+    private static CustomStorageWrapper getRedisInstance(String host, int port, int timeout, String password, int database,
+                                                         String prefix, int maxTotal) {
         JedisPoolConfig poolConfig = new JedisPoolConfig();
         poolConfig.setMaxTotal(maxTotal);
         JedisPool jedisPool = new JedisPool(poolConfig, host, port, timeout, password, database);

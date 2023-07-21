@@ -41,8 +41,9 @@ public class SegmentSynchronizationTaskImp implements SegmentSynchronizationTask
 
     private ScheduledFuture<?> _scheduledFuture;
 
-    public SegmentSynchronizationTaskImp(SegmentChangeFetcher segmentChangeFetcher, long refreshEveryNSeconds, int numThreads, SegmentCacheProducer segmentCacheProducer,
-                                         TelemetryRuntimeProducer telemetryRuntimeProducer, SplitCacheConsumer splitCacheConsumer, ThreadFactory threadFactory) {
+    public SegmentSynchronizationTaskImp(SegmentChangeFetcher segmentChangeFetcher, long refreshEveryNSeconds, int numThreads,
+                                         SegmentCacheProducer segmentCacheProducer, TelemetryRuntimeProducer telemetryRuntimeProducer,
+                                         SplitCacheConsumer splitCacheConsumer, ThreadFactory threadFactory) {
         _segmentChangeFetcher = checkNotNull(segmentChangeFetcher);
 
         checkArgument(refreshEveryNSeconds >= 0L);

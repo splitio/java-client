@@ -36,7 +36,8 @@ public class SplitSynchronizationTask implements SyncTask, Closeable {
 
     private ScheduledFuture<?> _scheduledFuture;
 
-    public SplitSynchronizationTask(SplitFetcher splitFetcher, SplitCacheProducer splitCachesplitCacheProducer, long refreshEveryNSeconds, ThreadFactory threadFactory) {
+    public SplitSynchronizationTask(SplitFetcher splitFetcher, SplitCacheProducer splitCachesplitCacheProducer, long refreshEveryNSeconds,
+                                    ThreadFactory threadFactory) {
         _splitFetcher.set(checkNotNull(splitFetcher));
         _splitCacheProducer.set(checkNotNull(splitCachesplitCacheProducer));
         checkArgument(refreshEveryNSeconds >= 0L);
