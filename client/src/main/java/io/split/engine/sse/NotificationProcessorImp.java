@@ -26,8 +26,7 @@ public class NotificationProcessorImp implements NotificationProcessor {
         _pushStatusTracker = checkNotNull(pushStatusTracker);
     }
 
-    public static NotificationProcessorImp build(FeatureFlagsWorker featureFlagsWorker, Worker<SegmentQueueDto> segmentWorker,
-                                                 PushStatusTracker pushStatusTracker) {
+    public static NotificationProcessorImp build(FeatureFlagsWorker featureFlagsWorker, Worker<SegmentQueueDto> segmentWorker, PushStatusTracker pushStatusTracker) {
         return new NotificationProcessorImp(featureFlagsWorker, segmentWorker, pushStatusTracker);
     }
 
