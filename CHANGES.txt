@@ -1,6 +1,6 @@
 4.8.1 (Aug 1, 2023)
-- Added the checkstyle linter.
-- Fixed the use case when the prefix is empty for Redis.
+- Applied linting rules to the code.
+- Fixed an issue when the prefix is empty for Redis settings.
 
 4.8.0 (Jul 18, 2023)
 - Improved streaming architecture implementation to apply feature flag updates from the notification received which is now enhanced, improving efficiency and reliability of the whole update system.
