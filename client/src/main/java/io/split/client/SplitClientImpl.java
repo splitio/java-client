@@ -125,7 +125,8 @@ public final class SplitClientImpl implements SplitClient {
 
     @Override
     public Map<String, SplitResult> getTreatmentsWithConfig(String key, List<String> featureFlagNames) {
-        return getTreatmentsWithConfigInternal(key, null, featureFlagNames, Collections.<String, Object>emptyMap(), MethodEnum.TREATMENTS_WITH_CONFIG);
+        return getTreatmentsWithConfigInternal(key, null, featureFlagNames, Collections.<String, Object>emptyMap(),
+                MethodEnum.TREATMENTS_WITH_CONFIG);
     }
 
     @Override
@@ -135,7 +136,8 @@ public final class SplitClientImpl implements SplitClient {
 
     @Override
     public Map<String, SplitResult> getTreatmentsWithConfig(Key key, List<String> featureFlagNames, Map<String, Object> attributes) {
-        return getTreatmentsWithConfigInternal(key.matchingKey(), key.bucketingKey(), featureFlagNames, attributes, MethodEnum.TREATMENTS_WITH_CONFIG);
+        return getTreatmentsWithConfigInternal(key.matchingKey(), key.bucketingKey(), featureFlagNames, attributes,
+                MethodEnum.TREATMENTS_WITH_CONFIG);
     }
 
     @Override
@@ -220,7 +222,8 @@ public final class SplitClientImpl implements SplitClient {
         return _eventsStorageProducer.track(event, propertiesResult.getEventSize());
     }
 
-    private SplitResult getTreatmentWithConfigInternal(String matchingKey, String bucketingKey, String featureFlag, Map<String, Object> attributes, MethodEnum methodEnum) {
+    private SplitResult getTreatmentWithConfigInternal(String matchingKey, String bucketingKey, String featureFlag, Map<String,
+                                                       Object> attributes, MethodEnum methodEnum) {
         long initTime = System.currentTimeMillis();
         try {
             checkSDKReady(methodEnum);
@@ -279,7 +282,8 @@ public final class SplitClientImpl implements SplitClient {
         }
     }
 
-    private Map<String, SplitResult> getTreatmentsWithConfigInternal(String matchingKey, String bucketingKey, List<String> featureFlagNames, Map<String, Object> attributes, MethodEnum methodEnum) {
+    private Map<String, SplitResult> getTreatmentsWithConfigInternal(String matchingKey, String bucketingKey, List<String> featureFlagNames,
+                                                                     Map<String, Object> attributes, MethodEnum methodEnum) {
         long initTime = System.currentTimeMillis();
         if (featureFlagNames == null) {
             _log.error(String.format("%s: featureFlagNames must be a non-empty array", methodEnum.getMethod()));
@@ -303,17 +307,20 @@ public final class SplitClientImpl implements SplitClient {
                 return new HashMap<>();
             }
             featureFlagNames = SplitNameValidator.areValid(featureFlagNames, methodEnum.getMethod());
-            Map<String, EvaluatorImp.TreatmentLabelAndChangeNumber> evaluatorResult = _evaluator.evaluateFeatures(matchingKey, bucketingKey, featureFlagNames, attributes);
+            Map<String, EvaluatorImp.TreatmentLabelAndChangeNumber> evaluatorResult = _evaluator.evaluateFeatures(matchingKey,
+                    bucketingKey, featureFlagNames, attributes);
             List<Impression> impressions = new ArrayList<>();
             Map<String, SplitResult> result = new HashMap<>();
             evaluatorResult.keySet().forEach(t -> {
-                if (evaluatorResult.get(t).treatment.equals(Treatments.CONTROL) && evaluatorResult.get(t).label.equals(Labels.DEFINITION_NOT_FOUND) && _gates.isSDKReady()) {
-                    _log.warn(String.format(
-                            "%s: you passed \"%s\" that does not exist in this environment please double check what feature flags exist in the Split user interface.", methodEnum.getMethod(), t));
+                if (evaluatorResult.get(t).treatment.equals(Treatments.CONTROL) && evaluatorResult.get(t).label.
+                        equals(Labels.DEFINITION_NOT_FOUND) && _gates.isSDKReady()) {
+                    _log.warn(String.format("%s: you passed \"%s\" that does not exist in this environment please double check " +
+                            "what feature flags exist in the Split user interface.", methodEnum.getMethod(), t));
                     result.put(t, SPLIT_RESULT_CONTROL);
                 } else {
                     result.put(t, new SplitResult(evaluatorResult.get(t).treatment, evaluatorResult.get(t).configurations));
-                    impressions.add(new Impression(matchingKey, bucketingKey, t, evaluatorResult.get(t).treatment, System.currentTimeMillis(), evaluatorResult.get(t).label, evaluatorResult.get(t).changeNumber, attributes));
+                    impressions.add(new Impression(matchingKey, bucketingKey, t, evaluatorResult.get(t).treatment, System.currentTimeMillis(),
+                            evaluatorResult.get(t).label, evaluatorResult.get(t).changeNumber, attributes));
                 }
             });
 
@@ -337,7 +344,8 @@ public final class SplitClientImpl implements SplitClient {
     private void recordStats(String matchingKey, String bucketingKey, String featureFlagName, long start, String result,
                              String operation, String label, Long changeNumber, Map<String, Object> attributes) {
         try {
-            _impressionManager.track(Stream.of(new Impression(matchingKey, bucketingKey, featureFlagName, result, System.currentTimeMillis(), label, changeNumber, attributes)).collect(Collectors.toList()));
+            _impressionManager.track(Stream.of(new Impression(matchingKey, bucketingKey, featureFlagName, result, System.currentTimeMillis(),
+                    label, changeNumber, attributes)).collect(Collectors.toList()));
         } catch (Throwable t) {
             _log.error("Exception", t);
         }
@@ -354,8 +362,8 @@ public final class SplitClientImpl implements SplitClient {
 
     private void checkSDKReady(MethodEnum methodEnum) {
         if (!_gates.isSDKReady()) {
-            _log.warn(String.format(
-                    "%s: the SDK is not ready, results may be incorrect. Make sure to wait for SDK readiness before using this method", methodEnum.getMethod()));
+            _log.warn(String.format("%s: the SDK is not ready, results may be incorrect. Make sure to wait for SDK readiness " +
+                            "before using this method", methodEnum.getMethod()));
             _telemetryConfigProducer.recordNonReadyUsage();
         }
     }

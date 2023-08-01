@@ -4,7 +4,6 @@ import org.junit.Assert;
 import org.junit.Test;
 import pluggable.CustomStorageWrapper;
 import redis.clients.jedis.JedisPool;
-import redis.common.CommonRedis;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -16,7 +15,6 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 public class RedisSingleTest {
-    private final CommonRedis _commonRedis = CommonRedis.create("test-prefix:");
 
     @Test
     public void testSetAndGet() throws Exception {
@@ -255,5 +253,29 @@ public class RedisSingleTest {
         RedisSingle storageWrapper = new RedisSingle(new JedisPool(), "test-prefix");
         Assert.assertTrue(storageWrapper.disconnect());
     }
-}
 
+    @Test
+    public void testWithoutPrefix() throws Exception {
+        Map<String, String> map = new HashMap<>();
+        map.put("item-1", "1");
+        map.put("item-2", "2");
+        map.put("item-3", "3");
+        map.put("i-4", "4");
+        RedisSingle storageWrapper = new RedisSingle(new JedisPool(), "");
+        try {
+            for (Map.Entry<String, String> entry : map.entrySet()) {
+                storageWrapper.set(entry.getKey(), entry.getValue());
+            }
+
+            Set<String> result = storageWrapper.getKeysByPrefix("item*");
+
+            Assert.assertEquals(3, result.size());
+            Assert.assertTrue(result.contains("item-1"));
+            Assert.assertTrue(result.contains("item-2"));
+            Assert.assertTrue(result.contains("item-3"));
+        }
+        finally {
+            storageWrapper.delete(new ArrayList<>(map.keySet()));
+        }
+    }
+}

@@ -186,7 +186,8 @@ public class SynchronizerImp implements Synchronizer {
     @Override
     public void localKillSplit(SplitKillNotification splitKillNotification) {
         if (splitKillNotification.getChangeNumber() > _splitCacheProducer.getChangeNumber()) {
-            _splitCacheProducer.kill(splitKillNotification.getSplitName(), splitKillNotification.getDefaultTreatment(), splitKillNotification.getChangeNumber());
+            _splitCacheProducer.kill(splitKillNotification.getSplitName(), splitKillNotification.getDefaultTreatment(),
+                    splitKillNotification.getChangeNumber());
             refreshSplits(splitKillNotification.getChangeNumber());
         }
     }

@@ -27,7 +27,8 @@ public class EventsTask{
     private final ScheduledExecutorService _senderScheduledExecutorService;
     private static final Logger _log = LoggerFactory.getLogger(EventsTask.class);
 
-    public static EventsTask create(long sendIntervalMillis, EventsStorageConsumer eventsStorageConsumer, EventsSender eventsSender, ThreadFactory threadFactory) throws URISyntaxException {
+    public static EventsTask create(long sendIntervalMillis, EventsStorageConsumer eventsStorageConsumer, EventsSender eventsSender,
+                                    ThreadFactory threadFactory) throws URISyntaxException {
         return new EventsTask(eventsStorageConsumer,
                 sendIntervalMillis,
                 eventsSender,

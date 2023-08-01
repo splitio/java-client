@@ -33,13 +33,15 @@ public class EvaluatorImp implements Evaluator {
     }
 
     @Override
-    public TreatmentLabelAndChangeNumber evaluateFeature(String matchingKey, String bucketingKey, String featureFlag, Map<String, Object> attributes) {
+    public TreatmentLabelAndChangeNumber evaluateFeature(String matchingKey, String bucketingKey, String featureFlag, Map<String,
+            Object> attributes) {
         ParsedSplit parsedSplit = _splitCacheConsumer.get(featureFlag);
         return evaluateParsedSplit(matchingKey, bucketingKey, attributes, parsedSplit);
     }
 
     @Override
-    public Map<String, TreatmentLabelAndChangeNumber> evaluateFeatures(String matchingKey, String bucketingKey, List<String> featureFlags, Map<String, Object> attributes) {
+    public Map<String, TreatmentLabelAndChangeNumber> evaluateFeatures(String matchingKey, String bucketingKey, List<String> featureFlags,
+                                                                       Map<String, Object> attributes) {
         Map<String, TreatmentLabelAndChangeNumber> results = new HashMap<>();
         Map<String, ParsedSplit> parsedSplits = _splitCacheConsumer.fetchMany(featureFlags);
         if (parsedSplits == null) {
@@ -57,7 +59,8 @@ public class EvaluatorImp implements Evaluator {
      * @return
      * @throws ChangeNumberExceptionWrapper
      */
-    private TreatmentLabelAndChangeNumber getTreatment(String matchingKey, String bucketingKey, ParsedSplit parsedSplit, Map<String, Object> attributes) throws ChangeNumberExceptionWrapper {
+    private TreatmentLabelAndChangeNumber getTreatment(String matchingKey, String bucketingKey, ParsedSplit parsedSplit, Map<String,
+            Object> attributes) throws ChangeNumberExceptionWrapper {
         try {
             if (parsedSplit.killed()) {
                 String config = parsedSplit.configurations() != null ? parsedSplit.configurations().get(parsedSplit.defaultTreatment()) : null;
@@ -84,8 +87,10 @@ public class EvaluatorImp implements Evaluator {
 
                         if (bucket > parsedSplit.trafficAllocation()) {
                             // out of split
-                            String config = parsedSplit.configurations() != null ? parsedSplit.configurations().get(parsedSplit.defaultTreatment()) : null;
-                            return new TreatmentLabelAndChangeNumber(parsedSplit.defaultTreatment(), Labels.NOT_IN_SPLIT, parsedSplit.changeNumber(), config);
+                            String config = parsedSplit.configurations() != null ?
+                                    parsedSplit.configurations().get(parsedSplit.defaultTreatment()) : null;
+                            return new TreatmentLabelAndChangeNumber(parsedSplit.defaultTreatment(), Labels.NOT_IN_SPLIT,
+                                    parsedSplit.changeNumber(), config);
                         }
 
                     }
@@ -106,7 +111,8 @@ public class EvaluatorImp implements Evaluator {
         }
     }
 
-    private TreatmentLabelAndChangeNumber evaluateParsedSplit(String matchingKey, String bucketingKey, Map<String, Object> attributes, ParsedSplit parsedSplit) {
+    private TreatmentLabelAndChangeNumber evaluateParsedSplit(String matchingKey, String bucketingKey, Map<String, Object> attributes,
+                                                              ParsedSplit parsedSplit) {
         try {
             if (parsedSplit == null) {
                 return new TreatmentLabelAndChangeNumber(Treatments.CONTROL, Labels.DEFINITION_NOT_FOUND);

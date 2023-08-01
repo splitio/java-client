@@ -33,7 +33,8 @@ public class UniqueKeysTrackerImp implements UniqueKeysTracker{
     private final int _filterRefreshRate;
     private static final Logger _logger = LoggerFactory.getLogger(UniqueKeysTrackerImp.class);
 
-    public UniqueKeysTrackerImp(TelemetrySynchronizer telemetrySynchronizer, int uniqueKeysRefreshRate, int filterRefreshRate, ThreadFactory threadFactory) {
+    public UniqueKeysTrackerImp(TelemetrySynchronizer telemetrySynchronizer, int uniqueKeysRefreshRate, int filterRefreshRate,
+                                ThreadFactory threadFactory) {
         Filter bloomFilter = new BloomFilterImp(MAX_AMOUNT_OF_KEYS, MARGIN_ERROR);
         this.filterAdapter = new FilterAdapterImpl(bloomFilter);
         uniqueKeysTracker = new ConcurrentHashMap<>();
@@ -74,7 +75,8 @@ public class UniqueKeysTrackerImp implements UniqueKeysTracker{
         scheduleWithFixedDelay(_cleanFilterScheduledExecutorService, _filterRefreshRate, new ExecuteCleanFilter());
     }
 
-    private void scheduleWithFixedDelay(ScheduledExecutorService scheduledExecutorService, int refreshRate, ExecuteUniqueKeysAction executeUniqueKeysAction) {
+    private void scheduleWithFixedDelay(ScheduledExecutorService scheduledExecutorService, int refreshRate,
+                                        ExecuteUniqueKeysAction executeUniqueKeysAction) {
         scheduledExecutorService.scheduleWithFixedDelay(() -> {
             try {
                 executeUniqueKeysAction.execute();

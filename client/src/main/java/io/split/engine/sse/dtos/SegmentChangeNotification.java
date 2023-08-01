@@ -27,6 +27,7 @@ public class SegmentChangeNotification extends IncomingNotification {
 
     @Override
     public String toString() {
-        return String.format("Type: %s; Channel: %s; ChangeNumber: %s; SegmentName: %s", getType(), getChannel(), getChangeNumber(), getSegmentName());
+        return String.format("Type: %s; Channel: %s; ChangeNumber: %s; SegmentName: %s", getType(), getChannel(), getChangeNumber(),
+                getSegmentName());
     }
 }

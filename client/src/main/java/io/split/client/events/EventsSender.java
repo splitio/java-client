@@ -22,7 +22,8 @@ public class EventsSender {
     private final TelemetryRuntimeProducer _telemetryRuntimeProducer;
     private final HttpPostImp _httpPostImp;
 
-    public static EventsSender create(CloseableHttpClient httpclient, URI eventsTarget, TelemetryRuntimeProducer telemetryRuntimeProducer) throws URISyntaxException {
+    public static EventsSender create(CloseableHttpClient httpclient, URI eventsTarget, TelemetryRuntimeProducer telemetryRuntimeProducer)
+            throws URISyntaxException {
         return new EventsSender(httpclient, Utils.appendPath(eventsTarget, BULK_ENDPOINT_PATH), telemetryRuntimeProducer);
     }
 
