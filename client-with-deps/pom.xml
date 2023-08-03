@@ -1,5 +1,6 @@
-<?xml version="1.0"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <parent>
@@ -7,10 +8,10 @@
         <artifactId>java-client-parent</artifactId>
         <version>4.8.1</version>
     </parent>
-    <artifactId>java-client</artifactId>
+    <artifactId>java-client-with-deps</artifactId>
     <packaging>jar</packaging>
-    <name>Java Client</name>
-    <description>Java SDK for Split</description>
+    <name>Java Client With Dependencies</name>
+    <description>Java SDK for Split with Dependencies bundled</description>
 
     <profiles>
         <profile>
@@ -42,6 +43,78 @@
                     <source>${maven.compiler.source}</source>
                     <target>${maven.compiler.target}</target>
                 </configuration>
+            </plugin>
+            <!-- Shade dependencies to avoid conflicts with other customer's libs -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-shade-plugin</artifactId>
+                <version>3.2.4</version>
+                <executions>
+                    <execution>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>shade</goal>
+                        </goals>
+                        <configuration>
+                            <minimizeJar>false</minimizeJar>
+                            <promoteTransitiveDependencies>true</promoteTransitiveDependencies>
+                            <artifactSet>
+                                <includes>
+                                    <include>io.split.engine:*</include>
+                                    <include>io.split.client:*</include>
+                                    <include>io.split.schemas:*</include>
+                                    <include>io.codigo.grammar:*</include>
+                                    <include>org.apache.httpcomponents.*</include>
+                                    <include>com.google.*</include>
+                                    <include>org.yaml:snakeyaml:*</include>
+
+                                    <!-- Transitive dependency of guava -->
+                                    <include>org.checkerframework:*</include>
+
+                                    <!-- Transitive dependency of httpclient5. Package name is org.apache.commons -->
+                                    <include>commons-codec:*</include>
+                                </includes>
+                            </artifactSet>
+                            <transformers>
+                            <transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer" />
+                            <transformer implementation="org.apache.maven.plugins.shade.resource.ServicesResourceTransformer" />
+                            </transformers>
+                            <relocations>
+                                <relocation>
+                                    <pattern>org.apache</pattern>
+                                    <shadedPattern>split.org.apache</shadedPattern>
+                                </relocation>
+                                <relocation>
+                                    <pattern>org.checkerframework</pattern>
+                                    <shadedPattern>split.org.checkerframework</shadedPattern>
+                                </relocation>
+                                <relocation>
+                                    <pattern>org.yaml.snakeyaml</pattern>
+                                    <shadedPattern>split.org.yaml.snakeyaml</shadedPattern>
+                                </relocation>
+                                <relocation>
+                                    <pattern>com.google</pattern>
+                                    <shadedPattern>split.com.google</shadedPattern>
+                                </relocation>
+                            </relocations>
+                            <filters>
+                                <filter>
+                                    <artifact>*:*</artifact>
+                                    <excludes>
+                                        <exclude>META-INF/license/**</exclude>
+                                        <exclude>META-INF/*</exclude>
+                                        <exclude>META-INF/maven/**</exclude>
+                                        <exclude>META-INF/services/**</exclude>
+                                        <exclude>LICENSE</exclude>
+                                        <exclude>NOTICE</exclude>
+                                        <exclude>/*.txt</exclude>
+                                        <exclude>build.properties</exclude>
+                                    </excludes>
+                                </filter>
+                            </filters>
+                        </configuration>
+                    </execution>
+                </executions>
             </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
