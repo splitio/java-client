@@ -57,6 +57,8 @@
                         <configuration>
                             <minimizeJar>false</minimizeJar>
                             <promoteTransitiveDependencies>true</promoteTransitiveDependencies>
+                            <shadedArtifactAttached>true</shadedArtifactAttached>
+                            <shadedClassifierName>with-deps</shadedClassifierName>
                             <artifactSet>
                                 <includes>
                                     <include>io.split.engine:*</include>
