@@ -1,3 +1,6 @@
+4.9.0 (Aug 3, 2023)
+- Shuffled maven poms around to release both a client only jar and a client with dependencies version
+
 4.8.1 (Aug 1, 2023)
 - Applied linting rules to the code.
 - Fixed an issue when the prefix is empty for Redis settings.
