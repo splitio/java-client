@@ -4,7 +4,7 @@ This SDK is designed to work with [Split](https://www.split.io), the platform fo
 
 ### Quick setup
 
-For specific instructions on how to set up the Split SDK refer to our [official SDK documentation](http://docs.split.io/docs/sdk-overview).
+For specific instructions on how to set up the Split SDK refer to our [official SDK documentation](https://help.split.io/hc/en-us/articles/360020405151-Java-SDK).
 
 ### Commitment to Quality:
 
