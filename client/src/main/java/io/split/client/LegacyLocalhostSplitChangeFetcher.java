@@ -22,7 +22,7 @@ import java.util.Optional;
 
 public class LegacyLocalhostSplitChangeFetcher implements SplitChangeFetcher {
 
-    private static final Logger _log = LoggerFactory.getLogger(YamlLocalhostSplitChangeFetcher.class);
+    private static final Logger _log = LoggerFactory.getLogger(LegacyLocalhostSplitChangeFetcher.class);
     static final String FILENAME = ".split";
     private final File _splitFile;
 

@@ -2,7 +2,7 @@ package io.split.engine.segments;
 
 import com.google.common.collect.Maps;
 import io.split.client.LocalhostSegmentChangeFetcher;
-import io.split.client.JsonLocalhostSplitChangeFetcher;
+import io.split.client.JsonFileLocalhostSplitChangeFetcher;
 import io.split.engine.common.FetchOptions;
 import io.split.engine.experiments.SplitChangeFetcher;
 import io.split.engine.experiments.SplitFetcher;
@@ -149,7 +149,7 @@ public class SegmentSynchronizationTaskImpTest {
 
         SplitCache splitCacheProducer = new InMemoryCacheImp();
 
-        SplitChangeFetcher splitChangeFetcher = new JsonLocalhostSplitChangeFetcher("src/test/resources/split_init.json");
+        SplitChangeFetcher splitChangeFetcher = new JsonFileLocalhostSplitChangeFetcher("src/test/resources/split_init.json");
         SplitParser splitParser = new SplitParser();
         FetchOptions fetchOptions = new FetchOptions.Builder().build();
         SplitFetcher splitFetcher = new SplitFetcherImp(splitChangeFetcher, splitParser, splitCacheProducer, TELEMETRY_STORAGE_NOOP);

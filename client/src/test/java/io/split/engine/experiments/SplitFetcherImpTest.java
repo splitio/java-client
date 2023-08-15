@@ -1,6 +1,6 @@
 package io.split.engine.experiments;
 
-import io.split.client.JsonLocalhostSplitChangeFetcher;
+import io.split.client.JsonFileLocalhostSplitChangeFetcher;
 import io.split.engine.common.FetchOptions;
 import io.split.storages.SplitCacheProducer;
 import io.split.storages.memory.InMemoryCacheImp;
@@ -18,7 +18,7 @@ public class SplitFetcherImpTest {
     public void testLocalHost(){
         SplitCacheProducer splitCacheProducer = new InMemoryCacheImp();
 
-        SplitChangeFetcher splitChangeFetcher = new JsonLocalhostSplitChangeFetcher("src/test/resources/split_init.json");
+        SplitChangeFetcher splitChangeFetcher = new JsonFileLocalhostSplitChangeFetcher("src/test/resources/split_init.json");
         SplitParser splitParser = new SplitParser();
         FetchOptions fetchOptions = new FetchOptions.Builder().build();
         SplitFetcher splitFetcher = new SplitFetcherImp(splitChangeFetcher, splitParser, splitCacheProducer, TELEMETRY_STORAGE_NOOP);

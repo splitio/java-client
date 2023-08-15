@@ -1,7 +1,7 @@
 package io.split.engine.common;
 
 import io.split.client.LocalhostSegmentChangeFetcher;
-import io.split.client.JsonLocalhostSplitChangeFetcher;
+import io.split.client.JsonFileLocalhostSplitChangeFetcher;
 import io.split.engine.experiments.SplitChangeFetcher;
 import io.split.engine.experiments.SplitFetcher;
 import io.split.engine.experiments.SplitFetcherImp;
@@ -28,7 +28,7 @@ public class LocalhostSynchronizerTest {
     public void testSyncAll() {
         SplitCache splitCacheProducer = new InMemoryCacheImp();
 
-        SplitChangeFetcher splitChangeFetcher = new JsonLocalhostSplitChangeFetcher("src/test/resources/split_init.json");
+        SplitChangeFetcher splitChangeFetcher = new JsonFileLocalhostSplitChangeFetcher("src/test/resources/split_init.json");
         SplitParser splitParser = new SplitParser();
 
         SplitFetcher splitFetcher = new SplitFetcherImp(splitChangeFetcher, splitParser, splitCacheProducer, TELEMETRY_STORAGE_NOOP);
@@ -50,7 +50,7 @@ public class LocalhostSynchronizerTest {
     public void testPeriodicFetching() throws InterruptedException {
         SplitCache splitCacheProducer = new InMemoryCacheImp();
 
-        SplitChangeFetcher splitChangeFetcher = Mockito.mock(JsonLocalhostSplitChangeFetcher.class);
+        SplitChangeFetcher splitChangeFetcher = Mockito.mock(JsonFileLocalhostSplitChangeFetcher.class);
         SplitParser splitParser = new SplitParser();
 
         SplitFetcher splitFetcher = new SplitFetcherImp(splitChangeFetcher, splitParser, splitCacheProducer, TELEMETRY_STORAGE_NOOP);

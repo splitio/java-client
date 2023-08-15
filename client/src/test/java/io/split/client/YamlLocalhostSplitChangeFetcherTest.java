@@ -52,13 +52,13 @@ public class YamlLocalhostSplitChangeFetcherTest {
         split2_user_a.put("split_2", split2_user_a_data);
         allSplits.add(split2_user_a);
 
-
         Yaml yaml = new Yaml();
         StringWriter writer = new StringWriter();
         yaml.dump(allSplits, writer);
         LocalhostUtils.writeFile(file, writer);
 
-        YamlLocalhostSplitChangeFetcher localhostSplitChangeFetcher = new YamlLocalhostSplitChangeFetcher(file.getAbsolutePath());
+        YamlLocalhostSplitChangeFetcher localhostSplitChangeFetcher = new YamlFileLocalhostSplitChangeFetcher(
+                file.getAbsolutePath());
         FetchOptions fetchOptions = Mockito.mock(FetchOptions.class);
         SplitChange splitChange = localhostSplitChangeFetcher.fetch(-1L, fetchOptions);
 

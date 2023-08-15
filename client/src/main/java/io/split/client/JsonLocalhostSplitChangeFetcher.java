@@ -8,44 +8,26 @@ import io.split.engine.common.FetchOptions;
 import io.split.engine.experiments.SplitChangeFetcher;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileReader;
 import java.io.UnsupportedEncodingException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.Arrays;
 
-public class JsonLocalhostSplitChangeFetcher implements SplitChangeFetcher {
-
+public abstract class JsonLocalhostSplitChangeFetcher implements SplitChangeFetcher {
     private static final Logger _log = LoggerFactory.getLogger(JsonLocalhostSplitChangeFetcher.class);
-    private final File _file;
-    private byte [] lastHash;
-
-    public JsonLocalhostSplitChangeFetcher(String filePath) {
-        _file = new File(filePath);
-        lastHash = new byte[0];
-    }
+    byte [] lastHash;
+    public abstract JsonReader readFile();
+    public abstract String getFilePath();
 
     @Override
     public SplitChange fetch(long since, FetchOptions options) {
 
         try {
-            JsonReader jsonReader = new JsonReader(new FileReader(_file));
-            SplitChange splitChange = Json.fromJson(jsonReader, SplitChange.class);
+            SplitChange splitChange = Json.fromJson(readFile(), SplitChange.class);
             return processSplitChange(splitChange, since);
-        } catch (FileNotFoundException f){
-            _log.warn(String.format("There was no file named %s found. " +
-                            "We created a split client that returns default treatments for all feature flags for all of your users. " +
-                            "If you wish to return a specific treatment for a feature flag, enter the name of that feature flag name and " +
-                            "treatment name separated by whitespace in %s; one pair per line. Empty lines or lines starting with '#' are " +
-                            "considered comments",
-                    _file.getPath(), _file.getPath()), f);
-            throw new IllegalStateException("Problem fetching splitChanges: " + f.getMessage(), f);
         } catch (Exception e) {
             _log.warn(String.format("Problem to fetch split change using the file %s",
-                    _file.getPath()), e);
+                    getFilePath()), e);
             throw new IllegalStateException("Problem fetching splitChanges: " + e.getMessage(), e);
         }
     }

@@ -368,13 +368,24 @@ public class SplitFactoryImpl implements SplitFactory {
         // SplitFetcher
         SplitChangeFetcher splitChangeFetcher;
         String splitFile = config.splitFile();
-        if (splitFile != null && splitFile.toLowerCase().endsWith(".json")){
-            splitChangeFetcher = new JsonLocalhostSplitChangeFetcher(config.splitFile());
-        } else if (splitFile != null && !splitFile.isEmpty() && (splitFile.endsWith(".yaml") || splitFile.endsWith(".yml"))) {
-            splitChangeFetcher = new YamlLocalhostSplitChangeFetcher(splitFile);
+        if (splitFile != null){
+            if (splitFile.toLowerCase().endsWith(".json")){
+                splitChangeFetcher= null;
+                //splitChangeFetcher = new JsonFileLocalhostSplitChangeFetcher(config.splitFile());
+            } else if (!splitFile.isEmpty() && (splitFile.endsWith(".yaml") || splitFile.endsWith(".yml"))) {
+                splitChangeFetcher = new YamlFileLocalhostSplitChangeFetcher(config.splitFile());
+            } else {
+                splitChangeFetcher = new LegacyLocalhostSplitChangeFetcher(config.splitFile());
+            }
         } else {
-            splitChangeFetcher = new LegacyLocalhostSplitChangeFetcher(config.splitFile());
+            String splitFileResource = config.splitFileResource();
+            if (splitFileResource != null && (splitFileResource.endsWith(".yaml") || splitFileResource.endsWith(".yml"))) {
+                splitChangeFetcher = new YamlResourceLocalhostSplitChangeFetcher(splitFileResource);
+            } else {
+                splitChangeFetcher = new YamlResourceLocalhostSplitChangeFetcher(splitFileResource);
+            }
         }
+
 
         SplitParser splitParser = new SplitParser();
 

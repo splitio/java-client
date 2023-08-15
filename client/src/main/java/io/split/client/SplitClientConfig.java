@@ -49,6 +49,7 @@ public class SplitClientConfig {
     private final int _maxStringLength;
     private final boolean _destroyOnShutDown;
     private final String _splitFile;
+    private final String _splitFileResource;
     private final String _segmentDirectory;
     private final IntegrationsConfig _integrationsConfig;
     private final boolean _streamingEnabled;
@@ -111,6 +112,7 @@ public class SplitClientConfig {
                               int maxStringLength,
                               boolean destroyOnShutDown,
                               String splitFile,
+                              String splitFileResource,
                               String segmentDirectory,
                               IntegrationsConfig integrationsConfig,
                               boolean streamingEnabled,
@@ -159,6 +161,7 @@ public class SplitClientConfig {
         _maxStringLength = maxStringLength;
         _destroyOnShutDown = destroyOnShutDown;
         _splitFile = splitFile;
+        _splitFileResource = splitFileResource;
         _segmentDirectory = segmentDirectory;
         _integrationsConfig = integrationsConfig;
         _streamingEnabled = streamingEnabled;
@@ -300,6 +303,9 @@ public class SplitClientConfig {
     public String splitFile() {
         return _splitFile;
     }
+    public String splitFileResource() {
+        return _splitFileResource;
+    }
 
     public String segmentDirectory() {
         return _segmentDirectory;
@@ -394,6 +400,7 @@ public class SplitClientConfig {
         private int _maxStringLength = 250;
         private boolean _destroyOnShutDown = true;
         private String _splitFile = null;
+        private String _splitFileResource = null;
         private String _segmentDirectory = null;
         private IntegrationsConfig _integrationsConfig = null;
         private boolean _streamingEnabled = true;
@@ -749,6 +756,18 @@ public class SplitClientConfig {
         }
 
         /**
+         * Set the location of the new yaml file for localhost when is located in resources, and it will be use inside a jar.
+         * This setting is optional.
+         *
+         * @param splitFileResource location
+         * @return this builder
+         */
+        public Builder splitFileResource(String splitFileResource) {
+            _splitFileResource = splitFileResource;
+            return this;
+        }
+
+        /**
          * Set the location of the directory where are the segment json files for localhost mode.
          * This setting is optional.
          *
@@ -1005,6 +1024,7 @@ public class SplitClientConfig {
                     _maxStringLength,
                     _destroyOnShutDown,
                     _splitFile,
+                    _splitFileResource,
                     _segmentDirectory,
                     _integrationsConfig,
                     _streamingEnabled,
