@@ -1,7 +1,7 @@
 package io.split.engine.common;
 
+import io.split.client.JsonLocalhostSplitChangeFetcher;
 import io.split.client.LocalhostSegmentChangeFetcher;
-import io.split.client.JsonFileLocalhostSplitChangeFetcher;
 import io.split.engine.experiments.SplitChangeFetcher;
 import io.split.engine.experiments.SplitFetcher;
 import io.split.engine.experiments.SplitFetcherImp;
@@ -20,15 +20,21 @@ import org.junit.Assert;
 import org.junit.Test;
 import org.mockito.Mockito;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.InputStream;
+
 public class LocalhostSynchronizerTest {
 
     private static final TelemetryStorage TELEMETRY_STORAGE_NOOP = Mockito.mock(NoopTelemetryStorage.class);
 
     @Test
-    public void testSyncAll() {
+    public void testSyncAll() throws FileNotFoundException {
         SplitCache splitCacheProducer = new InMemoryCacheImp();
 
-        SplitChangeFetcher splitChangeFetcher = new JsonFileLocalhostSplitChangeFetcher("src/test/resources/split_init.json");
+        InputStream inputStream = new FileInputStream(new File("src/test/resources/split_init.json"));
+        SplitChangeFetcher splitChangeFetcher = new JsonLocalhostSplitChangeFetcher(inputStream);
         SplitParser splitParser = new SplitParser();
 
         SplitFetcher splitFetcher = new SplitFetcherImp(splitChangeFetcher, splitParser, splitCacheProducer, TELEMETRY_STORAGE_NOOP);
@@ -50,7 +56,7 @@ public class LocalhostSynchronizerTest {
     public void testPeriodicFetching() throws InterruptedException {
         SplitCache splitCacheProducer = new InMemoryCacheImp();
 
-        SplitChangeFetcher splitChangeFetcher = Mockito.mock(JsonFileLocalhostSplitChangeFetcher.class);
+        SplitChangeFetcher splitChangeFetcher = Mockito.mock(JsonLocalhostSplitChangeFetcher.class);
         SplitParser splitParser = new SplitParser();
 
         SplitFetcher splitFetcher = new SplitFetcherImp(splitChangeFetcher, splitParser, splitCacheProducer, TELEMETRY_STORAGE_NOOP);

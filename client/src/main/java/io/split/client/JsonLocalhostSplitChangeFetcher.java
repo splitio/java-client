@@ -8,16 +8,25 @@ import io.split.engine.common.FetchOptions;
 import io.split.engine.experiments.SplitChangeFetcher;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.io.BufferedReader;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.io.UnsupportedEncodingException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.Arrays;
 
-public abstract class JsonLocalhostSplitChangeFetcher implements SplitChangeFetcher {
+public class JsonLocalhostSplitChangeFetcher implements SplitChangeFetcher {
     private static final Logger _log = LoggerFactory.getLogger(JsonLocalhostSplitChangeFetcher.class);
-    byte [] lastHash;
-    public abstract JsonReader readFile();
-    public abstract String getFilePath();
+
+    private final InputStream _inputStream;
+    private byte [] lastHash;
+
+    public JsonLocalhostSplitChangeFetcher(InputStream inputStream) {
+        _inputStream = inputStream;
+        lastHash = new byte[0];
+    }
 
     @Override
     public SplitChange fetch(long since, FetchOptions options) {
@@ -27,7 +36,7 @@ public abstract class JsonLocalhostSplitChangeFetcher implements SplitChangeFetc
             return processSplitChange(splitChange, since);
         } catch (Exception e) {
             _log.warn(String.format("Problem to fetch split change using the file %s",
-                    getFilePath()), e);
+                    _inputStream.toString()), e);
             throw new IllegalStateException("Problem fetching splitChanges: " + e.getMessage(), e);
         }
     }
@@ -52,5 +61,17 @@ public abstract class JsonLocalhostSplitChangeFetcher implements SplitChangeFetc
         lastHash = currHash;
         splitChangeToProcess.since = changeNumber;
         return splitChangeToProcess;
+    }
+
+    public JsonReader readFile() {
+        try {
+            BufferedReader streamReader = new BufferedReader(new InputStreamReader(_inputStream, "UTF-8"));
+            JsonReader jsonReader = new JsonReader(streamReader);
+            return jsonReader;
+        } catch (Exception e){
+            _log.warn(String.format("Problem to fetch split change using the file %s",
+                    _inputStream.toString()), e);
+            throw new IllegalStateException("Problem fetching splitChanges: " + e.getMessage(), e);
+        }
     }
 }
