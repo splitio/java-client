@@ -5,16 +5,15 @@ import io.split.client.dtos.ConditionType;
 import io.split.client.dtos.Split;
 import io.split.client.dtos.SplitChange;
 import io.split.client.dtos.Status;
+import io.split.client.utils.InputStreamProvider;
 import io.split.client.utils.LocalhostConstants;
 import io.split.engine.common.FetchOptions;
 import io.split.engine.experiments.SplitChangeFetcher;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.yaml.snakeyaml.Yaml;
 
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileReader;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -27,17 +26,17 @@ import static io.split.client.utils.LocalhostSanitizer.createCondition;
 public class YamlLocalhostSplitChangeFetcher implements SplitChangeFetcher {
 
     private static final Logger _log = LoggerFactory.getLogger(YamlLocalhostSplitChangeFetcher.class);
-    private final File _splitFile;
+    private final InputStreamProvider _inputStreamProvider;
 
-    public YamlLocalhostSplitChangeFetcher(String filePath) {
-        _splitFile = new File(filePath);
+    public YamlLocalhostSplitChangeFetcher(InputStreamProvider inputStreamProvider) {
+        _inputStreamProvider = inputStreamProvider;
     }
 
     @Override
     public SplitChange fetch(long since, FetchOptions options) {
         try {
             Yaml yaml = new Yaml();
-            List<Map<String, Map<String, Object>>> yamlSplits = yaml.load(new FileReader(_splitFile));
+            List<Map<String, Map<String, Object>>> yamlSplits = yaml.load(_inputStreamProvider.get());
             SplitChange splitChange = new SplitChange();
             splitChange.splits = new ArrayList<>();
             for(Map<String, Map<String, Object>> aSplit : yamlSplits) {
@@ -76,16 +75,8 @@ public class YamlLocalhostSplitChangeFetcher implements SplitChangeFetcher {
             splitChange.till = since;
             splitChange.since = since;
             return splitChange;
-        } catch (FileNotFoundException f) {
-            _log.warn(String.format("There was no file named %s found. We created a split client that returns default treatments " +
-                            "for all feature flags for all of your users. If you wish to return a specific treatment for a feature flag, " +
-                            "enter the name of that feature flag name and treatment name separated by whitespace in %s; one pair per line. " +
-                            "Empty lines or lines starting with '#' are considered comments",
-                    _splitFile.getPath(), _splitFile.getPath()), f);
-            throw new IllegalStateException("Problem fetching splitChanges: " + f.getMessage(), f);
         } catch (Exception e) {
-            _log.warn(String.format("Problem to fetch split change using the file %s",
-                    _splitFile.getPath()), e);
+            _log.warn(String.format("Problem to fetch split change using a file"), e);
             throw new IllegalStateException("Problem fetching splitChanges: " + e.getMessage(), e);
         }
     }

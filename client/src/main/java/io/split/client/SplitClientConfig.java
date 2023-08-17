@@ -2,6 +2,7 @@ package io.split.client;
 
 import io.split.client.impressions.ImpressionListener;
 import io.split.client.impressions.ImpressionsManager;
+import io.split.client.utils.FileTypeEnum;
 import io.split.integrations.IntegrationsConfig;
 import io.split.storages.enums.OperationMode;
 import io.split.storages.enums.StorageMode;
@@ -9,6 +10,7 @@ import org.apache.hc.core5.http.HttpHost;
 import pluggable.CustomStorageWrapper;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.Properties;
 import java.util.concurrent.ThreadFactory;
 
@@ -49,6 +51,8 @@ public class SplitClientConfig {
     private final int _maxStringLength;
     private final boolean _destroyOnShutDown;
     private final String _splitFile;
+    private final FileTypeEnum _fileType;
+    private final InputStream _inputStream;
     private final String _segmentDirectory;
     private final IntegrationsConfig _integrationsConfig;
     private final boolean _streamingEnabled;
@@ -81,7 +85,6 @@ public class SplitClientConfig {
     public static String splitSdkVersion;
     private final long _lastSeenCacheSize;
 
-
     public static Builder builder() {
         return new Builder();
     }
@@ -111,6 +114,8 @@ public class SplitClientConfig {
                               int maxStringLength,
                               boolean destroyOnShutDown,
                               String splitFile,
+                              FileTypeEnum fileType,
+                              InputStream inputStream,
                               String segmentDirectory,
                               IntegrationsConfig integrationsConfig,
                               boolean streamingEnabled,
@@ -159,6 +164,8 @@ public class SplitClientConfig {
         _maxStringLength = maxStringLength;
         _destroyOnShutDown = destroyOnShutDown;
         _splitFile = splitFile;
+        _fileType = fileType;
+        _inputStream = inputStream;
         _segmentDirectory = segmentDirectory;
         _integrationsConfig = integrationsConfig;
         _streamingEnabled = streamingEnabled;
@@ -301,6 +308,14 @@ public class SplitClientConfig {
         return _splitFile;
     }
 
+    public FileTypeEnum fileType() {
+        return _fileType;
+    }
+
+    public InputStream inputStream(){
+        return _inputStream;
+    }
+
     public String segmentDirectory() {
         return _segmentDirectory;
     }
@@ -394,6 +409,8 @@ public class SplitClientConfig {
         private int _maxStringLength = 250;
         private boolean _destroyOnShutDown = true;
         private String _splitFile = null;
+        private FileTypeEnum _fileType = null;
+        private InputStream _inputStream = null;
         private String _segmentDirectory = null;
         private IntegrationsConfig _integrationsConfig = null;
         private boolean _streamingEnabled = true;
@@ -748,6 +765,12 @@ public class SplitClientConfig {
             return this;
         }
 
+        public Builder splitFile(InputStream inputStream, FileTypeEnum fileType) {
+            _fileType = fileType;
+            _inputStream = inputStream;
+            return this;
+        }
+
         /**
          * Set the location of the directory where are the segment json files for localhost mode.
          * This setting is optional.
@@ -1005,6 +1028,8 @@ public class SplitClientConfig {
                     _maxStringLength,
                     _destroyOnShutDown,
                     _splitFile,
+                    _fileType,
+                    _inputStream,
                     _segmentDirectory,
                     _integrationsConfig,
                     _streamingEnabled,

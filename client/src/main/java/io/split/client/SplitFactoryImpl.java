@@ -30,6 +30,9 @@ import io.split.client.interceptors.ClientKeyInterceptorFilter;
 import io.split.client.interceptors.GzipDecoderResponseInterceptor;
 import io.split.client.interceptors.GzipEncoderRequestInterceptor;
 import io.split.client.interceptors.SdkMetadataInterceptorFilter;
+import io.split.client.utils.FileInputStreamProvider;
+import io.split.client.utils.InputStreamProvider;
+import io.split.client.utils.InputStreamProviderImp;
 import io.split.client.utils.SDKMetadata;
 import io.split.engine.SDKReadinessGates;
 import io.split.engine.common.ConsumerSyncManager;
@@ -366,16 +369,44 @@ public class SplitFactoryImpl implements SplitFactory {
                config.getThreadFactory());
 
         // SplitFetcher
-        SplitChangeFetcher splitChangeFetcher;
+        SplitChangeFetcher splitChangeFetcher = new LegacyLocalhostSplitChangeFetcher(config.splitFile());
+        InputStreamProvider inputStreamProvider;
         String splitFile = config.splitFile();
-        if (splitFile != null && splitFile.toLowerCase().endsWith(".json")){
-            splitChangeFetcher = new JsonLocalhostSplitChangeFetcher(config.splitFile());
-        } else if (splitFile != null && !splitFile.isEmpty() && (splitFile.endsWith(".yaml") || splitFile.endsWith(".yml"))) {
-            splitChangeFetcher = new YamlLocalhostSplitChangeFetcher(splitFile);
+        if (splitFile != null) {
+            try {
+                if (splitFile.toLowerCase().endsWith(".json")) {
+                    inputStreamProvider = new FileInputStreamProvider(splitFile);
+                    splitChangeFetcher = new JsonLocalhostSplitChangeFetcher(inputStreamProvider);
+                } else if (!splitFile.isEmpty() && (splitFile.endsWith(".yaml") || splitFile.endsWith(".yml"))) {
+                    inputStreamProvider = new FileInputStreamProvider(splitFile);
+                    splitChangeFetcher = new YamlLocalhostSplitChangeFetcher(inputStreamProvider);
+                }
+            } catch (Exception e) {
+                _log.warn(String.format("There was no file named %s found. " +
+                                "We created a split client that returns default treatments for all feature flags for all of your users. " +
+                                "If you wish to return a specific treatment for a feature flag, enter the name of that feature flag name and " +
+                                "treatment name separated by whitespace in %s; one pair per line. Empty lines or lines starting with '#' are " +
+                                "considered comments",
+                        splitFile, splitFile), e);
+            }
+        } else if (config.inputStream() != null) {
+            inputStreamProvider = new InputStreamProviderImp(config.inputStream());
+            if (config.fileType() != null) {
+                switch (config.fileType()) {
+                    case JSON:
+                        splitChangeFetcher = new JsonLocalhostSplitChangeFetcher(inputStreamProvider);
+                        break;
+                    case YAML:
+                        splitChangeFetcher = new YamlLocalhostSplitChangeFetcher(inputStreamProvider);
+                        break;
+                }
+            } else {
+                _log.warn("Should add an fileType in the config if there is an inputStream");
+            }
         } else {
-            splitChangeFetcher = new LegacyLocalhostSplitChangeFetcher(config.splitFile());
+            _log.warn("The sdk initialize in localhost mode using Legacy file. The splitFile doesn't add it in the config.");
         }
-
+        
         SplitParser splitParser = new SplitParser();
 
         _splitFetcher = new SplitFetcherImp(splitChangeFetcher, splitParser, splitCache, _telemetryStorageProducer);

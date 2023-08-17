@@ -2,6 +2,8 @@ package io.split.client;
 
 import io.split.client.dtos.Split;
 import io.split.client.dtos.SplitChange;
+import io.split.client.utils.FileInputStreamProvider;
+import io.split.client.utils.InputStreamProvider;
 import io.split.client.utils.LocalhostUtils;
 import io.split.engine.common.FetchOptions;
 import org.junit.Assert;
@@ -12,7 +14,9 @@ import org.mockito.Mockito;
 import org.yaml.snakeyaml.Yaml;
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
@@ -58,7 +62,8 @@ public class YamlLocalhostSplitChangeFetcherTest {
         yaml.dump(allSplits, writer);
         LocalhostUtils.writeFile(file, writer);
 
-        YamlLocalhostSplitChangeFetcher localhostSplitChangeFetcher = new YamlLocalhostSplitChangeFetcher(file.getAbsolutePath());
+        InputStreamProvider inputStreamProvider = new FileInputStreamProvider(file.getAbsolutePath());
+        YamlLocalhostSplitChangeFetcher localhostSplitChangeFetcher = new YamlLocalhostSplitChangeFetcher(inputStreamProvider);
         FetchOptions fetchOptions = Mockito.mock(FetchOptions.class);
         SplitChange splitChange = localhostSplitChangeFetcher.fetch(-1L, fetchOptions);
 
