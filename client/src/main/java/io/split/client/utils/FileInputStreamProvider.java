@@ -1,5 +1,7 @@
 package io.split.client.utils;
 
+import io.split.client.exceptions.InputStreamProviderException;
+
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.InputStream;
@@ -13,7 +15,11 @@ public class FileInputStreamProvider implements InputStreamProvider {
     }
 
     @Override
-    public InputStream get() throws FileNotFoundException {
-        return new FileInputStream(_fileName);
+    public InputStream get() throws InputStreamProviderException {
+        try {
+            return new FileInputStream(_fileName);
+        } catch (FileNotFoundException f) {
+            throw new InputStreamProviderException(_fileName, f.getMessage());
+        }
     }
 }

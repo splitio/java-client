@@ -2,6 +2,7 @@ package io.split.client;
 
 import com.google.gson.stream.JsonReader;
 import io.split.client.dtos.SplitChange;
+import io.split.client.exceptions.InputStreamProviderException;
 import io.split.client.utils.InputStreamProvider;
 import io.split.client.utils.Json;
 import io.split.client.utils.LocalhostSanitizer;
@@ -12,7 +13,6 @@ import org.slf4j.LoggerFactory;
 
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
-import java.io.UnsupportedEncodingException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.Arrays;
@@ -31,17 +31,19 @@ public class JsonLocalhostSplitChangeFetcher implements SplitChangeFetcher {
     @Override
     public SplitChange fetch(long since, FetchOptions options) {
         try {
-            BufferedReader streamReader = new BufferedReader(new InputStreamReader(_inputStreamProvider.get(), "UTF-8"));
-            JsonReader jsonReader = new JsonReader(streamReader);
+            JsonReader jsonReader = new JsonReader(new BufferedReader(new InputStreamReader(_inputStreamProvider.get(), "UTF-8")));
             SplitChange splitChange = Json.fromJson(jsonReader, SplitChange.class);
             return processSplitChange(splitChange, since);
+        } catch (InputStreamProviderException i) {
+            _log.warn(String.format("Problem to fetch split change using file named %s", i.getFileName()));
+            throw new IllegalStateException("Problem fetching splitChanges: " + i.getMessage(), i);
         } catch (Exception e) {
             _log.warn(String.format("Problem to fetch split change using a file"), e);
             throw new IllegalStateException("Problem fetching splitChanges: " + e.getMessage(), e);
         }
     }
 
-    private SplitChange processSplitChange(SplitChange splitChange, long changeNumber) throws NoSuchAlgorithmException, UnsupportedEncodingException {
+    private SplitChange processSplitChange(SplitChange splitChange, long changeNumber) throws NoSuchAlgorithmException {
         SplitChange splitChangeToProcess = LocalhostSanitizer.sanitization(splitChange);
         // if the till is less than storage CN and different from the default till ignore the change
         if (splitChangeToProcess.till < changeNumber && splitChangeToProcess.till != -1) {

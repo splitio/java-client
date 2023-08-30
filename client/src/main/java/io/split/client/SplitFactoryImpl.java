@@ -31,8 +31,9 @@ import io.split.client.interceptors.GzipDecoderResponseInterceptor;
 import io.split.client.interceptors.GzipEncoderRequestInterceptor;
 import io.split.client.interceptors.SdkMetadataInterceptorFilter;
 import io.split.client.utils.FileInputStreamProvider;
-import io.split.client.utils.InputStreamProvider;
+import io.split.client.utils.FileTypeEnum;
 import io.split.client.utils.InputStreamProviderImp;
+import io.split.client.utils.LocalhostPair;
 import io.split.client.utils.SDKMetadata;
 import io.split.engine.SDKReadinessGates;
 import io.split.engine.common.ConsumerSyncManager;
@@ -102,6 +103,7 @@ import org.slf4j.LoggerFactory;
 import pluggable.CustomStorageWrapper;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.InetAddress;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -369,44 +371,19 @@ public class SplitFactoryImpl implements SplitFactory {
                config.getThreadFactory());
 
         // SplitFetcher
+        LocalhostPair pair = getInputStreamProviderAndFileType(config.splitFile(), config.inputStream(), config.fileType());
         SplitChangeFetcher splitChangeFetcher = new LegacyLocalhostSplitChangeFetcher(config.splitFile());
-        InputStreamProvider inputStreamProvider;
-        String splitFile = config.splitFile();
-        if (splitFile != null) {
-            try {
-                if (splitFile.toLowerCase().endsWith(".json")) {
-                    inputStreamProvider = new FileInputStreamProvider(splitFile);
-                    splitChangeFetcher = new JsonLocalhostSplitChangeFetcher(inputStreamProvider);
-                } else if (!splitFile.isEmpty() && (splitFile.endsWith(".yaml") || splitFile.endsWith(".yml"))) {
-                    inputStreamProvider = new FileInputStreamProvider(splitFile);
-                    splitChangeFetcher = new YamlLocalhostSplitChangeFetcher(inputStreamProvider);
-                }
-            } catch (Exception e) {
-                _log.warn(String.format("There was no file named %s found. " +
-                                "We created a split client that returns default treatments for all feature flags for all of your users. " +
-                                "If you wish to return a specific treatment for a feature flag, enter the name of that feature flag name and " +
-                                "treatment name separated by whitespace in %s; one pair per line. Empty lines or lines starting with '#' are " +
-                                "considered comments",
-                        splitFile, splitFile), e);
-            }
-        } else if (config.inputStream() != null) {
-            inputStreamProvider = new InputStreamProviderImp(config.inputStream());
-            if (config.fileType() != null) {
-                switch (config.fileType()) {
-                    case JSON:
-                        splitChangeFetcher = new JsonLocalhostSplitChangeFetcher(inputStreamProvider);
-                        break;
-                    case YAML:
-                        splitChangeFetcher = new YamlLocalhostSplitChangeFetcher(inputStreamProvider);
-                        break;
-                }
-            } else {
-                _log.warn("Should add an fileType in the config if there is an inputStream");
-            }
+        if (pair == null) {
+            _log.warn("The sdk initialize in localhost mode using Legacy file. The splitFile or inputStream doesn't add it to the config.");
         } else {
-            _log.warn("The sdk initialize in localhost mode using Legacy file. The splitFile doesn't add it in the config.");
+            switch (pair.getFileTypeEnum()) {
+                case JSON:
+                    splitChangeFetcher = new JsonLocalhostSplitChangeFetcher(pair.getInputStreamProvider());
+                    break;
+                case YAML:
+                    splitChangeFetcher = new YamlLocalhostSplitChangeFetcher(pair.getInputStreamProvider());
+            }
         }
-        
         SplitParser splitParser = new SplitParser();
 
         _splitFetcher = new SplitFetcherImp(splitChangeFetcher, splitParser, splitCache, _telemetryStorageProducer);
@@ -671,6 +648,41 @@ public class SplitFactoryImpl implements SplitFactory {
                     : config.uniqueKeysRefreshRateRedis();
             return new UniqueKeysTrackerImp(_telemetrySynchronizer, uniqueKeysRefreshRate, config.filterUniqueKeysRefreshRate(),
                     config.getThreadFactory());
+        }
+        return null;
+    }
+
+    private LocalhostPair getInputStreamProviderAndFileType(String splitFile, InputStream inputStream,
+                                                                                      FileTypeEnum fileType) {
+        if (splitFile != null && inputStream != null) {
+            _log.warn("splitFile or inputStreamProvider should have a value, not both");
+            return null;
+        }
+        if (inputStream != null && fileType == null) {
+            _log.warn("If inputStreamProvider is not null, then fileType must also have a non-null value");
+            return null;
+        }
+        if (inputStream == null && splitFile == null){
+            _log.warn("splitFile or inputStreamProvider should have a value");
+            return null;
+        }
+        if (splitFile != null) {
+            try {
+                if (splitFile.toLowerCase().endsWith(".json")) {
+                    return new LocalhostPair(new FileInputStreamProvider(splitFile), FileTypeEnum.JSON);
+                } else if (splitFile.endsWith(".yaml") || splitFile.endsWith(".yml")) {
+                    return new LocalhostPair(new FileInputStreamProvider(splitFile), FileTypeEnum.YAML);
+                }
+            } catch (Exception e) {
+                _log.warn(String.format("There was no file named %s found. " +
+                                "We created a split client that returns default treatments for all feature flags for all of your users. " +
+                                "If you wish to return a specific treatment for a feature flag, enter the name of that feature flag name and " +
+                                "treatment name separated by whitespace in %s; one pair per line. Empty lines or lines starting with '#' are " +
+                                "considered comments",
+                        splitFile, splitFile), e);
+            }
+        } else if (inputStream != null) {
+            return new LocalhostPair(new InputStreamProviderImp(inputStream), fileType);
         }
         return null;
     }
