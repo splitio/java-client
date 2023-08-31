@@ -1,5 +1,6 @@
 package io.split.client;
 
+import com.google.common.base.Charsets;
 import com.google.gson.stream.JsonReader;
 import io.split.client.dtos.SplitChange;
 import io.split.client.exceptions.InputStreamProviderException;
@@ -31,12 +32,13 @@ public class JsonLocalhostSplitChangeFetcher implements SplitChangeFetcher {
     @Override
     public SplitChange fetch(long since, FetchOptions options) {
         try {
-            JsonReader jsonReader = new JsonReader(new BufferedReader(new InputStreamReader(_inputStreamProvider.get(), "UTF-8")));
+            JsonReader jsonReader = new JsonReader(new BufferedReader(new InputStreamReader(_inputStreamProvider.get(), Charsets.UTF_8)));
             SplitChange splitChange = Json.fromJson(jsonReader, SplitChange.class);
             return processSplitChange(splitChange, since);
         } catch (InputStreamProviderException i) {
             _log.warn(String.format("Problem to fetch split change using file named %s", i.getFileName()));
-            throw new IllegalStateException("Problem fetching splitChanges: " + i.getMessage(), i);
+            throw new IllegalStateException(String.format("Problem fetching splitChanges using file named %s: %s",
+                    i.getFileName(), i.getMessage()), i);
         } catch (Exception e) {
             _log.warn(String.format("Problem to fetch split change using a file"), e);
             throw new IllegalStateException("Problem fetching splitChanges: " + e.getMessage(), e);

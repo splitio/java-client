@@ -1,19 +1,27 @@
 package io.split.client;
 
 import io.split.client.impressions.ImpressionsManager;
+import io.split.client.utils.FileInputStreamProvider;
+import io.split.client.utils.FileTypeEnum;
+import io.split.client.utils.LocalhostPair;
 import io.split.integrations.IntegrationsConfig;
 import io.split.storages.enums.OperationMode;
 import io.split.storages.pluggable.domain.UserStorageWrapper;
 import io.split.telemetry.storage.TelemetryStorage;
 import io.split.telemetry.synchronizer.TelemetrySynchronizer;
 import junit.framework.TestCase;
+import org.junit.Assert;
 import org.junit.Test;
 import org.mockito.Mockito;
 import pluggable.CustomStorageWrapper;
 
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.InputStream;
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 import java.net.URISyntaxException;
+import java.util.zip.InflaterInputStream;
 
 public class SplitFactoryImplTest extends TestCase {
     public static final String API_KEY ="29013ionasdasd09u";
@@ -162,8 +170,6 @@ public class SplitFactoryImplTest extends TestCase {
         Mockito.verify(telemetrySynchronizer, Mockito.times(1)).synchronizeConfig(Mockito.anyObject(), Mockito.anyLong(), Mockito.anyObject(), Mockito.anyObject());
     }
 
-
-
     @Test
     public void testFactoryConsumerInstantiationRetryReadiness() throws Exception {
         CustomStorageWrapper customStorageWrapper = Mockito.mock(CustomStorageWrapper.class);
@@ -220,5 +226,31 @@ public class SplitFactoryImplTest extends TestCase {
 
         assertTrue(splitFactory.isDestroyed());
         Mockito.verify(userStorageWrapper, Mockito.times(1)).disconnect();
+    }
+
+    @Test
+    public void testGetInputStreamProviderAndFileType() throws URISyntaxException, FileNotFoundException {
+        SplitClientConfig splitClientConfig = SplitClientConfig.builder()
+                .setBlockUntilReadyTimeout(10000)
+                .build();
+        SplitFactoryImpl splitFactory = new SplitFactoryImpl("localhost", splitClientConfig);
+        //splitFile null and InputStream null
+        Assert.assertNull(splitFactory.getInputStreamProviderAndFileType(null, null, FileTypeEnum.JSON));
+
+        //splitFile not null and InputStream not null
+        InputStream inputStream = new FileInputStream("src/test/resources/split_init.json");
+        Assert.assertNull(splitFactory.getInputStreamProviderAndFileType("test", inputStream, FileTypeEnum.JSON));
+
+        //inputStream is not null and fileType is null
+        Assert.assertNull(splitFactory.getInputStreamProviderAndFileType(null, inputStream, null));
+
+        //split file not null
+        LocalhostPair localhostPair = splitFactory.getInputStreamProviderAndFileType("src/test/resources/split_init.json",
+                null, null);
+        Assert.assertNotNull(localhostPair);
+
+        //inputStream is not null and filetype is not null
+        localhostPair = splitFactory.getInputStreamProviderAndFileType(null, inputStream, FileTypeEnum.JSON);
+        Assert.assertNotNull(localhostPair);
     }
 }

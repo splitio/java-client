@@ -372,8 +372,9 @@ public class SplitFactoryImpl implements SplitFactory {
 
         // SplitFetcher
         LocalhostPair pair = getInputStreamProviderAndFileType(config.splitFile(), config.inputStream(), config.fileType());
-        SplitChangeFetcher splitChangeFetcher = new LegacyLocalhostSplitChangeFetcher(config.splitFile());
+        SplitChangeFetcher splitChangeFetcher;
         if (pair == null) {
+            splitChangeFetcher = new LegacyLocalhostSplitChangeFetcher(config.splitFile());
             _log.warn("The sdk initialize in localhost mode using Legacy file. The splitFile or inputStream doesn't add it to the config.");
         } else {
             switch (pair.getFileTypeEnum()) {
@@ -382,6 +383,9 @@ public class SplitFactoryImpl implements SplitFactory {
                     break;
                 case YAML:
                     splitChangeFetcher = new YamlLocalhostSplitChangeFetcher(pair.getInputStreamProvider());
+                    break;
+                default:
+                    splitChangeFetcher = new LegacyLocalhostSplitChangeFetcher(config.splitFile());
             }
         }
         SplitParser splitParser = new SplitParser();
@@ -652,7 +656,7 @@ public class SplitFactoryImpl implements SplitFactory {
         return null;
     }
 
-    private LocalhostPair getInputStreamProviderAndFileType(String splitFile, InputStream inputStream,
+    LocalhostPair getInputStreamProviderAndFileType(String splitFile, InputStream inputStream,
                                                                                       FileTypeEnum fileType) {
         if (splitFile != null && inputStream != null) {
             _log.warn("splitFile or inputStreamProvider should have a value, not both");
@@ -681,7 +685,7 @@ public class SplitFactoryImpl implements SplitFactory {
                                 "considered comments",
                         splitFile, splitFile), e);
             }
-        } else if (inputStream != null) {
+        } else {
             return new LocalhostPair(new InputStreamProviderImp(inputStream), fileType);
         }
         return null;
