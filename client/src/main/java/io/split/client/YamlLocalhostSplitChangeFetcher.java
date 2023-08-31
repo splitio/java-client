@@ -79,8 +79,7 @@ public class YamlLocalhostSplitChangeFetcher implements SplitChangeFetcher {
             throw new IllegalStateException(String.format("Problem fetching splitChanges using file named %s: %s",
                     i.getFileName(), i.getMessage()), i);
         } catch (Exception e) {
-            _log.warn(String.format("Problem to fetch split change using a file"), e);
-            throw new IllegalStateException("Problem fetching splitChanges: " + e.getMessage(), e);
+            throw new IllegalStateException("Problem fetching splitChanges using a yaml file: " + e.getMessage(), e);
         }
     }
 }
