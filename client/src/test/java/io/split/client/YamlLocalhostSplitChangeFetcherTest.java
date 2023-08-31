@@ -74,4 +74,13 @@ public class YamlLocalhostSplitChangeFetcherTest {
             Assert.assertEquals("control", split.defaultTreatment);
         }
     }
+
+    @Test(expected = IllegalStateException.class)
+    public void processTestForException() {
+        InputStreamProvider inputStreamProvider = new FileInputStreamProvider("src/test/resources/notExist.yaml");
+        YamlLocalhostSplitChangeFetcher localhostSplitChangeFetcher = new YamlLocalhostSplitChangeFetcher(inputStreamProvider);
+        FetchOptions fetchOptions = Mockito.mock(FetchOptions.class);
+
+        SplitChange splitChange = localhostSplitChangeFetcher.fetch(-1L, fetchOptions);
+    }
 }

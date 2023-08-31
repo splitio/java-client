@@ -5,6 +5,7 @@ import io.split.client.dtos.ConditionType;
 import io.split.client.dtos.Split;
 import io.split.client.dtos.SplitChange;
 import io.split.client.dtos.Status;
+import io.split.client.exceptions.InputStreamProviderException;
 import io.split.client.utils.InputStreamProvider;
 import io.split.client.utils.LocalhostConstants;
 import io.split.engine.common.FetchOptions;
@@ -21,7 +22,6 @@ import java.util.Map;
 import java.util.Optional;
 
 import static io.split.client.utils.LocalhostSanitizer.createCondition;
-
 
 public class YamlLocalhostSplitChangeFetcher implements SplitChangeFetcher {
 
@@ -75,6 +75,9 @@ public class YamlLocalhostSplitChangeFetcher implements SplitChangeFetcher {
             splitChange.till = since;
             splitChange.since = since;
             return splitChange;
+        } catch (InputStreamProviderException i) {
+            throw new IllegalStateException(String.format("Problem fetching splitChanges using file named %s: %s",
+                    i.getFileName(), i.getMessage()), i);
         } catch (Exception e) {
             _log.warn(String.format("Problem to fetch split change using a file"), e);
             throw new IllegalStateException("Problem fetching splitChanges: " + e.getMessage(), e);

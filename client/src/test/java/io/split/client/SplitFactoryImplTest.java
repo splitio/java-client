@@ -1,7 +1,6 @@
 package io.split.client;
 
 import io.split.client.impressions.ImpressionsManager;
-import io.split.client.utils.FileInputStreamProvider;
 import io.split.client.utils.FileTypeEnum;
 import io.split.client.utils.LocalhostPair;
 import io.split.integrations.IntegrationsConfig;
@@ -21,7 +20,6 @@ import java.io.InputStream;
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 import java.net.URISyntaxException;
-import java.util.zip.InflaterInputStream;
 
 public class SplitFactoryImplTest extends TestCase {
     public static final String API_KEY ="29013ionasdasd09u";

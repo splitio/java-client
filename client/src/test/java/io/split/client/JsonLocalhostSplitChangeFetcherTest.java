@@ -169,4 +169,13 @@ public class JsonLocalhostSplitChangeFetcherTest {
         Assert.assertEquals(2323, splitChange.till);
         Assert.assertEquals(2323, splitChange.since);
     }
+
+    @Test(expected = IllegalStateException.class)
+    public void processTestForException() {
+        InputStreamProvider inputStreamProvider = new FileInputStreamProvider("src/test/resources/notExist.json");
+        JsonLocalhostSplitChangeFetcher localhostSplitChangeFetcher = new JsonLocalhostSplitChangeFetcher(inputStreamProvider);
+        FetchOptions fetchOptions = Mockito.mock(FetchOptions.class);
+
+        SplitChange splitChange = localhostSplitChangeFetcher.fetch(-1L, fetchOptions);
+    }
 }
