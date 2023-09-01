@@ -115,6 +115,7 @@ import static io.split.client.utils.SplitExecutorFactory.buildExecutorService;
 
 public class SplitFactoryImpl implements SplitFactory {
     private static final Logger _log = LoggerFactory.getLogger(SplitFactory.class);
+    private static final String LEGACY_LOG_MESSAGE = "The sdk initialize in localhost mode using Legacy file. The splitFile or inputStream doesn't add it to the config.";
     private final static long SSE_CONNECT_TIMEOUT = 30000;
     private final static long SSE_SOCKET_TIMEOUT = 70000;
 
@@ -645,17 +646,17 @@ public class SplitFactoryImpl implements SplitFactory {
         FileTypeEnum fileType = splitClientConfig.fileType();
         if (splitFile != null && inputStream != null) {
             _log.warn("splitFile or inputStreamProvider should have a value, not both");
-            _log.warn("The sdk initialize in localhost mode using Legacy file. The splitFile or inputStream doesn't add it to the config.");
+            _log.warn(LEGACY_LOG_MESSAGE);
             return new LegacyLocalhostSplitChangeFetcher(splitFile);
         }
         if (inputStream != null && fileType == null) {
             _log.warn("If inputStreamProvider is not null, then fileType must also have a non-null value");
-            _log.warn("The sdk initialize in localhost mode using Legacy file. The splitFile or inputStream doesn't add it to the config.");
+            _log.warn(LEGACY_LOG_MESSAGE);
             return new LegacyLocalhostSplitChangeFetcher(splitFile);
         }
         if (inputStream == null && splitFile == null){
             _log.warn("splitFile or inputStreamProvider should have a value");
-            _log.warn("The sdk initialize in localhost mode using Legacy file. The splitFile or inputStream doesn't add it to the config.");
+            _log.warn(LEGACY_LOG_MESSAGE);
             return new LegacyLocalhostSplitChangeFetcher(splitFile);
         }
         if (splitFile != null) {
@@ -684,7 +685,7 @@ public class SplitFactoryImpl implements SplitFactory {
                     return new LegacyLocalhostSplitChangeFetcher(splitFile);
             }
         }
-        _log.warn("The sdk initialize in localhost mode using Legacy file. The splitFile or inputStream doesn't add it to the config.");
+        _log.warn(LEGACY_LOG_MESSAGE);
         return new LegacyLocalhostSplitChangeFetcher(splitFile);
     }
 }
