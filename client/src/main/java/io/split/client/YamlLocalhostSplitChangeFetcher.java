@@ -5,7 +5,6 @@ import io.split.client.dtos.ConditionType;
 import io.split.client.dtos.Split;
 import io.split.client.dtos.SplitChange;
 import io.split.client.dtos.Status;
-import io.split.client.exceptions.InputStreamProviderException;
 import io.split.client.utils.InputStreamProvider;
 import io.split.client.utils.LocalhostConstants;
 import io.split.engine.common.FetchOptions;
