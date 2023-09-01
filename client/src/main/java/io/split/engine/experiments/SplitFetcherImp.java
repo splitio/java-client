@@ -1,7 +1,6 @@
 package io.split.engine.experiments;
 
 import io.split.client.dtos.SplitChange;
-import io.split.client.exceptions.InputStreamProviderException;
 import io.split.client.utils.FeatureFlagsToUpdate;
 import io.split.storages.SplitCacheProducer;
 import io.split.telemetry.domain.enums.LastSynchronizationRecordsEnum;
@@ -90,7 +89,7 @@ public class SplitFetcherImp implements SplitFetcher {
         this.forceRefresh(new FetchOptions.Builder().cacheControlHeaders(false).build());
     }
 
-    private Set<String> runWithoutExceptionHandling(FetchOptions options) throws InterruptedException, InputStreamProviderException {
+    private Set<String> runWithoutExceptionHandling(FetchOptions options) throws InterruptedException {
         SplitChange change = _splitChangeFetcher.fetch(_splitCacheProducer.getChangeNumber(), options);
         Set<String> segments = new HashSet<>();
 

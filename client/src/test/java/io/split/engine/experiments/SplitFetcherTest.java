@@ -1,7 +1,6 @@
 package io.split.engine.experiments;
 
 import com.google.common.collect.Lists;
-import io.split.client.exceptions.InputStreamProviderException;
 import io.split.storages.memory.InMemoryCacheImp;
 import io.split.storages.SegmentCache;
 import io.split.storages.memory.SegmentCacheInMemoryImpl;
@@ -88,7 +87,7 @@ public class SplitFetcherTest {
     }
 
     @Test
-    public void when_parser_fails_we_remove_the_experiment() throws InterruptedException, InputStreamProviderException {
+    public void when_parser_fails_we_remove_the_experiment() throws InterruptedException {
         Split validSplit = new Split();
         validSplit.status = Status.ACTIVE;
         validSplit.seed = (int) -1;
@@ -214,7 +213,7 @@ public class SplitFetcherTest {
     }
 
     @Test
-    public void testBypassCdnClearedAfterFirstHit() throws InputStreamProviderException {
+    public void testBypassCdnClearedAfterFirstHit() {
         SplitChangeFetcher mockFetcher = Mockito.mock(SplitChangeFetcher.class);
         SplitParser mockParser = new SplitParser();
         SplitCache mockCache = new InMemoryCacheImp();

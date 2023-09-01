@@ -33,7 +33,7 @@ public class YamlLocalhostSplitChangeFetcher implements SplitChangeFetcher {
     }
 
     @Override
-    public SplitChange fetch(long since, FetchOptions options) throws InputStreamProviderException {
+    public SplitChange fetch(long since, FetchOptions options) {
         try {
             Yaml yaml = new Yaml();
             List<Map<String, Map<String, Object>>> yamlSplits = yaml.load(_inputStreamProvider.get());
@@ -75,8 +75,6 @@ public class YamlLocalhostSplitChangeFetcher implements SplitChangeFetcher {
             splitChange.till = since;
             splitChange.since = since;
             return splitChange;
-        } catch (InputStreamProviderException i) {
-            throw i;
         } catch (Exception e) {
             throw new IllegalStateException("Problem fetching splitChanges using a yaml file: " + e.getMessage(), e);
         }

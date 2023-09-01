@@ -2,7 +2,6 @@ package io.split.client;
 
 import io.split.client.dtos.Split;
 import io.split.client.dtos.SplitChange;
-import io.split.client.exceptions.InputStreamProviderException;
 import io.split.client.utils.FileInputStreamProvider;
 import io.split.client.utils.InputStreamProvider;
 import io.split.client.utils.LocalhostUtils;
@@ -27,7 +26,7 @@ public class YamlLocalhostSplitChangeFetcherTest {
     public TemporaryFolder folder = new TemporaryFolder();
 
     @Test
-    public void testParseSplitChange() throws IOException, InputStreamProviderException {
+    public void testParseSplitChange() throws IOException {
         File file = folder.newFile(SplitClientConfig.LOCALHOST_DEFAULT_FILE);
 
         List<Map<String, Object>> allSplits = new ArrayList();
@@ -76,8 +75,8 @@ public class YamlLocalhostSplitChangeFetcherTest {
         }
     }
 
-    @Test(expected = InputStreamProviderException.class)
-    public void processTestForException() throws InputStreamProviderException {
+    @Test(expected = IllegalStateException.class)
+    public void processTestForException() {
         InputStreamProvider inputStreamProvider = new FileInputStreamProvider("src/test/resources/notExist.yaml");
         YamlLocalhostSplitChangeFetcher localhostSplitChangeFetcher = new YamlLocalhostSplitChangeFetcher(inputStreamProvider);
         FetchOptions fetchOptions = Mockito.mock(FetchOptions.class);

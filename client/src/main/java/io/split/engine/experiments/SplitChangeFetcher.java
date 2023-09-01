@@ -1,7 +1,6 @@
 package io.split.engine.experiments;
 
 import io.split.client.dtos.SplitChange;
-import io.split.client.exceptions.InputStreamProviderException;
 import io.split.engine.common.FetchOptions;
 
 /**
@@ -33,5 +32,5 @@ public interface SplitChangeFetcher {
      * @return SegmentChange
      * @throws java.lang.RuntimeException if there was a problem computing split changes
      */
-    SplitChange fetch(long since, FetchOptions options) throws InputStreamProviderException;
+    SplitChange fetch(long since, FetchOptions options);
 }

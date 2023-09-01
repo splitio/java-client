@@ -2,7 +2,6 @@ package io.split.client;
 
 import com.google.gson.stream.JsonReader;
 import io.split.client.dtos.SplitChange;
-import io.split.client.exceptions.InputStreamProviderException;
 import io.split.client.utils.InputStreamProvider;
 import io.split.client.utils.Json;
 import io.split.client.utils.LocalhostSanitizer;
@@ -30,13 +29,11 @@ public class JsonLocalhostSplitChangeFetcher implements SplitChangeFetcher {
     }
 
     @Override
-    public SplitChange fetch(long since, FetchOptions options) throws InputStreamProviderException {
+    public SplitChange fetch(long since, FetchOptions options) {
         try {
             JsonReader jsonReader = new JsonReader(new BufferedReader(new InputStreamReader(_inputStreamProvider.get(), StandardCharsets.UTF_8)));
             SplitChange splitChange = Json.fromJson(jsonReader, SplitChange.class);
             return processSplitChange(splitChange, since);
-        } catch (InputStreamProviderException i) {
-            throw i;
         } catch (Exception e) {
             throw new IllegalStateException("Problem fetching splitChanges: " + e.getMessage(), e);
         }
