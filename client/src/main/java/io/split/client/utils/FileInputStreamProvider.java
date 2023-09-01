@@ -19,7 +19,8 @@ public class FileInputStreamProvider implements InputStreamProvider {
         try {
             return new FileInputStream(_fileName);
         } catch (FileNotFoundException f) {
-            throw new InputStreamProviderException(_fileName, f.getMessage());
+            throw new InputStreamProviderException(String.format("Problem fetching splitChanges using file named %s: %s",
+                    _fileName, f.getMessage()));
         }
     }
 }

@@ -2,7 +2,6 @@ package io.split.client;
 
 import io.split.client.impressions.ImpressionsManager;
 import io.split.client.utils.FileTypeEnum;
-import io.split.client.utils.LocalhostPair;
 import io.split.integrations.IntegrationsConfig;
 import io.split.storages.enums.OperationMode;
 import io.split.storages.pluggable.domain.UserStorageWrapper;
@@ -18,6 +17,8 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.InputStream;
 import java.lang.reflect.Field;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.net.URISyntaxException;
 
@@ -227,28 +228,120 @@ public class SplitFactoryImplTest extends TestCase {
     }
 
     @Test
-    public void testGetInputStreamProviderAndFileType() throws URISyntaxException, FileNotFoundException {
+    public void testLocalhostLegacy() throws URISyntaxException, NoSuchMethodException, InvocationTargetException, IllegalAccessException {
         SplitClientConfig splitClientConfig = SplitClientConfig.builder()
                 .setBlockUntilReadyTimeout(10000)
                 .build();
         SplitFactoryImpl splitFactory = new SplitFactoryImpl("localhost", splitClientConfig);
-        //splitFile null and InputStream null
-        Assert.assertNull(splitFactory.getInputStreamProviderAndFileType(null, null, FileTypeEnum.JSON));
 
-        //splitFile not null and InputStream not null
+        Method method = SplitFactoryImpl.class.getDeclaredMethod("createSplitChangeFetcher", SplitClientConfig.class);
+        method.setAccessible(true);
+        Object splitChangeFetcher = method.invoke(splitFactory, splitClientConfig);
+        Assert.assertTrue(splitChangeFetcher instanceof LegacyLocalhostSplitChangeFetcher);
+    }
+
+    @Test
+    public void testLocalhostYaml() throws URISyntaxException, NoSuchMethodException, InvocationTargetException, IllegalAccessException {
+        SplitClientConfig splitClientConfig = SplitClientConfig.builder()
+                .splitFile("src/test/resources/split.yaml")
+                .setBlockUntilReadyTimeout(10000)
+                .build();
+        SplitFactoryImpl splitFactory = new SplitFactoryImpl("localhost", splitClientConfig);
+
+        Method method = SplitFactoryImpl.class.getDeclaredMethod("createSplitChangeFetcher", SplitClientConfig.class);
+        method.setAccessible(true);
+        Object splitChangeFetcher = method.invoke(splitFactory, splitClientConfig);
+        Assert.assertTrue(splitChangeFetcher instanceof YamlLocalhostSplitChangeFetcher);
+    }
+
+    @Test
+    public void testLocalhosJson() throws URISyntaxException, NoSuchMethodException, InvocationTargetException, IllegalAccessException {
+        SplitClientConfig splitClientConfig = SplitClientConfig.builder()
+                .splitFile("src/test/resources/split_init.json")
+                .setBlockUntilReadyTimeout(10000)
+                .build();
+        SplitFactoryImpl splitFactory = new SplitFactoryImpl("localhost", splitClientConfig);
+
+        Method method = SplitFactoryImpl.class.getDeclaredMethod("createSplitChangeFetcher", SplitClientConfig.class);
+        method.setAccessible(true);
+        Object splitChangeFetcher = method.invoke(splitFactory, splitClientConfig);
+        Assert.assertTrue(splitChangeFetcher instanceof JsonLocalhostSplitChangeFetcher);
+    }
+
+    @Test
+    public void testLocalhosYamlInputStream() throws URISyntaxException, NoSuchMethodException, InvocationTargetException,
+            IllegalAccessException, FileNotFoundException {
+        InputStream inputStream = new FileInputStream("src/test/resources/split.yaml");
+        SplitClientConfig splitClientConfig = SplitClientConfig.builder()
+                .splitFile(inputStream, FileTypeEnum.YAML)
+                .setBlockUntilReadyTimeout(10000)
+                .build();
+        SplitFactoryImpl splitFactory = new SplitFactoryImpl("localhost", splitClientConfig);
+
+        Method method = SplitFactoryImpl.class.getDeclaredMethod("createSplitChangeFetcher", SplitClientConfig.class);
+        method.setAccessible(true);
+        Object splitChangeFetcher = method.invoke(splitFactory, splitClientConfig);
+        Assert.assertTrue(splitChangeFetcher instanceof YamlLocalhostSplitChangeFetcher);
+    }
+
+    @Test
+    public void testLocalhosJsonInputStream() throws URISyntaxException, NoSuchMethodException, InvocationTargetException,
+            IllegalAccessException, FileNotFoundException {
         InputStream inputStream = new FileInputStream("src/test/resources/split_init.json");
-        Assert.assertNull(splitFactory.getInputStreamProviderAndFileType("test", inputStream, FileTypeEnum.JSON));
+        SplitClientConfig splitClientConfig = SplitClientConfig.builder()
+                .splitFile(inputStream, FileTypeEnum.JSON)
+                .setBlockUntilReadyTimeout(10000)
+                .build();
+        SplitFactoryImpl splitFactory = new SplitFactoryImpl("localhost", splitClientConfig);
 
-        //inputStream is not null and fileType is null
-        Assert.assertNull(splitFactory.getInputStreamProviderAndFileType(null, inputStream, null));
+        Method method = SplitFactoryImpl.class.getDeclaredMethod("createSplitChangeFetcher", SplitClientConfig.class);
+        method.setAccessible(true);
+        Object splitChangeFetcher = method.invoke(splitFactory, splitClientConfig);
+        Assert.assertTrue(splitChangeFetcher instanceof JsonLocalhostSplitChangeFetcher);
+    }
 
-        //split file not null
-        LocalhostPair localhostPair = splitFactory.getInputStreamProviderAndFileType("src/test/resources/split_init.json",
-                null, null);
-        Assert.assertNotNull(localhostPair);
+    @Test
+    public void testLocalhosJsonInputStreamNull() throws URISyntaxException, NoSuchMethodException, InvocationTargetException, IllegalAccessException {
+        SplitClientConfig splitClientConfig = SplitClientConfig.builder()
+                .splitFile(null, FileTypeEnum.JSON)
+                .setBlockUntilReadyTimeout(10000)
+                .build();
+        SplitFactoryImpl splitFactory = new SplitFactoryImpl("localhost", splitClientConfig);
 
-        //inputStream is not null and filetype is not null
-        localhostPair = splitFactory.getInputStreamProviderAndFileType(null, inputStream, FileTypeEnum.JSON);
-        Assert.assertNotNull(localhostPair);
+        Method method = SplitFactoryImpl.class.getDeclaredMethod("createSplitChangeFetcher", SplitClientConfig.class);
+        method.setAccessible(true);
+        Object splitChangeFetcher = method.invoke(splitFactory, splitClientConfig);
+        Assert.assertTrue(splitChangeFetcher instanceof LegacyLocalhostSplitChangeFetcher);
+    }
+
+    @Test
+    public void testLocalhosJsonInputStreamAndFileTypeNull() throws URISyntaxException, NoSuchMethodException, InvocationTargetException,
+            IllegalAccessException, FileNotFoundException {
+        InputStream inputStream = new FileInputStream("src/test/resources/split_init.json");
+        SplitClientConfig splitClientConfig = SplitClientConfig.builder()
+                .splitFile(inputStream, null)
+                .setBlockUntilReadyTimeout(10000)
+                .build();
+        SplitFactoryImpl splitFactory = new SplitFactoryImpl("localhost", splitClientConfig);
+
+        Method method = SplitFactoryImpl.class.getDeclaredMethod("createSplitChangeFetcher", SplitClientConfig.class);
+        method.setAccessible(true);
+        Object splitChangeFetcher = method.invoke(splitFactory, splitClientConfig);
+        Assert.assertTrue(splitChangeFetcher instanceof LegacyLocalhostSplitChangeFetcher);
+    }
+
+    @Test
+    public void testLocalhosJsonInputStreamNullAndFileTypeNull() throws URISyntaxException, NoSuchMethodException, InvocationTargetException,
+            IllegalAccessException {
+        SplitClientConfig splitClientConfig = SplitClientConfig.builder()
+                .splitFile(null, null)
+                .setBlockUntilReadyTimeout(10000)
+                .build();
+        SplitFactoryImpl splitFactory = new SplitFactoryImpl("localhost", splitClientConfig);
+
+        Method method = SplitFactoryImpl.class.getDeclaredMethod("createSplitChangeFetcher", SplitClientConfig.class);
+        method.setAccessible(true);
+        Object splitChangeFetcher = method.invoke(splitFactory, splitClientConfig);
+        Assert.assertTrue(splitChangeFetcher instanceof LegacyLocalhostSplitChangeFetcher);
     }
 }

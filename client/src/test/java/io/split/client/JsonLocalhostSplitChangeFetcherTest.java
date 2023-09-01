@@ -4,6 +4,7 @@ import io.split.client.dtos.ConditionType;
 import io.split.client.dtos.Split;
 import io.split.client.dtos.SplitChange;
 import io.split.client.dtos.Status;
+import io.split.client.exceptions.InputStreamProviderException;
 import io.split.client.utils.FileInputStreamProvider;
 import io.split.client.utils.InputStreamProvider;
 import io.split.client.utils.InputStreamProviderImp;
@@ -33,7 +34,7 @@ public class JsonLocalhostSplitChangeFetcherTest {
     private String TEST_4 = "{\"splits\":[{\"trafficTypeName\":\"user\",\"name\":\"SPLIT_1\",\"trafficAllocation\":100,\"trafficAllocationSeed\":-1780071202,\"seed\":-1442762199,\"status\":\"ACTIVE\",\"killed\":false,\"defaultTreatment\":\"off\",\"changeNumber\":1675443537882,\"algo\":2,\"configurations\":{},\"conditions\":[{\"conditionType\":\"ROLLOUT\",\"matcherGroup\":{\"combiner\":\"AND\",\"matchers\":[{\"keySelector\":{\"trafficType\":\"user\",\"attribute\":null},\"matcherType\":\"ALL_KEYS\",\"negate\":false,\"userDefinedSegmentMatcherData\":null,\"whitelistMatcherData\":null,\"unaryNumericMatcherData\":null,\"betweenMatcherData\":null,\"booleanMatcherData\":null,\"dependencyMatcherData\":null,\"stringMatcherData\":null}]},\"partitions\":[{\"treatment\":\"on\",\"size\":0},{\"treatment\":\"off\",\"size\":100}],\"label\":\"default rule\"}]}],\"since\":-1,\"till\":445345}";
     private String TEST_5 = "{\"splits\":[{\"trafficTypeName\":\"user\",\"name\":\"SPLIT_1\",\"trafficAllocation\":100,\"trafficAllocationSeed\":-1780071202,\"seed\":-1442762199,\"status\":\"ACTIVE\",\"killed\":false,\"defaultTreatment\":\"off\",\"changeNumber\":1675443537882,\"algo\":2,\"configurations\":{},\"conditions\":[{\"conditionType\":\"ROLLOUT\",\"matcherGroup\":{\"combiner\":\"AND\",\"matchers\":[{\"keySelector\":{\"trafficType\":\"user\",\"attribute\":null},\"matcherType\":\"ALL_KEYS\",\"negate\":false,\"userDefinedSegmentMatcherData\":null,\"whitelistMatcherData\":null,\"unaryNumericMatcherData\":null,\"betweenMatcherData\":null,\"booleanMatcherData\":null,\"dependencyMatcherData\":null,\"stringMatcherData\":null}]},\"partitions\":[{\"treatment\":\"on\",\"size\":0},{\"treatment\":\"off\",\"size\":100}],\"label\":\"default rule\"}]},{\"trafficTypeName\":\"user\",\"name\":\"SPLIT_2\",\"trafficAllocation\":100,\"trafficAllocationSeed\":-1780071202,\"seed\":-1442762199,\"status\":\"ACTIVE\",\"killed\":false,\"defaultTreatment\":\"off\",\"changeNumber\":1675443537882,\"algo\":2,\"configurations\":{},\"conditions\":[{\"conditionType\":\"ROLLOUT\",\"matcherGroup\":{\"combiner\":\"AND\",\"matchers\":[{\"keySelector\":{\"trafficType\":\"user\",\"attribute\":null},\"matcherType\":\"ALL_KEYS\",\"negate\":false,\"userDefinedSegmentMatcherData\":null,\"whitelistMatcherData\":null,\"unaryNumericMatcherData\":null,\"betweenMatcherData\":null,\"booleanMatcherData\":null,\"dependencyMatcherData\":null,\"stringMatcherData\":null}]},\"partitions\":[{\"treatment\":\"on\",\"size\":0},{\"treatment\":\"off\",\"size\":100}],\"label\":\"default rule\"}]}],\"since\":-1,\"till\":-1}";
     @Test
-    public void testParseSplitChange() throws FileNotFoundException {
+    public void testParseSplitChange() throws FileNotFoundException, InputStreamProviderException {
         InputStream inputStream = new FileInputStream("src/test/resources/split_init.json");
         InputStreamProvider inputStreamProvider = new InputStreamProviderImp(inputStream);
         JsonLocalhostSplitChangeFetcher localhostSplitChangeFetcher = new JsonLocalhostSplitChangeFetcher(inputStreamProvider);
@@ -48,7 +49,7 @@ public class JsonLocalhostSplitChangeFetcherTest {
     }
 
     @Test
-    public void testSinceAndTillSanitization() throws FileNotFoundException {
+    public void testSinceAndTillSanitization() throws FileNotFoundException, InputStreamProviderException {
         InputStream inputStream = new FileInputStream("src/test/resources/sanitizer/splitChangeTillSanitization.json");
         InputStreamProvider inputStreamProvider = new InputStreamProviderImp(inputStream);
         JsonLocalhostSplitChangeFetcher localhostSplitChangeFetcher = new JsonLocalhostSplitChangeFetcher(inputStreamProvider);
@@ -61,7 +62,7 @@ public class JsonLocalhostSplitChangeFetcherTest {
     }
 
     @Test
-    public void testSplitChangeWithoutSplits() throws FileNotFoundException {
+    public void testSplitChangeWithoutSplits() throws FileNotFoundException, InputStreamProviderException {
         InputStream inputStream = new FileInputStream("src/test/resources/sanitizer/splitChangeWithoutSplits.json");
         InputStreamProvider inputStreamProvider = new InputStreamProviderImp(inputStream);
         JsonLocalhostSplitChangeFetcher localhostSplitChangeFetcher = new JsonLocalhostSplitChangeFetcher(inputStreamProvider);
@@ -73,7 +74,7 @@ public class JsonLocalhostSplitChangeFetcherTest {
     }
 
     @Test
-    public void testSplitChangeSplitsToSanitize() throws FileNotFoundException {
+    public void testSplitChangeSplitsToSanitize() throws FileNotFoundException, InputStreamProviderException {
         InputStream inputStream = new FileInputStream("src/test/resources/sanitizer/splitChangeSplitsToSanitize.json");
         InputStreamProvider inputStreamProvider = new InputStreamProviderImp(inputStream);
         JsonLocalhostSplitChangeFetcher localhostSplitChangeFetcher = new JsonLocalhostSplitChangeFetcher(inputStreamProvider);
@@ -90,7 +91,7 @@ public class JsonLocalhostSplitChangeFetcherTest {
     }
 
     @Test
-    public void testSplitChangeSplitsToSanitizeMatchersNull() throws FileNotFoundException {
+    public void testSplitChangeSplitsToSanitizeMatchersNull() throws FileNotFoundException, InputStreamProviderException {
         InputStream inputStream = new FileInputStream("src/test/resources/sanitizer/splitChangerMatchersNull.json");
         InputStreamProvider inputStreamProvider = new InputStreamProviderImp(inputStream);
         JsonLocalhostSplitChangeFetcher localhostSplitChangeFetcher = new JsonLocalhostSplitChangeFetcher(inputStreamProvider);
@@ -107,7 +108,7 @@ public class JsonLocalhostSplitChangeFetcherTest {
     }
 
     @Test
-    public void testSplitChangeSplitsDifferentScenarios() throws IOException {
+    public void testSplitChangeSplitsDifferentScenarios() throws IOException, InputStreamProviderException {
 
         File file = folder.newFile("test_0.json");
 
@@ -170,8 +171,8 @@ public class JsonLocalhostSplitChangeFetcherTest {
         Assert.assertEquals(2323, splitChange.since);
     }
 
-    @Test(expected = IllegalStateException.class)
-    public void processTestForException() {
+    @Test(expected = InputStreamProviderException.class)
+    public void processTestForException() throws InputStreamProviderException {
         InputStreamProvider inputStreamProvider = new FileInputStreamProvider("src/test/resources/notExist.json");
         JsonLocalhostSplitChangeFetcher localhostSplitChangeFetcher = new JsonLocalhostSplitChangeFetcher(inputStreamProvider);
         FetchOptions fetchOptions = Mockito.mock(FetchOptions.class);

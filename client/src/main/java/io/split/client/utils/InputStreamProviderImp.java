@@ -5,7 +5,7 @@ import io.split.client.exceptions.InputStreamProviderException;
 import java.io.InputStream;
 
 public class InputStreamProviderImp implements InputStreamProvider {
-    private InputStream _inputStream;
+    private final InputStream _inputStream;
 
     public InputStreamProviderImp(InputStream inputStream){
         _inputStream = inputStream;

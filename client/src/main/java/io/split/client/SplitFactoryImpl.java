@@ -33,7 +33,6 @@ import io.split.client.interceptors.SdkMetadataInterceptorFilter;
 import io.split.client.utils.FileInputStreamProvider;
 import io.split.client.utils.FileTypeEnum;
 import io.split.client.utils.InputStreamProviderImp;
-import io.split.client.utils.LocalhostPair;
 import io.split.client.utils.SDKMetadata;
 import io.split.engine.SDKReadinessGates;
 import io.split.engine.common.ConsumerSyncManager;
@@ -371,23 +370,7 @@ public class SplitFactoryImpl implements SplitFactory {
                config.getThreadFactory());
 
         // SplitFetcher
-        LocalhostPair pair = getInputStreamProviderAndFileType(config.splitFile(), config.inputStream(), config.fileType());
-        SplitChangeFetcher splitChangeFetcher;
-        if (pair == null) {
-            splitChangeFetcher = new LegacyLocalhostSplitChangeFetcher(config.splitFile());
-            _log.warn("The sdk initialize in localhost mode using Legacy file. The splitFile or inputStream doesn't add it to the config.");
-        } else {
-            switch (pair.getFileTypeEnum()) {
-                case JSON:
-                    splitChangeFetcher = new JsonLocalhostSplitChangeFetcher(pair.getInputStreamProvider());
-                    break;
-                case YAML:
-                    splitChangeFetcher = new YamlLocalhostSplitChangeFetcher(pair.getInputStreamProvider());
-                    break;
-                default:
-                    splitChangeFetcher = new LegacyLocalhostSplitChangeFetcher(config.splitFile());
-            }
-        }
+        SplitChangeFetcher splitChangeFetcher = createSplitChangeFetcher(config);
         SplitParser splitParser = new SplitParser();
 
         _splitFetcher = new SplitFetcherImp(splitChangeFetcher, splitParser, splitCache, _telemetryStorageProducer);
@@ -656,26 +639,31 @@ public class SplitFactoryImpl implements SplitFactory {
         return null;
     }
 
-    LocalhostPair getInputStreamProviderAndFileType(String splitFile, InputStream inputStream,
-                                                                                      FileTypeEnum fileType) {
+    private SplitChangeFetcher createSplitChangeFetcher(SplitClientConfig splitClientConfig) {
+        String splitFile = splitClientConfig.splitFile();
+        InputStream inputStream = splitClientConfig.inputStream();
+        FileTypeEnum fileType = splitClientConfig.fileType();
         if (splitFile != null && inputStream != null) {
             _log.warn("splitFile or inputStreamProvider should have a value, not both");
-            return null;
+            _log.warn("The sdk initialize in localhost mode using Legacy file. The splitFile or inputStream doesn't add it to the config.");
+            return new LegacyLocalhostSplitChangeFetcher(splitFile);
         }
         if (inputStream != null && fileType == null) {
             _log.warn("If inputStreamProvider is not null, then fileType must also have a non-null value");
-            return null;
+            _log.warn("The sdk initialize in localhost mode using Legacy file. The splitFile or inputStream doesn't add it to the config.");
+            return new LegacyLocalhostSplitChangeFetcher(splitFile);
         }
         if (inputStream == null && splitFile == null){
             _log.warn("splitFile or inputStreamProvider should have a value");
-            return null;
+            _log.warn("The sdk initialize in localhost mode using Legacy file. The splitFile or inputStream doesn't add it to the config.");
+            return new LegacyLocalhostSplitChangeFetcher(splitFile);
         }
         if (splitFile != null) {
             try {
                 if (splitFile.toLowerCase().endsWith(".json")) {
-                    return new LocalhostPair(new FileInputStreamProvider(splitFile), FileTypeEnum.JSON);
+                    return new JsonLocalhostSplitChangeFetcher(new FileInputStreamProvider(splitFile));
                 } else if (splitFile.endsWith(".yaml") || splitFile.endsWith(".yml")) {
-                    return new LocalhostPair(new FileInputStreamProvider(splitFile), FileTypeEnum.YAML);
+                    return new YamlLocalhostSplitChangeFetcher(new FileInputStreamProvider(splitFile));
                 }
             } catch (Exception e) {
                 _log.warn(String.format("There was no file named %s found. " +
@@ -686,8 +674,17 @@ public class SplitFactoryImpl implements SplitFactory {
                         splitFile, splitFile), e);
             }
         } else {
-            return new LocalhostPair(new InputStreamProviderImp(inputStream), fileType);
+            switch (fileType) {
+                case JSON:
+                    return new JsonLocalhostSplitChangeFetcher(new InputStreamProviderImp(inputStream));
+                case YAML:
+                    return new YamlLocalhostSplitChangeFetcher(new InputStreamProviderImp(inputStream));
+                default:
+                    _log.warn("The sdk initialize in localhost mode using Legacy file. The splitFile or inputStream doesn't add it to the config.");
+                    return new LegacyLocalhostSplitChangeFetcher(splitFile);
+            }
         }
-        return null;
+        _log.warn("The sdk initialize in localhost mode using Legacy file. The splitFile or inputStream doesn't add it to the config.");
+        return new LegacyLocalhostSplitChangeFetcher(splitFile);
     }
 }

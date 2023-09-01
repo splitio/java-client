@@ -30,14 +30,13 @@ public class JsonLocalhostSplitChangeFetcher implements SplitChangeFetcher {
     }
 
     @Override
-    public SplitChange fetch(long since, FetchOptions options) {
+    public SplitChange fetch(long since, FetchOptions options) throws InputStreamProviderException {
         try {
             JsonReader jsonReader = new JsonReader(new BufferedReader(new InputStreamReader(_inputStreamProvider.get(), StandardCharsets.UTF_8)));
             SplitChange splitChange = Json.fromJson(jsonReader, SplitChange.class);
             return processSplitChange(splitChange, since);
         } catch (InputStreamProviderException i) {
-            throw new IllegalStateException(String.format("Problem fetching splitChanges using file named %s: %s",
-                    i.getFileName(), i.getMessage()), i);
+            throw i;
         } catch (Exception e) {
             throw new IllegalStateException("Problem fetching splitChanges: " + e.getMessage(), e);
         }

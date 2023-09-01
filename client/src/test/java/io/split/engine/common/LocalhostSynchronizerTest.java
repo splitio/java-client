@@ -2,6 +2,7 @@ package io.split.engine.common;
 
 import io.split.client.LocalhostSegmentChangeFetcher;
 import io.split.client.JsonLocalhostSplitChangeFetcher;
+import io.split.client.exceptions.InputStreamProviderException;
 import io.split.client.utils.FileInputStreamProvider;
 import io.split.client.utils.InputStreamProvider;
 import io.split.engine.experiments.SplitChangeFetcher;
@@ -22,14 +23,12 @@ import org.junit.Assert;
 import org.junit.Test;
 import org.mockito.Mockito;
 
-import java.io.FileNotFoundException;
-
 public class LocalhostSynchronizerTest {
 
     private static final TelemetryStorage TELEMETRY_STORAGE_NOOP = Mockito.mock(NoopTelemetryStorage.class);
 
     @Test
-    public void testSyncAll() throws FileNotFoundException {
+    public void testSyncAll(){
         SplitCache splitCacheProducer = new InMemoryCacheImp();
 
         InputStreamProvider inputStreamProvider = new FileInputStreamProvider("src/test/resources/split_init.json");
@@ -52,7 +51,7 @@ public class LocalhostSynchronizerTest {
     }
 
     @Test
-    public void testPeriodicFetching() throws InterruptedException {
+    public void testPeriodicFetching() throws InterruptedException, InputStreamProviderException {
         SplitCache splitCacheProducer = new InMemoryCacheImp();
 
         SplitChangeFetcher splitChangeFetcher = Mockito.mock(JsonLocalhostSplitChangeFetcher.class);
@@ -79,7 +78,7 @@ public class LocalhostSynchronizerTest {
     }
 
     @Test
-    public void testRefreshSplits() {
+    public void testRefreshSplits() throws InputStreamProviderException {
         SplitCacheProducer splitCacheProducer = new InMemoryCacheImp();
         SplitChangeFetcher splitChangeFetcher = Mockito.mock(SplitChangeFetcher.class);
         SplitParser splitParser = new SplitParser();
