@@ -34,8 +34,8 @@ import io.split.client.interceptors.SdkMetadataInterceptorFilter;
 import io.split.client.utils.FileInputStreamProvider;
 import io.split.client.utils.FileTypeEnum;
 import io.split.client.utils.InputStreamProvider;
-import io.split.client.utils.InputStreamProviderImp;
 import io.split.client.utils.SDKMetadata;
+import io.split.client.utils.StaticContentInputStreamProvider;
 import io.split.engine.SDKReadinessGates;
 import io.split.engine.common.ConsumerSyncManager;
 import io.split.engine.common.ConsumerSynchronizer;
@@ -655,7 +655,7 @@ public class SplitFactoryImpl implements SplitFactory {
             fileType = getFileTypeFromFileName(splitFile);
             inputStreamProvider = new FileInputStreamProvider(splitFile);
         } else {
-            inputStreamProvider = new InputStreamProviderImp(inputStream);
+            inputStreamProvider = new StaticContentInputStreamProvider(inputStream);
         }
         try {
             switch (fileType){

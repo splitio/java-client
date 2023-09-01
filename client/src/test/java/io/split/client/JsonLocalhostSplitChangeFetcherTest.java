@@ -6,7 +6,7 @@ import io.split.client.dtos.SplitChange;
 import io.split.client.dtos.Status;
 import io.split.client.utils.FileInputStreamProvider;
 import io.split.client.utils.InputStreamProvider;
-import io.split.client.utils.InputStreamProviderImp;
+import io.split.client.utils.StaticContentInputStreamProvider;
 import io.split.engine.common.FetchOptions;
 import org.junit.Assert;
 import org.junit.Rule;
@@ -35,7 +35,7 @@ public class JsonLocalhostSplitChangeFetcherTest {
     @Test
     public void testParseSplitChange() throws FileNotFoundException {
         InputStream inputStream = new FileInputStream("src/test/resources/split_init.json");
-        InputStreamProvider inputStreamProvider = new InputStreamProviderImp(inputStream);
+        InputStreamProvider inputStreamProvider = new StaticContentInputStreamProvider(inputStream);
         JsonLocalhostSplitChangeFetcher localhostSplitChangeFetcher = new JsonLocalhostSplitChangeFetcher(inputStreamProvider);
         FetchOptions fetchOptions = Mockito.mock(FetchOptions.class);
 
@@ -50,7 +50,7 @@ public class JsonLocalhostSplitChangeFetcherTest {
     @Test
     public void testSinceAndTillSanitization() throws FileNotFoundException {
         InputStream inputStream = new FileInputStream("src/test/resources/sanitizer/splitChangeTillSanitization.json");
-        InputStreamProvider inputStreamProvider = new InputStreamProviderImp(inputStream);
+        InputStreamProvider inputStreamProvider = new StaticContentInputStreamProvider(inputStream);
         JsonLocalhostSplitChangeFetcher localhostSplitChangeFetcher = new JsonLocalhostSplitChangeFetcher(inputStreamProvider);
         FetchOptions fetchOptions = Mockito.mock(FetchOptions.class);
 
@@ -63,7 +63,7 @@ public class JsonLocalhostSplitChangeFetcherTest {
     @Test
     public void testSplitChangeWithoutSplits() throws FileNotFoundException {
         InputStream inputStream = new FileInputStream("src/test/resources/sanitizer/splitChangeWithoutSplits.json");
-        InputStreamProvider inputStreamProvider = new InputStreamProviderImp(inputStream);
+        InputStreamProvider inputStreamProvider = new StaticContentInputStreamProvider(inputStream);
         JsonLocalhostSplitChangeFetcher localhostSplitChangeFetcher = new JsonLocalhostSplitChangeFetcher(inputStreamProvider);
         FetchOptions fetchOptions = Mockito.mock(FetchOptions.class);
 
@@ -75,7 +75,7 @@ public class JsonLocalhostSplitChangeFetcherTest {
     @Test
     public void testSplitChangeSplitsToSanitize() throws FileNotFoundException {
         InputStream inputStream = new FileInputStream("src/test/resources/sanitizer/splitChangeSplitsToSanitize.json");
-        InputStreamProvider inputStreamProvider = new InputStreamProviderImp(inputStream);
+        InputStreamProvider inputStreamProvider = new StaticContentInputStreamProvider(inputStream);
         JsonLocalhostSplitChangeFetcher localhostSplitChangeFetcher = new JsonLocalhostSplitChangeFetcher(inputStreamProvider);
         FetchOptions fetchOptions = Mockito.mock(FetchOptions.class);
 
@@ -92,7 +92,7 @@ public class JsonLocalhostSplitChangeFetcherTest {
     @Test
     public void testSplitChangeSplitsToSanitizeMatchersNull() throws FileNotFoundException {
         InputStream inputStream = new FileInputStream("src/test/resources/sanitizer/splitChangerMatchersNull.json");
-        InputStreamProvider inputStreamProvider = new InputStreamProviderImp(inputStream);
+        InputStreamProvider inputStreamProvider = new StaticContentInputStreamProvider(inputStream);
         JsonLocalhostSplitChangeFetcher localhostSplitChangeFetcher = new JsonLocalhostSplitChangeFetcher(inputStreamProvider);
         FetchOptions fetchOptions = Mockito.mock(FetchOptions.class);
 
