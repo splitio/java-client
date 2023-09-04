@@ -78,11 +78,9 @@ public class ImpressionsManagerImplTest {
         ImpressionCounter impressionCounter = Mockito.mock(ImpressionCounter.class);
         ImpressionObserver impressionObserver = new ImpressionObserver(200);
 
-        ProcessImpressionStrategy processImpressionStrategy = new ProcessImpressionDebug(true, impressionObserver);
+        ProcessImpressionStrategy processImpressionStrategy = new ProcessImpressionDebug(false, impressionObserver);
 
-        ImpressionListener impressionListener = Mockito.mock(AsynchronousImpressionListener.class);
-
-        ImpressionsManagerImpl treatmentLog = ImpressionsManagerImpl.instanceForTest(config, senderMock, TELEMETRY_STORAGE, storage, storage, processImpressionStrategy, impressionCounter, impressionListener);
+        ImpressionsManagerImpl treatmentLog = ImpressionsManagerImpl.instanceForTest(config, senderMock, TELEMETRY_STORAGE, storage, storage, processImpressionStrategy, impressionCounter, null);
         treatmentLog.start();
 
         KeyImpression ki1 = keyImpression("test1", "adil", "on", 1L, null);
