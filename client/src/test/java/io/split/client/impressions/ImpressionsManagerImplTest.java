@@ -28,6 +28,7 @@ import pluggable.CustomStorageWrapper;
 
 import java.net.URISyntaxException;
 import java.util.AbstractMap;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Optional;
@@ -74,9 +75,11 @@ public class ImpressionsManagerImplTest {
         ImpressionCounter impressionCounter = Mockito.mock(ImpressionCounter.class);
         ImpressionObserver impressionObserver = new ImpressionObserver(200);
 
-        ProcessImpressionStrategy processImpressionStrategy = new ProcessImpressionDebug(false, impressionObserver);
+        ProcessImpressionStrategy processImpressionStrategy = new ProcessImpressionDebug(true, impressionObserver);
 
-        ImpressionsManagerImpl treatmentLog = ImpressionsManagerImpl.instanceForTest(config, senderMock, TELEMETRY_STORAGE, storage, storage, processImpressionStrategy, impressionCounter, null);
+        ImpressionListener impressionListener = Mockito.mock(AsynchronousImpressionListener.class);
+
+        ImpressionsManagerImpl treatmentLog = ImpressionsManagerImpl.instanceForTest(config, senderMock, TELEMETRY_STORAGE, storage, storage, processImpressionStrategy, impressionCounter, impressionListener);
         treatmentLog.start();
 
         KeyImpression ki1 = keyImpression("test1", "adil", "on", 1L, null);
@@ -88,6 +91,7 @@ public class ImpressionsManagerImplTest {
         treatmentLog.track(Stream.of(new Impression(ki2.keyName, null, ki2.feature, ki2.treatment, ki2.time, null, ki2.changeNumber, null)).collect(Collectors.toList()));
         treatmentLog.track(Stream.of(new Impression(ki3.keyName, null, ki3.feature, ki3.treatment, ki3.time, null, ki3.changeNumber, null)).collect(Collectors.toList()));
         treatmentLog.track(Stream.of(new Impression(ki4.keyName, null, ki4.feature, ki4.treatment, ki4.time, null, ki4.changeNumber, null)).collect(Collectors.toList()));
+        verify(impressionListener, times(4)).log(Mockito.anyObject());
 
         // Do what the scheduler would do.
         treatmentLog.sendImpressions();
@@ -97,6 +101,132 @@ public class ImpressionsManagerImplTest {
         List<TestImpressions> captured = impressionsCaptor.getValue();
 
         Assert.assertEquals(2, captured.size());
+    }
+
+    @Test
+    public void testImpressionListenerOptimize() throws URISyntaxException {
+        SplitClientConfig config = SplitClientConfig.builder()
+                .impressionsQueueSize(10)
+                .endpoint("nowhere.com", "nowhere.com")
+                .impressionsMode(ImpressionsManager.Mode.OPTIMIZED)
+                .build();
+        ImpressionsStorage storage = new InMemoryImpressionsStorage(config.impressionsQueueSize());
+
+        ImpressionsSender senderMock = Mockito.mock(ImpressionsSender.class);
+        ImpressionCounter impressionCounter = new ImpressionCounter();
+        ImpressionObserver impressionObserver = new ImpressionObserver(200);
+        TelemetryStorageProducer telemetryStorageProducer = new InMemoryTelemetryStorage();
+
+        ProcessImpressionStrategy processImpressionStrategy = new ProcessImpressionOptimized(true, impressionObserver, impressionCounter, telemetryStorageProducer);
+
+        ImpressionListener impressionListener = Mockito.mock(AsynchronousImpressionListener.class);
+
+        ImpressionsManagerImpl treatmentLog = ImpressionsManagerImpl.instanceForTest(config, senderMock, TELEMETRY_STORAGE, storage, storage, processImpressionStrategy, impressionCounter, impressionListener);
+        treatmentLog.start();
+
+        KeyImpression ki1 = keyImpression("test1", "adil", "on", 1L, null);
+        KeyImpression ki2 = keyImpression("test1", "adil", "on", 2L, 1L);
+        KeyImpression ki3 = keyImpression("test1", "pato", "on", 3L, 2L);
+        KeyImpression ki4 = keyImpression("test2", "pato", "on", 4L, 3L);
+
+        List<Impression> impressionList = new ArrayList<>();
+        impressionList.add(new Impression(ki1.keyName, null, ki1.feature, ki1.treatment, ki1.time, null, ki1.changeNumber, null));
+        impressionList.add(new Impression(ki2.keyName, null, ki2.feature, ki2.treatment, ki2.time, null, ki2.changeNumber, null));
+        impressionList.add(new Impression(ki3.keyName, null, ki3.feature, ki3.treatment, ki3.time, null, ki3.changeNumber, null));
+        impressionList.add(new Impression(ki4.keyName, null, ki4.feature, ki4.treatment, ki4.time, null, ki4.changeNumber, null));
+
+        treatmentLog.track(impressionList);
+        verify(impressionListener, times(4)).log(Mockito.anyObject());
+
+        // Do what the scheduler would do.
+        treatmentLog.sendImpressions();
+
+        verify(senderMock).postImpressionsBulk(impressionsCaptor.capture());
+
+        List<TestImpressions> captured = impressionsCaptor.getValue();
+
+        Assert.assertEquals(2, captured.size());
+    }
+
+    @Test
+    public void testImpressionListenerDebug() throws URISyntaxException {
+        SplitClientConfig config = SplitClientConfig.builder()
+                .impressionsQueueSize(4)
+                .endpoint("nowhere.com", "nowhere.com")
+                .impressionsMode(ImpressionsManager.Mode.DEBUG)
+                .build();
+        ImpressionsStorage storage = new InMemoryImpressionsStorage(config.impressionsQueueSize());
+
+        ImpressionsSender senderMock = Mockito.mock(ImpressionsSender.class);
+        ImpressionCounter impressionCounter = Mockito.mock(ImpressionCounter.class);
+        ImpressionObserver impressionObserver = new ImpressionObserver(200);
+
+        ProcessImpressionStrategy processImpressionStrategy = new ProcessImpressionDebug(true, impressionObserver);
+
+        ImpressionListener impressionListener = Mockito.mock(AsynchronousImpressionListener.class);
+
+        ImpressionsManagerImpl treatmentLog = ImpressionsManagerImpl.instanceForTest(config, senderMock, TELEMETRY_STORAGE, storage, storage, processImpressionStrategy, impressionCounter, impressionListener);
+        treatmentLog.start();
+
+        KeyImpression ki1 = keyImpression("test1", "adil", "on", 1L, null);
+        KeyImpression ki2 = keyImpression("test1", "adil", "on", 2L, 1L);
+        KeyImpression ki3 = keyImpression("test1", "pato", "on", 3L, 2L);
+        KeyImpression ki4 = keyImpression("test2", "pato", "on", 4L, 3L);
+
+        List<Impression> impressionList = new ArrayList<>();
+        impressionList.add(new Impression(ki1.keyName, null, ki1.feature, ki1.treatment, ki1.time, null, ki1.changeNumber, null));
+        impressionList.add(new Impression(ki2.keyName, null, ki2.feature, ki2.treatment, ki2.time, null, ki2.changeNumber, null));
+        impressionList.add(new Impression(ki3.keyName, null, ki3.feature, ki3.treatment, ki3.time, null, ki3.changeNumber, null));
+        impressionList.add(new Impression(ki4.keyName, null, ki4.feature, ki4.treatment, ki4.time, null, ki4.changeNumber, null));
+
+        treatmentLog.track(impressionList);
+        verify(impressionListener, times(4)).log(Mockito.anyObject());
+
+        // Do what the scheduler would do.
+        treatmentLog.sendImpressions();
+
+        verify(senderMock).postImpressionsBulk(impressionsCaptor.capture());
+
+        List<TestImpressions> captured = impressionsCaptor.getValue();
+
+        Assert.assertEquals(2, captured.size());
+    }
+
+    @Test
+    public void testImpressionListenerNone() throws URISyntaxException {
+        SplitClientConfig config = SplitClientConfig.builder()
+                .impressionsQueueSize(10)
+                .endpoint("nowhere.com", "nowhere.com")
+                .impressionsMode(ImpressionsManager.Mode.NONE)
+                .build();
+        ImpressionsStorage storage = new InMemoryImpressionsStorage(config.impressionsQueueSize());
+
+        ImpressionsSender senderMock = Mockito.mock(ImpressionsSender.class);
+        TelemetrySynchronizer telemetrySynchronizer = Mockito.mock(TelemetryInMemorySubmitter.class);
+        ImpressionCounter impressionCounter = new ImpressionCounter();
+        UniqueKeysTracker uniqueKeysTracker = new UniqueKeysTrackerImp(telemetrySynchronizer, 1000, 1000, null);
+        uniqueKeysTracker.start();
+
+        ProcessImpressionStrategy processImpressionStrategy = new ProcessImpressionNone(true, uniqueKeysTracker, impressionCounter);
+
+        ImpressionListener impressionListener = Mockito.mock(AsynchronousImpressionListener.class);
+
+        ImpressionsManagerImpl treatmentLog = ImpressionsManagerImpl.instanceForTest(config, senderMock, TELEMETRY_STORAGE, storage, storage, processImpressionStrategy, impressionCounter, impressionListener);
+        treatmentLog.start();
+
+        KeyImpression ki1 = keyImpression("test1", "adil", "on", 1L, null);
+        KeyImpression ki2 = keyImpression("test1", "adil", "on", 2L, 1L);
+        KeyImpression ki3 = keyImpression("test1", "pato", "on", 3L, 2L);
+        KeyImpression ki4 = keyImpression("test2", "pato", "on", 4L, 3L);
+
+        List<Impression> impressionList = new ArrayList<>();
+        impressionList.add(new Impression(ki1.keyName, null, ki1.feature, ki1.treatment, ki1.time, null, ki1.changeNumber, null));
+        impressionList.add(new Impression(ki2.keyName, null, ki2.feature, ki2.treatment, ki2.time, null, ki2.changeNumber, null));
+        impressionList.add(new Impression(ki3.keyName, null, ki3.feature, ki3.treatment, ki3.time, null, ki3.changeNumber, null));
+        impressionList.add(new Impression(ki4.keyName, null, ki4.feature, ki4.treatment, ki4.time, null, ki4.changeNumber, null));
+
+        treatmentLog.track(impressionList);
+        verify(impressionListener, times(4)).log(Mockito.anyObject());
     }
 
     @Test
@@ -627,7 +757,7 @@ public class ImpressionsManagerImplTest {
     }
 
     @Test
-    public void testCounterStandaloneModeNoseMode() throws URISyntaxException {
+    public void testCounterStandaloneModeNoneMode() throws URISyntaxException {
         SplitClientConfig config = SplitClientConfig.builder()
                 .impressionsQueueSize(10)
                 .endpoint("nowhere.com", "nowhere.com")

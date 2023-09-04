@@ -117,7 +117,7 @@ public class ImpressionsManagerImpl implements ImpressionsManager, Closeable {
 
         ImpressionsResult impressionsResult = _processImpressionStrategy.process(impressions);
         List<Impression> impressionsForLogs = impressionsResult.getImpressionsToQueue();
-        List<Impression> impressionsToListener = impressionsResult.getImpressionsToQueue();
+        List<Impression> impressionsToListener = impressionsResult.getImpressionsToListener();
 
         int totalImpressions = impressionsForLogs.size();
         long queued = _impressionsStorageProducer.put(impressionsForLogs.stream().map(KeyImpression::fromImpression).collect(Collectors.toList()));
