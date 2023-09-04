@@ -57,6 +57,9 @@ public class ImpressionsManagerImplTest {
     private ArgumentCaptor<List<TestImpressions>> impressionsCaptor;
 
     @Captor
+    private ArgumentCaptor<List<KeyImpression>> impressionKeyList;
+
+    @Captor
     private ArgumentCaptor<UniqueKeys> uniqueKeysCaptor;
 
     @Captor
@@ -91,7 +94,6 @@ public class ImpressionsManagerImplTest {
         treatmentLog.track(Stream.of(new Impression(ki2.keyName, null, ki2.feature, ki2.treatment, ki2.time, null, ki2.changeNumber, null)).collect(Collectors.toList()));
         treatmentLog.track(Stream.of(new Impression(ki3.keyName, null, ki3.feature, ki3.treatment, ki3.time, null, ki3.changeNumber, null)).collect(Collectors.toList()));
         treatmentLog.track(Stream.of(new Impression(ki4.keyName, null, ki4.feature, ki4.treatment, ki4.time, null, ki4.changeNumber, null)).collect(Collectors.toList()));
-        verify(impressionListener, times(4)).log(Mockito.anyObject());
 
         // Do what the scheduler would do.
         treatmentLog.sendImpressions();
@@ -104,13 +106,13 @@ public class ImpressionsManagerImplTest {
     }
 
     @Test
-    public void testImpressionListenerOptimize() throws URISyntaxException {
+    public void testImpressionListenerOptimize() {
         SplitClientConfig config = SplitClientConfig.builder()
                 .impressionsQueueSize(10)
                 .endpoint("nowhere.com", "nowhere.com")
                 .impressionsMode(ImpressionsManager.Mode.OPTIMIZED)
                 .build();
-        ImpressionsStorage storage = new InMemoryImpressionsStorage(config.impressionsQueueSize());
+        ImpressionsStorage storage = Mockito.mock(InMemoryImpressionsStorage.class);
 
         ImpressionsSender senderMock = Mockito.mock(ImpressionsSender.class);
         ImpressionCounter impressionCounter = new ImpressionCounter();
@@ -124,8 +126,8 @@ public class ImpressionsManagerImplTest {
         ImpressionsManagerImpl treatmentLog = ImpressionsManagerImpl.instanceForTest(config, senderMock, TELEMETRY_STORAGE, storage, storage, processImpressionStrategy, impressionCounter, impressionListener);
         treatmentLog.start();
 
-        KeyImpression ki1 = keyImpression("test1", "adil", "on", 1L, null);
-        KeyImpression ki2 = keyImpression("test1", "adil", "on", 2L, 1L);
+        KeyImpression ki1 = keyImpression("test1", "adil", "on", 1L, 1L);
+        KeyImpression ki2 = keyImpression("test1", "adil", "on", 1L, 1L);
         KeyImpression ki3 = keyImpression("test1", "pato", "on", 3L, 2L);
         KeyImpression ki4 = keyImpression("test2", "pato", "on", 4L, 3L);
 
@@ -138,24 +140,21 @@ public class ImpressionsManagerImplTest {
         treatmentLog.track(impressionList);
         verify(impressionListener, times(4)).log(Mockito.anyObject());
 
-        // Do what the scheduler would do.
-        treatmentLog.sendImpressions();
+        verify(storage).put(impressionKeyList.capture());
 
-        verify(senderMock).postImpressionsBulk(impressionsCaptor.capture());
+        List captured = impressionKeyList.getValue();
 
-        List<TestImpressions> captured = impressionsCaptor.getValue();
-
-        Assert.assertEquals(2, captured.size());
+        Assert.assertEquals(3, captured.size());
     }
 
     @Test
-    public void testImpressionListenerDebug() throws URISyntaxException {
+    public void testImpressionListenerDebug() {
         SplitClientConfig config = SplitClientConfig.builder()
-                .impressionsQueueSize(4)
+                .impressionsQueueSize(6)
                 .endpoint("nowhere.com", "nowhere.com")
                 .impressionsMode(ImpressionsManager.Mode.DEBUG)
                 .build();
-        ImpressionsStorage storage = new InMemoryImpressionsStorage(config.impressionsQueueSize());
+        ImpressionsStorage storage = Mockito.mock(InMemoryImpressionsStorage.class);
 
         ImpressionsSender senderMock = Mockito.mock(ImpressionsSender.class);
         ImpressionCounter impressionCounter = Mockito.mock(ImpressionCounter.class);
@@ -168,8 +167,8 @@ public class ImpressionsManagerImplTest {
         ImpressionsManagerImpl treatmentLog = ImpressionsManagerImpl.instanceForTest(config, senderMock, TELEMETRY_STORAGE, storage, storage, processImpressionStrategy, impressionCounter, impressionListener);
         treatmentLog.start();
 
-        KeyImpression ki1 = keyImpression("test1", "adil", "on", 1L, null);
-        KeyImpression ki2 = keyImpression("test1", "adil", "on", 2L, 1L);
+        KeyImpression ki1 = keyImpression("test1", "adil", "on", 1L, 1L);
+        KeyImpression ki2 = keyImpression("test1", "adil", "on", 1L, 1L);
         KeyImpression ki3 = keyImpression("test1", "pato", "on", 3L, 2L);
         KeyImpression ki4 = keyImpression("test2", "pato", "on", 4L, 3L);
 
@@ -182,24 +181,21 @@ public class ImpressionsManagerImplTest {
         treatmentLog.track(impressionList);
         verify(impressionListener, times(4)).log(Mockito.anyObject());
 
-        // Do what the scheduler would do.
-        treatmentLog.sendImpressions();
+        verify(storage).put(impressionKeyList.capture());
 
-        verify(senderMock).postImpressionsBulk(impressionsCaptor.capture());
+        List captured = impressionKeyList.getValue();
 
-        List<TestImpressions> captured = impressionsCaptor.getValue();
-
-        Assert.assertEquals(2, captured.size());
+        Assert.assertEquals(4, captured.size());
     }
 
     @Test
-    public void testImpressionListenerNone() throws URISyntaxException {
+    public void testImpressionListenerNone() {
         SplitClientConfig config = SplitClientConfig.builder()
                 .impressionsQueueSize(10)
                 .endpoint("nowhere.com", "nowhere.com")
                 .impressionsMode(ImpressionsManager.Mode.NONE)
                 .build();
-        ImpressionsStorage storage = new InMemoryImpressionsStorage(config.impressionsQueueSize());
+        ImpressionsStorage storage = Mockito.mock(InMemoryImpressionsStorage.class);
 
         ImpressionsSender senderMock = Mockito.mock(ImpressionsSender.class);
         TelemetrySynchronizer telemetrySynchronizer = Mockito.mock(TelemetryInMemorySubmitter.class);
@@ -214,8 +210,8 @@ public class ImpressionsManagerImplTest {
         ImpressionsManagerImpl treatmentLog = ImpressionsManagerImpl.instanceForTest(config, senderMock, TELEMETRY_STORAGE, storage, storage, processImpressionStrategy, impressionCounter, impressionListener);
         treatmentLog.start();
 
-        KeyImpression ki1 = keyImpression("test1", "adil", "on", 1L, null);
-        KeyImpression ki2 = keyImpression("test1", "adil", "on", 2L, 1L);
+        KeyImpression ki1 = keyImpression("test1", "adil", "on", 1L, 1L);
+        KeyImpression ki2 = keyImpression("test1", "adil", "on", 1L, 1L);
         KeyImpression ki3 = keyImpression("test1", "pato", "on", 3L, 2L);
         KeyImpression ki4 = keyImpression("test2", "pato", "on", 4L, 3L);
 
@@ -227,10 +223,16 @@ public class ImpressionsManagerImplTest {
 
         treatmentLog.track(impressionList);
         verify(impressionListener, times(4)).log(Mockito.anyObject());
+
+        verify(storage).put(impressionKeyList.capture());
+
+        List captured = impressionKeyList.getValue();
+
+        Assert.assertEquals(0, captured.size());
     }
 
     @Test
-    public void worksButDropsImpressions() throws URISyntaxException {
+    public void worksButDropsImpressions() {
 
         SplitClientConfig config = SplitClientConfig.builder()
                 .impressionsQueueSize(3)
@@ -271,7 +273,7 @@ public class ImpressionsManagerImplTest {
     }
 
     @Test
-    public void works4ImpressionsInOneTest() throws URISyntaxException {
+    public void works4ImpressionsInOneTest() {
 
         SplitClientConfig config = SplitClientConfig.builder()
                 .impressionsQueueSize(10)
@@ -314,7 +316,7 @@ public class ImpressionsManagerImplTest {
     }
 
     @Test
-    public void worksNoImpressions() throws URISyntaxException {
+    public void worksNoImpressions() {
 
         SplitClientConfig config = SplitClientConfig.builder()
                 .impressionsQueueSize(10)
@@ -340,7 +342,7 @@ public class ImpressionsManagerImplTest {
     }
 
     @Test
-    public void alreadySeenImpressionsAreMarked() throws URISyntaxException {
+    public void alreadySeenImpressionsAreMarked() {
         SplitClientConfig config = SplitClientConfig.builder()
                 .impressionsQueueSize(10)
                 .endpoint("nowhere.com", "nowhere.com")
@@ -396,7 +398,7 @@ public class ImpressionsManagerImplTest {
     }
 
     @Test
-    public void testImpressionsStandaloneModeOptimizedMode() throws URISyntaxException {
+    public void testImpressionsStandaloneModeOptimizedMode() {
         SplitClientConfig config = SplitClientConfig.builder()
                 .impressionsQueueSize(10)
                 .endpoint("nowhere.com", "nowhere.com")
@@ -452,7 +454,7 @@ public class ImpressionsManagerImplTest {
     }
 
     @Test
-    public void testImpressionsStandaloneModeDebugMode() throws URISyntaxException {
+    public void testImpressionsStandaloneModeDebugMode() {
         SplitClientConfig config = SplitClientConfig.builder()
                 .impressionsQueueSize(10)
                 .endpoint("nowhere.com", "nowhere.com")
@@ -500,7 +502,7 @@ public class ImpressionsManagerImplTest {
     }
 
     @Test
-    public void testImpressionsStandaloneModeNoneMode() throws URISyntaxException {
+    public void testImpressionsStandaloneModeNoneMode() {
         SplitClientConfig config = SplitClientConfig.builder()
                 .impressionsQueueSize(10)
                 .endpoint("nowhere.com", "nowhere.com")
@@ -556,7 +558,7 @@ public class ImpressionsManagerImplTest {
     }
 
     @Test
-    public void testImpressionsConsumerModeOptimizedMode() throws URISyntaxException {
+    public void testImpressionsConsumerModeOptimizedMode() {
         SplitClientConfig config = SplitClientConfig.builder()
                 .impressionsQueueSize(10)
                 .endpoint("nowhere.com", "nowhere.com")
@@ -613,7 +615,7 @@ public class ImpressionsManagerImplTest {
     }
 
     @Test
-    public void testImpressionsConsumerModeNoneMode() throws URISyntaxException {
+    public void testImpressionsConsumerModeNoneMode() {
         SplitClientConfig config = SplitClientConfig.builder()
                 .impressionsQueueSize(10)
                 .endpoint("nowhere.com", "nowhere.com")
@@ -670,7 +672,7 @@ public class ImpressionsManagerImplTest {
     }
 
     @Test
-    public void testImpressionsConsumerModeDebugMode() throws URISyntaxException {
+    public void testImpressionsConsumerModeDebugMode() {
         SplitClientConfig config = SplitClientConfig.builder()
                 .impressionsQueueSize(10)
                 .endpoint("nowhere.com", "nowhere.com")
@@ -720,7 +722,7 @@ public class ImpressionsManagerImplTest {
     }
 
     @Test
-    public void testCounterStandaloneModeOptimizedMode() throws URISyntaxException {
+    public void testCounterStandaloneModeOptimizedMode() {
         SplitClientConfig config = SplitClientConfig.builder()
                 .impressionsQueueSize(10)
                 .endpoint("nowhere.com", "nowhere.com")
@@ -739,7 +741,7 @@ public class ImpressionsManagerImplTest {
         Assert.assertNotNull(manager.getCounter());
     }
     @Test
-    public void testCounterStandaloneModeDebugMode() throws URISyntaxException {
+    public void testCounterStandaloneModeDebugMode() {
         SplitClientConfig config = SplitClientConfig.builder()
                 .impressionsQueueSize(10)
                 .endpoint("nowhere.com", "nowhere.com")
@@ -757,7 +759,7 @@ public class ImpressionsManagerImplTest {
     }
 
     @Test
-    public void testCounterStandaloneModeNoneMode() throws URISyntaxException {
+    public void testCounterStandaloneModeNoneMode() {
         SplitClientConfig config = SplitClientConfig.builder()
                 .impressionsQueueSize(10)
                 .endpoint("nowhere.com", "nowhere.com")
@@ -775,7 +777,7 @@ public class ImpressionsManagerImplTest {
     }
 
     @Test
-    public void testCounterConsumerModeOptimizedMode() throws URISyntaxException {
+    public void testCounterConsumerModeOptimizedMode() {
         SplitClientConfig config = SplitClientConfig.builder()
                 .impressionsQueueSize(10)
                 .endpoint("nowhere.com", "nowhere.com")
@@ -795,7 +797,7 @@ public class ImpressionsManagerImplTest {
     }
 
     @Test
-    public void testCounterConsumerModeDebugMode() throws URISyntaxException {
+    public void testCounterConsumerModeDebugMode() {
         SplitClientConfig config = SplitClientConfig.builder()
                 .impressionsQueueSize(10)
                 .endpoint("nowhere.com", "nowhere.com")
@@ -814,7 +816,7 @@ public class ImpressionsManagerImplTest {
     }
 
     @Test
-    public void testCounterConsumerModeNoneMode() throws URISyntaxException {
+    public void testCounterConsumerModeNoneMode() {
         SplitClientConfig config = SplitClientConfig.builder()
                 .impressionsQueueSize(10)
                 .endpoint("nowhere.com", "nowhere.com")
