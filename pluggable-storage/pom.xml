@@ -6,7 +6,7 @@
     <parent>
         <artifactId>java-client-parent</artifactId>
         <groupId>io.split.client</groupId>
-        <version>4.8.1</version>
+        <version>4.8.2-rc2</version>
     </parent>
 
     <version>2.0.0</version>
