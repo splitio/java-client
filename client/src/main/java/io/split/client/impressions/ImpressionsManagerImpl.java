@@ -61,7 +61,7 @@ public class ImpressionsManagerImpl implements ImpressionsManager, Closeable {
                                                          ImpressionsStorageProducer impressionsStorageProducer,
                                                          ProcessImpressionStrategy processImpressionStrategy,
                                                          ImpressionCounter counter,
-                                                         ImpressionListener listener) throws URISyntaxException {
+                                                         ImpressionListener listener) {
         return new ImpressionsManagerImpl(config, impressionsSender, telemetryRuntimeProducer, impressionsStorageConsumer,
                 impressionsStorageProducer, processImpressionStrategy, counter, listener);
     }
@@ -73,7 +73,7 @@ public class ImpressionsManagerImpl implements ImpressionsManager, Closeable {
                                    ImpressionsStorageProducer impressionsStorageProducer,
                                    ProcessImpressionStrategy processImpressionStrategy,
                                    ImpressionCounter impressionCounter,
-                                   ImpressionListener impressionListener) throws URISyntaxException {
+                                   ImpressionListener impressionListener) {
 
 
         _config = checkNotNull(config);
@@ -117,7 +117,7 @@ public class ImpressionsManagerImpl implements ImpressionsManager, Closeable {
 
         ImpressionsResult impressionsResult = _processImpressionStrategy.process(impressions);
         List<Impression> impressionsForLogs = impressionsResult.getImpressionsToQueue();
-        List<Impression> impressionsToListener = impressionsResult.getImpressionsToQueue();
+        List<Impression> impressionsToListener = impressionsResult.getImpressionsToListener();
 
         int totalImpressions = impressionsForLogs.size();
         long queued = _impressionsStorageProducer.put(impressionsForLogs.stream().map(KeyImpression::fromImpression).collect(Collectors.toList()));
