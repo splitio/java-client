@@ -2,6 +2,7 @@ package io.split.client;
 
 import com.google.gson.stream.JsonReader;
 import io.split.client.dtos.SplitChange;
+import io.split.client.utils.InputStreamProvider;
 import io.split.client.utils.Json;
 import io.split.client.utils.LocalhostSanitizer;
 import io.split.engine.common.FetchOptions;
@@ -9,10 +10,9 @@ import io.split.engine.experiments.SplitChangeFetcher;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileReader;
-import java.io.UnsupportedEncodingException;
+import java.io.BufferedReader;
+import java.io.InputStreamReader;
+import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.Arrays;
@@ -20,37 +20,26 @@ import java.util.Arrays;
 public class JsonLocalhostSplitChangeFetcher implements SplitChangeFetcher {
 
     private static final Logger _log = LoggerFactory.getLogger(JsonLocalhostSplitChangeFetcher.class);
-    private final File _file;
+    private final InputStreamProvider _inputStreamProvider;
     private byte [] lastHash;
 
-    public JsonLocalhostSplitChangeFetcher(String filePath) {
-        _file = new File(filePath);
+    public JsonLocalhostSplitChangeFetcher(InputStreamProvider inputStreamProvider) {
+        _inputStreamProvider = inputStreamProvider;
         lastHash = new byte[0];
     }
 
     @Override
     public SplitChange fetch(long since, FetchOptions options) {
-
         try {
-            JsonReader jsonReader = new JsonReader(new FileReader(_file));
+            JsonReader jsonReader = new JsonReader(new BufferedReader(new InputStreamReader(_inputStreamProvider.get(), StandardCharsets.UTF_8)));
             SplitChange splitChange = Json.fromJson(jsonReader, SplitChange.class);
             return processSplitChange(splitChange, since);
-        } catch (FileNotFoundException f){
-            _log.warn(String.format("There was no file named %s found. " +
-                            "We created a split client that returns default treatments for all feature flags for all of your users. " +
-                            "If you wish to return a specific treatment for a feature flag, enter the name of that feature flag name and " +
-                            "treatment name separated by whitespace in %s; one pair per line. Empty lines or lines starting with '#' are " +
-                            "considered comments",
-                    _file.getPath(), _file.getPath()), f);
-            throw new IllegalStateException("Problem fetching splitChanges: " + f.getMessage(), f);
         } catch (Exception e) {
-            _log.warn(String.format("Problem to fetch split change using the file %s",
-                    _file.getPath()), e);
             throw new IllegalStateException("Problem fetching splitChanges: " + e.getMessage(), e);
         }
     }
 
-    private SplitChange processSplitChange(SplitChange splitChange, long changeNumber) throws NoSuchAlgorithmException, UnsupportedEncodingException {
+    private SplitChange processSplitChange(SplitChange splitChange, long changeNumber) throws NoSuchAlgorithmException {
         SplitChange splitChangeToProcess = LocalhostSanitizer.sanitization(splitChange);
         // if the till is less than storage CN and different from the default till ignore the change
         if (splitChangeToProcess.till < changeNumber && splitChangeToProcess.till != -1) {
