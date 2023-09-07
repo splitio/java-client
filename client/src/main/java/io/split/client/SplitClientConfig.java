@@ -9,6 +9,8 @@ import org.apache.hc.core5.http.HttpHost;
 import pluggable.CustomStorageWrapper;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Properties;
 import java.util.concurrent.ThreadFactory;
@@ -424,7 +426,7 @@ public class SplitClientConfig {
         private StorageMode _storageMode = StorageMode.MEMORY;
         private final long _lastSeenCacheSize = 500000;
         private ThreadFactory _threadFactory;
-        private List<String> _flagSetsFilter = null;
+        private List<String> _flagSetsFilter = Collections.emptyList();
 
         public Builder() {
         }
