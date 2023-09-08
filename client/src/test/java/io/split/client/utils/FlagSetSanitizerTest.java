@@ -44,4 +44,14 @@ public class FlagSetSanitizerTest {
         Assert.assertEquals(1, cleanFlagSets.size());
         Assert.assertEquals("test1", cleanFlagSets.get(0));
     }
+
+    @Test
+    public void testDuplicateFlagSets() {
+        List<String> flagSets = new ArrayList<>();
+        flagSets.add(" test1");
+        flagSets.add(" test1 ");
+        List<String> cleanFlagSets = FlagSetSanitizer.sanitizeFlagSet(flagSets);
+        Assert.assertEquals(1, cleanFlagSets.size());
+        Assert.assertEquals("test1", cleanFlagSets.get(0));
+    }
 }

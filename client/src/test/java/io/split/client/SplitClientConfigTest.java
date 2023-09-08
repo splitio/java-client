@@ -195,9 +195,9 @@ public class SplitClientConfigTest {
 
     @Test
     public void checkSetFlagSetsFilter() {
-        List<String> sets = Stream.of("test1", "test2").collect(Collectors.toList());
+        List<String> sets = Stream.of("test1", "test2", "TEST3", "test-4").collect(Collectors.toList());
         SplitClientConfig config = SplitClientConfig.builder().flagSetsFilter(sets).build();
         Assert.assertNotNull(config.getSetsFilter());
-        Assert.assertEquals(2, config.getSetsFilter().size());
+        Assert.assertEquals(3, config.getSetsFilter().size());
     }
 }
