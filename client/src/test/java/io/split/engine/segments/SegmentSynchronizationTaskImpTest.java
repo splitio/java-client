@@ -3,6 +3,8 @@ package io.split.engine.segments;
 import com.google.common.collect.Maps;
 import io.split.client.LocalhostSegmentChangeFetcher;
 import io.split.client.JsonLocalhostSplitChangeFetcher;
+import io.split.client.utils.InputStreamProvider;
+import io.split.client.utils.StaticContentInputStreamProvider;
 import io.split.engine.common.FetchOptions;
 import io.split.engine.experiments.SplitChangeFetcher;
 import io.split.engine.experiments.SplitFetcher;
@@ -24,6 +26,9 @@ import org.mockito.Mockito;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.InputStream;
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 import java.util.List;
@@ -145,11 +150,13 @@ public class SegmentSynchronizationTaskImpTest {
     }
 
     @Test
-    public void testLocalhostSegmentChangeFetcher() throws InterruptedException {
+    public void testLocalhostSegmentChangeFetcher() throws InterruptedException, FileNotFoundException {
 
         SplitCache splitCacheProducer = new InMemoryCacheImp();
 
-        SplitChangeFetcher splitChangeFetcher = new JsonLocalhostSplitChangeFetcher("src/test/resources/split_init.json");
+        InputStream inputStream = new FileInputStream("src/test/resources/split_init.json");
+        InputStreamProvider inputStreamProvider = new StaticContentInputStreamProvider(inputStream);
+        SplitChangeFetcher splitChangeFetcher = new JsonLocalhostSplitChangeFetcher(inputStreamProvider);
         SplitParser splitParser = new SplitParser();
         FetchOptions fetchOptions = new FetchOptions.Builder().build();
         SplitFetcher splitFetcher = new SplitFetcherImp(splitChangeFetcher, splitParser, splitCacheProducer, TELEMETRY_STORAGE_NOOP);
