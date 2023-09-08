@@ -160,8 +160,10 @@ public class SyncManagerImp implements SyncManager {
         _shuttedDown.set(true);
         _initializationtExecutorService.shutdownNow();
         _synchronizer.stopPeriodicFetching();
-        _pushManager.stop();
-        _pushMonitorExecutorService.shutdownNow();
+        if (_streamingEnabledConfig.get()) {
+            _pushManager.stop();
+            _pushMonitorExecutorService.shutdownNow();
+        }
         _segmentSynchronizationTaskImp.close();
         _log.info("Successful shutdown of segment fetchers");
         _splitSynchronizationTask.close();

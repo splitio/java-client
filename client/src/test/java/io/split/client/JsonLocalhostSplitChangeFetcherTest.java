@@ -4,6 +4,9 @@ import io.split.client.dtos.ConditionType;
 import io.split.client.dtos.Split;
 import io.split.client.dtos.SplitChange;
 import io.split.client.dtos.Status;
+import io.split.client.utils.FileInputStreamProvider;
+import io.split.client.utils.InputStreamProvider;
+import io.split.client.utils.StaticContentInputStreamProvider;
 import io.split.engine.common.FetchOptions;
 import org.junit.Assert;
 import org.junit.Rule;
@@ -12,7 +15,10 @@ import org.junit.rules.TemporaryFolder;
 import org.mockito.Mockito;
 
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.List;
 import java.util.Optional;
 
@@ -27,8 +33,10 @@ public class JsonLocalhostSplitChangeFetcherTest {
     private String TEST_4 = "{\"splits\":[{\"trafficTypeName\":\"user\",\"name\":\"SPLIT_1\",\"trafficAllocation\":100,\"trafficAllocationSeed\":-1780071202,\"seed\":-1442762199,\"status\":\"ACTIVE\",\"killed\":false,\"defaultTreatment\":\"off\",\"changeNumber\":1675443537882,\"algo\":2,\"configurations\":{},\"conditions\":[{\"conditionType\":\"ROLLOUT\",\"matcherGroup\":{\"combiner\":\"AND\",\"matchers\":[{\"keySelector\":{\"trafficType\":\"user\",\"attribute\":null},\"matcherType\":\"ALL_KEYS\",\"negate\":false,\"userDefinedSegmentMatcherData\":null,\"whitelistMatcherData\":null,\"unaryNumericMatcherData\":null,\"betweenMatcherData\":null,\"booleanMatcherData\":null,\"dependencyMatcherData\":null,\"stringMatcherData\":null}]},\"partitions\":[{\"treatment\":\"on\",\"size\":0},{\"treatment\":\"off\",\"size\":100}],\"label\":\"default rule\"}]}],\"since\":-1,\"till\":445345}";
     private String TEST_5 = "{\"splits\":[{\"trafficTypeName\":\"user\",\"name\":\"SPLIT_1\",\"trafficAllocation\":100,\"trafficAllocationSeed\":-1780071202,\"seed\":-1442762199,\"status\":\"ACTIVE\",\"killed\":false,\"defaultTreatment\":\"off\",\"changeNumber\":1675443537882,\"algo\":2,\"configurations\":{},\"conditions\":[{\"conditionType\":\"ROLLOUT\",\"matcherGroup\":{\"combiner\":\"AND\",\"matchers\":[{\"keySelector\":{\"trafficType\":\"user\",\"attribute\":null},\"matcherType\":\"ALL_KEYS\",\"negate\":false,\"userDefinedSegmentMatcherData\":null,\"whitelistMatcherData\":null,\"unaryNumericMatcherData\":null,\"betweenMatcherData\":null,\"booleanMatcherData\":null,\"dependencyMatcherData\":null,\"stringMatcherData\":null}]},\"partitions\":[{\"treatment\":\"on\",\"size\":0},{\"treatment\":\"off\",\"size\":100}],\"label\":\"default rule\"}]},{\"trafficTypeName\":\"user\",\"name\":\"SPLIT_2\",\"trafficAllocation\":100,\"trafficAllocationSeed\":-1780071202,\"seed\":-1442762199,\"status\":\"ACTIVE\",\"killed\":false,\"defaultTreatment\":\"off\",\"changeNumber\":1675443537882,\"algo\":2,\"configurations\":{},\"conditions\":[{\"conditionType\":\"ROLLOUT\",\"matcherGroup\":{\"combiner\":\"AND\",\"matchers\":[{\"keySelector\":{\"trafficType\":\"user\",\"attribute\":null},\"matcherType\":\"ALL_KEYS\",\"negate\":false,\"userDefinedSegmentMatcherData\":null,\"whitelistMatcherData\":null,\"unaryNumericMatcherData\":null,\"betweenMatcherData\":null,\"booleanMatcherData\":null,\"dependencyMatcherData\":null,\"stringMatcherData\":null}]},\"partitions\":[{\"treatment\":\"on\",\"size\":0},{\"treatment\":\"off\",\"size\":100}],\"label\":\"default rule\"}]}],\"since\":-1,\"till\":-1}";
     @Test
-    public void testParseSplitChange(){
-        JsonLocalhostSplitChangeFetcher localhostSplitChangeFetcher = new JsonLocalhostSplitChangeFetcher("src/test/resources/split_init.json");
+    public void testParseSplitChange() throws FileNotFoundException {
+        InputStream inputStream = new FileInputStream("src/test/resources/split_init.json");
+        InputStreamProvider inputStreamProvider = new StaticContentInputStreamProvider(inputStream);
+        JsonLocalhostSplitChangeFetcher localhostSplitChangeFetcher = new JsonLocalhostSplitChangeFetcher(inputStreamProvider);
         FetchOptions fetchOptions = Mockito.mock(FetchOptions.class);
 
         SplitChange splitChange = localhostSplitChangeFetcher.fetch(-1L, fetchOptions);
@@ -40,8 +48,10 @@ public class JsonLocalhostSplitChangeFetcherTest {
     }
 
     @Test
-    public void testSinceAndTillSanitization(){
-        JsonLocalhostSplitChangeFetcher localhostSplitChangeFetcher = new JsonLocalhostSplitChangeFetcher("src/test/resources/sanitizer/splitChangeTillSanitization.json");
+    public void testSinceAndTillSanitization() throws FileNotFoundException {
+        InputStream inputStream = new FileInputStream("src/test/resources/sanitizer/splitChangeTillSanitization.json");
+        InputStreamProvider inputStreamProvider = new StaticContentInputStreamProvider(inputStream);
+        JsonLocalhostSplitChangeFetcher localhostSplitChangeFetcher = new JsonLocalhostSplitChangeFetcher(inputStreamProvider);
         FetchOptions fetchOptions = Mockito.mock(FetchOptions.class);
 
         SplitChange splitChange = localhostSplitChangeFetcher.fetch(-1L, fetchOptions);
@@ -51,8 +61,10 @@ public class JsonLocalhostSplitChangeFetcherTest {
     }
 
     @Test
-    public void testSplitChangeWithoutSplits(){
-        JsonLocalhostSplitChangeFetcher localhostSplitChangeFetcher = new JsonLocalhostSplitChangeFetcher("src/test/resources/sanitizer/splitChangeWithoutSplits.json");
+    public void testSplitChangeWithoutSplits() throws FileNotFoundException {
+        InputStream inputStream = new FileInputStream("src/test/resources/sanitizer/splitChangeWithoutSplits.json");
+        InputStreamProvider inputStreamProvider = new StaticContentInputStreamProvider(inputStream);
+        JsonLocalhostSplitChangeFetcher localhostSplitChangeFetcher = new JsonLocalhostSplitChangeFetcher(inputStreamProvider);
         FetchOptions fetchOptions = Mockito.mock(FetchOptions.class);
 
         SplitChange splitChange = localhostSplitChangeFetcher.fetch(-1L, fetchOptions);
@@ -61,8 +73,10 @@ public class JsonLocalhostSplitChangeFetcherTest {
     }
 
     @Test
-    public void testSplitChangeSplitsToSanitize(){
-        JsonLocalhostSplitChangeFetcher localhostSplitChangeFetcher = new JsonLocalhostSplitChangeFetcher("src/test/resources/sanitizer/splitChangeSplitsToSanitize.json");
+    public void testSplitChangeSplitsToSanitize() throws FileNotFoundException {
+        InputStream inputStream = new FileInputStream("src/test/resources/sanitizer/splitChangeSplitsToSanitize.json");
+        InputStreamProvider inputStreamProvider = new StaticContentInputStreamProvider(inputStream);
+        JsonLocalhostSplitChangeFetcher localhostSplitChangeFetcher = new JsonLocalhostSplitChangeFetcher(inputStreamProvider);
         FetchOptions fetchOptions = Mockito.mock(FetchOptions.class);
 
         SplitChange splitChange = localhostSplitChangeFetcher.fetch(-1L, fetchOptions);
@@ -76,8 +90,10 @@ public class JsonLocalhostSplitChangeFetcherTest {
     }
 
     @Test
-    public void testSplitChangeSplitsToSanitizeMatchersNull(){
-        JsonLocalhostSplitChangeFetcher localhostSplitChangeFetcher = new JsonLocalhostSplitChangeFetcher("src/test/resources/sanitizer/splitChangerMatchersNull.json");
+    public void testSplitChangeSplitsToSanitizeMatchersNull() throws FileNotFoundException {
+        InputStream inputStream = new FileInputStream("src/test/resources/sanitizer/splitChangerMatchersNull.json");
+        InputStreamProvider inputStreamProvider = new StaticContentInputStreamProvider(inputStream);
+        JsonLocalhostSplitChangeFetcher localhostSplitChangeFetcher = new JsonLocalhostSplitChangeFetcher(inputStreamProvider);
         FetchOptions fetchOptions = Mockito.mock(FetchOptions.class);
 
         SplitChange splitChange = localhostSplitChangeFetcher.fetch(-1L, fetchOptions);
@@ -98,7 +114,8 @@ public class JsonLocalhostSplitChangeFetcherTest {
         byte[] test = TEST_0.getBytes();
         com.google.common.io.Files.write(test, file);
 
-        JsonLocalhostSplitChangeFetcher localhostSplitChangeFetcher = new JsonLocalhostSplitChangeFetcher(file.getAbsolutePath());
+        InputStreamProvider inputStreamProvider = new FileInputStreamProvider(file.getAbsolutePath());
+        JsonLocalhostSplitChangeFetcher localhostSplitChangeFetcher = new JsonLocalhostSplitChangeFetcher(inputStreamProvider);
         FetchOptions fetchOptions = Mockito.mock(FetchOptions.class);
 
         // 0) The CN from storage is -1, till and since are -1, and sha doesn't exist in the hash. It's going to return a split change with updates.
@@ -151,5 +168,14 @@ public class JsonLocalhostSplitChangeFetcherTest {
         Assert.assertEquals(2, splitChange.splits.size());
         Assert.assertEquals(2323, splitChange.till);
         Assert.assertEquals(2323, splitChange.since);
+    }
+
+    @Test(expected = IllegalStateException.class)
+    public void processTestForException() {
+        InputStreamProvider inputStreamProvider = new FileInputStreamProvider("src/test/resources/notExist.json");
+        JsonLocalhostSplitChangeFetcher localhostSplitChangeFetcher = new JsonLocalhostSplitChangeFetcher(inputStreamProvider);
+        FetchOptions fetchOptions = Mockito.mock(FetchOptions.class);
+
+        SplitChange splitChange = localhostSplitChangeFetcher.fetch(-1L, fetchOptions);
     }
 }
