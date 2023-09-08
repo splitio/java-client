@@ -1,5 +1,6 @@
 package io.split.client;
 
+import com.google.common.io.Files;
 import io.split.client.dtos.Metadata;
 import io.split.client.events.EventsSender;
 import io.split.client.events.EventsStorage;
@@ -30,7 +31,11 @@ import io.split.client.interceptors.ClientKeyInterceptorFilter;
 import io.split.client.interceptors.GzipDecoderResponseInterceptor;
 import io.split.client.interceptors.GzipEncoderRequestInterceptor;
 import io.split.client.interceptors.SdkMetadataInterceptorFilter;
+import io.split.client.utils.FileInputStreamProvider;
+import io.split.client.utils.FileTypeEnum;
+import io.split.client.utils.InputStreamProvider;
 import io.split.client.utils.SDKMetadata;
+import io.split.client.utils.StaticContentInputStreamProvider;
 import io.split.engine.SDKReadinessGates;
 import io.split.engine.common.ConsumerSyncManager;
 import io.split.engine.common.ConsumerSynchronizer;
@@ -99,6 +104,7 @@ import org.slf4j.LoggerFactory;
 import pluggable.CustomStorageWrapper;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.InetAddress;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -111,6 +117,8 @@ import static io.split.client.utils.SplitExecutorFactory.buildExecutorService;
 
 public class SplitFactoryImpl implements SplitFactory {
     private static final Logger _log = LoggerFactory.getLogger(SplitFactory.class);
+    private static final String LEGACY_LOG_MESSAGE = "The sdk initialize in localhost mode using Legacy file. The splitFile or " +
+                                                     "inputStream doesn't add it to the config.";
     private final static long SSE_CONNECT_TIMEOUT = 30000;
     private final static long SSE_SOCKET_TIMEOUT = 70000;
 
@@ -366,16 +374,7 @@ public class SplitFactoryImpl implements SplitFactory {
                config.getThreadFactory());
 
         // SplitFetcher
-        SplitChangeFetcher splitChangeFetcher;
-        String splitFile = config.splitFile();
-        if (splitFile != null && splitFile.toLowerCase().endsWith(".json")){
-            splitChangeFetcher = new JsonLocalhostSplitChangeFetcher(config.splitFile());
-        } else if (splitFile != null && !splitFile.isEmpty() && (splitFile.endsWith(".yaml") || splitFile.endsWith(".yml"))) {
-            splitChangeFetcher = new YamlLocalhostSplitChangeFetcher(splitFile);
-        } else {
-            splitChangeFetcher = new LegacyLocalhostSplitChangeFetcher(config.splitFile());
-        }
-
+        SplitChangeFetcher splitChangeFetcher = createSplitChangeFetcher(config);
         SplitParser splitParser = new SplitParser();
 
         _splitFetcher = new SplitFetcherImp(splitChangeFetcher, splitParser, splitCache, _telemetryStorageProducer);
@@ -642,5 +641,54 @@ public class SplitFactoryImpl implements SplitFactory {
                     config.getThreadFactory());
         }
         return null;
+    }
+
+    private SplitChangeFetcher createSplitChangeFetcher(SplitClientConfig splitClientConfig) {
+        String splitFile = splitClientConfig.splitFile();
+        InputStream inputStream = splitClientConfig.inputStream();
+        FileTypeEnum fileType = splitClientConfig.fileType();
+        InputStreamProvider inputStreamProvider;
+        if (splitFile != null || !isInputStreamConfigValid(inputStream, fileType)) {
+            if (splitFile == null) {
+                _log.warn("The InputStream config is invalid");
+            }
+            fileType = getFileTypeFromFileName(splitFile);
+            inputStreamProvider = new FileInputStreamProvider(splitFile);
+        } else {
+            inputStreamProvider = new StaticContentInputStreamProvider(inputStream);
+        }
+        try {
+            switch (fileType){
+                case JSON:
+                    return new JsonLocalhostSplitChangeFetcher(inputStreamProvider);
+                case YAML:
+                    return new YamlLocalhostSplitChangeFetcher(inputStreamProvider);
+                default:
+                    _log.warn(LEGACY_LOG_MESSAGE);
+                    return new LegacyLocalhostSplitChangeFetcher(splitFile);
+            }
+        } catch (Exception e) {
+            _log.warn(String.format("There was no file named %s found. " +
+                            "We created a split client that returns default treatments for all feature flags for all of your users. " +
+                            "If you wish to return a specific treatment for a feature flag, enter the name of that feature flag name and " +
+                            "treatment name separated by whitespace in %s; one pair per line. Empty lines or lines starting with '#' are " +
+                            "considered comments",
+                    splitFile, splitFile), e);
+        }
+        _log.warn(LEGACY_LOG_MESSAGE);
+        return new LegacyLocalhostSplitChangeFetcher(splitFile);
+    }
+
+    private Boolean isInputStreamConfigValid(InputStream inputStream, FileTypeEnum fileType) {
+        return inputStream != null && fileType != null;
+    }
+
+    private FileTypeEnum getFileTypeFromFileName(String fileName) {
+        try {
+            return FileTypeEnum.valueOf(Files.getFileExtension(fileName).toUpperCase());
+        } catch (Exception e) {
+            return FileTypeEnum.LEGACY;
+        }
+
     }
 }

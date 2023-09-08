@@ -2,6 +2,8 @@ package io.split.client;
 
 import io.split.client.dtos.Split;
 import io.split.client.dtos.SplitChange;
+import io.split.client.utils.FileInputStreamProvider;
+import io.split.client.utils.InputStreamProvider;
 import io.split.client.utils.LocalhostUtils;
 import io.split.engine.common.FetchOptions;
 import org.junit.Assert;
@@ -58,7 +60,8 @@ public class YamlLocalhostSplitChangeFetcherTest {
         yaml.dump(allSplits, writer);
         LocalhostUtils.writeFile(file, writer);
 
-        YamlLocalhostSplitChangeFetcher localhostSplitChangeFetcher = new YamlLocalhostSplitChangeFetcher(file.getAbsolutePath());
+        InputStreamProvider inputStreamProvider = new FileInputStreamProvider(file.getAbsolutePath());
+        YamlLocalhostSplitChangeFetcher localhostSplitChangeFetcher = new YamlLocalhostSplitChangeFetcher(inputStreamProvider);
         FetchOptions fetchOptions = Mockito.mock(FetchOptions.class);
         SplitChange splitChange = localhostSplitChangeFetcher.fetch(-1L, fetchOptions);
 
@@ -70,5 +73,14 @@ public class YamlLocalhostSplitChangeFetcherTest {
         for (Split split: splitChange.splits) {
             Assert.assertEquals("control", split.defaultTreatment);
         }
+    }
+
+    @Test(expected = IllegalStateException.class)
+    public void processTestForException() {
+        InputStreamProvider inputStreamProvider = new FileInputStreamProvider("src/test/resources/notExist.yaml");
+        YamlLocalhostSplitChangeFetcher localhostSplitChangeFetcher = new YamlLocalhostSplitChangeFetcher(inputStreamProvider);
+        FetchOptions fetchOptions = Mockito.mock(FetchOptions.class);
+
+        SplitChange splitChange = localhostSplitChangeFetcher.fetch(-1L, fetchOptions);
     }
 }
