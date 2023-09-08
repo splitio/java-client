@@ -9,6 +9,9 @@ import org.apache.hc.core5.http.HttpHost;
 import pluggable.CustomStorageWrapper;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 import java.util.Properties;
 import java.util.concurrent.ThreadFactory;
 
@@ -80,6 +83,7 @@ public class SplitClientConfig {
     // To be set during startup
     public static String splitSdkVersion;
     private final long _lastSeenCacheSize;
+    private final List<String> _flagSetsFilter;
 
 
     public static Builder builder() {
@@ -133,7 +137,8 @@ public class SplitClientConfig {
                               int uniqueKeysRefreshRateRedis,
                               int filterUniqueKeysRefreshRate,
                               long lastSeenCacheSize,
-                              ThreadFactory threadFactory) {
+                              ThreadFactory threadFactory,
+                              List<String> flagSetsFilter) {
         _endpoint = endpoint;
         _eventsEndpoint = eventsEndpoint;
         _featuresRefreshRate = pollForFeatureChangesEveryNSeconds;
@@ -182,6 +187,7 @@ public class SplitClientConfig {
         _customStorageWrapper = customStorageWrapper;
         _lastSeenCacheSize = lastSeenCacheSize;
         _threadFactory = threadFactory;
+        _flagSetsFilter = flagSetsFilter;
 
 
         Properties props = new Properties();
@@ -363,6 +369,9 @@ public class SplitClientConfig {
     public ThreadFactory getThreadFactory() {
         return _threadFactory;
     }
+    public List<String> getSetsFilter() {
+        return _flagSetsFilter;
+    }
 
     public static final class Builder {
 
@@ -417,6 +426,7 @@ public class SplitClientConfig {
         private StorageMode _storageMode = StorageMode.MEMORY;
         private final long _lastSeenCacheSize = 500000;
         private ThreadFactory _threadFactory;
+        private List<String> _flagSetsFilter = Collections.emptyList();
 
         public Builder() {
         }
@@ -882,6 +892,18 @@ public class SplitClientConfig {
             return this;
         }
 
+        /**
+         * Flag Sets Filter
+         *
+         * @param flagSetsFilter
+         * @return this builder
+         */
+        public Builder flagSetsFilter(List<String> flagSetsFilter) {
+            _flagSetsFilter = flagSetsFilter;
+            //TODO Apply validations
+            return this;
+        }
+
         public SplitClientConfig build() {
             if (_featuresRefreshRate < 5 ) {
                 throw new IllegalArgumentException("featuresRefreshRate must be >= 5: " + _featuresRefreshRate);
@@ -1027,7 +1049,8 @@ public class SplitClientConfig {
                     _uniqueKeysRefreshRateRedis,
                     _filterUniqueKeysRefreshRate,
                     _lastSeenCacheSize,
-                    _threadFactory);
+                    _threadFactory,
+                    _flagSetsFilter);
         }
     }
 }
