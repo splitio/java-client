@@ -1,4 +1,4 @@
-4.9.0 (Sep 7, 2023)
+4.9.0 (Sep 8, 2023)
 - Added InputStream config for localhost mode providing a solution when the file is inside a jar.
 - Fixed track impressions to send all impressions to the listener.
 - Fixed SyncManager shutdown to stop SSE only when is streaming mode on.
