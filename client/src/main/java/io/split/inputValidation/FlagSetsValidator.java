@@ -1,13 +1,11 @@
-package io.split.client.utils;
+package io.split.inputValidation;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.regex.Pattern;
-import java.util.stream.Collectors;
 
 public final class FlagSetsValidator {
 
@@ -18,12 +16,12 @@ public final class FlagSetsValidator {
         throw new IllegalStateException("Utility class");
     }
 
-    public static List<String> cleanup(List<String> flagSets) {
+    public static HashSet<String> cleanup(List<String> flagSets) {
         if (flagSets == null || flagSets.isEmpty()) {
             _log.error("FlagSets must be a non-empty list.");
-            return new ArrayList<>();
+            return new HashSet<>();
         }
-        HashSet<String> sanitizedFlagSets = new HashSet<>();
+        HashSet<String> cleanFlagSets = new HashSet<>();
         for (String flagSet: flagSets) {
             if(flagSet != flagSet.toLowerCase()) {
                 _log.warn(String.format("Flag Set name %s should be all lowercase - converting string to lowercase", flagSet));
@@ -39,12 +37,14 @@ public final class FlagSetsValidator {
                         flagSet, FLAG_SET_REGEX, flagSet));
                 continue;
             }
-            sanitizedFlagSets.add(flagSet);
+            cleanFlagSets.add(flagSet);
         }
-        return sanitizedFlagSets.stream().sorted().collect(Collectors.toList());
+        return cleanFlagSets;
     }
 
-    public static Boolean isValid(String value) {
-        return value != null && value.trim().matches(FLAG_SET_REGEX);
+    public static FlagSetsValidResult areValid(List<String> flagSets) {
+        HashSet<String> cleanFlagSets = cleanup(flagSets);
+
+        return new FlagSetsValidResult(cleanFlagSets != null && cleanFlagSets.size() != 0, cleanFlagSets);
     }
 }
