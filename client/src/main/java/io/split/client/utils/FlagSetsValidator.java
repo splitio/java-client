@@ -9,16 +9,16 @@ import java.util.List;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
-public final class FlagSetSanitizer {
+public final class FlagSetsValidator {
 
     private static final String FLAG_SET_REGEX = "^[a-z0-9][_a-z0-9]{0,49}$";
-    private static final Logger _log = LoggerFactory.getLogger(FlagSetSanitizer.class);
+    private static final Logger _log = LoggerFactory.getLogger(FlagSetsValidator.class);
 
-    private FlagSetSanitizer() {
+    private FlagSetsValidator() {
         throw new IllegalStateException("Utility class");
     }
 
-    public static List<String> sanitizeFlagSet(List<String> flagSets) {
+    public static List<String> cleanup(List<String> flagSets) {
         if (flagSets == null || flagSets.isEmpty()) {
             _log.error("FlagSets must be a non-empty list.");
             return new ArrayList<>();
@@ -42,5 +42,9 @@ public final class FlagSetSanitizer {
             sanitizedFlagSets.add(flagSet);
         }
         return sanitizedFlagSets.stream().sorted().collect(Collectors.toList());
+    }
+
+    public static Boolean isValid(String value) {
+        return value != null && value.trim().matches(FLAG_SET_REGEX);
     }
 }

@@ -16,7 +16,7 @@ import java.io.InputStream;
 import java.util.Properties;
 import java.util.concurrent.ThreadFactory;
 
-import static io.split.client.utils.FlagSetSanitizer.sanitizeFlagSet;
+import static io.split.client.utils.FlagSetsValidator.cleanup;
 
 /**
  * Configurations for the SplitClient.
@@ -922,7 +922,7 @@ public class SplitClientConfig {
          * @return this builder
          */
         public Builder flagSetsFilter(List<String> flagSetsFilter) {
-            _flagSetsFilter = sanitizeFlagSet(flagSetsFilter);
+            _flagSetsFilter = cleanup(flagSetsFilter);
             return this;
         }
 
