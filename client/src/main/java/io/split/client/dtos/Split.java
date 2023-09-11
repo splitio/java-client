@@ -1,5 +1,6 @@
 package io.split.client.dtos;
 
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 
@@ -16,7 +17,7 @@ public class Split {
     public Integer trafficAllocationSeed;
     public int algo;
     public Map<String, String> configurations;
-
+    public HashSet<String> sets;
 
     @Override
     public String toString() {
