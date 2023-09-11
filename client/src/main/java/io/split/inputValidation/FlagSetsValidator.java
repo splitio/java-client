@@ -18,7 +18,6 @@ public final class FlagSetsValidator {
 
     public static HashSet<String> cleanup(List<String> flagSets) {
         if (flagSets == null || flagSets.isEmpty()) {
-            _log.error("FlagSets must be a non-empty list.");
             return new HashSet<>();
         }
         HashSet<String> cleanFlagSets = new HashSet<>();
