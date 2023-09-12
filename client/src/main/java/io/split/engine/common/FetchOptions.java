@@ -102,12 +102,14 @@ public class FetchOptions {
         return Objects.equals(_cacheControlHeaders, other._cacheControlHeaders)
                 && Objects.equals(_fastlyDebugHeader, other._fastlyDebugHeader)
                 && Objects.equals(_responseHeadersCallback, other._responseHeadersCallback)
-                && Objects.equals(_targetCN, other._targetCN);
+                && Objects.equals(_targetCN, other._targetCN)
+                && Objects.equals(_flagSetsFilter, other._flagSetsFilter);
     }
 
     @Override
     public int hashCode() {
-        return com.google.common.base.Objects.hashCode(_cacheControlHeaders, _fastlyDebugHeader, _responseHeadersCallback, _targetCN);
+        return com.google.common.base.Objects.hashCode(_cacheControlHeaders, _fastlyDebugHeader, _responseHeadersCallback,
+                _targetCN, _flagSetsFilter);
     }
 
     private final boolean _cacheControlHeaders;
