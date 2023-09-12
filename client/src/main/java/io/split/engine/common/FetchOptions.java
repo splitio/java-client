@@ -17,6 +17,7 @@ public class FetchOptions {
             _cacheControlHeaders = opts._cacheControlHeaders;
             _fastlyDebugHeader = opts._fastlyDebugHeader;
             _responseHeadersCallback = opts._responseHeadersCallback;
+            _flagSetsFilter = opts._flagSetsFilter;
         }
 
         public Builder cacheControlHeaders(boolean on) {
@@ -39,14 +40,20 @@ public class FetchOptions {
             return this;
         }
 
+        public Builder flagSetsFilter(String flagSetsFilter) {
+            _flagSetsFilter = flagSetsFilter;
+            return this;
+        }
+
         public FetchOptions build() {
-            return new FetchOptions(_cacheControlHeaders, _targetCN, _responseHeadersCallback, _fastlyDebugHeader);
+            return new FetchOptions(_cacheControlHeaders, _targetCN, _responseHeadersCallback, _fastlyDebugHeader, _flagSetsFilter);
         }
 
         private long _targetCN = DEFAULT_TARGET_CHANGENUMBER;
         private boolean _cacheControlHeaders = false;
         private boolean _fastlyDebugHeader = false;
         private Function<Map<String, String>, Void> _responseHeadersCallback = null;
+        private String _flagSetsFilter = "";
     }
 
     public boolean cacheControlHeadersEnabled() {
@@ -61,6 +68,10 @@ public class FetchOptions {
 
     public boolean hasCustomCN() { return _targetCN != DEFAULT_TARGET_CHANGENUMBER; }
 
+    public String flagSetsFilter() {
+        return _flagSetsFilter;
+    }
+
     public void handleResponseHeaders(Map<String, String> headers) {
         if (Objects.isNull(_responseHeadersCallback) || Objects.isNull(headers)) {
             return;
@@ -71,11 +82,13 @@ public class FetchOptions {
     private FetchOptions(boolean cacheControlHeaders,
                          long targetCN,
                          Function<Map<String, String>, Void> responseHeadersCallback,
-                         boolean fastlyDebugHeader) {
+                         boolean fastlyDebugHeader,
+                         String flagSetsFilter) {
         _cacheControlHeaders = cacheControlHeaders;
         _targetCN = targetCN;
         _responseHeadersCallback = responseHeadersCallback;
         _fastlyDebugHeader = fastlyDebugHeader;
+        _flagSetsFilter = flagSetsFilter;
     }
 
     @Override
@@ -101,4 +114,5 @@ public class FetchOptions {
     private final boolean _fastlyDebugHeader;
     private final long _targetCN;
     private final Function<Map<String, String>, Void> _responseHeadersCallback;
+    private final String _flagSetsFilter;
 }
