@@ -10,11 +10,13 @@ import org.apache.hc.core5.http.HttpHost;
 import pluggable.CustomStorageWrapper;
 
 import java.io.IOException;
-import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 import java.io.InputStream;
 import java.util.Properties;
 import java.util.concurrent.ThreadFactory;
+
+import static io.split.inputValidation.FlagSetsValidator.cleanup;
 
 /**
  * Configurations for the SplitClient.
@@ -86,7 +88,7 @@ public class SplitClientConfig {
     // To be set during startup
     public static String splitSdkVersion;
     private final long _lastSeenCacheSize;
-    private final List<String> _flagSetsFilter;
+    private final HashSet<String> _flagSetsFilter;
 
     public static Builder builder() {
         return new Builder();
@@ -142,7 +144,7 @@ public class SplitClientConfig {
                               int filterUniqueKeysRefreshRate,
                               long lastSeenCacheSize,
                               ThreadFactory threadFactory,
-                              List<String> flagSetsFilter) {
+                              HashSet<String> flagSetsFilter) {
         _endpoint = endpoint;
         _eventsEndpoint = eventsEndpoint;
         _featuresRefreshRate = pollForFeatureChangesEveryNSeconds;
@@ -194,7 +196,6 @@ public class SplitClientConfig {
         _lastSeenCacheSize = lastSeenCacheSize;
         _threadFactory = threadFactory;
         _flagSetsFilter = flagSetsFilter;
-
 
         Properties props = new Properties();
         try {
@@ -383,7 +384,7 @@ public class SplitClientConfig {
     public ThreadFactory getThreadFactory() {
         return _threadFactory;
     }
-    public List<String> getSetsFilter() {
+    public HashSet<String> getSetsFilter() {
         return _flagSetsFilter;
     }
 
@@ -442,7 +443,7 @@ public class SplitClientConfig {
         private StorageMode _storageMode = StorageMode.MEMORY;
         private final long _lastSeenCacheSize = 500000;
         private ThreadFactory _threadFactory;
-        private List<String> _flagSetsFilter = Collections.emptyList();
+        private HashSet<String> _flagSetsFilter = new HashSet<>();
 
         public Builder() {
         }
@@ -921,8 +922,7 @@ public class SplitClientConfig {
          * @return this builder
          */
         public Builder flagSetsFilter(List<String> flagSetsFilter) {
-            _flagSetsFilter = flagSetsFilter;
-            //TODO Apply validations
+            _flagSetsFilter = cleanup(flagSetsFilter);
             return this;
         }
 
