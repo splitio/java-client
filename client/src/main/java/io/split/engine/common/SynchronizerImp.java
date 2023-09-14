@@ -113,6 +113,9 @@ public class SynchronizerImp implements Synchronizer {
         while(true) {
             remainingAttempts--;
             FetchResult fetchResult = _splitFetcher.forceRefresh(opts);
+            if (fetchResult != null && !fetchResult.retry() && !fetchResult.isSuccess()) {
+                return new SyncResult(false, remainingAttempts, fetchResult);
+            }
             if (targetChangeNumber <= _splitCacheProducer.getChangeNumber()) {
                 return new SyncResult(true, remainingAttempts, fetchResult);
             } else if (remainingAttempts <= 0) {
@@ -206,9 +209,9 @@ public class SynchronizerImp implements Synchronizer {
             remainingAttempts--;
             fetcher.fetch(opts);
             if (targetChangeNumber <= segmentCacheProducer.getChangeNumber(segmentName)) {
-                return new SyncResult(true, remainingAttempts, new FetchResult(false, new HashSet<>()));
+                return new SyncResult(true, remainingAttempts, new FetchResult(false, true, new HashSet<>()));
             } else if (remainingAttempts <= 0) {
-                return new SyncResult(false, remainingAttempts, new FetchResult(false, new HashSet<>()));
+                return new SyncResult(false, remainingAttempts, new FetchResult(false, true, new HashSet<>()));
             }
             try {
                 long howLong = nextWaitMs.apply(null);
