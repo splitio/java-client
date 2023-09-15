@@ -20,11 +20,12 @@ import org.junit.Test;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mockito;
 
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
-import java.io.StringBufferInputStream;
 import java.lang.reflect.InvocationTargetException;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.nio.charset.StandardCharsets;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -94,7 +95,7 @@ public class HttpSplitChangeFetcherTest {
         URI rootTarget = URI.create("https://api.split.io");
 
         HttpEntity entityMock = Mockito.mock(HttpEntity.class);
-        when(entityMock.getContent()).thenReturn(new StringBufferInputStream("{\"till\": 1}"));
+        when(entityMock.getContent()).thenReturn(new ByteArrayInputStream("{\"till\": 1}".getBytes(StandardCharsets.UTF_8)));
         ClassicHttpResponse response = Mockito.mock(ClassicHttpResponse.class);
         when(response.getCode()).thenReturn(200);
         when(response.getEntity()).thenReturn(entityMock);

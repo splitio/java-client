@@ -26,6 +26,7 @@ public class FetcherOptionsTest {
                 .fastlyDebugHeader(true)
                 .responseHeadersCallback(func)
                 .targetChangeNumber(123)
+                .flagSetsFilter("set1,set2")
                 .build();
 
         assertEquals(options.cacheControlHeadersEnabled(), true);
@@ -33,6 +34,7 @@ public class FetcherOptionsTest {
         assertEquals(options.targetCN(), 123);
         options.handleResponseHeaders(new HashMap<>());
         assertEquals(called[0], true);
+        assertEquals("set1,set2", options.flagSetsFilter());
     }
 
     @Test

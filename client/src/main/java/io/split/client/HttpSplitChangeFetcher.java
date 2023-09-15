@@ -2,6 +2,7 @@ package io.split.client;
 
 import com.google.common.annotations.VisibleForTesting;
 import io.split.client.dtos.SplitChange;
+import io.split.client.exceptions.UriTooLongException;
 import io.split.client.utils.Json;
 import io.split.client.utils.Utils;
 import io.split.engine.common.FetchOptions;
@@ -12,6 +13,7 @@ import io.split.telemetry.storage.TelemetryRuntimeProducer;
 import org.apache.hc.client5.http.classic.methods.HttpGet;
 import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
 import org.apache.hc.client5.http.impl.classic.CloseableHttpResponse;
+import org.apache.hc.core5.http.HttpException;
 import org.apache.hc.core5.http.HttpStatus;
 import org.apache.hc.core5.http.Header;
 import org.apache.hc.core5.http.io.entity.EntityUtils;
@@ -35,6 +37,7 @@ public final class HttpSplitChangeFetcher implements SplitChangeFetcher {
 
     private static final String SINCE = "since";
     private static final String TILL = "till";
+    private static final String SETS = "sets";
 
     private static final String HEADER_CACHE_CONTROL_NAME = "Cache-Control";
     private static final String HEADER_CACHE_CONTROL_VALUE = "no-cache";
@@ -75,6 +78,9 @@ public final class HttpSplitChangeFetcher implements SplitChangeFetcher {
             if (options.hasCustomCN()) {
                 uriBuilder.addParameter(TILL, "" + options.targetCN());
             }
+            if (!options.flagSetsFilter().isEmpty()) {
+                uriBuilder.addParameter(SETS, "" + options.flagSetsFilter());
+            }
             URI uri = uriBuilder.build();
 
             HttpGet request = new HttpGet(uri);
@@ -98,6 +104,10 @@ public final class HttpSplitChangeFetcher implements SplitChangeFetcher {
 
             if (statusCode < HttpStatus.SC_OK || statusCode >= HttpStatus.SC_MULTIPLE_CHOICES) {
                 _telemetryRuntimeProducer.recordSyncError(ResourceEnum.SPLIT_SYNC, statusCode);
+                if (statusCode == HttpStatus.SC_REQUEST_URI_TOO_LONG) {
+                    _log.error("The amount of flag sets provided are big causing uri length error.");
+                    throw new UriTooLongException(String.format("Status code: %s. Message: %s", statusCode, response.getReasonPhrase()));
+                }
                 _log.warn(String.format("Response status was: %s. Reason: %s", statusCode , response.getReasonPhrase()));
                 throw new IllegalStateException(String.format("Could not retrieve splitChanges since %s; http return code %s", since, statusCode));
             }

@@ -1,6 +1,7 @@
 package io.split.engine.experiments;
 
 import io.split.client.dtos.SplitChange;
+import io.split.client.exceptions.UriTooLongException;
 import io.split.client.utils.FeatureFlagsToUpdate;
 import io.split.storages.SplitCacheProducer;
 import io.split.telemetry.domain.enums.LastSynchronizationRecordsEnum;
@@ -68,19 +69,21 @@ public class SplitFetcherImp implements SplitFetcher {
                 }
 
                 if (start >= end) {
-                    return new FetchResult(true, segments);
+                    return new FetchResult(true, false, segments);
                 }
             }
+        } catch (UriTooLongException u) {
+            return new FetchResult(false, false, new HashSet<>());
         } catch (InterruptedException e) {
             _log.warn("Interrupting split fetcher task");
             Thread.currentThread().interrupt();
-            return new FetchResult(false, new HashSet<>());
+            return new FetchResult(false, true, new HashSet<>());
         } catch (Exception e) {
             _log.error("RefreshableSplitFetcher failed: " + e.getMessage());
             if (_log.isDebugEnabled()) {
                 _log.debug("Reason:", e);
             }
-            return new FetchResult(false, new HashSet<>());
+            return new FetchResult(false, true, new HashSet<>());
         }
     }
 
@@ -89,7 +92,7 @@ public class SplitFetcherImp implements SplitFetcher {
         this.forceRefresh(new FetchOptions.Builder().cacheControlHeaders(false).build());
     }
 
-    private Set<String> runWithoutExceptionHandling(FetchOptions options) throws InterruptedException {
+    private Set<String> runWithoutExceptionHandling(FetchOptions options) throws InterruptedException, UriTooLongException {
         SplitChange change = _splitChangeFetcher.fetch(_splitCacheProducer.getChangeNumber(), options);
         Set<String> segments = new HashSet<>();
 

@@ -33,6 +33,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import static org.mockito.Matchers.anyObject;
 import static org.mockito.Mockito.when;
 
 public class SynchronizerTest {
@@ -67,7 +68,7 @@ public class SynchronizerTest {
 
     @Test
     public void syncAll() throws InterruptedException {
-        Mockito.when(_splitFetcher.forceRefresh(Mockito.anyObject())).thenReturn(new FetchResult(true, new HashSet<>()));
+        Mockito.when(_splitFetcher.forceRefresh(Mockito.anyObject())).thenReturn(new FetchResult(true, false, new HashSet<>()));
         Mockito.when(_segmentFetcher.fetchAllSynchronous()).thenReturn(true);
         _synchronizer.syncAll();
 
@@ -87,7 +88,7 @@ public class SynchronizerTest {
         modifiersField.setAccessible(true);
         modifiersField.setInt(synchronizerSegmentFetcher, synchronizerSegmentFetcher.getModifiers() & ~Modifier.FINAL);
         synchronizerSegmentFetcher.set(_synchronizer, segmentSynchronizationTask);
-        Mockito.when(_splitFetcher.forceRefresh(Mockito.anyObject())).thenReturn(new FetchResult(true, Stream.of("Segment1", "Segment2").collect(Collectors.toSet())));
+        Mockito.when(_splitFetcher.forceRefresh(Mockito.anyObject())).thenReturn(new FetchResult(true, false, Stream.of("Segment1", "Segment2").collect(Collectors.toSet())));
         Mockito.when(_segmentFetcher.fetchAllSynchronous()).thenReturn(true);
         _synchronizer.syncAll();
 
@@ -116,7 +117,7 @@ public class SynchronizerTest {
     @Test
     public void streamingRetryOnSplit() {
         when(_splitCacheProducer.getChangeNumber()).thenReturn(0l).thenReturn(0l).thenReturn(1l);
-        when(_splitFetcher.forceRefresh(Mockito.anyObject())).thenReturn(new FetchResult(true, new HashSet<>()));
+        when(_splitFetcher.forceRefresh(Mockito.anyObject())).thenReturn(new FetchResult(true, false, new HashSet<>()));
         _synchronizer.refreshSplits(1L);
 
         Mockito.verify(_splitCacheProducer, Mockito.times(3)).getChangeNumber();
@@ -138,7 +139,7 @@ public class SynchronizerTest {
         Set<String> segments = new HashSet<>();
         segments.add("segment1");
         segments.add("segment2");
-        when(_splitFetcher.forceRefresh(Mockito.anyObject())).thenReturn(new FetchResult(true, segments));
+        when(_splitFetcher.forceRefresh(Mockito.anyObject())).thenReturn(new FetchResult(true, false, segments));
         SegmentFetcher fetcher = Mockito.mock(SegmentFetcher.class);
         when(_segmentCacheProducer.getChangeNumber(Mockito.anyString())).thenReturn(0l).thenReturn(0l).thenReturn(1l);
         when(_segmentFetcher.getFetcher(Mockito.anyString())).thenReturn(fetcher);
@@ -168,7 +169,7 @@ public class SynchronizerTest {
             switch (calls.get()) {
                 case 4: cache.setChangeNumber(123);
             }
-            return new FetchResult(true, new HashSet<>());
+            return new FetchResult(true, false, new HashSet<>());
         }).when(_splitFetcher).forceRefresh(optionsCaptor.capture());
 
         imp.refreshSplits(123L);
