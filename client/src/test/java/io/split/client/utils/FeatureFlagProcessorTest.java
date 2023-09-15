@@ -6,6 +6,7 @@ import org.junit.Assert;
 import org.junit.Test;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 
 import static io.split.client.utils.FeatureFlagProcessor.processFeatureFlagChanges;
@@ -25,7 +26,7 @@ public class FeatureFlagProcessorTest {
 
         featureFlags.add(featureFlagTest1);
         featureFlags.add(featureFlagTest2);
-        FeatureFlagsToUpdate featureFlagsToUpdate = processFeatureFlagChanges(splitParser, featureFlags);
+        FeatureFlagsToUpdate featureFlagsToUpdate = processFeatureFlagChanges(splitParser, featureFlags, new HashSet<>());
 
         Assert.assertEquals(1, featureFlagsToUpdate.toAdd.size());
         Assert.assertEquals(1, featureFlagsToUpdate.toRemove.size());
