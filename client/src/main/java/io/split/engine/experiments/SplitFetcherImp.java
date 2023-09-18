@@ -10,6 +10,7 @@ import io.split.engine.common.FetchOptions;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -30,6 +31,7 @@ public class SplitFetcherImp implements SplitFetcher {
     private final SplitCacheProducer _splitCacheProducer;
     private final Object _lock = new Object();
     private final TelemetryRuntimeProducer _telemetryRuntimeProducer;
+    private final HashSet<String> _flagSets;
 
     /**
      * Contains all the traffic types that are currently being used by the splits and also the count
@@ -43,11 +45,12 @@ public class SplitFetcherImp implements SplitFetcher {
 
 
     public SplitFetcherImp(SplitChangeFetcher splitChangeFetcher, SplitParser parser, SplitCacheProducer splitCacheProducer,
-                           TelemetryRuntimeProducer telemetryRuntimeProducer) {
+                           TelemetryRuntimeProducer telemetryRuntimeProducer, HashSet<String> sets) {
         _splitChangeFetcher = checkNotNull(splitChangeFetcher);
         _parser = checkNotNull(parser);
         _splitCacheProducer = checkNotNull(splitCacheProducer);
         _telemetryRuntimeProducer = checkNotNull(telemetryRuntimeProducer);
+        _flagSets = sets;
     }
 
     @Override
@@ -118,7 +121,7 @@ public class SplitFetcherImp implements SplitFetcher {
                 // some other thread may have updated the shared state. exit
                 return segments;
             }
-            FeatureFlagsToUpdate featureFlagsToUpdate = processFeatureFlagChanges(_parser, change.splits);
+            FeatureFlagsToUpdate featureFlagsToUpdate = processFeatureFlagChanges(_parser, change.splits, _flagSets);
             segments = featureFlagsToUpdate.getSegments();
             _splitCacheProducer.update(featureFlagsToUpdate.getToAdd(), featureFlagsToUpdate.getToRemove(), change.till);
             _telemetryRuntimeProducer.recordSuccessfulSync(LastSynchronizationRecordsEnum.SPLITS, System.currentTimeMillis());

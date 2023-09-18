@@ -106,7 +106,8 @@ public class SyncManagerImp implements SyncManager {
                                                         telemetryRuntimeProducer,
                                                         config.getThreadFactory(),
                                                         splitParser,
-                                                        splitCacheProducer);
+                                                        splitCacheProducer,
+                                                        config.getSetsFilter());
 
         return new SyncManagerImp(splitTasks,
                                   config.streamingEnabled(),

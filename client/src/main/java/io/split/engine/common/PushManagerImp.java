@@ -23,6 +23,7 @@ import io.split.telemetry.storage.TelemetryRuntimeProducer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.HashSet;
 import java.util.concurrent.Future;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ScheduledExecutorService;
@@ -74,8 +75,10 @@ public class PushManagerImp implements PushManager {
                                        TelemetryRuntimeProducer telemetryRuntimeProducer,
                                        ThreadFactory threadFactory,
                                        SplitParser splitParser,
-                                       SplitCacheProducer splitCacheProducer) {
-        FeatureFlagsWorker featureFlagsWorker = new FeatureFlagWorkerImp(synchronizer, splitParser, splitCacheProducer, telemetryRuntimeProducer);
+                                       SplitCacheProducer splitCacheProducer,
+                                       HashSet<String> flagSets) {
+        FeatureFlagsWorker featureFlagsWorker = new FeatureFlagWorkerImp(synchronizer, splitParser, splitCacheProducer,
+                telemetryRuntimeProducer, flagSets);
         Worker<SegmentQueueDto> segmentWorker = new SegmentsWorkerImp(synchronizer);
         PushStatusTracker pushStatusTracker = new PushStatusTrackerImp(statusMessages, telemetryRuntimeProducer);
         return new PushManagerImp(new AuthApiClientImp(authUrl, splitAPI.getHttpClient(), telemetryRuntimeProducer),

@@ -12,6 +12,8 @@ import org.junit.Assert;
 import org.junit.Test;
 import org.mockito.Mockito;
 
+import java.util.HashSet;
+
 public class SplitFetcherImpTest {
 
     private static final TelemetryStorage TELEMETRY_STORAGE_NOOP = Mockito.mock(NoopTelemetryStorage.class);
@@ -24,7 +26,7 @@ public class SplitFetcherImpTest {
         SplitChangeFetcher splitChangeFetcher = new JsonLocalhostSplitChangeFetcher(inputStreamProvider);
         SplitParser splitParser = new SplitParser();
         FetchOptions fetchOptions = new FetchOptions.Builder().build();
-        SplitFetcher splitFetcher = new SplitFetcherImp(splitChangeFetcher, splitParser, splitCacheProducer, TELEMETRY_STORAGE_NOOP);
+        SplitFetcher splitFetcher = new SplitFetcherImp(splitChangeFetcher, splitParser, splitCacheProducer, TELEMETRY_STORAGE_NOOP, new HashSet<>());
 
         FetchResult fetchResult = splitFetcher.forceRefresh(fetchOptions);
 

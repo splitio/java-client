@@ -9,6 +9,8 @@ import io.split.telemetry.storage.TelemetryStorage;
 import org.junit.Test;
 import org.mockito.Mockito;
 
+import java.util.HashSet;
+
 public class SplitSynchronizationTaskTest {
 
     private static final TelemetryStorage TELEMETRY_STORAGE_NOOP = Mockito.mock(NoopTelemetryStorage.class);
@@ -20,7 +22,7 @@ public class SplitSynchronizationTaskTest {
         SplitChangeFetcher splitChangeFetcher = Mockito.mock(JsonLocalhostSplitChangeFetcher.class);
         SplitParser splitParser = new SplitParser();
         FetchOptions fetchOptions = new FetchOptions.Builder().build();
-        SplitFetcher splitFetcher = new SplitFetcherImp(splitChangeFetcher, splitParser, splitCacheProducer, TELEMETRY_STORAGE_NOOP);
+        SplitFetcher splitFetcher = new SplitFetcherImp(splitChangeFetcher, splitParser, splitCacheProducer, TELEMETRY_STORAGE_NOOP, new HashSet<>());
 
         SplitSynchronizationTask splitSynchronizationTask = new SplitSynchronizationTask(splitFetcher, splitCacheProducer, 1000, null);
 

@@ -109,6 +109,7 @@ import java.net.InetAddress;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.stream.Collectors;
@@ -200,7 +201,7 @@ public class SplitFactoryImpl implements SplitFactory {
 
         SplitParser splitParser = new SplitParser();
         // SplitFetcher
-        _splitFetcher = buildSplitFetcher(splitCache, splitParser);
+        _splitFetcher = buildSplitFetcher(splitCache, splitParser, config.getSetsFilter());
 
         // SplitSynchronizationTask
         _splitSynchronizationTask = new SplitSynchronizationTask(_splitFetcher,
@@ -377,7 +378,7 @@ public class SplitFactoryImpl implements SplitFactory {
         SplitChangeFetcher splitChangeFetcher = createSplitChangeFetcher(config);
         SplitParser splitParser = new SplitParser();
 
-        _splitFetcher = new SplitFetcherImp(splitChangeFetcher, splitParser, splitCache, _telemetryStorageProducer);
+        _splitFetcher = new SplitFetcherImp(splitChangeFetcher, splitParser, splitCache, _telemetryStorageProducer, config.getSetsFilter());
 
         // SplitSynchronizationTask
         _splitSynchronizationTask = new SplitSynchronizationTask(_splitFetcher, splitCache, config.featuresRefreshRate(), config.getThreadFactory());
@@ -559,10 +560,11 @@ public class SplitFactoryImpl implements SplitFactory {
                 config.getThreadFactory());
     }
 
-    private SplitFetcher buildSplitFetcher(SplitCacheProducer splitCacheProducer, SplitParser splitParser) throws URISyntaxException {
+    private SplitFetcher buildSplitFetcher(SplitCacheProducer splitCacheProducer, SplitParser splitParser, HashSet<String> flagSets) throws
+            URISyntaxException {
         SplitChangeFetcher splitChangeFetcher = HttpSplitChangeFetcher.create(_httpclient, _rootTarget, _telemetryStorageProducer);
 
-        return new SplitFetcherImp(splitChangeFetcher, splitParser, splitCacheProducer, _telemetryStorageProducer);
+        return new SplitFetcherImp(splitChangeFetcher, splitParser, splitCacheProducer, _telemetryStorageProducer,flagSets);
     }
 
     private ImpressionsManagerImpl buildImpressionsManager(SplitClientConfig config, ImpressionsStorageConsumer impressionsStorageConsumer,

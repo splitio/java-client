@@ -13,6 +13,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.Set;
 
 import static com.google.common.base.Preconditions.checkNotNull;
@@ -24,14 +25,16 @@ public class FeatureFlagWorkerImp extends Worker<FeatureFlagChangeNotification> 
     private final SplitParser _splitParser;
     private final SplitCacheProducer _splitCacheProducer;
     private final TelemetryRuntimeProducer _telemetryRuntimeProducer;
+    private final HashSet<String> _flagSets;
 
     public FeatureFlagWorkerImp(Synchronizer synchronizer, SplitParser splitParser, SplitCacheProducer splitCacheProducer,
-                                TelemetryRuntimeProducer telemetryRuntimeProducer) {
+                                TelemetryRuntimeProducer telemetryRuntimeProducer, HashSet<String> flagSets) {
         super("Feature flags");
         _synchronizer = checkNotNull(synchronizer);
         _splitParser = splitParser;
         _splitCacheProducer = splitCacheProducer;
         _telemetryRuntimeProducer = telemetryRuntimeProducer;
+        _flagSets = flagSets;
     }
 
     @Override
@@ -61,7 +64,8 @@ public class FeatureFlagWorkerImp extends Worker<FeatureFlagChangeNotification> 
             if (featureFlagChangeNotification.getFeatureFlagDefinition() != null &&
                     featureFlagChangeNotification.getPreviousChangeNumber() == _splitCacheProducer.getChangeNumber()) {
                 Split featureFlag = featureFlagChangeNotification.getFeatureFlagDefinition();
-                FeatureFlagsToUpdate featureFlagsToUpdate = processFeatureFlagChanges(_splitParser, Collections.singletonList(featureFlag));
+                FeatureFlagsToUpdate featureFlagsToUpdate = processFeatureFlagChanges(_splitParser, Collections.singletonList(featureFlag),
+                        _flagSets);
                 _splitCacheProducer.update(featureFlagsToUpdate.getToAdd(), featureFlagsToUpdate.getToRemove(),
                         featureFlagChangeNotification.getChangeNumber());
                 Set<String> segments  = featureFlagsToUpdate.getSegments();
