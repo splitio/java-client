@@ -1,18 +1,18 @@
 package io.split.client.interceptors;
 
-import java.util.HashSet;
+import java.util.Set;
 
 public class FlagSetsFilterImpl implements  FlagSetsFilter {
 
-    private final HashSet<String> _flagSets;
+    private final Set<String> _flagSets;
     private final boolean _shouldFilter;
 
-    public FlagSetsFilterImpl(HashSet<String> flagSets) {
+    public FlagSetsFilterImpl(Set<String> flagSets) {
         _shouldFilter = !flagSets.isEmpty();
         _flagSets = flagSets;
     }
     @Override
-    public boolean Intersect(HashSet<String> sets) {
+    public boolean Intersect(Set<String> sets) {
         if (!_shouldFilter) {
             return true;
         }

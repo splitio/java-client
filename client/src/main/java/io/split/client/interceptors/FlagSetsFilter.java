@@ -1,9 +1,9 @@
 package io.split.client.interceptors;
 
-import java.util.HashSet;
+import java.util.Set;
 
 public interface FlagSetsFilter {
 
-    boolean Intersect(HashSet<String> sets);
+    boolean Intersect(Set<String> sets);
     boolean Intersect(String set);
 }
