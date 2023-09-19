@@ -28,6 +28,7 @@ import io.split.client.impressions.strategy.ProcessImpressionOptimized;
 import io.split.client.impressions.strategy.ProcessImpressionStrategy;
 import io.split.client.interceptors.AuthorizationInterceptorFilter;
 import io.split.client.interceptors.ClientKeyInterceptorFilter;
+import io.split.client.interceptors.FlagSetsFilterImpl;
 import io.split.client.interceptors.GzipDecoderResponseInterceptor;
 import io.split.client.interceptors.GzipEncoderRequestInterceptor;
 import io.split.client.interceptors.SdkMetadataInterceptorFilter;
@@ -189,7 +190,7 @@ public class SplitFactoryImpl implements SplitFactory {
 
         // Cache Initialisations
         SegmentCache segmentCache = new SegmentCacheInMemoryImpl();
-        SplitCache splitCache = new InMemoryCacheImp();
+        SplitCache splitCache = new InMemoryCacheImp(new FlagSetsFilterImpl(config.getSetsFilter()));
         ImpressionsStorage impressionsStorage = new InMemoryImpressionsStorage(config.impressionsQueueSize());
         _splitCache = splitCache;
         _segmentCache = segmentCache;
@@ -354,7 +355,7 @@ public class SplitFactoryImpl implements SplitFactory {
         _telemetryStorageProducer = new NoopTelemetryStorage();
 
         SegmentCache segmentCache = new SegmentCacheInMemoryImpl();
-        SplitCache splitCache = new InMemoryCacheImp();
+        SplitCache splitCache = new InMemoryCacheImp(new FlagSetsFilterImpl(config.getSetsFilter()));
         _splitCache = splitCache;
         _gates = new SDKReadinessGates();
         _segmentCache = segmentCache;

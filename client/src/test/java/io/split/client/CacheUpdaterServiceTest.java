@@ -1,11 +1,13 @@
 package io.split.client;
 
+import io.split.client.interceptors.FlagSetsFilterImpl;
 import io.split.storages.memory.InMemoryCacheImp;
 import io.split.storages.SplitCache;
 import org.junit.Assert;
 import org.junit.Test;
 
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
 
 public class CacheUpdaterServiceTest {
@@ -17,7 +19,7 @@ public class CacheUpdaterServiceTest {
 
     @Test
     public void testCacheUpdate() {
-        SplitCache splitCache = new InMemoryCacheImp();
+        SplitCache splitCache = new InMemoryCacheImp(new FlagSetsFilterImpl(new HashSet<>()));
         CacheUpdaterService cacheUpdaterService = new CacheUpdaterService(splitCache);
         cacheUpdaterService.updateCache(getMap());
         Assert.assertNotNull(splitCache.get(MY_FEATURE));

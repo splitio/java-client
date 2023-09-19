@@ -1,6 +1,7 @@
 package io.split.engine.experiments;
 
 import io.split.client.JsonLocalhostSplitChangeFetcher;
+import io.split.client.interceptors.FlagSetsFilterImpl;
 import io.split.client.utils.FileInputStreamProvider;
 import io.split.client.utils.InputStreamProvider;
 import io.split.engine.common.FetchOptions;
@@ -20,7 +21,7 @@ public class SplitFetcherImpTest {
 
     @Test
     public void testLocalHost() {
-        SplitCacheProducer splitCacheProducer = new InMemoryCacheImp();
+        SplitCacheProducer splitCacheProducer = new InMemoryCacheImp(new FlagSetsFilterImpl(new HashSet<>()));
 
         InputStreamProvider inputStreamProvider = new FileInputStreamProvider("src/test/resources/split_init.json");
         SplitChangeFetcher splitChangeFetcher = new JsonLocalhostSplitChangeFetcher(inputStreamProvider);

@@ -3,6 +3,7 @@ package io.split.engine.common;
 import io.split.client.events.EventsTask;
 import io.split.client.impressions.ImpressionsManager;
 import io.split.client.impressions.UniqueKeysTracker;
+import io.split.client.interceptors.FlagSetsFilterImpl;
 import io.split.engine.segments.SegmentChangeFetcher;
 import io.split.engine.segments.SegmentSynchronizationTaskImp;
 import io.split.storages.SegmentCache;
@@ -33,7 +34,6 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import static org.mockito.Matchers.anyObject;
 import static org.mockito.Mockito.when;
 
 public class SynchronizerTest {
@@ -151,8 +151,7 @@ public class SynchronizerTest {
 
     @Test
     public void testCDNBypassIsRequestedAfterNFailures() {
-
-        SplitCache cache = new InMemoryCacheImp();
+        SplitCache cache = new InMemoryCacheImp(new FlagSetsFilterImpl(new HashSet<>()));
         Synchronizer imp = new SynchronizerImp(_splitTasks,
                 _splitFetcher,
                 cache,
@@ -184,8 +183,7 @@ public class SynchronizerTest {
 
     @Test
     public void testCDNBypassRequestLimitAndBackoff() throws NoSuchFieldException, IllegalAccessException {
-
-        SplitCache cache = new InMemoryCacheImp();
+        SplitCache cache = new InMemoryCacheImp(new FlagSetsFilterImpl(new HashSet<>()));
         Synchronizer imp = new SynchronizerImp(_splitTasks,
                 _splitFetcher,
                 cache,
@@ -240,8 +238,7 @@ public class SynchronizerTest {
 
     @Test
     public void testCDNBypassRequestLimitAndForSegmentsBackoff() throws NoSuchFieldException, IllegalAccessException {
-
-        SplitCache cache = new InMemoryCacheImp();
+        SplitCache cache = new InMemoryCacheImp(new FlagSetsFilterImpl(new HashSet<>()));
         Synchronizer imp = new SynchronizerImp(_splitTasks,
                 _splitFetcher,
                 cache,
@@ -299,7 +296,7 @@ public class SynchronizerTest {
 
     @Test
     public void testDataRecording(){
-        SplitCache cache = new InMemoryCacheImp();
+        SplitCache cache = new InMemoryCacheImp(new FlagSetsFilterImpl(new HashSet<>()));
         Synchronizer imp = new SynchronizerImp(_splitTasks,
                 _splitFetcher,
                 cache,

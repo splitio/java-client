@@ -4,6 +4,7 @@ import com.google.common.collect.Lists;
 import io.split.client.dtos.ConditionType;
 import io.split.client.dtos.MatcherCombiner;
 import io.split.client.dtos.Partition;
+import io.split.client.interceptors.FlagSetsFilterImpl;
 import io.split.engine.experiments.ParsedCondition;
 import io.split.engine.experiments.ParsedSplit;
 import io.split.engine.matchers.AttributeMatcher;
@@ -19,6 +20,7 @@ import org.junit.Test;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -150,7 +152,7 @@ public class EvaluatorIntegrationTest {
     }
 
     private Evaluator buildEvaluatorAndLoadCache(boolean killed, int trafficAllocation) {
-        SplitCache splitCache = new InMemoryCacheImp();
+        SplitCache splitCache = new InMemoryCacheImp(new FlagSetsFilterImpl(new HashSet<>()));
         SegmentCache segmentCache = new SegmentCacheInMemoryImpl();
         Evaluator evaluator = new EvaluatorImp(splitCache, segmentCache);
 
@@ -171,10 +173,10 @@ public class EvaluatorIntegrationTest {
 
         List<ParsedCondition> conditions = Lists.newArrayList(whitelistCondition, rollOutCondition);
 
-        ParsedSplit parsedSplit1 = new ParsedSplit("split_1", 0, false, DEFAULT_TREATMENT_VALUE, conditions, TRAFFIC_TYPE_VALUE, 223366551, 100, 0, 2, null);
-        ParsedSplit parsedSplit2 = new ParsedSplit("split_2", 0, true, DEFAULT_TREATMENT_VALUE, conditions, TRAFFIC_TYPE_VALUE, 223366552, 100, 0, 2, null);
-        ParsedSplit parsedSplit3 = new ParsedSplit("split_3", 0, false, DEFAULT_TREATMENT_VALUE, conditions, TRAFFIC_TYPE_VALUE, 223366554, 100, 0, 2, null);
-        ParsedSplit parsedSplit4 = new ParsedSplit("split_test", 0, killed, DEFAULT_TREATMENT_VALUE, conditions, TRAFFIC_TYPE_VALUE, 223366555, trafficAllocation, 0, 2, null);
+        ParsedSplit parsedSplit1 = new ParsedSplit("split_1", 0, false, DEFAULT_TREATMENT_VALUE, conditions, TRAFFIC_TYPE_VALUE, 223366551, 100, 0, 2, null, new HashSet<>());
+        ParsedSplit parsedSplit2 = new ParsedSplit("split_2", 0, true, DEFAULT_TREATMENT_VALUE, conditions, TRAFFIC_TYPE_VALUE, 223366552, 100, 0, 2, null, new HashSet<>());
+        ParsedSplit parsedSplit3 = new ParsedSplit("split_3", 0, false, DEFAULT_TREATMENT_VALUE, conditions, TRAFFIC_TYPE_VALUE, 223366554, 100, 0, 2, null, new HashSet<>());
+        ParsedSplit parsedSplit4 = new ParsedSplit("split_test", 0, killed, DEFAULT_TREATMENT_VALUE, conditions, TRAFFIC_TYPE_VALUE, 223366555, trafficAllocation, 0, 2, null, new HashSet<>());
 
         splitCache.putMany(Stream.of(parsedSplit1, parsedSplit2, parsedSplit3, parsedSplit4).collect(Collectors.toList()));
         return evaluator;

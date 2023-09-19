@@ -4,6 +4,7 @@ import com.google.common.collect.ConcurrentHashMultiset;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Multiset;
 import com.google.common.collect.Sets;
+import io.split.client.interceptors.FlagSetsFilter;
 import io.split.engine.experiments.ParsedSplit;
 import io.split.storages.SplitCache;
 import org.slf4j.Logger;
@@ -12,6 +13,7 @@ import org.slf4j.LoggerFactory;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -24,27 +26,33 @@ public class InMemoryCacheImp implements SplitCache {
     private static final Logger _log = LoggerFactory.getLogger(InMemoryCacheImp.class);
 
     private final ConcurrentMap<String, ParsedSplit> _concurrentMap;
+    private final ConcurrentMap<String, HashSet<String>> _flagSets;
     private final Multiset<String> _concurrentTrafficTypeNameSet;
+    private final FlagSetsFilter _flagSetsFilter;
 
     private AtomicLong _changeNumber;
 
-    public InMemoryCacheImp() {
-        this(-1);
+    public InMemoryCacheImp(FlagSetsFilter flagSetsFilter) {
+        this(-1, flagSetsFilter);
     }
 
-    public InMemoryCacheImp(long startingChangeNumber) {
+    public InMemoryCacheImp(long startingChangeNumber, FlagSetsFilter flagSetsFilter) {
         _concurrentMap = Maps.newConcurrentMap();
         _changeNumber = new AtomicLong(startingChangeNumber);
         _concurrentTrafficTypeNameSet = ConcurrentHashMultiset.create();
+        _flagSets = Maps.newConcurrentMap();
+        _flagSetsFilter = flagSetsFilter;
     }
 
     @Override
     public boolean remove(String name) {
         ParsedSplit removed = _concurrentMap.remove(name);
-        if (removed != null && removed.trafficTypeName() != null) {
-            this.decreaseTrafficType(removed.trafficTypeName());
+        if (removed != null) {
+            removeFromFlagSets(removed.feature(), removed.flagSets());
+            if (removed.trafficTypeName() != null) {
+                this.decreaseTrafficType(removed.trafficTypeName());
+            }
         }
-
         return removed != null;
     }
 
@@ -98,6 +106,18 @@ public class InMemoryCacheImp implements SplitCache {
     }
 
     @Override
+    public Map<String, HashSet<String>> getNamesByFlagSets(List<String> flagSets) {
+        Map<String, HashSet<String>> toReturn = new HashMap<>();
+        for (String set: flagSets) {
+            HashSet<String> keys = _flagSets.get(set);
+            if(keys != null){
+                toReturn.put(set, keys);
+            }
+        }
+        return toReturn;
+    }
+
+    @Override
     public void kill(String splitName, String defaultTreatment, long changeNumber) {
         ParsedSplit parsedSplit = _concurrentMap.get(splitName);
 
@@ -111,7 +131,9 @@ public class InMemoryCacheImp implements SplitCache {
                 parsedSplit.trafficAllocation(),
                 parsedSplit.trafficAllocationSeed(),
                 parsedSplit.algo(),
-                parsedSplit.configurations());
+                parsedSplit.configurations(),
+                parsedSplit.flagSets()
+                );
 
         _concurrentMap.put(splitName, updatedSplit);
     }
@@ -130,6 +152,7 @@ public class InMemoryCacheImp implements SplitCache {
             if (split.trafficTypeName() != null) {
                 this.increaseTrafficType(split.trafficTypeName());
             }
+            addToFlagSets(split);
         }
     }
 
@@ -159,5 +182,30 @@ public class InMemoryCacheImp implements SplitCache {
     public Set<String> getSegments() {
         return _concurrentMap.values().stream()
                 .flatMap(parsedSplit -> parsedSplit.getSegmentsNames().stream()).collect(Collectors.toSet());
+    }
+
+    private void addToFlagSets(ParsedSplit featureFlag) {
+        HashSet<String> sets = featureFlag.flagSets();
+        if( sets != null) {
+            for (String set: sets) {
+                if (!_flagSetsFilter.Intersect(set)) {
+                    continue;
+                }
+                HashSet<String> features = _flagSets.get(set);
+                if (features == null) {
+                    features = new HashSet<>();
+                }
+                features.add(featureFlag.feature());
+                _flagSets.put(set, features);
+            }
+        }
+    }
+
+    private void removeFromFlagSets(String featureFlagName, HashSet<String> sets) {
+        for (String set: sets) {
+            HashSet<String> features = _flagSets.get(set);
+            features.remove(featureFlagName);
+            _flagSets.put(set, features);
+        }
     }
 }

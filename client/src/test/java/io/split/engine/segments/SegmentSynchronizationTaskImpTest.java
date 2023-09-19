@@ -3,6 +3,7 @@ package io.split.engine.segments;
 import com.google.common.collect.Maps;
 import io.split.client.LocalhostSegmentChangeFetcher;
 import io.split.client.JsonLocalhostSplitChangeFetcher;
+import io.split.client.interceptors.FlagSetsFilterImpl;
 import io.split.client.utils.InputStreamProvider;
 import io.split.client.utils.StaticContentInputStreamProvider;
 import io.split.engine.common.FetchOptions;
@@ -152,8 +153,7 @@ public class SegmentSynchronizationTaskImpTest {
 
     @Test
     public void testLocalhostSegmentChangeFetcher() throws InterruptedException, FileNotFoundException {
-
-        SplitCache splitCacheProducer = new InMemoryCacheImp();
+        SplitCache splitCacheProducer = new InMemoryCacheImp(new FlagSetsFilterImpl(new HashSet<>()));
 
         InputStream inputStream = new FileInputStream("src/test/resources/split_init.json");
         InputStreamProvider inputStreamProvider = new StaticContentInputStreamProvider(inputStream);

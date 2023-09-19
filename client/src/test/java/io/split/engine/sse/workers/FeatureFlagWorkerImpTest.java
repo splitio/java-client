@@ -1,5 +1,6 @@
 package io.split.engine.sse.workers;
 
+import io.split.client.interceptors.FlagSetsFilterImpl;
 import io.split.client.utils.Json;
 import io.split.engine.common.Synchronizer;
 import io.split.engine.common.SynchronizerImp;
@@ -60,7 +61,7 @@ public class FeatureFlagWorkerImpTest {
     public void testRefreshSplitsArchiveFF() {
         SplitParser splitParser = new SplitParser();
         Synchronizer synchronizer = Mockito.mock(SynchronizerImp.class);
-        SplitCacheProducer splitCacheProducer = new InMemoryCacheImp(1686165614090L);
+        SplitCacheProducer splitCacheProducer = new InMemoryCacheImp(1686165614090L, new FlagSetsFilterImpl(new HashSet<>()));
         TelemetryStorage telemetryRuntimeProducer = new InMemoryTelemetryStorage();
         FeatureFlagWorkerImp featureFlagsWorker = new FeatureFlagWorkerImp(synchronizer, splitParser, splitCacheProducer, telemetryRuntimeProducer, new HashSet<>());
         String notification = "{\"id\":\"vQQ61wzBRO:0:0\",\"clientId\":\"pri:MTUxNzg3MDg1OQ==\",\"timestamp\":1684265694676,\"encoding\":\"json\",\"channel\":\"NzM2MDI5Mzc0_MjkyNTIzNjczMw==_splits\",\"data\":\"{\\\"type\\\":\\\"SPLIT_UPDATE\\\",\\\"changeNumber\\\":1686165617166,\\\"pcn\\\":1686165614090,\\\"c\\\":2,\\\"d\\\":\\\"eJxsUdFu4jAQ/JVqnx3JDjTh/JZCrj2JBh0EqtOBIuNswKqTIMeuxKH8+ykhiKrqiyXvzM7O7lzAGlEUSqbnEyaiRODgGjRAQOXAIQ/puPB96tHHIPQYQ/QmFNErxEgG44DKnI2AQHXtTOI0my6WcXZAmxoUtsTKvil7nNZVoQ5RYdFERh7VBwK5TY60rqWwqq6AM0q/qa8Qc+As/EHZ5HHMCDR9wQ/9kIajcEygscK6BjhEy+nLr008AwLvSuuOVgjdIIEcC+H03RZw2Hg/n88JEJBHUR0wceUeDXAWTAIWPAYsZEFAQOhDDdwnIPslnOk9NcAvNwEOly3IWtdmC3wLe+1wCy0Q2Hh/zNvTV9xg3sFtr5irQe3v5f7twgAOy8V8vlinQKAUVh7RPJvanbrBsi73qurMQpTM7oSrzjueV6hR2tp05E8J39MV1hq1d7YrWWxsZ2cQGYjzeLXK0pcoyRbLLP69juZZuuiyxoPo2oa7ukqYc+JKNEq+XgVmwopucC6sGMSS9etTvAQCH0I7BO7Ttt21BE7C2E8XsN+l06h/CJy25CveH/eGM0rbHQEt9qiHnR62jtKR7N/8wafQ7tr/AQAA//8S4fPB\\\"}\"}";

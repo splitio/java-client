@@ -2,6 +2,7 @@ package io.split.engine.common;
 
 import io.split.client.LocalhostSegmentChangeFetcher;
 import io.split.client.JsonLocalhostSplitChangeFetcher;
+import io.split.client.interceptors.FlagSetsFilterImpl;
 import io.split.client.utils.FileInputStreamProvider;
 import io.split.client.utils.InputStreamProvider;
 import io.split.engine.experiments.SplitChangeFetcher;
@@ -30,7 +31,7 @@ public class LocalhostSynchronizerTest {
 
     @Test
     public void testSyncAll(){
-        SplitCache splitCacheProducer = new InMemoryCacheImp();
+        SplitCache splitCacheProducer = new InMemoryCacheImp(new FlagSetsFilterImpl(new HashSet<>()));
 
         InputStreamProvider inputStreamProvider = new FileInputStreamProvider("src/test/resources/split_init.json");
         SplitChangeFetcher splitChangeFetcher = new JsonLocalhostSplitChangeFetcher(inputStreamProvider);
@@ -53,7 +54,7 @@ public class LocalhostSynchronizerTest {
 
     @Test
     public void testPeriodicFetching() throws InterruptedException {
-        SplitCache splitCacheProducer = new InMemoryCacheImp();
+        SplitCache splitCacheProducer = new InMemoryCacheImp(new FlagSetsFilterImpl(new HashSet<>()));
 
         SplitChangeFetcher splitChangeFetcher = Mockito.mock(JsonLocalhostSplitChangeFetcher.class);
         SplitParser splitParser = new SplitParser();
@@ -80,7 +81,7 @@ public class LocalhostSynchronizerTest {
 
     @Test
     public void testRefreshSplits() {
-        SplitCacheProducer splitCacheProducer = new InMemoryCacheImp();
+        SplitCacheProducer splitCacheProducer = new InMemoryCacheImp(new FlagSetsFilterImpl(new HashSet<>()));
         SplitChangeFetcher splitChangeFetcher = Mockito.mock(SplitChangeFetcher.class);
         SplitParser splitParser = new SplitParser();
 
