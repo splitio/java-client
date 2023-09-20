@@ -17,7 +17,7 @@ public class SplitSynchronizationTaskTest {
 
     @Test
     public void testLocalhost() throws InterruptedException {
-        SplitCacheProducer splitCacheProducer = new InMemoryCacheImp();
+        SplitCacheProducer splitCacheProducer = new InMemoryCacheImp(new HashSet<>());
 
         SplitChangeFetcher splitChangeFetcher = Mockito.mock(JsonLocalhostSplitChangeFetcher.class);
         SplitParser splitParser = new SplitParser();
@@ -35,7 +35,7 @@ public class SplitSynchronizationTaskTest {
 
     @Test
     public void testStartAndStop() throws InterruptedException {
-        SplitCacheProducer splitCacheProducer = new InMemoryCacheImp();
+        SplitCacheProducer splitCacheProducer = new InMemoryCacheImp(new HashSet<>());
         SplitFetcherImp splitFetcherImp = Mockito.mock(SplitFetcherImp.class);
         SplitSynchronizationTask splitSynchronizationTask = new SplitSynchronizationTask(splitFetcherImp, splitCacheProducer, 1000, null);
         splitSynchronizationTask.start();

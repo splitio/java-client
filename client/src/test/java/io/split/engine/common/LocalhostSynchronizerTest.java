@@ -30,7 +30,7 @@ public class LocalhostSynchronizerTest {
 
     @Test
     public void testSyncAll(){
-        SplitCache splitCacheProducer = new InMemoryCacheImp();
+        SplitCache splitCacheProducer = new InMemoryCacheImp(new HashSet<>());
 
         InputStreamProvider inputStreamProvider = new FileInputStreamProvider("src/test/resources/split_init.json");
         SplitChangeFetcher splitChangeFetcher = new JsonLocalhostSplitChangeFetcher(inputStreamProvider);
@@ -53,7 +53,7 @@ public class LocalhostSynchronizerTest {
 
     @Test
     public void testPeriodicFetching() throws InterruptedException {
-        SplitCache splitCacheProducer = new InMemoryCacheImp();
+        SplitCache splitCacheProducer = new InMemoryCacheImp(new HashSet<>());
 
         SplitChangeFetcher splitChangeFetcher = Mockito.mock(JsonLocalhostSplitChangeFetcher.class);
         SplitParser splitParser = new SplitParser();
@@ -80,7 +80,7 @@ public class LocalhostSynchronizerTest {
 
     @Test
     public void testRefreshSplits() {
-        SplitCacheProducer splitCacheProducer = new InMemoryCacheImp();
+        SplitCacheProducer splitCacheProducer = new InMemoryCacheImp(new HashSet<>());
         SplitChangeFetcher splitChangeFetcher = Mockito.mock(SplitChangeFetcher.class);
         SplitParser splitParser = new SplitParser();
 

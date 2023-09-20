@@ -93,6 +93,12 @@ public class UserCustomSplitAdapterConsumer  implements SplitCacheConsumer {
     }
 
     @Override
+    public Map<String, HashSet<String>> getNamesByFlagSets(List<String> flagSets) {
+        //Todo implement
+        return null;
+    }
+
+    @Override
     public Map<String, ParsedSplit> fetchMany(List<String> names) {
         Map<String, ParsedSplit> result = new HashMap<>();
         List<String> wrapperResponse = _userStorageWrapper.getItems(PrefixAdapter.buildFetchManySplits(names));

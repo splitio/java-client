@@ -20,7 +20,7 @@ public class SplitFetcherImpTest {
 
     @Test
     public void testLocalHost() {
-        SplitCacheProducer splitCacheProducer = new InMemoryCacheImp();
+        SplitCacheProducer splitCacheProducer = new InMemoryCacheImp(new HashSet<>());
 
         InputStreamProvider inputStreamProvider = new FileInputStreamProvider("src/test/resources/split_init.json");
         SplitChangeFetcher splitChangeFetcher = new JsonLocalhostSplitChangeFetcher(inputStreamProvider);

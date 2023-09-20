@@ -12,7 +12,12 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -25,7 +30,7 @@ public class InMemoryCacheTest {
 
     @Before
     public void before() {
-        _cache = new InMemoryCacheImp();
+        _cache = new InMemoryCacheImp(new HashSet<>(Arrays.asList("set1", "set2")));
     }
 
     @Test
@@ -107,11 +112,10 @@ public class InMemoryCacheTest {
 
     @Test
     public void trafficTypesExist() {
-
-        ParsedSplit split = ParsedSplit.createParsedSplitForTests("splitName_1", 0, false, "default_treatment", new ArrayList<>(), "tt", 123, 2);
-        ParsedSplit split2 = ParsedSplit.createParsedSplitForTests("splitName_2", 0, false, "default_treatment", new ArrayList<>(), "tt", 123, 2);
-        ParsedSplit split3 = ParsedSplit.createParsedSplitForTests("splitName_3", 0, false, "default_treatment", new ArrayList<>(), "tt_2", 123, 2);
-        ParsedSplit split4 = ParsedSplit.createParsedSplitForTests("splitName_4", 0, false, "default_treatment", new ArrayList<>(), "tt_3", 123, 2);
+        ParsedSplit split = ParsedSplit.createParsedSplitForTests("splitName_1", 0, false, "default_treatment", new ArrayList<>(), "tt", 123, 2, null);
+        ParsedSplit split2 = ParsedSplit.createParsedSplitForTests("splitName_2", 0, false, "default_treatment", new ArrayList<>(), "tt", 123, 2, null);
+        ParsedSplit split3 = ParsedSplit.createParsedSplitForTests("splitName_3", 0, false, "default_treatment", new ArrayList<>(), "tt_2", 123, 2, null);
+        ParsedSplit split4 = ParsedSplit.createParsedSplitForTests("splitName_4", 0, false, "default_treatment", new ArrayList<>(), "tt_3", 123, 2, null);
 
         _cache.putMany(Stream.of(split, split2, split3, split4).collect(Collectors.toList()));
         assertTrue(_cache.trafficTypeExists("tt_2"));
@@ -132,10 +136,10 @@ public class InMemoryCacheTest {
         ParsedCondition parsedCondition1 = ParsedCondition.createParsedConditionForTests(CombiningMatcher.of(new UserDefinedSegmentMatcher(EMPLOYEES)), fullyRollout);
         ParsedCondition parsedCondition2 = ParsedCondition.createParsedConditionForTests(CombiningMatcher.of(new UserDefinedSegmentMatcher(EMPLOYEES+"2")), turnOff);
 
-        ParsedSplit split = ParsedSplit.createParsedSplitForTests("splitName_1", 0, false, "default_treatment", Stream.of(parsedCondition1).collect(Collectors.toList()), "tt", 123, 2);
-        ParsedSplit split2 = ParsedSplit.createParsedSplitForTests("splitName_2", 0, false, "default_treatment", Stream.of(parsedCondition2).collect(Collectors.toList()), "tt", 123, 2);
-        ParsedSplit split3 = ParsedSplit.createParsedSplitForTests("splitName_3", 0, false, "default_treatment", Stream.of(parsedCondition1).collect(Collectors.toList()), "tt_2", 123, 2);
-        ParsedSplit split4 = ParsedSplit.createParsedSplitForTests("splitName_4", 0, false, "default_treatment", Stream.of(parsedCondition2).collect(Collectors.toList()), "tt_3", 123, 2);
+        ParsedSplit split = ParsedSplit.createParsedSplitForTests("splitName_1", 0, false, "default_treatment", Stream.of(parsedCondition1).collect(Collectors.toList()), "tt", 123, 2, null);
+        ParsedSplit split2 = ParsedSplit.createParsedSplitForTests("splitName_2", 0, false, "default_treatment", Stream.of(parsedCondition2).collect(Collectors.toList()), "tt", 123, 2, null);
+        ParsedSplit split3 = ParsedSplit.createParsedSplitForTests("splitName_3", 0, false, "default_treatment", Stream.of(parsedCondition1).collect(Collectors.toList()), "tt_2", 123, 2, null);
+        ParsedSplit split4 = ParsedSplit.createParsedSplitForTests("splitName_4", 0, false, "default_treatment", Stream.of(parsedCondition2).collect(Collectors.toList()), "tt_3", 123, 2, null);
 
         _cache.putMany(Stream.of(split, split2, split3, split4).collect(Collectors.toList()));
 
@@ -147,7 +151,7 @@ public class InMemoryCacheTest {
     }
 
     private ParsedSplit getParsedSplit(String splitName) {
-        return ParsedSplit.createParsedSplitForTests(splitName, 0, false, "default_treatment", new ArrayList<>(), "tt", 123, 2);
+        return ParsedSplit.createParsedSplitForTests(splitName, 0, false, "default_treatment", new ArrayList<>(), "tt", 123, 2, new HashSet<>());
     }
 
     @Test
@@ -161,7 +165,7 @@ public class InMemoryCacheTest {
 
     @Test
     public void testIncreaseTrafficType() {
-        ParsedSplit split = ParsedSplit.createParsedSplitForTests("splitName_1", 0, false, "default_treatment", new ArrayList<>(), "tt", 123, 2);
+        ParsedSplit split = ParsedSplit.createParsedSplitForTests("splitName_1", 0, false, "default_treatment", new ArrayList<>(), "tt", 123, 2, new HashSet<>());
         _cache.putMany(Stream.of(split).collect(Collectors.toList()));
         _cache.increaseTrafficType("tt_2");
         assertTrue(_cache.trafficTypeExists("tt_2"));
@@ -169,9 +173,29 @@ public class InMemoryCacheTest {
 
     @Test
     public void testDecreaseTrafficType() {
-        ParsedSplit split = ParsedSplit.createParsedSplitForTests("splitName_1", 0, false, "default_treatment", new ArrayList<>(), "tt", 123, 2);
+        ParsedSplit split = ParsedSplit.createParsedSplitForTests("splitName_1", 0, false, "default_treatment", new ArrayList<>(), "tt", 123, 2, new HashSet<>());
         _cache.putMany(Stream.of(split).collect(Collectors.toList()));
         _cache.decreaseTrafficType("tt");
         assertFalse(_cache.trafficTypeExists("tt_2"));
+    }
+
+    @Test
+    public void testGetNamesByFlagSets() {
+        ParsedSplit split = ParsedSplit.createParsedSplitForTests("splitName_1", 0, false, "default_treatment", new ArrayList<>(), "tt", 123, 2, new HashSet<>(Arrays.asList("set1", "set2", "set3")));
+        ParsedSplit split2 = ParsedSplit.createParsedSplitForTests("splitName_2", 0, false, "default_treatment", new ArrayList<>(), "tt", 123, 2, new HashSet<>(Arrays.asList("set1")));
+        ParsedSplit split3 = ParsedSplit.createParsedSplitForTests("splitName_3", 0, false, "default_treatment", new ArrayList<>(), "tt_2", 123, 2, new HashSet<>(Arrays.asList("set4")));
+        ParsedSplit split4 = ParsedSplit.createParsedSplitForTests("splitName_4", 0, false, "default_treatment", new ArrayList<>(), "tt_3", 123, 2, new HashSet<>(Arrays.asList("set2")));
+
+        _cache.putMany(Stream.of(split, split2, split3, split4).collect(Collectors.toList()));
+        Map<String, HashSet<String>> namesByFlagSets = _cache.getNamesByFlagSets(new ArrayList<>(Arrays.asList("set1", "set2", "set3")));
+        assertTrue(namesByFlagSets.get("set1").contains("splitName_1"));
+        assertTrue(namesByFlagSets.get("set1").contains("splitName_2"));
+        assertFalse(namesByFlagSets.get("set1").contains("splitName_3"));
+        assertFalse(namesByFlagSets.get("set1").contains("splitName_4"));
+        assertFalse(namesByFlagSets.keySet().contains("set3"));
+
+        _cache.remove("splitName_2");
+        namesByFlagSets = _cache.getNamesByFlagSets(new ArrayList<>(Arrays.asList("set1", "set2", "set3")));
+        assertFalse(namesByFlagSets.get("set1").contains("splitName_2"));
     }
 }

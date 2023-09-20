@@ -152,8 +152,7 @@ public class SegmentSynchronizationTaskImpTest {
 
     @Test
     public void testLocalhostSegmentChangeFetcher() throws InterruptedException, FileNotFoundException {
-
-        SplitCache splitCacheProducer = new InMemoryCacheImp();
+        SplitCache splitCacheProducer = new InMemoryCacheImp(new HashSet<>());
 
         InputStream inputStream = new FileInputStream("src/test/resources/split_init.json");
         InputStreamProvider inputStreamProvider = new StaticContentInputStreamProvider(inputStream);

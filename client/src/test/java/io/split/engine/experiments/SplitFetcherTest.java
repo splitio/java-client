@@ -64,7 +64,7 @@ public class SplitFetcherTest {
 
     private void works(long startingChangeNumber) throws InterruptedException {
         AChangePerCallSplitChangeFetcher splitChangeFetcher = new AChangePerCallSplitChangeFetcher();
-        SplitCache cache = new InMemoryCacheImp(startingChangeNumber);
+        SplitCache cache = new InMemoryCacheImp(startingChangeNumber, new HashSet<>());
         SplitFetcherImp fetcher = new SplitFetcherImp(splitChangeFetcher, new SplitParser(), cache, TELEMETRY_STORAGE, new HashSet<>());
 
         // execute the fetcher for a little bit.
@@ -80,7 +80,7 @@ public class SplitFetcherTest {
 
         ParsedCondition expectedParsedCondition = ParsedCondition.createParsedConditionForTests(CombiningMatcher.of(new AllKeysMatcher()), Lists.newArrayList(ConditionsTestUtil.partition("on", 10)));
         List<ParsedCondition> expectedListOfMatcherAndSplits = Lists.newArrayList(expectedParsedCondition);
-        ParsedSplit expected = ParsedSplit.createParsedSplitForTests("" + cache.getChangeNumber(), (int) cache.getChangeNumber(), false, Treatments.OFF, expectedListOfMatcherAndSplits, null, cache.getChangeNumber(), 1);
+        ParsedSplit expected = ParsedSplit.createParsedSplitForTests("" + cache.getChangeNumber(), (int) cache.getChangeNumber(), false, Treatments.OFF, expectedListOfMatcherAndSplits, null, cache.getChangeNumber(), 1, new HashSet<>());
 
         ParsedSplit actual = cache.get("" + cache.getChangeNumber());
         Thread.sleep(1000);
@@ -131,7 +131,7 @@ public class SplitFetcherTest {
         when(splitChangeFetcher.fetch(Mockito.eq(1L), Mockito.any())).thenReturn(noReturn);
 
         SegmentCache segmentCache = new SegmentCacheInMemoryImpl();
-        SplitCache cache = new InMemoryCacheImp(-1);
+        SplitCache cache = new InMemoryCacheImp(-1, new HashSet<>());
 
         SegmentChangeFetcher segmentChangeFetcher = mock(SegmentChangeFetcher.class);
         SegmentSynchronizationTask segmentSynchronizationTask = new SegmentSynchronizationTaskImp(segmentChangeFetcher, 1,10, segmentCache, TELEMETRY_STORAGE, cache, null);
@@ -148,7 +148,7 @@ public class SplitFetcherTest {
 
     @Test
     public void if_there_is_a_problem_talking_to_split_change_count_down_latch_is_not_decremented() throws Exception {
-        SplitCache cache = new InMemoryCacheImp(-1);
+        SplitCache cache = new InMemoryCacheImp(-1, new HashSet<>());
 
         SplitChangeFetcher splitChangeFetcher = mock(SplitChangeFetcher.class);
         when(splitChangeFetcher.fetch(-1L, new FetchOptions.Builder().build())).thenThrow(new RuntimeException());
@@ -190,7 +190,7 @@ public class SplitFetcherTest {
         long startingChangeNumber = -1;
         String segmentName = "foosegment";
         AChangePerCallSplitChangeFetcher experimentChangeFetcher = new AChangePerCallSplitChangeFetcher(segmentName);
-        SplitCache cache = new InMemoryCacheImp(startingChangeNumber);
+        SplitCache cache = new InMemoryCacheImp(startingChangeNumber, new HashSet<>());
         SegmentCache segmentCache = new SegmentCacheInMemoryImpl();
 
         SegmentChangeFetcher segmentChangeFetcher = mock(SegmentChangeFetcher.class);
@@ -217,7 +217,7 @@ public class SplitFetcherTest {
     public void testBypassCdnClearedAfterFirstHit() {
         SplitChangeFetcher mockFetcher = Mockito.mock(SplitChangeFetcher.class);
         SplitParser mockParser = new SplitParser();
-        SplitCache mockCache = new InMemoryCacheImp();
+        SplitCache mockCache = new InMemoryCacheImp(new HashSet<>());
         SplitFetcherImp fetcher = new SplitFetcherImp(mockFetcher, mockParser, mockCache, Mockito.mock(TelemetryRuntimeProducer.class), new HashSet<>());
 
 

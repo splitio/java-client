@@ -33,7 +33,6 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import static org.mockito.Matchers.anyObject;
 import static org.mockito.Mockito.when;
 
 public class SynchronizerTest {
@@ -151,8 +150,7 @@ public class SynchronizerTest {
 
     @Test
     public void testCDNBypassIsRequestedAfterNFailures() {
-
-        SplitCache cache = new InMemoryCacheImp();
+        SplitCache cache = new InMemoryCacheImp(new HashSet<>());
         Synchronizer imp = new SynchronizerImp(_splitTasks,
                 _splitFetcher,
                 cache,
@@ -184,8 +182,7 @@ public class SynchronizerTest {
 
     @Test
     public void testCDNBypassRequestLimitAndBackoff() throws NoSuchFieldException, IllegalAccessException {
-
-        SplitCache cache = new InMemoryCacheImp();
+        SplitCache cache = new InMemoryCacheImp(new HashSet<>());
         Synchronizer imp = new SynchronizerImp(_splitTasks,
                 _splitFetcher,
                 cache,
@@ -240,8 +237,7 @@ public class SynchronizerTest {
 
     @Test
     public void testCDNBypassRequestLimitAndForSegmentsBackoff() throws NoSuchFieldException, IllegalAccessException {
-
-        SplitCache cache = new InMemoryCacheImp();
+        SplitCache cache = new InMemoryCacheImp(new HashSet<>());
         Synchronizer imp = new SynchronizerImp(_splitTasks,
                 _splitFetcher,
                 cache,
@@ -299,7 +295,7 @@ public class SynchronizerTest {
 
     @Test
     public void testDataRecording(){
-        SplitCache cache = new InMemoryCacheImp();
+        SplitCache cache = new InMemoryCacheImp(new HashSet<>());
         Synchronizer imp = new SynchronizerImp(_splitTasks,
                 _splitFetcher,
                 cache,
