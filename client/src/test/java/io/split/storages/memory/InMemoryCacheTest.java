@@ -2,7 +2,6 @@ package io.split.storages.memory;
 
 import com.google.common.collect.Lists;
 import io.split.client.dtos.Partition;
-import io.split.client.interceptors.FlagSetsFilterImpl;
 import io.split.engine.ConditionsTestUtil;
 import io.split.engine.experiments.ParsedCondition;
 import io.split.engine.experiments.ParsedSplit;
@@ -31,7 +30,7 @@ public class InMemoryCacheTest {
 
     @Before
     public void before() {
-        _cache = new InMemoryCacheImp(new FlagSetsFilterImpl(new HashSet<>(Arrays.asList("set1", "set2"))));
+        _cache = new InMemoryCacheImp(new HashSet<>(Arrays.asList("set1", "set2")));
     }
 
     @Test
@@ -113,10 +112,10 @@ public class InMemoryCacheTest {
 
     @Test
     public void trafficTypesExist() {
-        ParsedSplit split = ParsedSplit.createParsedSplitForTests("splitName_1", 0, false, "default_treatment", new ArrayList<>(), "tt", 123, 2, new HashSet<>());
-        ParsedSplit split2 = ParsedSplit.createParsedSplitForTests("splitName_2", 0, false, "default_treatment", new ArrayList<>(), "tt", 123, 2, new HashSet<>());
-        ParsedSplit split3 = ParsedSplit.createParsedSplitForTests("splitName_3", 0, false, "default_treatment", new ArrayList<>(), "tt_2", 123, 2, new HashSet<>());
-        ParsedSplit split4 = ParsedSplit.createParsedSplitForTests("splitName_4", 0, false, "default_treatment", new ArrayList<>(), "tt_3", 123, 2, new HashSet<>());
+        ParsedSplit split = ParsedSplit.createParsedSplitForTests("splitName_1", 0, false, "default_treatment", new ArrayList<>(), "tt", 123, 2, null);
+        ParsedSplit split2 = ParsedSplit.createParsedSplitForTests("splitName_2", 0, false, "default_treatment", new ArrayList<>(), "tt", 123, 2, null);
+        ParsedSplit split3 = ParsedSplit.createParsedSplitForTests("splitName_3", 0, false, "default_treatment", new ArrayList<>(), "tt_2", 123, 2, null);
+        ParsedSplit split4 = ParsedSplit.createParsedSplitForTests("splitName_4", 0, false, "default_treatment", new ArrayList<>(), "tt_3", 123, 2, null);
 
         _cache.putMany(Stream.of(split, split2, split3, split4).collect(Collectors.toList()));
         assertTrue(_cache.trafficTypeExists("tt_2"));
@@ -137,10 +136,10 @@ public class InMemoryCacheTest {
         ParsedCondition parsedCondition1 = ParsedCondition.createParsedConditionForTests(CombiningMatcher.of(new UserDefinedSegmentMatcher(EMPLOYEES)), fullyRollout);
         ParsedCondition parsedCondition2 = ParsedCondition.createParsedConditionForTests(CombiningMatcher.of(new UserDefinedSegmentMatcher(EMPLOYEES+"2")), turnOff);
 
-        ParsedSplit split = ParsedSplit.createParsedSplitForTests("splitName_1", 0, false, "default_treatment", Stream.of(parsedCondition1).collect(Collectors.toList()), "tt", 123, 2, new HashSet<>());
-        ParsedSplit split2 = ParsedSplit.createParsedSplitForTests("splitName_2", 0, false, "default_treatment", Stream.of(parsedCondition2).collect(Collectors.toList()), "tt", 123, 2, new HashSet<>());
-        ParsedSplit split3 = ParsedSplit.createParsedSplitForTests("splitName_3", 0, false, "default_treatment", Stream.of(parsedCondition1).collect(Collectors.toList()), "tt_2", 123, 2, new HashSet<>());
-        ParsedSplit split4 = ParsedSplit.createParsedSplitForTests("splitName_4", 0, false, "default_treatment", Stream.of(parsedCondition2).collect(Collectors.toList()), "tt_3", 123, 2, new HashSet<>());
+        ParsedSplit split = ParsedSplit.createParsedSplitForTests("splitName_1", 0, false, "default_treatment", Stream.of(parsedCondition1).collect(Collectors.toList()), "tt", 123, 2, null);
+        ParsedSplit split2 = ParsedSplit.createParsedSplitForTests("splitName_2", 0, false, "default_treatment", Stream.of(parsedCondition2).collect(Collectors.toList()), "tt", 123, 2, null);
+        ParsedSplit split3 = ParsedSplit.createParsedSplitForTests("splitName_3", 0, false, "default_treatment", Stream.of(parsedCondition1).collect(Collectors.toList()), "tt_2", 123, 2, null);
+        ParsedSplit split4 = ParsedSplit.createParsedSplitForTests("splitName_4", 0, false, "default_treatment", Stream.of(parsedCondition2).collect(Collectors.toList()), "tt_3", 123, 2, null);
 
         _cache.putMany(Stream.of(split, split2, split3, split4).collect(Collectors.toList()));
 
