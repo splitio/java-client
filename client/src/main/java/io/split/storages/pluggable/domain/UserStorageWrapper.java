@@ -6,6 +6,7 @@ import pluggable.CustomStorageWrapper;
 import pluggable.HasPipelineSupport;
 import pluggable.NotPipelinedImpl;
 
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
@@ -199,6 +200,17 @@ public class UserStorageWrapper implements CustomStorageWrapper {
         }
         catch (Exception e) {
             _log.error(String.format("error getting items with keys '%s' from storage. Error: '%s'", keys, e.getMessage()));
+            return null;
+        }
+    }
+
+    @Override
+    public HashSet<String> getMembers(String key) {
+        try {
+            return _customStorageWrapper.getMembers(key);
+        }
+        catch (Exception e) {
+            _log.error(String.format("error getting set members with key '%s' from storage. Error: '%s'", key, e.getMessage()));
             return null;
         }
     }

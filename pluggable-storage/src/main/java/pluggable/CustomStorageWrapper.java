@@ -1,5 +1,6 @@
 package pluggable;
 
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
@@ -28,6 +29,7 @@ public interface CustomStorageWrapper {
     void addItems(String key, List<String> items) throws Exception;
     void removeItems(String key, List<String> items) throws Exception;
     List<String> getItems(List<String> keys) throws Exception;
+    HashSet<String> getMembers(String key);
     boolean connect() throws Exception;
     boolean disconnect() throws Exception;
     Pipeline pipeline() throws Exception;

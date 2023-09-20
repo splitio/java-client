@@ -94,8 +94,14 @@ public class UserCustomSplitAdapterConsumer  implements SplitCacheConsumer {
 
     @Override
     public Map<String, HashSet<String>> getNamesByFlagSets(List<String> flagSets) {
-        //Todo implement
-        return null;
+        Map<String, HashSet<String>> toReturn = new HashMap<>();
+        for (String set: flagSets) {
+            HashSet<String> keys = _userStorageWrapper.getMembers(PrefixAdapter.buildFlagSetPrefix(set));
+            if(keys != null){
+                toReturn.put(set, keys);
+            }
+        }
+        return toReturn;
     }
 
     @Override
