@@ -5,6 +5,7 @@ import com.google.common.collect.Maps;
 import com.google.common.collect.Multiset;
 import com.google.common.collect.Sets;
 import io.split.client.interceptors.FlagSetsFilter;
+import io.split.client.interceptors.FlagSetsFilterImpl;
 import io.split.engine.experiments.ParsedSplit;
 import io.split.storages.SplitCache;
 import org.slf4j.Logger;
@@ -32,16 +33,16 @@ public class InMemoryCacheImp implements SplitCache {
 
     private AtomicLong _changeNumber;
 
-    public InMemoryCacheImp(FlagSetsFilter flagSetsFilter) {
-        this(-1, flagSetsFilter);
+    public InMemoryCacheImp(HashSet<String> flagSets) {
+        this(-1, flagSets);
     }
 
-    public InMemoryCacheImp(long startingChangeNumber, FlagSetsFilter flagSetsFilter) {
+    public InMemoryCacheImp(long startingChangeNumber, HashSet<String> flagSets) {
         _concurrentMap = Maps.newConcurrentMap();
         _changeNumber = new AtomicLong(startingChangeNumber);
         _concurrentTrafficTypeNameSet = ConcurrentHashMultiset.create();
         _flagSets = Maps.newConcurrentMap();
-        _flagSetsFilter = flagSetsFilter;
+        _flagSetsFilter = new FlagSetsFilterImpl(flagSets);
     }
 
     @Override
@@ -202,10 +203,12 @@ public class InMemoryCacheImp implements SplitCache {
     }
 
     private void removeFromFlagSets(String featureFlagName, HashSet<String> sets) {
-        for (String set: sets) {
-            HashSet<String> features = _flagSets.get(set);
-            features.remove(featureFlagName);
-            _flagSets.put(set, features);
+        if (sets != null) {
+            for (String set : sets) {
+                HashSet<String> features = _flagSets.get(set);
+                features.remove(featureFlagName);
+                _flagSets.put(set, features);
+            }
         }
     }
 }

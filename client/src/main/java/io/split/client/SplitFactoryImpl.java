@@ -190,7 +190,7 @@ public class SplitFactoryImpl implements SplitFactory {
 
         // Cache Initialisations
         SegmentCache segmentCache = new SegmentCacheInMemoryImpl();
-        SplitCache splitCache = new InMemoryCacheImp(new FlagSetsFilterImpl(config.getSetsFilter()));
+        SplitCache splitCache = new InMemoryCacheImp(config.getSetsFilter());
         ImpressionsStorage impressionsStorage = new InMemoryImpressionsStorage(config.impressionsQueueSize());
         _splitCache = splitCache;
         _segmentCache = segmentCache;
@@ -355,7 +355,7 @@ public class SplitFactoryImpl implements SplitFactory {
         _telemetryStorageProducer = new NoopTelemetryStorage();
 
         SegmentCache segmentCache = new SegmentCacheInMemoryImpl();
-        SplitCache splitCache = new InMemoryCacheImp(new FlagSetsFilterImpl(config.getSetsFilter()));
+        SplitCache splitCache = new InMemoryCacheImp(config.getSetsFilter());
         _splitCache = splitCache;
         _gates = new SDKReadinessGates();
         _segmentCache = segmentCache;

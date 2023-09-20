@@ -4,7 +4,6 @@ import com.google.common.collect.Lists;
 import io.split.client.dtos.ConditionType;
 import io.split.client.dtos.MatcherCombiner;
 import io.split.client.dtos.Partition;
-import io.split.client.interceptors.FlagSetsFilterImpl;
 import io.split.engine.experiments.ParsedCondition;
 import io.split.engine.experiments.ParsedSplit;
 import io.split.engine.matchers.AttributeMatcher;
@@ -152,7 +151,7 @@ public class EvaluatorIntegrationTest {
     }
 
     private Evaluator buildEvaluatorAndLoadCache(boolean killed, int trafficAllocation) {
-        SplitCache splitCache = new InMemoryCacheImp(new FlagSetsFilterImpl(new HashSet<>()));
+        SplitCache splitCache = new InMemoryCacheImp(new HashSet<>());
         SegmentCache segmentCache = new SegmentCacheInMemoryImpl();
         Evaluator evaluator = new EvaluatorImp(splitCache, segmentCache);
 

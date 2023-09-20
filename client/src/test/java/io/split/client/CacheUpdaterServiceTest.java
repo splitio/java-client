@@ -1,6 +1,5 @@
 package io.split.client;
 
-import io.split.client.interceptors.FlagSetsFilterImpl;
 import io.split.storages.memory.InMemoryCacheImp;
 import io.split.storages.SplitCache;
 import org.junit.Assert;
@@ -19,7 +18,7 @@ public class CacheUpdaterServiceTest {
 
     @Test
     public void testCacheUpdate() {
-        SplitCache splitCache = new InMemoryCacheImp(new FlagSetsFilterImpl(new HashSet<>()));
+        SplitCache splitCache = new InMemoryCacheImp(new HashSet<>());
         CacheUpdaterService cacheUpdaterService = new CacheUpdaterService(splitCache);
         cacheUpdaterService.updateCache(getMap());
         Assert.assertNotNull(splitCache.get(MY_FEATURE));
