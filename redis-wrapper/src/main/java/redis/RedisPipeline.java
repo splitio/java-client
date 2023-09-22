@@ -29,6 +29,11 @@ public class RedisPipeline implements pluggable.Pipeline {
         _pipelined.hincrBy(_commonRedis.buildKeyWithPrefix(key), field, value);
     }
 
+    @Override
+    public void getMembers(String key) {
+        _pipelined.smembers(_commonRedis.buildKeyWithPrefix(key));
+    }
+
     public void delete(List<String> keys) throws RedisException {
         if(keys == null || keys.isEmpty()){
             return ;

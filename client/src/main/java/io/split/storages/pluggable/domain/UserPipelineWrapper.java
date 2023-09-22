@@ -37,4 +37,13 @@ public class UserPipelineWrapper implements Pipeline{
            _logger.warn("Exception calling Pipeline hIncrement", e);
         }
     }
+
+    @Override
+    public void getMembers(String key) {
+        try {
+            _pipeline.getMembers(key);
+        } catch (Exception e){
+            _logger.warn("Exception calling Pipeline getMembers", e);
+        }
+    }
 }

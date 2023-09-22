@@ -14,7 +14,6 @@ import io.split.client.utils.Json;
 import io.split.engine.ConditionsTestUtil;
 import io.split.engine.segments.SegmentImp;
 import io.split.grammar.Treatments;
-import io.split.storages.pluggable.domain.ConfigConsumer;
 import io.split.storages.pluggable.domain.EventConsumer;
 import io.split.storages.pluggable.domain.ImpressionConsumer;
 import io.split.storages.pluggable.domain.PrefixAdapter;
@@ -26,7 +25,9 @@ import pluggable.Pipeline;
 
 import java.lang.reflect.Modifier;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -45,13 +46,14 @@ public class CustomStorageWrapperImp implements CustomStorageWrapper {
     private static final String IMPRESSIONS = "SPLITIO.impressions";
     private static final String EVENTS = "SPLITIO.events";
     private static final String COUNTS = "SPLITIO.impressions.counts";
+    private static final String FLAG_SET = "SPLITIO.flagSet";
     private Map<String, Split> splitsStorage = new HashMap<>();
     private Map<String, SegmentImp> segmentStorage = new HashMap<>();
     private final ConcurrentMap<String, AtomicLongArray> _methodLatencies = Maps.newConcurrentMap();
     private final ConcurrentMap<String, Long> _latencies = Maps.newConcurrentMap();
     private final ConcurrentMap<String, Long> _impressionsCount = Maps.newConcurrentMap();
     private final ConcurrentMap<String, String> _config = Maps.newConcurrentMap();
-    private ConfigConsumer _telemetryInit = null;
+    private final ConcurrentMap<String, HashSet<String>> _flagSets = Maps.newConcurrentMap();
     private List<ImpressionConsumer> imps = new ArrayList<>();
     private List<EventConsumer> events = new ArrayList<>();
     private final Gson _json = new GsonBuilder()
@@ -208,6 +210,15 @@ public class CustomStorageWrapperImp implements CustomStorageWrapper {
     }
 
     @Override
+    public HashSet<String> getMembers(String key) {
+        String storageKey = getStorage(key);
+        if(storageKey.equals(FLAG_SET)) {
+            return _flagSets.get(key);
+        }
+        return new HashSet<>();
+    }
+
+    @Override
     public boolean connect() throws Exception {
         return true;
     }
@@ -241,6 +252,8 @@ public class CustomStorageWrapperImp implements CustomStorageWrapper {
             return IMPRESSIONS;
         else if(key.startsWith(EVENTS))
             return EVENTS;
+        else if(key.startsWith(FLAG_SET))
+            return FLAG_SET;
         return "";
     }
 
@@ -249,6 +262,7 @@ public class CustomStorageWrapperImp implements CustomStorageWrapper {
         segmentStorage.put(PrefixAdapter.buildSegment("segmentName"), new SegmentImp(9874654L, "segmentName", Lists.newArrayList("key", "key2")));
         splitsStorage.put(PrefixAdapter.buildSplitKey("first.name"), makeSplit("first.name", 123, Lists.newArrayList(condition), 456478976L));
         splitsStorage.put(PrefixAdapter.buildSplitKey("second.name"), makeSplit("second.name", 321, Lists.newArrayList(), 568613L));
+        _flagSets.put("SPLITIO.flagSet.set1", new HashSet<>(new ArrayList<>(Arrays.asList("flag1", "flag2"))));
     }
 
     private Split makeSplit(String name, int seed, List<Condition> conditions, long changeNumber) {
@@ -286,5 +300,4 @@ public class CustomStorageWrapperImp implements CustomStorageWrapper {
     public ConcurrentMap <String, String> getConfig() {
         return _config;
     }
-
 }
