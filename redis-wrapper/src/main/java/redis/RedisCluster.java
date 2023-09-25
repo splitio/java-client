@@ -8,6 +8,7 @@ import redis.clients.jedis.JedisCluster;
 import redis.common.CommonRedis;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -226,6 +227,17 @@ class RedisCluster implements CustomStorageWrapper {
             keys = keys.stream().map(key -> _commonRedis.buildKeyWithPrefix(key)).collect(Collectors.toList());
 
             return jedis.mget(keys.toArray(new String[keys.size()]));
+        } catch (Exception ex) {
+            throw new RedisException(ex.getMessage());
+        }
+    }
+
+    @Override
+    public Set<String> getMembers(String key) throws Exception {
+        Set<String> items;
+        try {
+            items = jedis.smembers(_commonRedis.buildKeyWithPrefix(key));
+            return new HashSet<>(items);
         } catch (Exception ex) {
             throw new RedisException(ex.getMessage());
         }

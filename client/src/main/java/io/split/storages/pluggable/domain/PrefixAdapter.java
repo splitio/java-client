@@ -19,6 +19,7 @@ public class PrefixAdapter {
     private static final String LATENCIES = "latencies";
     private static final String EXCEPTIONS = "exceptions";
     private static final String INIT = "init";
+    private static final String FLAG_SET = "flagSet";
 
     public static String buildSplitKey(String name) {
         return String.format(DEFAULT_PREFIX+ SPLIT_PREFIX +"%s", name);
@@ -86,5 +87,8 @@ public class PrefixAdapter {
 
     public static String buildTelemetryInit() {
         return String.format(DEFAULT_PREFIX + TELEMETRY + INIT);
+    }
+    public static String buildFlagSetPrefix(String set) {
+        return String.format(DEFAULT_PREFIX + FLAG_SET + ".%s", set);
     }
 }

@@ -5,12 +5,14 @@ import io.split.client.utils.Json;
 import io.split.engine.experiments.ParsedSplit;
 import io.split.engine.experiments.SplitParser;
 import io.split.storages.SplitCacheConsumer;
+import io.split.storages.pluggable.domain.UserPipelineWrapper;
 import io.split.storages.pluggable.domain.UserStorageWrapper;
 import io.split.storages.pluggable.domain.PrefixAdapter;
 import io.split.storages.pluggable.utils.Helper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import pluggable.CustomStorageWrapper;
+import pluggable.Result;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -94,8 +96,26 @@ public class UserCustomSplitAdapterConsumer  implements SplitCacheConsumer {
 
     @Override
     public Map<String, HashSet<String>> getNamesByFlagSets(List<String> flagSets) {
-        //Todo implement
-        return null;
+        Map<String, HashSet<String>> toReturn = new HashMap<>();
+        try {
+            if (flagSets == null) {
+                return toReturn;
+            }
+            UserPipelineWrapper pipelineExecution = _userStorageWrapper.pipeline();
+            for (String set: flagSets) {
+                 pipelineExecution.getMembers(PrefixAdapter.buildFlagSetPrefix(set));
+            }
+            List<Result> results = pipelineExecution.exec();
+            if (results == null || results.isEmpty()){
+                return toReturn;
+            }
+            for (int i = 0; i < results.size(); i ++) {
+                toReturn.put(flagSets.get(i), results.get(i).asHash().get());
+            }
+        } catch (Exception e) {
+            _log.warn("Redis pipeline exception when getting names by flag sets: ", e);
+        }
+        return toReturn;
     }
 
     @Override
