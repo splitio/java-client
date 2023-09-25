@@ -98,11 +98,17 @@ public class UserCustomSplitAdapterConsumer  implements SplitCacheConsumer {
     public Map<String, HashSet<String>> getNamesByFlagSets(List<String> flagSets) {
         Map<String, HashSet<String>> toReturn = new HashMap<>();
         try {
+            if (flagSets == null) {
+                return toReturn;
+            }
             UserPipelineWrapper pipelineExecution = _userStorageWrapper.pipeline();
             for (String set: flagSets) {
                  pipelineExecution.getMembers(PrefixAdapter.buildFlagSetPrefix(set));
             }
             List<Result> results = pipelineExecution.exec();
+            if (results == null || results.isEmpty()){
+                return toReturn;
+            }
             for (int i = 0; i < results.size(); i ++) {
                 toReturn.put(flagSets.get(i), results.get(i).asHash().get());
             }

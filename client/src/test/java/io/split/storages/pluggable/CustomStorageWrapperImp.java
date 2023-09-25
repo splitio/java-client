@@ -210,7 +210,7 @@ public class CustomStorageWrapperImp implements CustomStorageWrapper {
     }
 
     @Override
-    public HashSet<String> getMembers(String key) {
+    public Set<String> getMembers(String key) {
         String storageKey = getStorage(key);
         if(storageKey.equals(FLAG_SET)) {
             return _flagSets.get(key);

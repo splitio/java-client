@@ -279,7 +279,7 @@ public class RedisSingleTest {
         RedisSingle storageWrapper = new RedisSingle(new JedisPool(), "");
         try (Jedis jedis = jedisPool.getResource()) {
             jedis.sadd("set1", "flag1", "flag2", "flag3");
-            HashSet<String> flags = storageWrapper.getMembers("set1");
+            Set<String> flags = storageWrapper.getMembers("set1");
             Assert.assertEquals(3, flags.size());
         } catch (Exception ex) {
             throw new RedisException(ex.getMessage());

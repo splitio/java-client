@@ -209,11 +209,11 @@ class RedisSingle implements CustomStorageWrapper, HasPipelineSupport {
     }
 
     @Override
-    public HashSet<String> getMembers(String key) throws Exception {
-        Set<String> flags;
+    public Set<String> getMembers(String key) throws Exception {
+        Set<String> items;
         try (Jedis jedis = this.jedisPool.getResource()) {
-            flags = jedis.smembers(_commonRedis.buildKeyWithPrefix(key));
-            return new HashSet<>(flags);
+            items = jedis.smembers(_commonRedis.buildKeyWithPrefix(key));
+            return new HashSet<>(items);
         } catch (Exception ex) {
             throw new RedisException(ex.getMessage());
         }

@@ -6,7 +6,6 @@ import pluggable.CustomStorageWrapper;
 import pluggable.HasPipelineSupport;
 import pluggable.NotPipelinedImpl;
 
-import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
@@ -205,7 +204,7 @@ public class UserStorageWrapper implements CustomStorageWrapper {
     }
 
     @Override
-    public HashSet<String> getMembers(String key) {
+    public Set<String> getMembers(String key) {
         try {
             return _customStorageWrapper.getMembers(key);
         }

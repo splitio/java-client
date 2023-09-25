@@ -111,7 +111,7 @@ public class CustomStorageWrapperHasPipeline implements CustomStorageWrapper, Ha
     }
 
     @Override
-    public HashSet<String> getMembers(String key) {
+    public Set<String> getMembers(String key) {
         return null;
     }
 
