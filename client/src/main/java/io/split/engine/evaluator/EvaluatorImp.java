@@ -1,5 +1,6 @@
 package io.split.engine.evaluator;
 
+import com.google.common.base.Stopwatch;
 import io.split.client.dtos.ConditionType;
 import io.split.client.exceptions.ChangeNumberExceptionWrapper;
 import io.split.engine.experiments.ParsedCondition;
@@ -11,15 +12,16 @@ import io.split.storages.SplitCacheConsumer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
 public class EvaluatorImp implements Evaluator {
-
-
     private static final Logger _log = LoggerFactory.getLogger(EvaluatorImp.class);
 
     private final SegmentCacheConsumer _segmentCacheConsumer;
@@ -49,6 +51,31 @@ public class EvaluatorImp implements Evaluator {
         }
         featureFlags.forEach(s -> results.put(s, evaluateParsedSplit(matchingKey, bucketingKey, attributes, parsedSplits.get(s))));
         return results;
+    }
+
+    @Override
+    public ByFlagSetsResult evaluateFeaturesByFlagSets(String key, String bucketingKey, List<String> flagSets) {
+        Stopwatch stopwatch = Stopwatch.createStarted();
+        List<String> flagSetsWithNames = getFeatureFlagNamesByFlagSets(flagSets);
+        Map<String, TreatmentLabelAndChangeNumber> evaluations = evaluateFeatures(key, bucketingKey, flagSetsWithNames, null);
+        stopwatch.stop();
+        long millis = stopwatch.elapsed(TimeUnit.MILLISECONDS);
+        return new ByFlagSetsResult(evaluations, millis);
+    }
+
+    private List<String> getFeatureFlagNamesByFlagSets(List<String> flagSets) {
+        HashSet<String> ffNamesToReturn = new HashSet<>();
+        Map<String, HashSet<String>> namesByFlagSets = _splitCacheConsumer.getNamesByFlagSets(flagSets);
+        for (String set: flagSets) {
+            HashSet<String> flags = namesByFlagSets.get(set);
+            if (flags == null) {
+                _log.warn(String.format("You passed %s Flag Set that does not contain cached feature flag names, please double check " +
+                        "what Flag Sets are in use in the Split user interface.", set));
+                continue;
+            }
+            ffNamesToReturn.addAll(flags);
+        }
+        return new ArrayList<>(ffNamesToReturn);
     }
 
     /**
@@ -125,6 +152,16 @@ public class EvaluatorImp implements Evaluator {
         } catch (Exception e) {
             _log.error("Evaluator Exception", e);
             return new EvaluatorImp.TreatmentLabelAndChangeNumber(Treatments.CONTROL, Labels.EXCEPTION);
+        }
+    }
+
+    public static class ByFlagSetsResult {
+        public final Map<String, TreatmentLabelAndChangeNumber> evaluations;
+        public final long elapsedMilliseconds;
+
+        public ByFlagSetsResult(Map<String, TreatmentLabelAndChangeNumber> evaluations, long elapsed) {
+            this.evaluations = evaluations;
+            this.elapsedMilliseconds = elapsed;
         }
     }
 
