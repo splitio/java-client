@@ -7,11 +7,13 @@ import io.split.engine.experiments.ParsedSplit;
 import io.split.engine.matchers.CombiningMatcher;
 import io.split.storages.SegmentCacheConsumer;
 import io.split.storages.SplitCacheConsumer;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mockito;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -146,5 +148,38 @@ public class EvaluatorTest {
         assertEquals(TREATMENT_VALUE, result.treatment);
         assertEquals("test whitelist label", result.label);
         assertEquals(CHANGE_NUMBER, result.changeNumber);
+    }
+
+    @Test
+    public void evaluateWithSets() {
+        ParsedSplit split = ParsedSplit.createParsedSplitForTests(SPLIT_NAME, 0, false, DEFAULT_TREATMENT_VALUE, _conditions, TRAFFIC_TYPE_VALUE, CHANGE_NUMBER, 2, new HashSet<>(Arrays.asList("set1", "set2")));
+        List<String> sets = new ArrayList<>(Arrays.asList("set1"));
+        Map<String, HashSet<String>> flagSets = new HashMap<>();
+        flagSets.put("set1", new HashSet<>(Arrays.asList(SPLIT_NAME)));
+        Mockito.when(_splitCacheConsumer.getNamesByFlagSets(sets)).thenReturn(flagSets);
+        Map<String, ParsedSplit> parsedSplits = new HashMap<>();
+        parsedSplits.put(SPLIT_NAME, split);
+        Mockito.when(_splitCacheConsumer.fetchMany(Arrays.asList(SPLIT_NAME))).thenReturn(parsedSplits);
+
+        EvaluatorImp.ByFlagSetsResult result = _evaluator.evaluateFeaturesByFlagSets(MATCHING_KEY, BUCKETING_KEY, sets);
+
+        EvaluatorImp.TreatmentLabelAndChangeNumber treatmentLabelAndChangeNumber = result.evaluations.get(SPLIT_NAME);
+
+        assertEquals(DEFAULT_TREATMENT_VALUE, treatmentLabelAndChangeNumber.treatment);
+        assertEquals("default rule", treatmentLabelAndChangeNumber.label);
+        assertEquals(CHANGE_NUMBER, treatmentLabelAndChangeNumber.changeNumber);
+    }
+
+    @Test
+    public void evaluateWithSetsNotHaveFlags() {
+        ParsedSplit split = ParsedSplit.createParsedSplitForTests(SPLIT_NAME, 0, false, DEFAULT_TREATMENT_VALUE, _conditions, TRAFFIC_TYPE_VALUE, CHANGE_NUMBER, 2, new HashSet<>(Arrays.asList("set1", "set2")));
+        List<String> sets = new ArrayList<>(Arrays.asList("set2"));
+        Map<String, HashSet<String>> flagSets = new HashMap<>();
+        Mockito.when(_splitCacheConsumer.getNamesByFlagSets(sets)).thenReturn(flagSets);
+        Map<String, ParsedSplit> parsedSplits = new HashMap<>();
+        Mockito.when(_splitCacheConsumer.fetchMany(Arrays.asList(SPLIT_NAME))).thenReturn(parsedSplits);
+
+        EvaluatorImp.ByFlagSetsResult result = _evaluator.evaluateFeaturesByFlagSets(MATCHING_KEY, BUCKETING_KEY, sets);
+        Assert.assertTrue(result.evaluations.isEmpty());
     }
 }
