@@ -54,13 +54,11 @@ public class EvaluatorImp implements Evaluator {
     }
 
     @Override
-    public ByFlagSetsResult evaluateFeaturesByFlagSets(String key, String bucketingKey, List<String> flagSets) {
-        Stopwatch stopwatch = Stopwatch.createStarted();
+    public Map<String, EvaluatorImp.TreatmentLabelAndChangeNumber> evaluateFeaturesByFlagSets(String key, String bucketingKey,
+                                                                                              List<String> flagSets) {
         List<String> flagSetsWithNames = getFeatureFlagNamesByFlagSets(flagSets);
         Map<String, TreatmentLabelAndChangeNumber> evaluations = evaluateFeatures(key, bucketingKey, flagSetsWithNames, null);
-        stopwatch.stop();
-        long millis = stopwatch.elapsed(TimeUnit.MILLISECONDS);
-        return new ByFlagSetsResult(evaluations, millis);
+        return evaluations;
     }
 
     private List<String> getFeatureFlagNamesByFlagSets(List<String> flagSets) {
@@ -152,16 +150,6 @@ public class EvaluatorImp implements Evaluator {
         } catch (Exception e) {
             _log.error("Evaluator Exception", e);
             return new EvaluatorImp.TreatmentLabelAndChangeNumber(Treatments.CONTROL, Labels.EXCEPTION);
-        }
-    }
-
-    public static class ByFlagSetsResult {
-        public final Map<String, TreatmentLabelAndChangeNumber> evaluations;
-        public final long elapsedMilliseconds;
-
-        public ByFlagSetsResult(Map<String, TreatmentLabelAndChangeNumber> evaluations, long elapsed) {
-            this.evaluations = evaluations;
-            this.elapsedMilliseconds = elapsed;
         }
     }
 
