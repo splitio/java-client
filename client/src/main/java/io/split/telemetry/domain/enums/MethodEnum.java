@@ -5,8 +5,10 @@ public enum MethodEnum {
     TREATMENTS("getTreatments"),
     TREATMENT_WITH_CONFIG("getTreatmentWithConfig"),
     TREATMENTS_WITH_CONFIG("getTreatmentsWithConfig"),
-    TREATMENTS_BY_FLAG_SETS("getTreatmentsByFlagSet"),
-    TREATMENTS_WITH_CONFIG_BY_FLAG_SETS("getTreatmentsWithConfigByFlagSet"),
+    TREATMENTS_BY_FLAG_SET("getTreatmentsByFlagSet"),
+    TREATMENTS_BY_FLAG_SETS("getTreatmentsByFlagSets"),
+    TREATMENTS_WITH_CONFIG_BY_FLAG_SET("getTreatmentsWithConfigByFlagSet"),
+    TREATMENTS_WITH_CONFIG_BY_FLAG_SETS("getTreatmentsWithConfigByFlagSets"),
     TRACK("track");
 
     private String _method;

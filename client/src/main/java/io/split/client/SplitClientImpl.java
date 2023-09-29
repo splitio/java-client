@@ -147,7 +147,7 @@ public final class SplitClientImpl implements SplitClient {
     @Override
     public Map<String, String> getTreatmentsByFlagSet(String key, String flagSet, Map<String, Object> attributes) {
         return getTreatmentsWithSetsAndWithConfigInternal(key, null, new ArrayList<>(Arrays.asList(flagSet)),
-                attributes, MethodEnum.TREATMENTS_BY_FLAG_SETS).entrySet().stream()
+                attributes, MethodEnum.TREATMENTS_BY_FLAG_SET).entrySet().stream()
                 .collect(Collectors.toMap(Map.Entry::getKey, e -> e.getValue().treatment()));
     }
 
@@ -161,7 +161,7 @@ public final class SplitClientImpl implements SplitClient {
     @Override
     public Map<String, SplitResult> getTreatmentsWithConfigByFlagSet(String key, String flagSet, Map<String, Object> attributes) {
         return getTreatmentsWithSetsAndWithConfigInternal(key, null, new ArrayList<>(Arrays.asList(flagSet)),
-                attributes, MethodEnum.TREATMENTS_WITH_CONFIG_BY_FLAG_SETS);
+                attributes, MethodEnum.TREATMENTS_WITH_CONFIG_BY_FLAG_SET);
     }
 
     @Override
@@ -385,12 +385,15 @@ public final class SplitClientImpl implements SplitClient {
                 return new HashMap<>();
             }
             if (filterSetsAreInConfig(flagSetsValidResult.getFlagSets()).isEmpty()) {
-                _log.warn("The sets are not");
+                _log.warn("The sets are not in flagSetsFilter config");
                 return new HashMap<>();
             }
             checkSDKReady(methodEnum);
             if (_container.isDestroyed()) {
                 _log.error("Client has already been destroyed - no calls possible");
+                return createMapControl(getAllFlags(flagSetsValidResult.getFlagSets()));
+            }
+            if (!KeyValidator.isValid(matchingKey, "matchingKey", _config.maxStringLength(), methodEnum.getMethod())) {
                 return createMapControl(getAllFlags(flagSetsValidResult.getFlagSets()));
             }
             if (!KeyValidator.bucketingKeyIsValid(bucketingKey, _config.maxStringLength(), methodEnum.getMethod())) {
