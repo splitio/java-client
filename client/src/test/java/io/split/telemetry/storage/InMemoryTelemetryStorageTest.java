@@ -34,12 +34,20 @@ public class InMemoryTelemetryStorageTest{
         telemetryStorage.recordLatency(MethodEnum.TREATMENTS, 500l * 1000);
         telemetryStorage.recordLatency(MethodEnum.TREATMENT_WITH_CONFIG, 800l * 1000);
         telemetryStorage.recordLatency(MethodEnum.TREATMENTS_WITH_CONFIG, 1000l * 1000);
+        telemetryStorage.recordLatency(MethodEnum.TREATMENTS_BY_FLAG_SET, 1000l * 1000);
+        telemetryStorage.recordLatency(MethodEnum.TREATMENTS_BY_FLAG_SETS, 1000l * 1000);
+        telemetryStorage.recordLatency(MethodEnum.TREATMENTS_WITH_CONFIG_BY_FLAG_SET, 1000l * 1000);
+        telemetryStorage.recordLatency(MethodEnum.TREATMENTS_WITH_CONFIG_BY_FLAG_SETS, 1000l * 1000);
 
         MethodLatencies latencies = telemetryStorage.popLatencies();
         Assert.assertEquals(2, latencies.get_treatment().stream().mapToInt(Long::intValue).sum());
         Assert.assertEquals(2, latencies.get_treatments().stream().mapToInt(Long::intValue).sum());
         Assert.assertEquals(1, latencies.get_treatmentsWithConfig().stream().mapToInt(Long::intValue).sum());
         Assert.assertEquals(1, latencies.get_treatmentWithConfig().stream().mapToInt(Long::intValue).sum());
+        Assert.assertEquals(1, latencies.get_treatmentByFlagSet().stream().mapToInt(Long::intValue).sum());
+        Assert.assertEquals(1, latencies.get_treatmentByFlagSets().stream().mapToInt(Long::intValue).sum());
+        Assert.assertEquals(1, latencies.get_treatmentWithConfigByFlagSet().stream().mapToInt(Long::intValue).sum());
+        Assert.assertEquals(1, latencies.get_treatmentWithConfigByFlagSets().stream().mapToInt(Long::intValue).sum());
         Assert.assertEquals(0, latencies.get_track().stream().mapToInt(Long::intValue).sum());
 
         //Check empty has worked

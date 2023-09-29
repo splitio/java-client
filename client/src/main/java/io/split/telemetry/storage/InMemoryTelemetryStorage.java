@@ -104,6 +104,10 @@ public class InMemoryTelemetryStorage implements TelemetryStorage{
         latencies.set_treatments(_methodLatencies.get(MethodEnum.TREATMENTS).fetchAndClearAll());
         latencies.set_treatmentWithConfig(_methodLatencies.get(MethodEnum.TREATMENT_WITH_CONFIG).fetchAndClearAll());
         latencies.set_treatmentsWithConfig(_methodLatencies.get(MethodEnum.TREATMENTS_WITH_CONFIG).fetchAndClearAll());
+        latencies.set_treatmentByFlagSet(_methodLatencies.get(MethodEnum.TREATMENTS_BY_FLAG_SET).fetchAndClearAll());
+        latencies.set_treatmentByFlagSets(_methodLatencies.get(MethodEnum.TREATMENTS_BY_FLAG_SETS).fetchAndClearAll());
+        latencies.set_treatmentWithConfigByFlagSet(_methodLatencies.get(MethodEnum.TREATMENTS_WITH_CONFIG_BY_FLAG_SET).fetchAndClearAll());
+        latencies.set_treatmentWithConfigByFlagSets(_methodLatencies.get(MethodEnum.TREATMENTS_WITH_CONFIG_BY_FLAG_SETS).fetchAndClearAll());
         latencies.set_track(_methodLatencies.get(MethodEnum.TRACK).fetchAndClearAll());
 
         return latencies;
@@ -306,6 +310,10 @@ public class InMemoryTelemetryStorage implements TelemetryStorage{
         _methodLatencies.put(MethodEnum.TREATMENTS, new AtomicLongArray(MAX_LATENCY_BUCKET_COUNT));
         _methodLatencies.put(MethodEnum.TREATMENT_WITH_CONFIG, new AtomicLongArray(MAX_LATENCY_BUCKET_COUNT));
         _methodLatencies.put(MethodEnum.TREATMENTS_WITH_CONFIG, new AtomicLongArray(MAX_LATENCY_BUCKET_COUNT));
+        _methodLatencies.put(MethodEnum.TREATMENTS_BY_FLAG_SET, new AtomicLongArray(MAX_LATENCY_BUCKET_COUNT));
+        _methodLatencies.put(MethodEnum.TREATMENTS_BY_FLAG_SETS, new AtomicLongArray(MAX_LATENCY_BUCKET_COUNT));
+        _methodLatencies.put(MethodEnum.TREATMENTS_WITH_CONFIG_BY_FLAG_SET, new AtomicLongArray(MAX_LATENCY_BUCKET_COUNT));
+        _methodLatencies.put(MethodEnum.TREATMENTS_WITH_CONFIG_BY_FLAG_SETS, new AtomicLongArray(MAX_LATENCY_BUCKET_COUNT));
         _methodLatencies.put(MethodEnum.TRACK, new AtomicLongArray(MAX_LATENCY_BUCKET_COUNT));
     }
 
