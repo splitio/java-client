@@ -7,6 +7,10 @@ public class MethodExceptions {
     /* package private */ static final String FIELD_TREATMENTS = "ts";
     /* package private */ static final String FIELD_TREATMENT_WITH_CONFIG = "tc";
     /* package private */ static final String FIELD_TREATMENTS_WITH_CONFIG = "tcs";
+    /* package private */ static final String FIELD_TREATMENT_BY_FLAG_SET = "tf";
+    /* package private */static final String FIELD_TREATMENT_BY_FLAG_SETS = "tfs";
+    /* package private */static final String FIELD_TREATMENT_WITH_CONFIG_BY_FLAG_SET = "tcf";
+    /* package private */static final String FIELD_TREATMENT_WITH_CONFIG_BY_FLAG_SETS = "tcfs";
     /* package private */ static final String FIELD_TRACK = "tr";
 
     @SerializedName(FIELD_TREATMENT)
@@ -17,6 +21,14 @@ public class MethodExceptions {
     private long _treatmentWithConfig;
     @SerializedName(FIELD_TREATMENTS_WITH_CONFIG)
     private long _treatmentsWithConfig;
+    @SerializedName(FIELD_TREATMENT_BY_FLAG_SET)
+    private Long _treatmentByFlagSet;
+    @SerializedName(FIELD_TREATMENT_BY_FLAG_SETS)
+    private Long _treatmentByFlagSets;
+    @SerializedName(FIELD_TREATMENT_WITH_CONFIG_BY_FLAG_SET)
+    private Long _treatmentWithConfigByFlagSet;
+    @SerializedName(FIELD_TREATMENT_WITH_CONFIG_BY_FLAG_SETS)
+    private Long _treatmentWithConfigByFlagSets;
     @SerializedName(FIELD_TRACK)
     private long _track;
 
@@ -58,5 +70,37 @@ public class MethodExceptions {
 
     public void set_track(long _track) {
         this._track = _track;
+    }
+
+    public long get_treatmentByFlagSet() {
+        return _treatmentByFlagSet;
+    }
+
+    public long get_treatmentByFlagSets() {
+        return _treatmentByFlagSets;
+    }
+
+    public long get_treatmentWithConfigByFlagSet() {
+        return _treatmentWithConfigByFlagSet;
+    }
+
+    public long get_treatmentWithConfigByFlagSets() {
+        return _treatmentWithConfigByFlagSets;
+    }
+
+    public void set_treatmentByFlagSet(Long _treatmentByFlagSet) {
+        this._treatmentByFlagSet = _treatmentByFlagSet;
+    }
+
+    public void set_treatmentByFlagSets(Long _treatmentByFlagSets) {
+        this._treatmentByFlagSets = _treatmentByFlagSets;
+    }
+
+    public void set_treatmentWithConfigByFlagSet(Long _treatmentWithConfigByFlagSet) {
+        this._treatmentWithConfigByFlagSet = _treatmentWithConfigByFlagSet;
+    }
+
+    public void set_treatmentWithConfigByFlagSets(Long _treatmentWithConfigByFlagSets) {
+        this._treatmentWithConfigByFlagSets = _treatmentWithConfigByFlagSets;
     }
 }

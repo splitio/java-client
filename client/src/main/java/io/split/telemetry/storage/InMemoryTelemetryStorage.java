@@ -92,6 +92,10 @@ public class InMemoryTelemetryStorage implements TelemetryStorage{
         exceptions.set_treatments(_exceptionsCounters.get(MethodEnum.TREATMENTS).getAndSet(0L));
         exceptions.set_treatmentWithConfig(_exceptionsCounters.get(MethodEnum.TREATMENT_WITH_CONFIG).getAndSet(0L));
         exceptions.set_treatmentsWithConfig(_exceptionsCounters.get(MethodEnum.TREATMENTS_WITH_CONFIG).getAndSet(0L));
+        exceptions.set_treatmentByFlagSet(_exceptionsCounters.get(MethodEnum.TREATMENTS_BY_FLAG_SET).getAndSet(0L));
+        exceptions.set_treatmentByFlagSets(_exceptionsCounters.get(MethodEnum.TREATMENTS_BY_FLAG_SETS).getAndSet(0L));
+        exceptions.set_treatmentWithConfigByFlagSet(_exceptionsCounters.get(MethodEnum.TREATMENTS_WITH_CONFIG_BY_FLAG_SET).getAndSet(0L));
+        exceptions.set_treatmentWithConfigByFlagSets(_exceptionsCounters.get(MethodEnum.TREATMENTS_WITH_CONFIG_BY_FLAG_SETS).getAndSet(0L));
         exceptions.set_track(_exceptionsCounters.get(MethodEnum.TRACK).getAndSet(0L));
 
         return exceptions;
@@ -334,6 +338,10 @@ public class InMemoryTelemetryStorage implements TelemetryStorage{
         _exceptionsCounters.put(MethodEnum.TREATMENTS, new AtomicLong());
         _exceptionsCounters.put(MethodEnum.TREATMENT_WITH_CONFIG, new AtomicLong());
         _exceptionsCounters.put(MethodEnum.TREATMENTS_WITH_CONFIG, new AtomicLong());
+        _exceptionsCounters.put(MethodEnum.TREATMENTS_BY_FLAG_SET, new AtomicLong());
+        _exceptionsCounters.put(MethodEnum.TREATMENTS_BY_FLAG_SETS, new AtomicLong());
+        _exceptionsCounters.put(MethodEnum.TREATMENTS_WITH_CONFIG_BY_FLAG_SET, new AtomicLong());
+        _exceptionsCounters.put(MethodEnum.TREATMENTS_WITH_CONFIG_BY_FLAG_SETS, new AtomicLong());
         _exceptionsCounters.put(MethodEnum.TRACK, new AtomicLong());
     }
 

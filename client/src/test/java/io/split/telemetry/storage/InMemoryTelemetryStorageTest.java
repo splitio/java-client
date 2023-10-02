@@ -1,6 +1,5 @@
 package io.split.telemetry.storage;
 
-
 import io.split.telemetry.domain.HTTPErrors;
 import io.split.telemetry.domain.HTTPLatencies;
 import io.split.telemetry.domain.LastSynchronization;
@@ -89,12 +88,20 @@ public class InMemoryTelemetryStorageTest{
         telemetryStorage.recordException(MethodEnum.TREATMENTS);
         telemetryStorage.recordException(MethodEnum.TREATMENT_WITH_CONFIG);
         telemetryStorage.recordException(MethodEnum.TREATMENTS_WITH_CONFIG);
+        telemetryStorage.recordException(MethodEnum.TREATMENTS_BY_FLAG_SET);
+        telemetryStorage.recordException(MethodEnum.TREATMENTS_BY_FLAG_SETS);
+        telemetryStorage.recordException(MethodEnum.TREATMENTS_WITH_CONFIG_BY_FLAG_SET);
+        telemetryStorage.recordException(MethodEnum.TREATMENTS_WITH_CONFIG_BY_FLAG_SETS);
 
         MethodExceptions methodExceptions = telemetryStorage.popExceptions();
         Assert.assertEquals(2, methodExceptions.get_treatment());
         Assert.assertEquals(2, methodExceptions.get_treatments());
         Assert.assertEquals(1, methodExceptions.get_treatmentsWithConfig());
         Assert.assertEquals(1, methodExceptions.get_treatmentWithConfig());
+        Assert.assertEquals(1, methodExceptions.get_treatmentByFlagSet());
+        Assert.assertEquals(1, methodExceptions.get_treatmentByFlagSets());
+        Assert.assertEquals(1, methodExceptions.get_treatmentWithConfigByFlagSet());
+        Assert.assertEquals(1, methodExceptions.get_treatmentWithConfigByFlagSets());
         Assert.assertEquals(0, methodExceptions.get_track());
 
         //Check empty has worked
