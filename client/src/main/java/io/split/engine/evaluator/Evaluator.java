@@ -8,5 +8,5 @@ public interface Evaluator {
                                                                Map<String, Object> attributes);
     Map<String, EvaluatorImp.TreatmentLabelAndChangeNumber> evaluateFeatures(String matchingKey, String bucketingKey,
                                                                              List<String> featureFlags, Map<String, Object> attributes);
-    EvaluatorImp.ByFlagSetsResult evaluateFeaturesByFlagSets(String key, String bucketingKey, List<String> flagSets);
+    Map<String, EvaluatorImp.TreatmentLabelAndChangeNumber> evaluateFeaturesByFlagSets(String key, String bucketingKey, List<String> flagSets);
 }

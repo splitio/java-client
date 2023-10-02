@@ -133,6 +133,26 @@ public class SplitClientForTest implements SplitClient {
     }
 
     @Override
+    public Map<String, String> getTreatmentsByFlagSet(String key, String flagSet, Map<String, Object> attributes) {
+        return null;
+    }
+
+    @Override
+    public Map<String, String> getTreatmentsByFlagSets(String key, List<String> flagSets, Map<String, Object> attributes) {
+        return null;
+    }
+
+    @Override
+    public Map<String, SplitResult> getTreatmentsWithConfigByFlagSet(String key, String flagSet, Map<String, Object> attributes) {
+        return null;
+    }
+
+    @Override
+    public Map<String, SplitResult> getTreatmentsWithConfigByFlagSets(String key, List<String> flagSets, Map<String, Object> attributes) {
+        return null;
+    }
+
+    @Override
     public void destroy() {
 
     }

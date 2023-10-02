@@ -47,10 +47,10 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.TimeoutException;
 
-import static org.hamcrest.Matchers.equalTo;
-import static org.hamcrest.Matchers.is;
-import static org.hamcrest.Matchers.nullValue;
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
 import static org.mockito.Matchers.anyList;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Mockito.mock;
@@ -67,7 +67,8 @@ import static org.mockito.Mockito.when;
 public class SplitClientImplTest {
 
     private static TelemetryStorage TELEMETRY_STORAGE = Mockito.mock(InMemoryTelemetryStorage.class);
-    private SplitClientConfig config = SplitClientConfig.builder().setBlockUntilReadyTimeout(100).build();
+    private SplitClientConfig config = SplitClientConfig.builder().setBlockUntilReadyTimeout(100).flagSetsFilter(new ArrayList<>(
+            Arrays.asList("set1", "set2", "set3"))).build();
 
     @Before
     public void updateTelemetryStorage() {
@@ -97,8 +98,7 @@ public class SplitClientImplTest {
                 gates,
                 new EvaluatorImp(splitCacheConsumer, segmentCacheConsumer), TELEMETRY_STORAGE, TELEMETRY_STORAGE
         );
-
-        assertThat(client.getTreatment(null, "test1"), is(equalTo(Treatments.CONTROL)));
+        assertEquals(Treatments.CONTROL, client.getTreatment(null, "test1"));
 
         verifyZeroInteractions(splitCacheConsumer);
     }
@@ -126,8 +126,7 @@ public class SplitClientImplTest {
                 gates,
                 new EvaluatorImp(splitCacheConsumer, segmentCacheConsumer), TELEMETRY_STORAGE, TELEMETRY_STORAGE
         );
-
-        assertThat(client.getTreatment("adil@relateiq.com", null), is(equalTo(Treatments.CONTROL)));
+        assertEquals(Treatments.CONTROL, client.getTreatment("adil@relateiq.com", null));
 
         verifyZeroInteractions(splitCacheConsumer);
     }
@@ -148,7 +147,7 @@ public class SplitClientImplTest {
                 gates,
                 new EvaluatorImp(splitCacheConsumer, segmentCacheConsumer), TELEMETRY_STORAGE, TELEMETRY_STORAGE
         );
-        assertThat(client.getTreatment("adil@relateiq.com", "test1"), is(equalTo(Treatments.CONTROL)));
+        assertEquals(Treatments.CONTROL, client.getTreatment("adil@relateiq.com", "test1"));
 
         verify(splitCacheConsumer).get("test1");
     }
@@ -182,7 +181,7 @@ public class SplitClientImplTest {
         int numKeys = 5;
         for (int i = 0; i < numKeys; i++) {
             String randomKey = RandomStringUtils.random(10);
-            assertThat(client.getTreatment(randomKey, test), is(equalTo("on")));
+            Assert.assertEquals("on", client.getTreatment(randomKey, test));
         }
 
         verify(splitCacheConsumer, times(numKeys)).get(test);
@@ -214,13 +213,10 @@ public class SplitClientImplTest {
                 gates,
                 new EvaluatorImp(splitCacheConsumer, segmentCacheConsumer), TELEMETRY_STORAGE, TELEMETRY_STORAGE
         );
-
-
         String randomKey = RandomStringUtils.random(10);
         SplitResult result = client.getTreatmentWithConfig(randomKey, test);
-        assertThat(result.treatment(), is(equalTo(Treatments.ON)));
-        assertThat(result.config(), is(nullValue()));
-
+        assertEquals(Treatments.ON, result.treatment());
+        assertNull(result.config());
         verify(splitCacheConsumer).get(test);
     }
 
@@ -256,8 +252,8 @@ public class SplitClientImplTest {
         for (int i = 0; i < numKeys; i++) {
             Map<String, Object> attributes = new HashMap<>();
             String randomKey = RandomStringUtils.random(10);
-            assertThat(client.getTreatment(randomKey, test), is(equalTo("on")));
-            assertThat(client.getTreatmentWithConfig(randomKey, test, attributes).config(), is(equalTo(configurations.get("on"))));
+            assertEquals("on", client.getTreatment(randomKey, test));
+            assertEquals(configurations.get("on"), client.getTreatmentWithConfig(randomKey, test, attributes).config());
         }
 
         // Times 2 because we are calling getTreatment twice. Once for getTreatment and one for getTreatmentWithConfig
@@ -287,7 +283,7 @@ public class SplitClientImplTest {
                 new EvaluatorImp(splitCacheConsumer, segmentCacheConsumer), TELEMETRY_STORAGE, TELEMETRY_STORAGE
         );
 
-        assertThat(client.getTreatment("pato@codigo.com", test), is(equalTo(Treatments.OFF)));
+        assertEquals(Treatments.OFF, client.getTreatment("pato@codigo.com", test));
 
         verify(splitCacheConsumer).get(test);
     }
@@ -326,8 +322,8 @@ public class SplitClientImplTest {
         );
 
         SplitResult result = client.getTreatmentWithConfig("pato@codigo.com", test);
-        assertThat(result.treatment(), is(equalTo(Treatments.OFF)));
-        assertThat(result.config(), is(equalTo("{\"size\" : 30}")));
+        assertEquals(Treatments.OFF, result.treatment());
+        assertEquals("{\"size\" : 30}", result.config());
 
         verify(splitCacheConsumer).get(test);
     }
@@ -359,9 +355,9 @@ public class SplitClientImplTest {
                 new EvaluatorImp(splitCacheConsumer, segmentCacheConsumer), TELEMETRY_STORAGE, TELEMETRY_STORAGE
         );
 
-        assertThat(client.getTreatment("adil@codigo.com", test), is(equalTo("on")));
-        assertThat(client.getTreatment("pato@codigo.com", test), is(equalTo("off")));
-        assertThat(client.getTreatment("trevor@codigo.com", test), is(equalTo("on")));
+        assertEquals("on", client.getTreatment("adil@codigo.com", test));
+        assertEquals("off", client.getTreatment("pato@codigo.com", test));
+        assertEquals("on", client.getTreatment("adil@codigo.com", test));
 
         verify(splitCacheConsumer, times(3)).get(test);
         verify(TELEMETRY_STORAGE, times(3)).recordNonReadyUsage();
@@ -391,7 +387,7 @@ public class SplitClientImplTest {
                 new EvaluatorImp(splitCacheConsumer, segmentCacheConsumer), TELEMETRY_STORAGE, TELEMETRY_STORAGE
         );
 
-        assertThat(client.getTreatment("adil@codigo.com", test), is(equalTo(Treatments.OFF)));
+        assertEquals(Treatments.OFF, client.getTreatment("adil@codigo.com", test));
 
         verify(splitCacheConsumer).get(test);
     }
@@ -430,8 +426,8 @@ public class SplitClientImplTest {
         );
 
         SplitResult result = client.getTreatmentWithConfig("adil@codigo.com", test);
-        assertThat(result.treatment(), is(equalTo(Treatments.OFF)));
-        assertThat(result.config(), is(equalTo("{\"size\" : 30}")));
+        assertEquals(Treatments.OFF, result.treatment());
+        assertEquals("{\"size\" : 30}", result.config());
 
         verify(splitCacheConsumer).get(test);
     }
@@ -465,8 +461,8 @@ public class SplitClientImplTest {
                 new EvaluatorImp(splitCacheConsumer, segmentCacheConsumer), TELEMETRY_STORAGE, TELEMETRY_STORAGE
         );
 
-        assertThat(client.getTreatment("key", parent), is(equalTo(Treatments.ON)));
-        assertThat(client.getTreatment("key", dependent), is(equalTo(Treatments.ON)));
+        assertEquals(Treatments.ON, client.getTreatment("key", parent));
+        assertEquals(Treatments.ON, client.getTreatment("key", dependent));
     }
 
     @Test
@@ -498,8 +494,8 @@ public class SplitClientImplTest {
                 new EvaluatorImp(splitCacheConsumer, segmentCacheConsumer), TELEMETRY_STORAGE, TELEMETRY_STORAGE
         );
 
-        assertThat(client.getTreatment("key", parent), is(equalTo(Treatments.ON)));
-        assertThat(client.getTreatment("key", dependent), is(equalTo(Treatments.OFF)));
+        assertEquals(Treatments.ON, client.getTreatment("key", parent));
+        assertEquals(Treatments.OFF, client.getTreatment("key", dependent));
     }
 
     @Test
@@ -525,7 +521,7 @@ public class SplitClientImplTest {
                 new EvaluatorImp(splitCacheConsumer, segmentCacheConsumer), TELEMETRY_STORAGE, TELEMETRY_STORAGE
         );
 
-        assertThat(client.getTreatment("key", dependent), is(equalTo(Treatments.ON)));
+        assertEquals(Treatments.ON, client.getTreatment("key", dependent));
     }
 
     @Test
@@ -553,12 +549,11 @@ public class SplitClientImplTest {
                 new EvaluatorImp(splitCacheConsumer, segmentCacheConsumer), TELEMETRY_STORAGE, TELEMETRY_STORAGE
         );
 
-        assertThat(client.getTreatment("adil@codigo.com", test), is(equalTo("on")));
-        assertThat(client.getTreatment("adil@codigo.com", test, null), is(equalTo("on")));
-        assertThat(client.getTreatment("adil@codigo.com", test, ImmutableMap.<String, Object>of()), is(equalTo("on")));
-
-        assertThat(client.getTreatment("pato@codigo.com", test, ImmutableMap.<String, Object>of("age", 10)), is(equalTo("on")));
-        assertThat(client.getTreatment("pato@codigo.com", test, ImmutableMap.<String, Object>of("age", 9)), is(equalTo("off")));
+        assertEquals("on", client.getTreatment("adil@codigo.com", test));
+        assertEquals("on", client.getTreatment("adil@codigo.com", test, null));
+        assertEquals("on", client.getTreatment("adil@codigo.com", test, ImmutableMap.<String, Object>of()));
+        assertEquals("on", client.getTreatment("pato@codigo.com", test, ImmutableMap.<String, Object>of("age", 10)));
+        assertEquals("off", client.getTreatment("pato@codigo.com", test, ImmutableMap.<String, Object>of("age", 9)));
 
         verify(splitCacheConsumer, times(5)).get(test);
     }
@@ -587,12 +582,12 @@ public class SplitClientImplTest {
                 new EvaluatorImp(splitCacheConsumer, segmentCacheConsumer), TELEMETRY_STORAGE, TELEMETRY_STORAGE
         );
 
-        assertThat(client.getTreatment("adil@codigo.com", test), is(equalTo("off")));
-        assertThat(client.getTreatment("adil@codigo.com", test, null), is(equalTo("off")));
-        assertThat(client.getTreatment("adil@codigo.com", test, ImmutableMap.<String, Object>of()), is(equalTo("off")));
+        assertEquals("off", client.getTreatment("adil@codigo.com", test));
+        assertEquals("off", client.getTreatment("adil@codigo.com", test, null));
+        assertEquals("off", client.getTreatment("adil@codigo.com", test, ImmutableMap.<String, Object>of()));
 
-        assertThat(client.getTreatment("pato@codigo.com", test, ImmutableMap.<String, Object>of("age", 10)), is(equalTo("off")));
-        assertThat(client.getTreatment("pato@codigo.com", test, ImmutableMap.<String, Object>of("age", 0)), is(equalTo("on")));
+        assertEquals("off", client.getTreatment("pato@codigo.com", test, ImmutableMap.<String, Object>of("age", 10)));
+        assertEquals("on", client.getTreatment("pato@codigo.com", test, ImmutableMap.<String, Object>of("age", 0)));
 
         verify(splitCacheConsumer, times(5)).get(test);
     }
@@ -621,14 +616,13 @@ public class SplitClientImplTest {
                 new EvaluatorImp(splitCacheConsumer, segmentCacheConsumer), TELEMETRY_STORAGE, TELEMETRY_STORAGE
         );
 
-        assertThat(client.getTreatment("adil@codigo.com", test), is(equalTo("off")));
-        assertThat(client.getTreatment("adil@codigo.com", test, null), is(equalTo("off")));
-        assertThat(client.getTreatment("adil@codigo.com", test, ImmutableMap.<String, Object>of()), is(equalTo("off")));
-
-        assertThat(client.getTreatment("pato@codigo.com", test, ImmutableMap.<String, Object>of("age", 10)), is(equalTo("off")));
-        assertThat(client.getTreatment("pato@codigo.com", test, ImmutableMap.<String, Object>of("age", -20)), is(equalTo("on")));
-        assertThat(client.getTreatment("pato@codigo.com", test, ImmutableMap.<String, Object>of("age", 20)), is(equalTo("off")));
-        assertThat(client.getTreatment("pato@codigo.com", test, ImmutableMap.<String, Object>of("age", -21)), is(equalTo("off")));
+        assertEquals("off", client.getTreatment("adil@codigo.com", test));
+        assertEquals("off", client.getTreatment("adil@codigo.com", test, null));
+        assertEquals("off", client.getTreatment("adil@codigo.com", test, ImmutableMap.<String, Object>of()));
+        assertEquals("off", client.getTreatment("pato@codigo.com", test, ImmutableMap.<String, Object>of("age", 10)));
+        assertEquals("on", client.getTreatment("pato@codigo.com", test, ImmutableMap.<String, Object>of("age", -20)));
+        assertEquals("off", client.getTreatment("pato@codigo.com", test, ImmutableMap.<String, Object>of("age", 20)));
+        assertEquals("off", client.getTreatment("pato@codigo.com", test, ImmutableMap.<String, Object>of("age", -21)));
 
         verify(splitCacheConsumer, times(7)).get(test);
     }
@@ -658,16 +652,16 @@ public class SplitClientImplTest {
                 new EvaluatorImp(splitCacheConsumer ,segmentCacheConsumer), TELEMETRY_STORAGE, TELEMETRY_STORAGE
         );
 
-        assertThat(client.getTreatment("adil@codigo.com", test), is(equalTo("off")));
-        assertThat(client.getTreatment("adil@codigo.com", test, null), is(equalTo("off")));
-        assertThat(client.getTreatment("adil@codigo.com", test, ImmutableMap.<String, Object>of()), is(equalTo("off")));
+        assertEquals("off", client.getTreatment("adil@codigo.com", test));
+        assertEquals("off", client.getTreatment("adil@codigo.com", test, null));
 
-        assertThat(client.getTreatment("pato@codigo.com", test, ImmutableMap.<String, Object>of("products", Lists.newArrayList())), is(equalTo("off")));
-        assertThat(client.getTreatment("pato@codigo.com", test, ImmutableMap.<String, Object>of("products", Lists.newArrayList(""))), is(equalTo("off")));
-        assertThat(client.getTreatment("pato@codigo.com", test, ImmutableMap.<String, Object>of("products", Lists.newArrayList("talk"))), is(equalTo("off")));
-        assertThat(client.getTreatment("pato@codigo.com", test, ImmutableMap.<String, Object>of("products", Lists.newArrayList("sms"))), is(equalTo("on")));
-        assertThat(client.getTreatment("pato@codigo.com", test, ImmutableMap.<String, Object>of("products", Lists.newArrayList("sms", "video"))), is(equalTo("on")));
-        assertThat(client.getTreatment("pato@codigo.com", test, ImmutableMap.<String, Object>of("products", Lists.newArrayList("video"))), is(equalTo("on")));
+        assertEquals("off", client.getTreatment("adil@codigo.com", test, ImmutableMap.<String, Object>of()));
+        assertEquals("off", client.getTreatment("pato@codigo.com", test, ImmutableMap.<String, Object>of("products", Lists.newArrayList())));
+        assertEquals("off", client.getTreatment("pato@codigo.com", test, ImmutableMap.<String, Object>of("products", Lists.newArrayList(""))));
+        assertEquals("off", client.getTreatment("pato@codigo.com", test, ImmutableMap.<String, Object>of("products", Lists.newArrayList("talk"))));
+        assertEquals("on", client.getTreatment("pato@codigo.com", test, ImmutableMap.<String, Object>of("products", Lists.newArrayList("sms"))));
+        assertEquals("on", client.getTreatment("pato@codigo.com", test, ImmutableMap.<String, Object>of("products", Lists.newArrayList("sms", "video"))));
+        assertEquals("on", client.getTreatment("pato@codigo.com", test, ImmutableMap.<String, Object>of("products", Lists.newArrayList("video"))));
 
         verify(splitCacheConsumer, times(9)).get(test);
     }
@@ -702,7 +696,7 @@ public class SplitClientImplTest {
         );
 
         Map<String, Object> attributes = ImmutableMap.<String, Object>of("age", -20, "acv", "1000000");
-        assertThat(client.getTreatment("pato@codigo.com", test, attributes), is(equalTo("on")));
+        assertEquals("on", client.getTreatment("pato@codigo.com", test, attributes));
 
         ArgumentCaptor<List> impressionCaptor = ArgumentCaptor.forClass(List.class);
 
@@ -713,9 +707,9 @@ public class SplitClientImplTest {
         assertEquals(1, impressions.size());
         Impression impression = impressions.get(0);
 
-        assertThat(impression.appliedRule(), is(equalTo("foolabel")));
+        assertEquals("foolabel", impression.appliedRule());
 
-        assertThat(impression.attributes(), is(attributes));
+        assertEquals(attributes, impression.attributes());
     }
 
     @Test
@@ -802,7 +796,7 @@ public class SplitClientImplTest {
                 new EvaluatorImp(splitCacheConsumer, segmentCacheConsumer), TELEMETRY_STORAGE, TELEMETRY_STORAGE
         );
 
-        assertThat(client.getTreatment(key, test), is(equalTo(expected_treatment_on_or_off)));
+        assertEquals(expected_treatment_on_or_off, client.getTreatment(key, test));
 
         ArgumentCaptor<List> impressionCaptor = ArgumentCaptor.forClass(List.class);
 
@@ -810,7 +804,7 @@ public class SplitClientImplTest {
         assertNotNull(impressionCaptor.getValue());
         assertEquals(1, impressionCaptor.getValue().size());
         Impression impression = (Impression) impressionCaptor.getValue().get(0);
-        assertThat(impression.appliedRule(), is(equalTo(label)));
+        assertEquals(label, impression.appliedRule());
     }
 
     /**
@@ -854,11 +848,10 @@ public class SplitClientImplTest {
                 new EvaluatorImp(splitCacheConsumer, segmentCacheConsumer), TELEMETRY_STORAGE, TELEMETRY_STORAGE
         );
 
-        assertThat(client.getTreatment("pato@split.io", test), is(equalTo(Treatments.OFF)));
-
+        assertEquals(Treatments.OFF, client.getTreatment("pato@split.io", test));
         SplitResult result = client.getTreatmentWithConfig("pato@split.io", test);
-        assertThat(result.treatment(), is(equalTo(Treatments.OFF)));
-        assertThat(result.config(), is(equalTo("{\"size\" : 30}")));
+        assertEquals(Treatments.OFF, result.treatment());
+        assertEquals("{\"size\" : 30}", result.config());
 
         ArgumentCaptor<List> impressionCaptor = ArgumentCaptor.forClass(List.class);
         verify(impressionsManager, times(2)).track(impressionCaptor.capture());
@@ -866,7 +859,7 @@ public class SplitClientImplTest {
         assertNotNull(impressionCaptor.getValue());
         assertEquals(1, impressionCaptor.getValue().size());
         Impression impression = (Impression) impressionCaptor.getValue().get(0);
-        assertThat(impression.appliedRule(), is(equalTo("not in split")));
+        assertEquals("not in split", impression.appliedRule());
     }
 
 
@@ -900,8 +893,8 @@ public class SplitClientImplTest {
         Key bad_key = new Key("adil", "aijaz");
         Key good_key = new Key("aijaz", "adil");
 
-        assertThat(client.getTreatment(bad_key, test, Collections.<String, Object>emptyMap()), is(equalTo("off")));
-        assertThat(client.getTreatment(good_key, test, Collections.<String, Object>emptyMap()), is(equalTo("on")));
+        assertEquals("off", client.getTreatment(bad_key, test, Collections.<String, Object>emptyMap()));
+        assertEquals("on", client.getTreatment(good_key, test, Collections.<String, Object>emptyMap()));
 
         verify(splitCacheConsumer, times(2)).get(test);
     }
@@ -937,7 +930,7 @@ public class SplitClientImplTest {
 
         Map<String, Object> attributes = ImmutableMap.<String, Object>of("age", -20, "acv", "1000000");
 
-        assertThat(client.getTreatment("pato@codigo.com", test, attributes), is(equalTo("on")));
+        assertEquals("on", client.getTreatment("pato@codigo.com", test, attributes));
 
         ArgumentCaptor<List> impressionCaptor = ArgumentCaptor.forClass(List.class);
 
@@ -948,8 +941,8 @@ public class SplitClientImplTest {
         assertEquals(1, impressionCaptor.getValue().size());
         Impression impression = (Impression) impressionCaptor.getValue().get(0);
 
-        assertThat(impression.appliedRule(), is(equalTo("foolabel")));
-        assertThat(impression.attributes(), is(equalTo(attributes)));
+        assertEquals("foolabel", impression.appliedRule());
+        assertEquals(attributes, impression.attributes());
     }
 
     private Partition partition(String treatment, int size) {
@@ -1015,15 +1008,12 @@ public class SplitClientImplTest {
                 new EvaluatorImp(splitCacheConsumer, segmentCacheConsumer), TELEMETRY_STORAGE, TELEMETRY_STORAGE
         );
 
-        Assert.assertThat(client.track("validKey", "valid_traffic_type", "valid_event"),
-                org.hamcrest.Matchers.is(org.hamcrest.Matchers.equalTo(true)));
+        assertTrue(client.track("validKey", "valid_traffic_type", "valid_event"));
 
         String validEventSize = new String(new char[80]).replace('\0', 'a');
         String validKeySize = new String(new char[250]).replace('\0', 'a');
-        Assert.assertThat(client.track(validKeySize, "valid_traffic_type", validEventSize, 10),
-                org.hamcrest.Matchers.is(org.hamcrest.Matchers.equalTo(true)));
+        assertTrue(client.track(validKeySize, "valid_traffic_type", validEventSize, 10));
         verify(TELEMETRY_STORAGE, times(2)).recordLatency(Mockito.anyObject(), Mockito.anyLong());
-
     }
 
     @Test
@@ -1041,20 +1031,12 @@ public class SplitClientImplTest {
                 gates,
                 new EvaluatorImp(splitCacheConsumer, segmentCacheConsumer), TELEMETRY_STORAGE, TELEMETRY_STORAGE
         );
-
-        Assert.assertThat(client.track("validKey", "valid_traffic_type", ""),
-                org.hamcrest.Matchers.is(org.hamcrest.Matchers.equalTo(false)));
-
-        Assert.assertThat(client.track("validKey", "valid_traffic_type", null),
-                org.hamcrest.Matchers.is(org.hamcrest.Matchers.equalTo(false)));
-
-        Assert.assertThat(client.track("validKey", "valid_traffic_type", "invalid#char"),
-                org.hamcrest.Matchers.is(org.hamcrest.Matchers.equalTo(false)));
+        Assert.assertFalse(client.track("validKey", "valid_traffic_type", ""));
+        Assert.assertFalse(client.track("validKey", "valid_traffic_type", null));
+        Assert.assertFalse(client.track("validKey", "valid_traffic_type", "invalid#char"));
 
         String invalidEventSize = new String(new char[81]).replace('\0', 'a');
-        Assert.assertThat(client.track("validKey", "valid_traffic_type", invalidEventSize),
-                org.hamcrest.Matchers.is(org.hamcrest.Matchers.equalTo(false)));
-
+        Assert.assertFalse(client.track("validKey", "valid_traffic_type", invalidEventSize));
     }
 
     @Test
@@ -1073,11 +1055,8 @@ public class SplitClientImplTest {
                 new EvaluatorImp(splitCacheConsumer, segmentCacheConsumer), TELEMETRY_STORAGE, TELEMETRY_STORAGE
         );
 
-        Assert.assertThat(client.track("validKey", "", "valid"),
-                org.hamcrest.Matchers.is(org.hamcrest.Matchers.equalTo(false)));
-
-        Assert.assertThat(client.track("validKey", null, "valid"),
-                org.hamcrest.Matchers.is(org.hamcrest.Matchers.equalTo(false)));
+        Assert.assertFalse(client.track("validKey", "", "valid"));
+        Assert.assertFalse(client.track("validKey", null, "valid"));
     }
 
     @Test
@@ -1096,15 +1075,11 @@ public class SplitClientImplTest {
                 new EvaluatorImp(splitCacheConsumer, segmentCacheConsumer), TELEMETRY_STORAGE, TELEMETRY_STORAGE
         );
 
-        Assert.assertThat(client.track("", "valid_traffic_type", "valid"),
-                org.hamcrest.Matchers.is(org.hamcrest.Matchers.equalTo(false)));
-
-        Assert.assertThat(client.track(null, "valid_traffic_type", "valid"),
-                org.hamcrest.Matchers.is(org.hamcrest.Matchers.equalTo(false)));
+        Assert.assertFalse(client.track("", "valid_traffic_type", "valid"));
+        Assert.assertFalse(client.track(null, "valid_traffic_type", "valid"));
 
         String invalidKeySize = new String(new char[251]).replace('\0', 'a');
-        Assert.assertThat(client.track(invalidKeySize, "valid_traffic_type", "valid"),
-                org.hamcrest.Matchers.is(org.hamcrest.Matchers.equalTo(false)));
+        Assert.assertFalse(client.track(invalidKeySize, "valid_traffic_type", "valid"));
     }
 
     @Test
@@ -1129,51 +1104,36 @@ public class SplitClientImplTest {
                 gates,
                 new EvaluatorImp(splitCacheConsumer, segmentCacheConsumer), TELEMETRY_STORAGE, TELEMETRY_STORAGE
         );
-
-        Assert.assertThat(client.getTreatment("valid", "split"),
-                org.hamcrest.Matchers.is(org.hamcrest.Matchers.not(Treatments.CONTROL)));
-
-        Assert.assertThat(client.getTreatment("", "split"),
-                org.hamcrest.Matchers.is(org.hamcrest.Matchers.equalTo(Treatments.CONTROL)));
-
-        Assert.assertThat(client.getTreatment(null, "split"),
-                org.hamcrest.Matchers.is(org.hamcrest.Matchers.equalTo(Treatments.CONTROL)));
+        Assert.assertNotEquals(Treatments.CONTROL, client.getTreatment("valid", "split"));
+        assertEquals(Treatments.CONTROL, client.getTreatment("", "split"));
+        assertEquals(Treatments.CONTROL, client.getTreatment(null, "split"));
 
         String invalidKeySize = new String(new char[251]).replace('\0', 'a');
-        Assert.assertThat(client.getTreatment(invalidKeySize, "split"),
-                org.hamcrest.Matchers.is(org.hamcrest.Matchers.equalTo(Treatments.CONTROL)));
+        assertEquals(Treatments.CONTROL, client.getTreatment(invalidKeySize, "split"));
 
-        Assert.assertThat(client.getTreatment("valid", ""),
-                org.hamcrest.Matchers.is(org.hamcrest.Matchers.equalTo(Treatments.CONTROL)));
-
-        Assert.assertThat(client.getTreatment("valid", null),
-                org.hamcrest.Matchers.is(org.hamcrest.Matchers.equalTo(Treatments.CONTROL)));
+        assertEquals(Treatments.CONTROL, client.getTreatment("valid", ""));
+        assertEquals(Treatments.CONTROL, client.getTreatment("valid", null));
 
         String matchingKey = new String(new char[250]).replace('\0', 'a');
         String bucketingKey = new String(new char[250]).replace('\0', 'a');
         Key key = new Key(matchingKey, bucketingKey);
-        Assert.assertThat(client.getTreatment(key, "split", null),
-                org.hamcrest.Matchers.is(org.hamcrest.Matchers.not(Treatments.CONTROL)));
+        Assert.assertNotEquals(Treatments.CONTROL, client.getTreatment(key, "split", null));
 
         key = new Key("valid", "");
-        Assert.assertThat(client.getTreatment(key, "split", null),
-                org.hamcrest.Matchers.is(org.hamcrest.Matchers.equalTo(Treatments.CONTROL)));
+        assertEquals(Treatments.CONTROL, client.getTreatment(key, "split", null));
 
         key = new Key("", "valid");
-        Assert.assertThat(client.getTreatment(key, "split", null),
-                org.hamcrest.Matchers.is(org.hamcrest.Matchers.equalTo(Treatments.CONTROL)));
+        assertEquals(Treatments.CONTROL, client.getTreatment(key, "split", null));
 
         matchingKey = new String(new char[251]).replace('\0', 'a');
         bucketingKey = new String(new char[250]).replace('\0', 'a');
         key = new Key(matchingKey, bucketingKey);
-        Assert.assertThat(client.getTreatment(key, "split", null),
-                org.hamcrest.Matchers.is(org.hamcrest.Matchers.is(Treatments.CONTROL)));
+        assertEquals(Treatments.CONTROL, client.getTreatment(key, "split", null));
 
         matchingKey = new String(new char[250]).replace('\0', 'a');
         bucketingKey = new String(new char[251]).replace('\0', 'a');
         key = new Key(matchingKey, bucketingKey);
-        Assert.assertThat(client.getTreatment(key, "split", null),
-                org.hamcrest.Matchers.is(org.hamcrest.Matchers.is(Treatments.CONTROL)));
+        assertEquals(Treatments.CONTROL, client.getTreatment(key, "split", null));
     }
 
     @Test
@@ -1199,57 +1159,53 @@ public class SplitClientImplTest {
 
         properties.put("ok_property", 123);
         properties.put("some_property", new Object());
-        Assert.assertThat(client.track("key1", "user", "purchase", properties),
-                org.hamcrest.Matchers.is(true));
+        assertTrue(client.track("key1", "user", "purchase", properties));
         verify(eventClientMock).track(eventArgumentCaptor.capture(), Mockito.anyInt());
         Event captured = eventArgumentCaptor.getValue();
-        Assert.assertThat(captured.properties.size(), org.hamcrest.Matchers.is(2));
-        Assert.assertThat((Integer) captured.properties.get("ok_property"), org.hamcrest.Matchers.is(123));
-        Assert.assertThat(captured.properties.get("some_property"), org.hamcrest.Matchers.nullValue());
+        assertEquals(2, captured.properties.size());
+        assertEquals(123, captured.properties.get("ok_property"));
+        assertNull(captured.properties.get("some_property"));
 
         properties.clear();
         Mockito.reset(eventClientMock);
         Mockito.when(eventClientMock.track((Event) Mockito.any(), Mockito.anyInt())).thenReturn(true);
         properties.put("ok_property", 123);
         properties.put("some_property", Arrays.asList(1, 2, 3));
-        Assert.assertThat(client.track("key1", "user", "purchase", properties),
-                org.hamcrest.Matchers.is(true));
+        assertTrue(client.track("key1", "user", "purchase", properties));
         eventArgumentCaptor = ArgumentCaptor.forClass(Event.class);
         verify(eventClientMock).track(eventArgumentCaptor.capture(), Mockito.anyInt());
         captured = eventArgumentCaptor.getValue();
-        Assert.assertThat(captured.properties.size(), org.hamcrest.Matchers.is(2));
-        Assert.assertThat((Integer) captured.properties.get("ok_property"), org.hamcrest.Matchers.is(123));
-        Assert.assertThat(captured.properties.get("some_property"), org.hamcrest.Matchers.nullValue());
+        assertEquals(2, captured.properties.size());
+        assertEquals(123, captured.properties.get("ok_property"));
+        assertNull(captured.properties.get("some_property"));
 
         properties.clear();
         Mockito.reset(eventClientMock);
         Mockito.when(eventClientMock.track((Event) Mockito.any(), Mockito.anyInt())).thenReturn(true);
         properties.put("ok_property", 123);
         properties.put("some_property", new HashMap<String, Number>());
-        Assert.assertThat(client.track("key1", "user", "purchase", properties),
-                org.hamcrest.Matchers.is(true));
+        assertTrue(client.track("key1", "user", "purchase", properties));
         eventArgumentCaptor = ArgumentCaptor.forClass(Event.class);
         verify(eventClientMock).track(eventArgumentCaptor.capture(), Mockito.anyInt());
         captured = eventArgumentCaptor.getValue();
-        Assert.assertThat(captured.properties.size(), org.hamcrest.Matchers.is(2));
-        Assert.assertThat((Integer) captured.properties.get("ok_property"), org.hamcrest.Matchers.is(123));
-        Assert.assertThat(captured.properties.get("some_property"), org.hamcrest.Matchers.nullValue());
+        assertEquals(2, captured.properties.size());
+        assertEquals(123, captured.properties.get("ok_property"));
+        assertNull(captured.properties.get("some_property"));
 
         properties.clear();
         Mockito.reset(eventClientMock);
         Mockito.when(eventClientMock.track((Event) Mockito.any(), Mockito.anyInt())).thenReturn(true);
         properties.put("ok_property", 123);
-        Assert.assertThat(client.track("key1", "user", "purchase", 123, properties),
-                org.hamcrest.Matchers.is(true));
+        assertTrue(client.track("key1", "user", "purchase", 123, properties));
         eventArgumentCaptor = ArgumentCaptor.forClass(Event.class);
         verify(eventClientMock).track(eventArgumentCaptor.capture(), Mockito.anyInt());
         captured = eventArgumentCaptor.getValue();
-        Assert.assertThat(captured.value, org.hamcrest.Matchers.is(123.0));
-        Assert.assertThat(captured.trafficTypeName,org.hamcrest.Matchers.is("user"));
-        Assert.assertThat(captured.eventTypeId,org.hamcrest.Matchers.is("purchase"));
-        Assert.assertThat(captured.key,org.hamcrest.Matchers.is("key1"));
-        Assert.assertThat(captured.properties.size(), org.hamcrest.Matchers.is(1));
-        Assert.assertThat((Integer) captured.properties.get("ok_property"), org.hamcrest.Matchers.is(123));
+        assertEquals(123.0, captured.value, 0);
+        assertEquals("user", captured.trafficTypeName);
+        assertEquals("purchase", captured.eventTypeId);
+        assertEquals("key1", captured.key);
+        assertEquals(1, captured.properties.size());
+        assertEquals(123, captured.properties.get("ok_property"));
 
         properties.clear();
         Mockito.reset(eventClientMock);
@@ -1260,18 +1216,17 @@ public class SplitClientImplTest {
         properties.put("prop4", "something");
         properties.put("prop5", true);
         properties.put("prop6", null);
-        Assert.assertThat(client.track("key1", "user", "purchase", properties),
-                org.hamcrest.Matchers.is(true));
+        assertTrue(client.track("key1", "user", "purchase", properties));
         eventArgumentCaptor = ArgumentCaptor.forClass(Event.class);
         verify(eventClientMock).track(eventArgumentCaptor.capture(), Mockito.anyInt());
         captured = eventArgumentCaptor.getValue();
-        Assert.assertThat(captured.properties.size(), org.hamcrest.Matchers.is(6));
-        Assert.assertThat((Integer) captured.properties.get("prop1"), org.hamcrest.Matchers.is(1));
-        Assert.assertThat((Long) captured.properties.get("prop2"), org.hamcrest.Matchers.is(2L));
-        Assert.assertThat((Double) captured.properties.get("prop3"), org.hamcrest.Matchers.is(7.56));
-        Assert.assertThat((String) captured.properties.get("prop4"), org.hamcrest.Matchers.is("something"));
-        Assert.assertThat((Boolean) captured.properties.get("prop5"), org.hamcrest.Matchers.is(true));
-        Assert.assertThat(captured.properties.get("prop6"), org.hamcrest.Matchers.nullValue());
+        assertEquals(6, captured.properties.size());
+        assertEquals(1, captured.properties.get("prop1"));
+        assertEquals(2L, captured.properties.get("prop2"));
+        assertEquals(7.56, captured.properties.get("prop3"));
+        assertEquals("something", captured.properties.get("prop4"));
+        assertTrue((Boolean) captured.properties.get("prop5"));
+        assertNull(captured.properties.get("prop6"));
 
         // 110 props of 300 bytes should be enough to make the event fail.
         properties.clear();
@@ -1279,7 +1234,7 @@ public class SplitClientImplTest {
             properties.put(new String(new char[300]).replace('\0', 'a') + i ,
                     new String(new char[300]).replace('\0', 'a') + i);
         }
-        Assert.assertThat(client.track("key1", "user", "purchase", properties), org.hamcrest.Matchers.is(false));
+        Assert.assertFalse(client.track("key1", "user", "purchase", properties));
     }
 
     @Test
@@ -1321,19 +1276,13 @@ public class SplitClientImplTest {
                 new EvaluatorImp(splitCacheConsumer, segmentCacheConsumer), TELEMETRY_STORAGE, TELEMETRY_STORAGE
         );
 
-        Assert.assertThat(client.getTreatment("valid", "split"),
-                org.hamcrest.Matchers.is(org.hamcrest.Matchers.not(Treatments.CONTROL)));
-
-        Assert.assertThat(client.track("validKey", "valid_traffic_type", "valid_event"),
-                org.hamcrest.Matchers.is(org.hamcrest.Matchers.equalTo(true)));
+        assertEquals(Treatments.ON, client.getTreatment("valid", "split"));
+        assertTrue(client.track("validKey", "valid_traffic_type", "valid_event"));
 
         client.destroy();
 
-        Assert.assertThat(client.getTreatment("valid", "split"),
-                org.hamcrest.Matchers.is(org.hamcrest.Matchers.equalTo(Treatments.CONTROL)));
-
-        Assert.assertThat(client.track("validKey", "valid_traffic_type", "valid_event"),
-                org.hamcrest.Matchers.is(org.hamcrest.Matchers.equalTo(false)));
+        assertEquals(Treatments.CONTROL, client.getTreatment("valid", "split"));
+        Assert.assertFalse(client.track("validKey", "valid_traffic_type", "valid_event"));
     }
 
     @Test
@@ -1371,8 +1320,8 @@ public class SplitClientImplTest {
             Map<String, Object> attributes = new HashMap<>();
             String randomKey = RandomStringUtils.random(10);
             Key key = new Key(randomKey, "BucketingKey");
-            assertThat(client.getTreatment(randomKey, test), is(equalTo("on")));
-            assertThat(client.getTreatmentWithConfig(key, test, attributes).config(), is(equalTo(configurations.get("on"))));
+            assertEquals("on", client.getTreatment(randomKey, test));
+            assertEquals("{\"size\" : 30}", client.getTreatmentWithConfig(key, test, attributes).config());
         }
 
         // Times 2 because we are calling getTreatment twice. Once for getTreatment and one for getTreatmentWithConfig
@@ -1432,8 +1381,6 @@ public class SplitClientImplTest {
                 gates,
                 new EvaluatorImp(splitCacheConsumer, segmentCacheConsumer), TELEMETRY_STORAGE, TELEMETRY_STORAGE
         );
-
-
         assertEquals(Treatments.CONTROL, client.getTreatments(null, Collections.singletonList("test1")).get("test1"));
 
         verifyZeroInteractions(splitCacheConsumer);
@@ -1463,7 +1410,6 @@ public class SplitClientImplTest {
                 gates,
                 new EvaluatorImp(splitCacheConsumer, segmentCacheConsumer), TELEMETRY_STORAGE, TELEMETRY_STORAGE
         );
-
         assertEquals(0, client.getTreatments("key", null).size());
 
         verifyZeroInteractions(splitCacheConsumer);
@@ -1492,8 +1438,6 @@ public class SplitClientImplTest {
 
         verify(splitCacheConsumer).fetchMany(anyList());
     }
-
-
 
     @Test
     public void getTreatments_works() {
@@ -1548,8 +1492,6 @@ public class SplitClientImplTest {
                 gates,
                 new EvaluatorImp(splitCacheConsumer, segmentCacheConsumer), TELEMETRY_STORAGE, TELEMETRY_STORAGE
         );
-
-
         Map<String, String> result = client.getTreatments("key", new ArrayList<>());
         assertNotNull(result);
         assertTrue(result.isEmpty());
@@ -1609,13 +1551,11 @@ public class SplitClientImplTest {
                 gates,
                 new EvaluatorImp(splitCacheConsumer, segmentCacheConsumer), TELEMETRY_STORAGE, TELEMETRY_STORAGE
         );
-
         Map<String, String> result = client.getTreatments("anyKey", Arrays.asList(test, test2));
         assertNotNull(result);
         assertEquals(2, result.size());
         assertEquals("on", result.get(test));
         assertEquals("on", result.get(test2));
-
 
         verify(splitCacheConsumer, times(1)).fetchMany(anyList());
         verify(TELEMETRY_STORAGE, times(1)).recordLatency(Mockito.anyObject(), Mockito.anyLong());
@@ -1654,7 +1594,6 @@ public class SplitClientImplTest {
         assertEquals("on", result.get(test));
         assertEquals("control", result.get(test2));
 
-
         verify(splitCacheConsumer, times(1)).fetchMany(anyList());
         verify(TELEMETRY_STORAGE, times(1)).recordLatency(Mockito.anyObject(), Mockito.anyLong());
     }
@@ -1691,7 +1630,6 @@ public class SplitClientImplTest {
                 gates,
                 new EvaluatorImp(splitCacheConsumer, segmentCacheConsumer), TELEMETRY_STORAGE, TELEMETRY_STORAGE
         );
-
         Map<String, Object> attributes = new HashMap<>();
         Map<String, SplitResult> result = client.getTreatmentsWithConfig("randomKey", Arrays.asList(test, test2, "", null), attributes);
         assertEquals(2, result.size());
@@ -1699,6 +1637,225 @@ public class SplitClientImplTest {
         assertNull(result.get(test2).config());
         assertEquals("control", result.get(test2).treatment());
 
+        verify(splitCacheConsumer, times(1)).fetchMany(anyList());
+    }
+
+    @Test
+    public void testTreatmentsByFlagSet() {
+        String test = "test1";
+
+        ParsedCondition rollOutToEveryone = ParsedCondition.createParsedConditionForTests(CombiningMatcher.of(new AllKeysMatcher()),
+                Lists.newArrayList(partition("on", 100)));
+        List<ParsedCondition> conditions = Lists.newArrayList(rollOutToEveryone);
+        ParsedSplit parsedSplit = ParsedSplit.createParsedSplitForTests(test, 123, false, Treatments.OFF, conditions,
+                null, 1, 1, new HashSet<>(Arrays.asList("set1", "set2")));
+
+        SDKReadinessGates gates = mock(SDKReadinessGates.class);
+        SplitCacheConsumer splitCacheConsumer = mock(SplitCacheConsumer.class);
+        SegmentCacheConsumer segmentCacheConsumer = mock(SegmentCacheConsumer.class);
+        Map<String, ParsedSplit> fetchManyResult = new HashMap<>();
+        fetchManyResult.put(test, parsedSplit);
+        when(splitCacheConsumer.fetchMany(new ArrayList<>(Arrays.asList(test)))).thenReturn(fetchManyResult);
+        List<String> sets = new ArrayList<>(Arrays.asList("set1"));
+        Map<String, HashSet<String>> flagsBySets = new HashMap<>();
+        flagsBySets.put("set1", new HashSet<>(Arrays.asList(test)));
+        when(splitCacheConsumer.getNamesByFlagSets(sets)).thenReturn(flagsBySets);
+        when(gates.isSDKReady()).thenReturn(true);
+
+        SplitClientImpl client = new SplitClientImpl(
+                mock(SplitFactory.class),
+                splitCacheConsumer,
+                new ImpressionsManager.NoOpImpressionsManager(),
+                NoopEventsStorageImp.create(),
+                config,
+                gates,
+                new EvaluatorImp(splitCacheConsumer, segmentCacheConsumer), TELEMETRY_STORAGE, TELEMETRY_STORAGE
+        );
+
+        int numKeys = 5;
+        Map<String, String> getTreatmentResult;
+        for (int i = 0; i < numKeys; i++) {
+            String randomKey = RandomStringUtils.random(10);
+            getTreatmentResult = client.getTreatmentsByFlagSet(randomKey, "set1", null);
+            assertEquals("on", getTreatmentResult.get(test));
+        }
+        verify(splitCacheConsumer, times(numKeys)).fetchMany(new ArrayList<>(Arrays.asList(test)));
+        verify(TELEMETRY_STORAGE, times(5)).recordLatency(Mockito.anyObject(), Mockito.anyLong());
+    }
+
+    @Test
+    public void testTreatmentsByFlagSetInvalid() {
+        String test = "test1";
+
+        ParsedCondition rollOutToEveryone = ParsedCondition.createParsedConditionForTests(CombiningMatcher.of(new AllKeysMatcher()),
+                Lists.newArrayList(partition("on", 100)));
+        List<ParsedCondition> conditions = Lists.newArrayList(rollOutToEveryone);
+        ParsedSplit parsedSplit = ParsedSplit.createParsedSplitForTests(test, 123, false, Treatments.OFF, conditions,
+                null, 1, 1, new HashSet<>(Arrays.asList("set1", "set2")));
+
+        SDKReadinessGates gates = mock(SDKReadinessGates.class);
+        SplitCacheConsumer splitCacheConsumer = mock(SplitCacheConsumer.class);
+        SegmentCacheConsumer segmentCacheConsumer = mock(SegmentCacheConsumer.class);
+        List<String> sets = new ArrayList<>();
+        when(gates.isSDKReady()).thenReturn(true);
+
+        SplitClientImpl client = new SplitClientImpl(
+                mock(SplitFactory.class),
+                splitCacheConsumer,
+                new ImpressionsManager.NoOpImpressionsManager(),
+                NoopEventsStorageImp.create(),
+                config,
+                gates,
+                new EvaluatorImp(splitCacheConsumer, segmentCacheConsumer), TELEMETRY_STORAGE, TELEMETRY_STORAGE
+        );
+        assertTrue(client.getTreatmentsByFlagSet(RandomStringUtils.random(10), "", null).isEmpty());
+    }
+
+    @Test
+    public void testTreatmentsByFlagSets() {
+        String test = "test1";
+        String test2 = "test2";
+
+        ParsedCondition rollOutToEveryone = ParsedCondition.createParsedConditionForTests(CombiningMatcher.of(new AllKeysMatcher()),
+                Lists.newArrayList(partition("on", 100)));
+        List<ParsedCondition> conditions = Lists.newArrayList(rollOutToEveryone);
+        ParsedSplit parsedSplit = ParsedSplit.createParsedSplitForTests(test, 123, false, Treatments.OFF, conditions,
+                null, 1, 1, new HashSet<>(Arrays.asList("set1", "set2")));
+        ParsedSplit parsedSplit2 = ParsedSplit.createParsedSplitForTests(test2, 123, false, Treatments.OFF, conditions,
+                null, 1, 1, new HashSet<>(Arrays.asList("set3", "set4")));
+
+        SDKReadinessGates gates = mock(SDKReadinessGates.class);
+        SplitCacheConsumer splitCacheConsumer = mock(SplitCacheConsumer.class);
+        SegmentCacheConsumer segmentCacheConsumer = mock(SegmentCacheConsumer.class);
+
+        Map<String, ParsedSplit> fetchManyResult = new HashMap<>();
+        fetchManyResult.put(test, parsedSplit);
+        fetchManyResult.put(test2, parsedSplit2);
+        when(splitCacheConsumer.fetchMany(new ArrayList<>(Arrays.asList(test2, test)))).thenReturn(fetchManyResult);
+
+        List<String> sets = new ArrayList<>(Arrays.asList("set3", "set1"));
+        Map<String, HashSet<String>> flagsBySets = new HashMap<>();
+        flagsBySets.put("set1", new HashSet<>(Arrays.asList(test)));
+        flagsBySets.put("set3", new HashSet<>(Arrays.asList(test2)));
+
+        when(splitCacheConsumer.getNamesByFlagSets(sets)).thenReturn(flagsBySets);
+        when(gates.isSDKReady()).thenReturn(true);
+
+        SplitClientImpl client = new SplitClientImpl(
+                mock(SplitFactory.class),
+                splitCacheConsumer,
+                new ImpressionsManager.NoOpImpressionsManager(),
+                NoopEventsStorageImp.create(),
+                config,
+                gates,
+                new EvaluatorImp(splitCacheConsumer, segmentCacheConsumer), TELEMETRY_STORAGE, TELEMETRY_STORAGE
+        );
+        int numKeys = 5;
+        Map<String, String> getTreatmentResult;
+        for (int i = 0; i < numKeys; i++) {
+            String randomKey = RandomStringUtils.random(10);
+            getTreatmentResult = client.getTreatmentsByFlagSets(randomKey, Arrays.asList("set1", "set3"), null);
+            assertEquals("on", getTreatmentResult.get(test));
+            assertEquals("on", getTreatmentResult.get(test2));
+        }
+        verify(splitCacheConsumer, times(numKeys)).fetchMany(new ArrayList<>(Arrays.asList(test2, test)));
+        verify(TELEMETRY_STORAGE, times(5)).recordLatency(Mockito.anyObject(), Mockito.anyLong());
+    }
+
+    @Test
+    public void treatments_worksAndHasConfigFlagSet() {
+        String test = "test1";
+        String test2 = "test2";
+
+        ParsedCondition rollOutToEveryone = ParsedCondition.createParsedConditionForTests(CombiningMatcher.of(new AllKeysMatcher()), Lists.newArrayList(partition("on", 100)));
+        List<ParsedCondition> conditions = Lists.newArrayList(rollOutToEveryone);
+
+        // Add config for only one treatment
+        Map<String, String> configurations = new HashMap<>();
+        configurations.put(Treatments.ON, "{\"size\" : 30}");
+        configurations.put(Treatments.CONTROL, "{\"size\" : 30}");
+
+
+        ParsedSplit parsedSplit = ParsedSplit.createParsedSplitForTests(test, 123, false, Treatments.OFF, conditions,
+                null, 1, 1, configurations, new HashSet<>(Arrays.asList("set1")));
+        Map<String, ParsedSplit> parsedSplits = new HashMap<>();
+        parsedSplits.put(test, parsedSplit);
+
+        SplitCacheConsumer splitCacheConsumer = mock(SplitCacheConsumer.class);
+        SegmentCacheConsumer segmentCacheConsumer = mock(SegmentCacheConsumer.class);
+        when(splitCacheConsumer.fetchMany(anyList())).thenReturn(parsedSplits);
+
+        List<String> sets = new ArrayList<>(Arrays.asList("set1"));
+        Map<String, HashSet<String>> flagsBySets = new HashMap<>();
+        flagsBySets.put("set1", new HashSet<>(Arrays.asList(test, test2)));
+        when(splitCacheConsumer.getNamesByFlagSets(sets)).thenReturn(flagsBySets);
+
+        SDKReadinessGates gates = mock(SDKReadinessGates.class);
+
+        SplitClientImpl client = new SplitClientImpl(
+                mock(SplitFactory.class),
+                splitCacheConsumer,
+                new ImpressionsManager.NoOpImpressionsManager(),
+                NoopEventsStorageImp.create(),
+                config,
+                gates,
+                new EvaluatorImp(splitCacheConsumer, segmentCacheConsumer), TELEMETRY_STORAGE, TELEMETRY_STORAGE
+        );
+        Map<String, Object> attributes = new HashMap<>();
+        Map<String, SplitResult> result = client.getTreatmentsWithConfigByFlagSet("randomKey", "set1", attributes);
+        assertEquals(2, result.size());
+        assertEquals(configurations.get("on"), result.get(test).config());
+        assertNull(result.get(test2).config());
+        assertEquals("control", result.get(test2).treatment());
+
+        verify(splitCacheConsumer, times(1)).fetchMany(anyList());
+    }
+
+    @Test
+    public void treatments_worksAndHasConfigFlagSets() {
+        String test = "test1";
+        String test2 = "test2";
+
+        ParsedCondition rollOutToEveryone = ParsedCondition.createParsedConditionForTests(CombiningMatcher.of(new AllKeysMatcher()), Lists.newArrayList(partition("on", 100)));
+        List<ParsedCondition> conditions = Lists.newArrayList(rollOutToEveryone);
+
+        // Add config for only one treatment
+        Map<String, String> configurations = new HashMap<>();
+        configurations.put(Treatments.ON, "{\"size\" : 30}");
+        configurations.put(Treatments.CONTROL, "{\"size\" : 30}");
+
+
+        ParsedSplit parsedSplit = ParsedSplit.createParsedSplitForTests(test, 123, false, Treatments.OFF, conditions,
+                null, 1, 1, configurations, new HashSet<>(Arrays.asList("set1")));
+        Map<String, ParsedSplit> parsedSplits = new HashMap<>();
+        parsedSplits.put(test, parsedSplit);
+
+        SplitCacheConsumer splitCacheConsumer = mock(SplitCacheConsumer.class);
+        SegmentCacheConsumer segmentCacheConsumer = mock(SegmentCacheConsumer.class);
+        when(splitCacheConsumer.fetchMany(anyList())).thenReturn(parsedSplits);
+
+        List<String> sets = new ArrayList<>(Arrays.asList("set1"));
+        Map<String, HashSet<String>> flagsBySets = new HashMap<>();
+        flagsBySets.put("set1", new HashSet<>(Arrays.asList(test, test2)));
+        when(splitCacheConsumer.getNamesByFlagSets(sets)).thenReturn(flagsBySets);
+
+        SDKReadinessGates gates = mock(SDKReadinessGates.class);
+
+        SplitClientImpl client = new SplitClientImpl(
+                mock(SplitFactory.class),
+                splitCacheConsumer,
+                new ImpressionsManager.NoOpImpressionsManager(),
+                NoopEventsStorageImp.create(),
+                config,
+                gates,
+                new EvaluatorImp(splitCacheConsumer, segmentCacheConsumer), TELEMETRY_STORAGE, TELEMETRY_STORAGE
+        );
+        Map<String, Object> attributes = new HashMap<>();
+        Map<String, SplitResult> result = client.getTreatmentsWithConfigByFlagSets("randomKey", new ArrayList<>(Arrays.asList("set1")), attributes);
+        assertEquals(2, result.size());
+        assertEquals(configurations.get("on"), result.get(test).config());
+        assertNull(result.get(test2).config());
+        assertEquals("control", result.get(test2).treatment());
 
         verify(splitCacheConsumer, times(1)).fetchMany(anyList());
     }
