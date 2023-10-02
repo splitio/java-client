@@ -38,6 +38,12 @@ public class UserCustomTelemetryAdapterProducerTest {
     }
 
     @Test
+    public void testRecordExceptionTreatmentByFlagSet() {
+        _userCustomTelemetryAdapterProducer.recordException(MethodEnum.TREATMENTS_BY_FLAG_SET);
+        Mockito.verify(_userStorageWrapper, Mockito.times(1)).hIncrement(Mockito.anyString(), Mockito.anyString(), Mockito.anyLong());
+    }
+
+    @Test
     public void testRecordException() {
         _userCustomTelemetryAdapterProducer.recordException(MethodEnum.TRACK);
         Mockito.verify(_userStorageWrapper, Mockito.times(1)).hIncrement(Mockito.anyString(), Mockito.anyString(), Mockito.anyLong());

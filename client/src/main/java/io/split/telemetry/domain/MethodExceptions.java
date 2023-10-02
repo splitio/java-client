@@ -32,75 +32,75 @@ public class MethodExceptions {
     @SerializedName(FIELD_TRACK)
     private long _track;
 
-    public long get_treatment() {
+    public long getTreatment() {
         return _treatment;
     }
 
-    public void set_treatment(long _treatment) {
-        this._treatment = _treatment;
+    public void setTreatment(long treatment) {
+        this._treatment = treatment;
     }
 
-    public long get_treatments() {
+    public long getTreatments() {
         return _treatments;
     }
 
-    public void set_treatments(long _treatments) {
-        this._treatments = _treatments;
+    public void setTreatments(long treatments) {
+        this._treatments = treatments;
     }
 
-    public long get_treatmentsWithConfig() {
+    public long getTreatmentsWithConfig() {
         return _treatmentsWithConfig;
     }
 
-    public void set_treatmentsWithConfig(long _treatmentsWithConfig) {
-        this._treatmentsWithConfig = _treatmentsWithConfig;
+    public void setTreatmentsWithConfig(long treatmentsWithConfig) {
+        this._treatmentsWithConfig = treatmentsWithConfig;
     }
 
-    public long get_treatmentWithConfig() {
+    public long getTreatmentWithConfig() {
         return _treatmentWithConfig;
     }
 
-    public void set_treatmentWithConfig(long _treatmentWithConfig) {
-        this._treatmentWithConfig = _treatmentWithConfig;
+    public void setTreatmentWithConfig(long treatmentWithConfig) {
+        this._treatmentWithConfig = treatmentWithConfig;
     }
 
-    public long get_track() {
+    public long getTrack() {
         return _track;
     }
 
-    public void set_track(long _track) {
-        this._track = _track;
+    public void setTrack(long track) {
+        this._track = track;
     }
 
-    public long get_treatmentByFlagSet() {
+    public long getTreatmentByFlagSet() {
         return _treatmentByFlagSet;
     }
 
-    public long get_treatmentByFlagSets() {
+    public long getTreatmentByFlagSets() {
         return _treatmentByFlagSets;
     }
 
-    public long get_treatmentWithConfigByFlagSet() {
+    public long getTreatmentWithConfigByFlagSet() {
         return _treatmentWithConfigByFlagSet;
     }
 
-    public long get_treatmentWithConfigByFlagSets() {
+    public long getTreatmentWithConfigByFlagSets() {
         return _treatmentWithConfigByFlagSets;
     }
 
-    public void set_treatmentByFlagSet(Long _treatmentByFlagSet) {
-        this._treatmentByFlagSet = _treatmentByFlagSet;
+    public void setTreatmentByFlagSet(Long treatmentByFlagSet) {
+        this._treatmentByFlagSet = treatmentByFlagSet;
     }
 
-    public void set_treatmentByFlagSets(Long _treatmentByFlagSets) {
-        this._treatmentByFlagSets = _treatmentByFlagSets;
+    public void setTreatmentByFlagSets(Long treatmentByFlagSets) {
+        this._treatmentByFlagSets = treatmentByFlagSets;
     }
 
-    public void set_treatmentWithConfigByFlagSet(Long _treatmentWithConfigByFlagSet) {
-        this._treatmentWithConfigByFlagSet = _treatmentWithConfigByFlagSet;
+    public void setTreatmentWithConfigByFlagSet(Long treatmentWithConfigByFlagSet) {
+        this._treatmentWithConfigByFlagSet = treatmentWithConfigByFlagSet;
     }
 
-    public void set_treatmentWithConfigByFlagSets(Long _treatmentWithConfigByFlagSets) {
-        this._treatmentWithConfigByFlagSets = _treatmentWithConfigByFlagSets;
+    public void setTreatmentWithConfigByFlagSets(Long treatmentWithConfigByFlagSets) {
+        this._treatmentWithConfigByFlagSets = treatmentWithConfigByFlagSets;
     }
 }
