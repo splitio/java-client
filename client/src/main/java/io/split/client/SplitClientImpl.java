@@ -12,6 +12,8 @@ import io.split.engine.evaluator.EvaluatorImp;
 import io.split.engine.evaluator.Labels;
 import io.split.grammar.Treatments;
 import io.split.inputValidation.EventsValidator;
+import io.split.inputValidation.FlagSetsValidResult;
+import io.split.inputValidation.FlagSetsValidator;
 import io.split.inputValidation.KeyValidator;
 import io.split.inputValidation.SplitNameValidator;
 import io.split.inputValidation.TrafficTypeValidator;
@@ -23,8 +25,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -111,33 +115,59 @@ public final class SplitClientImpl implements SplitClient {
 
     @Override
     public Map<String, String> getTreatments(String key, List<String> featureFlagNames, Map<String, Object> attributes) {
-        return getTreatmentsWithConfigInternal(key, null, featureFlagNames, attributes, MethodEnum.TREATMENTS)
+        return getTreatmentsWithConfigInternal(key, null, featureFlagNames, null, attributes, MethodEnum.TREATMENTS)
                 .entrySet().stream()
                 .collect(Collectors.toMap(Map.Entry::getKey, e -> e.getValue().treatment()));
     }
 
     @Override
     public Map<String, String> getTreatments(Key key, List<String> featureFlagNames, Map<String, Object> attributes) {
-        return getTreatmentsWithConfigInternal(key.matchingKey(), key.bucketingKey(), featureFlagNames, attributes, MethodEnum.TREATMENTS)
+        return getTreatmentsWithConfigInternal(key.matchingKey(), key.bucketingKey(), featureFlagNames, null, attributes, MethodEnum.TREATMENTS)
                 .entrySet().stream()
                 .collect(Collectors.toMap(Map.Entry::getKey, e -> e.getValue().treatment()));
     }
 
     @Override
     public Map<String, SplitResult> getTreatmentsWithConfig(String key, List<String> featureFlagNames) {
-        return getTreatmentsWithConfigInternal(key, null, featureFlagNames, Collections.<String, Object>emptyMap(),
+        return getTreatmentsWithConfigInternal(key, null, featureFlagNames, null, Collections.<String, Object>emptyMap(),
                 MethodEnum.TREATMENTS_WITH_CONFIG);
     }
 
     @Override
     public Map<String, SplitResult> getTreatmentsWithConfig(String key, List<String> featureFlagNames, Map<String, Object> attributes) {
-        return getTreatmentsWithConfigInternal(key, null, featureFlagNames, attributes, MethodEnum.TREATMENTS_WITH_CONFIG);
+        return getTreatmentsWithConfigInternal(key, null, featureFlagNames, null, attributes, MethodEnum.TREATMENTS_WITH_CONFIG);
     }
 
     @Override
     public Map<String, SplitResult> getTreatmentsWithConfig(Key key, List<String> featureFlagNames, Map<String, Object> attributes) {
-        return getTreatmentsWithConfigInternal(key.matchingKey(), key.bucketingKey(), featureFlagNames, attributes,
+        return getTreatmentsWithConfigInternal(key.matchingKey(), key.bucketingKey(), featureFlagNames, null, attributes,
                 MethodEnum.TREATMENTS_WITH_CONFIG);
+    }
+
+    @Override
+    public Map<String, String> getTreatmentsByFlagSet(String key, String flagSet, Map<String, Object> attributes) {
+        return getTreatmentsWithConfigInternal(key, null, null, new ArrayList<>(Arrays.asList(flagSet)),
+                attributes, MethodEnum.TREATMENTS_BY_FLAG_SET).entrySet().stream()
+                .collect(Collectors.toMap(Map.Entry::getKey, e -> e.getValue().treatment()));
+    }
+
+    @Override
+    public Map<String, String> getTreatmentsByFlagSets(String key, List<String> flagSets, Map<String, Object> attributes) {
+        return getTreatmentsWithConfigInternal(key, null, null, flagSets,
+                attributes, MethodEnum.TREATMENTS_BY_FLAG_SETS).entrySet().stream()
+                .collect(Collectors.toMap(Map.Entry::getKey, e -> e.getValue().treatment()));
+    }
+
+    @Override
+    public Map<String, SplitResult> getTreatmentsWithConfigByFlagSet(String key, String flagSet, Map<String, Object> attributes) {
+        return getTreatmentsWithConfigInternal(key, null, null, new ArrayList<>(Arrays.asList(flagSet)),
+                attributes, MethodEnum.TREATMENTS_WITH_CONFIG_BY_FLAG_SET);
+    }
+
+    @Override
+    public Map<String, SplitResult> getTreatmentsWithConfigByFlagSets(String key, List<String> flagSets, Map<String, Object> attributes) {
+        return getTreatmentsWithConfigInternal(key, null, null, flagSets,
+                attributes, MethodEnum.TREATMENTS_WITH_CONFIG_BY_FLAG_SETS);
     }
 
     @Override
@@ -283,9 +313,27 @@ public final class SplitClientImpl implements SplitClient {
     }
 
     private Map<String, SplitResult> getTreatmentsWithConfigInternal(String matchingKey, String bucketingKey, List<String> featureFlagNames,
-                                                                     Map<String, Object> attributes, MethodEnum methodEnum) {
+                                                                     List<String> sets, Map<String, Object> attributes, MethodEnum methodEnum) {
+
         long initTime = System.currentTimeMillis();
-        if (featureFlagNames == null) {
+        FlagSetsValidResult flagSetsValidResult = null;
+        if (methodEnum == MethodEnum.TREATMENTS_BY_FLAG_SET || methodEnum == MethodEnum.TREATMENTS_BY_FLAG_SETS ||
+                methodEnum == MethodEnum.TREATMENTS_WITH_CONFIG_BY_FLAG_SET || methodEnum == MethodEnum.TREATMENTS_WITH_CONFIG_BY_FLAG_SETS) {
+            if (sets == null || sets.isEmpty()) {
+                _log.warn(String.format("%s: sets must be a non-empty array", methodEnum.getMethod()));
+                return new HashMap<>();
+            }
+            flagSetsValidResult = FlagSetsValidator.areValid(sets);
+            if (!flagSetsValidResult.getValid()) {
+                _log.warn("The sets are invalid");
+                return new HashMap<>();
+            }
+            if (filterSetsAreInConfig(flagSetsValidResult.getFlagSets()).isEmpty()) {
+                _log.warn("The sets are not in flagSetsFilter config");
+                return new HashMap<>();
+            }
+            featureFlagNames = getAllFlags(flagSetsValidResult.getFlagSets());
+        } else if (featureFlagNames == null) {
             _log.error(String.format("%s: featureFlagNames must be a non-empty array", methodEnum.getMethod()));
             return new HashMap<>();
         }
@@ -295,20 +343,24 @@ public final class SplitClientImpl implements SplitClient {
                 _log.error("Client has already been destroyed - no calls possible");
                 return createMapControl(featureFlagNames);
             }
-
             if (!KeyValidator.isValid(matchingKey, "matchingKey", _config.maxStringLength(), methodEnum.getMethod())) {
                 return createMapControl(featureFlagNames);
             }
-
             if (!KeyValidator.bucketingKeyIsValid(bucketingKey, _config.maxStringLength(), methodEnum.getMethod())) {
                 return createMapControl(featureFlagNames);
             } else if (featureFlagNames.isEmpty()) {
                 _log.error(String.format("%s: featureFlagNames must be a non-empty array", methodEnum.getMethod()));
                 return new HashMap<>();
             }
-            featureFlagNames = SplitNameValidator.areValid(featureFlagNames, methodEnum.getMethod());
-            Map<String, EvaluatorImp.TreatmentLabelAndChangeNumber> evaluatorResult = _evaluator.evaluateFeatures(matchingKey,
-                    bucketingKey, featureFlagNames, attributes);
+            Map<String, EvaluatorImp.TreatmentLabelAndChangeNumber> evaluatorResult;
+            if (flagSetsValidResult != null) {
+                evaluatorResult = _evaluator.evaluateFeaturesByFlagSets(matchingKey, bucketingKey, new ArrayList<>(flagSetsValidResult.
+                        getFlagSets()));
+            } else {
+                featureFlagNames = SplitNameValidator.areValid(featureFlagNames, methodEnum.getMethod());
+                evaluatorResult = _evaluator.evaluateFeatures(matchingKey, bucketingKey, featureFlagNames, attributes);
+            }
+
             List<Impression> impressions = new ArrayList<>();
             Map<String, SplitResult> result = new HashMap<>();
             evaluatorResult.keySet().forEach(t -> {
@@ -323,9 +375,7 @@ public final class SplitClientImpl implements SplitClient {
                             evaluatorResult.get(t).label, evaluatorResult.get(t).changeNumber, attributes));
                 }
             });
-
             _telemetryEvaluationProducer.recordLatency(methodEnum, System.currentTimeMillis() - initTime);
-            //Track of impressions
             if (impressions.size() > 0) {
                 _impressionManager.track(impressions);
             }
@@ -339,6 +389,29 @@ public final class SplitClientImpl implements SplitClient {
             }
             return createMapControl(featureFlagNames);
         }
+    }
+
+    private List<String> filterSetsAreInConfig(HashSet<String> sets) {
+        HashSet<String> configSets = _config.getSetsFilter();
+        List<String> setsToReturn = new ArrayList<>();
+        for (String set : sets) {
+            if (!configSets.contains(set)) {
+                _log.warn(String.format("GetTreatmentsByFlagSets: you passed %s which is not part of the configured FlagSetsFilter, " +
+                        "ignoring Flag Set.", set));
+                continue;
+            }
+            setsToReturn.add(set);
+        }
+        return setsToReturn;
+    }
+
+    private List<String> getAllFlags(HashSet<String> sets) {
+        Map<String, HashSet<String>> namesBySets = _splitCacheConsumer.getNamesByFlagSets(new ArrayList<>(sets));
+        HashSet<String> flags = new HashSet<>();
+        for (String set: namesBySets.keySet()) {
+            flags.addAll(namesBySets.get(set));
+        }
+        return new ArrayList<>(flags);
     }
 
     private void recordStats(String matchingKey, String bucketingKey, String featureFlagName, long start, String result,

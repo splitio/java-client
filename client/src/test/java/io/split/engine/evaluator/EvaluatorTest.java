@@ -161,9 +161,9 @@ public class EvaluatorTest {
         parsedSplits.put(SPLIT_NAME, split);
         Mockito.when(_splitCacheConsumer.fetchMany(Arrays.asList(SPLIT_NAME))).thenReturn(parsedSplits);
 
-        EvaluatorImp.ByFlagSetsResult result = _evaluator.evaluateFeaturesByFlagSets(MATCHING_KEY, BUCKETING_KEY, sets);
+        Map<String, EvaluatorImp.TreatmentLabelAndChangeNumber> result = _evaluator.evaluateFeaturesByFlagSets(MATCHING_KEY, BUCKETING_KEY, sets);
 
-        EvaluatorImp.TreatmentLabelAndChangeNumber treatmentLabelAndChangeNumber = result.evaluations.get(SPLIT_NAME);
+        EvaluatorImp.TreatmentLabelAndChangeNumber treatmentLabelAndChangeNumber = result.get(SPLIT_NAME);
 
         assertEquals(DEFAULT_TREATMENT_VALUE, treatmentLabelAndChangeNumber.treatment);
         assertEquals("default rule", treatmentLabelAndChangeNumber.label);
@@ -179,7 +179,7 @@ public class EvaluatorTest {
         Map<String, ParsedSplit> parsedSplits = new HashMap<>();
         Mockito.when(_splitCacheConsumer.fetchMany(Arrays.asList(SPLIT_NAME))).thenReturn(parsedSplits);
 
-        EvaluatorImp.ByFlagSetsResult result = _evaluator.evaluateFeaturesByFlagSets(MATCHING_KEY, BUCKETING_KEY, sets);
-        Assert.assertTrue(result.evaluations.isEmpty());
+        Map<String, EvaluatorImp.TreatmentLabelAndChangeNumber> result = _evaluator.evaluateFeaturesByFlagSets(MATCHING_KEY, BUCKETING_KEY, sets);
+        Assert.assertTrue(result.isEmpty());
     }
 }
