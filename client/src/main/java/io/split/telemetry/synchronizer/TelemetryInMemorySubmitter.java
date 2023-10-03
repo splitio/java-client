@@ -66,34 +66,34 @@ public class TelemetryInMemorySubmitter implements TelemetrySynchronizer{
     @Override
     public void finalSynchronization() throws Exception {
         Stats stats = generateStats();
-        stats.set_splitCount(_splitCacheConsumer.getAll().stream().count());
-        stats.set_segmentCount(_segmentCacheConsumer.getSegmentCount());
-        stats.set_segmentKeyCount(_segmentCacheConsumer.getKeyCount());
+        stats.setSplitCount(_splitCacheConsumer.getAll().stream().count());
+        stats.setSegmentCount(_segmentCacheConsumer.getSegmentCount());
+        stats.setSegmentKeyCount(_segmentCacheConsumer.getKeyCount());
         _httpHttpTelemetryMemorySender.postStats(stats);
     }
 
     @VisibleForTesting
     Stats generateStats() throws Exception {
         Stats stats = new Stats();
-        stats.set_lastSynchronization(_teleTelemetryStorageConsumer.getLastSynchronization());
-        stats.set_methodLatencies(_teleTelemetryStorageConsumer.popLatencies());
-        stats.set_methodExceptions(_teleTelemetryStorageConsumer.popExceptions());
-        stats.set_httpErrors(_teleTelemetryStorageConsumer.popHTTPErrors());
-        stats.set_httpLatencies(_teleTelemetryStorageConsumer.popHTTPLatencies());
-        stats.set_tokenRefreshes(_teleTelemetryStorageConsumer.popTokenRefreshes());
-        stats.set_authRejections(_teleTelemetryStorageConsumer.popAuthRejections());
-        stats.set_impressionsQueued(_teleTelemetryStorageConsumer.getImpressionsStats(ImpressionsDataTypeEnum.IMPRESSIONS_QUEUED));
-        stats.set_impressionsDeduped(_teleTelemetryStorageConsumer.getImpressionsStats(ImpressionsDataTypeEnum.IMPRESSIONS_DEDUPED));
-        stats.set_impressionsDropped(_teleTelemetryStorageConsumer.getImpressionsStats(ImpressionsDataTypeEnum.IMPRESSIONS_DROPPED));
-        stats.set_splitCount(_splitCacheConsumer.getAll().stream().count());
-        stats.set_segmentCount(_segmentCacheConsumer.getSegmentCount());
-        stats.set_segmentKeyCount(_segmentCacheConsumer.getKeyCount());
-        stats.set_sessionLengthMs(_teleTelemetryStorageConsumer.getSessionLength());
-        stats.set_eventsQueued(_teleTelemetryStorageConsumer.getEventStats(EventsDataRecordsEnum.EVENTS_QUEUED));
-        stats.set_eventsDropped(_teleTelemetryStorageConsumer.getEventStats(EventsDataRecordsEnum.EVENTS_DROPPED));
-        stats.set_streamingEvents(_teleTelemetryStorageConsumer.popStreamingEvents());
-        stats.set_tags(_teleTelemetryStorageConsumer.popTags());
-        stats.set_updatesFromSSE(_teleTelemetryStorageConsumer.popUpdatesFromSSE());
+        stats.setLastSynchronization(_teleTelemetryStorageConsumer.getLastSynchronization());
+        stats.setMethodLatencies(_teleTelemetryStorageConsumer.popLatencies());
+        stats.setMethodExceptions(_teleTelemetryStorageConsumer.popExceptions());
+        stats.setHttpErrors(_teleTelemetryStorageConsumer.popHTTPErrors());
+        stats.setHttpLatencies(_teleTelemetryStorageConsumer.popHTTPLatencies());
+        stats.setTokenRefreshes(_teleTelemetryStorageConsumer.popTokenRefreshes());
+        stats.setAuthRejections(_teleTelemetryStorageConsumer.popAuthRejections());
+        stats.setImpressionsQueued(_teleTelemetryStorageConsumer.getImpressionsStats(ImpressionsDataTypeEnum.IMPRESSIONS_QUEUED));
+        stats.setImpressionsDeduped(_teleTelemetryStorageConsumer.getImpressionsStats(ImpressionsDataTypeEnum.IMPRESSIONS_DEDUPED));
+        stats.setImpressionsDropped(_teleTelemetryStorageConsumer.getImpressionsStats(ImpressionsDataTypeEnum.IMPRESSIONS_DROPPED));
+        stats.setSplitCount(_splitCacheConsumer.getAll().stream().count());
+        stats.setSegmentCount(_segmentCacheConsumer.getSegmentCount());
+        stats.setSegmentKeyCount(_segmentCacheConsumer.getKeyCount());
+        stats.setSessionLengthMs(_teleTelemetryStorageConsumer.getSessionLength());
+        stats.setEventsQueued(_teleTelemetryStorageConsumer.getEventStats(EventsDataRecordsEnum.EVENTS_QUEUED));
+        stats.setEventsDropped(_teleTelemetryStorageConsumer.getEventStats(EventsDataRecordsEnum.EVENTS_DROPPED));
+        stats.setStreamingEvents(_teleTelemetryStorageConsumer.popStreamingEvents());
+        stats.setTags(_teleTelemetryStorageConsumer.popTags());
+        stats.setUpdatesFromSSE(_teleTelemetryStorageConsumer.popUpdatesFromSSE());
         return stats;
     }
 
