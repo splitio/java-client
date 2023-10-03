@@ -9,7 +9,14 @@ import io.split.client.SplitClientConfig;
 import io.split.telemetry.domain.Config;
 import io.split.telemetry.domain.Stats;
 import io.split.telemetry.domain.StreamingEvent;
-import io.split.telemetry.domain.enums.*;
+
+import io.split.telemetry.domain.enums.EventsDataRecordsEnum;
+import io.split.telemetry.domain.enums.HTTPLatenciesEnum;
+import io.split.telemetry.domain.enums.ImpressionsDataTypeEnum;
+import io.split.telemetry.domain.enums.LastSynchronizationRecordsEnum;
+import io.split.telemetry.domain.enums.MethodEnum;
+import io.split.telemetry.domain.enums.ResourceEnum;
+import io.split.telemetry.domain.enums.UpdatesFromSSEEnum;
 import io.split.telemetry.storage.InMemoryTelemetryStorage;
 import io.split.telemetry.storage.TelemetryRuntimeProducer;
 import io.split.telemetry.storage.TelemetryStorage;
@@ -114,6 +121,10 @@ public class TelemetryInMemorySubmitterTest {
         Assert.assertEquals(2, stats.get_methodLatencies().getTreatments().stream().mapToInt(Long::intValue).sum());
         Assert.assertEquals(1, stats.get_methodLatencies().getTreatmentsWithConfig().stream().mapToInt(Long::intValue).sum());
         Assert.assertEquals(1, stats.get_methodLatencies().getTreatmentWithConfig().stream().mapToInt(Long::intValue).sum());
+        Assert.assertEquals(1, stats.get_methodLatencies().getTreatmentByFlagSet().stream().mapToInt(Long::intValue).sum());
+        Assert.assertEquals(1, stats.get_methodLatencies().getTreatmentByFlagSets().stream().mapToInt(Long::intValue).sum());
+        Assert.assertEquals(1, stats.get_methodLatencies().getTreatmentWithConfigByFlagSet().stream().mapToInt(Long::intValue).sum());
+        Assert.assertEquals(1, stats.get_methodLatencies().getTreatmentWithConfigByFlagSets().stream().mapToInt(Long::intValue).sum());
         Assert.assertEquals(0, stats.get_methodLatencies().getTrack().stream().mapToInt(Long::intValue).sum());
         Assert.assertEquals(3, stats.get_httpLatencies().get_splits().stream().mapToInt(Long::intValue).sum());
         Assert.assertEquals(2, stats.get_httpLatencies().get_telemetry().stream().mapToInt(Long::intValue).sum());
@@ -172,6 +183,10 @@ public class TelemetryInMemorySubmitterTest {
         telemetryStorage.recordLatency(MethodEnum.TREATMENTS, 500l * 1000);
         telemetryStorage.recordLatency(MethodEnum.TREATMENT_WITH_CONFIG, 800l * 1000);
         telemetryStorage.recordLatency(MethodEnum.TREATMENTS_WITH_CONFIG, 1000l * 1000);
+        telemetryStorage.recordLatency(MethodEnum.TREATMENTS_BY_FLAG_SET, 1000l * 1000);
+        telemetryStorage.recordLatency(MethodEnum.TREATMENTS_BY_FLAG_SETS, 1000l * 1000);
+        telemetryStorage.recordLatency(MethodEnum.TREATMENTS_WITH_CONFIG_BY_FLAG_SET, 1000l * 1000);
+        telemetryStorage.recordLatency(MethodEnum.TREATMENTS_WITH_CONFIG_BY_FLAG_SETS, 1000l * 1000);
 
         telemetryStorage.recordSyncLatency(HTTPLatenciesEnum.TELEMETRY, 1500l * 1000);
         telemetryStorage.recordSyncLatency(HTTPLatenciesEnum.TELEMETRY, 2000l * 1000);
