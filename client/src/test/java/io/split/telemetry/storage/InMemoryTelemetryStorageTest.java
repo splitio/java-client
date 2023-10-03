@@ -1,6 +1,5 @@
 package io.split.telemetry.storage;
 
-
 import io.split.telemetry.domain.HTTPErrors;
 import io.split.telemetry.domain.HTTPLatencies;
 import io.split.telemetry.domain.LastSynchronization;
@@ -97,21 +96,33 @@ public class InMemoryTelemetryStorageTest{
         telemetryStorage.recordException(MethodEnum.TREATMENTS);
         telemetryStorage.recordException(MethodEnum.TREATMENT_WITH_CONFIG);
         telemetryStorage.recordException(MethodEnum.TREATMENTS_WITH_CONFIG);
+        telemetryStorage.recordException(MethodEnum.TREATMENTS_BY_FLAG_SET);
+        telemetryStorage.recordException(MethodEnum.TREATMENTS_BY_FLAG_SETS);
+        telemetryStorage.recordException(MethodEnum.TREATMENTS_WITH_CONFIG_BY_FLAG_SET);
+        telemetryStorage.recordException(MethodEnum.TREATMENTS_WITH_CONFIG_BY_FLAG_SETS);
 
         MethodExceptions methodExceptions = telemetryStorage.popExceptions();
-        Assert.assertEquals(2, methodExceptions.get_treatment());
-        Assert.assertEquals(2, methodExceptions.get_treatments());
-        Assert.assertEquals(1, methodExceptions.get_treatmentsWithConfig());
-        Assert.assertEquals(1, methodExceptions.get_treatmentWithConfig());
-        Assert.assertEquals(0, methodExceptions.get_track());
+        Assert.assertEquals(2, methodExceptions.getTreatment());
+        Assert.assertEquals(2, methodExceptions.getTreatments());
+        Assert.assertEquals(1, methodExceptions.getTreatmentsWithConfig());
+        Assert.assertEquals(1, methodExceptions.getTreatmentWithConfig());
+        Assert.assertEquals(1, methodExceptions.getTreatmentByFlagSet());
+        Assert.assertEquals(1, methodExceptions.getTreatmentByFlagSets());
+        Assert.assertEquals(1, methodExceptions.getTreatmentWithConfigByFlagSet());
+        Assert.assertEquals(1, methodExceptions.getTreatmentWithConfigByFlagSets());
+        Assert.assertEquals(0, methodExceptions.getTrack());
 
         //Check empty has worked
         methodExceptions = telemetryStorage.popExceptions();
-        Assert.assertEquals(0, methodExceptions.get_treatment());
-        Assert.assertEquals(0, methodExceptions.get_treatments());
-        Assert.assertEquals(0, methodExceptions.get_treatmentsWithConfig());
-        Assert.assertEquals(0, methodExceptions.get_treatmentWithConfig());
-        Assert.assertEquals(0, methodExceptions.get_track());
+        Assert.assertEquals(0, methodExceptions.getTreatment());
+        Assert.assertEquals(0, methodExceptions.getTreatments());
+        Assert.assertEquals(0, methodExceptions.getTreatmentsWithConfig());
+        Assert.assertEquals(0, methodExceptions.getTreatmentWithConfig());
+        Assert.assertEquals(0, methodExceptions.getTreatmentByFlagSet());
+        Assert.assertEquals(0, methodExceptions.getTreatmentByFlagSets());
+        Assert.assertEquals(0, methodExceptions.getTreatmentWithConfigByFlagSet());
+        Assert.assertEquals(0, methodExceptions.getTreatmentWithConfigByFlagSets());
+        Assert.assertEquals(0, methodExceptions.getTrack());
 
         //AuthRejections
         telemetryStorage.recordAuthRejections();

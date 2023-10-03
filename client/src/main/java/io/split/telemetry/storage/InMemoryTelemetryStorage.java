@@ -88,11 +88,15 @@ public class InMemoryTelemetryStorage implements TelemetryStorage{
     @Override
     public MethodExceptions popExceptions() {
         MethodExceptions exceptions = new MethodExceptions();
-        exceptions.set_treatment(_exceptionsCounters.get(MethodEnum.TREATMENT).getAndSet(0L));
-        exceptions.set_treatments(_exceptionsCounters.get(MethodEnum.TREATMENTS).getAndSet(0L));
-        exceptions.set_treatmentWithConfig(_exceptionsCounters.get(MethodEnum.TREATMENT_WITH_CONFIG).getAndSet(0L));
-        exceptions.set_treatmentsWithConfig(_exceptionsCounters.get(MethodEnum.TREATMENTS_WITH_CONFIG).getAndSet(0L));
-        exceptions.set_track(_exceptionsCounters.get(MethodEnum.TRACK).getAndSet(0L));
+        exceptions.setTreatment(_exceptionsCounters.get(MethodEnum.TREATMENT).getAndSet(0L));
+        exceptions.setTreatments(_exceptionsCounters.get(MethodEnum.TREATMENTS).getAndSet(0L));
+        exceptions.setTreatmentWithConfig(_exceptionsCounters.get(MethodEnum.TREATMENT_WITH_CONFIG).getAndSet(0L));
+        exceptions.setTreatmentsWithConfig(_exceptionsCounters.get(MethodEnum.TREATMENTS_WITH_CONFIG).getAndSet(0L));
+        exceptions.setTreatmentByFlagSet(_exceptionsCounters.get(MethodEnum.TREATMENTS_BY_FLAG_SET).getAndSet(0L));
+        exceptions.setTreatmentByFlagSets(_exceptionsCounters.get(MethodEnum.TREATMENTS_BY_FLAG_SETS).getAndSet(0L));
+        exceptions.setTreatmentWithConfigByFlagSet(_exceptionsCounters.get(MethodEnum.TREATMENTS_WITH_CONFIG_BY_FLAG_SET).getAndSet(0L));
+        exceptions.setTreatmentWithConfigByFlagSets(_exceptionsCounters.get(MethodEnum.TREATMENTS_WITH_CONFIG_BY_FLAG_SETS).getAndSet(0L));
+        exceptions.setTrack(_exceptionsCounters.get(MethodEnum.TRACK).getAndSet(0L));
 
         return exceptions;
     }
@@ -342,6 +346,10 @@ public class InMemoryTelemetryStorage implements TelemetryStorage{
         _exceptionsCounters.put(MethodEnum.TREATMENTS, new AtomicLong());
         _exceptionsCounters.put(MethodEnum.TREATMENT_WITH_CONFIG, new AtomicLong());
         _exceptionsCounters.put(MethodEnum.TREATMENTS_WITH_CONFIG, new AtomicLong());
+        _exceptionsCounters.put(MethodEnum.TREATMENTS_BY_FLAG_SET, new AtomicLong());
+        _exceptionsCounters.put(MethodEnum.TREATMENTS_BY_FLAG_SETS, new AtomicLong());
+        _exceptionsCounters.put(MethodEnum.TREATMENTS_WITH_CONFIG_BY_FLAG_SET, new AtomicLong());
+        _exceptionsCounters.put(MethodEnum.TREATMENTS_WITH_CONFIG_BY_FLAG_SETS, new AtomicLong());
         _exceptionsCounters.put(MethodEnum.TRACK, new AtomicLong());
     }
 
