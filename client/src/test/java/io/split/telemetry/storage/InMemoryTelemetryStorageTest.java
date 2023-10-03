@@ -110,6 +110,10 @@ public class InMemoryTelemetryStorageTest{
         Assert.assertEquals(0, methodExceptions.getTreatments());
         Assert.assertEquals(0, methodExceptions.getTreatmentsWithConfig());
         Assert.assertEquals(0, methodExceptions.getTreatmentWithConfig());
+        Assert.assertEquals(0, methodExceptions.getTreatmentByFlagSet());
+        Assert.assertEquals(0, methodExceptions.getTreatmentByFlagSets());
+        Assert.assertEquals(0, methodExceptions.getTreatmentWithConfigByFlagSet());
+        Assert.assertEquals(0, methodExceptions.getTreatmentWithConfigByFlagSets());
         Assert.assertEquals(0, methodExceptions.getTrack());
 
         //AuthRejections
