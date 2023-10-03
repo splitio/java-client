@@ -110,11 +110,11 @@ public class TelemetryInMemorySubmitterTest {
 
         teleTelemetryStorageConsumer.set(telemetrySynchronizer, telemetryStorage);
         Stats stats = telemetrySynchronizer.generateStats();
-        Assert.assertEquals(2, stats.get_methodLatencies().get_treatment().stream().mapToInt(Long::intValue).sum());
-        Assert.assertEquals(2, stats.get_methodLatencies().get_treatments().stream().mapToInt(Long::intValue).sum());
-        Assert.assertEquals(1, stats.get_methodLatencies().get_treatmentsWithConfig().stream().mapToInt(Long::intValue).sum());
-        Assert.assertEquals(1, stats.get_methodLatencies().get_treatmentWithConfig().stream().mapToInt(Long::intValue).sum());
-        Assert.assertEquals(0, stats.get_methodLatencies().get_track().stream().mapToInt(Long::intValue).sum());
+        Assert.assertEquals(2, stats.get_methodLatencies().getTreatment().stream().mapToInt(Long::intValue).sum());
+        Assert.assertEquals(2, stats.get_methodLatencies().getTreatments().stream().mapToInt(Long::intValue).sum());
+        Assert.assertEquals(1, stats.get_methodLatencies().getTreatmentsWithConfig().stream().mapToInt(Long::intValue).sum());
+        Assert.assertEquals(1, stats.get_methodLatencies().getTreatmentWithConfig().stream().mapToInt(Long::intValue).sum());
+        Assert.assertEquals(0, stats.get_methodLatencies().getTrack().stream().mapToInt(Long::intValue).sum());
         Assert.assertEquals(3, stats.get_httpLatencies().get_splits().stream().mapToInt(Long::intValue).sum());
         Assert.assertEquals(2, stats.get_httpLatencies().get_telemetry().stream().mapToInt(Long::intValue).sum());
         Assert.assertEquals(2, stats.get_httpLatencies().get_events().stream().mapToInt(Long::intValue).sum());

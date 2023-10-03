@@ -100,15 +100,15 @@ public class InMemoryTelemetryStorage implements TelemetryStorage{
     @Override
     public MethodLatencies popLatencies() {
         MethodLatencies latencies = new MethodLatencies();
-        latencies.set_treatment(_methodLatencies.get(MethodEnum.TREATMENT).fetchAndClearAll());
-        latencies.set_treatments(_methodLatencies.get(MethodEnum.TREATMENTS).fetchAndClearAll());
-        latencies.set_treatmentWithConfig(_methodLatencies.get(MethodEnum.TREATMENT_WITH_CONFIG).fetchAndClearAll());
-        latencies.set_treatmentsWithConfig(_methodLatencies.get(MethodEnum.TREATMENTS_WITH_CONFIG).fetchAndClearAll());
-        latencies.set_treatmentByFlagSet(_methodLatencies.get(MethodEnum.TREATMENTS_BY_FLAG_SET).fetchAndClearAll());
-        latencies.set_treatmentByFlagSets(_methodLatencies.get(MethodEnum.TREATMENTS_BY_FLAG_SETS).fetchAndClearAll());
-        latencies.set_treatmentWithConfigByFlagSet(_methodLatencies.get(MethodEnum.TREATMENTS_WITH_CONFIG_BY_FLAG_SET).fetchAndClearAll());
-        latencies.set_treatmentWithConfigByFlagSets(_methodLatencies.get(MethodEnum.TREATMENTS_WITH_CONFIG_BY_FLAG_SETS).fetchAndClearAll());
-        latencies.set_track(_methodLatencies.get(MethodEnum.TRACK).fetchAndClearAll());
+        latencies.setTreatment(_methodLatencies.get(MethodEnum.TREATMENT).fetchAndClearAll());
+        latencies.setTreatments(_methodLatencies.get(MethodEnum.TREATMENTS).fetchAndClearAll());
+        latencies.setTreatmentWithConfig(_methodLatencies.get(MethodEnum.TREATMENT_WITH_CONFIG).fetchAndClearAll());
+        latencies.setTreatmentsWithConfig(_methodLatencies.get(MethodEnum.TREATMENTS_WITH_CONFIG).fetchAndClearAll());
+        latencies.setTreatmentByFlagSet(_methodLatencies.get(MethodEnum.TREATMENTS_BY_FLAG_SET).fetchAndClearAll());
+        latencies.setTreatmentByFlagSets(_methodLatencies.get(MethodEnum.TREATMENTS_BY_FLAG_SETS).fetchAndClearAll());
+        latencies.setTreatmentWithConfigByFlagSet(_methodLatencies.get(MethodEnum.TREATMENTS_WITH_CONFIG_BY_FLAG_SET).fetchAndClearAll());
+        latencies.setTreatmentWithConfigByFlagSets(_methodLatencies.get(MethodEnum.TREATMENTS_WITH_CONFIG_BY_FLAG_SETS).fetchAndClearAll());
+        latencies.setTrack(_methodLatencies.get(MethodEnum.TRACK).fetchAndClearAll());
 
         return latencies;
     }

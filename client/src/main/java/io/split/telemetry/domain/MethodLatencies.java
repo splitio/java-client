@@ -47,75 +47,75 @@ public class MethodLatencies {
         _track = new ArrayList<>();
     }
 
-    public List<Long> get_treatment() {
+    public List<Long> getTreatment() {
         return _treatment;
     }
 
-    public void set_treatment(List<Long> _treatment) {
-        this._treatment = _treatment;
+    public void setTreatment(List<Long> treatment) {
+        this._treatment = treatment;
     }
 
-    public List<Long> get_treatments() {
+    public List<Long> getTreatments() {
         return _treatments;
     }
 
-    public void set_treatments(List<Long> _treatments) {
-        this._treatments = _treatments;
+    public void setTreatments(List<Long> treatments) {
+        this._treatments = treatments;
     }
 
-    public List<Long> get_treatmentsWithConfig() {
+    public List<Long> getTreatmentsWithConfig() {
         return _treatmentsWithConfig;
     }
 
-    public void set_treatmentsWithConfig(List<Long> _treatmentsWithConfig) {
-        this._treatmentsWithConfig = _treatmentsWithConfig;
+    public void setTreatmentsWithConfig(List<Long> treatmentsWithConfig) {
+        this._treatmentsWithConfig = treatmentsWithConfig;
     }
 
-    public List<Long> get_treatmentWithConfig() {
+    public List<Long> getTreatmentWithConfig() {
         return _treatmentWithConfig;
     }
 
-    public void set_treatmentWithConfig(List<Long> _treatmentWithConfig) {
-        this._treatmentWithConfig = _treatmentWithConfig;
+    public void setTreatmentWithConfig(List<Long> treatmentWithConfig) {
+        this._treatmentWithConfig = treatmentWithConfig;
     }
 
-    public List<Long> get_track() {
+    public List<Long> getTrack() {
         return _track;
     }
 
-    public void set_track(List<Long> _track) {
-        this._track = _track;
+    public void setTrack(List<Long> track) {
+        this._track = track;
     }
 
-    public List<Long> get_treatmentByFlagSet() {
+    public List<Long> getTreatmentByFlagSet() {
         return _treatmentByFlagSet;
     }
 
-    public List<Long> get_treatmentByFlagSets() {
+    public List<Long> getTreatmentByFlagSets() {
         return _treatmentByFlagSets;
     }
 
-    public void set_treatmentByFlagSet(List<Long> _treatmentByFlagSet) {
-        this._treatmentByFlagSet = _treatmentByFlagSet;
+    public void setTreatmentByFlagSet(List<Long> treatmentByFlagSet) {
+        this._treatmentByFlagSet = treatmentByFlagSet;
     }
 
-    public void set_treatmentByFlagSets(List<Long> _treatmentByFlagSets) {
-        this._treatmentByFlagSets = _treatmentByFlagSets;
+    public void setTreatmentByFlagSets(List<Long> treatmentByFlagSets) {
+        this._treatmentByFlagSets = treatmentByFlagSets;
     }
 
-    public List<Long> get_treatmentWithConfigByFlagSet() {
+    public List<Long> getTreatmentWithConfigByFlagSet() {
         return _treatmentWithConfigByFlagSet;
     }
 
-    public void set_treatmentWithConfigByFlagSet(List<Long> _treatmentWithConfigByFlagSet) {
-        this._treatmentWithConfigByFlagSet = _treatmentWithConfigByFlagSet;
+    public void setTreatmentWithConfigByFlagSet(List<Long> treatmentWithConfigByFlagSet) {
+        this._treatmentWithConfigByFlagSet = treatmentWithConfigByFlagSet;
     }
 
-    public void set_treatmentWithConfigByFlagSets(List<Long> _treatmentWithConfigByFlagSets) {
-        this._treatmentWithConfigByFlagSets = _treatmentWithConfigByFlagSets;
+    public void setTreatmentWithConfigByFlagSets(List<Long> treatmentWithConfigByFlagSets) {
+        this._treatmentWithConfigByFlagSets = treatmentWithConfigByFlagSets;
     }
 
-    public List<Long> get_treatmentWithConfigByFlagSets() {
+    public List<Long> getTreatmentWithConfigByFlagSets() {
         return _treatmentWithConfigByFlagSets;
     }
 }
