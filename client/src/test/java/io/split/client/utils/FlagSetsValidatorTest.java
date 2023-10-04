@@ -62,6 +62,23 @@ public class FlagSetsValidatorTest {
     }
 
     @Test
+    public void testFlagSetsInOrder() {
+        List<String> flagSets = new ArrayList<>();
+        flagSets.add(" test3");
+        flagSets.add(" test2");
+        flagSets.add(" test1 ");
+        flagSets.add(" 1test ");
+        flagSets.add(" 2test ");
+        FSValidatorResult cleanFlagSets = cleanup(flagSets);
+        Assert.assertEquals(5, cleanFlagSets.getFlagSets().size());
+        Assert.assertEquals("1test", cleanFlagSets.getFlagSets().get(0));
+        Assert.assertEquals("2test", cleanFlagSets.getFlagSets().get(1));
+        Assert.assertEquals("test1", cleanFlagSets.getFlagSets().get(2));
+        Assert.assertEquals("test2", cleanFlagSets.getFlagSets().get(3));
+        Assert.assertEquals("test3", cleanFlagSets.getFlagSets().get(4));
+    }
+
+    @Test
     public void testIsValid(){
         Assert.assertTrue(areValid(Arrays.asList(" test1 ")).getValid());
         Assert.assertTrue(areValid(Arrays.asList("Test1 ")).getValid());
