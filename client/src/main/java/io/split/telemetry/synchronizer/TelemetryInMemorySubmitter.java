@@ -121,23 +121,26 @@ public class TelemetryInMemorySubmitter implements TelemetrySynchronizer{
         urlOverrides.set_events(!SplitClientConfig.EVENTS_ENDPOINT.equals(splitClientConfig.eventsEndpoint()));
         urlOverrides.set_telemetry(!SplitClientConfig.TELEMETRY_ENDPOINT.equals(splitClientConfig.telemetryURL()));
 
-        config.set_burTimeouts(_teleTelemetryStorageConsumer.getBURTimeouts());
-        config.set_nonReadyUsages(_teleTelemetryStorageConsumer.getNonReadyUsages());
-        config.set_httpProxyDetected(splitClientConfig.proxy() != null);
-        config.set_impressionsMode(getImpressionsMode(splitClientConfig));
-        config.set_integrations(impressions);
-        config.set_impressionsListenerEnabled((impressionsListeners.size()-impressions.size()) > 0);
-        config.set_operationMode(OPERATION_MODE);
-        config.set_storage(STORAGE);
-        config.set_impressionsQueueSize(splitClientConfig.impressionsQueueSize());
-        config.set_redundantFactories(getRedundantFactories(factoryInstances));
-        config.set_eventsQueueSize(splitClientConfig.eventsQueueSize());
-        config.set_tags(getListMaxSize(tags));
-        config.set_activeFactories(factoryInstances.size());
-        config.set_timeUntilReady(readyTimestamp - _initStartTime);
-        config.set_rates(rates);
-        config.set_urlOverrides(urlOverrides);
-        config.set_streamingEnabled(splitClientConfig.streamingEnabled());
+        config.setBurTimeouts(_teleTelemetryStorageConsumer.getBURTimeouts());
+        config.setNonReadyUsages(_teleTelemetryStorageConsumer.getNonReadyUsages());
+        config.setHttpProxyDetected(splitClientConfig.proxy() != null);
+        config.setImpressionsMode(getImpressionsMode(splitClientConfig));
+        config.setIntegrations(impressions);
+        config.setImpressionsListenerEnabled((impressionsListeners.size()-impressions.size()) > 0);
+        config.setOperationMode(OPERATION_MODE);
+        config.setStorage(STORAGE);
+        config.setImpressionsQueueSize(splitClientConfig.impressionsQueueSize());
+        config.setRedundantFactories(getRedundantFactories(factoryInstances));
+        config.setEventsQueueSize(splitClientConfig.eventsQueueSize());
+        config.setTags(getListMaxSize(tags));
+        config.setActiveFactories(factoryInstances.size());
+        config.setTimeUntilReady(readyTimestamp - _initStartTime);
+        config.setRates(rates);
+        config.setUrlOverrides(urlOverrides);
+        config.setStreamingEnabled(splitClientConfig.streamingEnabled());
+        int invalidSets = splitClientConfig.getInvalidSets();
+        config.setFlagSetsTotal(splitClientConfig.getSetsFilter().size() + invalidSets);
+        config.setFlagSetsInvalid(invalidSets);
         return config;
     }
 
