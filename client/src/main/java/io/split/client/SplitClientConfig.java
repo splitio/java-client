@@ -934,7 +934,7 @@ public class SplitClientConfig {
          */
         public Builder flagSetsFilter(List<String> flagSetsFilter) {
             FSValidatorResult fsValidatorResult = cleanup(flagSetsFilter);
-            _flagSetsFilter = new HashSet<>(fsValidatorResult.getFlagSets());
+            _flagSetsFilter = fsValidatorResult.getFlagSets();
             _invalidSets = fsValidatorResult.getInvalidSets();
             return this;
         }

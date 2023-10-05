@@ -3,7 +3,6 @@ package io.split.inputValidation;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.TreeSet;
@@ -19,10 +18,10 @@ public final class FlagSetsValidator {
     }
 
     public static FSValidatorResult cleanup(List<String> flagSets) {
-        if (flagSets == null || flagSets.isEmpty()) {
-            return new FSValidatorResult(new ArrayList<>(), 0);
-        }
         TreeSet<String> cleanFlagSets = new TreeSet<>();
+        if (flagSets == null || flagSets.isEmpty()) {
+            return new FSValidatorResult(cleanFlagSets, 0);
+        }
         int invalidSets = 0;
         for (String flagSet: flagSets) {
             if(flagSet != flagSet.toLowerCase()) {
@@ -42,12 +41,12 @@ public final class FlagSetsValidator {
             }
             cleanFlagSets.add(flagSet);
         }
-        return new FSValidatorResult(new ArrayList<>(cleanFlagSets), invalidSets);
+        return new FSValidatorResult(cleanFlagSets, invalidSets);
     }
 
     public static FlagSetsValidResult areValid(List<String> flagSets) {
         FSValidatorResult fsValidatorResult = cleanup(flagSets);
-        List<String> cleanFlagSets = fsValidatorResult.getFlagSets();
-        return new FlagSetsValidResult(cleanFlagSets != null && cleanFlagSets.size() != 0, new HashSet<>(cleanFlagSets));
+        HashSet cleanFlagSets = fsValidatorResult.getFlagSets();
+        return new FlagSetsValidResult(cleanFlagSets != null && cleanFlagSets.size() != 0, cleanFlagSets);
     }
 }
