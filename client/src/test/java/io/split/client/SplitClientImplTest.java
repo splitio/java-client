@@ -1733,7 +1733,7 @@ public class SplitClientImplTest {
         fetchManyResult.put(test2, parsedSplit2);
         when(splitCacheConsumer.fetchMany(new ArrayList<>(Arrays.asList(test2, test)))).thenReturn(fetchManyResult);
 
-        List<String> sets = new ArrayList<>(Arrays.asList("set3", "set1"));
+        List<String> sets = new ArrayList<>(Arrays.asList("set1", "set3"));
         Map<String, HashSet<String>> flagsBySets = new HashMap<>();
         flagsBySets.put("set1", new HashSet<>(Arrays.asList(test)));
         flagsBySets.put("set3", new HashSet<>(Arrays.asList(test2)));
