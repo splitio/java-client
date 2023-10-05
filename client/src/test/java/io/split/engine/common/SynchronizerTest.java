@@ -62,7 +62,7 @@ public class SynchronizerTest {
 
         _splitTasks = SplitTasks.build(_refreshableSplitFetcherTask, _segmentFetcher, _impressionsManager, _eventsTask, _telemetrySyncTask, _uniqueKeysTracker);
 
-        _synchronizer = new SynchronizerImp(_splitTasks, _splitFetcher, _splitCacheProducer, _segmentCacheProducer, 50, 10, 5, false);
+        _synchronizer = new SynchronizerImp(_splitTasks, _splitFetcher, _splitCacheProducer, _segmentCacheProducer, 50, 10, 5, false, new HashSet<>());
     }
 
     @Test
@@ -158,7 +158,8 @@ public class SynchronizerTest {
                 50,
                 3,
                 1,
-                true);
+                true,
+                new HashSet<>());
 
         ArgumentCaptor<FetchOptions> optionsCaptor = ArgumentCaptor.forClass(FetchOptions.class);
         AtomicInteger calls = new AtomicInteger();
@@ -190,7 +191,8 @@ public class SynchronizerTest {
                 50,
                 3,
                 1,
-                true);
+                true,
+                new HashSet<>());
 
         ArgumentCaptor<FetchOptions> optionsCaptor = ArgumentCaptor.forClass(FetchOptions.class);
         AtomicInteger calls = new AtomicInteger();
@@ -245,7 +247,8 @@ public class SynchronizerTest {
                 50,
                 3,
                 1,
-                true);
+                true,
+                new HashSet<>());
 
         SegmentFetcher fetcher = Mockito.mock(SegmentFetcher.class);
         when(_segmentFetcher.getFetcher("someSegment")).thenReturn(fetcher);
@@ -303,7 +306,8 @@ public class SynchronizerTest {
                 50,
                 3,
                 1,
-                true);
+                true,
+                new HashSet<>());
         imp.startPeriodicDataRecording();
 
         Mockito.verify(_eventsTask, Mockito.times(1)).start();
