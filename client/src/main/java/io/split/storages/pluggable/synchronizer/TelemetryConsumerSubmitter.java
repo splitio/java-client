@@ -59,11 +59,14 @@ public class TelemetryConsumerSubmitter implements TelemetrySynchronizer {
     @VisibleForTesting
     ConfigConsumer generateConfig(SplitClientConfig splitClientConfig, Map<String, Long> factoryInstances, List<String> tags) {
         ConfigConsumer config = new ConfigConsumer();
-        config.set_operationMode(splitClientConfig.operationMode()== OperationMode.STANDALONE ? 0 : 1);
-        config.set_storage(STORAGE);
-        config.set_activeFactories(factoryInstances.size());
-        config.set_redundantFactories(getRedundantFactories(factoryInstances));
-        config.set_tags(tags.size() < 10 ? tags : tags.subList(0, 10));
+        config.setOperationMode(splitClientConfig.operationMode()== OperationMode.STANDALONE ? 0 : 1);
+        config.setStorage(STORAGE);
+        config.setActiveFactories(factoryInstances.size());
+        config.setRedundantFactories(getRedundantFactories(factoryInstances));
+        config.setTags(tags.size() < 10 ? tags : tags.subList(0, 10));
+        int invalidSets = splitClientConfig.getInvalidSets();
+        config.setFlagSetsTotal(splitClientConfig.getSetsFilter().size() + invalidSets);
+        config.setFlagSetsInvalid(invalidSets);
         return config;
     }
 

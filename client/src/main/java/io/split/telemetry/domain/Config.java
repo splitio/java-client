@@ -21,7 +21,9 @@ public class Config {
     /* package private */ static final String FIELD_BUR_TIMEOUTS = "bT";
     /* package private */ static final String FIELD_NON_READY_USAGES = "nR";
     /* package private */ static final String FIELD_INTEGRATIONS = "i";
-    /* package private */ static final String FIELD__TAGS = "t";
+    /* package private */ static final String FIELD_TAGS = "t";
+    /* package private */ static final String FIELD_FLAG_SETS_TOTAL = "fsT";
+    /* package private */ static final String FIELD_FLAG_SETS_INVALID = "fsI";
 
     @SerializedName(FIELD_OPERATION_MODE)
     private int _operationMode;
@@ -55,142 +57,162 @@ public class Config {
     private long _nonReadyUsages;
     @SerializedName(FIELD_INTEGRATIONS)
     private List<String> _integrations;
-    @SerializedName(FIELD__TAGS)
+    @SerializedName(FIELD_TAGS)
     private List<String> _tags;
+    @SerializedName(FIELD_FLAG_SETS_TOTAL)
+    private int _flagSetsTotal;
+    @SerializedName(FIELD_FLAG_SETS_INVALID)
+    private int _flagSetsInvalid;
 
-    public int get_operationMode() {
+    public int getOperationMode() {
         return _operationMode;
     }
 
-    public void set_operationMode(int _operationMode) {
-        this._operationMode = _operationMode;
+    public void setOperationMode(int operationMode) {
+        this._operationMode = operationMode;
     }
 
-    public boolean is_streamingEnabled() {
+    public boolean isStreamingEnabled() {
         return _streamingEnabled;
     }
 
-    public void set_streamingEnabled(boolean _streamingEnabled) {
-        this._streamingEnabled = _streamingEnabled;
+    public void setStreamingEnabled(boolean streamingEnabled) {
+        this._streamingEnabled = streamingEnabled;
     }
 
-    public String get_storage() {
+    public String getStorage() {
         return _storage;
     }
 
-    public void set_storage(String _storage) {
-        this._storage = _storage;
+    public void setStorage(String storage) {
+        this._storage = storage;
     }
 
-    public Rates get_rates() {
+    public Rates getRates() {
         return _rates;
     }
 
-    public void set_rates(Rates _rates) {
-        this._rates = _rates;
+    public void setRates(Rates rates) {
+        this._rates = rates;
     }
 
-    public URLOverrides get_urlOverrides() {
+    public URLOverrides getUrlOverrides() {
         return _urlOverrides;
     }
 
-    public void set_urlOverrides(URLOverrides _urlOverrides) {
-        this._urlOverrides = _urlOverrides;
+    public void setUrlOverrides(URLOverrides urlOverrides) {
+        this._urlOverrides = urlOverrides;
     }
 
-    public long get_impressionsQueueSize() {
+    public long getImpressionsQueueSize() {
         return _impressionsQueueSize;
     }
 
-    public void set_impressionsQueueSize(long _impressionsQueueSize) {
-        this._impressionsQueueSize = _impressionsQueueSize;
+    public void setImpressionsQueueSize(long impressionsQueueSize) {
+        this._impressionsQueueSize = impressionsQueueSize;
     }
 
-    public long get_eventsQueueSize() {
+    public long getEventsQueueSize() {
         return _eventsQueueSize;
     }
 
-    public void set_eventsQueueSize(long _eventsQueueSize) {
-        this._eventsQueueSize = _eventsQueueSize;
+    public void setEventsQueueSize(long eventsQueueSize) {
+        this._eventsQueueSize = eventsQueueSize;
     }
 
-    public int get_impressionsMode() {
+    public int getImpressionsMode() {
         return _impressionsMode;
     }
 
-    public void set_impressionsMode(int _impressionsMode) {
-        this._impressionsMode = _impressionsMode;
+    public void setImpressionsMode(int impressionsMode) {
+        this._impressionsMode = impressionsMode;
     }
 
-    public boolean is_impressionsListenerEnabled() {
+    public boolean isImpressionsListenerEnabled() {
         return _impressionsListenerEnabled;
     }
 
-    public void set_impressionsListenerEnabled(boolean _impressionsListenerEnabled) {
-        this._impressionsListenerEnabled = _impressionsListenerEnabled;
+    public void setImpressionsListenerEnabled(boolean impressionsListenerEnabled) {
+        this._impressionsListenerEnabled = impressionsListenerEnabled;
     }
 
-    public boolean is_httpProxyDetected() {
+    public boolean isHttpProxyDetected() {
         return _httpProxyDetected;
     }
 
-    public void set_httpProxyDetected(boolean _httpProxyDetected) {
-        this._httpProxyDetected = _httpProxyDetected;
+    public void setHttpProxyDetected(boolean httpProxyDetected) {
+        this._httpProxyDetected = httpProxyDetected;
     }
 
-    public long get_activeFactories() {
+    public long getActiveFactories() {
         return _activeFactories;
     }
 
-    public void set_activeFactories(long _activeFactories) {
-        this._activeFactories = _activeFactories;
+    public void setActiveFactories(long activeFactories) {
+        this._activeFactories = activeFactories;
     }
 
-    public long get_redundantFactories() {
+    public long getRedundantFactories() {
         return _redundantFactories;
     }
 
-    public void set_redundantFactories(long _redundantFactories) {
-        this._redundantFactories = _redundantFactories;
+    public void setRedundantFactories(long redundantFactories) {
+        this._redundantFactories = redundantFactories;
     }
 
-    public long get_timeUntilReady() {
+    public long getTimeUntilReady() {
         return _timeUntilReady;
     }
 
-    public void set_timeUntilReady(long _timeUntilReady) {
-        this._timeUntilReady = _timeUntilReady;
+    public void setTimeUntilReady(long timeUntilReady) {
+        this._timeUntilReady = timeUntilReady;
     }
 
-    public long get_burTimeouts() {
+    public long getBurTimeouts() {
         return _burTimeouts;
     }
 
-    public void set_burTimeouts(long _burTimeouts) {
-        this._burTimeouts = _burTimeouts;
+    public void setBurTimeouts(long burTimeouts) {
+        this._burTimeouts = burTimeouts;
     }
 
-    public long get_nonReadyUsages() {
+    public long getNonReadyUsages() {
         return _nonReadyUsages;
     }
 
-    public void set_nonReadyUsages(long _nonReadyUsages) {
-        this._nonReadyUsages = _nonReadyUsages;
+    public void setNonReadyUsages(long nonReadyUsages) {
+        this._nonReadyUsages = nonReadyUsages;
     }
 
-    public List<String> get_integrations() {
+    public List<String> getIntegrations() {
         return _integrations;
     }
 
-    public void set_integrations(List<String> _integrations) {
-        this._integrations = _integrations;
+    public void setIntegrations(List<String> integrations) {
+        this._integrations = integrations;
     }
 
-    public List<String> get_tags() {
+    public List<String> getTags() {
         return _tags;
     }
 
-    public void set_tags(List<String> _tags) {
-        this._tags = _tags;
+    public void setTags(List<String> tags) {
+        this._tags = tags;
+    }
+
+    public int getFlagSetsTotal() {
+        return _flagSetsTotal;
+    }
+
+    public int getFlagSetsInvalid() {
+        return _flagSetsInvalid;
+    }
+
+    public void setFlagSetsTotal(int flagSetsTotal) {
+        this._flagSetsTotal = flagSetsTotal;
+    }
+
+    public void setFlagSetsInvalid(int flagSetsInvalid) {
+        this._flagSetsInvalid = flagSetsInvalid;
     }
 }
