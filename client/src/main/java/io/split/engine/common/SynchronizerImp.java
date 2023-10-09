@@ -20,6 +20,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
+import java.util.stream.Collectors;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
@@ -45,6 +46,7 @@ public class SynchronizerImp implements Synchronizer {
     private final int _onDemandFetchMaxRetries;
     private final int _failedAttemptsBeforeLogging;
     private final boolean _cdnResponseHeadersLogging;
+    private final String _sets;
 
     public SynchronizerImp(SplitTasks splitTasks,
                            SplitFetcher splitFetcher,
@@ -53,7 +55,8 @@ public class SynchronizerImp implements Synchronizer {
                            int onDemandFetchRetryDelayMs,
                            int onDemandFetchMaxRetries,
                            int failedAttemptsBeforeLogging,
-                           boolean cdnResponseHeadersLogging) {
+                           boolean cdnResponseHeadersLogging,
+                           HashSet<String> sets) {
         _splitSynchronizationTask = checkNotNull(splitTasks.getSplitSynchronizationTask());
         _splitFetcher = checkNotNull(splitFetcher);
         _segmentSynchronizationTaskImp = checkNotNull(splitTasks.getSegmentSynchronizationTask());
@@ -67,11 +70,12 @@ public class SynchronizerImp implements Synchronizer {
         _eventsTask = splitTasks.getEventsTask();
         _telemetrySyncTask = splitTasks.getTelemetrySyncTask();
         _uniqueKeysTracker = splitTasks.getUniqueKeysTracker();
+        _sets = sets.stream().collect(Collectors.joining(","));
     }
 
     @Override
     public boolean syncAll() {
-        FetchResult fetchResult = _splitFetcher.forceRefresh(new FetchOptions.Builder().cacheControlHeaders(true).build());
+        FetchResult fetchResult = _splitFetcher.forceRefresh(new FetchOptions.Builder().flagSetsFilter(_sets).cacheControlHeaders(true).build());
         return fetchResult.isSuccess() && _segmentSynchronizationTaskImp.fetchAllSynchronous();
     }
 
@@ -149,6 +153,7 @@ public class SynchronizerImp implements Synchronizer {
                 .cacheControlHeaders(true)
                 .fastlyDebugHeader(_cdnResponseHeadersLogging)
                 .responseHeadersCallback(_cdnResponseHeadersLogging ? captor::handle : null)
+                .flagSetsFilter(_sets)
                 .build();
 
         SyncResult regularResult = attemptSplitsSync(targetChangeNumber, opts,
