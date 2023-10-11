@@ -76,7 +76,7 @@ public class SplitClientImplTest {
     }
 
     @Test
-    public void null_key_results_in_control() {
+    public void nullKeyResultsInControl() {
         String test = "test1";
         ParsedCondition rollOutToEveryone = ParsedCondition.createParsedConditionForTests(CombiningMatcher.of(new AllKeysMatcher()),
                 Lists.newArrayList(partition("on", 100)));
@@ -104,7 +104,7 @@ public class SplitClientImplTest {
     }
 
     @Test
-    public void null_test_results_in_control() {
+    public void nullTestResultsInControl() {
         String test = "test1";
         ParsedCondition rollOutToEveryone = ParsedCondition.createParsedConditionForTests(CombiningMatcher.of(new AllKeysMatcher()),
                 Lists.newArrayList(partition("on", 100)));
@@ -132,7 +132,7 @@ public class SplitClientImplTest {
     }
 
     @Test
-    public void exceptions_result_in_control() {
+    public void exceptionsResultInControl() {
         SDKReadinessGates gates = mock(SDKReadinessGates.class);
         SplitCacheConsumer splitCacheConsumer = mock(SplitCacheConsumer.class);
         SegmentCacheConsumer segmentCacheConsumer = mock(SegmentCacheConsumer.class);
@@ -192,7 +192,7 @@ public class SplitClientImplTest {
      * There is no config for this treatment
      */
     @Test
-    public void works_null_config() {
+    public void worksNullConfig() {
         String test = "test1";
 
         ParsedCondition rollOutToEveryone = ParsedCondition.createParsedConditionForTests(CombiningMatcher.of(new AllKeysMatcher()), Lists.newArrayList(partition("on", 100)));
@@ -261,7 +261,7 @@ public class SplitClientImplTest {
     }
 
     @Test
-    public void last_condition_is_always_default() {
+    public void lastConditionIsAlwaysDefault() {
         String test = "test1";
 
         ParsedCondition rollOutToEveryone = ParsedCondition.createParsedConditionForTests(CombiningMatcher.of(new WhitelistMatcher(Lists.newArrayList("adil@codigo.com"))), Lists.newArrayList(partition("on", 100)));
@@ -292,7 +292,7 @@ public class SplitClientImplTest {
      * Tests that we retrieve configs from the default treatment
      */
     @Test
-    public void last_condition_is_always_default_but_with_treatment() {
+    public void lastConditionIsAlwaysDefaultButWithTreatment() {
         String test = "test1";
 
         ParsedCondition rollOutToEveryone = ParsedCondition.createParsedConditionForTests(CombiningMatcher.of(new WhitelistMatcher(
@@ -329,7 +329,7 @@ public class SplitClientImplTest {
     }
 
     @Test
-    public void multiple_conditions_work() {
+    public void multipleConditionsWork() {
         String test = "test1";
 
         ParsedCondition adil_is_always_on = ParsedCondition.createParsedConditionForTests(CombiningMatcher.of(new WhitelistMatcher(Lists.newArrayList("adil@codigo.com"))), Lists.newArrayList(partition("on", 100)));
@@ -365,7 +365,7 @@ public class SplitClientImplTest {
 
 
     @Test
-    public void killed_test_always_goes_to_default() {
+    public void killedTestAlwaysGoesToDefault() {
         String test = "test1";
 
         ParsedCondition rollOutToEveryone = ParsedCondition.createParsedConditionForTests(CombiningMatcher.of(new WhitelistMatcher(Lists.newArrayList("adil@codigo.com"))), Lists.newArrayList(partition("on", 100)));
@@ -396,7 +396,7 @@ public class SplitClientImplTest {
      * when killed, the evaluator follows a slightly different path. So testing that when there is a config.
      */
     @Test
-    public void killed_test_always_goes_to_default_has_config() {
+    public void killedTestAlwaysGoesToDefaultHasConfig() {
         String test = "test1";
 
         ParsedCondition rollOutToEveryone = ParsedCondition.createParsedConditionForTests(CombiningMatcher.of(new WhitelistMatcher(
@@ -433,7 +433,7 @@ public class SplitClientImplTest {
     }
 
     @Test
-    public void dependency_matcher_on() {
+    public void dependencyMatcherOn() {
         String parent = "parent";
         String dependent = "dependent";
 
@@ -466,7 +466,7 @@ public class SplitClientImplTest {
     }
 
     @Test
-    public void dependency_matcher_off() {
+    public void dependencyMatcherOff() {
         String parent = "parent";
         String dependent = "dependent";
 
@@ -499,7 +499,7 @@ public class SplitClientImplTest {
     }
 
     @Test
-    public void dependency_matcher_control() {
+    public void dependencyMatcherControl() {
         String dependent = "dependent";
 
         ParsedCondition dependent_needs_parent = ParsedCondition.createParsedConditionForTests(CombiningMatcher.of(new DependencyMatcher("not-exists", Lists.newArrayList(Treatments.OFF))), Lists.newArrayList(partition(Treatments.OFF, 100)));
@@ -525,7 +525,7 @@ public class SplitClientImplTest {
     }
 
     @Test
-    public void attributes_work() {
+    public void attributesWork() {
         String test = "test1";
 
         ParsedCondition adil_is_always_on = ParsedCondition.createParsedConditionForTests(CombiningMatcher.of(new WhitelistMatcher(Lists.newArrayList("adil@codigo.com"))), Lists.newArrayList(partition(Treatments.ON, 100)));
@@ -559,7 +559,7 @@ public class SplitClientImplTest {
     }
 
     @Test
-    public void attributes_work_2() {
+    public void attributesWork2() {
         String test = "test1";
 
         ParsedCondition age_equal_to_0_should_be_on = ParsedCondition.createParsedConditionForTests(CombiningMatcher.of("age", new EqualToMatcher(0, DataType.NUMBER)), Lists.newArrayList(partition("on", 100)));
@@ -593,7 +593,7 @@ public class SplitClientImplTest {
     }
 
     @Test
-    public void attributes_greater_than_negative_number() {
+    public void attributesGreaterThanNegativeNumber() {
         String test = "test1";
 
         ParsedCondition age_equal_to_0_should_be_on = ParsedCondition.createParsedConditionForTests(CombiningMatcher.of("age", new EqualToMatcher(-20, DataType.NUMBER)), Lists.newArrayList(partition("on", 100)));
@@ -629,7 +629,7 @@ public class SplitClientImplTest {
 
 
     @Test
-    public void attributes_for_sets() {
+    public void attributesForSets() {
         String test = "test1";
 
         ParsedCondition any_of_set = ParsedCondition.createParsedConditionForTests(CombiningMatcher.of("products", new ContainsAnyOfSetMatcher(Lists.<String>newArrayList("sms", "video"))), Lists.newArrayList(partition("on", 100)));
@@ -667,7 +667,7 @@ public class SplitClientImplTest {
     }
 
     @Test
-    public void labels_are_populated() {
+    public void labelsArePopulated() {
         String test = "test1";
 
         ParsedCondition age_equal_to_0_should_be_on = new ParsedCondition(ConditionType.ROLLOUT,
@@ -713,8 +713,8 @@ public class SplitClientImplTest {
     }
 
     @Test
-    public void not_in_split_if_no_allocation() {
-        traffic_allocation("pato@split.io", 0, 123, "off", "not in split");
+    public void notInSplitIfNoAllocation() {
+        trafficAllocation("pato@split.io", 0, 123, "off", "not in split");
     }
 
     /**
@@ -728,44 +728,44 @@ public class SplitClientImplTest {
      * @author adil
      */
     @Test
-    public void not_in_split_if_10_percent_allocation() {
+    public void notInSplitIf10PercentAllocation() {
 
         String key = "pato@split.io";
         int i = 0;
         for (; i <= 9; i++) {
-            traffic_allocation(key, i, 123, "off", "not in split");
+            trafficAllocation(key, i, 123, "off", "not in split");
         }
 
         for (; i <= 100; i++) {
-            traffic_allocation(key, i, 123, "on", "in segment all");
+            trafficAllocation(key, i, 123, "on", "in segment all");
         }
     }
 
     @Test
-    public void traffic_allocation_one_percent() {
+    public void trafficAllocationOnePercent() {
         //This key, with this seed it should fall in the 1%
         String fallsInOnePercent = "pato193";
-        traffic_allocation(fallsInOnePercent, 1, 123, "on", "in segment all");
+        trafficAllocation(fallsInOnePercent, 1, 123, "on", "in segment all");
 
         //All these others should not be in split
         for (int offset = 0; offset <= 100; offset++) {
-            traffic_allocation("pato" + String.valueOf(offset), 1, 123, "off", "not in split");
+            trafficAllocation("pato" + String.valueOf(offset), 1, 123, "off", "not in split");
         }
 
     }
 
     @Test
-    public void in_split_if_100_percent_allocation() {
-        traffic_allocation("pato@split.io", 100, 123, "on", "in segment all");
+    public void inSplitIf100PercentAllocation() {
+        trafficAllocation("pato@split.io", 100, 123, "on", "in segment all");
     }
 
     @Test
-    public void whitelist_overrides_traffic_allocation() {
-        traffic_allocation("adil@split.io", 0, 123, "on", "whitelisted user");
+    public void whitelistOverridesTrafficAllocation() {
+        trafficAllocation("adil@split.io", 0, 123, "on", "whitelisted user");
     }
 
 
-    private void traffic_allocation(String key, int trafficAllocation, int trafficAllocationSeed, String expected_treatment_on_or_off, String label) {
+    private void trafficAllocation(String key, int trafficAllocation, int trafficAllocationSeed, String expected_treatment_on_or_off, String label) {
 
         String test = "test1";
 
@@ -864,7 +864,7 @@ public class SplitClientImplTest {
 
 
     @Test
-    public void matching_bucketing_keys_work() {
+    public void matchingBucketingKeysWork() {
         String test = "test1";
 
 
@@ -900,7 +900,7 @@ public class SplitClientImplTest {
     }
 
     @Test
-    public void impression_metadata_is_propagated() {
+    public void impressionMetadataIsPropagated() {
         String test = "test1";
 
         ParsedCondition age_equal_to_0_should_be_on = new ParsedCondition(ConditionType.ROLLOUT,
@@ -953,7 +953,7 @@ public class SplitClientImplTest {
     }
 
     @Test
-    public void block_until_ready_does_not_time_when_sdk_is_ready() throws TimeoutException, InterruptedException {
+    public void blockUntilReadyDoesNotTimeWhenSdkIsReady() throws TimeoutException, InterruptedException {
         SplitCacheConsumer splitCacheConsumer = mock(SplitCacheConsumer.class);
         SDKReadinessGates ready = mock(SDKReadinessGates.class);
         SegmentCacheConsumer segmentCacheConsumer = mock(SegmentCacheConsumer.class);
@@ -973,7 +973,7 @@ public class SplitClientImplTest {
     }
 
     @Test(expected = TimeoutException.class)
-    public void block_until_ready_times_when_sdk_is_not_ready() throws TimeoutException, InterruptedException {
+    public void blockUntilReadyTimesWhenSdkIsNotReady() throws TimeoutException, InterruptedException {
         SplitCacheConsumer splitCacheConsumer = mock(SplitCacheConsumer.class);
         SDKReadinessGates ready = mock(SDKReadinessGates.class);
         SegmentCacheConsumer segmentCacheConsumer = mock(SegmentCacheConsumer.class);
@@ -993,7 +993,7 @@ public class SplitClientImplTest {
     }
 
     @Test
-    public void track_with_valid_parameters() {
+    public void trackWithValidParameters() {
         SDKReadinessGates gates = mock(SDKReadinessGates.class);
         SplitCacheConsumer splitCacheConsumer = mock(SplitCacheConsumer.class);
         SegmentCacheConsumer segmentCacheConsumer = mock(SegmentCacheConsumer.class);
@@ -1017,7 +1017,7 @@ public class SplitClientImplTest {
     }
 
     @Test
-    public void track_with_invalid_event_type_ids() {
+    public void trackWithInvalidEventTypeIds() {
         SDKReadinessGates gates = mock(SDKReadinessGates.class);
         SplitCacheConsumer splitCacheConsumer = mock(SplitCacheConsumer.class);
         SegmentCacheConsumer segmentCacheConsumer = mock(SegmentCacheConsumer.class);
@@ -1040,7 +1040,7 @@ public class SplitClientImplTest {
     }
 
     @Test
-    public void track_with_invalid_traffic_type_names() {
+    public void trackWithInvalidTrafficTypeNames() {
         SDKReadinessGates gates = mock(SDKReadinessGates.class);
         SplitCacheConsumer splitCacheConsumer = mock(SplitCacheConsumer.class);
         SegmentCacheConsumer segmentCacheConsumer = mock(SegmentCacheConsumer.class);
@@ -1060,7 +1060,7 @@ public class SplitClientImplTest {
     }
 
     @Test
-    public void track_with_invalid_keys() {
+    public void trackWithInvalidKeys() {
         SDKReadinessGates gates = mock(SDKReadinessGates.class);
         SplitCacheConsumer splitCacheConsumer = mock(SplitCacheConsumer.class);
         SegmentCacheConsumer segmentCacheConsumer = mock(SegmentCacheConsumer.class);
@@ -1083,7 +1083,7 @@ public class SplitClientImplTest {
     }
 
     @Test
-    public void getTreatment_with_invalid_keys() {
+    public void getTreatmentWithInvalidKeys() {
         String test = "split";
 
         ParsedCondition rollOutToEveryone = ParsedCondition.createParsedConditionForTests(CombiningMatcher.of(new AllKeysMatcher()), Lists.newArrayList(partition("on", 100)));
@@ -1137,7 +1137,7 @@ public class SplitClientImplTest {
     }
 
     @Test
-    public void track_with_properties() {
+    public void trackWithProperties() {
         SDKReadinessGates gates = mock(SDKReadinessGates.class);
         SplitCacheConsumer splitCacheConsumer = mock(SplitCacheConsumer.class);
         SegmentCacheConsumer segmentCacheConsumer = mock(SegmentCacheConsumer.class);
@@ -1238,7 +1238,7 @@ public class SplitClientImplTest {
     }
 
     @Test
-    public void client_cannot_perform_actions_when_destroyed() throws InterruptedException, URISyntaxException, TimeoutException, IOException {
+    public void clientCannotPerformActionsWhenDestroyed() throws InterruptedException, URISyntaxException, TimeoutException, IOException {
         String test = "split";
 
         ParsedCondition rollOutToEveryone = ParsedCondition.createParsedConditionForTests(CombiningMatcher.of(new AllKeysMatcher()), Lists.newArrayList(partition("on", 100)));
@@ -1358,7 +1358,7 @@ public class SplitClientImplTest {
     }
 
     @Test
-    public void null_key_results_in_control_getTreatments() {
+    public void nullKeyResultsInControlGetTreatments() {
         String test = "test1";
         ParsedCondition rollOutToEveryone = ParsedCondition.createParsedConditionForTests(CombiningMatcher.of(new AllKeysMatcher()),
                 Lists.newArrayList(partition("on", 100)));
@@ -1387,7 +1387,7 @@ public class SplitClientImplTest {
     }
 
     @Test
-    public void null_splits_results_in_empty_getTreatments() {
+    public void nullSplitsResultsInEmptyGetTreatments() {
         String test = "test1";
         ParsedCondition rollOutToEveryone = ParsedCondition.createParsedConditionForTests(CombiningMatcher.of(new AllKeysMatcher()),
                 Lists.newArrayList(partition("on", 100)));
@@ -1416,7 +1416,7 @@ public class SplitClientImplTest {
     }
 
     @Test
-    public void exceptions_result_in_control_getTreatments() {
+    public void exceptionsResultInControlGetTreatments() {
         SDKReadinessGates gates = mock(SDKReadinessGates.class);
         SplitCacheConsumer splitCacheConsumer = mock(SplitCacheConsumer.class);
         SegmentCacheConsumer segmentCacheConsumer = mock(SegmentCacheConsumer.class);
@@ -1440,7 +1440,7 @@ public class SplitClientImplTest {
     }
 
     @Test
-    public void getTreatments_works() {
+    public void getTreatmentsWorks() {
         String test = "test1";
 
         ParsedCondition rollOutToEveryone = ParsedCondition.createParsedConditionForTests(CombiningMatcher.of(new AllKeysMatcher()), Lists.newArrayList(partition("on", 100)));
@@ -1471,7 +1471,7 @@ public class SplitClientImplTest {
     }
 
     @Test
-    public void empty_splits_results_in_null_getTreatments() {
+    public void emptySplitsResultsInNullGetTreatments() {
         String test = "test1";
         ParsedCondition rollOutToEveryone = ParsedCondition.createParsedConditionForTests(CombiningMatcher.of(new AllKeysMatcher()), Lists.newArrayList(partition("on", 100)));
         List<ParsedCondition> conditions = Lists.newArrayList(rollOutToEveryone);
@@ -1500,7 +1500,7 @@ public class SplitClientImplTest {
     }
 
     @Test
-    public void exceptions_result_in_control_treatments() {
+    public void exceptionsResultInControlTreatments() {
         SDKReadinessGates gates = mock(SDKReadinessGates.class);
         SplitCacheConsumer splitCacheConsumer = mock(SplitCacheConsumer.class);
         SegmentCacheConsumer segmentCacheConsumer = mock(SegmentCacheConsumer.class);
@@ -1521,7 +1521,7 @@ public class SplitClientImplTest {
     }
 
     @Test
-    public void works_treatments() {
+    public void worksTreatments() {
         String test = "test1";
         String test2 = "test2";
 
@@ -1562,7 +1562,7 @@ public class SplitClientImplTest {
     }
 
     @Test
-    public void works_one_control_treatments() {
+    public void worksOneControlTreatments() {
         String test = "test1";
         String test2 = "test2";
 
@@ -1599,7 +1599,7 @@ public class SplitClientImplTest {
     }
 
     @Test
-    public void treatments_worksAndHasConfig() {
+    public void treatmentsWorksAndHasConfig() {
         String test = "test1";
         String test2 = "test2";
 
@@ -1763,7 +1763,7 @@ public class SplitClientImplTest {
     }
 
     @Test
-    public void treatments_worksAndHasConfigFlagSet() {
+    public void treatmentsWorksAndHasConfigFlagSet() {
         String test = "test1";
         String test2 = "test2";
 
@@ -1812,7 +1812,7 @@ public class SplitClientImplTest {
     }
 
     @Test
-    public void treatments_worksAndHasConfigFlagSets() {
+    public void treatmentsWorksAndHasConfigFlagSets() {
         String test = "test1";
         String test2 = "test2";
 
