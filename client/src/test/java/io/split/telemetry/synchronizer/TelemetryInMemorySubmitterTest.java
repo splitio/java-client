@@ -90,7 +90,7 @@ public class TelemetryInMemorySubmitterTest {
         TelemetryStorage telemetryStorage = new InMemoryTelemetryStorage();
         CloseableHttpClient httpClient = TestHelper.mockHttpClient(TELEMETRY_ENDPOINT, HttpStatus.SC_OK);
         TelemetryInMemorySubmitter telemetrySynchronizer = getTelemetrySynchronizer(httpClient);
-        SplitClientConfig splitClientConfig = SplitClientConfig.builder().flagSetsFilter(Arrays.asList("set1", "set2", "set-3")).build();
+        SplitClientConfig splitClientConfig = SplitClientConfig.builder().flagSetsFilter(Arrays.asList("a", "_b", "a", "a", "c", "d", "_d")).build();
         populateConfig(telemetryStorage);
         Field teleTelemetryStorageConsumer = TelemetryInMemorySubmitter.class.getDeclaredField("_teleTelemetryStorageConsumer");
         teleTelemetryStorageConsumer.setAccessible(true);
@@ -102,8 +102,8 @@ public class TelemetryInMemorySubmitterTest {
         Assert.assertEquals(3, config.getRedundantFactories());
         Assert.assertEquals(2, config.getBurTimeouts());
         Assert.assertEquals(3, config.getNonReadyUsages());
-        Assert.assertEquals(3, config.getFlagSetsTotal());
-        Assert.assertEquals(1, config.getFlagSetsInvalid());
+        Assert.assertEquals(5, config.getFlagSetsTotal());
+        Assert.assertEquals(2, config.getFlagSetsInvalid());
     }
 
     @Test

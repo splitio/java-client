@@ -10,7 +10,6 @@ import io.split.engine.common.FetchOptions;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -42,7 +41,6 @@ public class SplitFetcherImp implements SplitFetcher {
      * The count is used to maintain how many splits are using a traffic type, so when
      * an ARCHIVED split is received, we know if we need to remove a traffic type from the multiset.
      */
-
 
     public SplitFetcherImp(SplitChangeFetcher splitChangeFetcher, SplitParser parser, SplitCacheProducer splitCacheProducer,
                            TelemetryRuntimeProducer telemetryRuntimeProducer, HashSet<String> sets) {
