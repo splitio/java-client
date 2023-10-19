@@ -92,18 +92,18 @@ public class TelemetryInMemorySubmitterTest {
         TelemetryInMemorySubmitter telemetrySynchronizer = getTelemetrySynchronizer(httpClient);
         SplitClientConfig splitClientConfig = SplitClientConfig.builder().flagSetsFilter(Arrays.asList("a", "_b", "a", "a", "c", "d", "_d")).build();
         populateConfig(telemetryStorage);
-        Field teleTelemetryStorageConsumer = TelemetryInMemorySubmitter.class.getDeclaredField("_teleTelemetryStorageConsumer");
-        teleTelemetryStorageConsumer.setAccessible(true);
+        Field telemetryStorageConsumer = TelemetryInMemorySubmitter.class.getDeclaredField("_telemetryStorageConsumer");
+        telemetryStorageConsumer.setAccessible(true);
         Field modifiersField = Field.class.getDeclaredField("modifiers");
         modifiersField.setAccessible(true);
-        modifiersField.setInt(teleTelemetryStorageConsumer, teleTelemetryStorageConsumer.getModifiers() & ~Modifier.FINAL);
-        teleTelemetryStorageConsumer.set(telemetrySynchronizer, telemetryStorage);
+        modifiersField.setInt(telemetryStorageConsumer, telemetryStorageConsumer.getModifiers() & ~Modifier.FINAL);
+        telemetryStorageConsumer.set(telemetrySynchronizer, telemetryStorage);
         Config config = telemetrySynchronizer.generateConfig(splitClientConfig, 100l, ApiKeyCounter.getApiKeyCounterInstance().getFactoryInstances(), new ArrayList<>());
         Assert.assertEquals(3, config.getRedundantFactories());
         Assert.assertEquals(2, config.getBurTimeouts());
         Assert.assertEquals(3, config.getNonReadyUsages());
-        Assert.assertEquals(5, config.getFlagSetsTotal());
-        Assert.assertEquals(2, config.getFlagSetsInvalid());
+        Assert.assertEquals(7, config.getFlagSetsTotal());
+        Assert.assertEquals(4, config.getFlagSetsInvalid());
     }
 
     @Test
@@ -112,13 +112,13 @@ public class TelemetryInMemorySubmitterTest {
         CloseableHttpClient httpClient = TestHelper.mockHttpClient(TELEMETRY_ENDPOINT, HttpStatus.SC_OK);
         TelemetryInMemorySubmitter telemetrySynchronizer = getTelemetrySynchronizer(httpClient);
         populateStats(telemetryStorage);
-        Field teleTelemetryStorageConsumer = TelemetryInMemorySubmitter.class.getDeclaredField("_teleTelemetryStorageConsumer");
-        teleTelemetryStorageConsumer.setAccessible(true);
+        Field telemetryStorageConsumer = TelemetryInMemorySubmitter.class.getDeclaredField("_telemetryStorageConsumer");
+        telemetryStorageConsumer.setAccessible(true);
         Field modifiersField = Field.class.getDeclaredField("modifiers");
         modifiersField.setAccessible(true);
-        modifiersField.setInt(teleTelemetryStorageConsumer, teleTelemetryStorageConsumer.getModifiers() & ~Modifier.FINAL);
+        modifiersField.setInt(telemetryStorageConsumer, telemetryStorageConsumer.getModifiers() & ~Modifier.FINAL);
 
-        teleTelemetryStorageConsumer.set(telemetrySynchronizer, telemetryStorage);
+        telemetryStorageConsumer.set(telemetrySynchronizer, telemetryStorage);
         Stats stats = telemetrySynchronizer.generateStats();
         Assert.assertEquals(2, stats.getMethodLatencies().getTreatment().stream().mapToInt(Long::intValue).sum());
         Assert.assertEquals(2, stats.getMethodLatencies().getTreatments().stream().mapToInt(Long::intValue).sum());
