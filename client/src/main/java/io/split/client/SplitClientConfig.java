@@ -454,7 +454,7 @@ public class SplitClientConfig {
         private final long _lastSeenCacheSize = 500000;
         private ThreadFactory _threadFactory;
         private HashSet<String> _flagSetsFilter = new HashSet<>();
-        private int _invalidSets = 0;
+        private int _invalidSetsCount = 0;
 
         public Builder() {
         }
@@ -934,7 +934,7 @@ public class SplitClientConfig {
          */
         public Builder flagSetsFilter(List<String> flagSetsFilter) {
             _flagSetsFilter = new LinkedHashSet<>(cleanup(flagSetsFilter));
-            _invalidSets = flagSetsFilter.size() - _flagSetsFilter.size();
+            _invalidSetsCount = flagSetsFilter.size() - _flagSetsFilter.size();
             return this;
         }
 
@@ -1087,7 +1087,7 @@ public class SplitClientConfig {
                     _lastSeenCacheSize,
                     _threadFactory,
                     _flagSetsFilter,
-                    _invalidSets);
+                    _invalidSetsCount);
         }
     }
 }

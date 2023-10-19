@@ -4,12 +4,10 @@ import org.junit.Assert;
 import org.junit.Test;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
 
 import static io.split.inputValidation.FlagSetsValidator.cleanup;
-import static io.split.inputValidation.FlagSetsValidator.areValid;
 
 public class FlagSetsValidatorTest {
 
@@ -76,18 +74,5 @@ public class FlagSetsValidatorTest {
         Assert.assertEquals("test1", sets.get(2));
         Assert.assertEquals("test2", sets.get(3));
         Assert.assertEquals("test3", sets.get(4));
-    }
-
-    @Test
-    public void testIsValid(){
-        Assert.assertTrue(areValid(Arrays.asList(" test1 ")).getValid());
-        Assert.assertTrue(areValid(Arrays.asList("Test1 ")).getValid());
-    }
-
-    @Test
-    public void testIsNotValid(){
-        Assert.assertFalse(areValid(Arrays.asList(" test 1 ")).getValid());
-        Assert.assertFalse(areValid(Arrays.asList("")).getValid());
-        Assert.assertFalse(areValid(null).getValid());
     }
 }

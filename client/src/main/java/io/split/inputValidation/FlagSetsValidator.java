@@ -3,8 +3,6 @@ package io.split.inputValidation;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.HashSet;
-import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
@@ -42,10 +40,5 @@ public final class FlagSetsValidator {
             cleanFlagSets.add(flagSet);
         }
         return cleanFlagSets;
-    }
-
-    public static FlagSetsValidResult areValid(List<String> flagSets) {
-        HashSet cleanFlagSets = new LinkedHashSet<>(cleanup(flagSets));
-        return new FlagSetsValidResult(cleanFlagSets != null && cleanFlagSets.size() != 0, cleanFlagSets);
     }
 }
