@@ -35,7 +35,7 @@ public class InMemoryCacheTest {
 
     @Test
     public void putAndGetSplit() {
-        ParsedSplit split = getParsedSplit("split_name");
+        ParsedSplit split = getParsedSplitWithFlagSetsSameStorage("split_name");
         _cache.putMany(Stream.of(split).collect(Collectors.toList()));
 
         ParsedSplit result = _cache.get("split_name");
@@ -47,8 +47,8 @@ public class InMemoryCacheTest {
 
     @Test
     public void putDuplicateSplit() {
-        ParsedSplit split = getParsedSplit("split_name");
-        ParsedSplit split2 = getParsedSplit("split_name");
+        ParsedSplit split = getParsedSplitWithFlagSetsSameStorage("split_name");
+        ParsedSplit split2 = getParsedSplitWithFlagSetsSameStorage("split_name");
         _cache.putMany(Stream.of(split, split2).collect(Collectors.toList()));
 
         int result = _cache.getAll().size();
@@ -58,7 +58,7 @@ public class InMemoryCacheTest {
 
     @Test
     public void getInExistentSplit() {
-        ParsedSplit split = getParsedSplit("split_name");
+        ParsedSplit split = getParsedSplitWithFlagSetsSameStorage("split_name");
         _cache.putMany(Stream.of(split).collect(Collectors.toList()));
 
         ParsedSplit result = _cache.get("split_name_2");
@@ -67,14 +67,36 @@ public class InMemoryCacheTest {
 
     @Test
     public void removeSplit() {
-        ParsedSplit split = getParsedSplit("split_name");
-        ParsedSplit split2 = getParsedSplit("split_name_2");
-        _cache.putMany(Stream.of(split, split2).collect(Collectors.toList()));
+        ParsedSplit splitWithFlagSetsSameStorage = getParsedSplitWithFlagSetsSameStorage("split_name");
+        ParsedSplit split2WithFlagSetsSameStorage = getParsedSplitWithFlagSetsSameStorage("split_name_2");
+        ParsedSplit splitWithFlagSetsNotSameStorage = getParsedSplitWithFlagSetsNotSameStorage("split_name_3");
+        ParsedSplit splitFlagSetsEmpty = getParsedSplitFlagSetsEmpty("split_name_4");
+        ParsedSplit splitFlagSetsNull = getParsedSplitFlagSetsNull("split_name_5");
+        _cache.putMany(Stream.of(splitWithFlagSetsSameStorage, split2WithFlagSetsSameStorage, splitWithFlagSetsNotSameStorage,
+                splitFlagSetsEmpty, splitFlagSetsNull).collect(Collectors.toList()));
 
         int result = _cache.getAll().size();
-        Assert.assertEquals(2, result);
+        Assert.assertEquals(5, result);
+        Map<String, HashSet<String>> namesByFlagSets = _cache.getNamesByFlagSets(Arrays.asList("set1", "set2"));
+        Assert.assertTrue(namesByFlagSets.get("set1").contains("split_name"));
+        Assert.assertTrue(namesByFlagSets.get("set2").contains("split_name"));
 
         _cache.remove("split_name");
+        result = _cache.getAll().size();
+        Assert.assertEquals(4, result);
+        namesByFlagSets = _cache.getNamesByFlagSets(Arrays.asList("set1", "set2"));
+        Assert.assertFalse(namesByFlagSets.get("set1").contains("split_name"));
+        Assert.assertFalse(namesByFlagSets.get("set2").contains("split_name"));
+
+        _cache.remove("split_name_3");
+        result = _cache.getAll().size();
+        Assert.assertEquals(3, result);
+
+        _cache.remove("split_name_4");
+        result = _cache.getAll().size();
+        Assert.assertEquals(2, result);
+
+        _cache.remove("split_name_5");
         result = _cache.getAll().size();
         Assert.assertEquals(1, result);
 
@@ -95,10 +117,10 @@ public class InMemoryCacheTest {
 
     @Test
     public void getMany() {
-        ParsedSplit split = getParsedSplit("split_name_1");
-        ParsedSplit split2 = getParsedSplit("split_name_2");
-        ParsedSplit split3 = getParsedSplit("split_name_3");
-        ParsedSplit split4 = getParsedSplit("split_name_4");
+        ParsedSplit split = getParsedSplitWithFlagSetsSameStorage("split_name_1");
+        ParsedSplit split2 = getParsedSplitWithFlagSetsSameStorage("split_name_2");
+        ParsedSplit split3 = getParsedSplitWithFlagSetsSameStorage("split_name_3");
+        ParsedSplit split4 = getParsedSplitWithFlagSetsSameStorage("split_name_4");
         _cache.putMany(Stream.of(split, split2, split3, split4).collect(Collectors.toList()));
 
         List<String> names = new ArrayList<>();
@@ -150,13 +172,25 @@ public class InMemoryCacheTest {
 
     }
 
-    private ParsedSplit getParsedSplit(String splitName) {
-        return ParsedSplit.createParsedSplitForTests(splitName, 0, false, "default_treatment", new ArrayList<>(), "tt", 123, 2, new HashSet<>(Arrays.asList("set1", "set2", "set3")));
+    private ParsedSplit getParsedSplitWithFlagSetsSameStorage(String splitName) {
+        return ParsedSplit.createParsedSplitForTests(splitName, 0, false, "default_treatment", new ArrayList<>(), "tt", 123, 2, new HashSet<>(Arrays.asList("set1", "set2")));
+    }
+
+    private ParsedSplit getParsedSplitWithFlagSetsNotSameStorage(String splitName) {
+        return ParsedSplit.createParsedSplitForTests(splitName, 0, false, "default_treatment", new ArrayList<>(), "tt", 123, 2, new HashSet<>(Arrays.asList("set3")));
+    }
+
+    private ParsedSplit getParsedSplitFlagSetsNull(String splitName) {
+        return ParsedSplit.createParsedSplitForTests(splitName, 0, false, "default_treatment", new ArrayList<>(), "tt", 123, 2, null);
+    }
+
+    private ParsedSplit getParsedSplitFlagSetsEmpty(String splitName) {
+        return ParsedSplit.createParsedSplitForTests(splitName, 0, false, "default_treatment", new ArrayList<>(), "tt", 123, 2, new HashSet<>());
     }
 
     @Test
     public void testPutMany() {
-        _cache.putMany(Stream.of(getParsedSplit("split_name_1"),getParsedSplit("split_name_2"),getParsedSplit("split_name_3"),getParsedSplit("split_name_4")).collect(Collectors.toList()));
+        _cache.putMany(Stream.of(getParsedSplitWithFlagSetsSameStorage("split_name_1"), getParsedSplitWithFlagSetsSameStorage("split_name_2"), getParsedSplitWithFlagSetsSameStorage("split_name_3"), getParsedSplitWithFlagSetsSameStorage("split_name_4")).collect(Collectors.toList()));
         List<String> names = Stream.of("split_name_1","split_name_2","split_name_3","split_name_4").collect(Collectors.toList());
 
         Map<String, ParsedSplit> result = _cache.fetchMany(names);
