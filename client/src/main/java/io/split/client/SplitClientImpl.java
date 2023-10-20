@@ -12,8 +12,6 @@ import io.split.engine.evaluator.EvaluatorImp;
 import io.split.engine.evaluator.Labels;
 import io.split.grammar.Treatments;
 import io.split.inputValidation.EventsValidator;
-import io.split.inputValidation.FlagSetsValidResult;
-import io.split.inputValidation.FlagSetsValidator;
 import io.split.inputValidation.KeyValidator;
 import io.split.inputValidation.SplitNameValidator;
 import io.split.inputValidation.TrafficTypeValidator;
@@ -32,11 +30,13 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import java.util.concurrent.TimeoutException;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import static com.google.common.base.Preconditions.checkNotNull;
+import static io.split.inputValidation.FlagSetsValidator.cleanup;
 
 /**
  * A basic implementation of SplitClient.
@@ -316,23 +316,23 @@ public final class SplitClientImpl implements SplitClient {
                                                                      List<String> sets, Map<String, Object> attributes, MethodEnum methodEnum) {
 
         long initTime = System.currentTimeMillis();
-        FlagSetsValidResult flagSetsValidResult = null;
+        Set cleanFlagSets = null;
         if (methodEnum == MethodEnum.TREATMENTS_BY_FLAG_SET || methodEnum == MethodEnum.TREATMENTS_BY_FLAG_SETS ||
                 methodEnum == MethodEnum.TREATMENTS_WITH_CONFIG_BY_FLAG_SET || methodEnum == MethodEnum.TREATMENTS_WITH_CONFIG_BY_FLAG_SETS) {
             if (sets == null || sets.isEmpty()) {
                 _log.warn(String.format("%s: sets must be a non-empty array", methodEnum.getMethod()));
                 return new HashMap<>();
             }
-            flagSetsValidResult = FlagSetsValidator.areValid(sets);
-            if (!flagSetsValidResult.getValid()) {
+            cleanFlagSets = cleanup(sets);
+            if (cleanFlagSets == null || cleanFlagSets.size() == 0) {
                 _log.warn("The sets are invalid");
                 return new HashMap<>();
             }
-            if (filterSetsAreInConfig(flagSetsValidResult.getFlagSets()).isEmpty()) {
+            if (filterSetsAreInConfig(cleanFlagSets).isEmpty()) {
                 _log.warn("The sets are not in flagSetsFilter config");
                 return new HashMap<>();
             }
-            featureFlagNames = getAllFlags(flagSetsValidResult.getFlagSets());
+            featureFlagNames = getAllFlags(cleanFlagSets);
         } else if (featureFlagNames == null) {
             _log.error(String.format("%s: featureFlagNames must be a non-empty array", methodEnum.getMethod()));
             return new HashMap<>();
@@ -353,9 +353,8 @@ public final class SplitClientImpl implements SplitClient {
                 return new HashMap<>();
             }
             Map<String, EvaluatorImp.TreatmentLabelAndChangeNumber> evaluatorResult;
-            if (flagSetsValidResult != null) {
-                evaluatorResult = _evaluator.evaluateFeaturesByFlagSets(matchingKey, bucketingKey, new ArrayList<>(flagSetsValidResult.
-                        getFlagSets()));
+            if (cleanFlagSets != null) {
+                evaluatorResult = _evaluator.evaluateFeaturesByFlagSets(matchingKey, bucketingKey, new ArrayList<>(cleanFlagSets));
             } else {
                 featureFlagNames = SplitNameValidator.areValid(featureFlagNames, methodEnum.getMethod());
                 evaluatorResult = _evaluator.evaluateFeatures(matchingKey, bucketingKey, featureFlagNames, attributes);
@@ -391,7 +390,7 @@ public final class SplitClientImpl implements SplitClient {
         }
     }
 
-    private List<String> filterSetsAreInConfig(HashSet<String> sets) {
+    private List<String> filterSetsAreInConfig(Set<String> sets) {
         HashSet<String> configSets = _config.getSetsFilter();
         List<String> setsToReturn = new ArrayList<>();
         for (String set : sets) {
@@ -405,7 +404,7 @@ public final class SplitClientImpl implements SplitClient {
         return setsToReturn;
     }
 
-    private List<String> getAllFlags(HashSet<String> sets) {
+    private List<String> getAllFlags(Set<String> sets) {
         Map<String, HashSet<String>> namesBySets = _splitCacheConsumer.getNamesByFlagSets(new ArrayList<>(sets));
         HashSet<String> flags = new HashSet<>();
         for (String set: namesBySets.keySet()) {

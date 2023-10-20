@@ -33,7 +33,7 @@ public class TelemetryInMemorySubmitter implements TelemetrySynchronizer{
     private static  final String STORAGE = "memory";
 
     private HttpTelemetryMemorySender _httpHttpTelemetryMemorySender;
-    private TelemetryStorageConsumer _teleTelemetryStorageConsumer;
+    private TelemetryStorageConsumer _telemetryStorageConsumer;
     private SplitCacheConsumer _splitCacheConsumer;
     private SegmentCacheConsumer _segmentCacheConsumer;
     private final long _initStartTime;
@@ -42,7 +42,7 @@ public class TelemetryInMemorySubmitter implements TelemetrySynchronizer{
                                       SplitCacheConsumer splitCacheConsumer, SegmentCacheConsumer segmentCacheConsumer,
                                       TelemetryRuntimeProducer telemetryRuntimeProducer, long initStartTime) throws URISyntaxException {
         _httpHttpTelemetryMemorySender = HttpTelemetryMemorySender.create(client, telemetryRootEndpoint, telemetryRuntimeProducer);
-        _teleTelemetryStorageConsumer = checkNotNull(telemetryStorageConsumer);
+        _telemetryStorageConsumer = checkNotNull(telemetryStorageConsumer);
         _splitCacheConsumer = checkNotNull(splitCacheConsumer);
         _segmentCacheConsumer = checkNotNull(segmentCacheConsumer);
         _initStartTime = initStartTime;
@@ -75,25 +75,25 @@ public class TelemetryInMemorySubmitter implements TelemetrySynchronizer{
     @VisibleForTesting
     Stats generateStats() throws Exception {
         Stats stats = new Stats();
-        stats.setLastSynchronization(_teleTelemetryStorageConsumer.getLastSynchronization());
-        stats.setMethodLatencies(_teleTelemetryStorageConsumer.popLatencies());
-        stats.setMethodExceptions(_teleTelemetryStorageConsumer.popExceptions());
-        stats.setHttpErrors(_teleTelemetryStorageConsumer.popHTTPErrors());
-        stats.setHttpLatencies(_teleTelemetryStorageConsumer.popHTTPLatencies());
-        stats.setTokenRefreshes(_teleTelemetryStorageConsumer.popTokenRefreshes());
-        stats.setAuthRejections(_teleTelemetryStorageConsumer.popAuthRejections());
-        stats.setImpressionsQueued(_teleTelemetryStorageConsumer.getImpressionsStats(ImpressionsDataTypeEnum.IMPRESSIONS_QUEUED));
-        stats.setImpressionsDeduped(_teleTelemetryStorageConsumer.getImpressionsStats(ImpressionsDataTypeEnum.IMPRESSIONS_DEDUPED));
-        stats.setImpressionsDropped(_teleTelemetryStorageConsumer.getImpressionsStats(ImpressionsDataTypeEnum.IMPRESSIONS_DROPPED));
+        stats.setLastSynchronization(_telemetryStorageConsumer.getLastSynchronization());
+        stats.setMethodLatencies(_telemetryStorageConsumer.popLatencies());
+        stats.setMethodExceptions(_telemetryStorageConsumer.popExceptions());
+        stats.setHttpErrors(_telemetryStorageConsumer.popHTTPErrors());
+        stats.setHttpLatencies(_telemetryStorageConsumer.popHTTPLatencies());
+        stats.setTokenRefreshes(_telemetryStorageConsumer.popTokenRefreshes());
+        stats.setAuthRejections(_telemetryStorageConsumer.popAuthRejections());
+        stats.setImpressionsQueued(_telemetryStorageConsumer.getImpressionsStats(ImpressionsDataTypeEnum.IMPRESSIONS_QUEUED));
+        stats.setImpressionsDeduped(_telemetryStorageConsumer.getImpressionsStats(ImpressionsDataTypeEnum.IMPRESSIONS_DEDUPED));
+        stats.setImpressionsDropped(_telemetryStorageConsumer.getImpressionsStats(ImpressionsDataTypeEnum.IMPRESSIONS_DROPPED));
         stats.setSplitCount(_splitCacheConsumer.getAll().stream().count());
         stats.setSegmentCount(_segmentCacheConsumer.getSegmentCount());
         stats.setSegmentKeyCount(_segmentCacheConsumer.getKeyCount());
-        stats.setSessionLengthMs(_teleTelemetryStorageConsumer.getSessionLength());
-        stats.setEventsQueued(_teleTelemetryStorageConsumer.getEventStats(EventsDataRecordsEnum.EVENTS_QUEUED));
-        stats.setEventsDropped(_teleTelemetryStorageConsumer.getEventStats(EventsDataRecordsEnum.EVENTS_DROPPED));
-        stats.setStreamingEvents(_teleTelemetryStorageConsumer.popStreamingEvents());
-        stats.setTags(_teleTelemetryStorageConsumer.popTags());
-        stats.setUpdatesFromSSE(_teleTelemetryStorageConsumer.popUpdatesFromSSE());
+        stats.setSessionLengthMs(_telemetryStorageConsumer.getSessionLength());
+        stats.setEventsQueued(_telemetryStorageConsumer.getEventStats(EventsDataRecordsEnum.EVENTS_QUEUED));
+        stats.setEventsDropped(_telemetryStorageConsumer.getEventStats(EventsDataRecordsEnum.EVENTS_DROPPED));
+        stats.setStreamingEvents(_telemetryStorageConsumer.popStreamingEvents());
+        stats.setTags(_telemetryStorageConsumer.popTags());
+        stats.setUpdatesFromSSE(_telemetryStorageConsumer.popUpdatesFromSSE());
         return stats;
     }
 
@@ -121,8 +121,8 @@ public class TelemetryInMemorySubmitter implements TelemetrySynchronizer{
         urlOverrides.set_events(!SplitClientConfig.EVENTS_ENDPOINT.equals(splitClientConfig.eventsEndpoint()));
         urlOverrides.set_telemetry(!SplitClientConfig.TELEMETRY_ENDPOINT.equals(splitClientConfig.telemetryURL()));
 
-        config.setBurTimeouts(_teleTelemetryStorageConsumer.getBURTimeouts());
-        config.setNonReadyUsages(_teleTelemetryStorageConsumer.getNonReadyUsages());
+        config.setBurTimeouts(_telemetryStorageConsumer.getBURTimeouts());
+        config.setNonReadyUsages(_telemetryStorageConsumer.getNonReadyUsages());
         config.setHttpProxyDetected(splitClientConfig.proxy() != null);
         config.setImpressionsMode(getImpressionsMode(splitClientConfig));
         config.setIntegrations(impressions);

@@ -3,7 +3,6 @@ package io.split.client;
 import io.split.client.impressions.ImpressionListener;
 import io.split.client.impressions.ImpressionsManager;
 import io.split.client.utils.FileTypeEnum;
-import io.split.inputValidation.FSValidatorResult;
 import io.split.integrations.IntegrationsConfig;
 import io.split.storages.enums.OperationMode;
 import io.split.storages.enums.StorageMode;
@@ -12,6 +11,7 @@ import pluggable.CustomStorageWrapper;
 
 import java.io.IOException;
 import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.io.InputStream;
 import java.util.Properties;
@@ -454,7 +454,7 @@ public class SplitClientConfig {
         private final long _lastSeenCacheSize = 500000;
         private ThreadFactory _threadFactory;
         private HashSet<String> _flagSetsFilter = new HashSet<>();
-        private int _invalidSets = 0;
+        private int _invalidSetsCount = 0;
 
         public Builder() {
         }
@@ -933,9 +933,8 @@ public class SplitClientConfig {
          * @return this builder
          */
         public Builder flagSetsFilter(List<String> flagSetsFilter) {
-            FSValidatorResult fsValidatorResult = cleanup(flagSetsFilter);
-            _flagSetsFilter = fsValidatorResult.getFlagSets();
-            _invalidSets = fsValidatorResult.getInvalidSets();
+            _flagSetsFilter = new LinkedHashSet<>(cleanup(flagSetsFilter));
+            _invalidSetsCount = flagSetsFilter.size() - _flagSetsFilter.size();
             return this;
         }
 
@@ -1088,7 +1087,7 @@ public class SplitClientConfig {
                     _lastSeenCacheSize,
                     _threadFactory,
                     _flagSetsFilter,
-                    _invalidSets);
+                    _invalidSetsCount);
         }
     }
 }
