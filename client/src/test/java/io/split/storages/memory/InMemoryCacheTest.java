@@ -151,7 +151,7 @@ public class InMemoryCacheTest {
     }
 
     private ParsedSplit getParsedSplit(String splitName) {
-        return ParsedSplit.createParsedSplitForTests(splitName, 0, false, "default_treatment", new ArrayList<>(), "tt", 123, 2, new HashSet<>());
+        return ParsedSplit.createParsedSplitForTests(splitName, 0, false, "default_treatment", new ArrayList<>(), "tt", 123, 2, new HashSet<>(Arrays.asList("set1", "set2", "set3")));
     }
 
     @Test

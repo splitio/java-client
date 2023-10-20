@@ -206,8 +206,10 @@ public class InMemoryCacheImp implements SplitCache {
         if (sets != null) {
             for (String set : sets) {
                 HashSet<String> features = _flagSets.get(set);
-                features.remove(featureFlagName);
-                _flagSets.put(set, features);
+                if (features != null) {
+                    features.remove(featureFlagName);
+                    _flagSets.put(set, features);
+                }
             }
         }
     }
