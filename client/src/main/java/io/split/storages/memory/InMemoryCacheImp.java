@@ -187,28 +187,32 @@ public class InMemoryCacheImp implements SplitCache {
 
     private void addToFlagSets(ParsedSplit featureFlag) {
         HashSet<String> sets = featureFlag.flagSets();
-        if( sets != null) {
-            for (String set: sets) {
-                if (!_flagSetsFilter.Intersect(set)) {
-                    continue;
-                }
-                HashSet<String> features = _flagSets.get(set);
-                if (features == null) {
-                    features = new HashSet<>();
-                }
-                features.add(featureFlag.feature());
-                _flagSets.put(set, features);
+        if(sets == null) {
+            return;
+        }
+        for (String set: sets) {
+            if (!_flagSetsFilter.Intersect(set)) {
+                continue;
             }
+            HashSet<String> features = _flagSets.get(set);
+            if (features == null) {
+                features = new HashSet<>();
+            }
+            features.add(featureFlag.feature());
+            _flagSets.put(set, features);
         }
     }
 
     private void removeFromFlagSets(String featureFlagName, HashSet<String> sets) {
-        if (sets != null) {
-            for (String set : sets) {
-                HashSet<String> features = _flagSets.get(set);
-                features.remove(featureFlagName);
-                _flagSets.put(set, features);
+        if(sets == null) {
+            return;
+        }
+        for (String set : sets) {
+            HashSet<String> features = _flagSets.get(set);
+            if (features == null){
+                continue;
             }
+            features.remove(featureFlagName);
         }
     }
 }
