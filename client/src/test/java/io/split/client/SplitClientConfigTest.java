@@ -1,10 +1,10 @@
 package io.split.client;
 
+import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import io.split.client.impressions.Impression;
 import io.split.client.impressions.ImpressionListener;
 import io.split.client.impressions.ImpressionsManager;
 import io.split.integrations.IntegrationsConfig;
-import org.hamcrest.Matchers;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -15,14 +15,14 @@ import static org.hamcrest.Matchers.is;
 public class SplitClientConfigTest {
 
     @Test(expected = IllegalArgumentException.class)
-    public void cannot_set_feature_refresh_rate_to_less_than_5() {
+    public void cannotSetFeatureRefreshRateToLessThan5() {
         SplitClientConfig.builder()
                 .featuresRefreshRate(4)
                 .build();
     }
 
     @Test(expected = IllegalArgumentException.class)
-    public void cannot_set_segment_refresh_rate_to_less_than_30() {
+    public void cannotSetSegmentRefreshRateToLessThan30() {
         SplitClientConfig.builder()
                 .segmentsRefreshRate(29)
                 .build();
@@ -77,35 +77,35 @@ public class SplitClientConfigTest {
     }
 
     @Test
-    public void set_impression_refresh_rate_works() {
+    public void setImpressionRefreshRateWorks() {
         SplitClientConfig.builder()
                 .impressionsRefreshRate(1)
                 .build();
     }
 
     @Test(expected = IllegalArgumentException.class)
-    public void cannot_set_events_flush_rate_to_equal_to_1000() {
+    public void cannotSetEventsFlushRateToEqualTo1000() {
         SplitClientConfig.builder()
                 .eventFlushIntervalInMillis(999)
                 .build();
     }
 
     @Test
-    public void events_flush_rate_works() {
+    public void eventsFlushRateWorks() {
         SplitClientConfig.builder()
                 .eventFlushIntervalInMillis(1000)
                 .build();
     }
 
     @Test(expected = IllegalArgumentException.class)
-    public void cannot_set_metrics_refresh_rate_to_less_than_30() {
+    public void cannotSetMetricsRefreshRateToLessTha30() {
         SplitClientConfig.builder()
                 .metricsRefreshRate(29)
                 .build();
     }
 
     @Test
-    public void can_set_refresh_rates_to__30() {
+    public void canSetRefreshRatesTo30() {
         SplitClientConfig.builder()
                 .featuresRefreshRate(30)
                 .segmentsRefreshRate(30)
@@ -115,20 +115,18 @@ public class SplitClientConfigTest {
     }
 
     @Test
-    public void config_does_not_crash_if_new_relic_class_not_present() {
+    public void configDoesNotCrashIfNewRelicClassNotPresent() {
         SplitClientConfig cfg = SplitClientConfig.builder()
                 .integrations(IntegrationsConfig.builder()
                         .newRelicImpressionListener()
                         .build())
                 .build();
 
-        Assert.assertThat(
-                cfg.integrationsConfig().getImpressionsListeners(IntegrationsConfig.Execution.SYNC).size(),
-                is(equalTo(0)));
+        Assert.assertEquals(0, cfg.integrationsConfig().getImpressionsListeners(IntegrationsConfig.Execution.SYNC).size());
     }
 
     @Test
-    public void old_impression_listener_config_still_works() {
+    public void oldImpressionListenerConfigStillWorks() {
         SplitClientConfig cfg = SplitClientConfig.builder()
                .impressionListener(new ImpressionListener() {
                    @Override
@@ -139,9 +137,7 @@ public class SplitClientConfigTest {
                }, 1000)
                 .build();
 
-        Assert.assertThat(
-                cfg.integrationsConfig().getImpressionsListeners(IntegrationsConfig.Execution.ASYNC).size(),
-                is(equalTo(1)));
+        Assert.assertEquals(1, cfg.integrationsConfig().getImpressionsListeners(IntegrationsConfig.Execution.ASYNC).size());
     }
 
     @Test
@@ -149,8 +145,8 @@ public class SplitClientConfigTest {
         SplitClientConfig config = SplitClientConfig.builder()
                 .build();
 
-        Assert.assertThat(config.splitSdkVersion, Matchers.not(Matchers.equalTo("undefined")));
-        Assert.assertThat(config.splitSdkVersion, Matchers.startsWith("java-"));
+        Assert.assertNotEquals("undefined", config.splitSdkVersion);
+        Assert.assertTrue(config.splitSdkVersion.startsWith("java-"));
     }
 
     @Test(expected = IllegalArgumentException.class)
@@ -186,5 +182,17 @@ public class SplitClientConfigTest {
         SplitClientConfig config = SplitClientConfig.builder().build();
         Assert.assertEquals(60, config.featuresRefreshRate());
         Assert.assertEquals(60, config.segmentsRefreshRate());
+    }
+
+    @Test
+    public void threadFactoryNull() {
+        SplitClientConfig config = SplitClientConfig.builder().build();
+        Assert.assertNull(config.getThreadFactory());
+    }
+
+    @Test
+    public void threadFactoryNotNull() {
+        SplitClientConfig config = SplitClientConfig.builder().threadFactory(new ThreadFactoryBuilder().build()).build();
+        Assert.assertNotNull(config.getThreadFactory());
     }
 }
