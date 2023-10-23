@@ -78,9 +78,10 @@ public class SplitClientConfigTest {
 
     @Test
     public void setImpressionRefreshRateWorks() {
-        SplitClientConfig.builder()
-                .impressionsRefreshRate(1)
+        SplitClientConfig config = SplitClientConfig.builder()
+                .impressionsRefreshRate(65)
                 .build();
+        Assert.assertEquals(65, config.impressionsRefreshRate());
     }
 
     @Test(expected = IllegalArgumentException.class)
@@ -92,13 +93,14 @@ public class SplitClientConfigTest {
 
     @Test
     public void eventsFlushRateWorks() {
-        SplitClientConfig.builder()
+        SplitClientConfig config = SplitClientConfig.builder()
                 .eventFlushIntervalInMillis(1000)
                 .build();
+        Assert.assertEquals(1000, config.eventSendIntervalInMillis());
     }
 
     @Test(expected = IllegalArgumentException.class)
-    public void cannotSetMetricsRefreshRateToLessTha30() {
+    public void cannotSetMetricsRefreshRateToLessThan30() {
         SplitClientConfig.builder()
                 .metricsRefreshRate(29)
                 .build();
@@ -106,12 +108,16 @@ public class SplitClientConfigTest {
 
     @Test
     public void canSetRefreshRatesTo30() {
-        SplitClientConfig.builder()
+        SplitClientConfig cfg = SplitClientConfig.builder()
                 .featuresRefreshRate(30)
                 .segmentsRefreshRate(30)
-                .impressionsRefreshRate(30)
-                .metricsRefreshRate(30)
+                .impressionsRefreshRate(65)
+                .metricsRefreshRate(65)
                 .build();
+        Assert.assertEquals(30, cfg.featuresRefreshRate());
+        Assert.assertEquals(30, cfg.segmentsRefreshRate());
+        Assert.assertEquals(65, cfg.impressionsRefreshRate());
+        Assert.assertEquals(65, cfg.metricsRefreshRate());
     }
 
     @Test
@@ -175,6 +181,7 @@ public class SplitClientConfigTest {
         SplitClientConfig cfg = SplitClientConfig.builder()
                 .streamingReconnectBackoffBase(1)
                 .build();
+        Assert.assertEquals(1, cfg.streamingReconnectBackoffBase());
     }
 
     @Test
