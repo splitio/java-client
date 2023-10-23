@@ -24,6 +24,7 @@ public class SplitView {
     public List<String> treatments;
     public long changeNumber;
     public Map<String, String> configs;
+    public String defaultTreatment;
 
     public static SplitView fromParsedSplit(ParsedSplit parsedSplit) {
         SplitView splitView = new SplitView();
@@ -31,6 +32,7 @@ public class SplitView {
         splitView.trafficType = parsedSplit.trafficTypeName();
         splitView.killed = parsedSplit.killed();
         splitView.changeNumber = parsedSplit.changeNumber();
+        splitView.defaultTreatment = parsedSplit.defaultTreatment();
 
         Set<String> treatments = new HashSet<String>();
         for (ParsedCondition condition : parsedSplit.parsedConditions()) {
