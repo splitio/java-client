@@ -67,6 +67,7 @@ public class SplitManagerImplTest {
         Assert.assertEquals(1, theOne.treatments.size());
         Assert.assertEquals("off", theOne.treatments.get(0));
         Assert.assertEquals(0, theOne.configs.size());
+        Assert.assertEquals("off", theOne.defaultTreatment);
     }
 
     @Test
