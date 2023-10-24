@@ -256,7 +256,7 @@ public final class SplitClientImpl implements SplitClient {
                                                        Object> attributes, MethodEnum methodEnum) {
         long initTime = System.currentTimeMillis();
         try {
-            checkSDKReady(methodEnum);
+            checkSDKReady(methodEnum, Arrays.asList(featureFlag));
 
             if (_container.isDestroyed()) {
                 _log.error("Client has already been destroyed - no calls possible");
@@ -338,7 +338,7 @@ public final class SplitClientImpl implements SplitClient {
             return new HashMap<>();
         }
         try {
-            checkSDKReady(methodEnum);
+            checkSDKReady(methodEnum, featureFlagNames);
             if (_container.isDestroyed()) {
                 _log.error("Client has already been destroyed - no calls possible");
                 return createMapControl(featureFlagNames);
@@ -432,10 +432,11 @@ public final class SplitClientImpl implements SplitClient {
         return event;
     }
 
-    private void checkSDKReady(MethodEnum methodEnum) {
+    private void checkSDKReady(MethodEnum methodEnum, List<String> featureFlagNames) {
+        String toPrint =  featureFlagNames.size() == 1 ? featureFlagNames.get(0): String.join(",", featureFlagNames);
         if (!_gates.isSDKReady()) {
-            _log.warn(String.format("%s: the SDK is not ready, results may be incorrect. Make sure to wait for SDK readiness " +
-                            "before using this method", methodEnum.getMethod()));
+            _log.warn(String.format("%s: the SDK is not ready, results may be incorrect for feature flag %s. Make sure to wait for " +
+                            "SDK readiness before using this method", methodEnum.getMethod(), toPrint));
             _telemetryConfigProducer.recordNonReadyUsage();
         }
     }
