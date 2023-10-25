@@ -17,11 +17,10 @@ import java.util.Set;
 public class FeatureFlagProcessor {
     private static final Logger _log = LoggerFactory.getLogger(FeatureFlagProcessor.class);
 
-    public static FeatureFlagsToUpdate processFeatureFlagChanges(SplitParser splitParser, List<Split> splits, HashSet<String> configSets) {
+    public static FeatureFlagsToUpdate processFeatureFlagChanges(SplitParser splitParser, List<Split> splits, FlagSetsFilter flagSetsFilter) {
         List<ParsedSplit> toAdd = new ArrayList<>();
         List<String> toRemove = new ArrayList<>();
         Set<String> segments = new HashSet<>();
-        FlagSetsFilter flagSetsFilter = new FlagSetsFilterImpl(configSets);
         for (Split split : splits) {
             if (split.status != Status.ACTIVE) {
                 // archive.

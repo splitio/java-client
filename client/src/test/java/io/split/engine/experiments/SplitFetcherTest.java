@@ -1,6 +1,8 @@
 package io.split.engine.experiments;
 
 import com.google.common.collect.Lists;
+import io.split.client.interceptors.FlagSetsFilter;
+import io.split.client.interceptors.FlagSetsFilterImpl;
 import io.split.storages.memory.InMemoryCacheImp;
 import io.split.storages.SegmentCache;
 import io.split.storages.memory.SegmentCacheInMemoryImpl;
@@ -49,23 +51,24 @@ import static org.mockito.Mockito.when;
 public class SplitFetcherTest {
     private static final Logger _log = LoggerFactory.getLogger(SplitFetcherTest.class);
     private static final TelemetryStorage TELEMETRY_STORAGE = Mockito.mock(InMemoryTelemetryStorage.class);
+    private static final FlagSetsFilter FLAG_SETS_FILTER = new FlagSetsFilterImpl(new HashSet<>());
 
     @Test
     @Ignore //This test is ignore since is deprecated. We can review this in a future.
-    public void works_when_we_start_without_any_state() throws InterruptedException {
+    public void worksWhenWeStartWithoutAnyState() throws InterruptedException {
         works(0);
     }
 
     @Test
     @Ignore //This test is ignore since is deprecated. We can review this in a future.
-    public void works_when_we_start_with_any_state() throws InterruptedException {
+    public void worksWhenWeStartWithAnyState() throws InterruptedException {
         works(11L);
     }
 
     private void works(long startingChangeNumber) throws InterruptedException {
         AChangePerCallSplitChangeFetcher splitChangeFetcher = new AChangePerCallSplitChangeFetcher();
-        SplitCache cache = new InMemoryCacheImp(startingChangeNumber, new HashSet<>());
-        SplitFetcherImp fetcher = new SplitFetcherImp(splitChangeFetcher, new SplitParser(), cache, TELEMETRY_STORAGE, new HashSet<>());
+        SplitCache cache = new InMemoryCacheImp(startingChangeNumber, FLAG_SETS_FILTER);
+        SplitFetcherImp fetcher = new SplitFetcherImp(splitChangeFetcher, new SplitParser(), cache, TELEMETRY_STORAGE, FLAG_SETS_FILTER);
 
         // execute the fetcher for a little bit.
         executeWaitAndTerminate(fetcher, 1, 3, TimeUnit.SECONDS);
@@ -88,7 +91,7 @@ public class SplitFetcherTest {
     }
 
     @Test
-    public void when_parser_fails_we_remove_the_experiment() throws InterruptedException {
+    public void whenParserFailsWeRemoveTheExperiment() throws InterruptedException {
         Split validSplit = new Split();
         validSplit.status = Status.ACTIVE;
         validSplit.seed = (int) -1;
@@ -131,12 +134,12 @@ public class SplitFetcherTest {
         when(splitChangeFetcher.fetch(Mockito.eq(1L), Mockito.any())).thenReturn(noReturn);
 
         SegmentCache segmentCache = new SegmentCacheInMemoryImpl();
-        SplitCache cache = new InMemoryCacheImp(-1, new HashSet<>());
+        SplitCache cache = new InMemoryCacheImp(-1, FLAG_SETS_FILTER);
 
         SegmentChangeFetcher segmentChangeFetcher = mock(SegmentChangeFetcher.class);
         SegmentSynchronizationTask segmentSynchronizationTask = new SegmentSynchronizationTaskImp(segmentChangeFetcher, 1,10, segmentCache, TELEMETRY_STORAGE, cache, null);
         segmentSynchronizationTask.start();
-        SplitFetcherImp fetcher = new SplitFetcherImp(splitChangeFetcher, new SplitParser(), cache, TELEMETRY_STORAGE, new HashSet<>());
+        SplitFetcherImp fetcher = new SplitFetcherImp(splitChangeFetcher, new SplitParser(), cache, TELEMETRY_STORAGE, FLAG_SETS_FILTER);
 
         // execute the fetcher for a little bit.
         executeWaitAndTerminate(fetcher, 1, 5, TimeUnit.SECONDS);
@@ -147,8 +150,8 @@ public class SplitFetcherTest {
     }
 
     @Test
-    public void if_there_is_a_problem_talking_to_split_change_count_down_latch_is_not_decremented() throws Exception {
-        SplitCache cache = new InMemoryCacheImp(-1, new HashSet<>());
+    public void ifThereIsAProblemTalkingToSplitChangeCountDownLatchIsNotDecremented() throws Exception {
+        SplitCache cache = new InMemoryCacheImp(-1, FLAG_SETS_FILTER);
 
         SplitChangeFetcher splitChangeFetcher = mock(SplitChangeFetcher.class);
         when(splitChangeFetcher.fetch(-1L, new FetchOptions.Builder().build())).thenThrow(new RuntimeException());
@@ -157,7 +160,7 @@ public class SplitFetcherTest {
         SegmentChangeFetcher segmentChangeFetcher = mock(SegmentChangeFetcher.class);
         SegmentSynchronizationTask segmentSynchronizationTask = new SegmentSynchronizationTaskImp(segmentChangeFetcher, 1,10, segmentCache, TELEMETRY_STORAGE, cache, null);
         segmentSynchronizationTask.start();
-        SplitFetcherImp fetcher = new SplitFetcherImp(splitChangeFetcher, new SplitParser(), cache, TELEMETRY_STORAGE, new HashSet<>());
+        SplitFetcherImp fetcher = new SplitFetcherImp(splitChangeFetcher, new SplitParser(), cache, TELEMETRY_STORAGE, FLAG_SETS_FILTER);
 
         // execute the fetcher for a little bit.
         executeWaitAndTerminate(fetcher, 1, 5, TimeUnit.SECONDS);
@@ -186,11 +189,11 @@ public class SplitFetcherTest {
 
     @Test
     @Ignore //This test is ignore since is deprecated. We can review this in a future.
-    public void works_with_user_defined_segments() throws Exception {
+    public void worksWithUserDefinedSegments() throws Exception {
         long startingChangeNumber = -1;
         String segmentName = "foosegment";
         AChangePerCallSplitChangeFetcher experimentChangeFetcher = new AChangePerCallSplitChangeFetcher(segmentName);
-        SplitCache cache = new InMemoryCacheImp(startingChangeNumber, new HashSet<>());
+        SplitCache cache = new InMemoryCacheImp(startingChangeNumber, FLAG_SETS_FILTER);
         SegmentCache segmentCache = new SegmentCacheInMemoryImpl();
 
         SegmentChangeFetcher segmentChangeFetcher = mock(SegmentChangeFetcher.class);
@@ -198,7 +201,7 @@ public class SplitFetcherTest {
         when(segmentChangeFetcher.fetch(anyString(), anyLong(), any())).thenReturn(segmentChange);
         SegmentSynchronizationTask segmentSynchronizationTask = new SegmentSynchronizationTaskImp(segmentChangeFetcher, 1,10, segmentCache, Mockito.mock(TelemetryStorage.class), cache, null);
         segmentSynchronizationTask.start();
-        SplitFetcherImp fetcher = new SplitFetcherImp(experimentChangeFetcher, new SplitParser(), cache,  TELEMETRY_STORAGE, new HashSet<>());
+        SplitFetcherImp fetcher = new SplitFetcherImp(experimentChangeFetcher, new SplitParser(), cache,  TELEMETRY_STORAGE, FLAG_SETS_FILTER);
 
         // execute the fetcher for a little bit.
         executeWaitAndTerminate(fetcher, 1, 5, TimeUnit.SECONDS);
@@ -217,8 +220,8 @@ public class SplitFetcherTest {
     public void testBypassCdnClearedAfterFirstHit() {
         SplitChangeFetcher mockFetcher = Mockito.mock(SplitChangeFetcher.class);
         SplitParser mockParser = new SplitParser();
-        SplitCache mockCache = new InMemoryCacheImp(new HashSet<>());
-        SplitFetcherImp fetcher = new SplitFetcherImp(mockFetcher, mockParser, mockCache, Mockito.mock(TelemetryRuntimeProducer.class), new HashSet<>());
+        SplitCache mockCache = new InMemoryCacheImp(FLAG_SETS_FILTER);
+        SplitFetcherImp fetcher = new SplitFetcherImp(mockFetcher, mockParser, mockCache, Mockito.mock(TelemetryRuntimeProducer.class), FLAG_SETS_FILTER);
 
 
         SplitChange response1 = new SplitChange();

@@ -28,6 +28,7 @@ import io.split.client.impressions.strategy.ProcessImpressionOptimized;
 import io.split.client.impressions.strategy.ProcessImpressionStrategy;
 import io.split.client.interceptors.AuthorizationInterceptorFilter;
 import io.split.client.interceptors.ClientKeyInterceptorFilter;
+import io.split.client.interceptors.FlagSetsFilter;
 import io.split.client.interceptors.FlagSetsFilterImpl;
 import io.split.client.interceptors.GzipDecoderResponseInterceptor;
 import io.split.client.interceptors.GzipEncoderRequestInterceptor;
@@ -110,7 +111,6 @@ import java.net.InetAddress;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.stream.Collectors;
@@ -190,7 +190,8 @@ public class SplitFactoryImpl implements SplitFactory {
 
         // Cache Initialisations
         SegmentCache segmentCache = new SegmentCacheInMemoryImpl();
-        SplitCache splitCache = new InMemoryCacheImp(config.getSetsFilter());
+        FlagSetsFilter flagSetsFilter = new FlagSetsFilterImpl(config.getSetsFilter());
+        SplitCache splitCache = new InMemoryCacheImp(flagSetsFilter);
         ImpressionsStorage impressionsStorage = new InMemoryImpressionsStorage(config.impressionsQueueSize());
         _splitCache = splitCache;
         _segmentCache = segmentCache;
@@ -202,7 +203,7 @@ public class SplitFactoryImpl implements SplitFactory {
 
         SplitParser splitParser = new SplitParser();
         // SplitFetcher
-        _splitFetcher = buildSplitFetcher(splitCache, splitParser, config.getSetsFilter());
+        _splitFetcher = buildSplitFetcher(splitCache, splitParser, flagSetsFilter);
 
         // SplitSynchronizationTask
         _splitSynchronizationTask = new SplitSynchronizationTask(_splitFetcher,
@@ -355,7 +356,8 @@ public class SplitFactoryImpl implements SplitFactory {
         _telemetryStorageProducer = new NoopTelemetryStorage();
 
         SegmentCache segmentCache = new SegmentCacheInMemoryImpl();
-        SplitCache splitCache = new InMemoryCacheImp(config.getSetsFilter());
+        FlagSetsFilter flagSetsFilter = new FlagSetsFilterImpl(config.getSetsFilter());
+        SplitCache splitCache = new InMemoryCacheImp(flagSetsFilter);
         _splitCache = splitCache;
         _gates = new SDKReadinessGates();
         _segmentCache = segmentCache;
@@ -379,7 +381,7 @@ public class SplitFactoryImpl implements SplitFactory {
         SplitChangeFetcher splitChangeFetcher = createSplitChangeFetcher(config);
         SplitParser splitParser = new SplitParser();
 
-        _splitFetcher = new SplitFetcherImp(splitChangeFetcher, splitParser, splitCache, _telemetryStorageProducer, config.getSetsFilter());
+        _splitFetcher = new SplitFetcherImp(splitChangeFetcher, splitParser, splitCache, _telemetryStorageProducer, flagSetsFilter);
 
         // SplitSynchronizationTask
         _splitSynchronizationTask = new SplitSynchronizationTask(_splitFetcher, splitCache, config.featuresRefreshRate(), config.getThreadFactory());
@@ -561,11 +563,10 @@ public class SplitFactoryImpl implements SplitFactory {
                 config.getThreadFactory());
     }
 
-    private SplitFetcher buildSplitFetcher(SplitCacheProducer splitCacheProducer, SplitParser splitParser, HashSet<String> flagSets) throws
+    private SplitFetcher buildSplitFetcher(SplitCacheProducer splitCacheProducer, SplitParser splitParser, FlagSetsFilter flagSetsFilter) throws
             URISyntaxException {
         SplitChangeFetcher splitChangeFetcher = HttpSplitChangeFetcher.create(_httpclient, _rootTarget, _telemetryStorageProducer);
-
-        return new SplitFetcherImp(splitChangeFetcher, splitParser, splitCacheProducer, _telemetryStorageProducer,flagSets);
+        return new SplitFetcherImp(splitChangeFetcher, splitParser, splitCacheProducer, _telemetryStorageProducer,flagSetsFilter);
     }
 
     private ImpressionsManagerImpl buildImpressionsManager(SplitClientConfig config, ImpressionsStorageConsumer impressionsStorageConsumer,

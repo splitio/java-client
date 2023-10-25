@@ -6,6 +6,8 @@ import io.split.client.dtos.Event;
 import io.split.client.events.EventsStorageProducer;
 import io.split.client.impressions.Impression;
 import io.split.client.impressions.ImpressionsManager;
+import io.split.client.interceptors.FlagSetsFilter;
+import io.split.client.interceptors.FlagSetsFilterImpl;
 import io.split.engine.SDKReadinessGates;
 import io.split.engine.evaluator.Evaluator;
 import io.split.engine.evaluator.EvaluatorImp;
@@ -332,13 +334,16 @@ public final class SplitClientImpl implements SplitClient {
                 _log.warn("The sets are not in flagSetsFilter config");
                 return new HashMap<>();
             }
-            featureFlagNames = getAllFlags(cleanFlagSets);
+            featureFlagNames = new ArrayList<>();
         } else if (featureFlagNames == null) {
             _log.error(String.format("%s: featureFlagNames must be a non-empty array", methodEnum.getMethod()));
             return new HashMap<>();
         }
         try {
             checkSDKReady(methodEnum, featureFlagNames);
+            if (cleanFlagSets != null) {
+                featureFlagNames = getAllFlags(cleanFlagSets);
+            }
             if (_container.isDestroyed()) {
                 _log.error("Client has already been destroyed - no calls possible");
                 return createMapControl(featureFlagNames);
@@ -354,7 +359,7 @@ public final class SplitClientImpl implements SplitClient {
             }
             Map<String, EvaluatorImp.TreatmentLabelAndChangeNumber> evaluatorResult;
             if (cleanFlagSets != null) {
-                evaluatorResult = _evaluator.evaluateFeaturesByFlagSets(matchingKey, bucketingKey, new ArrayList<>(cleanFlagSets));
+                evaluatorResult = _evaluator.evaluateFeaturesByFlagSets(matchingKey, bucketingKey, new ArrayList<>(cleanFlagSets), attributes);
             } else {
                 featureFlagNames = SplitNameValidator.areValid(featureFlagNames, methodEnum.getMethod());
                 evaluatorResult = _evaluator.evaluateFeatures(matchingKey, bucketingKey, featureFlagNames, attributes);
@@ -391,10 +396,10 @@ public final class SplitClientImpl implements SplitClient {
     }
 
     private List<String> filterSetsAreInConfig(Set<String> sets) {
-        HashSet<String> configSets = _config.getSetsFilter();
+        FlagSetsFilter flagSetsFilter = new FlagSetsFilterImpl(_config.getSetsFilter());
         List<String> setsToReturn = new ArrayList<>();
         for (String set : sets) {
-            if (!configSets.contains(set)) {
+            if (!flagSetsFilter.Intersect(set)) {
                 _log.warn(String.format("GetTreatmentsByFlagSets: you passed %s which is not part of the configured FlagSetsFilter, " +
                         "ignoring Flag Set.", set));
                 continue;

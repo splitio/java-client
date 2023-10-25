@@ -1,6 +1,7 @@
 package io.split.engine.common;
 
 import com.google.common.annotations.VisibleForTesting;
+import io.split.client.interceptors.FlagSetsFilter;
 import io.split.engine.experiments.SplitParser;
 import io.split.engine.sse.AuthApiClient;
 import io.split.engine.sse.AuthApiClientImp;
@@ -23,7 +24,6 @@ import io.split.telemetry.storage.TelemetryRuntimeProducer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.HashSet;
 import java.util.concurrent.Future;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ScheduledExecutorService;
@@ -76,9 +76,9 @@ public class PushManagerImp implements PushManager {
                                        ThreadFactory threadFactory,
                                        SplitParser splitParser,
                                        SplitCacheProducer splitCacheProducer,
-                                       HashSet<String> flagSets) {
+                                       FlagSetsFilter flagSetsFilter) {
         FeatureFlagsWorker featureFlagsWorker = new FeatureFlagWorkerImp(synchronizer, splitParser, splitCacheProducer,
-                telemetryRuntimeProducer, flagSets);
+                telemetryRuntimeProducer, flagSetsFilter);
         Worker<SegmentQueueDto> segmentWorker = new SegmentsWorkerImp(synchronizer);
         PushStatusTracker pushStatusTracker = new PushStatusTrackerImp(statusMessages, telemetryRuntimeProducer);
         return new PushManagerImp(new AuthApiClientImp(authUrl, splitAPI.getHttpClient(), telemetryRuntimeProducer),

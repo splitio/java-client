@@ -3,6 +3,7 @@ package io.split.engine.common;
 import com.google.common.annotations.VisibleForTesting;
 import io.split.client.ApiKeyCounter;
 import io.split.client.SplitClientConfig;
+import io.split.client.interceptors.FlagSetsFilterImpl;
 import io.split.engine.SDKReadinessGates;
 import io.split.engine.experiments.SplitFetcher;
 import io.split.engine.experiments.SplitParser;
@@ -108,7 +109,7 @@ public class SyncManagerImp implements SyncManager {
                                                         config.getThreadFactory(),
                                                         splitParser,
                                                         splitCacheProducer,
-                                                        config.getSetsFilter());
+                                                        new FlagSetsFilterImpl(config.getSetsFilter()));
 
         return new SyncManagerImp(splitTasks,
                                   config.streamingEnabled(),

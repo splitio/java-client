@@ -161,7 +161,7 @@ public class EvaluatorTest {
         parsedSplits.put(SPLIT_NAME, split);
         Mockito.when(_splitCacheConsumer.fetchMany(Arrays.asList(SPLIT_NAME))).thenReturn(parsedSplits);
 
-        Map<String, EvaluatorImp.TreatmentLabelAndChangeNumber> result = _evaluator.evaluateFeaturesByFlagSets(MATCHING_KEY, BUCKETING_KEY, sets);
+        Map<String, EvaluatorImp.TreatmentLabelAndChangeNumber> result = _evaluator.evaluateFeaturesByFlagSets(MATCHING_KEY, BUCKETING_KEY, sets, null);
 
         EvaluatorImp.TreatmentLabelAndChangeNumber treatmentLabelAndChangeNumber = result.get(SPLIT_NAME);
 
@@ -179,7 +179,7 @@ public class EvaluatorTest {
         Map<String, ParsedSplit> parsedSplits = new HashMap<>();
         Mockito.when(_splitCacheConsumer.fetchMany(Arrays.asList(SPLIT_NAME))).thenReturn(parsedSplits);
 
-        Map<String, EvaluatorImp.TreatmentLabelAndChangeNumber> result = _evaluator.evaluateFeaturesByFlagSets(MATCHING_KEY, BUCKETING_KEY, sets);
+        Map<String, EvaluatorImp.TreatmentLabelAndChangeNumber> result = _evaluator.evaluateFeaturesByFlagSets(MATCHING_KEY, BUCKETING_KEY, sets, null);
         Assert.assertTrue(result.isEmpty());
     }
 }
