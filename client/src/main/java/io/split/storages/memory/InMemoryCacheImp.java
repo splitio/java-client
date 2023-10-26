@@ -48,7 +48,7 @@ public class InMemoryCacheImp implements SplitCache {
     public boolean remove(String name) {
         ParsedSplit removed = _concurrentMap.remove(name);
         if (removed != null) {
-            removeFromFlagSets(removed.feature(), removed.flagSets());
+            removeFromFlagSets(removed.feature());
             if (removed.trafficTypeName() != null) {
                 this.decreaseTrafficType(removed.trafficTypeName());
             }
@@ -189,6 +189,7 @@ public class InMemoryCacheImp implements SplitCache {
         if(sets == null) {
             return;
         }
+        removeFromFlagSets(featureFlag.feature());
         for (String set: sets) {
             if (!_flagSetsFilter.Intersect(set)) {
                 continue;
@@ -202,16 +203,9 @@ public class InMemoryCacheImp implements SplitCache {
         }
     }
 
-    private void removeFromFlagSets(String featureFlagName, HashSet<String> sets) {
-        if(sets == null) {
-            return;
-        }
-        for (String set : sets) {
-            HashSet<String> features = _flagSets.get(set);
-            if (features == null){
-                continue;
-            }
-            features.remove(featureFlagName);
+    private void removeFromFlagSets(String featureFlagName) {
+        for (String set: _flagSets.keySet()) {
+            _flagSets.get(set).remove(featureFlagName);
         }
     }
 }

@@ -28,6 +28,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.concurrent.Executors;
@@ -166,6 +167,51 @@ public class SplitFetcherTest {
         executeWaitAndTerminate(fetcher, 1, 5, TimeUnit.SECONDS);
 
         Assert.assertEquals(-1L, cache.getChangeNumber());
+    }
+
+    @Test
+    public void addFeatureFlags() throws InterruptedException {
+        SplitCache cache = new InMemoryCacheImp(-1, new FlagSetsFilterImpl(new HashSet<>(Arrays.asList("set_1", "set_2"))));
+
+        Split featureFlag1 = new Split();
+        featureFlag1.status = Status.ACTIVE;
+        featureFlag1.seed = (int) -1;
+        featureFlag1.conditions = Lists.newArrayList(ConditionsTestUtil.makeAllKeysCondition(Lists.newArrayList(ConditionsTestUtil.partition("on", 10))));
+        featureFlag1.defaultTreatment = Treatments.OFF;
+        featureFlag1.name = "feature_flag";
+        featureFlag1.sets = new HashSet<>(Arrays.asList("set_1", "set_2"));
+        featureFlag1.trafficAllocation = 100;
+        featureFlag1.trafficAllocationSeed = 147392224;
+
+        SplitChange validReturn = new SplitChange();
+        validReturn.splits = Lists.newArrayList(featureFlag1);
+        validReturn.since = -1L;
+        validReturn.till = 0L;
+
+        SplitChangeFetcher splitChangeFetcher = mock(SplitChangeFetcher.class);
+        when(splitChangeFetcher.fetch(Mockito.eq(-1L), Mockito.any())).thenReturn(validReturn);
+
+        FlagSetsFilter flagSetsFilter = new FlagSetsFilterImpl(new HashSet<>(Arrays.asList("set_1", "set_2")));
+        SplitFetcherImp fetcher = new SplitFetcherImp(splitChangeFetcher, new SplitParser(), cache, TELEMETRY_STORAGE, flagSetsFilter);
+
+        executeWaitAndTerminate(fetcher, 1, 5, TimeUnit.SECONDS);
+
+        Assert.assertTrue(cache.getNamesByFlagSets(Arrays.asList("set_1", "set_2")).get("set_1").contains("feature_flag"));
+        Assert.assertTrue(cache.getNamesByFlagSets(Arrays.asList("set_1", "set_2")).get("set_2").contains("feature_flag"));
+
+        featureFlag1.sets.remove("set_2");
+
+        validReturn = new SplitChange();
+        validReturn.splits = Lists.newArrayList(featureFlag1);
+        validReturn.since = 0L;
+        validReturn.till = 1L;
+
+        when(splitChangeFetcher.fetch(Mockito.eq(0L), Mockito.any())).thenReturn(validReturn);
+
+        executeWaitAndTerminate(fetcher, 1, 5, TimeUnit.SECONDS);
+
+        Assert.assertTrue(cache.getNamesByFlagSets(Arrays.asList("set_1", "set_2")).get("set_1").contains("feature_flag"));
+        Assert.assertFalse(cache.getNamesByFlagSets(Arrays.asList("set_1", "set_2")).get("set_2").contains("feature_flag"));
     }
 
     private void executeWaitAndTerminate(Runnable runnable, long frequency, long waitInBetween, TimeUnit unit) throws InterruptedException {
