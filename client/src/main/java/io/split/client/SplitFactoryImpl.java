@@ -251,7 +251,7 @@ public class SplitFactoryImpl implements SplitFactory {
         SplitAPI splitAPI = SplitAPI.build(_httpclient, buildSSEdHttpClient(apiToken, config, _sdkMetadata));
 
         _syncManager = SyncManagerImp.build(splitTasks, _splitFetcher, splitCache, splitAPI,
-                segmentCache, _gates, _telemetryStorageProducer, _telemetrySynchronizer, config, splitParser);
+                segmentCache, _gates, _telemetryStorageProducer, _telemetrySynchronizer, config, splitParser, flagSetsFilter);
         _syncManager.start();
 
         // DestroyOnShutDown

@@ -321,17 +321,9 @@ public final class SplitClientImpl implements SplitClient {
         Set cleanFlagSets = null;
         if (methodEnum == MethodEnum.TREATMENTS_BY_FLAG_SET || methodEnum == MethodEnum.TREATMENTS_BY_FLAG_SETS ||
                 methodEnum == MethodEnum.TREATMENTS_WITH_CONFIG_BY_FLAG_SET || methodEnum == MethodEnum.TREATMENTS_WITH_CONFIG_BY_FLAG_SETS) {
-            if (sets == null || sets.isEmpty()) {
+            cleanFlagSets = cleanAndValidateSets(sets);
+            if (cleanFlagSets == null || sets.isEmpty()) {
                 _log.warn(String.format("%s: sets must be a non-empty array", methodEnum.getMethod()));
-                return new HashMap<>();
-            }
-            cleanFlagSets = cleanup(sets);
-            if (cleanFlagSets == null || cleanFlagSets.size() == 0) {
-                _log.warn("The sets are invalid");
-                return new HashMap<>();
-            }
-            if (filterSetsAreInConfig(cleanFlagSets).isEmpty()) {
-                _log.warn("The sets are not in flagSetsFilter config");
                 return new HashMap<>();
             }
             featureFlagNames = new ArrayList<>();
@@ -393,6 +385,22 @@ public final class SplitClientImpl implements SplitClient {
             }
             return createMapControl(featureFlagNames);
         }
+    }
+
+    private Set cleanAndValidateSets(List<String> sets) {
+        if (sets == null || sets.isEmpty()) {
+            return null;
+        }
+        Set cleanFlagSets = cleanup(sets);
+        if (cleanFlagSets == null || cleanFlagSets.size() == 0) {
+            _log.warn("The sets are invalid");
+            return null;
+        }
+        if (filterSetsAreInConfig(cleanFlagSets).isEmpty()) {
+            _log.warn("The sets are not in flagSetsFilter config");
+            return null;
+        }
+        return cleanFlagSets;
     }
 
     private List<String> filterSetsAreInConfig(Set<String> sets) {
