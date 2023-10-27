@@ -1,5 +1,7 @@
 package io.split.engine.sse.workers;
 
+import io.split.client.interceptors.FlagSetsFilter;
+import io.split.client.interceptors.FlagSetsFilterImpl;
 import io.split.engine.common.Synchronizer;
 import io.split.engine.experiments.SplitParser;
 import io.split.engine.sse.dtos.FeatureFlagChangeNotification;
@@ -20,6 +22,8 @@ import static org.hamcrest.Matchers.contains;
 
 public class SplitsWorkerTest {
 
+    private static final FlagSetsFilter FLAG_SETS_FILTER = new FlagSetsFilterImpl(new HashSet<>());
+
     @Test
     public void addToQueueWithoutElementsWShouldNotTriggerFetch() throws InterruptedException {
         Synchronizer splitFetcherMock = Mockito.mock(Synchronizer.class);
@@ -27,7 +31,7 @@ public class SplitsWorkerTest {
         SplitCacheProducer splitCacheProducer = Mockito.mock(SplitCacheProducer.class);
         TelemetryRuntimeProducer telemetryRuntimeProducer = Mockito.mock(InMemoryTelemetryStorage.class);
 
-        FeatureFlagsWorker featureFlagsWorker = new FeatureFlagWorkerImp(splitFetcherMock, splitParser, splitCacheProducer, telemetryRuntimeProducer, new HashSet<>());
+        FeatureFlagsWorker featureFlagsWorker = new FeatureFlagWorkerImp(splitFetcherMock, splitParser, splitCacheProducer, telemetryRuntimeProducer, FLAG_SETS_FILTER);
         featureFlagsWorker.start();
 
         Thread.sleep(500);
@@ -42,7 +46,7 @@ public class SplitsWorkerTest {
         SplitCacheProducer splitCacheProducer = Mockito.mock(SplitCacheProducer.class);
         TelemetryRuntimeProducer telemetryRuntimeProducer = Mockito.mock(InMemoryTelemetryStorage.class);
 
-        FeatureFlagsWorker featureFlagsWorker = new FeatureFlagWorkerImp(syncMock, splitParser, splitCacheProducer, telemetryRuntimeProducer, new HashSet<>());
+        FeatureFlagsWorker featureFlagsWorker = new FeatureFlagWorkerImp(syncMock, splitParser, splitCacheProducer, telemetryRuntimeProducer, FLAG_SETS_FILTER);
         featureFlagsWorker.start();
 
         ArgumentCaptor<Long> cnCaptor = ArgumentCaptor.forClass(Long.class);
@@ -77,7 +81,7 @@ public class SplitsWorkerTest {
         SplitParser splitParser = new SplitParser();
         SplitCacheProducer splitCacheProducer = Mockito.mock(SplitCacheProducer.class);
         TelemetryRuntimeProducer telemetryRuntimeProducer = Mockito.mock(InMemoryTelemetryStorage.class);
-        FeatureFlagsWorker featureFlagsWorker = new FeatureFlagWorkerImp(syncMock, splitParser, splitCacheProducer, telemetryRuntimeProducer, new HashSet<>()) {
+        FeatureFlagsWorker featureFlagsWorker = new FeatureFlagWorkerImp(syncMock, splitParser, splitCacheProducer, telemetryRuntimeProducer, FLAG_SETS_FILTER) {
         };
         featureFlagsWorker.start();
         SplitKillNotification splitKillNotification = new SplitKillNotification(GenericNotificationData.builder()
@@ -97,7 +101,7 @@ public class SplitsWorkerTest {
         SplitParser splitParser = new SplitParser();
         SplitCacheProducer splitCacheProducer = Mockito.mock(SplitCacheProducer.class);
         TelemetryRuntimeProducer telemetryRuntimeProducer = Mockito.mock(InMemoryTelemetryStorage.class);
-        FeatureFlagsWorker featureFlagsWorker = new FeatureFlagWorkerImp(syncMock, splitParser, splitCacheProducer, telemetryRuntimeProducer, new HashSet<>());
+        FeatureFlagsWorker featureFlagsWorker = new FeatureFlagWorkerImp(syncMock, splitParser, splitCacheProducer, telemetryRuntimeProducer, FLAG_SETS_FILTER);
         featureFlagsWorker.start();
         featureFlagsWorker.addToQueue(new FeatureFlagChangeNotification(GenericNotificationData.builder()
                 .changeNumber(1585956698457L)

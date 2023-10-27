@@ -2,6 +2,8 @@ package io.split.storages.memory;
 
 import com.google.common.collect.Lists;
 import io.split.client.dtos.Partition;
+import io.split.client.interceptors.FlagSetsFilter;
+import io.split.client.interceptors.FlagSetsFilterImpl;
 import io.split.engine.ConditionsTestUtil;
 import io.split.engine.experiments.ParsedCondition;
 import io.split.engine.experiments.ParsedSplit;
@@ -30,7 +32,8 @@ public class InMemoryCacheTest {
 
     @Before
     public void before() {
-        _cache = new InMemoryCacheImp(new HashSet<>(Arrays.asList("set1", "set2")));
+        FlagSetsFilter flagSetsFilter = new FlagSetsFilterImpl(new HashSet<>(Arrays.asList("set1", "set2")));
+        _cache = new InMemoryCacheImp(flagSetsFilter);
     }
 
     @Test

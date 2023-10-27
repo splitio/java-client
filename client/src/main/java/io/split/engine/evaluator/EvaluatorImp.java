@@ -55,9 +55,9 @@ public class EvaluatorImp implements Evaluator {
 
     @Override
     public Map<String, EvaluatorImp.TreatmentLabelAndChangeNumber> evaluateFeaturesByFlagSets(String key, String bucketingKey,
-                                                                                              List<String> flagSets) {
+                                                                                              List<String> flagSets, Map<String, Object> attributes) {
         List<String> flagSetsWithNames = getFeatureFlagNamesByFlagSets(flagSets);
-        Map<String, TreatmentLabelAndChangeNumber> evaluations = evaluateFeatures(key, bucketingKey, flagSetsWithNames, null);
+        Map<String, TreatmentLabelAndChangeNumber> evaluations = evaluateFeatures(key, bucketingKey, flagSetsWithNames, attributes);
         return evaluations;
     }
 
