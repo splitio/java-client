@@ -356,7 +356,6 @@ public final class SplitClientImpl implements SplitClient {
             return new HashMap<>();
         }
         if (filterSetsAreInConfig(cleanFlagSets, methodEnum).isEmpty()) {
-            _log.warn("The sets are not in flagSetsFilter config");
             return new HashMap<>();
         }
         List<String> featureFlagNames = new ArrayList<>();
