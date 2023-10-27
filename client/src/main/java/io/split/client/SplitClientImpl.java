@@ -124,7 +124,7 @@ public final class SplitClientImpl implements SplitClient {
 
     @Override
     public Map<String, String> getTreatments(Key key, List<String> featureFlagNames, Map<String, Object> attributes) {
-        return getTreatmentsWithConfigInternal(key.matchingKey(), key.bucketingKey(), featureFlagNames, null, MethodEnum.TREATMENTS)
+        return getTreatmentsWithConfigInternal(key.matchingKey(), key.bucketingKey(), featureFlagNames, attributes, MethodEnum.TREATMENTS)
                 .entrySet().stream()
                 .collect(Collectors.toMap(Map.Entry::getKey, e -> e.getValue().treatment()));
     }
@@ -323,14 +323,14 @@ public final class SplitClientImpl implements SplitClient {
         }
         try {
             checkSDKReady(methodEnum, featureFlagNames);
-            Map<String, SplitResult> validation = getValidationsBeforeEvaluate(featureFlagNames, matchingKey, methodEnum,bucketingKey);
-            if(validation != null) {
-                return validation;
+            Map<String, SplitResult> result = validateBeforeEvaluate(featureFlagNames, matchingKey, methodEnum, bucketingKey);
+            if(result != null) {
+                return result;
             }
             featureFlagNames = SplitNameValidator.areValid(featureFlagNames, methodEnum.getMethod());
             Map<String, EvaluatorImp.TreatmentLabelAndChangeNumber> evaluatorResult = _evaluator.evaluateFeatures(matchingKey,
                     bucketingKey, featureFlagNames, attributes);
-            return calculateResult(evaluatorResult, methodEnum, matchingKey, bucketingKey, attributes, initTime);
+            return processEvaluatorResult(evaluatorResult, methodEnum, matchingKey, bucketingKey, attributes, initTime);
         } catch (Exception e) {
             try {
                 _telemetryEvaluationProducer.recordException(methodEnum);
@@ -351,10 +351,6 @@ public final class SplitClientImpl implements SplitClient {
             return new HashMap<>();
         }
         Set cleanFlagSets = cleanup(sets);
-        if (cleanFlagSets == null || cleanFlagSets.size() == 0) {
-            _log.warn("The sets are invalid");
-            return new HashMap<>();
-        }
         if (filterSetsAreInConfig(cleanFlagSets, methodEnum).isEmpty()) {
             return new HashMap<>();
         }
@@ -362,13 +358,13 @@ public final class SplitClientImpl implements SplitClient {
         try {
             checkSDKReady(methodEnum);
             featureFlagNames = getAllFlags(cleanFlagSets);
-            Map<String, SplitResult> validation = getValidationsBeforeEvaluate(featureFlagNames, matchingKey, methodEnum,bucketingKey);
-            if(validation != null) {
-                return validation;
+            Map<String, SplitResult> result = validateBeforeEvaluate(featureFlagNames, matchingKey, methodEnum,bucketingKey);
+            if(result != null) {
+                return result;
             }
             Map<String, EvaluatorImp.TreatmentLabelAndChangeNumber> evaluatorResult;
             evaluatorResult = _evaluator.evaluateFeaturesByFlagSets(matchingKey, bucketingKey, new ArrayList<>(cleanFlagSets), attributes);
-            return calculateResult(evaluatorResult, methodEnum, matchingKey, bucketingKey, attributes, initTime);
+            return processEvaluatorResult(evaluatorResult, methodEnum, matchingKey, bucketingKey, attributes, initTime);
         } catch (Exception e) {
             try {
                 _telemetryEvaluationProducer.recordException(methodEnum);
@@ -380,8 +376,9 @@ public final class SplitClientImpl implements SplitClient {
         }
     }
 
-    private Map<String, SplitResult> calculateResult(Map<String, EvaluatorImp.TreatmentLabelAndChangeNumber> evaluatorResult, MethodEnum methodEnum,
-                                                     String matchingKey, String bucketingKey, Map<String, Object> attributes, long initTime){
+    private Map<String, SplitResult> processEvaluatorResult(Map<String, EvaluatorImp.TreatmentLabelAndChangeNumber> evaluatorResult,
+                                                            MethodEnum methodEnum, String matchingKey, String bucketingKey, Map<String,
+                                                            Object> attributes, long initTime){
         List<Impression> impressions = new ArrayList<>();
         Map<String, SplitResult> result = new HashMap<>();
         evaluatorResult.keySet().forEach(t -> {
@@ -403,8 +400,8 @@ public final class SplitClientImpl implements SplitClient {
         return result;
     }
 
-    private Map<String, SplitResult> getValidationsBeforeEvaluate(List<String> featureFlagNames, String matchingKey, MethodEnum methodEnum,
-                                                                  String bucketingKey) {
+    private Map<String, SplitResult> validateBeforeEvaluate(List<String> featureFlagNames, String matchingKey, MethodEnum methodEnum,
+                                                            String bucketingKey) {
         if (_container.isDestroyed()) {
             _log.error("Client has already been destroyed - no calls possible");
             return createMapControl(featureFlagNames);
