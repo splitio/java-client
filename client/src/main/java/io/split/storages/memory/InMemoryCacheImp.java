@@ -148,10 +148,10 @@ public class InMemoryCacheImp implements SplitCache {
     public void putMany(List<ParsedSplit> splits) {
         for (ParsedSplit split : splits) {
             _concurrentMap.put(split.feature(), split);
-
             if (split.trafficTypeName() != null) {
                 this.increaseTrafficType(split.trafficTypeName());
             }
+            removeFromFlagSets(split.feature());
             addToFlagSets(split);
         }
     }
@@ -189,7 +189,6 @@ public class InMemoryCacheImp implements SplitCache {
         if(sets == null) {
             return;
         }
-        removeFromFlagSets(featureFlag.feature());
         for (String set: sets) {
             if (!_flagSetsFilter.Intersect(set)) {
                 continue;
