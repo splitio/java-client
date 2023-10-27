@@ -938,6 +938,17 @@ public class SplitClientConfig {
             return this;
         }
 
+        /**
+         * Thread Factory
+         *
+         * @param threadFactory
+         * @return this builder
+         */
+        public Builder threadFactory(ThreadFactory threadFactory) {
+            _threadFactory = threadFactory;
+            return this;
+        }
+
         public SplitClientConfig build() {
             if (_featuresRefreshRate < 5 ) {
                 throw new IllegalArgumentException("featuresRefreshRate must be >= 5: " + _featuresRefreshRate);
