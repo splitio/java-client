@@ -396,7 +396,7 @@ public final class SplitClientImpl implements SplitClient {
                 _telemetryEvaluationProducer.recordException(methodEnum);
                 _log.error("CatchAll Exception", e);
             } catch (Exception e1) {
-                // ignore\
+                // ignore
             }
             return createMapControl(featureFlagNames);
         }
