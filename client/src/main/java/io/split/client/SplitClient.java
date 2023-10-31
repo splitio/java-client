@@ -293,12 +293,44 @@ public interface SplitClient {
      * vs. premium plan. Another example is to show a different treatment
      * to users created after a certain date.
      *
+     * @param key the matching and bucketing keys. MUST not be null or empty.
+     * @param flagSet the Flag Set name that you want to evaluate. MUST not be null or empty.
+     * @param attributes of the customer (user, account etc.) to use in evaluation. Can be null or empty.
+     * @return for each feature flag the evaluated treatment, the default treatment of this feature flag, or 'control'.
+     */
+    Map<String, String> getTreatmentsByFlagSet(Key key, String flagSet, Map<String, Object> attributes);
+
+    /**
+     * Same as {@link #getTreatments(String, List<String>, Map)} but it returns for each feature flag the configuration associated to the
+     * matching treatment if any. Otherwise {@link SplitResult.configurations()} will be null.
+     * <p/>
+     * <p/>
+     * Examples include showing a different treatment to users on trial plan
+     * vs. premium plan. Another example is to show a different treatment
+     * to users created after a certain date.
+     *
      * @param key a unique key of your customer (e.g. user_id, user_email, account_id, etc.) MUST not be null or empty.
      * @param flagSets  the names of Flag Sets that you want to evaluate. MUST not be null or empty.
      * @param attributes of the customer (user, account etc.) to use in evaluation. Can be null or empty.
      * @return for each feature flag the evaluated treatment, the default treatment of this feature flag, or 'control'.
      */
     Map<String, String> getTreatmentsByFlagSets(String key, List<String> flagSets, Map<String, Object> attributes);
+
+    /**
+     * Same as {@link #getTreatments(String, List<String>, Map)} but it returns for each feature flag the configuration associated to the
+     * matching treatment if any. Otherwise {@link SplitResult.configurations()} will be null.
+     * <p/>
+     * <p/>
+     * Examples include showing a different treatment to users on trial plan
+     * vs. premium plan. Another example is to show a different treatment
+     * to users created after a certain date.
+     *
+     * @param key the matching and bucketing keys. MUST not be null or empty.
+     * @param flagSets  the names of Flag Sets that you want to evaluate. MUST not be null or empty.
+     * @param attributes of the customer (user, account etc.) to use in evaluation. Can be null or empty.
+     * @return for each feature flag the evaluated treatment, the default treatment of this feature flag, or 'control'.
+     */
+    Map<String, String> getTreatmentsByFlagSets(Key key, List<String> flagSets, Map<String, Object> attributes);
 
     /**
      * Same as {@link #getTreatments(String, List<String>, Map)} but it returns for each feature flag the configuration associated to the
@@ -326,6 +358,23 @@ public interface SplitClient {
      * vs. premium plan. Another example is to show a different treatment
      * to users created after a certain date.
      *
+     * @param key the matching and bucketing keys. MUST not be null or empty.
+     * @param flagSet  the Flag Set name that you want to evaluate. MUST not be null or empty.
+     * @param attributes of the customer (user, account etc.) to use in evaluation. Can be null or empty.
+     * @return for each feature flag the evaluated treatment (the default treatment of this feature flag, or 'control') and a configuration
+     * associated to this treatment if set.
+     */
+    Map<String, SplitResult> getTreatmentsWithConfigByFlagSet(Key key, String flagSet, Map<String, Object> attributes);
+
+    /**
+     * Same as {@link #getTreatments(String, List<String>, Map)} but it returns for each feature flag the configuration associated to the
+     * matching treatment if any. Otherwise {@link SplitResult.configurations()} will be null.
+     * <p/>
+     * <p/>
+     * Examples include showing a different treatment to users on trial plan
+     * vs. premium plan. Another example is to show a different treatment
+     * to users created after a certain date.
+     *
      * @param key a unique key of your customer (e.g. user_id, user_email, account_id, etc.) MUST not be null or empty.
      * @param flagSets  the names of Flag Sets that you want to evaluate. MUST not be null or empty.
      * @param attributes of the customer (user, account etc.) to use in evaluation. Can be null or empty.
@@ -333,6 +382,23 @@ public interface SplitClient {
      * associated to this treatment if set.
      */
     Map<String, SplitResult> getTreatmentsWithConfigByFlagSets(String key, List<String> flagSets, Map<String, Object> attributes);
+
+    /**
+     * Same as {@link #getTreatments(String, List<String>, Map)} but it returns for each feature flag the configuration associated to the
+     * matching treatment if any. Otherwise {@link SplitResult.configurations()} will be null.
+     * <p/>
+     * <p/>
+     * Examples include showing a different treatment to users on trial plan
+     * vs. premium plan. Another example is to show a different treatment
+     * to users created after a certain date.
+     *
+     * @param key the matching and bucketing keys. MUST not be null or empty.
+     * @param flagSets  the names of Flag Sets that you want to evaluate. MUST not be null or empty.
+     * @param attributes of the customer (user, account etc.) to use in evaluation. Can be null or empty.
+     * @return for each feature flag the evaluated treatment (the default treatment of this feature flag, or 'control') and a configuration
+     * associated to this treatment if set.
+     */
+    Map<String, SplitResult> getTreatmentsWithConfigByFlagSets(Key key, List<String> flagSets, Map<String, Object> attributes);
 
     /**
      * Destroys the background processes and clears the cache, releasing the resources used by
