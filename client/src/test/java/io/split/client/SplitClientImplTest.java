@@ -900,6 +900,84 @@ public class SplitClientImplTest {
     }
 
     @Test
+    public void matchingBucketingKeysByFlagSetWork() {
+        String test = "test1";
+
+        Set<String> whitelist = new HashSet<>();
+        whitelist.add("aijaz");
+        ParsedCondition aijaz_should_match = ParsedCondition.createParsedConditionForTests(CombiningMatcher.of(new WhitelistMatcher(whitelist)), Lists.newArrayList(partition("on", 100)));
+
+        List<ParsedCondition> conditions = Lists.newArrayList(aijaz_should_match);
+        ParsedSplit parsedSplit = ParsedSplit.createParsedSplitForTests(test, 123, false, Treatments.OFF, conditions, "user", 1, 1, new HashSet<>(Arrays.asList("set1")));
+
+        SDKReadinessGates gates = mock(SDKReadinessGates.class);
+        SplitCacheConsumer splitCacheConsumer = mock(SplitCacheConsumer.class);
+        SegmentCacheConsumer segmentCacheConsumer = mock(SegmentCacheConsumer.class);
+        HashMap<String, HashSet<String>> flagsBySets = new HashMap<>();
+        flagsBySets.put("set1", new HashSet<>(Arrays.asList(test)));
+        when(splitCacheConsumer.getNamesByFlagSets(Arrays.asList("set1"))).thenReturn(flagsBySets);
+
+        Map<String, ParsedSplit> fetchManyResult = new HashMap<>();
+        fetchManyResult.put(test, parsedSplit);
+        when(splitCacheConsumer.fetchMany(Arrays.asList(test))).thenReturn(fetchManyResult);
+
+        SplitClientImpl client = new SplitClientImpl(
+                mock(SplitFactory.class),
+                splitCacheConsumer,
+                new ImpressionsManager.NoOpImpressionsManager(),
+                NoopEventsStorageImp.create(),
+                config,
+                gates,
+                new EvaluatorImp(splitCacheConsumer, segmentCacheConsumer), TELEMETRY_STORAGE, TELEMETRY_STORAGE
+        );
+
+        Key bad_key = new Key("adil", "aijaz");
+        Key good_key = new Key("aijaz", "adil");
+
+        assertEquals("off", client.getTreatmentsByFlagSet(bad_key, "set1", Collections.emptyMap()).get(test));
+        assertEquals("on", client.getTreatmentsByFlagSet(good_key, "set1", Collections.emptyMap()).get(test));
+    }
+
+    @Test
+    public void matchingBucketingKeysByFlagSetsWork() {
+        String test = "test1";
+
+        Set<String> whitelist = new HashSet<>();
+        whitelist.add("aijaz");
+        ParsedCondition aijaz_should_match = ParsedCondition.createParsedConditionForTests(CombiningMatcher.of(new WhitelistMatcher(whitelist)), Lists.newArrayList(partition("on", 100)));
+
+        List<ParsedCondition> conditions = Lists.newArrayList(aijaz_should_match);
+        ParsedSplit parsedSplit = ParsedSplit.createParsedSplitForTests(test, 123, false, Treatments.OFF, conditions, "user", 1, 1, new HashSet<>(Arrays.asList("set1")));
+
+        SDKReadinessGates gates = mock(SDKReadinessGates.class);
+        SplitCacheConsumer splitCacheConsumer = mock(SplitCacheConsumer.class);
+        SegmentCacheConsumer segmentCacheConsumer = mock(SegmentCacheConsumer.class);
+        HashMap<String, HashSet<String>> flagsBySets = new HashMap<>();
+        flagsBySets.put("set1", new HashSet<>(Arrays.asList(test)));
+        when(splitCacheConsumer.getNamesByFlagSets(Arrays.asList("set1"))).thenReturn(flagsBySets);
+
+        Map<String, ParsedSplit> fetchManyResult = new HashMap<>();
+        fetchManyResult.put(test, parsedSplit);
+        when(splitCacheConsumer.fetchMany(Arrays.asList(test))).thenReturn(fetchManyResult);
+
+        SplitClientImpl client = new SplitClientImpl(
+                mock(SplitFactory.class),
+                splitCacheConsumer,
+                new ImpressionsManager.NoOpImpressionsManager(),
+                NoopEventsStorageImp.create(),
+                config,
+                gates,
+                new EvaluatorImp(splitCacheConsumer, segmentCacheConsumer), TELEMETRY_STORAGE, TELEMETRY_STORAGE
+        );
+
+        Key bad_key = new Key("adil", "aijaz");
+        Key good_key = new Key("aijaz", "adil");
+
+        assertEquals("off", client.getTreatmentsByFlagSets(bad_key, Arrays.asList("set1"), Collections.emptyMap()).get(test));
+        assertEquals("on", client.getTreatmentsByFlagSets(good_key, Arrays.asList("set1"), Collections.emptyMap()).get(test));
+    }
+
+    @Test
     public void impressionMetadataIsPropagated() {
         String test = "test1";
 
@@ -1326,6 +1404,98 @@ public class SplitClientImplTest {
 
         // Times 2 because we are calling getTreatment twice. Once for getTreatment and one for getTreatmentWithConfig
         verify(splitCacheConsumer, times(numKeys * 2)).get(test);
+    }
+
+    @Test
+    public void worksAndHasConfigByFlagSetTryKetTreatmentWithKey() {
+        String test = "test1";
+
+        ParsedCondition rollOutToEveryone = ParsedCondition.createParsedConditionForTests(CombiningMatcher.of(new AllKeysMatcher()),
+                Lists.newArrayList(partition("on", 100)));
+        List<ParsedCondition> conditions = Lists.newArrayList(rollOutToEveryone);
+
+        // Add config for only one treatment
+        Map<String, String> configurations = new HashMap<>();
+        configurations.put(Treatments.ON, "{\"size\" : 30}");
+
+        ParsedSplit parsedSplit = ParsedSplit.createParsedSplitForTests(test, 123, false, Treatments.OFF, conditions,
+                null, 1, 1, configurations, new HashSet<>(Arrays.asList("set1")));
+
+        SDKReadinessGates gates = mock(SDKReadinessGates.class);
+        SplitCacheConsumer splitCacheConsumer = mock(SplitCacheConsumer.class);
+        SegmentCacheConsumer segmentCacheConsumer = mock(SegmentCacheConsumer.class);
+        HashMap<String, HashSet<String>> flagsBySets = new HashMap<>();
+        flagsBySets.put("set1", new HashSet<>(Arrays.asList(test)));
+        when(splitCacheConsumer.getNamesByFlagSets(Arrays.asList("set1"))).thenReturn(flagsBySets);
+
+        Map<String, ParsedSplit> fetchManyResult = new HashMap<>();
+        fetchManyResult.put(test, parsedSplit);
+        when(splitCacheConsumer.fetchMany(Arrays.asList(test))).thenReturn(fetchManyResult);
+
+        SplitClientImpl client = new SplitClientImpl(
+                mock(SplitFactory.class),
+                splitCacheConsumer,
+                new ImpressionsManager.NoOpImpressionsManager(),
+                NoopEventsStorageImp.create(),
+                config,
+                gates,
+                new EvaluatorImp(splitCacheConsumer, segmentCacheConsumer), TELEMETRY_STORAGE, TELEMETRY_STORAGE
+        );
+
+        int numKeys = 5;
+        for (int i = 0; i < numKeys; i++) {
+            Map<String, Object> attributes = new HashMap<>();
+            String randomKey = RandomStringUtils.random(10);
+            Key key = new Key(randomKey, "BucketingKey");
+            assertEquals("on", client.getTreatmentsByFlagSet(randomKey, "set1", new HashMap<>()).get(test));
+            assertEquals("{\"size\" : 30}", client.getTreatmentsWithConfigByFlagSet(key, "set1", attributes).get(test).config());
+        }
+    }
+
+    @Test
+    public void worksAndHasConfigByFlagSetsTryKetTreatmentWithKey() {
+        String test = "test1";
+
+        ParsedCondition rollOutToEveryone = ParsedCondition.createParsedConditionForTests(CombiningMatcher.of(new AllKeysMatcher()),
+                Lists.newArrayList(partition("on", 100)));
+        List<ParsedCondition> conditions = Lists.newArrayList(rollOutToEveryone);
+
+        // Add config for only one treatment
+        Map<String, String> configurations = new HashMap<>();
+        configurations.put(Treatments.ON, "{\"size\" : 30}");
+
+        ParsedSplit parsedSplit = ParsedSplit.createParsedSplitForTests(test, 123, false, Treatments.OFF, conditions,
+                null, 1, 1, configurations, new HashSet<>(Arrays.asList("set1")));
+
+        SDKReadinessGates gates = mock(SDKReadinessGates.class);
+        SplitCacheConsumer splitCacheConsumer = mock(SplitCacheConsumer.class);
+        SegmentCacheConsumer segmentCacheConsumer = mock(SegmentCacheConsumer.class);
+        HashMap<String, HashSet<String>> flagsBySets = new HashMap<>();
+        flagsBySets.put("set1", new HashSet<>(Arrays.asList(test)));
+        when(splitCacheConsumer.getNamesByFlagSets(Arrays.asList("set1"))).thenReturn(flagsBySets);
+
+        Map<String, ParsedSplit> fetchManyResult = new HashMap<>();
+        fetchManyResult.put(test, parsedSplit);
+        when(splitCacheConsumer.fetchMany(Arrays.asList(test))).thenReturn(fetchManyResult);
+
+        SplitClientImpl client = new SplitClientImpl(
+                mock(SplitFactory.class),
+                splitCacheConsumer,
+                new ImpressionsManager.NoOpImpressionsManager(),
+                NoopEventsStorageImp.create(),
+                config,
+                gates,
+                new EvaluatorImp(splitCacheConsumer, segmentCacheConsumer), TELEMETRY_STORAGE, TELEMETRY_STORAGE
+        );
+
+        int numKeys = 5;
+        for (int i = 0; i < numKeys; i++) {
+            Map<String, Object> attributes = new HashMap<>();
+            String randomKey = RandomStringUtils.random(10);
+            Key key = new Key(randomKey, "BucketingKey");
+            assertEquals("on", client.getTreatmentsByFlagSets(randomKey, Arrays.asList("set1"), new HashMap<>()).get(test));
+            assertEquals("{\"size\" : 30}", client.getTreatmentsWithConfigByFlagSets(key, Arrays.asList("set1"), attributes).get(test).config());
+        }
     }
 
     @Test(expected = IllegalArgumentException.class)

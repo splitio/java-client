@@ -154,8 +154,22 @@ public final class SplitClientImpl implements SplitClient {
     }
 
     @Override
+    public Map<String, String> getTreatmentsByFlagSet(Key key, String flagSet, Map<String, Object> attributes) {
+        return getTreatmentsBySetsWithConfigInternal(key.matchingKey(), key.bucketingKey(), new ArrayList<>(Arrays.asList(flagSet)),
+                attributes, MethodEnum.TREATMENTS_BY_FLAG_SET).entrySet().stream()
+                .collect(Collectors.toMap(Map.Entry::getKey, e -> e.getValue().treatment()));
+    }
+
+    @Override
     public Map<String, String> getTreatmentsByFlagSets(String key, List<String> flagSets, Map<String, Object> attributes) {
         return getTreatmentsBySetsWithConfigInternal(key, null, flagSets,
+                attributes, MethodEnum.TREATMENTS_BY_FLAG_SETS).entrySet().stream()
+                .collect(Collectors.toMap(Map.Entry::getKey, e -> e.getValue().treatment()));
+    }
+
+    @Override
+    public Map<String, String> getTreatmentsByFlagSets(Key key, List<String> flagSets, Map<String, Object> attributes) {
+        return getTreatmentsBySetsWithConfigInternal(key.matchingKey(), key.bucketingKey(), flagSets,
                 attributes, MethodEnum.TREATMENTS_BY_FLAG_SETS).entrySet().stream()
                 .collect(Collectors.toMap(Map.Entry::getKey, e -> e.getValue().treatment()));
     }
@@ -167,8 +181,20 @@ public final class SplitClientImpl implements SplitClient {
     }
 
     @Override
+    public Map<String, SplitResult> getTreatmentsWithConfigByFlagSet(Key key, String flagSet, Map<String, Object> attributes) {
+        return getTreatmentsBySetsWithConfigInternal(key.matchingKey(), key.bucketingKey(), new ArrayList<>(Arrays.asList(flagSet)),
+                attributes, MethodEnum.TREATMENTS_WITH_CONFIG_BY_FLAG_SET);
+    }
+
+    @Override
     public Map<String, SplitResult> getTreatmentsWithConfigByFlagSets(String key, List<String> flagSets, Map<String, Object> attributes) {
         return getTreatmentsBySetsWithConfigInternal(key, null, flagSets,
+                attributes, MethodEnum.TREATMENTS_WITH_CONFIG_BY_FLAG_SETS);
+    }
+
+    @Override
+    public Map<String, SplitResult> getTreatmentsWithConfigByFlagSets(Key key, List<String> flagSets, Map<String, Object> attributes) {
+        return getTreatmentsBySetsWithConfigInternal(key.matchingKey(), key.bucketingKey(), flagSets,
                 attributes, MethodEnum.TREATMENTS_WITH_CONFIG_BY_FLAG_SETS);
     }
 
@@ -362,15 +388,15 @@ public final class SplitClientImpl implements SplitClient {
             if(result != null) {
                 return result;
             }
-            Map<String, EvaluatorImp.TreatmentLabelAndChangeNumber> evaluatorResult;
-            evaluatorResult = _evaluator.evaluateFeaturesByFlagSets(matchingKey, bucketingKey, new ArrayList<>(cleanFlagSets), attributes);
+            Map<String, EvaluatorImp.TreatmentLabelAndChangeNumber> evaluatorResult = _evaluator.evaluateFeaturesByFlagSets(matchingKey,
+                    bucketingKey, new ArrayList<>(cleanFlagSets), attributes);
             return processEvaluatorResult(evaluatorResult, methodEnum, matchingKey, bucketingKey, attributes, initTime);
         } catch (Exception e) {
             try {
                 _telemetryEvaluationProducer.recordException(methodEnum);
                 _log.error("CatchAll Exception", e);
             } catch (Exception e1) {
-                // ignore
+                // ignore\
             }
             return createMapControl(featureFlagNames);
         }
