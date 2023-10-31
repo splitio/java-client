@@ -3,7 +3,6 @@ package io.split.client;
 import io.split.client.api.Key;
 import io.split.client.api.SplitResult;
 
-import java.awt.*;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeoutException;
