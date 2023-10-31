@@ -12,7 +12,7 @@ public class FlagSetsFilterImpl implements  FlagSetsFilter {
         _flagSets = flagSets;
     }
     @Override
-    public boolean Intersect(Set<String> sets) {
+    public boolean intersect(Set<String> sets) {
         if (!_shouldFilter) {
             return true;
         }
@@ -28,7 +28,7 @@ public class FlagSetsFilterImpl implements  FlagSetsFilter {
     }
 
     @Override
-    public boolean Intersect(String set) {
+    public boolean intersect(String set) {
         if (!_shouldFilter) {
             return true;
         }

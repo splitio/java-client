@@ -279,7 +279,8 @@ public class SplitFactoryImpl implements SplitFactory {
         Metadata metadata = new Metadata(config.ipAddressEnabled(), SplitClientConfig.splitSdkVersion);
         _userStorageWrapper = new UserStorageWrapper(customStorageWrapper);
         UserCustomSegmentAdapterConsumer userCustomSegmentAdapterConsumer= new UserCustomSegmentAdapterConsumer(customStorageWrapper);
-        UserCustomSplitAdapterConsumer userCustomSplitAdapterConsumer = new UserCustomSplitAdapterConsumer(customStorageWrapper);
+        UserCustomSplitAdapterConsumer userCustomSplitAdapterConsumer = new UserCustomSplitAdapterConsumer(customStorageWrapper,
+                config.getSetsFilter());
         // TODO migrate impressions sender to Task instead manager and not instantiate Producer here.
         UserCustomImpressionAdapterConsumer userCustomImpressionAdapterConsumer = new UserCustomImpressionAdapterConsumer();
         UserCustomImpressionAdapterProducer userCustomImpressionAdapterProducer = new UserCustomImpressionAdapterProducer(customStorageWrapper,

@@ -1,6 +1,10 @@
 package io.split.storages.pluggable;
 
+import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
+import io.split.client.dtos.Split;
+import io.split.client.utils.Json;
+import io.split.storages.pluggable.domain.PrefixAdapter;
 import pluggable.CustomStorageWrapper;
 import pluggable.HasPipelineSupport;
 import pluggable.Pipeline;
@@ -8,8 +12,10 @@ import pluggable.Result;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ConcurrentMap;
@@ -18,6 +24,7 @@ public class CustomStorageWrapperHasPipeline implements CustomStorageWrapper, Ha
 
     private static final String COUNTS = "SPLITIO.impressions.count";
     private static final String FLAG_SET = "SPLITIO.flagSet";
+    private static final String SPLIT = "SPLITIO.split.";
     private final ConcurrentMap<String, Long> _impressionsCount = Maps.newConcurrentMap();
     private final ConcurrentMap<String, HashSet<String>> _flagSets = Maps.newConcurrentMap();
 
@@ -182,8 +189,10 @@ public class CustomStorageWrapperHasPipeline implements CustomStorageWrapper, Ha
         }
 
         private String getStorage(String key) {
+            if(key.startsWith(SPLIT))
+                return SPLIT;
             if(key.startsWith(COUNTS))
-                return  COUNTS;
+                return COUNTS;
             if(key.startsWith(FLAG_SET))
                 return FLAG_SET;
             return "";

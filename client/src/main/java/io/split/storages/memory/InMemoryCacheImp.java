@@ -190,7 +190,7 @@ public class InMemoryCacheImp implements SplitCache {
             return;
         }
         for (String set: sets) {
-            if (!_flagSetsFilter.Intersect(set)) {
+            if (!_flagSetsFilter.intersect(set)) {
                 continue;
             }
             HashSet<String> features = _flagSets.get(set);

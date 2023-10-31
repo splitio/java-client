@@ -421,7 +421,7 @@ public final class SplitClientImpl implements SplitClient {
         FlagSetsFilter flagSetsFilter = new FlagSetsFilterImpl(_config.getSetsFilter());
         List<String> setsToReturn = new ArrayList<>();
         for (String set : sets) {
-            if (!flagSetsFilter.Intersect(set)) {
+            if (!flagSetsFilter.intersect(set)) {
                 _log.warn(String.format("%s: you passed %s which is not part of the configured FlagSetsFilter, " +
                         "ignoring Flag Set.", methodEnum, set));
                 continue;

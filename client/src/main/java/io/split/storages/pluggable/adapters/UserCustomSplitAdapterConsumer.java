@@ -31,10 +31,12 @@ public class UserCustomSplitAdapterConsumer  implements SplitCacheConsumer {
 
     private final SplitParser _splitParser;
     private final UserStorageWrapper _userStorageWrapper;
+    private final HashSet<String> _flagSets;
 
-    public UserCustomSplitAdapterConsumer(CustomStorageWrapper customStorageWrapper) {
+    public UserCustomSplitAdapterConsumer(CustomStorageWrapper customStorageWrapper, HashSet<String> flagSets) {
         _splitParser = new SplitParser();
         _userStorageWrapper = new UserStorageWrapper(checkNotNull(customStorageWrapper));
+        _flagSets = flagSets;
     }
 
     @Override
@@ -45,25 +47,35 @@ public class UserCustomSplitAdapterConsumer  implements SplitCacheConsumer {
 
     @Override
     public ParsedSplit get(String name) {
-        String wrapperResponse = _userStorageWrapper.get(PrefixAdapter.buildSplitKey(name));
-        if(wrapperResponse == null) {
-            return null;
+        if (_flagSets.isEmpty() || getFlags().contains(name)){
+            String wrapperResponse = _userStorageWrapper.get(PrefixAdapter.buildSplitKey(name));
+            if(wrapperResponse == null) {
+                return null;
+            }
+            Split split = Json.fromJson(wrapperResponse, Split.class);
+            if(split == null) {
+                _log.warn("Could not parse Split.");
+                return null;
+            }
+            return _splitParser.parse(split);
         }
-        Split split = Json.fromJson(wrapperResponse, Split.class);
-        if(split == null) {
-            _log.warn("Could not parse Split.");
-            return null;
-        }
-        return _splitParser.parse(split);
+       return null;
     }
 
     @Override
     public Collection<ParsedSplit> getAll() {
-        Set<String> keys = _userStorageWrapper.getKeysByPrefix(PrefixAdapter.buildGetAllSplit());
-        if(keys == null) {
-            return new ArrayList<>();
+        List<String> wrapperResponse;
+        if (_flagSets.isEmpty()) {
+            Set<String> keys = _userStorageWrapper.getKeysByPrefix(PrefixAdapter.buildGetAllSplit());
+            if(keys == null) {
+                return new ArrayList<>();
+            }
+            wrapperResponse = _userStorageWrapper.getMany(new ArrayList<>(keys));
+
+        } else {
+            HashSet<String> flagNames = getFlags();
+            wrapperResponse = _userStorageWrapper.getMany(PrefixAdapter.buildFetchManySplits(new ArrayList<>(flagNames)));
         }
-        List<String> wrapperResponse = _userStorageWrapper.getMany(new ArrayList<>(keys));
         if(wrapperResponse == null) {
             return new ArrayList<>();
         }
@@ -88,10 +100,14 @@ public class UserCustomSplitAdapterConsumer  implements SplitCacheConsumer {
 
     @Override
     public List<String> splitNames() {
-        Set<String> splitNamesWithPrefix = _userStorageWrapper.getKeysByPrefix(PrefixAdapter.buildGetAllSplit());
-        splitNamesWithPrefix = splitNamesWithPrefix.stream().map(key -> key.replace(PrefixAdapter.buildSplitsPrefix(), "")).
-                collect(Collectors.toSet());
-        return new ArrayList<>(splitNamesWithPrefix);
+        if(_flagSets.isEmpty()) {
+            Set<String> splitNamesWithPrefix = _userStorageWrapper.getKeysByPrefix(PrefixAdapter.buildGetAllSplit());
+            splitNamesWithPrefix = splitNamesWithPrefix.stream().map(key -> key.replace(PrefixAdapter.buildSplitsPrefix(), "")).
+                    collect(Collectors.toSet());
+            return new ArrayList<>(splitNamesWithPrefix);
+        }
+        HashSet<String> flagNames = getFlags();
+        return new ArrayList<>(flagNames);
     }
 
     @Override
@@ -148,5 +164,14 @@ public class UserCustomSplitAdapterConsumer  implements SplitCacheConsumer {
             result.add(null);
         }
         return result;
+    }
+
+    private HashSet<String> getFlags() {
+        HashSet<String> flagNames = new HashSet<>();
+        Map<String, HashSet<String>> nameByFlaySets = getNamesByFlagSets(new ArrayList<>(_flagSets));
+        for (String set: nameByFlaySets.keySet()) {
+            flagNames.addAll(nameByFlaySets.get(set));
+        }
+        return flagNames;
     }
 }

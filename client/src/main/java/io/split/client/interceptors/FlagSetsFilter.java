@@ -4,6 +4,6 @@ import java.util.Set;
 
 public interface FlagSetsFilter {
 
-    boolean Intersect(Set<String> sets);
-    boolean Intersect(String set);
+    boolean intersect(Set<String> sets);
+    boolean intersect(String set);
 }

@@ -23,6 +23,8 @@ import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -41,7 +43,7 @@ public class UserCustomSplitAdapterConsumerTest {
     public void setUp() throws NoSuchFieldException, IllegalAccessException {
         _customStorageWrapper = Mockito.mock(CustomStorageWrapper.class);
         _userStorageWrapper = Mockito.mock(UserStorageWrapper.class);
-        _userCustomSplitAdapterConsumer = new UserCustomSplitAdapterConsumer(_customStorageWrapper);
+        _userCustomSplitAdapterConsumer = new UserCustomSplitAdapterConsumer(_customStorageWrapper, new HashSet<>());
         Field userCustomSplitAdapterConsumer = UserCustomSplitAdapterConsumer.class.getDeclaredField("_userStorageWrapper");
         userCustomSplitAdapterConsumer.setAccessible(true);
         Field modifiersField = Field.class.getDeclaredField("modifiers");
@@ -194,7 +196,8 @@ public class UserCustomSplitAdapterConsumerTest {
     @Test
     public void testGetNamesByFlagSets() {
         CustomStorageWrapper customStorageWrapper = new CustomStorageWrapperHasPipeline();
-        UserCustomSplitAdapterConsumer userCustomSplitAdapterConsumer = new UserCustomSplitAdapterConsumer(customStorageWrapper);
+        HashSet<String> sets = new HashSet<>(Arrays.asList("set1"));
+        UserCustomSplitAdapterConsumer userCustomSplitAdapterConsumer = new UserCustomSplitAdapterConsumer(customStorageWrapper, sets);
         Map<String, HashSet<String>> flagSets = userCustomSplitAdapterConsumer.getNamesByFlagSets(new ArrayList<>(Arrays.asList("set1")));
         Assert.assertEquals(2, flagSets.get("set1").size());
     }
@@ -202,7 +205,7 @@ public class UserCustomSplitAdapterConsumerTest {
     @Test
     public void testGetSegments() {
         //NoOp
-        UserCustomSplitAdapterConsumer userCustomSplitAdapterConsumer = new UserCustomSplitAdapterConsumer(_customStorageWrapper);
+        UserCustomSplitAdapterConsumer userCustomSplitAdapterConsumer = new UserCustomSplitAdapterConsumer(_customStorageWrapper, new HashSet<>());
         Assert.assertEquals(0, userCustomSplitAdapterConsumer.getSegments().size());
     }
 
