@@ -322,7 +322,7 @@ public class SplitFactoryImpl implements SplitFactory {
         Synchronizer synchronizer = new ConsumerSynchronizer(splitTasks);
         FlagSetsFilter flagSetsFilter = new FlagSetsFilterImpl(new HashSet<>());
         if(!config.getSetsFilter().isEmpty()) {
-            _log.warn("FlagSets filter is not applicable for Consumer modes where the SDK does keep rollout data in sync. FlagSet " +
+            _log.warn("FlagSets filter is not applicable for Consumer modes where the SDK does not keep rollout data in sync. FlagSet " +
                     "filter was discarded");
         }
         _client = new SplitClientImpl(this,
