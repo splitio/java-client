@@ -20,12 +20,12 @@ public class UserPipelineWrapper implements Pipeline{
     }
 
     @Override
-    public List<Result> exec() {
+    public List<Result> exec() throws Exception {
         try{
             return _pipeline.exec();
         } catch (Exception e) {
             _logger.warn("Exception calling Pipeline exec", e);
-            return new ArrayList<>();
+            throw e;
         }
     }
 

@@ -26,7 +26,7 @@ public class FeatureFlagProcessor {
                 toRemove.add(split.name);
                 continue;
             }
-            if (!flagSetsFilter.Intersect(split.sets)) {
+            if (!flagSetsFilter.intersect(split.sets)) {
                 toRemove.add(split.name);
                 continue;
             }

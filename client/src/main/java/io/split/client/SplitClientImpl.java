@@ -7,7 +7,6 @@ import io.split.client.events.EventsStorageProducer;
 import io.split.client.impressions.Impression;
 import io.split.client.impressions.ImpressionsManager;
 import io.split.client.interceptors.FlagSetsFilter;
-import io.split.client.interceptors.FlagSetsFilterImpl;
 import io.split.engine.SDKReadinessGates;
 import io.split.engine.evaluator.Evaluator;
 import io.split.engine.evaluator.EvaluatorImp;
@@ -61,6 +60,7 @@ public final class SplitClientImpl implements SplitClient {
     private final Evaluator _evaluator;
     private final TelemetryEvaluationProducer _telemetryEvaluationProducer;
     private final TelemetryConfigProducer _telemetryConfigProducer;
+    private final FlagSetsFilter _flagSetsFilter;
 
     public SplitClientImpl(SplitFactory container,
                            SplitCacheConsumer splitCacheConsumer,
@@ -70,7 +70,8 @@ public final class SplitClientImpl implements SplitClient {
                            SDKReadinessGates gates,
                            Evaluator evaluator,
                            TelemetryEvaluationProducer telemetryEvaluationProducer,
-                           TelemetryConfigProducer telemetryConfigProducer) {
+                           TelemetryConfigProducer telemetryConfigProducer,
+                           FlagSetsFilter flagSetsFilter) {
         _container = container;
         _splitCacheConsumer = checkNotNull(splitCacheConsumer);
         _impressionManager = checkNotNull(impressionManager);
@@ -80,6 +81,7 @@ public final class SplitClientImpl implements SplitClient {
         _evaluator = checkNotNull(evaluator);
         _telemetryEvaluationProducer = checkNotNull(telemetryEvaluationProducer);
         _telemetryConfigProducer = checkNotNull(telemetryConfigProducer);
+        _flagSetsFilter = flagSetsFilter;
     }
 
     @Override
@@ -446,10 +448,9 @@ public final class SplitClientImpl implements SplitClient {
         return null;
     }
     private List<String> filterSetsAreInConfig(Set<String> sets, MethodEnum methodEnum) {
-        FlagSetsFilter flagSetsFilter = new FlagSetsFilterImpl(_config.getSetsFilter());
         List<String> setsToReturn = new ArrayList<>();
         for (String set : sets) {
-            if (!flagSetsFilter.Intersect(set)) {
+            if (!_flagSetsFilter.intersect(set)) {
                 _log.warn(String.format("%s: you passed %s which is not part of the configured FlagSetsFilter, " +
                         "ignoring Flag Set.", methodEnum, set));
                 continue;
