@@ -3,7 +3,6 @@ package io.split.client.utils;
 import io.split.client.dtos.Split;
 import io.split.client.dtos.Status;
 import io.split.client.interceptors.FlagSetsFilter;
-import io.split.client.interceptors.FlagSetsFilterImpl;
 import io.split.engine.experiments.ParsedSplit;
 import io.split.engine.experiments.SplitParser;
 import org.slf4j.Logger;
@@ -27,7 +26,7 @@ public class FeatureFlagProcessor {
                 toRemove.add(split.name);
                 continue;
             }
-            if (!flagSetsFilter.Intersect(split.sets)) {
+            if (!flagSetsFilter.intersect(split.sets)) {
                 toRemove.add(split.name);
                 continue;
             }

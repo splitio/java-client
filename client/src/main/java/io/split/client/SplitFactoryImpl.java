@@ -111,6 +111,7 @@ import java.net.InetAddress;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.stream.Collectors;
@@ -240,7 +241,8 @@ public class SplitFactoryImpl implements SplitFactory {
                 _gates,
                 _evaluator,
                 _telemetryStorageProducer, //TelemetryEvaluation instance
-                _telemetryStorageProducer); //TelemetryConfiguration instance
+                _telemetryStorageProducer, //TelemetryConfiguration instance
+                flagSetsFilter);
 
         // SplitManager
         _manager = new SplitManagerImpl(splitCache, config, _gates, _telemetryStorageProducer);
@@ -318,7 +320,11 @@ public class SplitFactoryImpl implements SplitFactory {
 
         // Synchronizer
         Synchronizer synchronizer = new ConsumerSynchronizer(splitTasks);
-
+        FlagSetsFilter flagSetsFilter = new FlagSetsFilterImpl(new HashSet<>());
+        if(!config.getSetsFilter().isEmpty()) {
+            _log.warn("FlagSets filter is not applicable for Consumer modes where the SDK does keep rollout data in sync. FlagSet " +
+                    "filter was discarded");
+        }
         _client = new SplitClientImpl(this,
                 userCustomSplitAdapterConsumer,
                 _impressionsManager,
@@ -327,7 +333,8 @@ public class SplitFactoryImpl implements SplitFactory {
                 _gates,
                 _evaluator,
                 _telemetryStorageProducer, //TelemetryEvaluation instance
-                _telemetryStorageProducer); //TelemetryConfiguration instance
+                _telemetryStorageProducer, //TelemetryConfiguration instance
+                flagSetsFilter);
 
 
         // SyncManager
@@ -405,7 +412,8 @@ public class SplitFactoryImpl implements SplitFactory {
                 _gates,
                 _evaluator,
                 _telemetryStorageProducer, //TelemetryEvaluation instance
-                _telemetryStorageProducer); //TelemetryConfiguration instance
+                _telemetryStorageProducer, //TelemetryConfiguration instance
+                flagSetsFilter);
 
         // Synchronizer
         Synchronizer synchronizer = new LocalhostSynchronizer(splitTasks, _splitFetcher, config.localhostRefreshEnabled());
