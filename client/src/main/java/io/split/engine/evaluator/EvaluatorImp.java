@@ -1,6 +1,5 @@
 package io.split.engine.evaluator;
 
-import com.google.common.base.Stopwatch;
 import io.split.client.dtos.ConditionType;
 import io.split.client.exceptions.ChangeNumberExceptionWrapper;
 import io.split.engine.experiments.ParsedCondition;
@@ -17,7 +16,6 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.TimeUnit;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
@@ -57,8 +55,7 @@ public class EvaluatorImp implements Evaluator {
     public Map<String, EvaluatorImp.TreatmentLabelAndChangeNumber> evaluateFeaturesByFlagSets(String key, String bucketingKey,
                                                                                               List<String> flagSets, Map<String, Object> attributes) {
         List<String> flagSetsWithNames = getFeatureFlagNamesByFlagSets(flagSets);
-        Map<String, TreatmentLabelAndChangeNumber> evaluations = evaluateFeatures(key, bucketingKey, flagSetsWithNames, attributes);
-        return evaluations;
+        return evaluateFeatures(key, bucketingKey, flagSetsWithNames, attributes);
     }
 
     private List<String> getFeatureFlagNamesByFlagSets(List<String> flagSets) {
