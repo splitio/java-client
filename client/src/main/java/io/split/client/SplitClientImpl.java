@@ -47,6 +47,8 @@ import static io.split.inputValidation.FlagSetsValidator.cleanup;
  */
 public final class SplitClientImpl implements SplitClient {
     public static final SplitResult SPLIT_RESULT_CONTROL = new SplitResult(Treatments.CONTROL, null);
+    private static final String CLIENT_DESTROY = "Client has already been destroyed - no calls possible";
+    private static final String CATCHALL_EXCEPTION = "CatchAll Exception";
 
     private static final Logger _log = LoggerFactory.getLogger(SplitClientImpl.class);
 
@@ -247,7 +249,7 @@ public final class SplitClientImpl implements SplitClient {
     private boolean track(Event event) {
         long initTime = System.currentTimeMillis();
         if (_container.isDestroyed()) {
-            _log.error("Client has already been destroyed - no calls possible");
+            _log.error(CLIENT_DESTROY);
             return false;
         }
 
@@ -287,7 +289,7 @@ public final class SplitClientImpl implements SplitClient {
             checkSDKReady(methodEnum, Arrays.asList(featureFlag));
 
             if (_container.isDestroyed()) {
-                _log.error("Client has already been destroyed - no calls possible");
+                _log.error(CLIENT_DESTROY);
                 return SPLIT_RESULT_CONTROL;
             }
 
@@ -332,7 +334,7 @@ public final class SplitClientImpl implements SplitClient {
         } catch (Exception e) {
             try {
                 _telemetryEvaluationProducer.recordException(methodEnum);
-                _log.error("CatchAll Exception", e);
+                _log.error(CATCHALL_EXCEPTION, e);
             } catch (Exception e1) {
                 // ignore
             }
@@ -360,7 +362,7 @@ public final class SplitClientImpl implements SplitClient {
         } catch (Exception e) {
             try {
                 _telemetryEvaluationProducer.recordException(methodEnum);
-                _log.error("CatchAll Exception", e);
+                _log.error(CATCHALL_EXCEPTION, e);
             } catch (Exception e1) {
                 // ignore
             }
@@ -394,7 +396,7 @@ public final class SplitClientImpl implements SplitClient {
         } catch (Exception e) {
             try {
                 _telemetryEvaluationProducer.recordException(methodEnum);
-                _log.error("CatchAll Exception", e);
+                _log.error(CATCHALL_EXCEPTION, e);
             } catch (Exception e1) {
                 // ignore
             }
@@ -429,7 +431,7 @@ public final class SplitClientImpl implements SplitClient {
     private Map<String, SplitResult> validateBeforeEvaluate(List<String> featureFlagNames, String matchingKey, MethodEnum methodEnum,
                                                             String bucketingKey) {
         if (_container.isDestroyed()) {
-            _log.error("Client has already been destroyed - no calls possible");
+            _log.error(CLIENT_DESTROY);
             return createMapControl(featureFlagNames);
         }
         if (!KeyValidator.isValid(matchingKey, "matchingKey", _config.maxStringLength(), methodEnum.getMethod())) {
