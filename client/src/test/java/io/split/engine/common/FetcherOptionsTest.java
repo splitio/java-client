@@ -25,7 +25,6 @@ public class FetcherOptionsTest {
         FetchOptions options = new FetchOptions.Builder()
                 .cacheControlHeaders(true)
                 .fastlyDebugHeader(true)
-                .responseHeadersCallback(func)
                 .targetChangeNumber(123)
                 .flagSetsFilter("set1,set2")
                 .build();
@@ -33,20 +32,7 @@ public class FetcherOptionsTest {
         assertEquals(options.cacheControlHeadersEnabled(), true);
         assertEquals(options.fastlyDebugHeaderEnabled(), true);
         assertEquals(options.targetCN(), 123);
-        options.handleResponseHeaders(new Header[0]);
         assertEquals(called[0], true);
         assertEquals("set1,set2", options.flagSetsFilter());
-    }
-
-    @Test
-    public void nullHandlerDoesNotExplode() {
-
-        FetchOptions options = new FetchOptions.Builder()
-                .cacheControlHeaders(true)
-                .fastlyDebugHeader(true)
-                .responseHeadersCallback(null)
-                .build();
-
-        options.handleResponseHeaders(new Header[0]);
     }
 }

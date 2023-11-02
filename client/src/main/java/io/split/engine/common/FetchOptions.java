@@ -19,7 +19,6 @@ public class FetchOptions {
             _targetCN = opts._targetCN;
             _cacheControlHeaders = opts._cacheControlHeaders;
             _fastlyDebugHeader = opts._fastlyDebugHeader;
-            _responseHeadersCallback = opts._responseHeadersCallback;
             _flagSetsFilter = opts._flagSetsFilter;
         }
 
@@ -30,11 +29,6 @@ public class FetchOptions {
 
         public Builder fastlyDebugHeader(boolean on) {
             _fastlyDebugHeader = on;
-            return this;
-        }
-
-        public Builder responseHeadersCallback(Function<Map<String, String>, Void> callback) {
-            _responseHeadersCallback = callback;
             return this;
         }
 
@@ -49,13 +43,12 @@ public class FetchOptions {
         }
 
         public FetchOptions build() {
-            return new FetchOptions(_cacheControlHeaders, _targetCN, _responseHeadersCallback, _fastlyDebugHeader, _flagSetsFilter);
+            return new FetchOptions(_cacheControlHeaders, _targetCN, _fastlyDebugHeader, _flagSetsFilter);
         }
 
         private long _targetCN = DEFAULT_TARGET_CHANGENUMBER;
         private boolean _cacheControlHeaders = false;
         private boolean _fastlyDebugHeader = false;
-        private Function<Map<String, String>, Void> _responseHeadersCallback = null;
         private String _flagSetsFilter = "";
     }
 
@@ -75,32 +68,12 @@ public class FetchOptions {
         return _flagSetsFilter;
     }
 
-    public void handleResponseHeaders(Header[] headers) {
-        if (Objects.isNull(_responseHeadersCallback) || Objects.isNull(headers)) {
-            return;
-        }
-
-        Map<String, String> toApply = new HashMap<>();
-        for (Header header : headers) {
-            if (toApply.containsKey(header.getName())) {
-                toApply.put(header.getName(), toApply.get(header.getName()) + "," + header.getValue());
-                continue;
-            }
-
-            toApply.put(header.getName(), header.getValue());
-        }
-
-        _responseHeadersCallback.apply(toApply);
-    }
-
     private FetchOptions(boolean cacheControlHeaders,
                          long targetCN,
-                         Function<Map<String, String>, Void> responseHeadersCallback,
                          boolean fastlyDebugHeader,
                          String flagSetsFilter) {
         _cacheControlHeaders = cacheControlHeaders;
         _targetCN = targetCN;
-        _responseHeadersCallback = responseHeadersCallback;
         _fastlyDebugHeader = fastlyDebugHeader;
         _flagSetsFilter = flagSetsFilter;
     }
@@ -115,20 +88,18 @@ public class FetchOptions {
 
         return Objects.equals(_cacheControlHeaders, other._cacheControlHeaders)
                 && Objects.equals(_fastlyDebugHeader, other._fastlyDebugHeader)
-                && Objects.equals(_responseHeadersCallback, other._responseHeadersCallback)
                 && Objects.equals(_targetCN, other._targetCN)
                 && Objects.equals(_flagSetsFilter, other._flagSetsFilter);
     }
 
     @Override
     public int hashCode() {
-        return com.google.common.base.Objects.hashCode(_cacheControlHeaders, _fastlyDebugHeader, _responseHeadersCallback,
+        return com.google.common.base.Objects.hashCode(_cacheControlHeaders, _fastlyDebugHeader,
                 _targetCN, _flagSetsFilter);
     }
 
     private final boolean _cacheControlHeaders;
     private final boolean _fastlyDebugHeader;
     private final long _targetCN;
-    private final Function<Map<String, String>, Void> _responseHeadersCallback;
     private final String _flagSetsFilter;
 }

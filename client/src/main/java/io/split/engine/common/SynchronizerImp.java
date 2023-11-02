@@ -152,7 +152,6 @@ public class SynchronizerImp implements Synchronizer {
         FetchOptions opts = new FetchOptions.Builder()
                 .cacheControlHeaders(true)
                 .fastlyDebugHeader(_cdnResponseHeadersLogging)
-                .responseHeadersCallback(_cdnResponseHeadersLogging ? captor::handle : null)
                 .flagSetsFilter(_sets)
                 .build();
 
@@ -239,7 +238,6 @@ public class SynchronizerImp implements Synchronizer {
         FetchOptions opts = new FetchOptions.Builder()
                 .cacheControlHeaders(true)
                 .fastlyDebugHeader(_cdnResponseHeadersLogging)
-                .responseHeadersCallback(_cdnResponseHeadersLogging ? captor::handle : null)
                 .build();
 
         SyncResult regularResult = attemptSegmentSync(segmentName, targetChangeNumber, opts,

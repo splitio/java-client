@@ -97,7 +97,6 @@ public final class HttpSplitChangeFetcher implements SplitChangeFetcher {
             }
 
             response = _client.execute(request);
-            options.handleResponseHeaders(response.getHeaders());
 
             int statusCode = response.getCode();
 
