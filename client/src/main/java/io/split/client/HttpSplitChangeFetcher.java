@@ -97,7 +97,7 @@ public final class HttpSplitChangeFetcher implements SplitChangeFetcher {
             }
 
             response = _client.execute(request);
-            options.handleResponseHeaders(readResponseHeaders(response.getHeaders()));
+            options.handleResponseHeaders(response.getHeaders());
 
             int statusCode = response.getCode();
 
@@ -129,19 +129,5 @@ public final class HttpSplitChangeFetcher implements SplitChangeFetcher {
     @VisibleForTesting
     URI getTarget() {
         return _target;
-    }
-
-    private Map<String, String> readResponseHeaders(Header[] headers) {
-        Map<String, String> toReturn = new HashMap<>();
-        for (Header header : headers) {
-            if (toReturn.containsKey(header.getName())) {
-                toReturn.put(header.getName(), toReturn.get(header.getName()) + "," + header.getValue());
-                continue;
-            }
-
-            toReturn.put(header.getName(), header.getValue());
-        }
-
-        return toReturn;
     }
 }

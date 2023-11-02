@@ -1,5 +1,6 @@
 package io.split.engine.common;
 
+import org.apache.hc.core5.http.Header;
 import org.junit.Test;
 
 import java.util.HashMap;
@@ -32,7 +33,7 @@ public class FetcherOptionsTest {
         assertEquals(options.cacheControlHeadersEnabled(), true);
         assertEquals(options.fastlyDebugHeaderEnabled(), true);
         assertEquals(options.targetCN(), 123);
-        options.handleResponseHeaders(new HashMap<>());
+        options.handleResponseHeaders(new Header[0]);
         assertEquals(called[0], true);
         assertEquals("set1,set2", options.flagSetsFilter());
     }
@@ -46,6 +47,6 @@ public class FetcherOptionsTest {
                 .responseHeadersCallback(null)
                 .build();
 
-        options.handleResponseHeaders(new HashMap<>());
+        options.handleResponseHeaders(new Header[0]);
     }
 }

@@ -1,5 +1,8 @@
 package io.split.engine.common;
 
+import org.apache.hc.core5.http.Header;
+
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 import java.util.function.Function;
@@ -72,11 +75,22 @@ public class FetchOptions {
         return _flagSetsFilter;
     }
 
-    public void handleResponseHeaders(Map<String, String> headers) {
+    public void handleResponseHeaders(Header[] headers) {
         if (Objects.isNull(_responseHeadersCallback) || Objects.isNull(headers)) {
             return;
         }
-        _responseHeadersCallback.apply(headers);
+
+        Map<String, String> toApply = new HashMap<>();
+        for (Header header : headers) {
+            if (toApply.containsKey(header.getName())) {
+                toApply.put(header.getName(), toApply.get(header.getName()) + "," + header.getValue());
+                continue;
+            }
+
+            toApply.put(header.getName(), header.getValue());
+        }
+
+        _responseHeadersCallback.apply(toApply);
     }
 
     private FetchOptions(boolean cacheControlHeaders,

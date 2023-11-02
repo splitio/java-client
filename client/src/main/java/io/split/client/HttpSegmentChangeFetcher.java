@@ -87,8 +87,7 @@ public final class HttpSegmentChangeFetcher implements SegmentChangeFetcher {
 
             response = _client.execute(request);
 
-            options.handleResponseHeaders(Arrays.stream(response.getHeaders())
-                    .collect(Collectors.toMap(Header::getName, Header::getValue)));
+            options.handleResponseHeaders(response.getHeaders());
 
             int statusCode = response.getCode();
 
