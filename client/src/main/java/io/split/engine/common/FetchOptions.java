@@ -1,11 +1,6 @@
 package io.split.engine.common;
 
-import org.apache.hc.core5.http.Header;
-
-import java.util.HashMap;
-import java.util.Map;
 import java.util.Objects;
-import java.util.function.Function;
 
 public class FetchOptions {
 
