@@ -6,10 +6,10 @@
     <parent>
         <artifactId>java-client-parent</artifactId>
         <groupId>io.split.client</groupId>
-        <version>4.10.0-rc2</version>
+        <version>4.10.0</version>
     </parent>
     <artifactId>redis-wrapper</artifactId>
-    <version>3.1.0-rc2</version>
+    <version>3.1.0</version>
     <packaging>jar</packaging>
     <name>Package for Redis Wrapper Implementation</name>
     <description>Implements Redis Pluggable Storage</description>
@@ -22,7 +22,7 @@
         <dependency>
             <groupId>io.split.client</groupId>
             <artifactId>pluggable-storage</artifactId>
-            <version>2.1.0-rc2</version>
+            <version>2.1.0</version>
             <scope>compile</scope>
         </dependency>
         <dependency>
@@ -38,7 +38,7 @@
         <dependency>
             <groupId>io.split.client</groupId>
             <artifactId>pluggable-storage</artifactId>
-            <version>2.1.0-rc2</version>
+            <version>2.1.0</version>
             <scope>compile</scope>
         </dependency>
     </dependencies>
