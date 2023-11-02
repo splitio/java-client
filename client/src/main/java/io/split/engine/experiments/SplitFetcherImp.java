@@ -1,6 +1,8 @@
 package io.split.engine.experiments;
 
 import io.split.client.dtos.SplitChange;
+import io.split.client.exceptions.UriTooLongException;
+import io.split.client.interceptors.FlagSetsFilter;
 import io.split.client.utils.FeatureFlagsToUpdate;
 import io.split.storages.SplitCacheProducer;
 import io.split.telemetry.domain.enums.LastSynchronizationRecordsEnum;
@@ -29,6 +31,7 @@ public class SplitFetcherImp implements SplitFetcher {
     private final SplitCacheProducer _splitCacheProducer;
     private final Object _lock = new Object();
     private final TelemetryRuntimeProducer _telemetryRuntimeProducer;
+    private final FlagSetsFilter _flagSetsFilter;
 
     /**
      * Contains all the traffic types that are currently being used by the splits and also the count
@@ -40,13 +43,13 @@ public class SplitFetcherImp implements SplitFetcher {
      * an ARCHIVED split is received, we know if we need to remove a traffic type from the multiset.
      */
 
-
     public SplitFetcherImp(SplitChangeFetcher splitChangeFetcher, SplitParser parser, SplitCacheProducer splitCacheProducer,
-                           TelemetryRuntimeProducer telemetryRuntimeProducer) {
+                           TelemetryRuntimeProducer telemetryRuntimeProducer, FlagSetsFilter flagSetsFilter) {
         _splitChangeFetcher = checkNotNull(splitChangeFetcher);
         _parser = checkNotNull(parser);
         _splitCacheProducer = checkNotNull(splitCacheProducer);
         _telemetryRuntimeProducer = checkNotNull(telemetryRuntimeProducer);
+        _flagSetsFilter = flagSetsFilter;
     }
 
     @Override
@@ -68,19 +71,21 @@ public class SplitFetcherImp implements SplitFetcher {
                 }
 
                 if (start >= end) {
-                    return new FetchResult(true, segments);
+                    return new FetchResult(true, false, segments);
                 }
             }
+        } catch (UriTooLongException u) {
+            return new FetchResult(false, false, new HashSet<>());
         } catch (InterruptedException e) {
             _log.warn("Interrupting split fetcher task");
             Thread.currentThread().interrupt();
-            return new FetchResult(false, new HashSet<>());
+            return new FetchResult(false, true, new HashSet<>());
         } catch (Exception e) {
             _log.error("RefreshableSplitFetcher failed: " + e.getMessage());
             if (_log.isDebugEnabled()) {
                 _log.debug("Reason:", e);
             }
-            return new FetchResult(false, new HashSet<>());
+            return new FetchResult(false, true, new HashSet<>());
         }
     }
 
@@ -89,7 +94,7 @@ public class SplitFetcherImp implements SplitFetcher {
         this.forceRefresh(new FetchOptions.Builder().cacheControlHeaders(false).build());
     }
 
-    private Set<String> runWithoutExceptionHandling(FetchOptions options) throws InterruptedException {
+    private Set<String> runWithoutExceptionHandling(FetchOptions options) throws InterruptedException, UriTooLongException {
         SplitChange change = _splitChangeFetcher.fetch(_splitCacheProducer.getChangeNumber(), options);
         Set<String> segments = new HashSet<>();
 
@@ -115,7 +120,7 @@ public class SplitFetcherImp implements SplitFetcher {
                 // some other thread may have updated the shared state. exit
                 return segments;
             }
-            FeatureFlagsToUpdate featureFlagsToUpdate = processFeatureFlagChanges(_parser, change.splits);
+            FeatureFlagsToUpdate featureFlagsToUpdate = processFeatureFlagChanges(_parser, change.splits, _flagSetsFilter);
             segments = featureFlagsToUpdate.getSegments();
             _splitCacheProducer.update(featureFlagsToUpdate.getToAdd(), featureFlagsToUpdate.getToRemove(), change.till);
             _telemetryRuntimeProducer.recordSuccessfulSync(LastSynchronizationRecordsEnum.SPLITS, System.currentTimeMillis());

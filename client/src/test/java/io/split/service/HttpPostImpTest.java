@@ -1,14 +1,9 @@
 package io.split.service;
 
 import io.split.TestHelper;
-import io.split.telemetry.domain.enums.HTTPLatenciesEnum;
 import io.split.telemetry.domain.enums.HttpParamsWrapper;
-import io.split.telemetry.domain.enums.LastSynchronizationRecordsEnum;
-import io.split.telemetry.domain.enums.ResourceEnum;
 import io.split.telemetry.storage.InMemoryTelemetryStorage;
-import io.split.telemetry.storage.TelemetryRuntimeProducer;
 import io.split.telemetry.storage.TelemetryStorage;
-import junit.framework.TestCase;
 import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
 import org.apache.hc.core5.http.HttpStatus;
 import org.junit.Assert;

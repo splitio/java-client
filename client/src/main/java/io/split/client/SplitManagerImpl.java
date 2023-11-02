@@ -58,7 +58,8 @@ public class SplitManagerImpl implements SplitManager {
     @Override
     public SplitView split(String featureFlagName) {
         if (!_gates.isSDKReady()) { {
-            _log.warn("split: the SDK is not ready, results may be incorrect. Make sure to wait for SDK readiness before using this method");
+            _log.warn(String.format("the SDK is not ready, results may be incorrect for feature flag %s. Make sure to wait " +
+                    "for SDK readiness before using this method", featureFlagName));
             _telemetryConfigProducer.recordNonReadyUsage();
         }}
         Optional<String> result = SplitNameValidator.isValid(featureFlagName, "split");

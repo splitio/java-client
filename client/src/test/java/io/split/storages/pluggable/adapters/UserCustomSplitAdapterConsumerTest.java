@@ -10,6 +10,7 @@ import io.split.engine.ConditionsTestUtil;
 import io.split.engine.experiments.ParsedSplit;
 import io.split.engine.experiments.SplitParser;
 import io.split.grammar.Treatments;
+import io.split.storages.pluggable.CustomStorageWrapperHasPipeline;
 import io.split.storages.pluggable.domain.PrefixAdapter;
 import io.split.storages.pluggable.domain.UserStorageWrapper;
 import org.junit.Assert;
@@ -20,6 +21,9 @@ import pluggable.CustomStorageWrapper;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -85,7 +89,7 @@ public class UserCustomSplitAdapterConsumerTest {
     }
 
     @Test
-    public void testGetAll(){
+    public void testGetAll() {
         Split split = getSplit(SPLIT_NAME);
         Split split2 = getSplit(SPLIT_NAME+"2");
         List<Split> listResultExpected = Stream.of(split, split2).collect(Collectors.toList());
@@ -103,7 +107,7 @@ public class UserCustomSplitAdapterConsumerTest {
     }
 
     @Test
-    public void testGetAllWithWrapperFailing(){
+    public void testGetAllWithWrapperFailing() {
         Mockito.when(_userStorageWrapper.get(PrefixAdapter.buildGetAllSplit())).
                 thenReturn(null);
         List<ParsedSplit> splitsResult = (List<ParsedSplit>) _userCustomSplitAdapterConsumer.getAll();
@@ -156,7 +160,7 @@ public class UserCustomSplitAdapterConsumerTest {
     }
 
     @Test
-    public void testFetchMany(){
+    public void testFetchMany() {
         Split split = getSplit(SPLIT_NAME);
         Split split2 = getSplit(SPLIT_NAME+"2");
         List<String> listResultExpected = Stream.of(Json.toJson(split), Json.toJson(split2)).collect(Collectors.toList());
@@ -168,7 +172,7 @@ public class UserCustomSplitAdapterConsumerTest {
     }
 
     @Test
-    public void testFetchManyWithWrapperFailing(){
+    public void testFetchManyWithWrapperFailing() {
         Mockito.when(_userStorageWrapper.getItems(PrefixAdapter.buildFetchManySplits(Stream.of(SPLIT_NAME, SPLIT_NAME+"2").collect(Collectors.toList())))).
                 thenReturn(null);
         Map<String, ParsedSplit> splitsResult = _userCustomSplitAdapterConsumer.fetchMany(Stream.of(SPLIT_NAME, SPLIT_NAME+"2").collect(Collectors.toList()));
@@ -178,13 +182,21 @@ public class UserCustomSplitAdapterConsumerTest {
     }
 
     @Test
-    public void testFetchManyNotFound(){
+    public void testFetchManyNotFound() {
         Mockito.when(_userStorageWrapper.getItems(PrefixAdapter.buildFetchManySplits(Stream.of(SPLIT_NAME, SPLIT_NAME+"2").collect(Collectors.toList())))).
                 thenReturn(null);
         Map<String, ParsedSplit> splitsResult = _userCustomSplitAdapterConsumer.fetchMany(Stream.of(SPLIT_NAME, SPLIT_NAME+"2").collect(Collectors.toList()));
         Assert.assertNotNull(splitsResult);
         Assert.assertNull(splitsResult.get(SPLIT_NAME));
         Assert.assertNull(splitsResult.get(SPLIT_NAME+"2"));
+    }
+
+    @Test
+    public void testGetNamesByFlagSets() {
+        CustomStorageWrapper customStorageWrapper = new CustomStorageWrapperHasPipeline();
+        UserCustomSplitAdapterConsumer userCustomSplitAdapterConsumer = new UserCustomSplitAdapterConsumer(customStorageWrapper);
+        Map<String, HashSet<String>> flagSets = userCustomSplitAdapterConsumer.getNamesByFlagSets(new ArrayList<>(Arrays.asList("set1")));
+        Assert.assertEquals(2, flagSets.get("set1").size());
     }
 
     @Test

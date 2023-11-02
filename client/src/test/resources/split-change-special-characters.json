@@ -10,6 +10,7 @@
       "killed": false,
       "defaultTreatment": "of",
       "changeNumber": 1491244291288,
+      "sets": [ "set1", "set2" ],
       "algo": 2,
       "configurations": {
         "on": "{\"test\": \"blue\",\"grüne Straße\": 13}",

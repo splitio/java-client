@@ -269,7 +269,7 @@ public class SplitFactoryImplTest extends TestCase {
     }
 
     @Test
-    public void testLocalhosYamlInputStream() throws URISyntaxException, NoSuchMethodException, InvocationTargetException,
+    public void testLocalhostYamlInputStream() throws URISyntaxException, NoSuchMethodException, InvocationTargetException,
             IllegalAccessException, FileNotFoundException {
         InputStream inputStream = new FileInputStream("src/test/resources/split.yaml");
         SplitClientConfig splitClientConfig = SplitClientConfig.builder()
