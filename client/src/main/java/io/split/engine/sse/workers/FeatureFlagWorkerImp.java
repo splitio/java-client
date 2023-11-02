@@ -1,6 +1,7 @@
 package io.split.engine.sse.workers;
 
 import io.split.client.dtos.Split;
+import io.split.client.interceptors.FlagSetsFilter;
 import io.split.client.utils.FeatureFlagsToUpdate;
 import io.split.engine.common.Synchronizer;
 import io.split.engine.experiments.SplitParser;
@@ -13,7 +14,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.Collections;
-import java.util.HashSet;
 import java.util.Set;
 
 import static com.google.common.base.Preconditions.checkNotNull;
@@ -25,16 +25,16 @@ public class FeatureFlagWorkerImp extends Worker<FeatureFlagChangeNotification> 
     private final SplitParser _splitParser;
     private final SplitCacheProducer _splitCacheProducer;
     private final TelemetryRuntimeProducer _telemetryRuntimeProducer;
-    private final HashSet<String> _flagSets;
+    private final FlagSetsFilter _flagSetsFilter;
 
     public FeatureFlagWorkerImp(Synchronizer synchronizer, SplitParser splitParser, SplitCacheProducer splitCacheProducer,
-                                TelemetryRuntimeProducer telemetryRuntimeProducer, HashSet<String> flagSets) {
+                                TelemetryRuntimeProducer telemetryRuntimeProducer, FlagSetsFilter flagSetsFilter) {
         super("Feature flags");
         _synchronizer = checkNotNull(synchronizer);
         _splitParser = splitParser;
         _splitCacheProducer = splitCacheProducer;
         _telemetryRuntimeProducer = telemetryRuntimeProducer;
-        _flagSets = flagSets;
+        _flagSetsFilter = flagSetsFilter;
     }
 
     @Override
@@ -65,7 +65,7 @@ public class FeatureFlagWorkerImp extends Worker<FeatureFlagChangeNotification> 
                     featureFlagChangeNotification.getPreviousChangeNumber() == _splitCacheProducer.getChangeNumber()) {
                 Split featureFlag = featureFlagChangeNotification.getFeatureFlagDefinition();
                 FeatureFlagsToUpdate featureFlagsToUpdate = processFeatureFlagChanges(_splitParser, Collections.singletonList(featureFlag),
-                        _flagSets);
+                        _flagSetsFilter);
                 _splitCacheProducer.update(featureFlagsToUpdate.getToAdd(), featureFlagsToUpdate.getToRemove(),
                         featureFlagChangeNotification.getChangeNumber());
                 Set<String> segments  = featureFlagsToUpdate.getSegments();

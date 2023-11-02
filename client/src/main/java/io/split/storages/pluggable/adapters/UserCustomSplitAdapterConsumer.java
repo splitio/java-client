@@ -19,6 +19,7 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.HashSet;
 import java.util.stream.Collectors;
@@ -110,7 +111,10 @@ public class UserCustomSplitAdapterConsumer  implements SplitCacheConsumer {
                 return toReturn;
             }
             for (int i = 0; i < results.size(); i ++) {
-                toReturn.put(flagSets.get(i), results.get(i).asHash().get());
+                Optional<HashSet<String>> featureFlags = results.get(i).asHash();
+                if(featureFlags.isPresent()) {
+                    toReturn.put(flagSets.get(i), featureFlags.get());
+                }
             }
         } catch (Exception e) {
             _log.warn("Redis pipeline exception when getting names by flag sets: ", e);

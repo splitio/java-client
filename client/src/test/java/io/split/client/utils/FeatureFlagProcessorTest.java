@@ -1,6 +1,8 @@
 package io.split.client.utils;
 
 import io.split.client.dtos.Split;
+import io.split.client.interceptors.FlagSetsFilter;
+import io.split.client.interceptors.FlagSetsFilterImpl;
 import io.split.engine.experiments.SplitParser;
 import org.junit.Assert;
 import org.junit.Test;
@@ -27,7 +29,8 @@ public class FeatureFlagProcessorTest {
 
         featureFlags.add(featureFlagTest1);
         featureFlags.add(featureFlagTest2);
-        FeatureFlagsToUpdate featureFlagsToUpdate = processFeatureFlagChanges(splitParser, featureFlags, new HashSet<>());
+        FlagSetsFilter flagSetsFilter = new FlagSetsFilterImpl(new HashSet<>());
+        FeatureFlagsToUpdate featureFlagsToUpdate = processFeatureFlagChanges(splitParser, featureFlags, flagSetsFilter);
 
         Assert.assertEquals(1, featureFlagsToUpdate.toAdd.size());
         Assert.assertEquals(1, featureFlagsToUpdate.toRemove.size());
@@ -47,7 +50,8 @@ public class FeatureFlagProcessorTest {
 
         featureFlags.add(featureFlagTest1);
         featureFlags.add(featureFlagTest2);
-        FeatureFlagsToUpdate featureFlagsToUpdate = processFeatureFlagChanges(splitParser, featureFlags, new HashSet<>(Arrays.asList("set_1")));
+        FlagSetsFilter flagSetsFilter = new FlagSetsFilterImpl(new HashSet<>(Arrays.asList("set_1")));
+        FeatureFlagsToUpdate featureFlagsToUpdate = processFeatureFlagChanges(splitParser, featureFlags, flagSetsFilter);
 
         Assert.assertEquals(1, featureFlagsToUpdate.toAdd.size());
         Assert.assertEquals(1, featureFlagsToUpdate.toRemove.size());
@@ -67,7 +71,8 @@ public class FeatureFlagProcessorTest {
 
         featureFlags.add(featureFlagTest1);
         featureFlags.add(featureFlagTest2);
-        FeatureFlagsToUpdate featureFlagsToUpdate = processFeatureFlagChanges(splitParser, featureFlags, new HashSet<>(Arrays.asList("set_3")));
+        FlagSetsFilter flagSetsFilter = new FlagSetsFilterImpl(new HashSet<>(Arrays.asList("set_3")));
+        FeatureFlagsToUpdate featureFlagsToUpdate = processFeatureFlagChanges(splitParser, featureFlags, flagSetsFilter);
 
         Assert.assertEquals(0, featureFlagsToUpdate.toAdd.size());
         Assert.assertEquals(2, featureFlagsToUpdate.toRemove.size());

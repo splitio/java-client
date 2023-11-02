@@ -3,6 +3,8 @@ package io.split.engine.common;
 import io.split.client.events.EventsTask;
 import io.split.client.impressions.ImpressionsManager;
 import io.split.client.impressions.UniqueKeysTracker;
+import io.split.client.interceptors.FlagSetsFilter;
+import io.split.client.interceptors.FlagSetsFilterImpl;
 import io.split.engine.segments.SegmentChangeFetcher;
 import io.split.engine.segments.SegmentSynchronizationTaskImp;
 import io.split.storages.SegmentCache;
@@ -36,6 +38,7 @@ import java.util.stream.Stream;
 import static org.mockito.Mockito.when;
 
 public class SynchronizerTest {
+    private static final FlagSetsFilter FLAG_SETS_FILTER = new FlagSetsFilterImpl(new HashSet<>());
     private SplitSynchronizationTask _refreshableSplitFetcherTask;
     private SegmentSynchronizationTask _segmentFetcher;
     private SplitFetcherImp _splitFetcher;
@@ -150,7 +153,7 @@ public class SynchronizerTest {
 
     @Test
     public void testCDNBypassIsRequestedAfterNFailures() {
-        SplitCache cache = new InMemoryCacheImp(new HashSet<>());
+        SplitCache cache = new InMemoryCacheImp(FLAG_SETS_FILTER);
         Synchronizer imp = new SynchronizerImp(_splitTasks,
                 _splitFetcher,
                 cache,
@@ -183,7 +186,7 @@ public class SynchronizerTest {
 
     @Test
     public void testCDNBypassRequestLimitAndBackoff() throws NoSuchFieldException, IllegalAccessException {
-        SplitCache cache = new InMemoryCacheImp(new HashSet<>());
+        SplitCache cache = new InMemoryCacheImp(FLAG_SETS_FILTER);
         Synchronizer imp = new SynchronizerImp(_splitTasks,
                 _splitFetcher,
                 cache,
@@ -239,7 +242,7 @@ public class SynchronizerTest {
 
     @Test
     public void testCDNBypassRequestLimitAndForSegmentsBackoff() throws NoSuchFieldException, IllegalAccessException {
-        SplitCache cache = new InMemoryCacheImp(new HashSet<>());
+        SplitCache cache = new InMemoryCacheImp(FLAG_SETS_FILTER);
         Synchronizer imp = new SynchronizerImp(_splitTasks,
                 _splitFetcher,
                 cache,
@@ -298,7 +301,7 @@ public class SynchronizerTest {
 
     @Test
     public void testDataRecording(){
-        SplitCache cache = new InMemoryCacheImp(new HashSet<>());
+        SplitCache cache = new InMemoryCacheImp(FLAG_SETS_FILTER);
         Synchronizer imp = new SynchronizerImp(_splitTasks,
                 _splitFetcher,
                 cache,

@@ -1,6 +1,8 @@
 package io.split.engine.experiments;
 
 import io.split.client.JsonLocalhostSplitChangeFetcher;
+import io.split.client.interceptors.FlagSetsFilter;
+import io.split.client.interceptors.FlagSetsFilterImpl;
 import io.split.client.utils.FileInputStreamProvider;
 import io.split.client.utils.InputStreamProvider;
 import io.split.engine.common.FetchOptions;
@@ -29,13 +31,14 @@ public class SplitFetcherImpTest {
 
     @Test
     public void testLocalHost() {
-        SplitCacheProducer splitCacheProducer = new InMemoryCacheImp(new HashSet<>());
+        FlagSetsFilter flagSetsFilter = new FlagSetsFilterImpl(new HashSet<>());
+        SplitCacheProducer splitCacheProducer = new InMemoryCacheImp(flagSetsFilter);
 
         InputStreamProvider inputStreamProvider = new FileInputStreamProvider("src/test/resources/split_init.json");
         SplitChangeFetcher splitChangeFetcher = new JsonLocalhostSplitChangeFetcher(inputStreamProvider);
         SplitParser splitParser = new SplitParser();
         FetchOptions fetchOptions = new FetchOptions.Builder().build();
-        SplitFetcher splitFetcher = new SplitFetcherImp(splitChangeFetcher, splitParser, splitCacheProducer, TELEMETRY_STORAGE_NOOP, new HashSet<>());
+        SplitFetcher splitFetcher = new SplitFetcherImp(splitChangeFetcher, splitParser, splitCacheProducer, TELEMETRY_STORAGE_NOOP, flagSetsFilter);
 
         FetchResult fetchResult = splitFetcher.forceRefresh(fetchOptions);
 
@@ -50,12 +53,13 @@ public class SplitFetcherImpTest {
         com.google.common.io.Files.write(test, file);
 
         InputStreamProvider inputStreamProvider = new FileInputStreamProvider(file.getAbsolutePath());
-        SplitCacheProducer splitCacheProducer = new InMemoryCacheImp(new HashSet<>(Arrays.asList("set_1")));
+        FlagSetsFilter flagSetsFilter = new FlagSetsFilterImpl(new HashSet<>(Arrays.asList("set_1")));
+        SplitCacheProducer splitCacheProducer = new InMemoryCacheImp(flagSetsFilter);
 
         SplitChangeFetcher splitChangeFetcher = new JsonLocalhostSplitChangeFetcher(inputStreamProvider);
         SplitParser splitParser = new SplitParser();
         FetchOptions fetchOptions = new FetchOptions.Builder().build();
-        SplitFetcher splitFetcher = new SplitFetcherImp(splitChangeFetcher, splitParser, splitCacheProducer, TELEMETRY_STORAGE_NOOP, new HashSet<>(Arrays.asList("set_1")));
+        SplitFetcher splitFetcher = new SplitFetcherImp(splitChangeFetcher, splitParser, splitCacheProducer, TELEMETRY_STORAGE_NOOP, flagSetsFilter);
 
         FetchResult fetchResult = splitFetcher.forceRefresh(fetchOptions);
 
@@ -70,12 +74,13 @@ public class SplitFetcherImpTest {
         com.google.common.io.Files.write(test, file);
 
         InputStreamProvider inputStreamProvider = new FileInputStreamProvider(file.getAbsolutePath());
-        SplitCacheProducer splitCacheProducer = new InMemoryCacheImp(new HashSet<>(Arrays.asList("set_4")));
+        FlagSetsFilter flagSetsFilter = new FlagSetsFilterImpl(new HashSet<>(Arrays.asList("set_4")));
+        SplitCacheProducer splitCacheProducer = new InMemoryCacheImp(flagSetsFilter);
 
         SplitChangeFetcher splitChangeFetcher = new JsonLocalhostSplitChangeFetcher(inputStreamProvider);
         SplitParser splitParser = new SplitParser();
         FetchOptions fetchOptions = new FetchOptions.Builder().build();
-        SplitFetcher splitFetcher = new SplitFetcherImp(splitChangeFetcher, splitParser, splitCacheProducer, TELEMETRY_STORAGE_NOOP, new HashSet<>(Arrays.asList("set_4")));
+        SplitFetcher splitFetcher = new SplitFetcherImp(splitChangeFetcher, splitParser, splitCacheProducer, TELEMETRY_STORAGE_NOOP, flagSetsFilter);
 
         FetchResult fetchResult = splitFetcher.forceRefresh(fetchOptions);
 

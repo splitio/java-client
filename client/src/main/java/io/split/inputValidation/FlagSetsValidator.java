@@ -23,11 +23,11 @@ public final class FlagSetsValidator {
             return cleanFlagSets;
         }
         for (String flagSet: flagSets) {
-            if(flagSet != flagSet.toLowerCase()) {
+            if(!flagSet.equals(flagSet.toLowerCase())) {
                 _log.warn(String.format("Flag Set name %s should be all lowercase - converting string to lowercase", flagSet));
                 flagSet = flagSet.toLowerCase();
             }
-            if (flagSet.trim() != flagSet) {
+            if (!flagSet.equals(flagSet.trim())) {
                 _log.warn(String.format("Flag Set name %s has extra whitespace, trimming", flagSet));
                 flagSet = flagSet.trim();
             }

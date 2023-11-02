@@ -3,7 +3,6 @@ package io.split.client.utils;
 import io.split.client.dtos.Split;
 import io.split.client.dtos.Status;
 import io.split.client.interceptors.FlagSetsFilter;
-import io.split.client.interceptors.FlagSetsFilterImpl;
 import io.split.engine.experiments.ParsedSplit;
 import io.split.engine.experiments.SplitParser;
 import org.slf4j.Logger;
@@ -17,18 +16,17 @@ import java.util.Set;
 public class FeatureFlagProcessor {
     private static final Logger _log = LoggerFactory.getLogger(FeatureFlagProcessor.class);
 
-    public static FeatureFlagsToUpdate processFeatureFlagChanges(SplitParser splitParser, List<Split> splits, HashSet<String> configSets) {
+    public static FeatureFlagsToUpdate processFeatureFlagChanges(SplitParser splitParser, List<Split> splits, FlagSetsFilter flagSetsFilter) {
         List<ParsedSplit> toAdd = new ArrayList<>();
         List<String> toRemove = new ArrayList<>();
         Set<String> segments = new HashSet<>();
-        FlagSetsFilter flagSetsFilter = new FlagSetsFilterImpl(configSets);
         for (Split split : splits) {
             if (split.status != Status.ACTIVE) {
                 // archive.
                 toRemove.add(split.name);
                 continue;
             }
-            if (!flagSetsFilter.Intersect(split.sets)) {
+            if (!flagSetsFilter.intersect(split.sets)) {
                 toRemove.add(split.name);
                 continue;
             }

@@ -57,7 +57,7 @@ public class UniqueKeysTrackerImp implements UniqueKeysTracker{
         }
         value.add(key);
         uniqueKeysTracker.put(featureFlagName, value);
-        _logger.debug("The feature flag" + featureFlagName + " and key " + key + " was added");
+        _logger.debug("The feature flag " + featureFlagName + " and key " + key + " was added");
         if (uniqueKeysTracker.size() == MAX_AMOUNT_OF_TRACKED_UNIQUE_KEYS){
             _logger.warn("The UniqueKeysTracker size reached the maximum limit");
             try {
