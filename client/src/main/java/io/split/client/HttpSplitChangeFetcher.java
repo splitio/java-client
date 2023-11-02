@@ -14,9 +14,11 @@ import org.apache.hc.client5.http.classic.methods.HttpGet;
 import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
 import org.apache.hc.client5.http.impl.classic.CloseableHttpResponse;
 import org.apache.hc.core5.http.HttpException;
+import org.apache.hc.core5.http.HttpHeaders;
 import org.apache.hc.core5.http.HttpStatus;
 import org.apache.hc.core5.http.Header;
 import org.apache.hc.core5.http.io.entity.EntityUtils;
+import org.apache.hc.core5.http.message.BasicHeader;
 import org.apache.hc.core5.net.URIBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -25,6 +27,8 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 import static com.google.common.base.Preconditions.checkNotNull;
@@ -93,8 +97,7 @@ public final class HttpSplitChangeFetcher implements SplitChangeFetcher {
             }
 
             response = _client.execute(request);
-            options.handleResponseHeaders(Arrays.stream(response.getHeaders())
-                    .collect(Collectors.toMap(Header::getName, Header::getValue)));
+            options.handleResponseHeaders(readResponseHeaders(response.getHeaders()));
 
             int statusCode = response.getCode();
 
@@ -126,5 +129,19 @@ public final class HttpSplitChangeFetcher implements SplitChangeFetcher {
     @VisibleForTesting
     URI getTarget() {
         return _target;
+    }
+
+    private Map<String, String> readResponseHeaders(Header[] headers) {
+        Map<String, String> toReturn = new HashMap<>();
+        for (Header header : headers) {
+            if (toReturn.containsKey(header.getName())) {
+                toReturn.put(header.getName(), toReturn.get(header.getName()) + "," + header.getValue());
+                continue;
+            }
+
+            toReturn.put(header.getName(), header.getValue());
+        }
+
+        return toReturn;
     }
 }
