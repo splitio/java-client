@@ -64,7 +64,7 @@ public final class SplitParser {
         }
 
         return new ParsedSplit(split.name, split.seed, split.killed, split.defaultTreatment, parsedConditionList, split.trafficTypeName,
-                split.changeNumber, split.trafficAllocation, split.trafficAllocationSeed, split.algo, split.configurations);
+                split.changeNumber, split.trafficAllocation, split.trafficAllocationSeed, split.algo, split.configurations, split.sets);
     }
 
     private CombiningMatcher toMatcher(MatcherGroup matcherGroup) {

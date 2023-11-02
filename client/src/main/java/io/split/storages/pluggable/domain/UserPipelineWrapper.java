@@ -20,12 +20,12 @@ public class UserPipelineWrapper implements Pipeline{
     }
 
     @Override
-    public List<Result> exec() {
+    public List<Result> exec() throws Exception {
         try{
             return _pipeline.exec();
         } catch (Exception e) {
             _logger.warn("Exception calling Pipeline exec", e);
-            return new ArrayList<>();
+            throw e;
         }
     }
 
@@ -35,6 +35,15 @@ public class UserPipelineWrapper implements Pipeline{
             _pipeline.hIncrement(key, field, value);
         } catch (Exception e){
            _logger.warn("Exception calling Pipeline hIncrement", e);
+        }
+    }
+
+    @Override
+    public void getMembers(String key) {
+        try {
+            _pipeline.getMembers(key);
+        } catch (Exception e){
+            _logger.warn("Exception calling Pipeline getMembers", e);
         }
     }
 }

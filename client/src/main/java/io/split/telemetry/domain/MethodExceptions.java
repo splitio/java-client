@@ -7,6 +7,10 @@ public class MethodExceptions {
     /* package private */ static final String FIELD_TREATMENTS = "ts";
     /* package private */ static final String FIELD_TREATMENT_WITH_CONFIG = "tc";
     /* package private */ static final String FIELD_TREATMENTS_WITH_CONFIG = "tcs";
+    /* package private */ static final String FIELD_TREATMENT_BY_FLAG_SET = "tf";
+    /* package private */static final String FIELD_TREATMENT_BY_FLAG_SETS = "tfs";
+    /* package private */static final String FIELD_TREATMENT_WITH_CONFIG_BY_FLAG_SET = "tcf";
+    /* package private */static final String FIELD_TREATMENT_WITH_CONFIG_BY_FLAG_SETS = "tcfs";
     /* package private */ static final String FIELD_TRACK = "tr";
 
     @SerializedName(FIELD_TREATMENT)
@@ -17,46 +21,86 @@ public class MethodExceptions {
     private long _treatmentWithConfig;
     @SerializedName(FIELD_TREATMENTS_WITH_CONFIG)
     private long _treatmentsWithConfig;
+    @SerializedName(FIELD_TREATMENT_BY_FLAG_SET)
+    private Long _treatmentByFlagSet;
+    @SerializedName(FIELD_TREATMENT_BY_FLAG_SETS)
+    private Long _treatmentByFlagSets;
+    @SerializedName(FIELD_TREATMENT_WITH_CONFIG_BY_FLAG_SET)
+    private Long _treatmentWithConfigByFlagSet;
+    @SerializedName(FIELD_TREATMENT_WITH_CONFIG_BY_FLAG_SETS)
+    private Long _treatmentWithConfigByFlagSets;
     @SerializedName(FIELD_TRACK)
     private long _track;
 
-    public long get_treatment() {
+    public long getTreatment() {
         return _treatment;
     }
 
-    public void set_treatment(long _treatment) {
-        this._treatment = _treatment;
+    public void setTreatment(long treatment) {
+        this._treatment = treatment;
     }
 
-    public long get_treatments() {
+    public long getTreatments() {
         return _treatments;
     }
 
-    public void set_treatments(long _treatments) {
-        this._treatments = _treatments;
+    public void setTreatments(long treatments) {
+        this._treatments = treatments;
     }
 
-    public long get_treatmentsWithConfig() {
+    public long getTreatmentsWithConfig() {
         return _treatmentsWithConfig;
     }
 
-    public void set_treatmentsWithConfig(long _treatmentsWithConfig) {
-        this._treatmentsWithConfig = _treatmentsWithConfig;
+    public void setTreatmentsWithConfig(long treatmentsWithConfig) {
+        this._treatmentsWithConfig = treatmentsWithConfig;
     }
 
-    public long get_treatmentWithConfig() {
+    public long getTreatmentWithConfig() {
         return _treatmentWithConfig;
     }
 
-    public void set_treatmentWithConfig(long _treatmentWithConfig) {
-        this._treatmentWithConfig = _treatmentWithConfig;
+    public void setTreatmentWithConfig(long treatmentWithConfig) {
+        this._treatmentWithConfig = treatmentWithConfig;
     }
 
-    public long get_track() {
+    public long getTrack() {
         return _track;
     }
 
-    public void set_track(long _track) {
-        this._track = _track;
+    public void setTrack(long track) {
+        this._track = track;
+    }
+
+    public long getTreatmentByFlagSet() {
+        return _treatmentByFlagSet;
+    }
+
+    public long getTreatmentByFlagSets() {
+        return _treatmentByFlagSets;
+    }
+
+    public long getTreatmentWithConfigByFlagSet() {
+        return _treatmentWithConfigByFlagSet;
+    }
+
+    public long getTreatmentWithConfigByFlagSets() {
+        return _treatmentWithConfigByFlagSets;
+    }
+
+    public void setTreatmentByFlagSet(Long treatmentByFlagSet) {
+        this._treatmentByFlagSet = treatmentByFlagSet;
+    }
+
+    public void setTreatmentByFlagSets(Long treatmentByFlagSets) {
+        this._treatmentByFlagSets = treatmentByFlagSets;
+    }
+
+    public void setTreatmentWithConfigByFlagSet(Long treatmentWithConfigByFlagSet) {
+        this._treatmentWithConfigByFlagSet = treatmentWithConfigByFlagSet;
+    }
+
+    public void setTreatmentWithConfigByFlagSets(Long treatmentWithConfigByFlagSets) {
+        this._treatmentWithConfigByFlagSets = treatmentWithConfigByFlagSets;
     }
 }

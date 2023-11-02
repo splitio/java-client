@@ -8,6 +8,10 @@ import io.split.integrations.IntegrationsConfig;
 import org.junit.Assert;
 import org.junit.Test;
 
+import java.util.List;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.is;
@@ -185,10 +189,18 @@ public class SplitClientConfigTest {
     }
 
     @Test
-    public void checkDefaultRateForFeatureAndSegment(){
+    public void checkDefaultRateForFeatureAndSegment() {
         SplitClientConfig config = SplitClientConfig.builder().build();
         Assert.assertEquals(60, config.featuresRefreshRate());
         Assert.assertEquals(60, config.segmentsRefreshRate());
+    }
+
+    @Test
+    public void checkSetFlagSetsFilter() {
+        List<String> sets = Stream.of("test1", "test2", "TEST3", "test-4").collect(Collectors.toList());
+        SplitClientConfig config = SplitClientConfig.builder().flagSetsFilter(sets).build();
+        Assert.assertNotNull(config.getSetsFilter());
+        Assert.assertEquals(3, config.getSetsFilter().size());
     }
 
     @Test

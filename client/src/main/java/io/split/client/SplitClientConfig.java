@@ -10,9 +10,14 @@ import org.apache.hc.core5.http.HttpHost;
 import pluggable.CustomStorageWrapper;
 
 import java.io.IOException;
+import java.util.HashSet;
+import java.util.LinkedHashSet;
+import java.util.List;
 import java.io.InputStream;
 import java.util.Properties;
 import java.util.concurrent.ThreadFactory;
+
+import static io.split.inputValidation.FlagSetsValidator.cleanup;
 
 /**
  * Configurations for the SplitClient.
@@ -84,6 +89,8 @@ public class SplitClientConfig {
     // To be set during startup
     public static String splitSdkVersion;
     private final long _lastSeenCacheSize;
+    private final HashSet<String> _flagSetsFilter;
+    private final int _invalidSets;
 
     public static Builder builder() {
         return new Builder();
@@ -138,7 +145,9 @@ public class SplitClientConfig {
                               int uniqueKeysRefreshRateRedis,
                               int filterUniqueKeysRefreshRate,
                               long lastSeenCacheSize,
-                              ThreadFactory threadFactory) {
+                              ThreadFactory threadFactory,
+                              HashSet<String> flagSetsFilter,
+                              int invalidSets) {
         _endpoint = endpoint;
         _eventsEndpoint = eventsEndpoint;
         _featuresRefreshRate = pollForFeatureChangesEveryNSeconds;
@@ -189,7 +198,8 @@ public class SplitClientConfig {
         _customStorageWrapper = customStorageWrapper;
         _lastSeenCacheSize = lastSeenCacheSize;
         _threadFactory = threadFactory;
-
+        _flagSetsFilter = flagSetsFilter;
+        _invalidSets = invalidSets;
 
         Properties props = new Properties();
         try {
@@ -375,8 +385,17 @@ public class SplitClientConfig {
     public long getLastSeenCacheSize() {
         return _lastSeenCacheSize;
     }
+
     public ThreadFactory getThreadFactory() {
         return _threadFactory;
+    }
+
+    public HashSet<String> getSetsFilter() {
+        return _flagSetsFilter;
+    }
+
+    public int getInvalidSets() {
+        return _invalidSets;
     }
 
     public static final class Builder {
@@ -434,6 +453,8 @@ public class SplitClientConfig {
         private StorageMode _storageMode = StorageMode.MEMORY;
         private final long _lastSeenCacheSize = 500000;
         private ThreadFactory _threadFactory;
+        private HashSet<String> _flagSetsFilter = new HashSet<>();
+        private int _invalidSetsCount = 0;
 
         public Builder() {
         }
@@ -906,6 +927,18 @@ public class SplitClientConfig {
         }
 
         /**
+         * Flag Sets Filter
+         *
+         * @param flagSetsFilter
+         * @return this builder
+         */
+        public Builder flagSetsFilter(List<String> flagSetsFilter) {
+            _flagSetsFilter = new LinkedHashSet<>(cleanup(flagSetsFilter));
+            _invalidSetsCount = flagSetsFilter.size() - _flagSetsFilter.size();
+            return this;
+        }
+
+        /**
          * Thread Factory
          *
          * @param threadFactory
@@ -1063,7 +1096,9 @@ public class SplitClientConfig {
                     _uniqueKeysRefreshRateRedis,
                     _filterUniqueKeysRefreshRate,
                     _lastSeenCacheSize,
-                    _threadFactory);
+                    _threadFactory,
+                    _flagSetsFilter,
+                    _invalidSetsCount);
         }
     }
 }

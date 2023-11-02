@@ -204,6 +204,17 @@ public class UserStorageWrapper implements CustomStorageWrapper {
     }
 
     @Override
+    public Set<String> getMembers(String key) {
+        try {
+            return _customStorageWrapper.getMembers(key);
+        }
+        catch (Exception e) {
+            _log.error(String.format("error getting set members with key '%s' from storage. Error: '%s'", key, e.getMessage()));
+            return null;
+        }
+    }
+
+    @Override
     public boolean connect(){
         try {
             return _customStorageWrapper.connect();

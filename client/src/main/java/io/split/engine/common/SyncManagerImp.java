@@ -3,6 +3,7 @@ package io.split.engine.common;
 import com.google.common.annotations.VisibleForTesting;
 import io.split.client.ApiKeyCounter;
 import io.split.client.SplitClientConfig;
+import io.split.client.interceptors.FlagSetsFilter;
 import io.split.engine.SDKReadinessGates;
 import io.split.engine.experiments.SplitFetcher;
 import io.split.engine.experiments.SplitParser;
@@ -87,7 +88,8 @@ public class SyncManagerImp implements SyncManager {
                                        TelemetryRuntimeProducer telemetryRuntimeProducer,
                                        TelemetrySynchronizer telemetrySynchronizer,
                                        SplitClientConfig config,
-                                       SplitParser splitParser) {
+                                       SplitParser splitParser,
+                                       FlagSetsFilter flagSetsFilter) {
         LinkedBlockingQueue<PushManager.Status> pushMessages = new LinkedBlockingQueue<>();
         Synchronizer synchronizer = new SynchronizerImp(splitTasks,
                                         splitFetcher,
@@ -96,7 +98,8 @@ public class SyncManagerImp implements SyncManager {
                                         config.streamingRetryDelay(),
                                         config.streamingFetchMaxRetries(),
                                         config.failedAttemptsBeforeLogging(),
-                                        config.cdnDebugLogging());
+                                        config.cdnDebugLogging(),
+                                        config.getSetsFilter());
 
         PushManager pushManager = PushManagerImp.build(synchronizer,
                                                         config.streamingServiceURL(),
@@ -106,7 +109,8 @@ public class SyncManagerImp implements SyncManager {
                                                         telemetryRuntimeProducer,
                                                         config.getThreadFactory(),
                                                         splitParser,
-                                                        splitCacheProducer);
+                                                        splitCacheProducer,
+                                                        flagSetsFilter);
 
         return new SyncManagerImp(splitTasks,
                                   config.streamingEnabled(),
