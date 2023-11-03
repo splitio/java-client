@@ -5,6 +5,8 @@ import org.apache.hc.client5.http.impl.classic.CloseableHttpResponse;
 import org.apache.hc.core5.http.ClassicHttpResponse;
 import org.apache.hc.core5.http.Header;
 import org.apache.hc.core5.http.HttpEntity;
+import org.apache.hc.core5.http.HttpHeaders;
+import org.apache.hc.core5.http.message.BasicHeader;
 import org.mockito.Mockito;
 
 import java.io.IOException;
@@ -19,7 +21,10 @@ public class TestHelper {
         ClassicHttpResponse httpResponseMock = Mockito.mock(ClassicHttpResponse.class);
         Mockito.when(httpResponseMock.getEntity()).thenReturn(entityMock);
         Mockito.when(httpResponseMock.getCode()).thenReturn(httpStatus);
-        Mockito.when(httpResponseMock.getHeaders()).thenReturn(new Header[0]);
+        Header[] headers = new Header[2];
+        headers[0] = new BasicHeader(HttpHeaders.VIA, "HTTP/1.1 m_proxy_rio1");
+        headers[1] = new BasicHeader(HttpHeaders.VIA, "HTTP/1.1 s_proxy_rio1");
+        Mockito.when(httpResponseMock.getHeaders()).thenReturn(headers);
         CloseableHttpClient httpClientMock = Mockito.mock(CloseableHttpClient.class);
         Mockito.when(httpClientMock.execute(Mockito.anyObject())).thenReturn(classicResponseToCloseableMock(httpResponseMock));
 
