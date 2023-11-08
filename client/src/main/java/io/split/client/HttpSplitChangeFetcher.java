@@ -38,9 +38,6 @@ public final class HttpSplitChangeFetcher implements SplitChangeFetcher {
     private static final String HEADER_CACHE_CONTROL_NAME = "Cache-Control";
     private static final String HEADER_CACHE_CONTROL_VALUE = "no-cache";
 
-    private static final String HEADER_FASTLY_DEBUG_NAME = "Fastly-Debug";
-    private static final String HEADER_FASTLY_DEBUG_VALUE = "1";
-
     private final CloseableHttpClient _client;
     private final URI _target;
     private final TelemetryRuntimeProducer _telemetryRuntimeProducer;
@@ -82,10 +79,6 @@ public final class HttpSplitChangeFetcher implements SplitChangeFetcher {
             HttpGet request = new HttpGet(uri);
             if(options.cacheControlHeadersEnabled()) {
                 request.setHeader(HEADER_CACHE_CONTROL_NAME, HEADER_CACHE_CONTROL_VALUE);
-            }
-
-            if (options.fastlyDebugHeaderEnabled()) {
-                request.addHeader(HEADER_FASTLY_DEBUG_NAME, HEADER_FASTLY_DEBUG_VALUE);
             }
 
             response = _client.execute(request);

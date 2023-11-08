@@ -3,7 +3,6 @@ package io.split.engine.common;
 import io.split.client.events.EventsTask;
 import io.split.client.impressions.ImpressionsManager;
 import io.split.client.impressions.UniqueKeysTracker;
-import io.split.client.utils.Json;
 import io.split.engine.experiments.FetchResult;
 import io.split.engine.experiments.SplitFetcher;
 import io.split.engine.experiments.SplitSynchronizationTask;
@@ -17,8 +16,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -45,7 +42,6 @@ public class SynchronizerImp implements Synchronizer {
     private final int _onDemandFetchRetryDelayMs;
     private final int _onDemandFetchMaxRetries;
     private final int _failedAttemptsBeforeLogging;
-    private final boolean _cdnResponseHeadersLogging;
     private final String _sets;
 
     public SynchronizerImp(SplitTasks splitTasks,
@@ -55,7 +51,6 @@ public class SynchronizerImp implements Synchronizer {
                            int onDemandFetchRetryDelayMs,
                            int onDemandFetchMaxRetries,
                            int failedAttemptsBeforeLogging,
-                           boolean cdnResponseHeadersLogging,
                            HashSet<String> sets) {
         _splitSynchronizationTask = checkNotNull(splitTasks.getSplitSynchronizationTask());
         _splitFetcher = checkNotNull(splitFetcher);
@@ -63,7 +58,6 @@ public class SynchronizerImp implements Synchronizer {
         _splitCacheProducer = checkNotNull(splitCacheProducer);
         this.segmentCacheProducer = checkNotNull(segmentCacheProducer);
         _onDemandFetchRetryDelayMs = checkNotNull(onDemandFetchRetryDelayMs);
-        _cdnResponseHeadersLogging = cdnResponseHeadersLogging;
         _onDemandFetchMaxRetries = onDemandFetchMaxRetries;
         _failedAttemptsBeforeLogging = failedAttemptsBeforeLogging;
         _impressionManager = splitTasks.getImpressionManager();
@@ -135,12 +129,6 @@ public class SynchronizerImp implements Synchronizer {
         }
     }
 
-    private void logCdnHeaders(String prefix, int maxRetries, int remainingAttempts, List<Map<String, String>> headers) {
-        if (maxRetries - remainingAttempts > _failedAttemptsBeforeLogging) {
-            _log.info(String.format("%s: CDN Debug headers: %s", prefix, Json.toJson(headers)));
-        }
-    }
-
     @Override
     public void refreshSplits(Long targetChangeNumber) {
 
@@ -151,7 +139,6 @@ public class SynchronizerImp implements Synchronizer {
         FastlyHeadersCaptor captor = new FastlyHeadersCaptor();
         FetchOptions opts = new FetchOptions.Builder()
                 .cacheControlHeaders(true)
-                .fastlyDebugHeader(_cdnResponseHeadersLogging)
                 .flagSetsFilter(_sets)
                 .build();
 
@@ -161,9 +148,7 @@ public class SynchronizerImp implements Synchronizer {
         int attempts =  _onDemandFetchMaxRetries - regularResult.remainingAttempts();
         if (regularResult.success()) {
             _log.debug(String.format("Refresh completed in %s attempts.", attempts));
-            if (_cdnResponseHeadersLogging) {
-                logCdnHeaders("[splits]", _onDemandFetchMaxRetries , regularResult.remainingAttempts(), captor.get());
-            }
+
             regularResult._fetchResult.getSegments().stream()
                     .forEach(segmentName -> forceRefreshSegment(segmentName));
             return;
@@ -182,11 +167,6 @@ public class SynchronizerImp implements Synchronizer {
                     .forEach(segmentName -> forceRefreshSegment(segmentName));
         } else {
             _log.debug(String.format("No changes fetched after %s attempts with CDN bypassed.", withoutCDNAttempts));
-        }
-
-        if (_cdnResponseHeadersLogging) {
-            logCdnHeaders("[splits]", _onDemandFetchMaxRetries + ON_DEMAND_FETCH_BACKOFF_MAX_RETRIES,
-                    withCDNBypassed.remainingAttempts(), captor.get());
         }
     }
 
@@ -237,7 +217,6 @@ public class SynchronizerImp implements Synchronizer {
         FastlyHeadersCaptor captor = new FastlyHeadersCaptor();
         FetchOptions opts = new FetchOptions.Builder()
                 .cacheControlHeaders(true)
-                .fastlyDebugHeader(_cdnResponseHeadersLogging)
                 .build();
 
         SyncResult regularResult = attemptSegmentSync(segmentName, targetChangeNumber, opts,
@@ -246,9 +225,7 @@ public class SynchronizerImp implements Synchronizer {
         int attempts =  _onDemandFetchMaxRetries - regularResult.remainingAttempts();
         if (regularResult.success()) {
             _log.debug(String.format("Segment %s refresh completed in %s attempts.", segmentName, attempts));
-            if (_cdnResponseHeadersLogging) {
-                logCdnHeaders(String.format("[segment/%s]", segmentName), _onDemandFetchMaxRetries , regularResult.remainingAttempts(), captor.get());
-            }
+
             return;
         }
 
@@ -263,11 +240,6 @@ public class SynchronizerImp implements Synchronizer {
             _log.debug(String.format("Segment %s refresh completed bypassing the CDN in %s attempts.", segmentName, withoutCDNAttempts));
         } else {
             _log.debug(String.format("No changes fetched for segment %s after %s attempts with CDN bypassed.", segmentName, withoutCDNAttempts));
-        }
-
-        if (_cdnResponseHeadersLogging) {
-            logCdnHeaders(String.format("[segment/%s]", segmentName), _onDemandFetchMaxRetries + ON_DEMAND_FETCH_BACKOFF_MAX_RETRIES,
-                    withCDNBypassed.remainingAttempts(), captor.get());
         }
     }
 
