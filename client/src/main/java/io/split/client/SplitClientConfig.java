@@ -73,7 +73,6 @@ public class SplitClientConfig {
     private final int _uniqueKeysRefreshRateInMemory;
     private final int _uniqueKeysRefreshRateRedis;
     private static int _filterUniqueKeysRefreshRate;
-    private final boolean _cdnDebugLogging;
     private final OperationMode _operationMode;
     private long _validateAfterInactivityInMillis;
     private final long _startingSyncCallBackoffBaseMs;
@@ -135,7 +134,6 @@ public class SplitClientConfig {
                               int onDemandFetchRetryDelayMs,
                               int onDemandFetchMaxRetries,
                               int failedAttemptsBeforeLogging,
-                              boolean cdnDebugLogging,
                               OperationMode operationMode,
                               long validateAfterInactivityInMillis,
                               long startingSyncCallBackoffBaseMs,
@@ -190,7 +188,6 @@ public class SplitClientConfig {
         _onDemandFetchRetryDelayMs = onDemandFetchRetryDelayMs;
         _onDemandFetchMaxRetries = onDemandFetchMaxRetries;
         _failedAttemptsBeforeLogging = failedAttemptsBeforeLogging;
-        _cdnDebugLogging = cdnDebugLogging;
         _operationMode = operationMode;
         _storageMode = storageMode;
         _validateAfterInactivityInMillis = validateAfterInactivityInMillis;
@@ -367,8 +364,6 @@ public class SplitClientConfig {
 
     public int failedAttemptsBeforeLogging() {return _failedAttemptsBeforeLogging;}
 
-    public boolean cdnDebugLogging() { return _cdnDebugLogging; }
-
     public OperationMode operationMode() { return _operationMode;}
 
     public long validateAfterInactivityInMillis() {
@@ -445,7 +440,6 @@ public class SplitClientConfig {
         private int _onDemandFetchRetryDelayMs = 50;
         private final int _onDemandFetchMaxRetries = 10;
         private final int _failedAttemptsBeforeLogging = 10;
-        private final boolean _cdnDebugLogging = true;
         private OperationMode _operationMode = OperationMode.STANDALONE;
         private long _validateAfterInactivityInMillis = 1000;
         private static final long STARTING_SYNC_CALL_BACKOFF_BASE_MS = 1000; //backoff base starting at 1 seconds
@@ -1086,7 +1080,6 @@ public class SplitClientConfig {
                     _onDemandFetchRetryDelayMs,
                     _onDemandFetchMaxRetries,
                     _failedAttemptsBeforeLogging,
-                    _cdnDebugLogging,
                     _operationMode,
                     _validateAfterInactivityInMillis,
                     STARTING_SYNC_CALL_BACKOFF_BASE_MS,
