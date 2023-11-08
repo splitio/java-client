@@ -1,3 +1,6 @@
+4.10.1 (Nov 9, 2023)
+- Fixed handler for response http headers.
+
 4.10.0 (Nov 2, 2023)
 - Added support for Flag Sets on the SDK, which enables grouping feature flags and interacting with the group rather than individually (more details in our documentation):
   - Added new variations of the get treatment methods to support evaluating flags in given flag set/s.
