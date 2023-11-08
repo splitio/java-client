@@ -14,7 +14,6 @@ import org.apache.hc.client5.http.classic.methods.HttpGet;
 import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
 import org.apache.hc.client5.http.impl.classic.CloseableHttpResponse;
 import org.apache.hc.core5.http.HttpStatus;
-import org.apache.hc.core5.http.Header;
 import org.apache.hc.core5.http.io.entity.EntityUtils;
 import org.apache.hc.core5.net.URIBuilder;
 import org.slf4j.Logger;
@@ -23,8 +22,6 @@ import org.slf4j.LoggerFactory;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.nio.charset.StandardCharsets;
-import java.util.Arrays;
-import java.util.stream.Collectors;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
@@ -40,9 +37,6 @@ public final class HttpSplitChangeFetcher implements SplitChangeFetcher {
 
     private static final String HEADER_CACHE_CONTROL_NAME = "Cache-Control";
     private static final String HEADER_CACHE_CONTROL_VALUE = "no-cache";
-
-    private static final String HEADER_FASTLY_DEBUG_NAME = "Fastly-Debug";
-    private static final String HEADER_FASTLY_DEBUG_VALUE = "1";
 
     private final CloseableHttpClient _client;
     private final URI _target;
@@ -87,13 +81,7 @@ public final class HttpSplitChangeFetcher implements SplitChangeFetcher {
                 request.setHeader(HEADER_CACHE_CONTROL_NAME, HEADER_CACHE_CONTROL_VALUE);
             }
 
-            if (options.fastlyDebugHeaderEnabled()) {
-                request.addHeader(HEADER_FASTLY_DEBUG_NAME, HEADER_FASTLY_DEBUG_VALUE);
-            }
-
             response = _client.execute(request);
-            options.handleResponseHeaders(Arrays.stream(response.getHeaders())
-                    .collect(Collectors.toMap(Header::getName, Header::getValue)));
 
             int statusCode = response.getCode();
 
