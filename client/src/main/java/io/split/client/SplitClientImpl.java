@@ -151,6 +151,13 @@ public final class SplitClientImpl implements SplitClient {
     }
 
     @Override
+    public Map<String, String> getTreatmentsByFlagSet(String key, String flagSet) {
+        return getTreatmentsBySetsWithConfigInternal(key, null, new ArrayList<>(Arrays.asList(flagSet)),
+                null, MethodEnum.TREATMENTS_BY_FLAG_SET).entrySet().stream()
+                .collect(Collectors.toMap(Map.Entry::getKey, e -> e.getValue().treatment()));
+    }
+
+    @Override
     public Map<String, String> getTreatmentsByFlagSet(String key, String flagSet, Map<String, Object> attributes) {
         return getTreatmentsBySetsWithConfigInternal(key, null, new ArrayList<>(Arrays.asList(flagSet)),
                 attributes, MethodEnum.TREATMENTS_BY_FLAG_SET).entrySet().stream()
@@ -161,6 +168,13 @@ public final class SplitClientImpl implements SplitClient {
     public Map<String, String> getTreatmentsByFlagSet(Key key, String flagSet, Map<String, Object> attributes) {
         return getTreatmentsBySetsWithConfigInternal(key.matchingKey(), key.bucketingKey(), new ArrayList<>(Arrays.asList(flagSet)),
                 attributes, MethodEnum.TREATMENTS_BY_FLAG_SET).entrySet().stream()
+                .collect(Collectors.toMap(Map.Entry::getKey, e -> e.getValue().treatment()));
+    }
+
+    @Override
+    public Map<String, String> getTreatmentsByFlagSets(String key, List<String> flagSets) {
+        return getTreatmentsBySetsWithConfigInternal(key, null, flagSets,
+                null, MethodEnum.TREATMENTS_BY_FLAG_SETS).entrySet().stream()
                 .collect(Collectors.toMap(Map.Entry::getKey, e -> e.getValue().treatment()));
     }
 
@@ -179,6 +193,12 @@ public final class SplitClientImpl implements SplitClient {
     }
 
     @Override
+    public Map<String, SplitResult> getTreatmentsWithConfigByFlagSet(String key, String flagSet) {
+        return getTreatmentsBySetsWithConfigInternal(key, null, new ArrayList<>(Arrays.asList(flagSet)),
+                null, MethodEnum.TREATMENTS_WITH_CONFIG_BY_FLAG_SET);
+    }
+
+    @Override
     public Map<String, SplitResult> getTreatmentsWithConfigByFlagSet(String key, String flagSet, Map<String, Object> attributes) {
         return getTreatmentsBySetsWithConfigInternal(key, null, new ArrayList<>(Arrays.asList(flagSet)),
                 attributes, MethodEnum.TREATMENTS_WITH_CONFIG_BY_FLAG_SET);
@@ -188,6 +208,12 @@ public final class SplitClientImpl implements SplitClient {
     public Map<String, SplitResult> getTreatmentsWithConfigByFlagSet(Key key, String flagSet, Map<String, Object> attributes) {
         return getTreatmentsBySetsWithConfigInternal(key.matchingKey(), key.bucketingKey(), new ArrayList<>(Arrays.asList(flagSet)),
                 attributes, MethodEnum.TREATMENTS_WITH_CONFIG_BY_FLAG_SET);
+    }
+
+    @Override
+    public Map<String, SplitResult> getTreatmentsWithConfigByFlagSets(String key, List<String> flagSets) {
+        return getTreatmentsBySetsWithConfigInternal(key, null, flagSets,
+                null, MethodEnum.TREATMENTS_WITH_CONFIG_BY_FLAG_SETS);
     }
 
     @Override
@@ -381,7 +407,8 @@ public final class SplitClientImpl implements SplitClient {
             return new HashMap<>();
         }
         Set cleanFlagSets = cleanup(sets);
-        if (filterSetsAreInConfig(cleanFlagSets, methodEnum).isEmpty()) {
+        cleanFlagSets = filterSetsAreInConfig(cleanFlagSets, methodEnum);
+        if (cleanFlagSets.isEmpty()) {
             return new HashMap<>();
         }
         List<String> featureFlagNames = new ArrayList<>();
@@ -447,8 +474,8 @@ public final class SplitClientImpl implements SplitClient {
         }
         return null;
     }
-    private List<String> filterSetsAreInConfig(Set<String> sets, MethodEnum methodEnum) {
-        List<String> setsToReturn = new ArrayList<>();
+    private Set<String> filterSetsAreInConfig(Set<String> sets, MethodEnum methodEnum) {
+        Set<String> setsToReturn = new HashSet<>();
         for (String set : sets) {
             if (!_flagSetsFilter.intersect(set)) {
                 _log.warn(String.format("%s: you passed %s which is not part of the configured FlagSetsFilter, " +

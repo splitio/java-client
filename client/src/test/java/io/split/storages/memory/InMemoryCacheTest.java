@@ -24,6 +24,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
 public class InMemoryCacheTest {
@@ -229,7 +230,8 @@ public class InMemoryCacheTest {
         assertTrue(namesByFlagSets.get("set1").contains("splitName_2"));
         assertFalse(namesByFlagSets.get("set1").contains("splitName_3"));
         assertFalse(namesByFlagSets.get("set1").contains("splitName_4"));
-        assertFalse(namesByFlagSets.keySet().contains("set3"));
+        assertTrue(namesByFlagSets.keySet().contains("set3"));
+        assertNull(namesByFlagSets.get("set3"));
 
         _cache.remove("splitName_2");
         namesByFlagSets = _cache.getNamesByFlagSets(new ArrayList<>(Arrays.asList("set1", "set2", "set3")));
