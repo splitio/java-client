@@ -33,7 +33,7 @@ public final class FlagSetsValidator {
             }
             if (!Pattern.matches(FLAG_SET_REGEX, flagSet)) {
                 _log.warn(String.format("you passed %s, Flag Set must adhere to the regular expressions %s. This means a Flag Set must be " +
-                        "start with a letter, be in lowercase, alphanumeric and have a max length of 50 characters. %s was discarded.",
+                        "start with a letter or number, be in lowercase, alphanumeric and have a max length of 50 characters. %s was discarded.",
                         flagSet, FLAG_SET_REGEX, flagSet));
                 continue;
             }
