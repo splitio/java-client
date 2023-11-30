@@ -3,7 +3,6 @@ package io.split.telemetry.synchronizer;
 import com.google.common.annotations.VisibleForTesting;
 import io.split.client.dtos.UniqueKeys;
 import io.split.client.utils.Utils;
-import io.split.engine.segments.SegmentFetcherImp;
 import io.split.service.HttpPostImp;
 import io.split.telemetry.domain.Config;
 import io.split.telemetry.domain.Stats;
