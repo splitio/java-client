@@ -432,7 +432,6 @@ public final class SplitClientImpl implements SplitClient {
             return createMapControl(featureFlagNames);
         }
     }
-
     private Map<String, SplitResult> processEvaluatorResult(Map<String, EvaluatorImp.TreatmentLabelAndChangeNumber> evaluatorResult,
                                                             MethodEnum methodEnum, String matchingKey, String bucketingKey, Map<String,
                                                             Object> attributes, long initTime){
@@ -471,6 +470,7 @@ public final class SplitClientImpl implements SplitClient {
         }
         return null;
     }
+
     private Map<String, SplitResult> validateBeforeEvaluate(List<String> featureFlagNames, String matchingKey, MethodEnum methodEnum,
                                                             String bucketingKey) {
         if (_container.isDestroyed()) {
@@ -500,16 +500,6 @@ public final class SplitClientImpl implements SplitClient {
         }
         return setsToReturn;
     }
-
-    private List<String> getAllFlags(Set<String> sets) {
-        Map<String, HashSet<String>> namesBySets = _splitCacheConsumer.getNamesByFlagSets(new ArrayList<>(sets));
-        HashSet<String> flags = new HashSet<>();
-        for (String set: namesBySets.keySet()) {
-            flags.addAll(namesBySets.get(set));
-        }
-        return new ArrayList<>(flags);
-    }
-
     private void recordStats(String matchingKey, String bucketingKey, String featureFlagName, long start, String result,
                              String operation, String label, Long changeNumber, Map<String, Object> attributes) {
         try {
