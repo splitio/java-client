@@ -64,9 +64,6 @@ public class TelemetryConsumerSubmitter implements TelemetrySynchronizer {
         config.setActiveFactories(factoryInstances.size());
         config.setRedundantFactories(getRedundantFactories(factoryInstances));
         config.setTags(tags.size() < 10 ? tags : tags.subList(0, 10));
-        int invalidSets = splitClientConfig.getInvalidSets();
-        config.setFlagSetsTotal(splitClientConfig.getSetsFilter().size() + invalidSets);
-        config.setFlagSetsInvalid(invalidSets);
         return config;
     }
 
