@@ -133,6 +133,11 @@ public class SplitClientForTest implements SplitClient {
     }
 
     @Override
+    public Map<String, String> getTreatmentsByFlagSet(String key, String flagSet) {
+        return null;
+    }
+
+    @Override
     public Map<String, String> getTreatmentsByFlagSet(String key, String flagSet, Map<String, Object> attributes) {
         return new HashMap<>();
     }
@@ -140,6 +145,11 @@ public class SplitClientForTest implements SplitClient {
     @Override
     public Map<String, String> getTreatmentsByFlagSet(Key key, String flagSet, Map<String, Object> attributes) {
         return new HashMap<>();
+    }
+
+    @Override
+    public Map<String, String> getTreatmentsByFlagSets(String key, List<String> flagSets) {
+        return null;
     }
 
     @Override
@@ -153,6 +163,11 @@ public class SplitClientForTest implements SplitClient {
     }
 
     @Override
+    public Map<String, SplitResult> getTreatmentsWithConfigByFlagSet(String key, String flagSet) {
+        return null;
+    }
+
+    @Override
     public Map<String, SplitResult> getTreatmentsWithConfigByFlagSet(String key, String flagSet, Map<String, Object> attributes) {
         return new HashMap<>();
     }
@@ -160,6 +175,11 @@ public class SplitClientForTest implements SplitClient {
     @Override
     public Map<String, SplitResult> getTreatmentsWithConfigByFlagSet(Key key, String flagSet, Map<String, Object> attributes) {
         return new HashMap<>();
+    }
+
+    @Override
+    public Map<String, SplitResult> getTreatmentsWithConfigByFlagSets(String key, List<String> flagSets) {
+        return null;
     }
 
     @Override

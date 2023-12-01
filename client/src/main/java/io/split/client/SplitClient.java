@@ -256,7 +256,7 @@ public interface SplitClient {
     Map<String, SplitResult> getTreatmentsWithConfig(String key, List<String> featureFlagNames, Map<String, Object> attributes);
 
     /**
-     * Same as {@link #getTreatments(Key, List<String>, Map)} but it returns for each feature flag the configuration associated to the
+     * Same as {@link #getTreatments(Key, List, Map)} but it returns for each feature flag the configuration associated to the
      * matching treatment if any. Otherwise {@link SplitResult.configurations()} will be null.
      *
      * @param key the matching and bucketing keys. MUST NOT be null.
@@ -267,6 +267,21 @@ public interface SplitClient {
      *         a configuration associated to this treatment if set.
      */
     Map<String, SplitResult> getTreatmentsWithConfig(Key key, List<String> featureFlagNames, Map<String, Object> attributes);
+
+    /**
+     * Same as {@link #getTreatments(String, List<String>, Map)} but it returns for each feature flag the configuration associated to the
+     * matching treatment if any. Otherwise {@link SplitResult.configurations()} will be null.
+     * <p/>
+     * <p/>
+     * Examples include showing a different treatment to users on trial plan
+     * vs. premium plan. Another example is to show a different treatment
+     * to users created after a certain date.
+     *
+     * @param key a unique key of your customer (e.g. user_id, user_email, account_id, etc.) MUST not be null or empty.
+     * @param flagSet the Flag Set name that you want to evaluate. MUST not be null or empty.
+     * @return for each feature flag the evaluated treatment, the default treatment of this feature flag, or 'control'.
+     */
+    Map<String, String> getTreatmentsByFlagSet(String key, String flagSet);
 
     /**
      * Same as {@link #getTreatments(String, List<String>, Map)} but it returns for each feature flag the configuration associated to the
@@ -311,6 +326,21 @@ public interface SplitClient {
      *
      * @param key a unique key of your customer (e.g. user_id, user_email, account_id, etc.) MUST not be null or empty.
      * @param flagSets  the names of Flag Sets that you want to evaluate. MUST not be null or empty.
+     * @return for each feature flag the evaluated treatment, the default treatment of this feature flag, or 'control'.
+     */
+    Map<String, String> getTreatmentsByFlagSets(String key, List<String> flagSets);
+
+    /**
+     * Same as {@link #getTreatments(String, List<String>, Map)} but it returns for each feature flag the configuration associated to the
+     * matching treatment if any. Otherwise {@link SplitResult.configurations()} will be null.
+     * <p/>
+     * <p/>
+     * Examples include showing a different treatment to users on trial plan
+     * vs. premium plan. Another example is to show a different treatment
+     * to users created after a certain date.
+     *
+     * @param key a unique key of your customer (e.g. user_id, user_email, account_id, etc.) MUST not be null or empty.
+     * @param flagSets  the names of Flag Sets that you want to evaluate. MUST not be null or empty.
      * @param attributes of the customer (user, account etc.) to use in evaluation. Can be null or empty.
      * @return for each feature flag the evaluated treatment, the default treatment of this feature flag, or 'control'.
      */
@@ -331,6 +361,22 @@ public interface SplitClient {
      * @return for each feature flag the evaluated treatment, the default treatment of this feature flag, or 'control'.
      */
     Map<String, String> getTreatmentsByFlagSets(Key key, List<String> flagSets, Map<String, Object> attributes);
+
+    /**
+     * Same as {@link #getTreatments(String, List<String>, Map)} but it returns for each feature flag the configuration associated to the
+     * matching treatment if any. Otherwise {@link SplitResult.configurations()} will be null.
+     * <p/>
+     * <p/>
+     * Examples include showing a different treatment to users on trial plan
+     * vs. premium plan. Another example is to show a different treatment
+     * to users created after a certain date.
+     *
+     * @param key a unique key of your customer (e.g. user_id, user_email, account_id, etc.) MUST not be null or empty.
+     * @param flagSet  the Flag Set name that you want to evaluate. MUST not be null or empty.
+     * @return for each feature flag the evaluated treatment (the default treatment of this feature flag, or 'control') and a configuration
+     * associated to this treatment if set.
+     */
+    Map<String, SplitResult> getTreatmentsWithConfigByFlagSet(String key, String flagSet);
 
     /**
      * Same as {@link #getTreatments(String, List<String>, Map)} but it returns for each feature flag the configuration associated to the
@@ -365,6 +411,22 @@ public interface SplitClient {
      * associated to this treatment if set.
      */
     Map<String, SplitResult> getTreatmentsWithConfigByFlagSet(Key key, String flagSet, Map<String, Object> attributes);
+
+    /**
+     * Same as {@link #getTreatments(String, List<String>, Map)} but it returns for each feature flag the configuration associated to the
+     * matching treatment if any. Otherwise {@link SplitResult.configurations()} will be null.
+     * <p/>
+     * <p/>
+     * Examples include showing a different treatment to users on trial plan
+     * vs. premium plan. Another example is to show a different treatment
+     * to users created after a certain date.
+     *
+     * @param key a unique key of your customer (e.g. user_id, user_email, account_id, etc.) MUST not be null or empty.
+     * @param flagSets  the names of Flag Sets that you want to evaluate. MUST not be null or empty.
+     * @return for each feature flag the evaluated treatment (the default treatment of this feature flag, or 'control') and a configuration
+     * associated to this treatment if set.
+     */
+    Map<String, SplitResult> getTreatmentsWithConfigByFlagSets(String key, List<String> flagSets);
 
     /**
      * Same as {@link #getTreatments(String, List<String>, Map)} but it returns for each feature flag the configuration associated to the
@@ -444,7 +506,6 @@ public interface SplitClient {
      * @param key the identifier of the entity
      * @param trafficType the type of the event
      * @param eventType the type of the event
-     * @param value the value of the event
      *
      * @return true if the track was successful, false otherwise
      */
