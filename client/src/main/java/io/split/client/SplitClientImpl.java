@@ -48,6 +48,7 @@ public final class SplitClientImpl implements SplitClient {
     public static final SplitResult SPLIT_RESULT_CONTROL = new SplitResult(Treatments.CONTROL, null);
     private static final String CLIENT_DESTROY = "Client has already been destroyed - no calls possible";
     private static final String CATCHALL_EXCEPTION = "CatchAll Exception";
+    private static final String MATCHING_KEY = "matchingKey";
 
     private static final Logger _log = LoggerFactory.getLogger(SplitClientImpl.class);
 
@@ -321,7 +322,7 @@ public final class SplitClientImpl implements SplitClient {
                 return SPLIT_RESULT_CONTROL;
             }
 
-            if (!KeyValidator.isValid(matchingKey, "matchingKey", _config.maxStringLength(), methodEnum.getMethod())) {
+            if (!KeyValidator.isValid(matchingKey, MATCHING_KEY, _config.maxStringLength(), methodEnum.getMethod())) {
                 return SPLIT_RESULT_CONTROL;
             }
 
@@ -462,7 +463,7 @@ public final class SplitClientImpl implements SplitClient {
             _log.error(CLIENT_DESTROY);
             return new HashMap<>();
         }
-        if (!KeyValidator.isValid(matchingKey, "matchingKey", _config.maxStringLength(), methodEnum.getMethod())) {
+        if (!KeyValidator.isValid(matchingKey, MATCHING_KEY, _config.maxStringLength(), methodEnum.getMethod())) {
             return new HashMap<>();
         }
         if (!KeyValidator.bucketingKeyIsValid(bucketingKey, _config.maxStringLength(), methodEnum.getMethod())) {
@@ -476,7 +477,7 @@ public final class SplitClientImpl implements SplitClient {
             _log.error(CLIENT_DESTROY);
             return createMapControl(featureFlagNames);
         }
-        if (!KeyValidator.isValid(matchingKey, "matchingKey", _config.maxStringLength(), methodEnum.getMethod())) {
+        if (!KeyValidator.isValid(matchingKey, MATCHING_KEY, _config.maxStringLength(), methodEnum.getMethod())) {
             return createMapControl(featureFlagNames);
         }
         if (!KeyValidator.bucketingKeyIsValid(bucketingKey, _config.maxStringLength(), methodEnum.getMethod())) {
