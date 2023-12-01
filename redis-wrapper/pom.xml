@@ -6,7 +6,7 @@
     <parent>
         <artifactId>java-client-parent</artifactId>
         <groupId>io.split.client</groupId>
-        <version>4.10.1</version>
+        <version>4.10.2-rc1</version>
     </parent>
     <artifactId>redis-wrapper</artifactId>
     <version>3.1.0</version>
@@ -22,7 +22,7 @@
         <dependency>
             <groupId>io.split.client</groupId>
             <artifactId>pluggable-storage</artifactId>
-            <version>2.1.0</version>
+            <version>2.1.1-rc1</version>
             <scope>compile</scope>
         </dependency>
         <dependency>
@@ -34,12 +34,6 @@
             <groupId>junit</groupId>
             <artifactId>junit</artifactId>
             <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>io.split.client</groupId>
-            <artifactId>pluggable-storage</artifactId>
-            <version>2.1.0</version>
-            <scope>compile</scope>
         </dependency>
     </dependencies>
 

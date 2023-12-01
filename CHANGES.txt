@@ -1,3 +1,6 @@
+4.10.2 (Dec 1, 2023)
+- Fixed some issues for flag sets.
+
 4.10.1 (Nov 9, 2023)
 - Fixed handler for response http headers.
 
