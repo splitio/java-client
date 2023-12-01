@@ -63,7 +63,7 @@ public class EvaluatorImp implements Evaluator {
         Map<String, HashSet<String>> namesByFlagSets = _splitCacheConsumer.getNamesByFlagSets(flagSets);
         for (String set: flagSets) {
             HashSet<String> flags = namesByFlagSets.get(set);
-            if (flags == null) {
+            if (flags == null || flags.isEmpty()) {
                 _log.warn(String.format("You passed %s Flag Set that does not contain cached feature flag names, please double check " +
                         "what Flag Sets are in use in the Split user interface.", set));
                 continue;

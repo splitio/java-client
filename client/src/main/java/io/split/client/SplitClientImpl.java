@@ -414,8 +414,7 @@ public final class SplitClientImpl implements SplitClient {
         List<String> featureFlagNames = new ArrayList<>();
         try {
             checkSDKReady(methodEnum);
-            featureFlagNames = getAllFlags(cleanFlagSets);
-            Map<String, SplitResult> result = validateBeforeEvaluate(featureFlagNames, matchingKey, methodEnum,bucketingKey);
+            Map<String, SplitResult> result = validateBeforeEvaluateByFlagSets(matchingKey, methodEnum,bucketingKey);
             if(result != null) {
                 return result;
             }
@@ -457,6 +456,20 @@ public final class SplitClientImpl implements SplitClient {
         return result;
     }
 
+    private Map<String, SplitResult> validateBeforeEvaluateByFlagSets(String matchingKey, MethodEnum methodEnum,
+                                                            String bucketingKey) {
+        if (_container.isDestroyed()) {
+            _log.error(CLIENT_DESTROY);
+            return new HashMap<>();
+        }
+        if (!KeyValidator.isValid(matchingKey, "matchingKey", _config.maxStringLength(), methodEnum.getMethod())) {
+            return new HashMap<>();
+        }
+        if (!KeyValidator.bucketingKeyIsValid(bucketingKey, _config.maxStringLength(), methodEnum.getMethod())) {
+            return new HashMap<>();
+        }
+        return null;
+    }
     private Map<String, SplitResult> validateBeforeEvaluate(List<String> featureFlagNames, String matchingKey, MethodEnum methodEnum,
                                                             String bucketingKey) {
         if (_container.isDestroyed()) {
