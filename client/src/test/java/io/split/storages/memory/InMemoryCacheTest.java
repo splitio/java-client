@@ -23,6 +23,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
@@ -236,5 +237,9 @@ public class InMemoryCacheTest {
         _cache.remove("splitName_2");
         namesByFlagSets = _cache.getNamesByFlagSets(new ArrayList<>(Arrays.asList("set1", "set2", "set3")));
         assertFalse(namesByFlagSets.get("set1").contains("splitName_2"));
+        _cache.remove("splitName_1");
+        namesByFlagSets = _cache.getNamesByFlagSets(new ArrayList<>(Arrays.asList("set1", "set2", "set3")));
+        assertFalse(namesByFlagSets.get("set1").contains("splitName_1"));
+        assertTrue(namesByFlagSets.get("set1").isEmpty());
     }
 }
