@@ -58,6 +58,14 @@ public class IntegrationsConfig {
             return this;
         }
 
+        public Builder impressionsListener(ImpressionListener listener, int queueSize, Execution executionType) {
+            if (queueSize <= 0) {
+                throw new IllegalArgumentException("An ImpressionListener was provided, but its capacity was non-positive: " + queueSize);
+            }
+            _listeners.add(new ImpressionListenerWithMeta(listener, executionType, queueSize));
+            return this;
+        }
+
         public Builder newRelicImpressionListener() {
             if (_newRelicEnabled) {
                 _log.warn("You can only add one new relic integration instance. Ignoring");
