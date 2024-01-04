@@ -1,5 +1,5 @@
 4.11.0 (Jan XX, 2024)
-- Added impressionsListener method in the IntegrationConfig builder to set Sync and Async Listener.
+- Added impressionsListener method in the IntegrationConfig builder to set Sync or Async Listener execution.
 
 4.10.2 (Dec 1, 2023)
 - Added getTreatmentsByFlagSets without attributes.
