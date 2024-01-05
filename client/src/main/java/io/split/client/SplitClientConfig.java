@@ -355,7 +355,7 @@ public class SplitClientConfig {
         return _telemetryURL;
     }
 
-    public int get_telemetryRefreshRate() {
+    public int getTelemetryRefreshRate() {
         return _telemetryRefreshRate;
     }
     public int streamingRetryDelay() {return _onDemandFetchRetryDelayMs;}

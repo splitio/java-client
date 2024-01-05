@@ -20,19 +20,19 @@ public class StreamingEvent {
         this._timestamp = _timestamp;
     }
 
-    public int get_type() {
+    public int getType() {
         return _type;
     }
 
-    public void set_type(int _type) {
+    public void setType(int _type) {
         this._type = _type;
     }
 
-    public long get_data() {
+    public long getData() {
         return _data;
     }
 
-    public void set_data(long _data) {
+    public void setData(long _data) {
         this._data = _data;
     }
 

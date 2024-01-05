@@ -33,15 +33,15 @@ public class Splitter {
     static long hash(String key, int seed, int algo) {
         switch (algo) {
             case ALGO_MURMUR:
-                return murmur_hash(key, seed);
+                return murmurHash(key, seed);
             case ALGO_LEGACY:
             default:
-                return legacy_hash(key, seed);
+                return legacyHash(key, seed);
         }
     }
 
     /*package private*/
-    static long murmur_hash(String key, int seed) {
+    static long murmurHash(String key, int seed) {
         return MurmurHash3.murmurhash3_x86_32(key, 0, key.length(), seed);
     }
 
@@ -56,7 +56,7 @@ public class Splitter {
     }
 
     /*package private*/
-    static int legacy_hash(String key, int seed) {
+    static int legacyHash(String key, int seed) {
         int h = 0;
         for (int i = 0; i < key.length(); i++) {
             h = 31 * h + key.charAt(i);
