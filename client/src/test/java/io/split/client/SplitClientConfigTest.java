@@ -7,6 +7,7 @@ import io.split.client.impressions.ImpressionsManager;
 import io.split.integrations.IntegrationsConfig;
 import org.junit.Assert;
 import org.junit.Test;
+import org.mockito.Mockito;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -213,5 +214,25 @@ public class SplitClientConfigTest {
     public void threadFactoryNotNull() {
         SplitClientConfig config = SplitClientConfig.builder().threadFactory(new ThreadFactoryBuilder().build()).build();
         Assert.assertNotNull(config.getThreadFactory());
+    }
+
+    @Test
+    public void IntegrationConfigSyncNotNull() {
+        SplitClientConfig config = SplitClientConfig.builder().integrations(IntegrationsConfig.builder()
+                .impressionsListener(Mockito.mock(ImpressionListener.class), 500, IntegrationsConfig.Execution.SYNC)
+                .build()).build();
+        Assert.assertNotNull(config.integrationsConfig());
+        Assert.assertEquals(1, config.integrationsConfig().getImpressionsListeners(IntegrationsConfig.Execution.SYNC).size());
+        Assert.assertEquals(0, config.integrationsConfig().getImpressionsListeners(IntegrationsConfig.Execution.ASYNC).size());
+    }
+
+    @Test
+    public void IntegrationConfigAsyncNotNull() {
+        SplitClientConfig config = SplitClientConfig.builder().integrations(IntegrationsConfig.builder()
+                .impressionsListener(Mockito.mock(ImpressionListener.class), 500, IntegrationsConfig.Execution.ASYNC)
+                .build()).build();
+        Assert.assertNotNull(config.integrationsConfig());
+        Assert.assertEquals(0, config.integrationsConfig().getImpressionsListeners(IntegrationsConfig.Execution.SYNC).size());
+        Assert.assertEquals(1, config.integrationsConfig().getImpressionsListeners(IntegrationsConfig.Execution.ASYNC).size());
     }
 }
