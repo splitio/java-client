@@ -51,10 +51,14 @@ public class IntegrationsConfig {
         }
 
         public Builder impressionsListener(ImpressionListener listener, int queueSize) {
+            return impressionsListener(listener, queueSize, Execution.ASYNC);
+        }
+
+        public Builder impressionsListener(ImpressionListener listener, int queueSize, Execution executionType) {
             if (queueSize <= 0) {
                 throw new IllegalArgumentException("An ImpressionListener was provided, but its capacity was non-positive: " + queueSize);
             }
-            _listeners.add(new ImpressionListenerWithMeta(listener, Execution.ASYNC, queueSize));
+            _listeners.add(new ImpressionListenerWithMeta(listener, executionType, queueSize));
             return this;
         }
 
