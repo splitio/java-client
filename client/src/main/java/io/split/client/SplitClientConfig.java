@@ -355,6 +355,14 @@ public class SplitClientConfig {
         return _telemetryURL;
     }
 
+    /**
+     * @deprecated  As of release 4.X.X, replaced by {@link #getTelemetryRefreshRate()} } //todo update version
+     **/
+    @Deprecated
+    public int get_telemetryRefreshRate() {
+        return _telemetryRefreshRate;
+    }
+
     public int getTelemetryRefreshRate() {
         return _telemetryRefreshRate;
     }
