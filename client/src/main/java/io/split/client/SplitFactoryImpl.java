@@ -674,6 +674,7 @@ public class SplitFactoryImpl implements SplitFactory {
                 case JSON:
                     return new JsonLocalhostSplitChangeFetcher(inputStreamProvider);
                 case YAML:
+                case YML:
                     return new YamlLocalhostSplitChangeFetcher(inputStreamProvider);
                 default:
                     _log.warn(LEGACY_LOG_MESSAGE);
