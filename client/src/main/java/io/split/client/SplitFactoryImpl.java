@@ -23,6 +23,7 @@ import io.split.client.impressions.PluggableImpressionSender;
 import io.split.client.impressions.UniqueKeysTracker;
 import io.split.client.impressions.UniqueKeysTrackerImp;
 import io.split.client.impressions.strategy.ProcessImpressionDebug;
+import io.split.client.impressions.strategy.ProcessImpressionNoOp;
 import io.split.client.impressions.strategy.ProcessImpressionNone;
 import io.split.client.impressions.strategy.ProcessImpressionOptimized;
 import io.split.client.impressions.strategy.ProcessImpressionStrategy;
@@ -607,6 +608,8 @@ public class SplitFactoryImpl implements SplitFactory {
                 counter = new ImpressionCounter();
                 processImpressionStrategy = new ProcessImpressionNone(listener != null, _uniqueKeysTracker, counter);
                 break;
+            case NOOP:
+                processImpressionStrategy = new ProcessImpressionNoOp();
         }
         return ImpressionsManagerImpl.instance(config, _telemetryStorageProducer, impressionsStorageConsumer, impressionsStorageProducer,
                 _impressionsSender, processImpressionStrategy, counter, listener);
