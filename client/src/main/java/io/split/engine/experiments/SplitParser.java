@@ -6,7 +6,6 @@ import io.split.client.dtos.Matcher;
 import io.split.client.dtos.MatcherGroup;
 import io.split.client.dtos.Partition;
 import io.split.client.dtos.Split;
-import io.split.client.dtos.Status;
 import io.split.engine.matchers.AllKeysMatcher;
 import io.split.engine.matchers.AttributeMatcher;
 import io.split.engine.matchers.BetweenMatcher;
@@ -26,8 +25,6 @@ import io.split.engine.matchers.strings.EndsWithAnyOfMatcher;
 import io.split.engine.matchers.strings.RegularExpressionMatcher;
 import io.split.engine.matchers.strings.StartsWithAnyOfMatcher;
 import io.split.engine.matchers.strings.WhitelistMatcher;
-import io.split.engine.segments.SegmentSynchronizationTask;
-import io.split.storages.SegmentCacheConsumer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -58,10 +55,6 @@ public final class SplitParser {
     }
 
     private ParsedSplit parseWithoutExceptionHandling(Split split) {
-        if (split.status != Status.ACTIVE) {
-            return null;
-        }
-
         List<ParsedCondition> parsedConditionList = Lists.newArrayList();
 
         for (Condition condition : split.conditions) {
@@ -70,7 +63,8 @@ public final class SplitParser {
             parsedConditionList.add(new ParsedCondition(condition.conditionType, matcher, partitions, condition.label));
         }
 
-        return new ParsedSplit(split.name, split.seed, split.killed, split.defaultTreatment, parsedConditionList, split.trafficTypeName, split.changeNumber, split.trafficAllocation, split.trafficAllocationSeed, split.algo, split.configurations);
+        return new ParsedSplit(split.name, split.seed, split.killed, split.defaultTreatment, parsedConditionList, split.trafficTypeName,
+                split.changeNumber, split.trafficAllocation, split.trafficAllocationSeed, split.algo, split.configurations, split.sets);
     }
 
     private CombiningMatcher toMatcher(MatcherGroup matcherGroup) {
@@ -178,6 +172,4 @@ public final class SplitParser {
 
         return new AttributeMatcher(attribute, delegate, negate);
     }
-
-
 }

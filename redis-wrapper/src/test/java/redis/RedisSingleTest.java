@@ -3,12 +3,13 @@ package redis;
 import org.junit.Assert;
 import org.junit.Test;
 import pluggable.CustomStorageWrapper;
+import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisPool;
-import redis.common.CommonRedis;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -16,7 +17,6 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 public class RedisSingleTest {
-    private final CommonRedis _commonRedis = CommonRedis.create("test-prefix:");
 
     @Test
     public void testSetAndGet() throws Exception {
@@ -99,8 +99,7 @@ public class RedisSingleTest {
             Assert.assertTrue(result.contains("item-1"));
             Assert.assertTrue(result.contains("item-2"));
             Assert.assertTrue(result.contains("item-3"));
-        }
-        finally {
+        } finally {
             storageWrapper.delete(new ArrayList<>(map.keySet()));
         }
     }
@@ -120,8 +119,7 @@ public class RedisSingleTest {
 
             result = storageWrapper.decrement("item-1", 3L);
             Assert.assertEquals(1L, result);
-        }
-        finally {
+        } finally {
             storageWrapper.delete(new ArrayList<>(map.keySet()));
         }
     }
@@ -156,8 +154,7 @@ public class RedisSingleTest {
             push = storageWrapper.pushItems("item-1", Arrays.asList("5"));
             Assert.assertEquals(2L, push);
 
-        }
-        finally {
+        } finally {
             storageWrapper.delete(new ArrayList<>(map.keySet()));
         }
     }
@@ -172,8 +169,7 @@ public class RedisSingleTest {
             long result = storageWrapper.getItemsCount("item-1");
 
             Assert.assertEquals(4L, result);
-        }
-        finally {
+        } finally {
             storageWrapper.delete(new ArrayList<>(map.keySet()));
         }
     }
@@ -188,8 +184,7 @@ public class RedisSingleTest {
             boolean result = storageWrapper.itemContains("item-1", "2");
 
             Assert.assertTrue(result);
-        }
-        finally {
+        } finally {
             storageWrapper.delete(new ArrayList<>(map.keySet()));
         }
     }
@@ -209,8 +204,7 @@ public class RedisSingleTest {
             Assert.assertFalse(result);
             result = storageWrapper.itemContains("item-1", "4");
             Assert.assertFalse(result);
-        }
-        finally {
+        } finally {
             storageWrapper.delete(new ArrayList<>(map.keySet()));
         }
     }
@@ -238,8 +232,7 @@ public class RedisSingleTest {
             List<String> items = storageWrapper.getItems(new ArrayList<>(keys));
             Assert.assertEquals(3, items.size());
             Assert.assertTrue(items.containsAll(Arrays.asList("1", "2", "3")));
-        }
-        finally {
+        } finally {
             storageWrapper.delete(new ArrayList<>(map.keySet()));
         }
     }
@@ -255,5 +248,43 @@ public class RedisSingleTest {
         RedisSingle storageWrapper = new RedisSingle(new JedisPool(), "test-prefix");
         Assert.assertTrue(storageWrapper.disconnect());
     }
-}
 
+    @Test
+    public void testWithoutPrefix() throws Exception {
+        Map<String, String> map = new HashMap<>();
+        map.put("item-1", "1");
+        map.put("item-2", "2");
+        map.put("item-3", "3");
+        map.put("i-4", "4");
+        RedisSingle storageWrapper = new RedisSingle(new JedisPool(), "");
+        try {
+            for (Map.Entry<String, String> entry : map.entrySet()) {
+                storageWrapper.set(entry.getKey(), entry.getValue());
+            }
+
+            Set<String> result = storageWrapper.getKeysByPrefix("item*");
+
+            Assert.assertEquals(3, result.size());
+            Assert.assertTrue(result.contains("item-1"));
+            Assert.assertTrue(result.contains("item-2"));
+            Assert.assertTrue(result.contains("item-3"));
+        } finally {
+            storageWrapper.delete(new ArrayList<>(map.keySet()));
+        }
+    }
+
+    @Test
+    public void testGetMembers() throws Exception {
+        JedisPool jedisPool = new JedisPool();
+        RedisSingle storageWrapper = new RedisSingle(new JedisPool(), "");
+        try (Jedis jedis = jedisPool.getResource()) {
+            jedis.sadd("set1", "flag1", "flag2", "flag3");
+            Set<String> flags = storageWrapper.getMembers("set1");
+            Assert.assertEquals(3, flags.size());
+        } catch (Exception ex) {
+            throw new RedisException(ex.getMessage());
+        } finally {
+            storageWrapper.delete(new ArrayList<>(Arrays.asList("set1")));
+        }
+    }
+}

@@ -76,12 +76,12 @@ public final class LocalhostSplitManager implements SplitManager {
     }
 
     @Override
-    public SplitView split(String featureName) {
-        if (!_splitToTreatmentsMap.containsKey(featureName)) {
+    public SplitView split(String featureFlagName) {
+        if (!_splitToTreatmentsMap.containsKey(featureFlagName)) {
             return null;
         }
 
-        return toSplitView(featureName, _splitToTreatmentsMap.get(featureName));
+        return toSplitView(featureFlagName, _splitToTreatmentsMap.get(featureFlagName));
     }
 
     void updateFeatureToTreatmentMap(Map<SplitAndKey, LocalhostSplit> featureToTreatmentMap) {
@@ -91,9 +91,9 @@ public final class LocalhostSplitManager implements SplitManager {
     }
 
 
-    private SplitView toSplitView(String featureName, Set<String> treatments) {
+    private SplitView toSplitView(String featureFlagName, Set<String> treatments) {
         SplitView view = new SplitView();
-        view.name = featureName;
+        view.name = featureFlagName;
         view.killed = false;
         view.trafficType = null;
         view.changeNumber = 0;

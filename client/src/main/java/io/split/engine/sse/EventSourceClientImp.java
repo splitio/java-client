@@ -1,11 +1,12 @@
 package io.split.engine.sse;
 
 import com.google.common.annotations.VisibleForTesting;
+import com.google.common.base.Strings;
 import io.split.engine.sse.client.RawEvent;
 import io.split.engine.sse.client.SSEClient;
 import io.split.engine.sse.dtos.SegmentQueueDto;
 import io.split.engine.sse.exceptions.EventParsingException;
-import io.split.engine.sse.workers.SplitsWorker;
+import io.split.engine.sse.workers.FeatureFlagsWorker;
 import io.split.engine.sse.workers.Worker;
 import io.split.telemetry.storage.TelemetryRuntimeProducer;
 import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
@@ -15,6 +16,7 @@ import org.slf4j.LoggerFactory;
 
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import static com.google.common.base.Preconditions.checkNotNull;
@@ -37,7 +39,8 @@ public class EventSourceClientImp implements EventSourceClient {
                                                NotificationProcessor notificationProcessor,
                                                PushStatusTracker pushStatusTracker,
                                                CloseableHttpClient sseHttpClient,
-                                               TelemetryRuntimeProducer telemetryRuntimeProducer) {
+                                               TelemetryRuntimeProducer telemetryRuntimeProducer,
+                                               ThreadFactory threadFactory) {
         _baseStreamingUrl = checkNotNull(baseStreamingUrl);
         _notificationParser = checkNotNull(notificationParser);
         _notificationProcessor = checkNotNull(notificationProcessor);
@@ -46,21 +49,26 @@ public class EventSourceClientImp implements EventSourceClient {
         _sseClient = new SSEClient(
                 inboundEvent -> { onMessage(inboundEvent); return null; },
                 status -> { _pushStatusTracker.handleSseStatus(status); return null; },
-                sseHttpClient, telemetryRuntimeProducer);
+                sseHttpClient,
+                telemetryRuntimeProducer,
+                threadFactory);
         _firstEvent = new AtomicBoolean();
     }
 
     public static EventSourceClientImp build(String baseStreamingUrl,
-                                             SplitsWorker splitsWorker,
+                                             FeatureFlagsWorker featureFlagsWorker,
                                              Worker<SegmentQueueDto> segmentWorker,
                                              PushStatusTracker pushStatusTracker,
-                                             CloseableHttpClient sseHttpClient, TelemetryRuntimeProducer telemetryRuntimeProducer) {
+                                             CloseableHttpClient sseHttpClient,
+                                             TelemetryRuntimeProducer telemetryRuntimeProducer,
+                                             ThreadFactory threadFactory) {
         return new EventSourceClientImp(baseStreamingUrl,
                 new NotificationParserImp(),
-                NotificationProcessorImp.build(splitsWorker, segmentWorker, pushStatusTracker),
+                NotificationProcessorImp.build(featureFlagsWorker, segmentWorker, pushStatusTracker),
                 pushStatusTracker,
                 sseHttpClient,
-                telemetryRuntimeProducer);
+                telemetryRuntimeProducer,
+                threadFactory);
     }
 
     @Override
@@ -103,7 +111,7 @@ public class EventSourceClientImp implements EventSourceClient {
             if(_firstEvent.compareAndSet(false, true) && !ERROR.equals(type)){
                 _pushStatusTracker.handleSseStatus(SSEClient.StatusMessage.FIRST_EVENT);
             }
-            if (payload.length() > 0) {
+            if (!Strings.isNullOrEmpty(payload)) {
                 _log.debug(String.format("Payload received: %s", payload));
                 switch (type) {
                     case MESSAGE:

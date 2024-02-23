@@ -1,11 +1,11 @@
 package io.split.client.impressions;
 
 import com.google.common.annotations.VisibleForTesting;
-import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import io.split.client.SplitClientConfig;
 import io.split.client.dtos.KeyImpression;
 import io.split.client.dtos.TestImpressions;
 import io.split.client.impressions.strategy.ProcessImpressionStrategy;
+import io.split.client.utils.SplitExecutorFactory;
 import io.split.telemetry.domain.enums.ImpressionsDataTypeEnum;
 import io.split.telemetry.storage.TelemetryRuntimeProducer;
 import org.slf4j.Logger;
@@ -14,9 +14,7 @@ import org.slf4j.LoggerFactory;
 import java.io.Closeable;
 import java.net.URISyntaxException;
 import java.util.List;
-import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
@@ -52,7 +50,8 @@ public class ImpressionsManagerImpl implements ImpressionsManager, Closeable {
                                                   ProcessImpressionStrategy processImpressionStrategy,
                                                   ImpressionCounter counter,
                                                   ImpressionListener listener) throws URISyntaxException {
-        return new ImpressionsManagerImpl(config, impressionsSender, telemetryRuntimeProducer, impressionsStorageConsumer, impressionsStorageProducer, processImpressionStrategy, counter, listener);
+        return new ImpressionsManagerImpl(config, impressionsSender, telemetryRuntimeProducer, impressionsStorageConsumer,
+                impressionsStorageProducer, processImpressionStrategy, counter, listener);
     }
 
     public static ImpressionsManagerImpl instanceForTest(SplitClientConfig config,
@@ -62,8 +61,9 @@ public class ImpressionsManagerImpl implements ImpressionsManager, Closeable {
                                                          ImpressionsStorageProducer impressionsStorageProducer,
                                                          ProcessImpressionStrategy processImpressionStrategy,
                                                          ImpressionCounter counter,
-                                                         ImpressionListener listener) throws URISyntaxException {
-        return new ImpressionsManagerImpl(config, impressionsSender, telemetryRuntimeProducer, impressionsStorageConsumer, impressionsStorageProducer, processImpressionStrategy, counter, listener);
+                                                         ImpressionListener listener) {
+        return new ImpressionsManagerImpl(config, impressionsSender, telemetryRuntimeProducer, impressionsStorageConsumer,
+                impressionsStorageProducer, processImpressionStrategy, counter, listener);
     }
 
     private ImpressionsManagerImpl(SplitClientConfig config,
@@ -73,7 +73,7 @@ public class ImpressionsManagerImpl implements ImpressionsManager, Closeable {
                                    ImpressionsStorageProducer impressionsStorageProducer,
                                    ProcessImpressionStrategy processImpressionStrategy,
                                    ImpressionCounter impressionCounter,
-                                   ImpressionListener impressionListener) throws URISyntaxException {
+                                   ImpressionListener impressionListener) {
 
 
         _config = checkNotNull(config);
@@ -85,7 +85,7 @@ public class ImpressionsManagerImpl implements ImpressionsManager, Closeable {
         _impressionsSender = impressionsSender;
         _counter = impressionCounter;
 
-        _scheduler = buildExecutor();
+        _scheduler = SplitExecutorFactory.buildScheduledExecutorService(config.getThreadFactory(), "Split-ImpressionsManager-%d", 2);
         _listener = impressionListener;
 
         _impressionsRefreshRate = config.impressionsRefreshRate();
@@ -95,14 +95,16 @@ public class ImpressionsManagerImpl implements ImpressionsManager, Closeable {
     public void start(){
         switch (_impressionsMode){
             case OPTIMIZED:
-                _scheduler.scheduleAtFixedRate(this::sendImpressionCounters, COUNT_INITIAL_DELAY_SECONDS, COUNT_REFRESH_RATE_SECONDS, TimeUnit.SECONDS);
+                _scheduler.scheduleAtFixedRate(this::sendImpressionCounters, COUNT_INITIAL_DELAY_SECONDS, COUNT_REFRESH_RATE_SECONDS,
+                        TimeUnit.SECONDS);
                 _scheduler.scheduleAtFixedRate(this::sendImpressions, BULK_INITIAL_DELAY_SECONDS, _impressionsRefreshRate, TimeUnit.SECONDS);
                 break;
             case DEBUG:
                 _scheduler.scheduleAtFixedRate(this::sendImpressions, BULK_INITIAL_DELAY_SECONDS, _impressionsRefreshRate, TimeUnit.SECONDS);
                 break;
             case NONE:
-                _scheduler.scheduleAtFixedRate(this::sendImpressionCounters, COUNT_INITIAL_DELAY_SECONDS, COUNT_REFRESH_RATE_SECONDS, TimeUnit.SECONDS);
+                _scheduler.scheduleAtFixedRate(this::sendImpressionCounters, COUNT_INITIAL_DELAY_SECONDS, COUNT_REFRESH_RATE_SECONDS,
+                        TimeUnit.SECONDS);
                 break;
         }
     }
@@ -115,7 +117,7 @@ public class ImpressionsManagerImpl implements ImpressionsManager, Closeable {
 
         ImpressionsResult impressionsResult = _processImpressionStrategy.process(impressions);
         List<Impression> impressionsForLogs = impressionsResult.getImpressionsToQueue();
-        List<Impression> impressionsToListener = impressionsResult.getImpressionsToQueue();
+        List<Impression> impressionsToListener = impressionsResult.getImpressionsToListener();
 
         int totalImpressions = impressionsForLogs.size();
         long queued = _impressionsStorageProducer.put(impressionsForLogs.stream().map(KeyImpression::fromImpression).collect(Collectors.toList()));
@@ -171,14 +173,6 @@ public class ImpressionsManagerImpl implements ImpressionsManager, Closeable {
         if (!_counter.isEmpty()) {
             _impressionsSender.postCounters(_counter.popAll());
         }
-    }
-
-    private ScheduledExecutorService buildExecutor() {
-        ThreadFactory threadFactory = new ThreadFactoryBuilder()
-                .setDaemon(true)
-                .setNameFormat("Split-ImpressionsManager-%d")
-                .build();
-        return Executors.newScheduledThreadPool(2, threadFactory);
     }
 
     @VisibleForTesting

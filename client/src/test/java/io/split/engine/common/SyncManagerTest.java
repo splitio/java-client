@@ -63,8 +63,9 @@ public class SyncManagerTest {
         Mockito.verify(_synchronizer, Mockito.times(1)).syncAll();
         Mockito.verify(_pushManager, Mockito.times(0)).start();
 
-        syncManager.shutdown(1L,1L,1L);
-        Mockito.verify(_synchronizer, Mockito.times(1)).stopPeriodicDataRecording(1L,1L,1L);
+        syncManager.shutdown();
+        Mockito.verify(_pushManager, Mockito.times(0)).stop();
+        Mockito.verify(_synchronizer, Mockito.times(1)).stopPeriodicDataRecording();
     }
 
     @Test
@@ -86,7 +87,7 @@ public class SyncManagerTest {
     }
 
     @Test
-    public void onStreamingAvailable() throws InterruptedException, IOException {
+    public void onStreamingAvailable() throws InterruptedException {
         TelemetryStorage telemetryStorage = Mockito.mock(TelemetryStorage.class);
         LinkedBlockingQueue<PushManager.Status> messages = new LinkedBlockingQueue<>();
         SplitTasks splitTasks = SplitTasks.build(_splitSynchronizationTask, _segmentSynchronizationTaskImp,
@@ -107,7 +108,7 @@ public class SyncManagerTest {
     }
 
     @Test
-    public void onStreamingDisabled() throws InterruptedException, IOException {
+    public void onStreamingDisabled() throws InterruptedException {
         TelemetryStorage telemetryStorage = new InMemoryTelemetryStorage();
         LinkedBlockingQueue<PushManager.Status> messsages = new LinkedBlockingQueue<>();
         SplitTasks splitTasks = SplitTasks.build(_splitSynchronizationTask, _segmentSynchronizationTaskImp,
@@ -127,7 +128,7 @@ public class SyncManagerTest {
     }
 
     @Test
-    public void onStreamingShutdown() throws InterruptedException, IOException {
+    public void onStreamingShutdown() throws InterruptedException {
         TelemetryStorage telemetryStorage = new InMemoryTelemetryStorage();
         LinkedBlockingQueue<PushManager.Status> messsages = new LinkedBlockingQueue<>();
         SplitTasks splitTasks = SplitTasks.build(_splitSynchronizationTask, _segmentSynchronizationTaskImp,
@@ -161,8 +162,8 @@ public class SyncManagerTest {
         Mockito.verify(_synchronizer, Mockito.times(1)).syncAll();
         t.interrupt();
 
-        syncManager.shutdown(1L,1L,1L);
-        Mockito.verify(_synchronizer, Mockito.times(1)).stopPeriodicDataRecording(1L,1L,1L);
+        syncManager.shutdown();
+        Mockito.verify(_synchronizer, Mockito.times(1)).stopPeriodicDataRecording();
     }
 
     @Test
@@ -182,8 +183,8 @@ public class SyncManagerTest {
         Mockito.verify(_synchronizer, Mockito.times(1)).startPeriodicFetching();
         t.interrupt();
 
-        syncManager.shutdown(1L,1L,1L);
-        Mockito.verify(_synchronizer, Mockito.times(1)).stopPeriodicDataRecording(1L,1L,1L);
+        syncManager.shutdown();
+        Mockito.verify(_synchronizer, Mockito.times(1)).stopPeriodicDataRecording();
     }
 
     @Test
@@ -204,8 +205,8 @@ public class SyncManagerTest {
         Mockito.verify(_synchronizer, Mockito.times(1)).syncAll();
         Mockito.verify(_pushManager, Mockito.times(2)).start();
 
-        syncManager.shutdown(1L,1L,1L);
-        Mockito.verify(_synchronizer, Mockito.times(1)).stopPeriodicDataRecording(1L,1L,1L);
+        syncManager.shutdown();
+        Mockito.verify(_synchronizer, Mockito.times(1)).stopPeriodicDataRecording();
     }
 
     @Test
@@ -226,7 +227,7 @@ public class SyncManagerTest {
         Mockito.verify(_gates, Mockito.times(1)).sdkInternalReady();
         Mockito.verify(_telemetrySynchronizer, Mockito.times(1)).synchronizeConfig(Mockito.anyObject(), Mockito.anyLong(), Mockito.anyObject(), Mockito.anyObject());
 
-        syncManager.shutdown(1L,1L,1L);
-        Mockito.verify(_synchronizer, Mockito.times(1)).stopPeriodicDataRecording(1L,1L,1L);
+        syncManager.shutdown();
+        Mockito.verify(_synchronizer, Mockito.times(1)).stopPeriodicDataRecording();
     }
 }

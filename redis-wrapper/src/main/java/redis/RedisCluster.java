@@ -8,6 +8,7 @@ import redis.clients.jedis.JedisCluster;
 import redis.common.CommonRedis;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -72,7 +73,7 @@ class RedisCluster implements CustomStorageWrapper {
     @Override
     public void set(String key, String item) throws Exception {
         try {
-            if(key.contains(_commonRedis.TELEMETRY_INIT)) {
+            if(key.contains(CommonRedis.TELEMETRY_INIT)) {
                 String[] splittedKey = key.split("::");
                 jedis.hset(_commonRedis.buildKeyWithPrefix(splittedKey[0]), splittedKey[1], item);
                 return;
@@ -158,10 +159,8 @@ class RedisCluster implements CustomStorageWrapper {
     public long pushItems(String key, List<String> items) throws Exception {
         try {
             long addedItems = jedis.rpush(_commonRedis.buildKeyWithPrefix(key), items.toArray(new String[items.size()]));
-            if(_commonRedis.EVENTS_KEY.equals(key) || _commonRedis.IMPRESSIONS_KEY.equals(key)) {
-                if(addedItems == items.size()) {
-                    jedis.pexpire(key, _commonRedis.IMPRESSIONS_OR_EVENTS_DEFAULT_TTL);
-                }
+            if((CommonRedis.EVENTS_KEY.equals(key) || CommonRedis.IMPRESSIONS_KEY.equals(key)) && addedItems == items.size()) {
+                jedis.pexpire(key, CommonRedis.IMPRESSIONS_OR_EVENTS_DEFAULT_TTL);
             }
             return addedItems;
         } catch (Exception ex) {
@@ -228,6 +227,17 @@ class RedisCluster implements CustomStorageWrapper {
             keys = keys.stream().map(key -> _commonRedis.buildKeyWithPrefix(key)).collect(Collectors.toList());
 
             return jedis.mget(keys.toArray(new String[keys.size()]));
+        } catch (Exception ex) {
+            throw new RedisException(ex.getMessage());
+        }
+    }
+
+    @Override
+    public Set<String> getMembers(String key) throws Exception {
+        Set<String> items;
+        try {
+            items = jedis.smembers(_commonRedis.buildKeyWithPrefix(key));
+            return new HashSet<>(items);
         } catch (Exception ex) {
             throw new RedisException(ex.getMessage());
         }

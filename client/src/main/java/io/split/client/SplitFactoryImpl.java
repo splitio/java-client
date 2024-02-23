@@ -1,6 +1,6 @@
 package io.split.client;
 
-import com.google.common.util.concurrent.ThreadFactoryBuilder;
+import com.google.common.io.Files;
 import io.split.client.dtos.Metadata;
 import io.split.client.events.EventsSender;
 import io.split.client.events.EventsStorage;
@@ -28,10 +28,16 @@ import io.split.client.impressions.strategy.ProcessImpressionOptimized;
 import io.split.client.impressions.strategy.ProcessImpressionStrategy;
 import io.split.client.interceptors.AuthorizationInterceptorFilter;
 import io.split.client.interceptors.ClientKeyInterceptorFilter;
+import io.split.client.interceptors.FlagSetsFilter;
+import io.split.client.interceptors.FlagSetsFilterImpl;
 import io.split.client.interceptors.GzipDecoderResponseInterceptor;
 import io.split.client.interceptors.GzipEncoderRequestInterceptor;
 import io.split.client.interceptors.SdkMetadataInterceptorFilter;
+import io.split.client.utils.FileInputStreamProvider;
+import io.split.client.utils.FileTypeEnum;
+import io.split.client.utils.InputStreamProvider;
 import io.split.client.utils.SDKMetadata;
+import io.split.client.utils.StaticContentInputStreamProvider;
 import io.split.engine.SDKReadinessGates;
 import io.split.engine.common.ConsumerSyncManager;
 import io.split.engine.common.ConsumerSynchronizer;
@@ -100,22 +106,24 @@ import org.slf4j.LoggerFactory;
 import pluggable.CustomStorageWrapper;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.InetAddress;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
-import java.util.Random;
 import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 import java.util.stream.Collectors;
+
+import static io.split.client.utils.SplitExecutorFactory.buildExecutorService;
 
 public class SplitFactoryImpl implements SplitFactory {
     private static final Logger _log = LoggerFactory.getLogger(SplitFactory.class);
+    private static final String LEGACY_LOG_MESSAGE = "The sdk initialize in localhost mode using Legacy file. The splitFile or " +
+                                                     "inputStream doesn't add it to the config.";
     private final static long SSE_CONNECT_TIMEOUT = 30000;
     private final static long SSE_SOCKET_TIMEOUT = 70000;
-
-    private static Random RANDOM = new Random();
 
     private final SDKReadinessGates _gates;
     private final ImpressionsManager _impressionsManager;
@@ -152,7 +160,6 @@ public class SplitFactoryImpl implements SplitFactory {
     private final URI _eventsRootTarget;
     private final UniqueKeysTracker _uniqueKeysTracker;
 
-
     //Constructor for standalone mode
     public SplitFactoryImpl(String apiToken, SplitClientConfig config) throws URISyntaxException {
         _userStorageWrapper = null;
@@ -184,25 +191,30 @@ public class SplitFactoryImpl implements SplitFactory {
 
         // Cache Initialisations
         SegmentCache segmentCache = new SegmentCacheInMemoryImpl();
-        SplitCache splitCache = new InMemoryCacheImp();
+        FlagSetsFilter flagSetsFilter = new FlagSetsFilterImpl(config.getSetsFilter());
+        SplitCache splitCache = new InMemoryCacheImp(flagSetsFilter);
         ImpressionsStorage impressionsStorage = new InMemoryImpressionsStorage(config.impressionsQueueSize());
         _splitCache = splitCache;
         _segmentCache = segmentCache;
-        _telemetrySynchronizer = new TelemetryInMemorySubmitter(_httpclient, URI.create(config.telemetryURL()), telemetryStorage, splitCache, segmentCache, telemetryStorage, _startTime);
+        _telemetrySynchronizer = new TelemetryInMemorySubmitter(_httpclient, URI.create(config.telemetryURL()), telemetryStorage,
+                splitCache, _segmentCache, telemetryStorage, _startTime);
 
         // Segments
         _segmentSynchronizationTaskImp = buildSegments(config, segmentCache, splitCache);
 
+        SplitParser splitParser = new SplitParser();
         // SplitFetcher
-        _splitFetcher = buildSplitFetcher(splitCache, splitCache);
+        _splitFetcher = buildSplitFetcher(splitCache, splitParser, flagSetsFilter);
 
         // SplitSynchronizationTask
         _splitSynchronizationTask = new SplitSynchronizationTask(_splitFetcher,
                 splitCache,
-                config.featuresRefreshRate());
+                config.featuresRefreshRate(),
+                config.getThreadFactory());
 
         //ImpressionSender
-        _impressionsSender = HttpImpressionsSender.create(_httpclient, URI.create(config.eventsEndpoint()), config.impressionsMode(), _telemetryStorageProducer);
+        _impressionsSender = HttpImpressionsSender.create(_httpclient, URI.create(config.eventsEndpoint()), config.impressionsMode(),
+                _telemetryStorageProducer);
 
         //UniqueKeysTracker
         _uniqueKeysTracker = createUniqueKeysTracker(config);
@@ -213,9 +225,9 @@ public class SplitFactoryImpl implements SplitFactory {
         // EventClient
         EventsStorage eventsStorage = new InMemoryEventsStorage(config.eventsQueueSize(), _telemetryStorageProducer);
         EventsSender eventsSender = EventsSender.create(_httpclient, _eventsRootTarget, _telemetryStorageProducer);
-        _eventsTask = EventsTask.create(config.eventSendIntervalInMillis(), eventsStorage, eventsSender);
+        _eventsTask = EventsTask.create(config.eventSendIntervalInMillis(), eventsStorage, eventsSender, config.getThreadFactory());
 
-        _telemetrySyncTask = new TelemetrySyncTask(config.get_telemetryRefreshRate(), _telemetrySynchronizer);
+        _telemetrySyncTask = new TelemetrySyncTask(config.get_telemetryRefreshRate(), _telemetrySynchronizer, config.getThreadFactory());
 
         // Evaluator
         _evaluator = new EvaluatorImp(splitCache, segmentCache);
@@ -229,7 +241,8 @@ public class SplitFactoryImpl implements SplitFactory {
                 _gates,
                 _evaluator,
                 _telemetryStorageProducer, //TelemetryEvaluation instance
-                _telemetryStorageProducer); //TelemetryConfiguration instance
+                _telemetryStorageProducer, //TelemetryConfiguration instance
+                flagSetsFilter);
 
         // SplitManager
         _manager = new SplitManagerImpl(splitCache, config, _gates, _telemetryStorageProducer);
@@ -240,7 +253,7 @@ public class SplitFactoryImpl implements SplitFactory {
         SplitAPI splitAPI = SplitAPI.build(_httpclient, buildSSEdHttpClient(apiToken, config, _sdkMetadata));
 
         _syncManager = SyncManagerImp.build(splitTasks, _splitFetcher, splitCache, splitAPI,
-                segmentCache, _gates, _telemetryStorageProducer, _telemetrySynchronizer, config);
+                segmentCache, _gates, _telemetryStorageProducer, _telemetrySynchronizer, config, splitParser, flagSetsFilter);
         _syncManager.start();
 
         // DestroyOnShutDown
@@ -253,7 +266,6 @@ public class SplitFactoryImpl implements SplitFactory {
             Runtime.getRuntime().addShutdownHook(shutdown);
         }
     }
-
 
     //Constructor for consumer mode
     protected SplitFactoryImpl(String apiToken, SplitClientConfig config, CustomStorageWrapper customStorageWrapper) throws URISyntaxException {
@@ -270,8 +282,10 @@ public class SplitFactoryImpl implements SplitFactory {
         _userStorageWrapper = new UserStorageWrapper(customStorageWrapper);
         UserCustomSegmentAdapterConsumer userCustomSegmentAdapterConsumer= new UserCustomSegmentAdapterConsumer(customStorageWrapper);
         UserCustomSplitAdapterConsumer userCustomSplitAdapterConsumer = new UserCustomSplitAdapterConsumer(customStorageWrapper);
-        UserCustomImpressionAdapterConsumer userCustomImpressionAdapterConsumer = new UserCustomImpressionAdapterConsumer(); // TODO migrate impressions sender to Task instead manager and not instantiate Producer here.
-        UserCustomImpressionAdapterProducer userCustomImpressionAdapterProducer = new UserCustomImpressionAdapterProducer(customStorageWrapper, metadata);
+        // TODO migrate impressions sender to Task instead manager and not instantiate Producer here.
+        UserCustomImpressionAdapterConsumer userCustomImpressionAdapterConsumer = new UserCustomImpressionAdapterConsumer();
+        UserCustomImpressionAdapterProducer userCustomImpressionAdapterProducer = new UserCustomImpressionAdapterProducer(customStorageWrapper,
+                metadata);
         UserCustomEventAdapterProducer userCustomEventAdapterProducer = new UserCustomEventAdapterProducer(customStorageWrapper, metadata);
 
         _operationMode = config.operationMode();
@@ -299,14 +313,18 @@ public class SplitFactoryImpl implements SplitFactory {
         _impressionsSender = PluggableImpressionSender.create(customStorageWrapper);
         _uniqueKeysTracker = createUniqueKeysTracker(config);
         _impressionsManager = buildImpressionsManager(config, userCustomImpressionAdapterConsumer, userCustomImpressionAdapterProducer);
-        _telemetrySyncTask = new TelemetrySyncTask(config.get_telemetryRefreshRate(), _telemetrySynchronizer);
+        _telemetrySyncTask = new TelemetrySyncTask(config.get_telemetryRefreshRate(), _telemetrySynchronizer, config.getThreadFactory());
 
         SplitTasks splitTasks = SplitTasks.build(null, null,
                 _impressionsManager, null, _telemetrySyncTask, _uniqueKeysTracker);
 
         // Synchronizer
         Synchronizer synchronizer = new ConsumerSynchronizer(splitTasks);
-
+        FlagSetsFilter flagSetsFilter = new FlagSetsFilterImpl(new HashSet<>());
+        if(!config.getSetsFilter().isEmpty()) {
+            _log.warn("FlagSets filter is not applicable for Consumer modes where the SDK does not keep rollout data in sync. FlagSet " +
+                    "filter was discarded");
+        }
         _client = new SplitClientImpl(this,
                 userCustomSplitAdapterConsumer,
                 _impressionsManager,
@@ -315,7 +333,8 @@ public class SplitFactoryImpl implements SplitFactory {
                 _gates,
                 _evaluator,
                 _telemetryStorageProducer, //TelemetryEvaluation instance
-                _telemetryStorageProducer); //TelemetryConfiguration instance
+                _telemetryStorageProducer, //TelemetryConfiguration instance
+                flagSetsFilter);
 
 
         // SyncManager
@@ -327,7 +346,7 @@ public class SplitFactoryImpl implements SplitFactory {
     }
 
     // Localhost
-    protected SplitFactoryImpl(SplitClientConfig config) throws URISyntaxException {
+    protected SplitFactoryImpl(SplitClientConfig config) {
         _userStorageWrapper = null;
         _apiToken = "localhost";
         _apiKeyCounter = ApiKeyCounter.getApiKeyCounterInstance();
@@ -344,7 +363,8 @@ public class SplitFactoryImpl implements SplitFactory {
         _telemetryStorageProducer = new NoopTelemetryStorage();
 
         SegmentCache segmentCache = new SegmentCacheInMemoryImpl();
-        SplitCache splitCache = new InMemoryCacheImp();
+        FlagSetsFilter flagSetsFilter = new FlagSetsFilterImpl(config.getSetsFilter());
+        SplitCache splitCache = new InMemoryCacheImp(flagSetsFilter);
         _splitCache = splitCache;
         _gates = new SDKReadinessGates();
         _segmentCache = segmentCache;
@@ -361,17 +381,17 @@ public class SplitFactoryImpl implements SplitFactory {
                 config.numThreadsForSegmentFetch(),
                 segmentCache,
                 _telemetryStorageProducer,
-                _splitCache);
+                _splitCache,
+               config.getThreadFactory());
 
         // SplitFetcher
-        SplitChangeFetcher splitChangeFetcher = new LocalhostSplitChangeFetcher(config.splitFile());
-
+        SplitChangeFetcher splitChangeFetcher = createSplitChangeFetcher(config);
         SplitParser splitParser = new SplitParser();
 
-        _splitFetcher = new SplitFetcherImp(splitChangeFetcher, splitParser, _splitCache, splitCache, _telemetryStorageProducer);
+        _splitFetcher = new SplitFetcherImp(splitChangeFetcher, splitParser, splitCache, _telemetryStorageProducer, flagSetsFilter);
 
         // SplitSynchronizationTask
-        _splitSynchronizationTask = new SplitSynchronizationTask(_splitFetcher, splitCache, config.featuresRefreshRate());
+        _splitSynchronizationTask = new SplitSynchronizationTask(_splitFetcher, splitCache, config.featuresRefreshRate(), config.getThreadFactory());
 
         _impressionsManager = new ImpressionsManager.NoOpImpressionsManager();
 
@@ -392,7 +412,8 @@ public class SplitFactoryImpl implements SplitFactory {
                 _gates,
                 _evaluator,
                 _telemetryStorageProducer, //TelemetryEvaluation instance
-                _telemetryStorageProducer); //TelemetryConfiguration instance
+                _telemetryStorageProducer, //TelemetryConfiguration instance
+                flagSetsFilter);
 
         // Synchronizer
         Synchronizer synchronizer = new LocalhostSynchronizer(splitTasks, _splitFetcher, config.localhostRefreshEnabled());
@@ -430,16 +451,12 @@ public class SplitFactoryImpl implements SplitFactory {
             return;
         }
         try {
-            long splitCount = _splitCache.getAll().stream().count();
-            long segmentCount = _segmentCache.getSegmentCount();
-            long segmentKeyCount = _segmentCache.getKeyCount();
             _log.info("Shutdown called for split");
-            _syncManager.shutdown(splitCount, segmentCount, segmentKeyCount);
+            _syncManager.shutdown();
             _log.info("Successful shutdown of syncManager");
             if(OperationMode.STANDALONE.equals(_operationMode)) {
                 _telemetryStorageProducer.recordSessionLength(System.currentTimeMillis() - _startTime);
-                }
-            else if(OperationMode.CONSUMER.equals(_operationMode)) {
+            } else if(OperationMode.CONSUMER.equals(_operationMode)) {
                 _userStorageWrapper.disconnect();
             }
         } catch (IOException e) {
@@ -541,7 +558,8 @@ public class SplitFactoryImpl implements SplitFactory {
         return  httpClientbuilder;
     }
 
-    private SegmentSynchronizationTaskImp buildSegments(SplitClientConfig config, SegmentCacheProducer segmentCacheProducer, SplitCacheConsumer splitCacheConsumer) throws URISyntaxException {
+    private SegmentSynchronizationTaskImp buildSegments(SplitClientConfig config, SegmentCacheProducer segmentCacheProducer,
+                                                        SplitCacheConsumer splitCacheConsumer) throws URISyntaxException {
         SegmentChangeFetcher segmentChangeFetcher = HttpSegmentChangeFetcher.create(_httpclient, _rootTarget, _telemetryStorageProducer);
 
         return new SegmentSynchronizationTaskImp(segmentChangeFetcher,
@@ -549,17 +567,18 @@ public class SplitFactoryImpl implements SplitFactory {
                 config.numThreadsForSegmentFetch(),
                 segmentCacheProducer,
                 _telemetryStorageProducer,
-                splitCacheConsumer);
+                splitCacheConsumer,
+                config.getThreadFactory());
     }
 
-    private SplitFetcher buildSplitFetcher(SplitCacheConsumer splitCacheConsumer, SplitCacheProducer splitCacheProducer) throws URISyntaxException {
+    private SplitFetcher buildSplitFetcher(SplitCacheProducer splitCacheProducer, SplitParser splitParser, FlagSetsFilter flagSetsFilter) throws
+            URISyntaxException {
         SplitChangeFetcher splitChangeFetcher = HttpSplitChangeFetcher.create(_httpclient, _rootTarget, _telemetryStorageProducer);
-        SplitParser splitParser = new SplitParser();
-
-        return new SplitFetcherImp(splitChangeFetcher, splitParser, splitCacheConsumer, splitCacheProducer, _telemetryStorageProducer);
+        return new SplitFetcherImp(splitChangeFetcher, splitParser, splitCacheProducer, _telemetryStorageProducer,flagSetsFilter);
     }
 
-    private ImpressionsManagerImpl buildImpressionsManager(SplitClientConfig config, ImpressionsStorageConsumer impressionsStorageConsumer, ImpressionsStorageProducer impressionsStorageProducer) throws URISyntaxException {
+    private ImpressionsManagerImpl buildImpressionsManager(SplitClientConfig config, ImpressionsStorageConsumer impressionsStorageConsumer,
+                                                           ImpressionsStorageProducer impressionsStorageProducer) throws URISyntaxException {
         List<ImpressionListener> impressionListeners = new ArrayList<>();
         if (config.integrationsConfig() != null) {
             config.integrationsConfig().getImpressionsListeners(IntegrationsConfig.Execution.ASYNC).stream()
@@ -572,7 +591,7 @@ public class SplitFactoryImpl implements SplitFactory {
         }
         ProcessImpressionStrategy processImpressionStrategy = null;
         ImpressionCounter counter = null;
-        ImpressionListener listener = (null != impressionListeners && !impressionListeners.isEmpty()) ? new ImpressionListener.FederatedImpressionListener(impressionListeners)
+        ImpressionListener listener = !impressionListeners.isEmpty() ? new ImpressionListener.FederatedImpressionListener(impressionListeners)
                 : null;
         switch (config.impressionsMode()){
             case OPTIMIZED:
@@ -589,7 +608,8 @@ public class SplitFactoryImpl implements SplitFactory {
                 processImpressionStrategy = new ProcessImpressionNone(listener != null, _uniqueKeysTracker, counter);
                 break;
         }
-        return ImpressionsManagerImpl.instance(config, _telemetryStorageProducer, impressionsStorageConsumer, impressionsStorageProducer, _impressionsSender, processImpressionStrategy, counter, listener);
+        return ImpressionsManagerImpl.instance(config, _telemetryStorageProducer, impressionsStorageConsumer, impressionsStorageProducer,
+                _impressionsSender, processImpressionStrategy, counter, listener);
     }
 
     private SDKMetadata createSdkMetadata(boolean ipAddressEnabled, String splitSdkVersion) {
@@ -609,10 +629,7 @@ public class SplitFactoryImpl implements SplitFactory {
     }
 
     private void manageSdkReady(SplitClientConfig config) {
-        ExecutorService executorService = Executors.newSingleThreadExecutor(new ThreadFactoryBuilder()
-                .setNameFormat("SPLIT-SDKReadyForConsumer-%d")
-                .setDaemon(true)
-                .build());
+        ExecutorService executorService = buildExecutorService(config.getThreadFactory(), "SPLIT-SDKReadyForConsumer-%d");
         executorService.submit(() -> {
             while(!_userStorageWrapper.connect()) {
                 try {
@@ -623,7 +640,8 @@ public class SplitFactoryImpl implements SplitFactory {
                 }
             }
             _gates.sdkInternalReady();
-            _telemetrySynchronizer.synchronizeConfig(config, System.currentTimeMillis(), ApiKeyCounter.getApiKeyCounterInstance().getFactoryInstances(), new ArrayList<>());
+            _telemetrySynchronizer.synchronizeConfig(config, System.currentTimeMillis(), ApiKeyCounter.getApiKeyCounterInstance().
+                    getFactoryInstances(), new ArrayList<>());
         });
     }
 
@@ -631,8 +649,59 @@ public class SplitFactoryImpl implements SplitFactory {
         if (config.impressionsMode().equals(ImpressionsManager.Mode.NONE)){
             int uniqueKeysRefreshRate = config.operationMode().equals(OperationMode.STANDALONE) ? config.uniqueKeysRefreshRateInMemory()
                     : config.uniqueKeysRefreshRateRedis();
-            return new UniqueKeysTrackerImp(_telemetrySynchronizer, uniqueKeysRefreshRate, config.filterUniqueKeysRefreshRate());
+            return new UniqueKeysTrackerImp(_telemetrySynchronizer, uniqueKeysRefreshRate, config.filterUniqueKeysRefreshRate(),
+                    config.getThreadFactory());
         }
         return null;
+    }
+
+    private SplitChangeFetcher createSplitChangeFetcher(SplitClientConfig splitClientConfig) {
+        String splitFile = splitClientConfig.splitFile();
+        InputStream inputStream = splitClientConfig.inputStream();
+        FileTypeEnum fileType = splitClientConfig.fileType();
+        InputStreamProvider inputStreamProvider;
+        if (splitFile != null || !isInputStreamConfigValid(inputStream, fileType)) {
+            if (splitFile == null) {
+                _log.warn("The InputStream config is invalid");
+            }
+            fileType = getFileTypeFromFileName(splitFile);
+            inputStreamProvider = new FileInputStreamProvider(splitFile);
+        } else {
+            inputStreamProvider = new StaticContentInputStreamProvider(inputStream);
+        }
+        try {
+            switch (fileType){
+                case JSON:
+                    return new JsonLocalhostSplitChangeFetcher(inputStreamProvider);
+                case YAML:
+                case YML:
+                    return new YamlLocalhostSplitChangeFetcher(inputStreamProvider);
+                default:
+                    _log.warn(LEGACY_LOG_MESSAGE);
+                    return new LegacyLocalhostSplitChangeFetcher(splitFile);
+            }
+        } catch (Exception e) {
+            _log.warn(String.format("There was no file named %s found. " +
+                            "We created a split client that returns default treatments for all feature flags for all of your users. " +
+                            "If you wish to return a specific treatment for a feature flag, enter the name of that feature flag name and " +
+                            "treatment name separated by whitespace in %s; one pair per line. Empty lines or lines starting with '#' are " +
+                            "considered comments",
+                    splitFile, splitFile), e);
+        }
+        _log.warn(LEGACY_LOG_MESSAGE);
+        return new LegacyLocalhostSplitChangeFetcher(splitFile);
+    }
+
+    private Boolean isInputStreamConfigValid(InputStream inputStream, FileTypeEnum fileType) {
+        return inputStream != null && fileType != null;
+    }
+
+    private FileTypeEnum getFileTypeFromFileName(String fileName) {
+        try {
+            return FileTypeEnum.valueOf(Files.getFileExtension(fileName).toUpperCase());
+        } catch (Exception e) {
+            return FileTypeEnum.LEGACY;
+        }
+
     }
 }

@@ -2,7 +2,6 @@ package io.split.engine.experiments;
 
 import com.google.common.collect.ImmutableList;
 import io.split.engine.matchers.AttributeMatcher;
-import io.split.engine.matchers.Matcher;
 import io.split.engine.matchers.UserDefinedSegmentMatcher;
 
 import java.util.HashSet;
@@ -32,6 +31,7 @@ public class ParsedSplit {
     private final int _trafficAllocationSeed;
     private final int _algo;
     private final Map<String, String> _configurations;
+    private final HashSet<String> _flagSets;
 
     public static ParsedSplit createParsedSplitForTests(
             String feature,
@@ -41,7 +41,8 @@ public class ParsedSplit {
             List<ParsedCondition> matcherAndSplits,
             String trafficTypeName,
             long changeNumber,
-            int algo
+            int algo,
+            HashSet<String> flagSets
     ) {
         return new ParsedSplit(
                 feature,
@@ -54,7 +55,8 @@ public class ParsedSplit {
                 100,
                 seed,
                 algo,
-                null
+                null,
+                flagSets
         );
     }
 
@@ -67,7 +69,8 @@ public class ParsedSplit {
             String trafficTypeName,
             long changeNumber,
             int algo,
-            Map<String, String> configurations
+            Map<String, String> configurations,
+            HashSet<String> flagSets
     ) {
         return new ParsedSplit(
                 feature,
@@ -80,7 +83,8 @@ public class ParsedSplit {
                 100,
                 seed,
                 algo,
-                configurations
+                configurations,
+                flagSets
         );
     }
 
@@ -95,7 +99,8 @@ public class ParsedSplit {
             int trafficAllocation,
             int trafficAllocationSeed,
             int algo,
-            Map<String, String> configurations
+            Map<String, String> configurations,
+            HashSet<String> flagSets
     ) {
         _split = feature;
         _seed = seed;
@@ -111,9 +116,8 @@ public class ParsedSplit {
         _trafficAllocation = trafficAllocation;
         _trafficAllocationSeed = trafficAllocationSeed;
         _configurations = configurations;
+        _flagSets = flagSets;
     }
-
-
 
     public String feature() {
         return _split;
@@ -148,6 +152,9 @@ public class ParsedSplit {
     public long changeNumber() {return _changeNumber;}
 
     public int algo() {return _algo;}
+    public HashSet<String> flagSets() {
+        return _flagSets;
+    }
 
     public Map<String, String> configurations() {
         return _configurations;

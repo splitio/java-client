@@ -1,7 +1,6 @@
 package io.split.engine.matchers;
 
 import io.split.engine.evaluator.EvaluationContext;
-import io.split.engine.evaluator.Evaluator;
 
 import java.util.List;
 import java.util.Map;
@@ -11,11 +10,11 @@ import java.util.Objects;
  * Supports the logic: if user is in split "feature" treatments ["on","off"]
  */
 public class DependencyMatcher implements Matcher {
-    private String _split;
+    private String _featureFlag;
     private List<String> _treatments;
 
-    public DependencyMatcher(String split, List<String> treatments) {
-        _split = split;
+    public DependencyMatcher(String featureFlag, List<String> treatments) {
+        _featureFlag = featureFlag;
         _treatments = treatments;
     }
 
@@ -29,7 +28,7 @@ public class DependencyMatcher implements Matcher {
             return false;
         }
 
-        String result = evaluationContext.getEvaluator().evaluateFeature((String) matchValue, bucketingKey, _split, attributes).treatment;
+        String result = evaluationContext.getEvaluator().evaluateFeature((String) matchValue, bucketingKey, _featureFlag, attributes).treatment;
 
         return _treatments.contains(result);
     }
@@ -38,7 +37,7 @@ public class DependencyMatcher implements Matcher {
     public String toString() {
         StringBuilder bldr = new StringBuilder();
         bldr.append("in split \"");
-        bldr.append(this._split);
+        bldr.append(this._featureFlag);
         bldr.append("\" treatment ");
         bldr.append(this._treatments);
         return bldr.toString();
@@ -51,13 +50,13 @@ public class DependencyMatcher implements Matcher {
 
         DependencyMatcher that = (DependencyMatcher) o;
 
-        if (!Objects.equals(_split, that._split)) return false;
+        if (!Objects.equals(_featureFlag, that._featureFlag)) return false;
         return Objects.equals(_treatments, that._treatments);
     }
 
     @Override
     public int hashCode() {
-        int result = _split != null ? _split.hashCode() : 0;
+        int result = _featureFlag != null ? _featureFlag.hashCode() : 0;
         result = 31 * result + (_treatments != null ? _treatments.hashCode() : 0);
         return result;
     }

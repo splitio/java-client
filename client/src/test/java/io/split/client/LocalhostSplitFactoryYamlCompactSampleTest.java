@@ -1,12 +1,10 @@
 package io.split.client;
 
-import com.google.common.collect.Maps;
 import io.split.grammar.Treatments;
 import org.junit.Test;
 
 import java.io.IOException;
 import java.net.URISyntaxException;
-import java.util.Map;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
@@ -25,8 +23,9 @@ public class LocalhostSplitFactoryYamlCompactSampleTest {
 
         String file = getClass().getClassLoader().getResource("split_compact.yaml").getFile();
 
-        LocalhostSplitFactory factory = new LocalhostSplitFactory("", file);
-        SplitClient client = factory.client();
+        SplitClientConfig config = SplitClientConfig.builder().splitFile(file).build();
+        SplitFactory splitFactory = SplitFactoryBuilder.build("localhost", config);
+        SplitClient client = splitFactory.client();
 
         assertThat(client.getTreatment(null, "foo"), is(equalTo(Treatments.CONTROL)));
         assertThat(client.getTreatment("user_c", "foo"), is(equalTo(Treatments.CONTROL)));
@@ -42,15 +41,30 @@ public class LocalhostSplitFactoryYamlCompactSampleTest {
         assertThat(client.getTreatment("user_e", "split_2"), is(equalTo("off")));
         assertThat(client.getTreatmentWithConfig("user_e", "split_2").treatment(), is(equalTo("off")));
         assertThat(client.getTreatmentWithConfig("user_e", "split_2").config(), is(equalTo("{ \"size\" : 55 }")));
-
-        // Update
-
-        Map<SplitAndKey, LocalhostSplit> update = Maps.newHashMap();
-        update.put(SplitAndKey.of("split_2", "user_a"), LocalhostSplit.of("on"));
-
-        factory.updateFeatureToTreatmentMap(update);
-
-        assertThat(client.getTreatment("user_a", "split_2"), is(equalTo("on")));
     }
 
+    @Test
+    public void worksYML() throws IOException, URISyntaxException {
+
+        String file = getClass().getClassLoader().getResource("split_compact.yml").getFile();
+
+        SplitClientConfig config = SplitClientConfig.builder().splitFile(file).build();
+        SplitFactory splitFactory = SplitFactoryBuilder.build("localhost", config);
+        SplitClient client = splitFactory.client();
+
+        assertThat(client.getTreatment(null, "foo"), is(equalTo(Treatments.CONTROL)));
+        assertThat(client.getTreatment("user_c", "foo"), is(equalTo(Treatments.CONTROL)));
+
+        assertThat(client.getTreatment("user_c", "split_1"), is(equalTo("off")));
+        assertThat(client.getTreatmentWithConfig("user_c", "split_1").treatment(), is(equalTo("off")));
+        assertThat(client.getTreatmentWithConfig("user_c", "split_1").config(), is(equalTo("{ \"size\" : 10 }")));
+
+        assertThat(client.getTreatment("user_d", "split_1"), is(equalTo("on")));
+        assertThat(client.getTreatmentWithConfig("user_d", "split_1").treatment(), is(equalTo("on")));
+        assertThat(client.getTreatmentWithConfig("user_d", "split_1").config(), is(nullValue()));
+
+        assertThat(client.getTreatment("user_e", "split_2"), is(equalTo("off")));
+        assertThat(client.getTreatmentWithConfig("user_e", "split_2").treatment(), is(equalTo("off")));
+        assertThat(client.getTreatmentWithConfig("user_e", "split_2").config(), is(equalTo("{ \"size\" : 55 }")));
+    }
 }

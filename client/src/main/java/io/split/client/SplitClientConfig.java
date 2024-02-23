@@ -2,6 +2,7 @@ package io.split.client;
 
 import io.split.client.impressions.ImpressionListener;
 import io.split.client.impressions.ImpressionsManager;
+import io.split.client.utils.FileTypeEnum;
 import io.split.integrations.IntegrationsConfig;
 import io.split.storages.enums.OperationMode;
 import io.split.storages.enums.StorageMode;
@@ -9,7 +10,14 @@ import org.apache.hc.core5.http.HttpHost;
 import pluggable.CustomStorageWrapper;
 
 import java.io.IOException;
+import java.util.HashSet;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.io.InputStream;
 import java.util.Properties;
+import java.util.concurrent.ThreadFactory;
+
+import static io.split.inputValidation.FlagSetsValidator.cleanup;
 
 /**
  * Configurations for the SplitClient.
@@ -48,6 +56,8 @@ public class SplitClientConfig {
     private final int _maxStringLength;
     private final boolean _destroyOnShutDown;
     private final String _splitFile;
+    private final FileTypeEnum _fileType;
+    private final InputStream _inputStream;
     private final String _segmentDirectory;
     private final IntegrationsConfig _integrationsConfig;
     private final boolean _streamingEnabled;
@@ -63,12 +73,12 @@ public class SplitClientConfig {
     private final int _uniqueKeysRefreshRateInMemory;
     private final int _uniqueKeysRefreshRateRedis;
     private static int _filterUniqueKeysRefreshRate;
-    private final boolean _cdnDebugLogging;
     private final OperationMode _operationMode;
     private long _validateAfterInactivityInMillis;
     private final long _startingSyncCallBackoffBaseMs;
     private final CustomStorageWrapper _customStorageWrapper;
     private final StorageMode _storageMode;
+    private final ThreadFactory _threadFactory;
 
     // Proxy configs
     private final HttpHost _proxy;
@@ -78,7 +88,8 @@ public class SplitClientConfig {
     // To be set during startup
     public static String splitSdkVersion;
     private final long _lastSeenCacheSize;
-
+    private final HashSet<String> _flagSetsFilter;
+    private final int _invalidSets;
 
     public static Builder builder() {
         return new Builder();
@@ -109,6 +120,8 @@ public class SplitClientConfig {
                               int maxStringLength,
                               boolean destroyOnShutDown,
                               String splitFile,
+                              FileTypeEnum fileType,
+                              InputStream inputStream,
                               String segmentDirectory,
                               IntegrationsConfig integrationsConfig,
                               boolean streamingEnabled,
@@ -121,7 +134,6 @@ public class SplitClientConfig {
                               int onDemandFetchRetryDelayMs,
                               int onDemandFetchMaxRetries,
                               int failedAttemptsBeforeLogging,
-                              boolean cdnDebugLogging,
                               OperationMode operationMode,
                               long validateAfterInactivityInMillis,
                               long startingSyncCallBackoffBaseMs,
@@ -130,7 +142,10 @@ public class SplitClientConfig {
                               int uniqueKeysRefreshRateInMemory,
                               int uniqueKeysRefreshRateRedis,
                               int filterUniqueKeysRefreshRate,
-                              long lastSeenCacheSize) {
+                              long lastSeenCacheSize,
+                              ThreadFactory threadFactory,
+                              HashSet<String> flagSetsFilter,
+                              int invalidSets) {
         _endpoint = endpoint;
         _eventsEndpoint = eventsEndpoint;
         _featuresRefreshRate = pollForFeatureChangesEveryNSeconds;
@@ -156,6 +171,8 @@ public class SplitClientConfig {
         _maxStringLength = maxStringLength;
         _destroyOnShutDown = destroyOnShutDown;
         _splitFile = splitFile;
+        _fileType = fileType;
+        _inputStream = inputStream;
         _segmentDirectory = segmentDirectory;
         _integrationsConfig = integrationsConfig;
         _streamingEnabled = streamingEnabled;
@@ -171,13 +188,15 @@ public class SplitClientConfig {
         _onDemandFetchRetryDelayMs = onDemandFetchRetryDelayMs;
         _onDemandFetchMaxRetries = onDemandFetchMaxRetries;
         _failedAttemptsBeforeLogging = failedAttemptsBeforeLogging;
-        _cdnDebugLogging = cdnDebugLogging;
         _operationMode = operationMode;
         _storageMode = storageMode;
         _validateAfterInactivityInMillis = validateAfterInactivityInMillis;
         _startingSyncCallBackoffBaseMs = startingSyncCallBackoffBaseMs;
         _customStorageWrapper = customStorageWrapper;
         _lastSeenCacheSize = lastSeenCacheSize;
+        _threadFactory = threadFactory;
+        _flagSetsFilter = flagSetsFilter;
+        _invalidSets = invalidSets;
 
         Properties props = new Properties();
         try {
@@ -296,6 +315,14 @@ public class SplitClientConfig {
         return _splitFile;
     }
 
+    public FileTypeEnum fileType() {
+        return _fileType;
+    }
+
+    public InputStream inputStream(){
+        return _inputStream;
+    }
+
     public String segmentDirectory() {
         return _segmentDirectory;
     }
@@ -337,8 +364,6 @@ public class SplitClientConfig {
 
     public int failedAttemptsBeforeLogging() {return _failedAttemptsBeforeLogging;}
 
-    public boolean cdnDebugLogging() { return _cdnDebugLogging; }
-
     public OperationMode operationMode() { return _operationMode;}
 
     public long validateAfterInactivityInMillis() {
@@ -354,6 +379,18 @@ public class SplitClientConfig {
 
     public long getLastSeenCacheSize() {
         return _lastSeenCacheSize;
+    }
+
+    public ThreadFactory getThreadFactory() {
+        return _threadFactory;
+    }
+
+    public HashSet<String> getSetsFilter() {
+        return _flagSetsFilter;
+    }
+
+    public int getInvalidSets() {
+        return _invalidSets;
     }
 
     public static final class Builder {
@@ -382,10 +419,12 @@ public class SplitClientConfig {
         private String _proxyUsername;
         private String _proxyPassword;
         private int _eventsQueueSize = 500;
-        private long _eventSendIntervalInMillis = 30 * 1000;
+        private long _eventSendIntervalInMillis = 30 * (long)1000;
         private int _maxStringLength = 250;
         private boolean _destroyOnShutDown = true;
         private String _splitFile = null;
+        private FileTypeEnum _fileType = null;
+        private InputStream _inputStream = null;
         private String _segmentDirectory = null;
         private IntegrationsConfig _integrationsConfig = null;
         private boolean _streamingEnabled = true;
@@ -394,20 +433,22 @@ public class SplitClientConfig {
         private String _authServiceURL = AUTH_ENDPOINT;
         private String _streamingServiceURL = STREAMING_ENDPOINT;
         private String _telemetryURl = TELEMETRY_ENDPOINT;
-        private int _telemetryRefreshRate = 3600;
+        private int _telemetryRefreshRate = 600;
         private final int _uniqueKeysRefreshRateInMemory = 900;
         private final int _uniqueKeysRefreshRateRedis = 300;
         private final int _filterUniqueKeysRefreshRate = 86400;
         private int _onDemandFetchRetryDelayMs = 50;
         private final int _onDemandFetchMaxRetries = 10;
         private final int _failedAttemptsBeforeLogging = 10;
-        private final boolean _cdnDebugLogging = true;
         private OperationMode _operationMode = OperationMode.STANDALONE;
         private long _validateAfterInactivityInMillis = 1000;
-        private final long _startingSyncCallBackoffBaseMs = new Long(1000); //backoff base starting at 1 seconds
+        private static final long STARTING_SYNC_CALL_BACKOFF_BASE_MS = 1000; //backoff base starting at 1 seconds
         private CustomStorageWrapper _customStorageWrapper;
         private StorageMode _storageMode = StorageMode.MEMORY;
         private final long _lastSeenCacheSize = 500000;
+        private ThreadFactory _threadFactory;
+        private HashSet<String> _flagSetsFilter = new HashSet<>();
+        private int _invalidSetsCount = 0;
 
         public Builder() {
         }
@@ -739,6 +780,12 @@ public class SplitClientConfig {
             return this;
         }
 
+        public Builder splitFile(InputStream inputStream, FileTypeEnum fileType) {
+            _fileType = fileType;
+            _inputStream = inputStream;
+            return this;
+        }
+
         /**
          * Set the location of the directory where are the segment json files for localhost mode.
          * This setting is optional.
@@ -873,6 +920,29 @@ public class SplitClientConfig {
             return this;
         }
 
+        /**
+         * Flag Sets Filter
+         *
+         * @param flagSetsFilter
+         * @return this builder
+         */
+        public Builder flagSetsFilter(List<String> flagSetsFilter) {
+            _flagSetsFilter = new LinkedHashSet<>(cleanup(flagSetsFilter));
+            _invalidSetsCount = flagSetsFilter.size() - _flagSetsFilter.size();
+            return this;
+        }
+
+        /**
+         * Thread Factory
+         *
+         * @param threadFactory
+         * @return this builder
+         */
+        public Builder threadFactory(ThreadFactory threadFactory) {
+            _threadFactory = threadFactory;
+            return this;
+        }
+
         public SplitClientConfig build() {
             if (_featuresRefreshRate < 5 ) {
                 throw new IllegalArgumentException("featuresRefreshRate must be >= 5: " + _featuresRefreshRate);
@@ -996,6 +1066,8 @@ public class SplitClientConfig {
                     _maxStringLength,
                     _destroyOnShutDown,
                     _splitFile,
+                    _fileType,
+                    _inputStream,
                     _segmentDirectory,
                     _integrationsConfig,
                     _streamingEnabled,
@@ -1008,16 +1080,18 @@ public class SplitClientConfig {
                     _onDemandFetchRetryDelayMs,
                     _onDemandFetchMaxRetries,
                     _failedAttemptsBeforeLogging,
-                    _cdnDebugLogging,
                     _operationMode,
                     _validateAfterInactivityInMillis,
-                    _startingSyncCallBackoffBaseMs,
+                    STARTING_SYNC_CALL_BACKOFF_BASE_MS,
                     _customStorageWrapper,
                     _storageMode,
                     _uniqueKeysRefreshRateInMemory,
                     _uniqueKeysRefreshRateRedis,
                     _filterUniqueKeysRefreshRate,
-                    _lastSeenCacheSize);
+                    _lastSeenCacheSize,
+                    _threadFactory,
+                    _flagSetsFilter,
+                    _invalidSetsCount);
         }
     }
 }

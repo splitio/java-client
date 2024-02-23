@@ -23,6 +23,7 @@ public class Stats {
     /* package private */ static final String FIELD_EVENTS_DROPPED = "eD";
     /* package private */ static final String FIELD_STREAMING_EVENT = "sE";
     /* package private */ static final String FIELD_TAGS = "t";
+    /* package private */ static final String FIELD_UPDATES_FROM_SSE = "ufs";
 
     @SerializedName(FIELD_LAST_SYNCHRONIZATION)
     private LastSynchronization _lastSynchronization;
@@ -60,148 +61,158 @@ public class Stats {
     private List<StreamingEvent> _streamingEvents;
     @SerializedName(FIELD_TAGS)
     private List<String> _tags;
+    @SerializedName(FIELD_UPDATES_FROM_SSE)
+    private UpdatesFromSSE _updatesFromSSE;
 
-    public LastSynchronization get_lastSynchronization() {
+    public LastSynchronization getLastSynchronization() {
         return _lastSynchronization;
     }
 
-    public void set_lastSynchronization(LastSynchronization _lastSynchronization) {
-        this._lastSynchronization = _lastSynchronization;
+    public void setLastSynchronization(LastSynchronization lastSynchronization) {
+        this._lastSynchronization = lastSynchronization;
     }
 
-    public MethodLatencies get_methodLatencies() {
+    public MethodLatencies getMethodLatencies() {
         return _methodLatencies;
     }
 
-    public void set_methodLatencies(MethodLatencies _methodLatencies) {
-        this._methodLatencies = _methodLatencies;
+    public void setMethodLatencies(MethodLatencies methodLatencies) {
+        this._methodLatencies = methodLatencies;
     }
 
-    public MethodExceptions get_methodExceptions() {
+    public MethodExceptions getMethodExceptions() {
         return _methodExceptions;
     }
 
-    public void set_methodExceptions(MethodExceptions _methodExceptions) {
-        this._methodExceptions = _methodExceptions;
+    public void setMethodExceptions(MethodExceptions methodExceptions) {
+        this._methodExceptions = methodExceptions;
     }
 
-    public HTTPErrors get_httpErrors() {
+    public HTTPErrors getHttpErrors() {
         return _httpErrors;
     }
 
-    public void set_httpErrors(HTTPErrors _httpErrors) {
-        this._httpErrors = _httpErrors;
+    public void setHttpErrors(HTTPErrors httpErrors) {
+        this._httpErrors = httpErrors;
     }
 
-    public HTTPLatencies get_httpLatencies() {
+    public HTTPLatencies getHttpLatencies() {
         return _httpLatencies;
     }
 
-    public void set_httpLatencies(HTTPLatencies _httpLatencies) {
-        this._httpLatencies = _httpLatencies;
+    public void setHttpLatencies(HTTPLatencies httpLatencies) {
+        this._httpLatencies = httpLatencies;
     }
 
-    public long get_tokenRefreshes() {
+    public long getTokenRefreshes() {
         return _tokenRefreshes;
     }
 
-    public void set_tokenRefreshes(long _tokenRefreshes) {
-        this._tokenRefreshes = _tokenRefreshes;
+    public void setTokenRefreshes(long tokenRefreshes) {
+        this._tokenRefreshes = tokenRefreshes;
     }
 
-    public long get_authRejections() {
+    public long getAuthRejections() {
         return _authRejections;
     }
 
-    public void set_authRejections(long _authRejections) {
-        this._authRejections = _authRejections;
+    public void setAuthRejections(long authRejections) {
+        this._authRejections = authRejections;
     }
 
-    public long get_impressionsQueued() {
+    public long getImpressionsQueued() {
         return _impressionsQueued;
     }
 
-    public void set_impressionsQueued(long _impressionsQueued) {
-        this._impressionsQueued = _impressionsQueued;
+    public void setImpressionsQueued(long impressionsQueued) {
+        this._impressionsQueued = impressionsQueued;
     }
 
-    public long get_impressionsDeduped() {
+    public long getImpressionsDeduped() {
         return _impressionsDeduped;
     }
 
-    public void set_impressionsDeduped(long _impressionsDeduped) {
-        this._impressionsDeduped = _impressionsDeduped;
+    public void setImpressionsDeduped(long impressionsDeduped) {
+        this._impressionsDeduped = impressionsDeduped;
     }
 
-    public long get_impressionsDropped() {
+    public long getImpressionsDropped() {
         return _impressionsDropped;
     }
 
-    public void set_impressionsDropped(long _impressionsDropped) {
-        this._impressionsDropped = _impressionsDropped;
+    public void setImpressionsDropped(long impressionsDropped) {
+        this._impressionsDropped = impressionsDropped;
     }
 
-    public long get_splitCount() {
+    public long getSplitCount() {
         return _splitCount;
     }
 
-    public void set_splitCount(long _splitCount) {
-        this._splitCount = _splitCount;
+    public void setSplitCount(long splitCount) {
+        this._splitCount = splitCount;
     }
 
-    public long get_segmentCount() {
+    public long getSegmentCount() {
         return _segmentCount;
     }
 
-    public void set_segmentCount(long _segmentCount) {
-        this._segmentCount = _segmentCount;
+    public void setSegmentCount(long segmentCount) {
+        this._segmentCount = segmentCount;
     }
 
-    public long get_segmentKeyCount() {
+    public long getSegmentKeyCount() {
         return _segmentKeyCount;
     }
 
-    public void set_segmentKeyCount(long _segmentKeyCount) {
-        this._segmentKeyCount = _segmentKeyCount;
+    public void setSegmentKeyCount(long segmentKeyCount) {
+        this._segmentKeyCount = segmentKeyCount;
     }
 
-    public long get_sessionLengthMs() {
+    public long getSessionLengthMs() {
         return _sessionLengthMs;
     }
 
-    public void set_sessionLengthMs(long _sessionLengthMs) {
-        this._sessionLengthMs = _sessionLengthMs;
+    public void setSessionLengthMs(long sessionLengthMs) {
+        this._sessionLengthMs = sessionLengthMs;
     }
 
-    public long get_eventsQueued() {
+    public long getEventsQueued() {
         return _eventsQueued;
     }
 
-    public void set_eventsQueued(long _eventsQueued) {
-        this._eventsQueued = _eventsQueued;
+    public void setEventsQueued(long eventsQueued) {
+        this._eventsQueued = eventsQueued;
     }
 
-    public long get_eventsDropped() {
+    public long getEventsDropped() {
         return _eventsDropped;
     }
 
-    public void set_eventsDropped(long _eventsDropped) {
-        this._eventsDropped = _eventsDropped;
+    public void setEventsDropped(long eventsDropped) {
+        this._eventsDropped = eventsDropped;
     }
 
-    public List<StreamingEvent> get_streamingEvents() {
+    public List<StreamingEvent> getStreamingEvents() {
         return _streamingEvents;
     }
 
-    public void set_streamingEvents(List<StreamingEvent> _streamingEvents) {
-        this._streamingEvents = _streamingEvents;
+    public void setStreamingEvents(List<StreamingEvent> streamingEvents) {
+        this._streamingEvents = streamingEvents;
     }
 
-    public List<String> get_tags() {
+    public List<String> getTags() {
         return _tags;
     }
 
-    public void set_tags(List<String> _tags) {
-        this._tags = _tags;
+    public void setTags(List<String> tags) {
+        this._tags = tags;
+    }
+
+    public UpdatesFromSSE getUpdatesFromSSE() {
+        return _updatesFromSSE;
+    }
+
+    public void setUpdatesFromSSE(UpdatesFromSSE updatesFromSSE) {
+        this._updatesFromSSE = updatesFromSSE;
     }
 }

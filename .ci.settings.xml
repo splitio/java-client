@@ -24,15 +24,17 @@
                 <activeByDefault>true</activeByDefault>
             </activation>
             <properties>
+              <sonar.projectName>java-client</sonar.projectName>
               <sonar.host.url>https://sonarqube.split-internal.com</sonar.host.url>
               <sonar.login>${env.SONAR_TOKEN}</sonar.login>
-              <sonar.ws.timeout>300</sonar.ws.timeout>
+              <sonar.sources>.</sonar.sources>
+              <sonar.inclusions>pom.xml,src/main/**</sonar.inclusions>
+              <sonar.tests>.</sonar.tests>
+              <sonar.test.inclusions>src/test/**</sonar.test.inclusions>
+              <sonar.text.excluded.file.suffixes>.csv</sonar.text.excluded.file.suffixes>
+              <sonar.cpd.exclusions>**/matchers/**/*.*</sonar.cpd.exclusions>
               <sonar.links.ci>https://travis-ci.com/splitio/java-client</sonar.links.ci>
               <sonar.links.scm>https://github.com/splitio/java-client</sonar.links.scm>
-              <sonar.projectName>java-client</sonar.projectName>
-              <sonar.sources>./src</sonar.sources>
-              <sonar.test.exclusions>**/test/**/*.*,**/testing/**/*.*</sonar.test.exclusions>
-              <sonar.exclusions>**/ai/**/*.*,**/jdbc/**/*.*,**/mpt/**/*.*,**/jcr/**/*.*,**/JDBC*</sonar.exclusions>
             </properties>
         </profile>
     </profiles>

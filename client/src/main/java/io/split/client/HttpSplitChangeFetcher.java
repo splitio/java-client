@@ -2,6 +2,7 @@ package io.split.client;
 
 import com.google.common.annotations.VisibleForTesting;
 import io.split.client.dtos.SplitChange;
+import io.split.client.exceptions.UriTooLongException;
 import io.split.client.utils.Json;
 import io.split.client.utils.Utils;
 import io.split.engine.common.FetchOptions;
@@ -13,7 +14,6 @@ import org.apache.hc.client5.http.classic.methods.HttpGet;
 import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
 import org.apache.hc.client5.http.impl.classic.CloseableHttpResponse;
 import org.apache.hc.core5.http.HttpStatus;
-import org.apache.hc.core5.http.Header;
 import org.apache.hc.core5.http.io.entity.EntityUtils;
 import org.apache.hc.core5.net.URIBuilder;
 import org.slf4j.Logger;
@@ -22,8 +22,6 @@ import org.slf4j.LoggerFactory;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.nio.charset.StandardCharsets;
-import java.util.Arrays;
-import java.util.stream.Collectors;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
@@ -35,18 +33,17 @@ public final class HttpSplitChangeFetcher implements SplitChangeFetcher {
 
     private static final String SINCE = "since";
     private static final String TILL = "till";
+    private static final String SETS = "sets";
 
     private static final String HEADER_CACHE_CONTROL_NAME = "Cache-Control";
     private static final String HEADER_CACHE_CONTROL_VALUE = "no-cache";
-
-    private static final String HEADER_FASTLY_DEBUG_NAME = "Fastly-Debug";
-    private static final String HEADER_FASTLY_DEBUG_VALUE = "1";
 
     private final CloseableHttpClient _client;
     private final URI _target;
     private final TelemetryRuntimeProducer _telemetryRuntimeProducer;
 
-    public static HttpSplitChangeFetcher create(CloseableHttpClient client, URI root, TelemetryRuntimeProducer telemetryRuntimeProducer) throws URISyntaxException {
+    public static HttpSplitChangeFetcher create(CloseableHttpClient client, URI root, TelemetryRuntimeProducer telemetryRuntimeProducer)
+            throws URISyntaxException {
         return new HttpSplitChangeFetcher(client, Utils.appendPath(root, "api/splitChanges"), telemetryRuntimeProducer);
     }
 
@@ -74,6 +71,9 @@ public final class HttpSplitChangeFetcher implements SplitChangeFetcher {
             if (options.hasCustomCN()) {
                 uriBuilder.addParameter(TILL, "" + options.targetCN());
             }
+            if (!options.flagSetsFilter().isEmpty()) {
+                uriBuilder.addParameter(SETS, "" + options.flagSetsFilter());
+            }
             URI uri = uriBuilder.build();
 
             HttpGet request = new HttpGet(uri);
@@ -81,13 +81,7 @@ public final class HttpSplitChangeFetcher implements SplitChangeFetcher {
                 request.setHeader(HEADER_CACHE_CONTROL_NAME, HEADER_CACHE_CONTROL_VALUE);
             }
 
-            if (options.fastlyDebugHeaderEnabled()) {
-                request.addHeader(HEADER_FASTLY_DEBUG_NAME, HEADER_FASTLY_DEBUG_VALUE);
-            }
-
             response = _client.execute(request);
-            options.handleResponseHeaders(Arrays.stream(response.getHeaders())
-                    .collect(Collectors.toMap(Header::getName, Header::getValue)));
 
             int statusCode = response.getCode();
 
@@ -97,6 +91,10 @@ public final class HttpSplitChangeFetcher implements SplitChangeFetcher {
 
             if (statusCode < HttpStatus.SC_OK || statusCode >= HttpStatus.SC_MULTIPLE_CHOICES) {
                 _telemetryRuntimeProducer.recordSyncError(ResourceEnum.SPLIT_SYNC, statusCode);
+                if (statusCode == HttpStatus.SC_REQUEST_URI_TOO_LONG) {
+                    _log.error("The amount of flag sets provided are big causing uri length error.");
+                    throw new UriTooLongException(String.format("Status code: %s. Message: %s", statusCode, response.getReasonPhrase()));
+                }
                 _log.warn(String.format("Response status was: %s. Reason: %s", statusCode , response.getReasonPhrase()));
                 throw new IllegalStateException(String.format("Could not retrieve splitChanges since %s; http return code %s", since, statusCode));
             }

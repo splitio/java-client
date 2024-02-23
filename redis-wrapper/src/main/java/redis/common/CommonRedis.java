@@ -17,6 +17,9 @@ public class CommonRedis {
     }
 
     public String buildKeyWithPrefix(String key) {
+        if (_prefix.isEmpty()) {
+            return key;
+        }
         return String.format("%s.%s", _prefix, key);
     }
 

@@ -1,8 +1,6 @@
 package io.split.storages.pluggable.domain;
 
 import com.google.gson.annotations.SerializedName;
-import io.split.telemetry.domain.Rates;
-import io.split.telemetry.domain.URLOverrides;
 
 import java.util.List;
 
@@ -11,7 +9,9 @@ public class ConfigConsumer {
     /* package private */ static final String FIELD_STORAGE = "st";
     /* package private */ static final String FIELD_ACTIVE_FACTORIES = "aF";
     /* package private */ static final String FIELD_REDUNDANT_FACTORIES = "rF";
-    /* package private */ static final String FIELD__TAGS = "t";
+    /* package private */ static final String FIELD_TAGS = "t";
+    /* package private */ static final String FIELD_FLAG_SETS_TOTAL = "fsT";
+    /* package private */ static final String FIELD_FLAG_SETS_INVALID = "fsI";
 
     @SerializedName(FIELD_OPERATION_MODE)
     private int _operationMode;
@@ -21,46 +21,66 @@ public class ConfigConsumer {
     private long _activeFactories;
     @SerializedName(FIELD_REDUNDANT_FACTORIES)
     private long _redundantFactories;
-    @SerializedName(FIELD__TAGS)
+    @SerializedName(FIELD_TAGS)
     private List<String> _tags;
+    @SerializedName(FIELD_FLAG_SETS_TOTAL)
+    private int _flagSetsTotal;
+    @SerializedName(FIELD_FLAG_SETS_INVALID)
+    private int _flagSetsInvalid;
 
-    public int get_operationMode() {
+    public int getOperationMode() {
         return _operationMode;
     }
 
-    public void set_operationMode(int _operationMode) {
-        this._operationMode = _operationMode;
+    public void setOperationMode(int operationMode) {
+        this._operationMode = operationMode;
     }
 
-    public String get_storage() {
+    public String getStorage() {
         return _storage;
     }
 
-    public void set_storage(String _storage) {
-        this._storage = _storage;
+    public void setStorage(String storage) {
+        this._storage = storage;
     }
 
-    public long get_activeFactories() {
+    public long getActiveFactories() {
         return _activeFactories;
     }
 
-    public void set_activeFactories(long _activeFactories) {
-        this._activeFactories = _activeFactories;
+    public void setActiveFactories(long activeFactories) {
+        this._activeFactories = activeFactories;
     }
 
-    public long get_redundantFactories() {
+    public long getRedundantFactories() {
         return _redundantFactories;
     }
 
-    public void set_redundantFactories(long _redundantFactories) {
-        this._redundantFactories = _redundantFactories;
+    public void setRedundantFactories(long redundantFactories) {
+        this._redundantFactories = redundantFactories;
     }
 
-    public List<String> get_tags() {
+    public List<String> getTags() {
         return _tags;
     }
 
-    public void set_tags(List<String> _tags) {
-        this._tags = _tags;
+    public void setTags(List<String> tags) {
+        this._tags = tags;
+    }
+
+    public int getFlagSetsTotal() {
+        return _flagSetsTotal;
+    }
+
+    public void setFlagSetsTotal(int flagSetsTotal) {
+        this._flagSetsTotal = flagSetsTotal;
+    }
+
+    public int getFlagSetsInvalid() {
+        return _flagSetsInvalid;
+    }
+
+    public void setFlagSetsInvalid(int flagSetsInvalid) {
+        this._flagSetsInvalid = flagSetsInvalid;
     }
 }

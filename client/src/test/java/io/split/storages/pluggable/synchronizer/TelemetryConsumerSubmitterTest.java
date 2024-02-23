@@ -14,6 +14,7 @@ import pluggable.CustomStorageWrapper;
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -33,10 +34,10 @@ public class TelemetryConsumerSubmitterTest {
         ApiKeyCounter.getApiKeyCounterInstance().add(SECOND_KEY);
         ApiKeyCounter.getApiKeyCounterInstance().add(SECOND_KEY);
         TelemetryConsumerSubmitter telemetrySynchronizer = new TelemetryConsumerSubmitter(Mockito.mock(CustomStorageWrapper.class), new SDKMetadata("SDK 4.2.x", "22.215135.1", "testMachine"));
-        SplitClientConfig splitClientConfig = SplitClientConfig.builder().build();
+        SplitClientConfig splitClientConfig = SplitClientConfig.builder().flagSetsFilter(Arrays.asList("set1", "set2", "set-3")).build();
         ConfigConsumer config = telemetrySynchronizer.generateConfig(splitClientConfig, ApiKeyCounter.getApiKeyCounterInstance().getFactoryInstances(), Stream.of("tag1", "tag2").collect(Collectors.toList()));
-        Assert.assertEquals(3, config.get_redundantFactories());
-        Assert.assertEquals(2, config.get_tags().size());
+        Assert.assertEquals(3, config.getRedundantFactories());
+        Assert.assertEquals(2, config.getTags().size());
     }
 
     @Test
@@ -70,7 +71,7 @@ public class TelemetryConsumerSubmitterTest {
         UniqueKeys uniqueKeysToSend = new UniqueKeys(uniqueKeys);
 
         telemetrySynchronizer.synchronizeUniqueKeys(uniqueKeysToSend);
-        List<String> uniqueKeysJson = new ArrayList<>(Collections.singletonList("[{\"f\":\"feature-1\",\"ks\":[\"key-1\",\"key-2\"]}]"));
+        List<String> uniqueKeysJson = new ArrayList<>(Collections.singletonList("{\"f\":\"feature-1\",\"ks\":[\"key-1\",\"key-2\"]}"));
         Mockito.verify(userStorageWrapper).pushItems(Mockito.eq("SPLITIO.uniquekeys"), Mockito.eq(uniqueKeysJson));
     }
 }

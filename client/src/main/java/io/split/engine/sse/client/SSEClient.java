@@ -1,7 +1,6 @@
 package io.split.engine.sse.client;
 
 import com.google.common.base.Strings;
-import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import io.split.telemetry.domain.StreamingEvent;
 import io.split.telemetry.domain.enums.StreamEventsEnum;
 import io.split.telemetry.storage.TelemetryRuntimeProducer;
@@ -20,13 +19,14 @@ import java.net.SocketException;
 import java.net.URI;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
+import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Function;
 
 import static com.google.common.base.Preconditions.checkNotNull;
+import static io.split.client.utils.SplitExecutorFactory.buildExecutorService;
 
 public class SSEClient {
 
@@ -48,11 +48,7 @@ public class SSEClient {
     private final static String KEEP_ALIVE_PAYLOAD = ":keepalive\n";
     private final static long CONNECT_TIMEOUT = 30000;
     private static final Logger _log = LoggerFactory.getLogger(SSEClient.class);
-
-    private final ExecutorService _connectionExecutor = Executors.newSingleThreadExecutor(new ThreadFactoryBuilder()
-            .setDaemon(true)
-            .setNameFormat("SPLIT-SSEConnection-%d")
-            .build());
+    private final ExecutorService _connectionExecutor;
     private final CloseableHttpClient _client;
     private final Function<RawEvent, Void> _eventCallback;
     private final Function<StatusMessage, Void> _statusCallback;
@@ -66,12 +62,14 @@ public class SSEClient {
     public SSEClient(Function<RawEvent, Void> eventCallback,
                      Function<StatusMessage, Void> statusCallback,
                      CloseableHttpClient client,
-                     TelemetryRuntimeProducer telemetryRuntimeProducer) {
+                     TelemetryRuntimeProducer telemetryRuntimeProducer,
+                     ThreadFactory threadFactory) {
         _eventCallback = eventCallback;
         _statusCallback = statusCallback;
         _client = client;
         _forcedStop = new AtomicBoolean();
         _telemetryRuntimeProducer = checkNotNull(telemetryRuntimeProducer);
+        _connectionExecutor = buildExecutorService(threadFactory, "SPLIT-SSEConnection-%d");
     }
 
     public synchronized boolean open(URI uri) {
@@ -138,26 +136,31 @@ public class SSEClient {
                     _log.debug(exc.getMessage());
                     if (SOCKET_CLOSED_MESSAGE.equals(exc.getMessage())) { // Connection closed by us
                         _statusCallback.apply(StatusMessage.FORCED_STOP);
-                        _telemetryRuntimeProducer.recordStreamingEvents(new StreamingEvent(StreamEventsEnum.SSE_CONNECTION_ERROR.getType(), StreamEventsEnum.SseConnectionErrorValues.REQUESTED_CONNECTION_ERROR.getValue(), System.currentTimeMillis()));
+                        _telemetryRuntimeProducer.recordStreamingEvents(new StreamingEvent(StreamEventsEnum.SSE_CONNECTION_ERROR.getType(),
+                                StreamEventsEnum.SseConnectionErrorValues.REQUESTED_CONNECTION_ERROR.getValue(), System.currentTimeMillis()));
                         return;
                     }
                     // Connection closed by server
                     _statusCallback.apply(StatusMessage.RETRYABLE_ERROR);
-                    _telemetryRuntimeProducer.recordStreamingEvents(new StreamingEvent(StreamEventsEnum.SSE_CONNECTION_ERROR.getType(), StreamEventsEnum.SseConnectionErrorValues.NON_REQUESTED_CONNECTION_ERROR.getValue(), System.currentTimeMillis()));
+                    _telemetryRuntimeProducer.recordStreamingEvents(new StreamingEvent(StreamEventsEnum.SSE_CONNECTION_ERROR.getType(),
+                            StreamEventsEnum.SseConnectionErrorValues.NON_REQUESTED_CONNECTION_ERROR.getValue(), System.currentTimeMillis()));
                     return;
                 } catch (IOException exc) { // Other type of connection error
                     if(!_forcedStop.get()) {
                         _log.debug(String.format("SSE connection ended abruptly: %s. Retying", exc.getMessage()));
-                        _telemetryRuntimeProducer.recordStreamingEvents(new StreamingEvent(StreamEventsEnum.SSE_CONNECTION_ERROR.getType(), StreamEventsEnum.SseConnectionErrorValues.REQUESTED_CONNECTION_ERROR.getValue(), System.currentTimeMillis()));
+                        _telemetryRuntimeProducer.recordStreamingEvents(new StreamingEvent(StreamEventsEnum.SSE_CONNECTION_ERROR.getType(),
+                                StreamEventsEnum.SseConnectionErrorValues.REQUESTED_CONNECTION_ERROR.getValue(), System.currentTimeMillis()));
                         _statusCallback.apply(StatusMessage.RETRYABLE_ERROR);
                         return;
                     }
 
-                    _telemetryRuntimeProducer.recordStreamingEvents(new StreamingEvent(StreamEventsEnum.SSE_CONNECTION_ERROR.getType(), StreamEventsEnum.SseConnectionErrorValues.NON_REQUESTED_CONNECTION_ERROR.getValue(), System.currentTimeMillis()));
+                    _telemetryRuntimeProducer.recordStreamingEvents(new StreamingEvent(StreamEventsEnum.SSE_CONNECTION_ERROR.getType(),
+                            StreamEventsEnum.SseConnectionErrorValues.NON_REQUESTED_CONNECTION_ERROR.getValue(), System.currentTimeMillis()));
                 }
             }
         } catch (Exception e) { // Any other error non related to the connection disables streaming altogether
-            _telemetryRuntimeProducer.recordStreamingEvents(new StreamingEvent(StreamEventsEnum.SSE_CONNECTION_ERROR.getType(), StreamEventsEnum.SseConnectionErrorValues.NON_REQUESTED_CONNECTION_ERROR.getValue(), System.currentTimeMillis()));
+            _telemetryRuntimeProducer.recordStreamingEvents(new StreamingEvent(StreamEventsEnum.SSE_CONNECTION_ERROR.getType(),
+                    StreamEventsEnum.SseConnectionErrorValues.NON_REQUESTED_CONNECTION_ERROR.getValue(), System.currentTimeMillis()));
             _log.warn(e.getMessage(), e);
             _statusCallback.apply(StatusMessage.NONRETRYABLE_ERROR);
         } finally {

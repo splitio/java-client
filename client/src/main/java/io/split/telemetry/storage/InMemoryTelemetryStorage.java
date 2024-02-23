@@ -1,8 +1,24 @@
 package io.split.telemetry.storage;
 
 import com.google.common.collect.Maps;
-import io.split.telemetry.domain.*;
-import io.split.telemetry.domain.enums.*;
+
+import io.split.telemetry.domain.HTTPErrors;
+import io.split.telemetry.domain.HTTPLatencies;
+import io.split.telemetry.domain.LastSynchronization;
+import io.split.telemetry.domain.MethodExceptions;
+import io.split.telemetry.domain.MethodLatencies;
+import io.split.telemetry.domain.StreamingEvent;
+import io.split.telemetry.domain.UpdatesFromSSE;
+import io.split.telemetry.domain.enums.EventsDataRecordsEnum;
+import io.split.telemetry.domain.enums.FactoryCountersEnum;
+import io.split.telemetry.domain.enums.HTTPLatenciesEnum;
+import io.split.telemetry.domain.enums.ImpressionsDataTypeEnum;
+import io.split.telemetry.domain.enums.LastSynchronizationRecordsEnum;
+import io.split.telemetry.domain.enums.MethodEnum;
+import io.split.telemetry.domain.enums.PushCountersEnum;
+import io.split.telemetry.domain.enums.ResourceEnum;
+import io.split.telemetry.domain.enums.SdkRecordsEnum;
+import io.split.telemetry.domain.enums.UpdatesFromSSEEnum;
 import io.split.telemetry.utils.AtomicLongArray;
 import io.split.telemetry.utils.BucketCalculator;
 
@@ -13,7 +29,7 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.atomic.AtomicLong;
 
-public class InMemoryTelemetryStorage implements  TelemetryStorage{
+public class InMemoryTelemetryStorage implements TelemetryStorage{
     public static final int MAX_LATENCY_BUCKET_COUNT = 23;
     public static final int MAX_STREAMING_EVENTS = 20;
     public static final int MAX_TAGS = 10;
@@ -32,6 +48,7 @@ public class InMemoryTelemetryStorage implements  TelemetryStorage{
     private final ConcurrentMap<EventsDataRecordsEnum, AtomicLong> _eventsDataRecords = Maps.newConcurrentMap();
     private final ConcurrentMap<LastSynchronizationRecordsEnum, AtomicLong> _lastSynchronizationRecords = Maps.newConcurrentMap();
     private final ConcurrentMap<SdkRecordsEnum, AtomicLong> _sdkRecords = Maps.newConcurrentMap();
+    private final ConcurrentMap<UpdatesFromSSEEnum, AtomicLong> _updatesFromSSERecords = Maps.newConcurrentMap();
 
     //HTTPErrors
     private final ConcurrentMap<ResourceEnum, ConcurrentMap<Long, Long>> _httpErrors = Maps.newConcurrentMap();
@@ -55,6 +72,7 @@ public class InMemoryTelemetryStorage implements  TelemetryStorage{
         initSdkRecords();
         initLastSynchronizationRecords();
         initEventDataRecords();
+        initUpdatesFromSEE();
     }
 
     @Override
@@ -70,11 +88,15 @@ public class InMemoryTelemetryStorage implements  TelemetryStorage{
     @Override
     public MethodExceptions popExceptions() {
         MethodExceptions exceptions = new MethodExceptions();
-        exceptions.set_treatment(_exceptionsCounters.get(MethodEnum.TREATMENT).getAndSet(0L));
-        exceptions.set_treatments(_exceptionsCounters.get(MethodEnum.TREATMENTS).getAndSet(0L));
-        exceptions.set_treatmentWithConfig(_exceptionsCounters.get(MethodEnum.TREATMENT_WITH_CONFIG).getAndSet(0L));
-        exceptions.set_treatmentsWithConfig(_exceptionsCounters.get(MethodEnum.TREATMENTS_WITH_CONFIG).getAndSet(0L));
-        exceptions.set_track(_exceptionsCounters.get(MethodEnum.TRACK).getAndSet(0L));
+        exceptions.setTreatment(_exceptionsCounters.get(MethodEnum.TREATMENT).getAndSet(0L));
+        exceptions.setTreatments(_exceptionsCounters.get(MethodEnum.TREATMENTS).getAndSet(0L));
+        exceptions.setTreatmentWithConfig(_exceptionsCounters.get(MethodEnum.TREATMENT_WITH_CONFIG).getAndSet(0L));
+        exceptions.setTreatmentsWithConfig(_exceptionsCounters.get(MethodEnum.TREATMENTS_WITH_CONFIG).getAndSet(0L));
+        exceptions.setTreatmentByFlagSet(_exceptionsCounters.get(MethodEnum.TREATMENTS_BY_FLAG_SET).getAndSet(0L));
+        exceptions.setTreatmentByFlagSets(_exceptionsCounters.get(MethodEnum.TREATMENTS_BY_FLAG_SETS).getAndSet(0L));
+        exceptions.setTreatmentWithConfigByFlagSet(_exceptionsCounters.get(MethodEnum.TREATMENTS_WITH_CONFIG_BY_FLAG_SET).getAndSet(0L));
+        exceptions.setTreatmentWithConfigByFlagSets(_exceptionsCounters.get(MethodEnum.TREATMENTS_WITH_CONFIG_BY_FLAG_SETS).getAndSet(0L));
+        exceptions.setTrack(_exceptionsCounters.get(MethodEnum.TRACK).getAndSet(0L));
 
         return exceptions;
     }
@@ -82,11 +104,15 @@ public class InMemoryTelemetryStorage implements  TelemetryStorage{
     @Override
     public MethodLatencies popLatencies() {
         MethodLatencies latencies = new MethodLatencies();
-        latencies.set_treatment(_methodLatencies.get(MethodEnum.TREATMENT).fetchAndClearAll());
-        latencies.set_treatments(_methodLatencies.get(MethodEnum.TREATMENTS).fetchAndClearAll());
-        latencies.set_treatmentWithConfig(_methodLatencies.get(MethodEnum.TREATMENT_WITH_CONFIG).fetchAndClearAll());
-        latencies.set_treatmentsWithConfig(_methodLatencies.get(MethodEnum.TREATMENTS_WITH_CONFIG).fetchAndClearAll());
-        latencies.set_track(_methodLatencies.get(MethodEnum.TRACK).fetchAndClearAll());
+        latencies.setTreatment(_methodLatencies.get(MethodEnum.TREATMENT).fetchAndClearAll());
+        latencies.setTreatments(_methodLatencies.get(MethodEnum.TREATMENTS).fetchAndClearAll());
+        latencies.setTreatmentWithConfig(_methodLatencies.get(MethodEnum.TREATMENT_WITH_CONFIG).fetchAndClearAll());
+        latencies.setTreatmentsWithConfig(_methodLatencies.get(MethodEnum.TREATMENTS_WITH_CONFIG).fetchAndClearAll());
+        latencies.setTreatmentByFlagSet(_methodLatencies.get(MethodEnum.TREATMENTS_BY_FLAG_SET).fetchAndClearAll());
+        latencies.setTreatmentByFlagSets(_methodLatencies.get(MethodEnum.TREATMENTS_BY_FLAG_SETS).fetchAndClearAll());
+        latencies.setTreatmentWithConfigByFlagSet(_methodLatencies.get(MethodEnum.TREATMENTS_WITH_CONFIG_BY_FLAG_SET).fetchAndClearAll());
+        latencies.setTreatmentWithConfigByFlagSets(_methodLatencies.get(MethodEnum.TREATMENTS_WITH_CONFIG_BY_FLAG_SETS).fetchAndClearAll());
+        latencies.setTrack(_methodLatencies.get(MethodEnum.TRACK).fetchAndClearAll());
 
         return latencies;
     }
@@ -210,6 +236,13 @@ public class InMemoryTelemetryStorage implements  TelemetryStorage{
     }
 
     @Override
+    public UpdatesFromSSE popUpdatesFromSSE() {
+        UpdatesFromSSE updatesFromSSE = new UpdatesFromSSE();
+        updatesFromSSE.setSplits(_updatesFromSSERecords.get(UpdatesFromSSEEnum.SPLITS).getAndSet(0L));
+        return updatesFromSSE;
+    }
+
+    @Override
     public void addTag(String tag) {
         synchronized (_tagsLock) {
             if(_tags.size() < MAX_TAGS) {
@@ -271,11 +304,20 @@ public class InMemoryTelemetryStorage implements  TelemetryStorage{
         _sdkRecords.replace(SdkRecordsEnum.SESSION, new AtomicLong(sessionLength));
     }
 
+    @Override
+    public void recordUpdatesFromSSE(UpdatesFromSSEEnum updatesFromSSEEnum) {
+        _updatesFromSSERecords.get(UpdatesFromSSEEnum.SPLITS).incrementAndGet();
+    }
+
     private void initMethodLatencies() {
         _methodLatencies.put(MethodEnum.TREATMENT, new AtomicLongArray(MAX_LATENCY_BUCKET_COUNT));
         _methodLatencies.put(MethodEnum.TREATMENTS, new AtomicLongArray(MAX_LATENCY_BUCKET_COUNT));
         _methodLatencies.put(MethodEnum.TREATMENT_WITH_CONFIG, new AtomicLongArray(MAX_LATENCY_BUCKET_COUNT));
         _methodLatencies.put(MethodEnum.TREATMENTS_WITH_CONFIG, new AtomicLongArray(MAX_LATENCY_BUCKET_COUNT));
+        _methodLatencies.put(MethodEnum.TREATMENTS_BY_FLAG_SET, new AtomicLongArray(MAX_LATENCY_BUCKET_COUNT));
+        _methodLatencies.put(MethodEnum.TREATMENTS_BY_FLAG_SETS, new AtomicLongArray(MAX_LATENCY_BUCKET_COUNT));
+        _methodLatencies.put(MethodEnum.TREATMENTS_WITH_CONFIG_BY_FLAG_SET, new AtomicLongArray(MAX_LATENCY_BUCKET_COUNT));
+        _methodLatencies.put(MethodEnum.TREATMENTS_WITH_CONFIG_BY_FLAG_SETS, new AtomicLongArray(MAX_LATENCY_BUCKET_COUNT));
         _methodLatencies.put(MethodEnum.TRACK, new AtomicLongArray(MAX_LATENCY_BUCKET_COUNT));
     }
 
@@ -304,6 +346,10 @@ public class InMemoryTelemetryStorage implements  TelemetryStorage{
         _exceptionsCounters.put(MethodEnum.TREATMENTS, new AtomicLong());
         _exceptionsCounters.put(MethodEnum.TREATMENT_WITH_CONFIG, new AtomicLong());
         _exceptionsCounters.put(MethodEnum.TREATMENTS_WITH_CONFIG, new AtomicLong());
+        _exceptionsCounters.put(MethodEnum.TREATMENTS_BY_FLAG_SET, new AtomicLong());
+        _exceptionsCounters.put(MethodEnum.TREATMENTS_BY_FLAG_SETS, new AtomicLong());
+        _exceptionsCounters.put(MethodEnum.TREATMENTS_WITH_CONFIG_BY_FLAG_SET, new AtomicLong());
+        _exceptionsCounters.put(MethodEnum.TREATMENTS_WITH_CONFIG_BY_FLAG_SETS, new AtomicLong());
         _exceptionsCounters.put(MethodEnum.TRACK, new AtomicLong());
     }
 
@@ -340,5 +386,9 @@ public class InMemoryTelemetryStorage implements  TelemetryStorage{
     private void initEventDataRecords() {
         _eventsDataRecords.put(EventsDataRecordsEnum.EVENTS_DROPPED, new AtomicLong());
         _eventsDataRecords.put(EventsDataRecordsEnum.EVENTS_QUEUED, new AtomicLong());
+    }
+
+    private void initUpdatesFromSEE() {
+        _updatesFromSSERecords.put(UpdatesFromSSEEnum.SPLITS, new AtomicLong());
     }
 }

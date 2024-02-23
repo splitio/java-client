@@ -99,6 +99,19 @@ public class UserCustomSplitAdapterProducer implements SplitCacheProducer {
     }
 
     @Override
+    public void update(List<ParsedSplit> toAdd, List<String> toRemove, long changeNumber) {
+        if(toAdd != null) {
+            putMany(toAdd);
+        }
+        if(toRemove != null) {
+            for(String featureFlag : toRemove) {
+                remove(featureFlag);
+            }
+        }
+        setChangeNumber(changeNumber);
+    }
+
+    @Override
     public Set<String> getSegments() {
         //NoOp
         return new HashSet<>();

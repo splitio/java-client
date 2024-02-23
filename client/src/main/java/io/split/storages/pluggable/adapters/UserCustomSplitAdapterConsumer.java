@@ -5,18 +5,21 @@ import io.split.client.utils.Json;
 import io.split.engine.experiments.ParsedSplit;
 import io.split.engine.experiments.SplitParser;
 import io.split.storages.SplitCacheConsumer;
+import io.split.storages.pluggable.domain.UserPipelineWrapper;
 import io.split.storages.pluggable.domain.UserStorageWrapper;
 import io.split.storages.pluggable.domain.PrefixAdapter;
 import io.split.storages.pluggable.utils.Helper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import pluggable.CustomStorageWrapper;
+import pluggable.Result;
 
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.HashSet;
 import java.util.stream.Collectors;
@@ -87,8 +90,36 @@ public class UserCustomSplitAdapterConsumer  implements SplitCacheConsumer {
     @Override
     public List<String> splitNames() {
         Set<String> splitNamesWithPrefix = _userStorageWrapper.getKeysByPrefix(PrefixAdapter.buildGetAllSplit());
-        splitNamesWithPrefix = splitNamesWithPrefix.stream().map(key -> key.replace(PrefixAdapter.buildSplitsPrefix(), "")).collect(Collectors.toSet());
+        splitNamesWithPrefix = splitNamesWithPrefix.stream().map(key -> key.replace(PrefixAdapter.buildSplitsPrefix(), "")).
+                collect(Collectors.toSet());
         return new ArrayList<>(splitNamesWithPrefix);
+    }
+
+    @Override
+    public Map<String, HashSet<String>> getNamesByFlagSets(List<String> flagSets) {
+        Map<String, HashSet<String>> toReturn = new HashMap<>();
+        try {
+            if (flagSets == null) {
+                return toReturn;
+            }
+            UserPipelineWrapper pipelineExecution = _userStorageWrapper.pipeline();
+            for (String set: flagSets) {
+                 pipelineExecution.getMembers(PrefixAdapter.buildFlagSetPrefix(set));
+            }
+            List<Result> results = pipelineExecution.exec();
+            if (results == null || results.isEmpty()){
+                return toReturn;
+            }
+            for (int i = 0; i < results.size(); i ++) {
+                Optional<HashSet<String>> featureFlags = results.get(i).asHash();
+                if(featureFlags.isPresent()) {
+                    toReturn.put(flagSets.get(i), featureFlags.get());
+                }
+            }
+        } catch (Exception e) {
+            _log.warn("Redis pipeline exception when getting names by flag sets: ", e);
+        }
+        return toReturn;
     }
 
     @Override

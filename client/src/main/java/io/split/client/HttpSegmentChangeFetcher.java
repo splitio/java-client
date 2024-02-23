@@ -14,7 +14,6 @@ import org.apache.hc.client5.http.classic.methods.HttpGet;
 import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
 import org.apache.hc.client5.http.impl.classic.CloseableHttpResponse;
 import org.apache.hc.core5.http.HttpStatus;
-import org.apache.hc.core5.http.Header;
 import org.apache.hc.core5.http.io.entity.EntityUtils;
 import org.apache.hc.core5.net.URIBuilder;
 import org.slf4j.Logger;
@@ -23,8 +22,6 @@ import org.slf4j.LoggerFactory;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.nio.charset.StandardCharsets;
-import java.util.Arrays;
-import java.util.stream.Collectors;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
@@ -40,14 +37,12 @@ public final class HttpSegmentChangeFetcher implements SegmentChangeFetcher {
     private static final String CACHE_CONTROL_HEADER_NAME = "Cache-Control";
     private static final String CACHE_CONTROL_HEADER_VALUE = "no-cache";
 
-    private static final String HEADER_FASTLY_DEBUG_NAME = "Fastly-Debug";
-    private static final String HEADER_FASTLY_DEBUG_VALUE = "1";
-
     private final CloseableHttpClient _client;
     private final URI _target;
     private final TelemetryRuntimeProducer _telemetryRuntimeProducer;
 
-    public static HttpSegmentChangeFetcher create(CloseableHttpClient client, URI root, TelemetryRuntimeProducer telemetryRuntimeProducer) throws URISyntaxException {
+    public static HttpSegmentChangeFetcher create(CloseableHttpClient client, URI root, TelemetryRuntimeProducer telemetryRuntimeProducer)
+            throws URISyntaxException {
         return new HttpSegmentChangeFetcher(client, Utils.appendPath(root, "api/segmentChanges"), telemetryRuntimeProducer);
     }
 
@@ -80,14 +75,7 @@ public final class HttpSegmentChangeFetcher implements SegmentChangeFetcher {
                 request.setHeader(CACHE_CONTROL_HEADER_NAME, CACHE_CONTROL_HEADER_VALUE);
             }
 
-            if (options.fastlyDebugHeaderEnabled()) {
-                request.addHeader(HEADER_FASTLY_DEBUG_NAME, HEADER_FASTLY_DEBUG_VALUE);
-            }
-
             response = _client.execute(request);
-
-            options.handleResponseHeaders(Arrays.stream(response.getHeaders())
-                    .collect(Collectors.toMap(Header::getName, Header::getValue)));
 
             int statusCode = response.getCode();
 
@@ -99,10 +87,11 @@ public final class HttpSegmentChangeFetcher implements SegmentChangeFetcher {
                 _telemetryRuntimeProducer.recordSyncError(ResourceEnum.SEGMENT_SYNC, statusCode);
                 _log.error(String.format("Response status was: %s. Reason: %s", statusCode , response.getReasonPhrase()));
                 if (statusCode == HttpStatus.SC_FORBIDDEN) {
-                    _log.error("factory instantiation: you passed a browser type api_key, " +
-                            "please grab an api key from the Split console that is of type sdk");
+                    _log.error("factory instantiation: you passed a client side type sdkKey, " +
+                            "please grab an sdk key from the Split user interface that is of type server side");
                 }
-                throw new IllegalStateException(String.format("Could not retrieve segment changes for %s, since %s; http return code %s", segmentName, since, statusCode));
+                throw new IllegalStateException(String.format("Could not retrieve segment changes for %s, since %s; http return code %s",
+                        segmentName, since, statusCode));
             }
 
             _telemetryRuntimeProducer.recordSuccessfulSync(LastSynchronizationRecordsEnum.SEGMENTS, System.currentTimeMillis());

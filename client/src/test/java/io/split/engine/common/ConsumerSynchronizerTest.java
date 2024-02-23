@@ -21,10 +21,10 @@ public class ConsumerSynchronizerTest {
         Mockito.verify(uniqueKeysTracker, Mockito.times(1)).start();
         Mockito.verify(telemetrySyncTask, Mockito.times(1)).startScheduledTask();
 
-        imp.stopPeriodicDataRecording(3L, 1L, 1L);
+        imp.stopPeriodicDataRecording();
 
         Mockito.verify(impressionsManager, Mockito.times(1)).close();
         Mockito.verify(uniqueKeysTracker, Mockito.times(1)).stop();
-        Mockito.verify(telemetrySyncTask, Mockito.times(1)).stopScheduledTask(3L,1L,1L);
+        Mockito.verify(telemetrySyncTask, Mockito.times(1)).stopScheduledTask();
     }
 }

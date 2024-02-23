@@ -33,15 +33,16 @@ public class TelemetryInMemorySubmitter implements TelemetrySynchronizer{
     private static  final String STORAGE = "memory";
 
     private HttpTelemetryMemorySender _httpHttpTelemetryMemorySender;
-    private TelemetryStorageConsumer _teleTelemetryStorageConsumer;
+    private TelemetryStorageConsumer _telemetryStorageConsumer;
     private SplitCacheConsumer _splitCacheConsumer;
     private SegmentCacheConsumer _segmentCacheConsumer;
     private final long _initStartTime;
 
-    public TelemetryInMemorySubmitter(CloseableHttpClient client, URI telemetryRootEndpoint, TelemetryStorageConsumer telemetryStorageConsumer, SplitCacheConsumer splitCacheConsumer,
-                                      SegmentCacheConsumer segmentCacheConsumer, TelemetryRuntimeProducer telemetryRuntimeProducer, long initStartTime) throws URISyntaxException {
+    public TelemetryInMemorySubmitter(CloseableHttpClient client, URI telemetryRootEndpoint, TelemetryStorageConsumer telemetryStorageConsumer,
+                                      SplitCacheConsumer splitCacheConsumer, SegmentCacheConsumer segmentCacheConsumer,
+                                      TelemetryRuntimeProducer telemetryRuntimeProducer, long initStartTime) throws URISyntaxException {
         _httpHttpTelemetryMemorySender = HttpTelemetryMemorySender.create(client, telemetryRootEndpoint, telemetryRuntimeProducer);
-        _teleTelemetryStorageConsumer = checkNotNull(telemetryStorageConsumer);
+        _telemetryStorageConsumer = checkNotNull(telemetryStorageConsumer);
         _splitCacheConsumer = checkNotNull(splitCacheConsumer);
         _segmentCacheConsumer = checkNotNull(segmentCacheConsumer);
         _initStartTime = initStartTime;
@@ -63,35 +64,36 @@ public class TelemetryInMemorySubmitter implements TelemetrySynchronizer{
     }
 
     @Override
-    public void finalSynchronization(long splitCount, long segmentCount, long segmentKeyCount) throws Exception {
+    public void finalSynchronization() throws Exception {
         Stats stats = generateStats();
-        stats.set_splitCount(splitCount);
-        stats.set_segmentCount(segmentCount);
-        stats.set_segmentKeyCount(segmentKeyCount);
+        stats.setSplitCount(_splitCacheConsumer.getAll().stream().count());
+        stats.setSegmentCount(_segmentCacheConsumer.getSegmentCount());
+        stats.setSegmentKeyCount(_segmentCacheConsumer.getKeyCount());
         _httpHttpTelemetryMemorySender.postStats(stats);
     }
 
     @VisibleForTesting
     Stats generateStats() throws Exception {
         Stats stats = new Stats();
-        stats.set_lastSynchronization(_teleTelemetryStorageConsumer.getLastSynchronization());
-        stats.set_methodLatencies(_teleTelemetryStorageConsumer.popLatencies());
-        stats.set_methodExceptions(_teleTelemetryStorageConsumer.popExceptions());
-        stats.set_httpErrors(_teleTelemetryStorageConsumer.popHTTPErrors());
-        stats.set_httpLatencies(_teleTelemetryStorageConsumer.popHTTPLatencies());
-        stats.set_tokenRefreshes(_teleTelemetryStorageConsumer.popTokenRefreshes());
-        stats.set_authRejections(_teleTelemetryStorageConsumer.popAuthRejections());
-        stats.set_impressionsQueued(_teleTelemetryStorageConsumer.getImpressionsStats(ImpressionsDataTypeEnum.IMPRESSIONS_QUEUED));
-        stats.set_impressionsDeduped(_teleTelemetryStorageConsumer.getImpressionsStats(ImpressionsDataTypeEnum.IMPRESSIONS_DEDUPED));
-        stats.set_impressionsDropped(_teleTelemetryStorageConsumer.getImpressionsStats(ImpressionsDataTypeEnum.IMPRESSIONS_DROPPED));
-        stats.set_splitCount(_splitCacheConsumer.getAll().stream().count());
-        stats.set_segmentCount(_segmentCacheConsumer.getSegmentCount());
-        stats.set_segmentKeyCount(_segmentCacheConsumer.getKeyCount());
-        stats.set_sessionLengthMs(_teleTelemetryStorageConsumer.getSessionLength());
-        stats.set_eventsQueued(_teleTelemetryStorageConsumer.getEventStats(EventsDataRecordsEnum.EVENTS_QUEUED));
-        stats.set_eventsDropped(_teleTelemetryStorageConsumer.getEventStats(EventsDataRecordsEnum.EVENTS_DROPPED));
-        stats.set_streamingEvents(_teleTelemetryStorageConsumer.popStreamingEvents());
-        stats.set_tags(_teleTelemetryStorageConsumer.popTags());
+        stats.setLastSynchronization(_telemetryStorageConsumer.getLastSynchronization());
+        stats.setMethodLatencies(_telemetryStorageConsumer.popLatencies());
+        stats.setMethodExceptions(_telemetryStorageConsumer.popExceptions());
+        stats.setHttpErrors(_telemetryStorageConsumer.popHTTPErrors());
+        stats.setHttpLatencies(_telemetryStorageConsumer.popHTTPLatencies());
+        stats.setTokenRefreshes(_telemetryStorageConsumer.popTokenRefreshes());
+        stats.setAuthRejections(_telemetryStorageConsumer.popAuthRejections());
+        stats.setImpressionsQueued(_telemetryStorageConsumer.getImpressionsStats(ImpressionsDataTypeEnum.IMPRESSIONS_QUEUED));
+        stats.setImpressionsDeduped(_telemetryStorageConsumer.getImpressionsStats(ImpressionsDataTypeEnum.IMPRESSIONS_DEDUPED));
+        stats.setImpressionsDropped(_telemetryStorageConsumer.getImpressionsStats(ImpressionsDataTypeEnum.IMPRESSIONS_DROPPED));
+        stats.setSplitCount(_splitCacheConsumer.getAll().stream().count());
+        stats.setSegmentCount(_segmentCacheConsumer.getSegmentCount());
+        stats.setSegmentKeyCount(_segmentCacheConsumer.getKeyCount());
+        stats.setSessionLengthMs(_telemetryStorageConsumer.getSessionLength());
+        stats.setEventsQueued(_telemetryStorageConsumer.getEventStats(EventsDataRecordsEnum.EVENTS_QUEUED));
+        stats.setEventsDropped(_telemetryStorageConsumer.getEventStats(EventsDataRecordsEnum.EVENTS_DROPPED));
+        stats.setStreamingEvents(_telemetryStorageConsumer.popStreamingEvents());
+        stats.setTags(_telemetryStorageConsumer.popTags());
+        stats.setUpdatesFromSSE(_telemetryStorageConsumer.popUpdatesFromSSE());
         return stats;
     }
 
@@ -119,23 +121,26 @@ public class TelemetryInMemorySubmitter implements TelemetrySynchronizer{
         urlOverrides.set_events(!SplitClientConfig.EVENTS_ENDPOINT.equals(splitClientConfig.eventsEndpoint()));
         urlOverrides.set_telemetry(!SplitClientConfig.TELEMETRY_ENDPOINT.equals(splitClientConfig.telemetryURL()));
 
-        config.set_burTimeouts(_teleTelemetryStorageConsumer.getBURTimeouts());
-        config.set_nonReadyUsages(_teleTelemetryStorageConsumer.getNonReadyUsages());
-        config.set_httpProxyDetected(splitClientConfig.proxy() != null);
-        config.set_impressionsMode(getImpressionsMode(splitClientConfig));
-        config.set_integrations(impressions);
-        config.set_impressionsListenerEnabled((impressionsListeners.size()-impressions.size()) > 0);
-        config.set_operationMode(OPERATION_MODE);
-        config.set_storage(STORAGE);
-        config.set_impressionsQueueSize(splitClientConfig.impressionsQueueSize());
-        config.set_redundantFactories(getRedundantFactories(factoryInstances));
-        config.set_eventsQueueSize(splitClientConfig.eventsQueueSize());
-        config.set_tags(getListMaxSize(tags));
-        config.set_activeFactories(factoryInstances.size());
-        config.set_timeUntilReady(readyTimestamp - _initStartTime);
-        config.set_rates(rates);
-        config.set_urlOverrides(urlOverrides);
-        config.set_streamingEnabled(splitClientConfig.streamingEnabled());
+        config.setBurTimeouts(_telemetryStorageConsumer.getBURTimeouts());
+        config.setNonReadyUsages(_telemetryStorageConsumer.getNonReadyUsages());
+        config.setHttpProxyDetected(splitClientConfig.proxy() != null);
+        config.setImpressionsMode(getImpressionsMode(splitClientConfig));
+        config.setIntegrations(impressions);
+        config.setImpressionsListenerEnabled((impressionsListeners.size()-impressions.size()) > 0);
+        config.setOperationMode(OPERATION_MODE);
+        config.setStorage(STORAGE);
+        config.setImpressionsQueueSize(splitClientConfig.impressionsQueueSize());
+        config.setRedundantFactories(getRedundantFactories(factoryInstances));
+        config.setEventsQueueSize(splitClientConfig.eventsQueueSize());
+        config.setTags(getListMaxSize(tags));
+        config.setActiveFactories(factoryInstances.size());
+        config.setTimeUntilReady(readyTimestamp - _initStartTime);
+        config.setRates(rates);
+        config.setUrlOverrides(urlOverrides);
+        config.setStreamingEnabled(splitClientConfig.streamingEnabled());
+        int invalidSets = splitClientConfig.getInvalidSets();
+        config.setFlagSetsTotal(splitClientConfig.getSetsFilter().size() + invalidSets);
+        config.setFlagSetsInvalid(invalidSets);
         return config;
     }
 

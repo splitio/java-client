@@ -17,7 +17,9 @@ import org.junit.Before;
 import org.junit.Test;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeoutException;
@@ -53,7 +55,7 @@ public class SplitManagerImplTest {
         String existent = "existent";
 
         SplitCacheConsumer splitCacheConsumer = mock(SplitCacheConsumer.class);
-        ParsedSplit response = ParsedSplit.createParsedSplitForTests("FeatureName", 123, true, "off", Lists.newArrayList(getTestCondition("off")), "traffic", 456L, 1);
+        ParsedSplit response = ParsedSplit.createParsedSplitForTests("FeatureName", 123, true, "off", Lists.newArrayList(getTestCondition("off")), "traffic", 456L, 1, new HashSet<>());
         when(splitCacheConsumer.get(existent)).thenReturn(response);
 
         SplitManagerImpl splitManager = new SplitManagerImpl(splitCacheConsumer,
@@ -67,6 +69,7 @@ public class SplitManagerImplTest {
         Assert.assertEquals(1, theOne.treatments.size());
         Assert.assertEquals("off", theOne.treatments.get(0));
         Assert.assertEquals(0, theOne.configs.size());
+        Assert.assertEquals("off", theOne.defaultTreatment);
     }
 
     @Test
@@ -78,7 +81,7 @@ public class SplitManagerImplTest {
         Map<String, String> configurations = new HashMap<>();
         configurations.put(Treatments.OFF, "{\"size\" : 30}");
 
-        ParsedSplit response = ParsedSplit.createParsedSplitForTests("FeatureName", 123, true, "off", Lists.newArrayList(getTestCondition("off")), "traffic", 456L, 1, configurations);
+        ParsedSplit response = ParsedSplit.createParsedSplitForTests("FeatureName", 123, true, "off", Lists.newArrayList(getTestCondition("off")), "traffic", 456L, 1, configurations, new HashSet<>());
         when(splitCacheConsumer.get(existent)).thenReturn(response);
 
         SplitManagerImpl splitManager = new SplitManagerImpl(splitCacheConsumer,
@@ -114,7 +117,7 @@ public class SplitManagerImplTest {
         List<ParsedSplit> parsedSplits = Lists.newArrayList();
         SDKReadinessGates gates = mock(SDKReadinessGates.class);
         when(gates.isSDKReady()).thenReturn(false);
-        ParsedSplit response = ParsedSplit.createParsedSplitForTests("FeatureName", 123, true, "off", Lists.newArrayList(getTestCondition("off")), "traffic", 456L, 1);
+        ParsedSplit response = ParsedSplit.createParsedSplitForTests("FeatureName", 123, true, "off", Lists.newArrayList(getTestCondition("off")), "traffic", 456L, 1, new HashSet<>());
         parsedSplits.add(response);
 
         when(splitCacheConsumer.getAll()).thenReturn(parsedSplits);
@@ -182,6 +185,36 @@ public class SplitManagerImplTest {
 
         splitManager.blockUntilReady();
         verify(TELEMETRY_STORAGE, times(1)).recordBURTimeout();
+    }
+
+    @Test
+    public void splitCallWithExistentSets() {
+        String existent = "existent";
+        SplitCacheConsumer splitCacheConsumer = mock(SplitCacheConsumer.class);
+        ParsedSplit response = ParsedSplit.createParsedSplitForTests("FeatureName", 123, true, "off",
+                Lists.newArrayList(getTestCondition("off")), "traffic", 456L, 1, new HashSet<>(Arrays.asList("set1", "set2", "set3")));
+        when(splitCacheConsumer.get(existent)).thenReturn(response);
+
+        SplitManagerImpl splitManager = new SplitManagerImpl(splitCacheConsumer,
+                mock(SplitClientConfig.class),
+                mock(SDKReadinessGates.class), TELEMETRY_STORAGE);
+        SplitView theOne = splitManager.split(existent);
+        Assert.assertEquals(response.flagSets().size(), theOne.sets.size());
+    }
+
+    @Test
+    public void splitCallWithEmptySets() {
+        String existent = "existent";
+        SplitCacheConsumer splitCacheConsumer = mock(SplitCacheConsumer.class);
+        ParsedSplit response = ParsedSplit.createParsedSplitForTests("FeatureName", 123, true, "off",
+                Lists.newArrayList(getTestCondition("off")), "traffic", 456L, 1, null);
+        when(splitCacheConsumer.get(existent)).thenReturn(response);
+
+        SplitManagerImpl splitManager = new SplitManagerImpl(splitCacheConsumer,
+                mock(SplitClientConfig.class),
+                mock(SDKReadinessGates.class), TELEMETRY_STORAGE);
+        SplitView theOne = splitManager.split(existent);
+        Assert.assertEquals(0, theOne.sets.size());
     }
 
     private ParsedCondition getTestCondition(String treatment) {

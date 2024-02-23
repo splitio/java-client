@@ -1,7 +1,19 @@
 package io.split.telemetry.storage;
 
-import io.split.telemetry.domain.*;
-import io.split.telemetry.domain.enums.*;
+import io.split.telemetry.domain.HTTPErrors;
+import io.split.telemetry.domain.HTTPLatencies;
+import io.split.telemetry.domain.LastSynchronization;
+import io.split.telemetry.domain.MethodExceptions;
+import io.split.telemetry.domain.MethodLatencies;
+import io.split.telemetry.domain.StreamingEvent;
+import io.split.telemetry.domain.UpdatesFromSSE;
+import io.split.telemetry.domain.enums.EventsDataRecordsEnum;
+import io.split.telemetry.domain.enums.HTTPLatenciesEnum;
+import io.split.telemetry.domain.enums.ImpressionsDataTypeEnum;
+import io.split.telemetry.domain.enums.LastSynchronizationRecordsEnum;
+import io.split.telemetry.domain.enums.MethodEnum;
+import io.split.telemetry.domain.enums.ResourceEnum;
+import io.split.telemetry.domain.enums.UpdatesFromSSEEnum;
 
 import java.util.List;
 
@@ -78,6 +90,11 @@ public class NoopTelemetryStorage implements TelemetryStorage{
     }
 
     @Override
+    public void recordUpdatesFromSSE(UpdatesFromSSEEnum updatesFromSSEEnum) {
+
+    }
+
+    @Override
     public long getBURTimeouts() {
         return 0;
     }
@@ -145,5 +162,10 @@ public class NoopTelemetryStorage implements TelemetryStorage{
     @Override
     public long getSessionLength() {
         return 0;
+    }
+
+    @Override
+    public UpdatesFromSSE popUpdatesFromSSE() {
+        return null;
     }
 }

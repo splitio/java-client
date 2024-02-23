@@ -10,8 +10,6 @@ import io.split.storages.pluggable.domain.ConfigConsumer;
 import io.split.storages.pluggable.domain.PrefixAdapter;
 import io.split.storages.pluggable.domain.UserStorageWrapper;
 import io.split.telemetry.synchronizer.TelemetrySynchronizer;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import pluggable.CustomStorageWrapper;
 
 import java.util.ArrayList;
@@ -27,8 +25,6 @@ public class TelemetryConsumerSubmitter implements TelemetrySynchronizer {
 
     private final UserStorageWrapper _userStorageWrapper;
     private final SDKMetadata _sdkMetadata;
-
-    private static final Logger _log = LoggerFactory.getLogger(TelemetryConsumerSubmitter.class);
 
     public TelemetryConsumerSubmitter(CustomStorageWrapper customStorageWrapper, SDKMetadata sdkMetadata) {
         _userStorageWrapper = new UserStorageWrapper(checkNotNull(customStorageWrapper));
@@ -48,23 +44,26 @@ public class TelemetryConsumerSubmitter implements TelemetrySynchronizer {
 
     @Override
     public void synchronizeUniqueKeys(UniqueKeys uniqueKeys) {
-        List<String> uniqueKeysToSend = new ArrayList<>(Arrays.asList(Json.toJson(uniqueKeys.uniqueKeys)));
-        _userStorageWrapper.pushItems(PrefixAdapter.buildUniqueKeys(), uniqueKeysToSend);
+        List<String> uniqueKeysToSend;
+        for (UniqueKeys.UniqueKey uniqueKey: uniqueKeys.uniqueKeys) {
+            uniqueKeysToSend = new ArrayList<>(Arrays.asList(Json.toJson(uniqueKey)));
+            _userStorageWrapper.pushItems(PrefixAdapter.buildUniqueKeys(), uniqueKeysToSend);
+        }
     }
 
     @Override
-    public void finalSynchronization(long splitCount, long segmentCount, long segmentKeyCount) {
+    public void finalSynchronization() {
         //No-Op
     }
 
     @VisibleForTesting
     ConfigConsumer generateConfig(SplitClientConfig splitClientConfig, Map<String, Long> factoryInstances, List<String> tags) {
         ConfigConsumer config = new ConfigConsumer();
-        config.set_operationMode(splitClientConfig.operationMode()== OperationMode.STANDALONE ? 0 : 1);
-        config.set_storage(STORAGE);
-        config.set_activeFactories(factoryInstances.size());
-        config.set_redundantFactories(getRedundantFactories(factoryInstances));
-        config.set_tags(tags.size() < 10 ? tags : tags.subList(0, 10));
+        config.setOperationMode(splitClientConfig.operationMode()== OperationMode.STANDALONE ? 0 : 1);
+        config.setStorage(STORAGE);
+        config.setActiveFactories(factoryInstances.size());
+        config.setRedundantFactories(getRedundantFactories(factoryInstances));
+        config.setTags(tags.size() < 10 ? tags : tags.subList(0, 10));
         return config;
     }
 

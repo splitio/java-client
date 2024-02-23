@@ -1,7 +1,20 @@
 package io.split.telemetry.storage;
 
-import io.split.telemetry.domain.*;
-import io.split.telemetry.domain.enums.*;
+import io.split.telemetry.domain.HTTPErrors;
+import io.split.telemetry.domain.HTTPLatencies;
+import io.split.telemetry.domain.LastSynchronization;
+import io.split.telemetry.domain.MethodExceptions;
+import io.split.telemetry.domain.MethodLatencies;
+import io.split.telemetry.domain.StreamingEvent;
+import io.split.telemetry.domain.UpdatesFromSSE;
+
+import io.split.telemetry.domain.enums.EventsDataRecordsEnum;
+import io.split.telemetry.domain.enums.HTTPLatenciesEnum;
+import io.split.telemetry.domain.enums.ImpressionsDataTypeEnum;
+import io.split.telemetry.domain.enums.LastSynchronizationRecordsEnum;
+import io.split.telemetry.domain.enums.MethodEnum;
+import io.split.telemetry.domain.enums.ResourceEnum;
+import io.split.telemetry.domain.enums.UpdatesFromSSEEnum;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -10,7 +23,7 @@ import java.util.List;
 public class InMemoryTelemetryStorageTest{
 
     @Test
-    public void testInMemoryTelemetryStorage() throws Exception {
+    public void testInMemoryTelemetryStorage() {
         InMemoryTelemetryStorage telemetryStorage = new InMemoryTelemetryStorage();
 
         //MethodLatencies
@@ -20,21 +33,29 @@ public class InMemoryTelemetryStorageTest{
         telemetryStorage.recordLatency(MethodEnum.TREATMENTS, 500l * 1000);
         telemetryStorage.recordLatency(MethodEnum.TREATMENT_WITH_CONFIG, 800l * 1000);
         telemetryStorage.recordLatency(MethodEnum.TREATMENTS_WITH_CONFIG, 1000l * 1000);
+        telemetryStorage.recordLatency(MethodEnum.TREATMENTS_BY_FLAG_SET, 1000l * 1000);
+        telemetryStorage.recordLatency(MethodEnum.TREATMENTS_BY_FLAG_SETS, 1000l * 1000);
+        telemetryStorage.recordLatency(MethodEnum.TREATMENTS_WITH_CONFIG_BY_FLAG_SET, 1000l * 1000);
+        telemetryStorage.recordLatency(MethodEnum.TREATMENTS_WITH_CONFIG_BY_FLAG_SETS, 1000l * 1000);
 
         MethodLatencies latencies = telemetryStorage.popLatencies();
-        Assert.assertEquals(2, latencies.get_treatment().stream().mapToInt(Long::intValue).sum());
-        Assert.assertEquals(2, latencies.get_treatments().stream().mapToInt(Long::intValue).sum());
-        Assert.assertEquals(1, latencies.get_treatmentsWithConfig().stream().mapToInt(Long::intValue).sum());
-        Assert.assertEquals(1, latencies.get_treatmentWithConfig().stream().mapToInt(Long::intValue).sum());
-        Assert.assertEquals(0, latencies.get_track().stream().mapToInt(Long::intValue).sum());
+        Assert.assertEquals(2, latencies.getTreatment().stream().mapToInt(Long::intValue).sum());
+        Assert.assertEquals(2, latencies.getTreatments().stream().mapToInt(Long::intValue).sum());
+        Assert.assertEquals(1, latencies.getTreatmentsWithConfig().stream().mapToInt(Long::intValue).sum());
+        Assert.assertEquals(1, latencies.getTreatmentWithConfig().stream().mapToInt(Long::intValue).sum());
+        Assert.assertEquals(1, latencies.getTreatmentByFlagSet().stream().mapToInt(Long::intValue).sum());
+        Assert.assertEquals(1, latencies.getTreatmentByFlagSets().stream().mapToInt(Long::intValue).sum());
+        Assert.assertEquals(1, latencies.getTreatmentWithConfigByFlagSet().stream().mapToInt(Long::intValue).sum());
+        Assert.assertEquals(1, latencies.getTreatmentWithConfigByFlagSets().stream().mapToInt(Long::intValue).sum());
+        Assert.assertEquals(0, latencies.getTrack().stream().mapToInt(Long::intValue).sum());
 
         //Check empty has worked
         latencies = telemetryStorage.popLatencies();
-        Assert.assertEquals(0, latencies.get_treatment().stream().mapToInt(Long::intValue).sum());
-        Assert.assertEquals(0, latencies.get_treatments().stream().mapToInt(Long::intValue).sum());
-        Assert.assertEquals(0, latencies.get_treatmentsWithConfig().stream().mapToInt(Long::intValue).sum());
-        Assert.assertEquals(0, latencies.get_treatmentWithConfig().stream().mapToInt(Long::intValue).sum());
-        Assert.assertEquals(0, latencies.get_track().stream().mapToInt(Long::intValue).sum());
+        Assert.assertEquals(0, latencies.getTreatment().stream().mapToInt(Long::intValue).sum());
+        Assert.assertEquals(0, latencies.getTreatments().stream().mapToInt(Long::intValue).sum());
+        Assert.assertEquals(0, latencies.getTreatmentsWithConfig().stream().mapToInt(Long::intValue).sum());
+        Assert.assertEquals(0, latencies.getTreatmentWithConfig().stream().mapToInt(Long::intValue).sum());
+        Assert.assertEquals(0, latencies.getTrack().stream().mapToInt(Long::intValue).sum());
 
         //HttpLatencies
         telemetryStorage.recordSyncLatency(HTTPLatenciesEnum.TELEMETRY, 1500l * 1000);
@@ -75,21 +96,33 @@ public class InMemoryTelemetryStorageTest{
         telemetryStorage.recordException(MethodEnum.TREATMENTS);
         telemetryStorage.recordException(MethodEnum.TREATMENT_WITH_CONFIG);
         telemetryStorage.recordException(MethodEnum.TREATMENTS_WITH_CONFIG);
+        telemetryStorage.recordException(MethodEnum.TREATMENTS_BY_FLAG_SET);
+        telemetryStorage.recordException(MethodEnum.TREATMENTS_BY_FLAG_SETS);
+        telemetryStorage.recordException(MethodEnum.TREATMENTS_WITH_CONFIG_BY_FLAG_SET);
+        telemetryStorage.recordException(MethodEnum.TREATMENTS_WITH_CONFIG_BY_FLAG_SETS);
 
         MethodExceptions methodExceptions = telemetryStorage.popExceptions();
-        Assert.assertEquals(2, methodExceptions.get_treatment());
-        Assert.assertEquals(2, methodExceptions.get_treatments());
-        Assert.assertEquals(1, methodExceptions.get_treatmentsWithConfig());
-        Assert.assertEquals(1, methodExceptions.get_treatmentWithConfig());
-        Assert.assertEquals(0, methodExceptions.get_track());
+        Assert.assertEquals(2, methodExceptions.getTreatment());
+        Assert.assertEquals(2, methodExceptions.getTreatments());
+        Assert.assertEquals(1, methodExceptions.getTreatmentsWithConfig());
+        Assert.assertEquals(1, methodExceptions.getTreatmentWithConfig());
+        Assert.assertEquals(1, methodExceptions.getTreatmentByFlagSet());
+        Assert.assertEquals(1, methodExceptions.getTreatmentByFlagSets());
+        Assert.assertEquals(1, methodExceptions.getTreatmentWithConfigByFlagSet());
+        Assert.assertEquals(1, methodExceptions.getTreatmentWithConfigByFlagSets());
+        Assert.assertEquals(0, methodExceptions.getTrack());
 
         //Check empty has worked
         methodExceptions = telemetryStorage.popExceptions();
-        Assert.assertEquals(0, methodExceptions.get_treatment());
-        Assert.assertEquals(0, methodExceptions.get_treatments());
-        Assert.assertEquals(0, methodExceptions.get_treatmentsWithConfig());
-        Assert.assertEquals(0, methodExceptions.get_treatmentWithConfig());
-        Assert.assertEquals(0, methodExceptions.get_track());
+        Assert.assertEquals(0, methodExceptions.getTreatment());
+        Assert.assertEquals(0, methodExceptions.getTreatments());
+        Assert.assertEquals(0, methodExceptions.getTreatmentsWithConfig());
+        Assert.assertEquals(0, methodExceptions.getTreatmentWithConfig());
+        Assert.assertEquals(0, methodExceptions.getTreatmentByFlagSet());
+        Assert.assertEquals(0, methodExceptions.getTreatmentByFlagSets());
+        Assert.assertEquals(0, methodExceptions.getTreatmentWithConfigByFlagSet());
+        Assert.assertEquals(0, methodExceptions.getTreatmentWithConfigByFlagSets());
+        Assert.assertEquals(0, methodExceptions.getTrack());
 
         //AuthRejections
         telemetryStorage.recordAuthRejections();
@@ -215,5 +248,12 @@ public class InMemoryTelemetryStorageTest{
         tags = telemetryStorage.popTags();
         Assert.assertEquals(0, tags.size());
 
+        //UpdatesFromSSE
+        telemetryStorage.recordUpdatesFromSSE(UpdatesFromSSEEnum.SPLITS);
+        telemetryStorage.recordUpdatesFromSSE(UpdatesFromSSEEnum.SPLITS);
+        telemetryStorage.recordUpdatesFromSSE(UpdatesFromSSEEnum.SPLITS);
+
+        UpdatesFromSSE updatesFromSSE = telemetryStorage.popUpdatesFromSSE();
+        Assert.assertEquals(3, updatesFromSSE.getSplits());
     }
 }

@@ -1,5 +1,6 @@
 package io.split.client.utils;
 
+import com.google.common.base.Preconditions;
 import io.split.client.dtos.Condition;
 import io.split.client.dtos.ConditionType;
 import io.split.client.dtos.KeySelector;
@@ -12,29 +13,27 @@ import io.split.client.dtos.SegmentChange;
 import io.split.client.dtos.Split;
 import io.split.client.dtos.SplitChange;
 import io.split.client.dtos.Status;
+import io.split.client.dtos.WhitelistMatcherData;
 
+import java.security.SecureRandom;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Random;
 import java.util.stream.Collectors;
 
 public final class LocalhostSanitizer {
-
-    private static final int MILLI_SECONDS = 1000;
-    private static final int ALGO = 2;
-    private static final int TRAFFIC_ALLOCATION_LIMIT = 100;
-    private static final String TREATMENT_ON = "on";
-    private static final String TREATMENT_OFF = "off";
     private static final String DEFAULT_RULE = "default rule";
-    private static final String TRAFFIC_TYPE_USER = "user";
+
+    private LocalhostSanitizer() {
+        throw new IllegalStateException("Utility class");
+    }
 
     public static SplitChange sanitization(SplitChange splitChange) {
-        Random random = new Random();
+        SecureRandom random = new SecureRandom();
         List<Split> splitsToRemove = new ArrayList<>();
-        if (splitChange.till < -1 || splitChange.till == 0) {
-            splitChange.till = -1L;
+        if (splitChange.till < LocalhostConstants.DEFAULT_TS || splitChange.till == 0) {
+            splitChange.till = LocalhostConstants.DEFAULT_TS;
         }
-        if (splitChange.since < -1 || splitChange.since > splitChange.till) {
+        if (splitChange.since < LocalhostConstants.DEFAULT_TS || splitChange.since > splitChange.till) {
             splitChange.since = splitChange.till;
         }
         if (splitChange.splits != null) {
@@ -44,28 +43,28 @@ public final class LocalhostSanitizer {
                     continue;
                 }
                 if (split.trafficTypeName == null || split.trafficTypeName.isEmpty()) {
-                    split.trafficTypeName = TRAFFIC_TYPE_USER;
+                    split.trafficTypeName = LocalhostConstants.USER;
                 }
-                if (split.trafficAllocation == null || split.trafficAllocation < 0 || split.trafficAllocation > TRAFFIC_ALLOCATION_LIMIT) {
-                    split.trafficAllocation = TRAFFIC_ALLOCATION_LIMIT;
+                if (split.trafficAllocation == null || split.trafficAllocation < 0 || split.trafficAllocation > LocalhostConstants.SIZE_100) {
+                    split.trafficAllocation = LocalhostConstants.SIZE_100;
                 }
                 if (split.trafficAllocationSeed == null || split.trafficAllocationSeed == 0) {
-                    split.trafficAllocationSeed = new Integer(- random.nextInt(10) * MILLI_SECONDS) ;
+                    split.trafficAllocationSeed = - random.nextInt(10) * LocalhostConstants.MILLI_SECONDS;
                 }
                 if (split.seed == 0) {
-                    split.seed = - random.nextInt(10) * MILLI_SECONDS;
+                    split.seed = - random.nextInt(10) * LocalhostConstants.MILLI_SECONDS;
                 }
                 if (split.status == null || split.status != Status.ACTIVE && split.status != Status.ARCHIVED) {
                     split.status = Status.ACTIVE;
                 }
                 if (split.defaultTreatment == null || split.defaultTreatment.isEmpty()) {
-                    split.defaultTreatment = TREATMENT_ON;
+                    split.defaultTreatment = LocalhostConstants.CONTROL;
                 }
                 if (split.changeNumber < 0) {
                     split.changeNumber = 0;
                 }
-                if (split.algo != ALGO){
-                    split.algo = ALGO;
+                if (split.algo != LocalhostConstants.ALGO){
+                    split.algo = LocalhostConstants.ALGO;
                 }
                 if (split.conditions == null) {
                     split.conditions = new ArrayList<>();
@@ -81,7 +80,7 @@ public final class LocalhostSanitizer {
                         condition.matcherGroup.matchers.isEmpty() ||
                         !condition.matcherGroup.matchers.get(0).matcherType.equals(MatcherType.ALL_KEYS)) {
                     Condition rolloutCondition = new Condition();
-                    split.conditions.add(createRolloutCondition(rolloutCondition, split.trafficTypeName));
+                    split.conditions.add(createRolloutCondition(rolloutCondition, split.trafficTypeName, null));
                 }
             }
             splitChange.splits.removeAll(splitsToRemove);
@@ -103,16 +102,16 @@ public final class LocalhostSanitizer {
         List<String> addedToRemoved = segmentChange.added.stream().filter(add -> segmentChange.removed.contains(add)).collect(Collectors.toList());
         segmentChange.removed.removeAll(addedToRemoved);
 
-        if (segmentChange.till <-1 || segmentChange.till == 0){
-            segmentChange.till = -1L;
+        if (segmentChange.till < LocalhostConstants.DEFAULT_TS || segmentChange.till == 0){
+            segmentChange.till = LocalhostConstants.DEFAULT_TS;
         }
-        if (segmentChange.since < -1 || segmentChange.since > segmentChange.till) {
+        if (segmentChange.since < LocalhostConstants.DEFAULT_TS || segmentChange.since > segmentChange.till) {
             segmentChange.since = segmentChange.till;
         }
         return segmentChange;
     }
 
-    private static Condition createRolloutCondition(Condition condition, String trafficType) {
+    public static Condition createRolloutCondition(Condition condition, String trafficType, String treatment) {
         condition.conditionType = ConditionType.ROLLOUT;
         condition.matcherGroup = new MatcherGroup();
         condition.matcherGroup.combiner = MatcherCombiner.AND;
@@ -127,18 +126,71 @@ public final class LocalhostSanitizer {
         condition.matcherGroup.matchers = new ArrayList<>();
         condition.matcherGroup.matchers.add(matcher);
 
-        Partition partitionOn = new Partition();
-        partitionOn.treatment = TREATMENT_ON;
-        partitionOn.size = 0;
-        Partition partitionOff = new Partition();
-        partitionOff.treatment = TREATMENT_OFF;
-        partitionOff.size = 100;
+        condition.partitions = new ArrayList<>();
+        Partition partition1 = new Partition();
+        Partition partition2 = new Partition();
+        partition1.size = LocalhostConstants.SIZE_100;
+        partition2.size = LocalhostConstants.SIZE_0;
+        if (treatment != null) {
+            partition1.treatment = treatment;
+        } else {
+            partition1.treatment = LocalhostConstants.TREATMENT_OFF;
+            partition2.treatment = LocalhostConstants.TREATMENT_ON;
+        }
+        condition.partitions.add(partition1);
+        condition.partitions.add(partition2);
+        condition.label = DEFAULT_RULE;
+
+        return condition;
+    }
+
+    public static Condition createCondition(Object keyOrKeys, String treatment) {
+        Condition condition = new Condition();
+        if (keyOrKeys == null) {
+            return LocalhostSanitizer.createRolloutCondition(condition, "user", treatment);
+        } else {
+            if (keyOrKeys instanceof String) {
+                List keys = new ArrayList<>();
+                keys.add(keyOrKeys);
+                return createWhitelistCondition(condition, "user", treatment, keys);
+            } else {
+                Preconditions.checkArgument(keyOrKeys instanceof List, "'keys' is not a String nor a List.");
+                return createWhitelistCondition(condition, "user", treatment, (List<String>) keyOrKeys);
+            }
+        }
+    }
+
+    public static Condition createWhitelistCondition(Condition condition, String trafficType, String treatment, List<String> keys) {
+        condition.conditionType = ConditionType.WHITELIST;
+        condition.matcherGroup = new MatcherGroup();
+        condition.matcherGroup.combiner = MatcherCombiner.AND;
+        Matcher matcher = new Matcher();
+        KeySelector keySelector = new KeySelector();
+        keySelector.trafficType = trafficType;
+
+        matcher.keySelector = keySelector;
+        matcher.matcherType = MatcherType.WHITELIST;
+        matcher.negate = false;
+        matcher.whitelistMatcherData = new WhitelistMatcherData();
+        matcher.whitelistMatcherData.whitelist = new ArrayList<>(keys);
+
+        condition.matcherGroup.matchers = new ArrayList<>();
+        condition.matcherGroup.matchers.add(matcher);
 
         condition.partitions = new ArrayList<>();
-        condition.partitions.add(partitionOn);
-        condition.partitions.add(partitionOff);
-
-        condition.label = DEFAULT_RULE;
+        Partition partition1 = new Partition();
+        Partition partition2 = new Partition();
+        partition1.size = LocalhostConstants.SIZE_100;
+        partition2.size = LocalhostConstants.SIZE_0;
+        if (treatment != null) {
+            partition1.treatment = treatment;
+        } else {
+            partition1.treatment = LocalhostConstants.TREATMENT_OFF;
+            partition2.treatment = LocalhostConstants.TREATMENT_ON;
+        }
+        condition.partitions.add(partition1);
+        condition.partitions.add(partition2);
+        condition.label = "default rule";
 
         return condition;
     }

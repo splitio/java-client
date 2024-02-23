@@ -7,6 +7,8 @@ import pluggable.Pipeline;
 import pluggable.Result;
 
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.Callable;
@@ -15,11 +17,14 @@ import java.util.concurrent.ConcurrentMap;
 public class CustomStorageWrapperHasPipeline implements CustomStorageWrapper, HasPipelineSupport {
 
     private static final String COUNTS = "SPLITIO.impressions.count";
+    private static final String FLAG_SET = "SPLITIO.flagSet";
     private final ConcurrentMap<String, Long> _impressionsCount = Maps.newConcurrentMap();
+    private final ConcurrentMap<String, HashSet<String>> _flagSets = Maps.newConcurrentMap();
 
     public CustomStorageWrapperHasPipeline() {
-
+        _flagSets.put("SPLITIO.flagSet.set1", new HashSet<>(new ArrayList<>(Arrays.asList("flag1", "flag2"))));
     }
+
     @Override
     public String get(String key) throws Exception {
         return null;
@@ -106,6 +111,11 @@ public class CustomStorageWrapperHasPipeline implements CustomStorageWrapper, Ha
     }
 
     @Override
+    public Set<String> getMembers(String key) {
+        return null;
+    }
+
+    @Override
     public boolean connect() {
         return false;
     }
@@ -123,7 +133,7 @@ public class CustomStorageWrapperHasPipeline implements CustomStorageWrapper, Ha
     public ConcurrentMap<String, Long> getImpressionsCount(){
         return _impressionsCount;
     }
-    private class CustomPipeline implements Pipeline{
+    private class CustomPipeline implements Pipeline {
 
         private List<Callable<Object>> methodsToExecute;
 
@@ -158,9 +168,24 @@ public class CustomStorageWrapperHasPipeline implements CustomStorageWrapper, Ha
             return count;
         }
 
+        @Override
+        public void getMembers(String key) {
+            methodsToExecute.add(() -> { return  getMembersToExecute(key);});
+        }
+
+        private HashSet<String> getMembersToExecute(String key) {
+            String storageKey = getStorage(key);
+            if(storageKey.equals(FLAG_SET)) {
+                return _flagSets.get(key);
+            }
+            return new HashSet<>();
+        }
+
         private String getStorage(String key) {
             if(key.startsWith(COUNTS))
                 return  COUNTS;
+            if(key.startsWith(FLAG_SET))
+                return FLAG_SET;
             return "";
         }
 

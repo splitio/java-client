@@ -28,6 +28,7 @@ public interface CustomStorageWrapper {
     void addItems(String key, List<String> items) throws Exception;
     void removeItems(String key, List<String> items) throws Exception;
     List<String> getItems(List<String> keys) throws Exception;
+    Set<String> getMembers(String key) throws Exception;
     boolean connect() throws Exception;
     boolean disconnect() throws Exception;
     Pipeline pipeline() throws Exception;

@@ -18,10 +18,11 @@ public class Impression {
     private final Map<String, Object> _attributes;
 
 
-    public Impression(String key, String bucketingKey, String split, String treatment, long time, String appliedRule, Long changeNumber, Map<String, Object> atributes) {
+    public Impression(String key, String bucketingKey, String featureFlag, String treatment, long time, String appliedRule,
+                      Long changeNumber, Map<String, Object> atributes) {
         _key = key;
         _bucketingKey = bucketingKey;
-        _split = split;
+        _split = featureFlag;
         _treatment = treatment;
         _time = time;
         _appliedRule = appliedRule;

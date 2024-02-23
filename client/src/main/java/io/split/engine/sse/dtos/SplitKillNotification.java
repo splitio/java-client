@@ -28,11 +28,12 @@ public class SplitKillNotification extends IncomingNotification {
 
     @Override
     public void handler(NotificationProcessor notificationProcessor) {
-        notificationProcessor.processSplitKill(getChangeNumber(), getSplitName(), getDefaultTreatment());
+        notificationProcessor.processSplitKill(this);
     }
 
     @Override
     public String toString() {
-        return String.format("Type: %s; Channel: %s; ChangeNumber: %s; DefaultTreatment: %s; SplitName: %s", getType(), getChannel(), getChangeNumber(), getDefaultTreatment(), getSplitName());
+        return String.format("Type: %s; Channel: %s; ChangeNumber: %s; DefaultTreatment: %s; SplitName: %s", getType(), getChannel(),
+                getChangeNumber(), getDefaultTreatment(), getSplitName());
     }
 }

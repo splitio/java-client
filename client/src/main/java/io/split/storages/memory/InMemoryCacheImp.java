@@ -4,6 +4,7 @@ import com.google.common.collect.ConcurrentHashMultiset;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Multiset;
 import com.google.common.collect.Sets;
+import io.split.client.interceptors.FlagSetsFilter;
 import io.split.engine.experiments.ParsedSplit;
 import io.split.storages.SplitCache;
 import org.slf4j.Logger;
@@ -12,6 +13,7 @@ import org.slf4j.LoggerFactory;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -24,27 +26,33 @@ public class InMemoryCacheImp implements SplitCache {
     private static final Logger _log = LoggerFactory.getLogger(InMemoryCacheImp.class);
 
     private final ConcurrentMap<String, ParsedSplit> _concurrentMap;
+    private final ConcurrentMap<String, HashSet<String>> _flagSets;
     private final Multiset<String> _concurrentTrafficTypeNameSet;
+    private final FlagSetsFilter _flagSetsFilter;
 
     private AtomicLong _changeNumber;
 
-    public InMemoryCacheImp() {
-        this(-1);
+    public InMemoryCacheImp(FlagSetsFilter flagSets) {
+        this(-1, flagSets);
     }
 
-    public InMemoryCacheImp(long startingChangeNumber) {
+    public InMemoryCacheImp(long startingChangeNumber, FlagSetsFilter flagSets) {
         _concurrentMap = Maps.newConcurrentMap();
         _changeNumber = new AtomicLong(startingChangeNumber);
         _concurrentTrafficTypeNameSet = ConcurrentHashMultiset.create();
+        _flagSets = Maps.newConcurrentMap();
+        _flagSetsFilter = flagSets;
     }
 
     @Override
     public boolean remove(String name) {
         ParsedSplit removed = _concurrentMap.remove(name);
-        if (removed != null && removed.trafficTypeName() != null) {
-            this.decreaseTrafficType(removed.trafficTypeName());
+        if (removed != null) {
+            removeFromFlagSets(removed.feature());
+            if (removed.trafficTypeName() != null) {
+                this.decreaseTrafficType(removed.trafficTypeName());
+            }
         }
-
         return removed != null;
     }
 
@@ -75,7 +83,7 @@ public class InMemoryCacheImp implements SplitCache {
     @Override
     public void setChangeNumber(long changeNumber) {
         if (changeNumber < _changeNumber.get()) {
-            _log.error("ChangeNumber for splits cache is less than previous");
+            _log.error("ChangeNumber for feature flags cache is less than previous");
         }
 
         _changeNumber.set(changeNumber);
@@ -98,6 +106,16 @@ public class InMemoryCacheImp implements SplitCache {
     }
 
     @Override
+    public Map<String, HashSet<String>> getNamesByFlagSets(List<String> flagSets) {
+        Map<String, HashSet<String>> toReturn = new HashMap<>();
+        for (String set: flagSets) {
+            HashSet<String> keys = _flagSets.get(set);
+            toReturn.put(set, keys);
+        }
+        return toReturn;
+    }
+
+    @Override
     public void kill(String splitName, String defaultTreatment, long changeNumber) {
         ParsedSplit parsedSplit = _concurrentMap.get(splitName);
 
@@ -111,7 +129,9 @@ public class InMemoryCacheImp implements SplitCache {
                 parsedSplit.trafficAllocation(),
                 parsedSplit.trafficAllocationSeed(),
                 parsedSplit.algo(),
-                parsedSplit.configurations());
+                parsedSplit.configurations(),
+                parsedSplit.flagSets()
+                );
 
         _concurrentMap.put(splitName, updatedSplit);
     }
@@ -126,10 +146,11 @@ public class InMemoryCacheImp implements SplitCache {
     public void putMany(List<ParsedSplit> splits) {
         for (ParsedSplit split : splits) {
             _concurrentMap.put(split.feature(), split);
-
             if (split.trafficTypeName() != null) {
                 this.increaseTrafficType(split.trafficTypeName());
             }
+            removeFromFlagSets(split.feature());
+            addToFlagSets(split);
         }
     }
 
@@ -142,9 +163,46 @@ public class InMemoryCacheImp implements SplitCache {
     public void decreaseTrafficType(String trafficType) {
         _concurrentTrafficTypeNameSet.remove(trafficType);
     }
-    
+
+    @Override
+    public void update(List<ParsedSplit> toAdd, List<String> toRemove, long changeNumber) {
+        if(toAdd != null) {
+            putMany(toAdd);
+        }
+        if(toRemove != null) {
+            for(String featureFlag : toRemove) {
+                remove(featureFlag);
+            }
+        }
+        setChangeNumber(changeNumber);
+    }
+
     public Set<String> getSegments() {
         return _concurrentMap.values().stream()
                 .flatMap(parsedSplit -> parsedSplit.getSegmentsNames().stream()).collect(Collectors.toSet());
+    }
+
+    private void addToFlagSets(ParsedSplit featureFlag) {
+        HashSet<String> sets = featureFlag.flagSets();
+        if(sets == null) {
+            return;
+        }
+        for (String set: sets) {
+            if (!_flagSetsFilter.intersect(set)) {
+                continue;
+            }
+            HashSet<String> features = _flagSets.get(set);
+            if (features == null) {
+                features = new HashSet<>();
+            }
+            features.add(featureFlag.feature());
+            _flagSets.put(set, features);
+        }
+    }
+
+    private void removeFromFlagSets(String featureFlagName) {
+        for (String set: _flagSets.keySet()) {
+            _flagSets.get(set).remove(featureFlagName);
+        }
     }
 }

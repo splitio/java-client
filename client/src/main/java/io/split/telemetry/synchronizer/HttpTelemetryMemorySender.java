@@ -3,7 +3,6 @@ package io.split.telemetry.synchronizer;
 import com.google.common.annotations.VisibleForTesting;
 import io.split.client.dtos.UniqueKeys;
 import io.split.client.utils.Utils;
-import io.split.engine.segments.SegmentFetcherImp;
 import io.split.service.HttpPostImp;
 import io.split.telemetry.domain.Config;
 import io.split.telemetry.domain.Stats;
@@ -32,7 +31,8 @@ public class HttpTelemetryMemorySender{
     private final URI _uniqueKeysTarget;
     private final HttpPostImp _httpPost;
 
-    public static HttpTelemetryMemorySender create(CloseableHttpClient client, URI telemetryRootEndpoint, TelemetryRuntimeProducer telemetryRuntimeProducer) throws URISyntaxException {
+    public static HttpTelemetryMemorySender create(CloseableHttpClient client, URI telemetryRootEndpoint,
+                                                   TelemetryRuntimeProducer telemetryRuntimeProducer) throws URISyntaxException {
         return new HttpTelemetryMemorySender(client,
                 Utils.appendPath(telemetryRootEndpoint,CONFIG_ENDPOINT_PATH),
                 Utils.appendPath(telemetryRootEndpoint, STATS_ENDPOINT_PATH),
@@ -42,7 +42,8 @@ public class HttpTelemetryMemorySender{
     }
 
     @VisibleForTesting
-    HttpTelemetryMemorySender(CloseableHttpClient client, URI impressionConfigTarget, URI impressionStatsTarget, URI uniqueKeysTarget,TelemetryRuntimeProducer telemetryRuntimeProducer) {
+    HttpTelemetryMemorySender(CloseableHttpClient client, URI impressionConfigTarget, URI impressionStatsTarget,
+                              URI uniqueKeysTarget,TelemetryRuntimeProducer telemetryRuntimeProducer) {
         _httpPost = new HttpPostImp(client, telemetryRuntimeProducer);
         _impressionConfigTarget = impressionConfigTarget;
         _impressionStatsTarget = impressionStatsTarget;
