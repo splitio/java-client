@@ -46,7 +46,7 @@ public class UniqueKeysTrackerImp implements UniqueKeysTracker{
     }
 
     @Override
-    public synchronized boolean track(String featureFlagName, String key) {
+    public boolean track(String featureFlagName, String key) {
         if (!filterAdapter.add(featureFlagName, key)) {
             _logger.debug("The feature flag " + featureFlagName + " and key " + key + " exist in the UniqueKeysTracker");
             return false;
@@ -106,7 +106,7 @@ public class UniqueKeysTrackerImp implements UniqueKeysTracker{
         return toReturn;
     }
 
-    private void sendUniqueKeys(){
+    private synchronized void sendUniqueKeys(){
         if (uniqueKeysTracker.size() == 0) {
            _log.warn("The Unique Keys Tracker is empty");
            return;
