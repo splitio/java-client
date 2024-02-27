@@ -22,7 +22,7 @@ import java.nio.charset.StandardCharsets;
 import static com.google.common.base.Preconditions.checkNotNull;
 
 public class AuthApiClientImp implements AuthApiClient {
-    private static final Logger _log = LoggerFactory.getLogger(AuthApiClient.class);
+    private static final Logger _log = LoggerFactory.getLogger(AuthApiClientImp.class);
 
     private final CloseableHttpClient _httpClient;
     private final String _target;
