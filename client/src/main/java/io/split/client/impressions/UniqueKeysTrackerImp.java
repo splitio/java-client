@@ -14,6 +14,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ScheduledExecutorService;
@@ -121,8 +122,8 @@ public class UniqueKeysTrackerImp implements UniqueKeysTracker{
             }
             HashMap<String, HashSet<String>> uniqueKeysHashMap = popAll();
             List<UniqueKeys.UniqueKey> uniqueKeysFromPopAll = new ArrayList<>();
-            for (String feature : uniqueKeysHashMap.keySet()) {
-                UniqueKeys.UniqueKey uniqueKey = new UniqueKeys.UniqueKey(feature, new ArrayList<>(uniqueKeysHashMap.get(feature)));
+            for (Map.Entry<String, HashSet<String>> uniqueKeyEntry : uniqueKeysHashMap.entrySet()) {
+                UniqueKeys.UniqueKey uniqueKey = new UniqueKeys.UniqueKey(uniqueKeyEntry.getKey(), new ArrayList<>(uniqueKeyEntry.getValue()));
                 uniqueKeysFromPopAll.add(uniqueKey);
             }
             _telemetrySynchronizer.synchronizeUniqueKeys(new UniqueKeys(uniqueKeysFromPopAll));
@@ -148,5 +149,9 @@ public class UniqueKeysTrackerImp implements UniqueKeysTracker{
         public void execute() {
             sendUniqueKeys();
         }
+    }
+
+    public AtomicBoolean getSendGuard() {
+        return sendGuard;
     }
 }
