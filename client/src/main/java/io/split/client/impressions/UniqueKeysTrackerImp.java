@@ -14,10 +14,13 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 public class UniqueKeysTrackerImp implements UniqueKeysTracker{
     private static final Logger _log = LoggerFactory.getLogger(UniqueKeysTrackerImp.class);
@@ -31,6 +34,7 @@ public class UniqueKeysTrackerImp implements UniqueKeysTracker{
     private final ConcurrentHashMap<String,HashSet<String>> uniqueKeysTracker;
     private final int _uniqueKeysRefreshRate;
     private final int _filterRefreshRate;
+    private final AtomicBoolean sendGuard = new AtomicBoolean(false);
     private static final Logger _logger = LoggerFactory.getLogger(UniqueKeysTrackerImp.class);
 
     public UniqueKeysTrackerImp(TelemetrySynchronizer telemetrySynchronizer, int uniqueKeysRefreshRate, int filterRefreshRate,
@@ -46,19 +50,19 @@ public class UniqueKeysTrackerImp implements UniqueKeysTracker{
     }
 
     @Override
-    public synchronized boolean track(String featureFlagName, String key) {
+    public boolean track(String featureFlagName, String key) {
         if (!filterAdapter.add(featureFlagName, key)) {
             _logger.debug("The feature flag " + featureFlagName + " and key " + key + " exist in the UniqueKeysTracker");
             return false;
         }
-        HashSet<String> value = new HashSet<>();
-        if(uniqueKeysTracker.containsKey(featureFlagName)){
-            value = uniqueKeysTracker.get(featureFlagName);
-        }
-        value.add(key);
-        uniqueKeysTracker.put(featureFlagName, value);
+        uniqueKeysTracker.compute(featureFlagName,
+                (feature, current) -> {
+                    HashSet<String> keysByFeature = Optional.ofNullable(current).orElse(new HashSet<>());
+                    keysByFeature.add(key);
+                    return keysByFeature;
+                });
         _logger.debug("The feature flag " + featureFlagName + " and key " + key + " was added");
-        if (uniqueKeysTracker.size() == MAX_AMOUNT_OF_TRACKED_UNIQUE_KEYS){
+        if (uniqueKeysTracker.size() >= MAX_AMOUNT_OF_TRACKED_UNIQUE_KEYS){
             _logger.warn("The UniqueKeysTracker size reached the maximum limit");
             try {
                 sendUniqueKeys();
@@ -107,17 +111,25 @@ public class UniqueKeysTrackerImp implements UniqueKeysTracker{
     }
 
     private void sendUniqueKeys(){
-        if (uniqueKeysTracker.size() == 0) {
-           _log.warn("The Unique Keys Tracker is empty");
-           return;
+        if (!sendGuard.compareAndSet(false, true)) {
+            _log.debug("SendUniqueKeys already running");
+            return;
         }
-        HashMap<String, HashSet<String>> uniqueKeysHashMap = popAll();
-        List<UniqueKeys.UniqueKey> uniqueKeysFromPopAll = new ArrayList<>();
-        for (String featureFlag : uniqueKeysHashMap.keySet()) {
-            UniqueKeys.UniqueKey uniqueKey = new UniqueKeys.UniqueKey(featureFlag, new ArrayList<>(uniqueKeysHashMap.get(featureFlag)));
-            uniqueKeysFromPopAll.add(uniqueKey);
+        try {
+            if (uniqueKeysTracker.size() == 0) {
+                _log.warn("The Unique Keys Tracker is empty");
+                return;
+            }
+            HashMap<String, HashSet<String>> uniqueKeysHashMap = popAll();
+            List<UniqueKeys.UniqueKey> uniqueKeysFromPopAll = new ArrayList<>();
+            for (Map.Entry<String, HashSet<String>> uniqueKeyEntry : uniqueKeysHashMap.entrySet()) {
+                UniqueKeys.UniqueKey uniqueKey = new UniqueKeys.UniqueKey(uniqueKeyEntry.getKey(), new ArrayList<>(uniqueKeyEntry.getValue()));
+                uniqueKeysFromPopAll.add(uniqueKey);
+            }
+            _telemetrySynchronizer.synchronizeUniqueKeys(new UniqueKeys(uniqueKeysFromPopAll));
+        } finally {
+            sendGuard.set(false);
         }
-        _telemetrySynchronizer.synchronizeUniqueKeys(new UniqueKeys(uniqueKeysFromPopAll));
     }
 
     private interface ExecuteUniqueKeysAction{
@@ -137,5 +149,9 @@ public class UniqueKeysTrackerImp implements UniqueKeysTracker{
         public void execute() {
             sendUniqueKeys();
         }
+    }
+
+    public AtomicBoolean getSendGuard() {
+        return sendGuard;
     }
 }
