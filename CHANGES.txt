@@ -1,3 +1,6 @@
+4.11.1 (Feb 29, 2024)
+- Fixed deadlock in UniqueKeysTracker when sending Unique Keys.
+
 4.11.0 (Jan 9, 2024)
 - Added impressionsListener method in the IntegrationConfig builder to set Sync or Async Listener execution.
 - Fixed localhost to read files with yml ending.

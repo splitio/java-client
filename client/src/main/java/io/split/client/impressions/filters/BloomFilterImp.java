@@ -6,7 +6,7 @@ import com.google.common.hash.Funnels;
 
 public class BloomFilterImp implements Filter {
 
-    private BloomFilter bloomFilter;
+    private BloomFilter<String> bloomFilter;
     private final int size;
     private final double errorMargin;
 
@@ -17,17 +17,17 @@ public class BloomFilterImp implements Filter {
     }
 
     @Override
-    public synchronized boolean add(String data) {
+    public boolean add(String data) {
         return bloomFilter.put(data);
     }
 
     @Override
-    public synchronized boolean contains(String data) {
+    public boolean contains(String data) {
         return bloomFilter.mightContain(data);
     }
 
     @Override
-    public synchronized void clear() {
+    public void clear() {
         bloomFilter = BloomFilter.create(Funnels.stringFunnel(Charsets.UTF_16), size, errorMargin);
 
     }
