@@ -31,12 +31,18 @@ public final class SplitHttpClient {
     private final RequestDecorator _requestDecorator;
     private final TelemetryRuntimeProducer _telemetryRuntimeProducer;
 
-    public static SplitHttpClient create(CloseableHttpClient client, TelemetryRuntimeProducer telemetryRuntimeProducer, RequestDecorator requestDecorator)
-            throws URISyntaxException {
+    public static SplitHttpClient create(
+            CloseableHttpClient client,
+            TelemetryRuntimeProducer telemetryRuntimeProducer,
+            RequestDecorator requestDecorator
+    ) throws URISyntaxException {
         return new SplitHttpClient(client, telemetryRuntimeProducer, requestDecorator);
     }
 
-    private SplitHttpClient(CloseableHttpClient client, TelemetryRuntimeProducer telemetryRuntimeProducer, RequestDecorator requestDecorator) {
+    private SplitHttpClient
+            (CloseableHttpClient client,
+             TelemetryRuntimeProducer telemetryRuntimeProducer,
+             RequestDecorator requestDecorator) {
         _client = client;
         _telemetryRuntimeProducer = checkNotNull(telemetryRuntimeProducer);
         _requestDecorator = requestDecorator;
@@ -81,7 +87,11 @@ public final class SplitHttpClient {
         }
     }
 
-    public void post(URI uri, HttpEntity entity, Map<String, String> additionalHeaders, HttpParamsWrapper telemetryParamsWrapper) throws IOException {
+    public void post
+            (URI uri,
+             HttpEntity entity,
+             Map<String, String> additionalHeaders,
+             HttpParamsWrapper telemetryParamsWrapper) throws IOException {
         CloseableHttpResponse response = null;
         long initTime = System.currentTimeMillis();
         try {
