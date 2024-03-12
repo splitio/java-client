@@ -2,18 +2,12 @@ package io.split.client;
 
 import org.apache.hc.client5.http.classic.methods.HttpGet;
 import org.apache.hc.client5.http.classic.methods.HttpPost;
-import org.apache.hc.client5.http.classic.methods.HttpUriRequestBase;
 import org.apache.hc.core5.http.ProtocolException;
 import org.junit.Assert;
 import org.junit.Test;
-import io.split.client.RequestDecorator;
 
 import java.util.HashMap;
 import java.util.Map;
-
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.equalTo;
-import static org.hamcrest.Matchers.is;
 
 public class RequestDecoratorTest {
 
@@ -21,7 +15,7 @@ public class RequestDecoratorTest {
     public void testNoOp() {
         RequestDecorator decorator = new RequestDecorator(null);
         HttpGet request = new HttpGet("http://anyhost");
-        request  = (HttpGet) decorator.decorateHeaders((HttpUriRequestBase) request);
+        request  = (HttpGet) decorator.decorateHeaders(request);
         Assert.assertEquals(0, request.getHeaders().length);
         request.addHeader("myheader", "value");
         request  = (HttpGet) decorator.decorateHeaders(request);
