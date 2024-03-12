@@ -48,7 +48,7 @@ public class HttpSplitClientTest {
         CloseableHttpClient httpClientMock = TestHelper.mockHttpClient("split-change-special-characters.json", HttpStatus.SC_OK);
         RequestDecorator decorator = new RequestDecorator(null);
 
-        SplitHttpClient splitHtpClient = SplitHttpClient.create(httpClientMock, TELEMETRY_STORAGE, decorator);
+        SplitHttpClient splitHtpClient = SplitHttpClientImpl.create(httpClientMock, TELEMETRY_STORAGE, decorator);
         String change_raw = splitHtpClient.get(rootTarget,
                 new FetchOptions.Builder().cacheControlHeaders(true).build(),
                 HttpParamsWrapper.SPLITS
@@ -73,7 +73,7 @@ public class HttpSplitClientTest {
         CloseableHttpClient httpClientMock = TestHelper.mockHttpClient("split-change-special-characters.json", HttpStatus.SC_INTERNAL_SERVER_ERROR);
         RequestDecorator decorator = new RequestDecorator(null);
 
-        SplitHttpClient splitHtpClient = SplitHttpClient.create(httpClientMock, TELEMETRY_STORAGE, decorator);
+        SplitHttpClient splitHtpClient = SplitHttpClientImpl.create(httpClientMock, TELEMETRY_STORAGE, decorator);
         String change_raw = splitHtpClient.get(rootTarget,
                 new FetchOptions.Builder().cacheControlHeaders(true).build(),
                 HttpParamsWrapper.SPLITS
@@ -82,13 +82,13 @@ public class HttpSplitClientTest {
 
     @Test
     public void testPost() throws URISyntaxException, IOException, IllegalAccessException, NoSuchMethodException, InvocationTargetException {
-        URI rootTarget = URI.create("https://kubernetesturl.com/split");
+        URI rootTarget = URI.create("https://kubernetesturl.com/split/api/testImpressions/bulk");
 
         // Setup response mock
         CloseableHttpClient httpClient = TestHelper.mockHttpClient("", HttpStatus.SC_OK);
         RequestDecorator decorator = new RequestDecorator(null);
 
-        SplitHttpClient splitHtpClient = SplitHttpClient.create(httpClient, TELEMETRY_STORAGE, decorator);
+        SplitHttpClient splitHtpClient = SplitHttpClientImpl.create(httpClient, TELEMETRY_STORAGE, decorator);
 
         // Send impressions
         List<TestImpressions> toSend = Arrays.asList(new TestImpressions("t1", Arrays.asList(
@@ -101,7 +101,7 @@ public class HttpSplitClientTest {
                 KeyImpression.fromImpression(new Impression("k3", null, "t2", "on", 123L, "r1", 456L, null))
         )));
         Map<String, String> additionalHeaders = new HashMap<>();
-        additionalHeaders.put("SplitSDKImpressionsMode", "any");
+        additionalHeaders.put("SplitSDKImpressionsMode", "OPTIMIZED");
         splitHtpClient.post(rootTarget, Utils.toJsonEntity(toSend), additionalHeaders, HttpParamsWrapper.IMPRESSIONS);
 
         // Capture outgoing request and validate it
@@ -125,7 +125,7 @@ public class HttpSplitClientTest {
         CloseableHttpClient httpClientMock = TestHelper.mockHttpClient("split-change-special-characters.json", HttpStatus.SC_INTERNAL_SERVER_ERROR);
         RequestDecorator decorator = new RequestDecorator(null);
 
-        SplitHttpClient splitHtpClient = SplitHttpClient.create(httpClientMock, TELEMETRY_STORAGE, decorator);
+        SplitHttpClient splitHtpClient = SplitHttpClientImpl.create(httpClientMock, TELEMETRY_STORAGE, decorator);
         splitHtpClient.post(rootTarget, Utils.toJsonEntity(Arrays.asList( new String[] { "A", "B", "C", "D" })), null, HttpParamsWrapper.IMPRESSIONS);
     }
 
@@ -134,7 +134,7 @@ public class HttpSplitClientTest {
         URI rootTarget = URI.create("https://api.split.io/splitChanges?since=1234567");
         CloseableHttpClient httpClientMock = TestHelper.mockHttpClient("split-change-special-characters.json", HttpStatus.SC_INTERNAL_SERVER_ERROR);
 
-        SplitHttpClient splitHtpClient = SplitHttpClient.create(httpClientMock, TELEMETRY_STORAGE, null);
+        SplitHttpClient splitHtpClient = SplitHttpClientImpl.create(httpClientMock, TELEMETRY_STORAGE, null);
         splitHtpClient.post(rootTarget, Utils.toJsonEntity(Arrays.asList( new String[] { "A", "B", "C", "D" })), null, HttpParamsWrapper.IMPRESSIONS);
     }
 }
