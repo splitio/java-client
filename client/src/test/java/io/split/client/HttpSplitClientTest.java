@@ -59,11 +59,23 @@ public class HttpSplitClientTest {
         Assert.assertEquals(2, split.sets.size());
     }
 
-    @Test(expected = IllegalStateException.class)
+    @Test
     public void testGetError() throws URISyntaxException, InvocationTargetException, NoSuchMethodException, IllegalAccessException, IOException {
         URI rootTarget = URI.create("https://api.split.io/splitChanges?since=1234567");
         CloseableHttpClient httpClientMock = TestHelper.mockHttpClient("split-change-special-characters.json", HttpStatus.SC_INTERNAL_SERVER_ERROR);
         RequestDecorator decorator = new RequestDecorator(null);
+
+        SplitHttpClient splitHtpClient = SplitHttpClientImpl.create(httpClientMock, decorator);
+        SplitHttpResponse splitHttpResponse = splitHtpClient.get(rootTarget,
+                new FetchOptions.Builder().cacheControlHeaders(true).build());
+        Assert.assertEquals(HttpStatus.SC_INTERNAL_SERVER_ERROR, (long) splitHttpResponse.statusCode);
+    }
+
+    @Test(expected = IllegalStateException.class)
+    public void testException() throws URISyntaxException, InvocationTargetException, NoSuchMethodException, IllegalAccessException, IOException {
+        URI rootTarget = URI.create("https://api.split.io/splitChanges?since=1234567");
+        CloseableHttpClient httpClientMock = TestHelper.mockHttpClient("split-change-special-characters.json", HttpStatus.SC_INTERNAL_SERVER_ERROR);
+        RequestDecorator decorator = null;
 
         SplitHttpClient splitHtpClient = SplitHttpClientImpl.create(httpClientMock, decorator);
         splitHtpClient.get(rootTarget,
