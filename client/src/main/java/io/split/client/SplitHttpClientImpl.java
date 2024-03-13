@@ -60,18 +60,18 @@ public final class SplitHttpClientImpl implements SplitHttpClient {
                 _log.debug(String.format("[%s] %s. Status code: %s", request.getMethod(), uri.toURL(), statusCode));
             }
 
+            SplitHttpResponse httpResponse = new SplitHttpResponse();
+            httpResponse.statusMessage = "";
             if (statusCode < HttpStatus.SC_OK || statusCode >= HttpStatus.SC_MULTIPLE_CHOICES) {
                 if (statusCode == HttpStatus.SC_REQUEST_URI_TOO_LONG) {
                     _log.error("The amount of flag sets provided are big causing uri length error.");
                     throw new UriTooLongException(String.format("Status code: %s. Message: %s", statusCode, response.getReasonPhrase()));
                 }
                 _log.warn(String.format("Response status was: %s. Reason: %s", statusCode , response.getReasonPhrase()));
-                throw new IllegalStateException(String.format("Http get received non-successful return code %s", statusCode));
+                httpResponse.statusMessage = response.getReasonPhrase();
             }
-            SplitHttpResponse httpResponse = new SplitHttpResponse();
             httpResponse.statusCode = statusCode;
             httpResponse.body = EntityUtils.toString(response.getEntity(), StandardCharsets.UTF_8);
-            httpResponse.statusMessage = "";
             return httpResponse;
         } catch (Exception e) {
             throw new IllegalStateException(String.format("Problem in http get operation: %s", e), e);

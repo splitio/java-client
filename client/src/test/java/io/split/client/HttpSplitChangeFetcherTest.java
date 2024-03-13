@@ -40,7 +40,9 @@ public class HttpSplitChangeFetcherTest {
         URI rootTarget = URI.create("https://api.split.io");
         CloseableHttpClient httpClient = HttpClients.custom().build();
         Metrics.NoopMetrics metrics = new Metrics.NoopMetrics();
-        HttpSplitChangeFetcher fetcher = HttpSplitChangeFetcher.create(httpClient, rootTarget, TELEMETRY_STORAGE);
+        SplitHttpClient splitHtpClient = SplitHttpClientImpl.create(httpClient, new RequestDecorator(null));
+
+        HttpSplitChangeFetcher fetcher = HttpSplitChangeFetcher.create(splitHtpClient, rootTarget, TELEMETRY_STORAGE);
         Assert.assertEquals("https://api.split.io/api/splitChanges", fetcher.getTarget().toString());
     }
 
@@ -48,7 +50,9 @@ public class HttpSplitChangeFetcherTest {
     public void testCustomURLNoPathNoBackslash() throws URISyntaxException {
         URI rootTarget = URI.create("https://kubernetesturl.com/split");
         CloseableHttpClient httpClient = HttpClients.custom().build();
-        HttpSplitChangeFetcher fetcher = HttpSplitChangeFetcher.create(httpClient, rootTarget, TELEMETRY_STORAGE);
+        SplitHttpClient splitHtpClient = SplitHttpClientImpl.create(httpClient, new RequestDecorator(null));
+
+        HttpSplitChangeFetcher fetcher = HttpSplitChangeFetcher.create(splitHtpClient, rootTarget, TELEMETRY_STORAGE);
         Assert.assertEquals("https://kubernetesturl.com/split/api/splitChanges", fetcher.getTarget().toString());
     }
 
@@ -56,7 +60,8 @@ public class HttpSplitChangeFetcherTest {
     public void testCustomURLAppendingPath() throws URISyntaxException {
         URI rootTarget = URI.create("https://kubernetesturl.com/split/");
         CloseableHttpClient httpClient = HttpClients.custom().build();
-        HttpSplitChangeFetcher fetcher = HttpSplitChangeFetcher.create(httpClient, rootTarget, TELEMETRY_STORAGE);
+        SplitHttpClient splitHtpClient = SplitHttpClientImpl.create(httpClient, new RequestDecorator(null));
+        HttpSplitChangeFetcher fetcher = HttpSplitChangeFetcher.create(splitHtpClient, rootTarget, TELEMETRY_STORAGE);
         Assert.assertEquals("https://kubernetesturl.com/split/api/splitChanges", fetcher.getTarget().toString());
     }
 
@@ -64,7 +69,8 @@ public class HttpSplitChangeFetcherTest {
     public void testCustomURLAppendingPathNoBackslash() throws URISyntaxException {
         URI rootTarget = URI.create("https://kubernetesturl.com/split");
         CloseableHttpClient httpClient = HttpClients.custom().build();
-        HttpSplitChangeFetcher fetcher = HttpSplitChangeFetcher.create(httpClient, rootTarget, TELEMETRY_STORAGE);
+        SplitHttpClient splitHtpClient = SplitHttpClientImpl.create(httpClient, new RequestDecorator(null));
+        HttpSplitChangeFetcher fetcher = HttpSplitChangeFetcher.create(splitHtpClient, rootTarget, TELEMETRY_STORAGE);
         Assert.assertEquals("https://kubernetesturl.com/split/api/splitChanges", fetcher.getTarget().toString());
     }
 
@@ -73,8 +79,9 @@ public class HttpSplitChangeFetcherTest {
         URI rootTarget = URI.create("https://api.split.io");
 
         CloseableHttpClient httpClientMock = TestHelper.mockHttpClient("split-change-special-characters.json", HttpStatus.SC_OK);
+        SplitHttpClient splitHtpClient = SplitHttpClientImpl.create(httpClientMock, new RequestDecorator(null));
 
-        HttpSplitChangeFetcher fetcher = HttpSplitChangeFetcher.create(httpClientMock, rootTarget, TELEMETRY_STORAGE);
+        HttpSplitChangeFetcher fetcher = HttpSplitChangeFetcher.create(splitHtpClient, rootTarget, TELEMETRY_STORAGE);
 
         SplitChange change = fetcher.fetch(1234567, new FetchOptions.Builder().cacheControlHeaders(true).build());
 
@@ -104,8 +111,9 @@ public class HttpSplitChangeFetcherTest {
         ArgumentCaptor<ClassicHttpRequest> requestCaptor = ArgumentCaptor.forClass(ClassicHttpRequest.class);
         CloseableHttpClient httpClientMock = Mockito.mock(CloseableHttpClient.class);
         when(httpClientMock.execute(requestCaptor.capture())).thenReturn(TestHelper.classicResponseToCloseableMock(response));
+        SplitHttpClient splitHtpClient = SplitHttpClientImpl.create(httpClientMock, new RequestDecorator(null));
 
-        HttpSplitChangeFetcher fetcher = HttpSplitChangeFetcher.create(httpClientMock, rootTarget, Mockito.mock(TelemetryRuntimeProducer.class));
+        HttpSplitChangeFetcher fetcher = HttpSplitChangeFetcher.create(splitHtpClient, rootTarget, Mockito.mock(TelemetryRuntimeProducer.class));
 
         fetcher.fetch(-1, new FetchOptions.Builder().targetChangeNumber(123).build());
         fetcher.fetch(-1, new FetchOptions.Builder().build());
@@ -119,7 +127,8 @@ public class HttpSplitChangeFetcherTest {
     public void testRandomNumberGeneration() throws URISyntaxException {
         URI rootTarget = URI.create("https://api.split.io");
         CloseableHttpClient httpClientMock = Mockito.mock(CloseableHttpClient.class);
-        HttpSplitChangeFetcher fetcher = HttpSplitChangeFetcher.create(httpClientMock, rootTarget, Mockito.mock(TelemetryRuntimeProducer.class));
+        SplitHttpClient splitHtpClient = SplitHttpClientImpl.create(httpClientMock, new RequestDecorator(null));
+        HttpSplitChangeFetcher fetcher = HttpSplitChangeFetcher.create(splitHtpClient, rootTarget, Mockito.mock(TelemetryRuntimeProducer.class));
 
         Set<Long> seen = new HashSet<>();
         long min = (long)Math.pow(2, 63) * (-1);
