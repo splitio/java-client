@@ -3,10 +3,7 @@ package io.split.client;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 import io.split.TestHelper;
-import io.split.client.dtos.KeyImpression;
-import io.split.client.dtos.Split;
-import io.split.client.dtos.SplitChange;
-import io.split.client.dtos.TestImpressions;
+import io.split.client.dtos.*;
 import io.split.client.impressions.Impression;
 import io.split.client.utils.Json;
 import io.split.client.utils.Utils;
@@ -28,10 +25,7 @@ import java.io.InputStreamReader;
 import java.lang.reflect.InvocationTargetException;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.Is.is;
@@ -40,7 +34,6 @@ import static org.hamcrest.core.IsInstanceOf.instanceOf;
 import static org.mockito.Mockito.verify;
 
 public class HttpSplitClientTest {
-    private static final TelemetryStorage TELEMETRY_STORAGE = Mockito.mock(InMemoryTelemetryStorage.class);
 
     @Test
     public void testGetWithSpecialCharacters() throws URISyntaxException, InvocationTargetException, NoSuchMethodException, IllegalAccessException, IOException {
@@ -48,12 +41,11 @@ public class HttpSplitClientTest {
         CloseableHttpClient httpClientMock = TestHelper.mockHttpClient("split-change-special-characters.json", HttpStatus.SC_OK);
         RequestDecorator decorator = new RequestDecorator(null);
 
-        SplitHttpClient splitHtpClient = SplitHttpClientImpl.create(httpClientMock, TELEMETRY_STORAGE, decorator);
-        String change_raw = splitHtpClient.get(rootTarget,
-                new FetchOptions.Builder().cacheControlHeaders(true).build(),
-                HttpParamsWrapper.SPLITS
-        );
-        SplitChange change = Json.fromJson(change_raw, SplitChange.class);
+        SplitHttpClient splitHtpClient = SplitHttpClientImpl.create(httpClientMock, decorator);
+
+        SplitHttpResponse splitHttpResponse = splitHtpClient.get(rootTarget,
+                new FetchOptions.Builder().cacheControlHeaders(true).build());
+        SplitChange change = Json.fromJson(splitHttpResponse.body, SplitChange.class);
 
         Assert.assertNotNull(change);
         Assert.assertEquals(1, change.splits.size());
@@ -73,11 +65,9 @@ public class HttpSplitClientTest {
         CloseableHttpClient httpClientMock = TestHelper.mockHttpClient("split-change-special-characters.json", HttpStatus.SC_INTERNAL_SERVER_ERROR);
         RequestDecorator decorator = new RequestDecorator(null);
 
-        SplitHttpClient splitHtpClient = SplitHttpClientImpl.create(httpClientMock, TELEMETRY_STORAGE, decorator);
-        String change_raw = splitHtpClient.get(rootTarget,
-                new FetchOptions.Builder().cacheControlHeaders(true).build(),
-                HttpParamsWrapper.SPLITS
-        );
+        SplitHttpClient splitHtpClient = SplitHttpClientImpl.create(httpClientMock, decorator);
+        splitHtpClient.get(rootTarget,
+                new FetchOptions.Builder().cacheControlHeaders(true).build());
     }
 
     @Test
@@ -88,7 +78,7 @@ public class HttpSplitClientTest {
         CloseableHttpClient httpClient = TestHelper.mockHttpClient("", HttpStatus.SC_OK);
         RequestDecorator decorator = new RequestDecorator(null);
 
-        SplitHttpClient splitHtpClient = SplitHttpClientImpl.create(httpClient, TELEMETRY_STORAGE, decorator);
+        SplitHttpClient splitHtpClient = SplitHttpClientImpl.create(httpClient, decorator);
 
         // Send impressions
         List<TestImpressions> toSend = Arrays.asList(new TestImpressions("t1", Arrays.asList(
@@ -102,7 +92,7 @@ public class HttpSplitClientTest {
         )));
         Map<String, String> additionalHeaders = new HashMap<>();
         additionalHeaders.put("SplitSDKImpressionsMode", "OPTIMIZED");
-        splitHtpClient.post(rootTarget, Utils.toJsonEntity(toSend), additionalHeaders, HttpParamsWrapper.IMPRESSIONS);
+        SplitHttpResponse splitHttpResponse = splitHtpClient.post(rootTarget, Utils.toJsonEntity(toSend), additionalHeaders);
 
         // Capture outgoing request and validate it
         ArgumentCaptor<HttpUriRequest> captor = ArgumentCaptor.forClass(HttpUriRequest.class);
@@ -117,6 +107,7 @@ public class HttpSplitClientTest {
         Gson gson = new Gson();
         List<TestImpressions> payload = gson.fromJson(reader, new TypeToken<List<TestImpressions>>() { }.getType());
         assertThat(payload.size(), is(equalTo(2)));
+        Assert.assertEquals(200,(long) splitHttpResponse.statusCode);
     }
 
     @Test
@@ -125,8 +116,10 @@ public class HttpSplitClientTest {
         CloseableHttpClient httpClientMock = TestHelper.mockHttpClient("split-change-special-characters.json", HttpStatus.SC_INTERNAL_SERVER_ERROR);
         RequestDecorator decorator = new RequestDecorator(null);
 
-        SplitHttpClient splitHtpClient = SplitHttpClientImpl.create(httpClientMock, TELEMETRY_STORAGE, decorator);
-        splitHtpClient.post(rootTarget, Utils.toJsonEntity(Arrays.asList( new String[] { "A", "B", "C", "D" })), null, HttpParamsWrapper.IMPRESSIONS);
+        SplitHttpClient splitHtpClient = SplitHttpClientImpl.create(httpClientMock, decorator);
+        SplitHttpResponse splitHttpResponse = splitHtpClient.post(rootTarget, Utils.toJsonEntity(Arrays.asList( new String[] { "A", "B", "C", "D" })), null);
+        Assert.assertEquals(500, (long) splitHttpResponse.statusCode);
+
     }
 
     @Test(expected = IOException.class)
@@ -134,7 +127,7 @@ public class HttpSplitClientTest {
         URI rootTarget = URI.create("https://api.split.io/splitChanges?since=1234567");
         CloseableHttpClient httpClientMock = TestHelper.mockHttpClient("split-change-special-characters.json", HttpStatus.SC_INTERNAL_SERVER_ERROR);
 
-        SplitHttpClient splitHtpClient = SplitHttpClientImpl.create(httpClientMock, TELEMETRY_STORAGE, null);
-        splitHtpClient.post(rootTarget, Utils.toJsonEntity(Arrays.asList( new String[] { "A", "B", "C", "D" })), null, HttpParamsWrapper.IMPRESSIONS);
+        SplitHttpClient splitHtpClient = SplitHttpClientImpl.create(httpClientMock, null);
+        splitHtpClient.post(rootTarget, Utils.toJsonEntity(Arrays.asList( new String[] { "A", "B", "C", "D" })), null);
     }
 }

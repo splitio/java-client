@@ -1,10 +1,10 @@
 package io.split.client;
 
 import io.split.client.exceptions.UriTooLongException;
+import io.split.client.utils.Json;
 import io.split.client.utils.Utils;
 import io.split.engine.common.FetchOptions;
-import io.split.telemetry.domain.enums.HttpParamsWrapper;
-import io.split.telemetry.storage.TelemetryRuntimeProducer;
+import io.split.client.dtos.SplitHttpResponse;
 import org.apache.hc.client5.http.classic.methods.HttpGet;
 import org.apache.hc.client5.http.classic.methods.HttpPost;
 import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
@@ -21,36 +21,28 @@ import java.net.URISyntaxException;
 import java.nio.charset.StandardCharsets;
 import java.util.Map;
 
-import static com.google.common.base.Preconditions.checkNotNull;
-
 public final class SplitHttpClientImpl implements SplitHttpClient {
     private static final Logger _log = LoggerFactory.getLogger(SplitHttpClient.class);
     private static final String HEADER_CACHE_CONTROL_NAME = "Cache-Control";
     private static final String HEADER_CACHE_CONTROL_VALUE = "no-cache";
     private final CloseableHttpClient _client;
     private final RequestDecorator _requestDecorator;
-    private final TelemetryRuntimeProducer _telemetryRuntimeProducer;
 
     public static SplitHttpClientImpl create(
             CloseableHttpClient client,
-            TelemetryRuntimeProducer telemetryRuntimeProducer,
             RequestDecorator requestDecorator
     ) throws URISyntaxException {
-        return new SplitHttpClientImpl(client, telemetryRuntimeProducer, requestDecorator);
+        return new SplitHttpClientImpl(client, requestDecorator);
     }
 
     private SplitHttpClientImpl
             (CloseableHttpClient client,
-             TelemetryRuntimeProducer telemetryRuntimeProducer,
              RequestDecorator requestDecorator) {
         _client = client;
-        _telemetryRuntimeProducer = checkNotNull(telemetryRuntimeProducer);
         _requestDecorator = requestDecorator;
     }
 
-    public String get(URI uri, FetchOptions options, HttpParamsWrapper telemetryParamsWrapper) {
-        long start = System.currentTimeMillis();
-
+    public SplitHttpResponse get(URI uri, FetchOptions options) {
         CloseableHttpResponse response = null;
 
         try {
@@ -69,7 +61,6 @@ public final class SplitHttpClientImpl implements SplitHttpClient {
             }
 
             if (statusCode < HttpStatus.SC_OK || statusCode >= HttpStatus.SC_MULTIPLE_CHOICES) {
-                _telemetryRuntimeProducer.recordSyncError(telemetryParamsWrapper.getResourceEnum(), statusCode);
                 if (statusCode == HttpStatus.SC_REQUEST_URI_TOO_LONG) {
                     _log.error("The amount of flag sets provided are big causing uri length error.");
                     throw new UriTooLongException(String.format("Status code: %s. Message: %s", statusCode, response.getReasonPhrase()));
@@ -77,21 +68,22 @@ public final class SplitHttpClientImpl implements SplitHttpClient {
                 _log.warn(String.format("Response status was: %s. Reason: %s", statusCode , response.getReasonPhrase()));
                 throw new IllegalStateException(String.format("Http get received non-successful return code %s", statusCode));
             }
-
-            return EntityUtils.toString(response.getEntity(), StandardCharsets.UTF_8);
+            SplitHttpResponse httpResponse = new SplitHttpResponse();
+            httpResponse.statusCode = statusCode;
+            httpResponse.body = EntityUtils.toString(response.getEntity(), StandardCharsets.UTF_8);
+            httpResponse.statusMessage = "";
+            return httpResponse;
         } catch (Exception e) {
             throw new IllegalStateException(String.format("Problem in http get operation: %s", e), e);
         } finally {
-            _telemetryRuntimeProducer.recordSyncLatency(telemetryParamsWrapper.getHttpLatenciesEnum(), System.currentTimeMillis()-start);
             Utils.forceClose(response);
         }
     }
 
-    public void post
+    public SplitHttpResponse post
             (URI uri,
              HttpEntity entity,
-             Map<String, String> additionalHeaders,
-             HttpParamsWrapper telemetryParamsWrapper) throws IOException {
+             Map<String, String> additionalHeaders) throws IOException {
         CloseableHttpResponse response = null;
         long initTime = System.currentTimeMillis();
         try {
@@ -108,15 +100,19 @@ public final class SplitHttpClientImpl implements SplitHttpClient {
 
             int status = response.getCode();
 
+            String statusMessage = new String("");
             if (status < HttpStatus.SC_OK || status >= HttpStatus.SC_MULTIPLE_CHOICES) {
-                _telemetryRuntimeProducer.recordSyncError(telemetryParamsWrapper.getResourceEnum(), status);
+                statusMessage = response.getReasonPhrase();
                 _log.warn(String.format("Response status was: %s. Reason: %s", status, response.getReasonPhrase()));
             }
-            _telemetryRuntimeProducer.recordSuccessfulSync(telemetryParamsWrapper.getLastSynchronizationRecordsEnum(), System.currentTimeMillis());
+            SplitHttpResponse httpResponse = new SplitHttpResponse();
+            httpResponse.statusCode = status;
+            httpResponse.body = "";
+            httpResponse.statusMessage = statusMessage;
+            return httpResponse;
         } catch (Exception e) {
             throw new IOException(String.format("Problem in http post operation: %s", e), e);
         } finally {
-            _telemetryRuntimeProducer.recordSyncLatency(telemetryParamsWrapper.getHttpLatenciesEnum(), System.currentTimeMillis() - initTime);
             Utils.forceClose(response);
         }
     }
