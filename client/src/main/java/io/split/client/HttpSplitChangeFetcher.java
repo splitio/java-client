@@ -8,6 +8,7 @@ import io.split.client.utils.Json;
 import io.split.client.utils.Utils;
 import io.split.engine.common.FetchOptions;
 import io.split.engine.experiments.SplitChangeFetcher;
+import io.split.service.SplitHttpClient;
 import io.split.telemetry.domain.enums.HTTPLatenciesEnum;
 import io.split.telemetry.domain.enums.ResourceEnum;
 import io.split.telemetry.storage.TelemetryRuntimeProducer;
@@ -76,7 +77,10 @@ public final class HttpSplitChangeFetcher implements SplitChangeFetcher {
             int statusCode = response.statusCode;
 
             if (statusCode < HttpStatus.SC_OK || statusCode >= HttpStatus.SC_MULTIPLE_CHOICES) {
-                _log.warn(String.format("Response status was: %s. Reason: %s", statusCode , response.statusMessage));
+                if (statusCode == HttpStatus.SC_REQUEST_URI_TOO_LONG) {
+                    _log.error("The amount of flag sets provided are big causing uri length error.");
+                    throw new UriTooLongException(String.format("Status code: %s. Message: %s", statusCode, response.statusMessage));
+                }
                 _telemetryRuntimeProducer.recordSyncError(ResourceEnum.SPLIT_SYNC, statusCode);
                 throw new IllegalStateException(String.format("Could not retrieve splitChanges since %s; http return code %s", since, statusCode));
             }

@@ -16,7 +16,7 @@ class NoOpHeaderDecorator implements  UserCustomHeaderDecorator {
     }
 }
 
-class RequestDecorator {
+public final class RequestDecorator {
     UserCustomHeaderDecorator _headerDecorator;
 
     private static final Set<String> forbiddenHeaders = new HashSet<>(Arrays.asList(

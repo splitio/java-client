@@ -1,7 +1,6 @@
-package io.split.client;
+package io.split.service;
 
-import io.split.client.exceptions.UriTooLongException;
-import io.split.client.utils.Json;
+import io.split.client.RequestDecorator;
 import io.split.client.utils.Utils;
 import io.split.engine.common.FetchOptions;
 import io.split.client.dtos.SplitHttpResponse;
@@ -63,10 +62,6 @@ public final class SplitHttpClientImpl implements SplitHttpClient {
             SplitHttpResponse httpResponse = new SplitHttpResponse();
             httpResponse.statusMessage = "";
             if (statusCode < HttpStatus.SC_OK || statusCode >= HttpStatus.SC_MULTIPLE_CHOICES) {
-                if (statusCode == HttpStatus.SC_REQUEST_URI_TOO_LONG) {
-                    _log.error("The amount of flag sets provided are big causing uri length error.");
-                    throw new UriTooLongException(String.format("Status code: %s. Message: %s", statusCode, response.getReasonPhrase()));
-                }
                 _log.warn(String.format("Response status was: %s. Reason: %s", statusCode , response.getReasonPhrase()));
                 httpResponse.statusMessage = response.getReasonPhrase();
             }

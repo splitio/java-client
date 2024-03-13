@@ -5,6 +5,8 @@ import io.split.client.dtos.Split;
 import io.split.client.dtos.SplitChange;
 import io.split.engine.common.FetchOptions;
 import io.split.engine.metrics.Metrics;
+import io.split.service.SplitHttpClient;
+import io.split.service.SplitHttpClientImpl;
 import io.split.telemetry.storage.InMemoryTelemetryStorage;
 import io.split.telemetry.storage.TelemetryRuntimeProducer;
 import io.split.telemetry.storage.TelemetryStorage;
