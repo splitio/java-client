@@ -41,8 +41,8 @@ public class HttpSplitChangeFetcherTest {
     public void testDefaultURL() throws URISyntaxException {
         URI rootTarget = URI.create("https://api.split.io");
         CloseableHttpClient httpClient = HttpClients.custom().build();
-        SplitHttpClient splitHtpClient = SplitHttpClientImpl.create(httpClient, new RequestDecorator(null));
         Metrics.NoopMetrics metrics = new Metrics.NoopMetrics();
+        SplitHttpClient splitHtpClient = SplitHttpClientImpl.create(httpClient, new RequestDecorator(null));
 
         HttpSplitChangeFetcher fetcher = HttpSplitChangeFetcher.create(splitHtpClient, rootTarget, TELEMETRY_STORAGE);
         Assert.assertEquals("https://api.split.io/api/splitChanges", fetcher.getTarget().toString());
