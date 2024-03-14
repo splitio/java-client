@@ -31,10 +31,6 @@ public final class HttpSplitChangeFetcher implements SplitChangeFetcher {
     private static final String SINCE = "since";
     private static final String TILL = "till";
     private static final String SETS = "sets";
-
-    private static final String HEADER_CACHE_CONTROL_NAME = "Cache-Control";
-    private static final String HEADER_CACHE_CONTROL_VALUE = "no-cache";
-
     private final SplitHttpClient _client;
     private final URI _target;
     private final TelemetryRuntimeProducer _telemetryRuntimeProducer;
@@ -77,11 +73,11 @@ public final class HttpSplitChangeFetcher implements SplitChangeFetcher {
             int statusCode = response.statusCode;
 
             if (statusCode < HttpStatus.SC_OK || statusCode >= HttpStatus.SC_MULTIPLE_CHOICES) {
+                _telemetryRuntimeProducer.recordSyncError(ResourceEnum.SPLIT_SYNC, statusCode);
                 if (statusCode == HttpStatus.SC_REQUEST_URI_TOO_LONG) {
                     _log.error("The amount of flag sets provided are big causing uri length error.");
                     throw new UriTooLongException(String.format("Status code: %s. Message: %s", statusCode, response.statusMessage));
                 }
-                _telemetryRuntimeProducer.recordSyncError(ResourceEnum.SPLIT_SYNC, statusCode);
                 throw new IllegalStateException(String.format("Could not retrieve splitChanges since %s; http return code %s", since, statusCode));
             }
 
