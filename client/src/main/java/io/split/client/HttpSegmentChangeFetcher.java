@@ -30,9 +30,6 @@ public final class HttpSegmentChangeFetcher implements SegmentChangeFetcher {
 
     private static final String SINCE = "since";
     private static final String TILL = "till";
-    private static final String PREFIX = "segmentChangeFetcher";
-    private static final String CACHE_CONTROL_HEADER_NAME = "Cache-Control";
-    private static final String CACHE_CONTROL_HEADER_VALUE = "no-cache";
 
     private final SplitHttpClient _client;
     private final URI _target;
