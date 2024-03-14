@@ -3,9 +3,12 @@ package io.split.client.impressions;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 import io.split.TestHelper;
+import io.split.client.RequestDecorator;
 import io.split.client.dtos.ImpressionCount;
 import io.split.client.dtos.KeyImpression;
 import io.split.client.dtos.TestImpressions;
+import io.split.service.SplitHttpClient;
+import io.split.service.SplitHttpClientImpl;
 import io.split.telemetry.storage.InMemoryTelemetryStorage;
 import io.split.telemetry.storage.TelemetryStorage;
 import org.apache.hc.client5.http.classic.methods.HttpPost;
@@ -42,7 +45,8 @@ public class HttpImpressionsSenderTest {
     public void testDefaultURL() throws URISyntaxException {
         URI rootTarget = URI.create("https://api.split.io");
         CloseableHttpClient httpClient = HttpClients.custom().build();
-        HttpImpressionsSender fetcher = HttpImpressionsSender.create(httpClient, rootTarget, ImpressionsManager.Mode.DEBUG, TELEMETRY_STORAGE);
+        SplitHttpClient splitHtpClient = SplitHttpClientImpl.create(httpClient, new RequestDecorator(null));
+        HttpImpressionsSender fetcher = HttpImpressionsSender.create(splitHtpClient, rootTarget, ImpressionsManager.Mode.DEBUG, TELEMETRY_STORAGE);
         Assert.assertThat(fetcher.getTarget().toString(), Matchers.is(Matchers.equalTo("https://api.split.io/api/testImpressions/bulk")));
     }
 
@@ -50,7 +54,8 @@ public class HttpImpressionsSenderTest {
     public void testCustomURLNoPathNoBackslash() throws URISyntaxException {
         URI rootTarget = URI.create("https://kubernetesturl.com");
         CloseableHttpClient httpClient = HttpClients.custom().build();
-        HttpImpressionsSender fetcher = HttpImpressionsSender.create(httpClient, rootTarget, ImpressionsManager.Mode.DEBUG, TELEMETRY_STORAGE);
+        SplitHttpClient splitHtpClient = SplitHttpClientImpl.create(httpClient, new RequestDecorator(null));
+        HttpImpressionsSender fetcher = HttpImpressionsSender.create(splitHtpClient, rootTarget, ImpressionsManager.Mode.DEBUG, TELEMETRY_STORAGE);
         Assert.assertThat(fetcher.getTarget().toString(), Matchers.is(Matchers.equalTo("https://kubernetesturl.com/api/testImpressions/bulk")));
     }
 
@@ -58,7 +63,8 @@ public class HttpImpressionsSenderTest {
     public void testCustomURLAppendingPath() throws URISyntaxException {
         URI rootTarget = URI.create("https://kubernetesturl.com/split/");
         CloseableHttpClient httpClient = HttpClients.custom().build();
-        HttpImpressionsSender fetcher = HttpImpressionsSender.create(httpClient, rootTarget, ImpressionsManager.Mode.DEBUG, TELEMETRY_STORAGE);
+        SplitHttpClient splitHtpClient = SplitHttpClientImpl.create(httpClient, new RequestDecorator(null));
+        HttpImpressionsSender fetcher = HttpImpressionsSender.create(splitHtpClient, rootTarget, ImpressionsManager.Mode.DEBUG, TELEMETRY_STORAGE);
         Assert.assertThat(fetcher.getTarget().toString(), Matchers.is(Matchers.equalTo("https://kubernetesturl.com/split/api/testImpressions/bulk")));
     }
 
@@ -66,7 +72,8 @@ public class HttpImpressionsSenderTest {
     public void testCustomURLAppendingPathNoBackslash() throws URISyntaxException {
         URI rootTarget = URI.create("https://kubernetesturl.com/split");
         CloseableHttpClient httpClient = HttpClients.custom().build();
-        HttpImpressionsSender fetcher = HttpImpressionsSender.create(httpClient, rootTarget, ImpressionsManager.Mode.DEBUG, TELEMETRY_STORAGE);
+        SplitHttpClient splitHtpClient = SplitHttpClientImpl.create(httpClient, new RequestDecorator(null));
+        HttpImpressionsSender fetcher = HttpImpressionsSender.create(splitHtpClient, rootTarget, ImpressionsManager.Mode.DEBUG, TELEMETRY_STORAGE);
         Assert.assertThat(fetcher.getTarget().toString(), Matchers.is(Matchers.equalTo("https://kubernetesturl.com/split/api/testImpressions/bulk")));
     }
 
@@ -76,9 +83,10 @@ public class HttpImpressionsSenderTest {
 
         // Setup response mock
         CloseableHttpClient httpClient = TestHelper.mockHttpClient("", HttpStatus.SC_OK);
+        SplitHttpClient splitHtpClient = SplitHttpClientImpl.create(httpClient, new RequestDecorator(null));
 
         // Send counters
-        HttpImpressionsSender sender = HttpImpressionsSender.create(httpClient, rootTarget, ImpressionsManager.Mode.OPTIMIZED, TELEMETRY_STORAGE);
+        HttpImpressionsSender sender = HttpImpressionsSender.create(splitHtpClient, rootTarget, ImpressionsManager.Mode.OPTIMIZED, TELEMETRY_STORAGE);
         HashMap<ImpressionCounter.Key, Integer> toSend = new HashMap<>();
         toSend.put(new ImpressionCounter.Key("test1", 0), 4);
         toSend.put(new ImpressionCounter.Key("test2", 0), 5);
@@ -106,9 +114,10 @@ public class HttpImpressionsSenderTest {
 
         // Setup response mock
         CloseableHttpClient httpClient = TestHelper.mockHttpClient("", HttpStatus.SC_OK);
+        SplitHttpClient splitHtpClient = SplitHttpClientImpl.create(httpClient, new RequestDecorator(null));
 
         // Send counters
-        HttpImpressionsSender sender = HttpImpressionsSender.create(httpClient, rootTarget, ImpressionsManager.Mode.DEBUG, TELEMETRY_STORAGE);
+        HttpImpressionsSender sender = HttpImpressionsSender.create(splitHtpClient, rootTarget, ImpressionsManager.Mode.DEBUG, TELEMETRY_STORAGE);
         HashMap<ImpressionCounter.Key, Integer> toSend = new HashMap<>();
         toSend.put(new ImpressionCounter.Key("test1", 0), 4);
         toSend.put(new ImpressionCounter.Key("test2", 0), 5);
@@ -124,8 +133,9 @@ public class HttpImpressionsSenderTest {
 
         // Setup response mock
         CloseableHttpClient httpClient = TestHelper.mockHttpClient("", HttpStatus.SC_OK);
+        SplitHttpClient splitHtpClient = SplitHttpClientImpl.create(httpClient, new RequestDecorator(null));
 
-        HttpImpressionsSender sender = HttpImpressionsSender.create(httpClient, rootTarget, ImpressionsManager.Mode.OPTIMIZED, TELEMETRY_STORAGE);
+        HttpImpressionsSender sender = HttpImpressionsSender.create(splitHtpClient, rootTarget, ImpressionsManager.Mode.OPTIMIZED, TELEMETRY_STORAGE);
 
         // Send impressions
         List<TestImpressions> toSend = Arrays.asList(new TestImpressions("t1", Arrays.asList(
@@ -155,8 +165,9 @@ public class HttpImpressionsSenderTest {
 
         // Do the same flow for imrpessionsMode = debug
         CloseableHttpClient httpClientDebugMode = TestHelper.mockHttpClient("", HttpStatus.SC_OK);
+        SplitHttpClient splitHtpClient2 = SplitHttpClientImpl.create(httpClientDebugMode, new RequestDecorator(null));
 
-        sender = HttpImpressionsSender.create(httpClientDebugMode, rootTarget, ImpressionsManager.Mode.DEBUG, TELEMETRY_STORAGE);
+        sender = HttpImpressionsSender.create(splitHtpClient2, rootTarget, ImpressionsManager.Mode.DEBUG, TELEMETRY_STORAGE);
         sender.postImpressionsBulk(toSend);
         captor = ArgumentCaptor.forClass(HttpUriRequest.class);
         verify(httpClientDebugMode).execute(captor.capture());
