@@ -1,4 +1,4 @@
-package io.split.client;
+package io.split.service;
 
 import io.split.engine.common.FetchOptions;
 import io.split.telemetry.domain.enums.HttpParamsWrapper;
