@@ -14,15 +14,16 @@ import org.mockito.Mockito;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.net.URI;
+import java.net.URISyntaxException;
 
 public class HttpPostImpTest{
 
     private static final String URL = "www.split.io";
 
     @Test
-    public void testPostWith200() throws InvocationTargetException, NoSuchMethodException, IllegalAccessException, IOException {
+    public void testPostWith200() throws InvocationTargetException, NoSuchMethodException, IllegalAccessException, IOException, URISyntaxException {
         CloseableHttpClient client =TestHelper.mockHttpClient(URL, HttpStatus.SC_OK);
-        SplitHttpClient splitHttpClient = new SplitHttpClientImpl(client, new RequestDecorator(null));
+        SplitHttpClient splitHttpClient = SplitHttpClientImpl.create(client, new RequestDecorator(null));
         TelemetryStorage telemetryStorage = new InMemoryTelemetryStorage();
         HttpPostImp httpPostImp = new HttpPostImp(splitHttpClient, telemetryStorage);
         httpPostImp.post(URI.create(URL), new Object(), "Metrics", HttpParamsWrapper.TELEMETRY);
@@ -32,9 +33,9 @@ public class HttpPostImpTest{
     }
 
     @Test
-    public void testPostWith400() throws InvocationTargetException, NoSuchMethodException, IllegalAccessException, IOException {
+    public void testPostWith400() throws InvocationTargetException, NoSuchMethodException, IllegalAccessException, IOException, URISyntaxException {
         CloseableHttpClient client =TestHelper.mockHttpClient(URL, HttpStatus.SC_CLIENT_ERROR);
-        SplitHttpClient splitHttpClient = new SplitHttpClientImpl(client, new RequestDecorator(null));
+        SplitHttpClient splitHttpClient = SplitHttpClientImpl.create(client, new RequestDecorator(null));
         TelemetryStorage telemetryStorage = new InMemoryTelemetryStorage();
         HttpPostImp httpPostImp = new HttpPostImp(splitHttpClient, telemetryStorage);
         httpPostImp.post(URI.create(URL), new Object(), "Metrics", HttpParamsWrapper.TELEMETRY);
