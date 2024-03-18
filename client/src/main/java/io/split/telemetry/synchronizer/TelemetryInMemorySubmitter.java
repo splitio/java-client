@@ -7,6 +7,7 @@ import io.split.client.impressions.ImpressionListener;
 import io.split.client.impressions.ImpressionsManager;
 import io.split.integrations.IntegrationsConfig;
 import io.split.integrations.NewRelicListener;
+import io.split.service.SplitHttpClient;
 import io.split.storages.SegmentCacheConsumer;
 import io.split.storages.SplitCacheConsumer;
 import io.split.telemetry.domain.Config;
@@ -38,7 +39,7 @@ public class TelemetryInMemorySubmitter implements TelemetrySynchronizer{
     private SegmentCacheConsumer _segmentCacheConsumer;
     private final long _initStartTime;
 
-    public TelemetryInMemorySubmitter(CloseableHttpClient client, URI telemetryRootEndpoint, TelemetryStorageConsumer telemetryStorageConsumer,
+    public TelemetryInMemorySubmitter(SplitHttpClient client, URI telemetryRootEndpoint, TelemetryStorageConsumer telemetryStorageConsumer,
                                       SplitCacheConsumer splitCacheConsumer, SegmentCacheConsumer segmentCacheConsumer,
                                       TelemetryRuntimeProducer telemetryRuntimeProducer, long initStartTime) throws URISyntaxException {
         _httpHttpTelemetryMemorySender = HttpTelemetryMemorySender.create(client, telemetryRootEndpoint, telemetryRuntimeProducer);

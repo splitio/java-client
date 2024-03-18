@@ -1,8 +1,9 @@
-package io.split.client;
+package io.split.service;
 
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 import io.split.TestHelper;
+import io.split.client.RequestDecorator;
 import io.split.client.dtos.*;
 import io.split.client.impressions.Impression;
 import io.split.client.utils.Json;
