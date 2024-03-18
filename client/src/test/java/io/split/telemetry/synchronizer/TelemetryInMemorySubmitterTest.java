@@ -1,7 +1,10 @@
 package io.split.telemetry.synchronizer;
 
 import io.split.TestHelper;
+import io.split.client.RequestDecorator;
 import io.split.client.dtos.UniqueKeys;
+import io.split.service.SplitHttpClient;
+import io.split.service.SplitHttpClientImpl;
 import io.split.storages.SegmentCacheConsumer;
 import io.split.storages.SplitCacheConsumer;
 import io.split.client.ApiKeyCounter;
@@ -46,7 +49,8 @@ public class TelemetryInMemorySubmitterTest {
     @Test
     public void testSynchronizeConfig() throws URISyntaxException, NoSuchMethodException, IOException, IllegalAccessException, InvocationTargetException {
         CloseableHttpClient httpClient = TestHelper.mockHttpClient(TELEMETRY_ENDPOINT, HttpStatus.SC_OK);
-        TelemetrySynchronizer telemetrySynchronizer = getTelemetrySynchronizer(httpClient);
+        SplitHttpClient splitHttpClient = new SplitHttpClientImpl(httpClient, new RequestDecorator(null));
+        TelemetrySynchronizer telemetrySynchronizer = getTelemetrySynchronizer(splitHttpClient);
         SplitClientConfig splitClientConfig = SplitClientConfig.builder().build();
 
         telemetrySynchronizer.synchronizeConfig(splitClientConfig, 100l, new HashMap<String,Long>(), new ArrayList<String>());
@@ -57,7 +61,8 @@ public class TelemetryInMemorySubmitterTest {
     @Test
     public void testSynchronizeStats() throws Exception {
         CloseableHttpClient httpClient = TestHelper.mockHttpClient(TELEMETRY_ENDPOINT, HttpStatus.SC_OK);
-        TelemetrySynchronizer telemetrySynchronizer = getTelemetrySynchronizer(httpClient);
+        SplitHttpClient splitHttpClient = new SplitHttpClientImpl(httpClient, new RequestDecorator(null));
+        TelemetrySynchronizer telemetrySynchronizer = getTelemetrySynchronizer(splitHttpClient);
 
         telemetrySynchronizer.synchronizeStats();
         Mockito.verify(httpClient, Mockito.times(1)).execute(Mockito.any());
@@ -66,7 +71,8 @@ public class TelemetryInMemorySubmitterTest {
     @Test
     public void testSynchronizeUniqueKeys() throws Exception {
         CloseableHttpClient httpClient = TestHelper.mockHttpClient(TELEMETRY_ENDPOINT, HttpStatus.SC_OK);
-        TelemetrySynchronizer telemetrySynchronizer = getTelemetrySynchronizer(httpClient);
+        SplitHttpClient splitHttpClient = new SplitHttpClientImpl(httpClient, new RequestDecorator(null));
+        TelemetrySynchronizer telemetrySynchronizer = getTelemetrySynchronizer(splitHttpClient);
 
         List<String> keys = new ArrayList<>();
         keys.add("key-1");
@@ -89,7 +95,8 @@ public class TelemetryInMemorySubmitterTest {
         ApiKeyCounter.getApiKeyCounterInstance().add(SECOND_KEY);
         TelemetryStorage telemetryStorage = new InMemoryTelemetryStorage();
         CloseableHttpClient httpClient = TestHelper.mockHttpClient(TELEMETRY_ENDPOINT, HttpStatus.SC_OK);
-        TelemetryInMemorySubmitter telemetrySynchronizer = getTelemetrySynchronizer(httpClient);
+        SplitHttpClient splitHttpClient = new SplitHttpClientImpl(httpClient, null);
+        TelemetryInMemorySubmitter telemetrySynchronizer = getTelemetrySynchronizer(splitHttpClient);
         SplitClientConfig splitClientConfig = SplitClientConfig.builder().flagSetsFilter(Arrays.asList("a", "_b", "a", "a", "c", "d", "_d")).build();
         populateConfig(telemetryStorage);
         Field telemetryStorageConsumer = TelemetryInMemorySubmitter.class.getDeclaredField("_telemetryStorageConsumer");
@@ -110,7 +117,8 @@ public class TelemetryInMemorySubmitterTest {
     public void testStats() throws Exception {
         TelemetryStorage telemetryStorage = new InMemoryTelemetryStorage();
         CloseableHttpClient httpClient = TestHelper.mockHttpClient(TELEMETRY_ENDPOINT, HttpStatus.SC_OK);
-        TelemetryInMemorySubmitter telemetrySynchronizer = getTelemetrySynchronizer(httpClient);
+        SplitHttpClient splitHttpClient = new SplitHttpClientImpl(httpClient, null);
+        TelemetryInMemorySubmitter telemetrySynchronizer = getTelemetrySynchronizer(splitHttpClient);
         populateStats(telemetryStorage);
         Field telemetryStorageConsumer = TelemetryInMemorySubmitter.class.getDeclaredField("_telemetryStorageConsumer");
         telemetryStorageConsumer.setAccessible(true);
@@ -175,7 +183,7 @@ public class TelemetryInMemorySubmitterTest {
         Assert.assertEquals(1, stats.getUpdatesFromSSE().getSplits());
     }
 
-    private TelemetryInMemorySubmitter getTelemetrySynchronizer(CloseableHttpClient httpClient) throws URISyntaxException {
+    private TelemetryInMemorySubmitter getTelemetrySynchronizer(SplitHttpClient httpClient) throws URISyntaxException {
         TelemetryStorageConsumer consumer = Mockito.mock(InMemoryTelemetryStorage.class);
         TelemetryRuntimeProducer telemetryRuntimeProducer = Mockito.mock(TelemetryRuntimeProducer.class);
         SplitCacheConsumer splitCacheConsumer = Mockito.mock(SplitCacheConsumer.class);
