@@ -1,5 +1,6 @@
 package io.split.service;
 
+import io.split.client.dtos.SplitHttpResponse;
 import io.split.client.utils.Utils;
 import io.split.telemetry.domain.enums.HttpParamsWrapper;
 import io.split.telemetry.storage.TelemetryRuntimeProducer;
@@ -17,10 +18,10 @@ import static com.google.common.base.Preconditions.checkNotNull;
 
 public class HttpPostImp {
     private static final Logger _logger = LoggerFactory.getLogger(HttpPostImp.class);
-    private CloseableHttpClient _client;
+    private SplitHttpClient _client;
     private final TelemetryRuntimeProducer _telemetryRuntimeProducer;
 
-    public HttpPostImp(CloseableHttpClient client, TelemetryRuntimeProducer telemetryRuntimeProducer) {
+    public HttpPostImp(SplitHttpClient client, TelemetryRuntimeProducer telemetryRuntimeProducer) {
         _client = client;
         _telemetryRuntimeProducer = checkNotNull(telemetryRuntimeProducer);
     }
@@ -28,6 +29,7 @@ public class HttpPostImp {
     public void post(URI uri, Object object, String posted, HttpParamsWrapper httpParamsWrapper) {
         long initTime = System.currentTimeMillis();
         HttpEntity entity = Utils.toJsonEntity(object);
+
         HttpPost request = new HttpPost(uri);
         request.setEntity(entity);
 
@@ -35,12 +37,11 @@ public class HttpPostImp {
             _logger.debug(String.format("[%s] %s", request.getMethod(), uri));
         }
 
-        try (CloseableHttpResponse response = _client.execute(request)) {
-
-            int status = response.getCode();
+        try {
+            SplitHttpResponse response = _client.post(uri, entity, null);
+            int status = response.statusCode;
             if (status < HttpStatus.SC_OK || status >= HttpStatus.SC_MULTIPLE_CHOICES) {
                 _telemetryRuntimeProducer.recordSyncError(httpParamsWrapper.getResourceEnum(), status);
-                _logger.warn(String.format("Response status was: %s. Reason: %s", status , response.getReasonPhrase()));
                 return;
             }
             _telemetryRuntimeProducer.recordSyncLatency(httpParamsWrapper.getHttpLatenciesEnum(), System.currentTimeMillis() - initTime);

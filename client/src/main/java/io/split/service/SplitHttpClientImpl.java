@@ -33,7 +33,7 @@ public final class SplitHttpClientImpl implements SplitHttpClient {
         return new SplitHttpClientImpl(client, requestDecorator);
     }
 
-    private SplitHttpClientImpl
+    public SplitHttpClientImpl
             (CloseableHttpClient client,
              RequestDecorator requestDecorator) {
         _client = client;

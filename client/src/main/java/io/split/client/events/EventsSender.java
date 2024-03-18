@@ -4,6 +4,7 @@ import com.google.common.annotations.VisibleForTesting;
 import io.split.client.dtos.Event;
 import io.split.client.utils.Utils;
 import io.split.service.HttpPostImp;
+import io.split.service.SplitHttpClient;
 import io.split.telemetry.domain.enums.HttpParamsWrapper;
 import io.split.telemetry.storage.TelemetryRuntimeProducer;
 import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
@@ -18,20 +19,20 @@ public class EventsSender {
 
     private static final String BULK_ENDPOINT_PATH = "api/events/bulk";
     private final URI _bulkEndpoint;
-    private final CloseableHttpClient _client;
+    private final SplitHttpClient _client;
     private final TelemetryRuntimeProducer _telemetryRuntimeProducer;
     private final HttpPostImp _httpPostImp;
 
-    public static EventsSender create(CloseableHttpClient httpclient, URI eventsTarget, TelemetryRuntimeProducer telemetryRuntimeProducer)
+    public static EventsSender create(SplitHttpClient splitHttpclient, URI eventsTarget, TelemetryRuntimeProducer telemetryRuntimeProducer)
             throws URISyntaxException {
-        return new EventsSender(httpclient, Utils.appendPath(eventsTarget, BULK_ENDPOINT_PATH), telemetryRuntimeProducer);
+        return new EventsSender(splitHttpclient, Utils.appendPath(eventsTarget, BULK_ENDPOINT_PATH), telemetryRuntimeProducer);
     }
 
-    EventsSender(CloseableHttpClient httpclient, URI eventsTarget, TelemetryRuntimeProducer telemetryRuntimeProducer) {
-        _client = checkNotNull(httpclient);
+    EventsSender(SplitHttpClient splitHttpclient, URI eventsTarget, TelemetryRuntimeProducer telemetryRuntimeProducer) {
+        _client = splitHttpclient;
         _bulkEndpoint = checkNotNull(eventsTarget);
         _telemetryRuntimeProducer = checkNotNull(telemetryRuntimeProducer);
-        _httpPostImp = new HttpPostImp(httpclient, telemetryRuntimeProducer);
+        _httpPostImp = new HttpPostImp(_client, telemetryRuntimeProducer);
     }
 
     public void sendEvents(List<Event> _data) {
