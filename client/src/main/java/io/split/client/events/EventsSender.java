@@ -7,7 +7,6 @@ import io.split.service.HttpPostImp;
 import io.split.service.SplitHttpClient;
 import io.split.telemetry.domain.enums.HttpParamsWrapper;
 import io.split.telemetry.storage.TelemetryRuntimeProducer;
-import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
 
 import java.net.URI;
 import java.net.URISyntaxException;

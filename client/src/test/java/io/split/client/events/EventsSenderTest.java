@@ -15,10 +15,10 @@ public class EventsSenderTest {
 
     private static final TelemetryRuntimeProducer TELEMETRY_RUNTIME_CONSUMER = Mockito.mock(TelemetryRuntimeProducer.class);
     private static final CloseableHttpClient CLOSEABLE_HTTP_CLIENT = Mockito.mock(CloseableHttpClient.class);
-    private static final SplitHttpClient SPLIT_HTTP_CLIENT = new SplitHttpClientImpl(CLOSEABLE_HTTP_CLIENT, null);
 
     @Test
     public void testDefaultURL() throws URISyntaxException {
+        SplitHttpClient SPLIT_HTTP_CLIENT = SplitHttpClientImpl.create(CLOSEABLE_HTTP_CLIENT, null);
         URI rootTarget = URI.create("https://api.split.io");
         EventsSender fetcher = EventsSender.create(SPLIT_HTTP_CLIENT, rootTarget, TELEMETRY_RUNTIME_CONSUMER);
         Assert.assertEquals("https://api.split.io/api/events/bulk", fetcher.getBulkEndpoint().toString());
@@ -26,6 +26,7 @@ public class EventsSenderTest {
 
     @Test
     public void testCustomURLNoPathNoBackslash() throws URISyntaxException {
+        SplitHttpClient SPLIT_HTTP_CLIENT = SplitHttpClientImpl.create(CLOSEABLE_HTTP_CLIENT, null);
         URI rootTarget = URI.create("https://kubernetesturl.com");
         EventsSender fetcher = EventsSender.create(SPLIT_HTTP_CLIENT, rootTarget, TELEMETRY_RUNTIME_CONSUMER);
         Assert.assertEquals("https://kubernetesturl.com/api/events/bulk", fetcher.getBulkEndpoint().toString());
@@ -33,6 +34,7 @@ public class EventsSenderTest {
 
     @Test
     public void testCustomURLAppendingPath() throws URISyntaxException {
+        SplitHttpClient SPLIT_HTTP_CLIENT = SplitHttpClientImpl.create(CLOSEABLE_HTTP_CLIENT, null);
         URI rootTarget = URI.create("https://kubernetesturl.com/split/");
         EventsSender fetcher = EventsSender.create(SPLIT_HTTP_CLIENT, rootTarget, TELEMETRY_RUNTIME_CONSUMER);
         Assert.assertEquals("https://kubernetesturl.com/split/api/events/bulk", fetcher.getBulkEndpoint().toString());
@@ -40,6 +42,7 @@ public class EventsSenderTest {
 
     @Test
     public void testCustomURLAppendingPathNoBackslash() throws URISyntaxException {
+        SplitHttpClient SPLIT_HTTP_CLIENT = SplitHttpClientImpl.create(CLOSEABLE_HTTP_CLIENT, null);
         URI rootTarget = URI.create("https://kubernetesturl.com/split");
         EventsSender fetcher = EventsSender.create(SPLIT_HTTP_CLIENT, rootTarget, TELEMETRY_RUNTIME_CONSUMER);
         Assert.assertEquals("https://kubernetesturl.com/split/api/events/bulk", fetcher.getBulkEndpoint().toString());
