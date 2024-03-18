@@ -3,11 +3,6 @@ package io.split.client;
 import org.apache.hc.client5.http.classic.methods.HttpUriRequestBase;
 import java.util.*;
 
-interface UserCustomHeaderDecorator
-{
-    Map<String, String> getHeaderOverrides();
-}
-
 class NoOpHeaderDecorator implements  UserCustomHeaderDecorator {
     public NoOpHeaderDecorator() {}
     @Override

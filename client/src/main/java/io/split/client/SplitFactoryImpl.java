@@ -58,6 +58,8 @@ import io.split.engine.experiments.SplitSynchronizationTask;
 import io.split.engine.segments.SegmentChangeFetcher;
 import io.split.engine.segments.SegmentSynchronizationTaskImp;
 import io.split.integrations.IntegrationsConfig;
+import io.split.service.SplitHttpClient;
+import io.split.service.SplitHttpClientImpl;
 import io.split.storages.SegmentCache;
 import io.split.storages.SegmentCacheConsumer;
 import io.split.storages.SegmentCacheProducer;
@@ -154,6 +156,7 @@ public class SplitFactoryImpl implements SplitFactory {
     private final EventsTask _eventsTask;
     private final SyncManager _syncManager;
     private final CloseableHttpClient _httpclient;
+    private final SplitHttpClient _splitHttpClient;
     private final UserStorageWrapper _userStorageWrapper;
     private final ImpressionsSender _impressionsSender;
     private final URI _rootTarget;
@@ -184,6 +187,8 @@ public class SplitFactoryImpl implements SplitFactory {
 
         // HttpClient
         _httpclient = buildHttpClient(apiToken, config, _sdkMetadata);
+        UserCustomHeaderDecorator _userCustomHeaderDecorator = config.userCustomHeaderDecorator();
+        _splitHttpClient = SplitHttpClientImpl.create(_httpclient, new RequestDecorator(_userCustomHeaderDecorator));
 
         // Roots
         _rootTarget = URI.create(config.endpoint());
@@ -196,7 +201,7 @@ public class SplitFactoryImpl implements SplitFactory {
         ImpressionsStorage impressionsStorage = new InMemoryImpressionsStorage(config.impressionsQueueSize());
         _splitCache = splitCache;
         _segmentCache = segmentCache;
-        _telemetrySynchronizer = new TelemetryInMemorySubmitter(_httpclient, URI.create(config.telemetryURL()), telemetryStorage,
+        _telemetrySynchronizer = new TelemetryInMemorySubmitter(_splitHttpClient, URI.create(config.telemetryURL()), telemetryStorage,
                 splitCache, _segmentCache, telemetryStorage, _startTime);
 
         // Segments
@@ -213,7 +218,7 @@ public class SplitFactoryImpl implements SplitFactory {
                 config.getThreadFactory());
 
         //ImpressionSender
-        _impressionsSender = HttpImpressionsSender.create(_httpclient, URI.create(config.eventsEndpoint()), config.impressionsMode(),
+        _impressionsSender = HttpImpressionsSender.create(_splitHttpClient, URI.create(config.eventsEndpoint()), config.impressionsMode(),
                 _telemetryStorageProducer);
 
         //UniqueKeysTracker
@@ -224,7 +229,7 @@ public class SplitFactoryImpl implements SplitFactory {
 
         // EventClient
         EventsStorage eventsStorage = new InMemoryEventsStorage(config.eventsQueueSize(), _telemetryStorageProducer);
-        EventsSender eventsSender = EventsSender.create(_httpclient, _eventsRootTarget, _telemetryStorageProducer);
+        EventsSender eventsSender = EventsSender.create(_splitHttpClient, _eventsRootTarget, _telemetryStorageProducer);
         _eventsTask = EventsTask.create(config.eventSendIntervalInMillis(), eventsStorage, eventsSender, config.getThreadFactory());
 
         _telemetrySyncTask = new TelemetrySyncTask(config.get_telemetryRefreshRate(), _telemetrySynchronizer, config.getThreadFactory());
@@ -275,6 +280,7 @@ public class SplitFactoryImpl implements SplitFactory {
         _splitSynchronizationTask = null;
         _eventsTask = null;
         _httpclient = null;
+        _splitHttpClient = null;
         _rootTarget = null;
         _eventsRootTarget = null;
 
@@ -356,6 +362,7 @@ public class SplitFactoryImpl implements SplitFactory {
         _telemetrySyncTask = null;
         _eventsTask = null;
         _httpclient = null;
+        _splitHttpClient = null;
         _impressionsSender = null;
         _rootTarget = null;
         _eventsRootTarget = null;
@@ -560,7 +567,7 @@ public class SplitFactoryImpl implements SplitFactory {
 
     private SegmentSynchronizationTaskImp buildSegments(SplitClientConfig config, SegmentCacheProducer segmentCacheProducer,
                                                         SplitCacheConsumer splitCacheConsumer) throws URISyntaxException {
-        SegmentChangeFetcher segmentChangeFetcher = HttpSegmentChangeFetcher.create(_httpclient, _rootTarget, _telemetryStorageProducer);
+        SegmentChangeFetcher segmentChangeFetcher = HttpSegmentChangeFetcher.create(_splitHttpClient, _rootTarget, _telemetryStorageProducer);
 
         return new SegmentSynchronizationTaskImp(segmentChangeFetcher,
                 config.segmentsRefreshRate(),
@@ -573,7 +580,7 @@ public class SplitFactoryImpl implements SplitFactory {
 
     private SplitFetcher buildSplitFetcher(SplitCacheProducer splitCacheProducer, SplitParser splitParser, FlagSetsFilter flagSetsFilter) throws
             URISyntaxException {
-        SplitChangeFetcher splitChangeFetcher = HttpSplitChangeFetcher.create(_httpclient, _rootTarget, _telemetryStorageProducer);
+        SplitChangeFetcher splitChangeFetcher = HttpSplitChangeFetcher.create(_splitHttpClient, _rootTarget, _telemetryStorageProducer);
         return new SplitFetcherImp(splitChangeFetcher, splitParser, splitCacheProducer, _telemetryStorageProducer,flagSetsFilter);
     }
 
