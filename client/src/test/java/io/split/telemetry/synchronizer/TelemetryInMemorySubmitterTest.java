@@ -95,7 +95,7 @@ public class TelemetryInMemorySubmitterTest {
         ApiKeyCounter.getApiKeyCounterInstance().add(SECOND_KEY);
         TelemetryStorage telemetryStorage = new InMemoryTelemetryStorage();
         CloseableHttpClient httpClient = TestHelper.mockHttpClient(TELEMETRY_ENDPOINT, HttpStatus.SC_OK);
-        SplitHttpClient splitHttpClient = SplitHttpClientImpl.create(httpClient, null);
+        SplitHttpClient splitHttpClient = SplitHttpClientImpl.create(httpClient, new RequestDecorator(null));
         TelemetryInMemorySubmitter telemetrySynchronizer = getTelemetrySynchronizer(splitHttpClient);
         SplitClientConfig splitClientConfig = SplitClientConfig.builder().flagSetsFilter(Arrays.asList("a", "_b", "a", "a", "c", "d", "_d")).build();
         populateConfig(telemetryStorage);
@@ -117,7 +117,7 @@ public class TelemetryInMemorySubmitterTest {
     public void testStats() throws Exception {
         TelemetryStorage telemetryStorage = new InMemoryTelemetryStorage();
         CloseableHttpClient httpClient = TestHelper.mockHttpClient(TELEMETRY_ENDPOINT, HttpStatus.SC_OK);
-        SplitHttpClient splitHttpClient = SplitHttpClientImpl.create(httpClient, null);
+        SplitHttpClient splitHttpClient = SplitHttpClientImpl.create(httpClient, new RequestDecorator(null));
         TelemetryInMemorySubmitter telemetrySynchronizer = getTelemetrySynchronizer(splitHttpClient);
         populateStats(telemetryStorage);
         Field telemetryStorageConsumer = TelemetryInMemorySubmitter.class.getDeclaredField("_telemetryStorageConsumer");
