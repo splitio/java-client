@@ -93,7 +93,7 @@ public final class SplitHttpClientImpl implements SplitHttpClient {
 
             int status = response.getCode();
 
-            String statusMessage = new String("");
+            String statusMessage = "";
             if (status < HttpStatus.SC_OK || status >= HttpStatus.SC_MULTIPLE_CHOICES) {
                 statusMessage = response.getReasonPhrase();
                 _log.warn(String.format("Response status was: %s. Reason: %s", status, response.getReasonPhrase()));
