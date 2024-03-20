@@ -1,13 +1,17 @@
 package io.split.client;
 
 import org.apache.hc.client5.http.classic.methods.HttpUriRequestBase;
-import java.util.*;
+import java.util.HashSet;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Arrays;
+import java.util.Set;
 
 class NoOpHeaderDecorator implements  UserCustomHeaderDecorator {
     public NoOpHeaderDecorator() {}
     @Override
     public Map<String, String> getHeaderOverrides() {
-        return new HashMap<String, String>();
+        return new HashMap<>();
     }
 }
 

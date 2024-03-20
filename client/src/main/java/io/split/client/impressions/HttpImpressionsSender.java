@@ -63,7 +63,7 @@ public class HttpImpressionsSender implements ImpressionsSender {
     @Override
     public void postImpressionsBulk(List<TestImpressions> impressions) {
 
-        SplitHttpResponse response = null;
+        SplitHttpResponse response;
         long initTime = System.currentTimeMillis();
         try {
             HttpEntity entity = Utils.toJsonEntity(impressions);

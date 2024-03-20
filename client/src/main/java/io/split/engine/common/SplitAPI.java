@@ -1,6 +1,5 @@
 package io.split.engine.common;
 
-import io.split.client.dtos.Split;
 import io.split.service.SplitHttpClient;
 import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
 import org.slf4j.Logger;

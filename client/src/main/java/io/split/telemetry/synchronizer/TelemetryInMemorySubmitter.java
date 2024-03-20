@@ -18,7 +18,6 @@ import io.split.telemetry.domain.enums.EventsDataRecordsEnum;
 import io.split.telemetry.domain.enums.ImpressionsDataTypeEnum;
 import io.split.telemetry.storage.TelemetryRuntimeProducer;
 import io.split.telemetry.storage.TelemetryStorageConsumer;
-import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
 
 import java.net.URI;
 import java.net.URISyntaxException;

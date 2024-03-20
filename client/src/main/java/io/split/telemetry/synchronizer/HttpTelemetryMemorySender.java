@@ -9,7 +9,6 @@ import io.split.telemetry.domain.Config;
 import io.split.telemetry.domain.Stats;
 import io.split.telemetry.domain.enums.HttpParamsWrapper;
 import io.split.telemetry.storage.TelemetryRuntimeProducer;
-import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

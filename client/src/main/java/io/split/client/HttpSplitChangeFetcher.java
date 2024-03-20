@@ -31,10 +31,6 @@ public final class HttpSplitChangeFetcher implements SplitChangeFetcher {
     private static final String SINCE = "since";
     private static final String TILL = "till";
     private static final String SETS = "sets";
-
-    private static final String HEADER_CACHE_CONTROL_NAME = "Cache-Control";
-    private static final String HEADER_CACHE_CONTROL_VALUE = "no-cache";
-
     private final SplitHttpClient _client;
     private final URI _target;
     private final TelemetryRuntimeProducer _telemetryRuntimeProducer;

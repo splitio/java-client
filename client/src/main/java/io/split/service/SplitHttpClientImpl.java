@@ -79,7 +79,6 @@ public final class SplitHttpClientImpl implements SplitHttpClient {
              HttpEntity entity,
              Map<String, String> additionalHeaders) throws IOException {
         CloseableHttpResponse response = null;
-        long initTime = System.currentTimeMillis();
         try {
             HttpPost request = new HttpPost(uri);
             if (additionalHeaders != null) {

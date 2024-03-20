@@ -1,6 +1,6 @@
 package io.split.client;
 
-import java.util.*;
+import java.util.Map;
 
 public interface UserCustomHeaderDecorator
 {
