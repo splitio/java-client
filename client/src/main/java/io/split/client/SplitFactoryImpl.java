@@ -155,7 +155,6 @@ public class SplitFactoryImpl implements SplitFactory {
     private final SplitSynchronizationTask _splitSynchronizationTask;
     private final EventsTask _eventsTask;
     private final SyncManager _syncManager;
-    private final CloseableHttpClient _httpclient;
     private final SplitHttpClient _splitHttpClient;
     private final UserStorageWrapper _userStorageWrapper;
     private final ImpressionsSender _impressionsSender;
@@ -186,9 +185,7 @@ public class SplitFactoryImpl implements SplitFactory {
         _gates = new SDKReadinessGates();
 
         // HttpClient
-        _httpclient = buildHttpClient(apiToken, config, _sdkMetadata);
-        UserCustomHeaderDecorator _userCustomHeaderDecorator = config.userCustomHeaderDecorator();
-        _splitHttpClient = SplitHttpClientImpl.create(_httpclient, new RequestDecorator(_userCustomHeaderDecorator));
+        _splitHttpClient = buildSplitHttpClient(apiToken, config, _sdkMetadata);
 
         // Roots
         _rootTarget = URI.create(config.endpoint());
@@ -279,7 +276,6 @@ public class SplitFactoryImpl implements SplitFactory {
         _splitFetcher = null;
         _splitSynchronizationTask = null;
         _eventsTask = null;
-        _httpclient = null;
         _splitHttpClient = null;
         _rootTarget = null;
         _eventsRootTarget = null;
@@ -361,7 +357,6 @@ public class SplitFactoryImpl implements SplitFactory {
         _telemetrySynchronizer = null;
         _telemetrySyncTask = null;
         _eventsTask = null;
-        _httpclient = null;
         _splitHttpClient = null;
         _impressionsSender = null;
         _rootTarget = null;
@@ -478,7 +473,7 @@ public class SplitFactoryImpl implements SplitFactory {
         return isTerminated;
     }
 
-    private static CloseableHttpClient buildHttpClient(String apiToken, SplitClientConfig config, SDKMetadata sdkMetadata) {
+    private static SplitHttpClient buildSplitHttpClient(String apiToken, SplitClientConfig config, SDKMetadata sdkMetadata) throws URISyntaxException {
         SSLConnectionSocketFactory sslSocketFactory = SSLConnectionSocketFactoryBuilder.create()
                 .setSslContext(SSLContexts.createSystemDefault())
                 .setTlsVersions(TLS.V_1_1, TLS.V_1_2)
@@ -512,7 +507,7 @@ public class SplitFactoryImpl implements SplitFactory {
             httpClientbuilder = setupProxy(httpClientbuilder, config);
         }
 
-        return httpClientbuilder.build();
+        return SplitHttpClientImpl.create(httpClientbuilder.build(), new RequestDecorator(config.userCustomHeaderDecorator()));
     }
 
     private static CloseableHttpClient buildSSEdHttpClient(String apiToken, SplitClientConfig config, SDKMetadata sdkMetadata) {

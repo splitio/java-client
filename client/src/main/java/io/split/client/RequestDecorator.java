@@ -19,18 +19,18 @@ public final class RequestDecorator {
     UserCustomHeaderDecorator _headerDecorator;
 
     private static final Set<String> forbiddenHeaders = new HashSet<>(Arrays.asList(
-            "SplitSDKVersion",
-            "SplitMachineIp",
-            "SplitMachineName",
-            "SplitImpressionsMode",
-            "Host",
-            "Referrer",
-            "Content-Type",
-            "Content-Length",
-            "Content-Encoding",
-            "Accept",
-            "Keep-Alive",
-            "X-Fastly-Debug"
+            "splitsdkversion",
+            "splitmachineip",
+            "splitmachinename",
+            "splitimpressionsmode",
+            "host",
+            "referrer",
+            "content-type",
+            "content-length",
+            "content-encoding",
+            "accept",
+            "keep-alive",
+            "x-fastly-debug"
     ));
 
     public RequestDecorator(UserCustomHeaderDecorator headerDecorator) {
@@ -55,6 +55,6 @@ public final class RequestDecorator {
     }
 
     private boolean isHeaderAllowed(String headerName) {
-        return !forbiddenHeaders.contains(headerName);
+        return !forbiddenHeaders.contains(headerName.toLowerCase());
     }
 }
