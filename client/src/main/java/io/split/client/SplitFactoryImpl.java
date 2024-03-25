@@ -473,7 +473,8 @@ public class SplitFactoryImpl implements SplitFactory {
         return isTerminated;
     }
 
-    private static SplitHttpClient buildSplitHttpClient(String apiToken, SplitClientConfig config, SDKMetadata sdkMetadata) throws URISyntaxException {
+    private static SplitHttpClient buildSplitHttpClient(String apiToken, SplitClientConfig config, SDKMetadata sdkMetadata)
+            throws URISyntaxException {
         SSLConnectionSocketFactory sslSocketFactory = SSLConnectionSocketFactoryBuilder.create()
                 .setSslContext(SSLContexts.createSystemDefault())
                 .setTlsVersions(TLS.V_1_1, TLS.V_1_2)

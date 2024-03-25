@@ -76,7 +76,9 @@ public final class HttpSplitChangeFetcher implements SplitChangeFetcher {
                     throw new UriTooLongException(String.format("Status code: %s. Message: %s", response.statusCode, response.statusMessage));
                 }
                 _telemetryRuntimeProducer.recordSyncError(ResourceEnum.SPLIT_SYNC, response.statusCode);
-                throw new IllegalStateException(String.format("Could not retrieve splitChanges since %s; http return code %s", since, response.statusCode));
+                throw new IllegalStateException(
+                        String.format("Could not retrieve splitChanges since %s; http return code %s", since, response.statusCode)
+                );
             }
 
             return Json.fromJson(response.body, SplitChange.class);
