@@ -27,10 +27,6 @@ public class HttpPostImp {
         long initTime = System.currentTimeMillis();
         HttpEntity entity = Utils.toJsonEntity(object);
 
-        if (_logger.isDebugEnabled()) {
-            _logger.debug(String.format("[Post] %s", uri));
-        }
-
         try {
             SplitHttpResponse response = _client.post(uri, entity, null);
             if (response.statusCode < HttpStatus.SC_OK || response.statusCode >= HttpStatus.SC_MULTIPLE_CHOICES) {
