@@ -164,7 +164,7 @@ public class SplitManagerImplTest {
     }
 
     @Test
-    public void block_until_ready_does_not_time_when_sdk_is_ready() throws TimeoutException, InterruptedException {
+    public void blockUntilReadyDoesNotTimeWhenSdkIsReady() throws TimeoutException, InterruptedException {
         SDKReadinessGates ready = mock(SDKReadinessGates.class);
         when(ready.waitUntilInternalReady(100)).thenReturn(true);
         SplitManagerImpl splitManager = new SplitManagerImpl(mock(SplitCacheConsumer.class),
@@ -175,7 +175,7 @@ public class SplitManagerImplTest {
     }
 
     @Test(expected = TimeoutException.class)
-    public void block_until_ready_times_when_sdk_is_not_ready() throws TimeoutException, InterruptedException {
+    public void blockUntilReadyTimesWhenSdkIsNotReady() throws TimeoutException, InterruptedException {
         SDKReadinessGates ready = mock(SDKReadinessGates.class);
         when(ready.waitUntilInternalReady(100)).thenReturn(false);
 

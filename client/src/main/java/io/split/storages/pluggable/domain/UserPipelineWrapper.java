@@ -5,7 +5,6 @@ import org.slf4j.LoggerFactory;
 import pluggable.Pipeline;
 import pluggable.Result;
 
-import java.util.ArrayList;
 import java.util.List;
 
 public class UserPipelineWrapper implements Pipeline{

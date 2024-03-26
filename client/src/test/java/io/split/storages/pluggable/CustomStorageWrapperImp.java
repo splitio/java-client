@@ -285,7 +285,7 @@ public class CustomStorageWrapperImp implements CustomStorageWrapper {
         return _latencies;
     }
 
-    public ConcurrentMap<String, Long> get_impressionsCount() {
+    public ConcurrentMap<String, Long> getImpressionsCount() {
         return _impressionsCount;
     }
 

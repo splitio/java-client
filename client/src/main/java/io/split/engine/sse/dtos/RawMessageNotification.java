@@ -1,7 +1,5 @@
 package io.split.engine.sse.dtos;
 
-import java.util.Map;
-
 public class RawMessageNotification {
     private String id;
     private String clientId;

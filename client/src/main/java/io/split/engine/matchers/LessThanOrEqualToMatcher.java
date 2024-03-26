@@ -2,7 +2,6 @@ package io.split.engine.matchers;
 
 import io.split.client.dtos.DataType;
 import io.split.engine.evaluator.EvaluationContext;
-import io.split.engine.evaluator.Evaluator;
 
 import java.util.Map;
 

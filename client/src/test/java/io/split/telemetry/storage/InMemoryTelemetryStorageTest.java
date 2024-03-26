@@ -71,22 +71,22 @@ public class InMemoryTelemetryStorageTest{
 
         HTTPLatencies httpLatencies = telemetryStorage.popHTTPLatencies();
 
-        Assert.assertEquals(3, httpLatencies.get_splits().stream().mapToInt(Long::intValue).sum());
-        Assert.assertEquals(2, httpLatencies.get_telemetry().stream().mapToInt(Long::intValue).sum());
-        Assert.assertEquals(2, httpLatencies.get_events().stream().mapToInt(Long::intValue).sum());
-        Assert.assertEquals(1, httpLatencies.get_segments().stream().mapToInt(Long::intValue).sum());
-        Assert.assertEquals(1, httpLatencies.get_impressions().stream().mapToInt(Long::intValue).sum());
-        Assert.assertEquals(1, httpLatencies.get_impressionsCount().stream().mapToInt(Long::intValue).sum());
-        Assert.assertEquals(0, httpLatencies.get_token().stream().mapToInt(Long::intValue).sum());
+        Assert.assertEquals(3, httpLatencies.getSplits().stream().mapToInt(Long::intValue).sum());
+        Assert.assertEquals(2, httpLatencies.getTelemetry().stream().mapToInt(Long::intValue).sum());
+        Assert.assertEquals(2, httpLatencies.getEvents().stream().mapToInt(Long::intValue).sum());
+        Assert.assertEquals(1, httpLatencies.getSegments().stream().mapToInt(Long::intValue).sum());
+        Assert.assertEquals(1, httpLatencies.getImpressions().stream().mapToInt(Long::intValue).sum());
+        Assert.assertEquals(1, httpLatencies.getImpressionsCount().stream().mapToInt(Long::intValue).sum());
+        Assert.assertEquals(0, httpLatencies.getToken().stream().mapToInt(Long::intValue).sum());
 
         httpLatencies = telemetryStorage.popHTTPLatencies();
-        Assert.assertEquals(0, httpLatencies.get_splits().stream().mapToInt(Long::intValue).sum());
-        Assert.assertEquals(0, httpLatencies.get_telemetry().stream().mapToInt(Long::intValue).sum());
-        Assert.assertEquals(0, httpLatencies.get_events().stream().mapToInt(Long::intValue).sum());
-        Assert.assertEquals(0, httpLatencies.get_segments().stream().mapToInt(Long::intValue).sum());
-        Assert.assertEquals(0, httpLatencies.get_impressions().stream().mapToInt(Long::intValue).sum());
-        Assert.assertEquals(0, httpLatencies.get_impressionsCount().stream().mapToInt(Long::intValue).sum());
-        Assert.assertEquals(0, httpLatencies.get_token().stream().mapToInt(Long::intValue).sum());
+        Assert.assertEquals(0, httpLatencies.getSplits().stream().mapToInt(Long::intValue).sum());
+        Assert.assertEquals(0, httpLatencies.getTelemetry().stream().mapToInt(Long::intValue).sum());
+        Assert.assertEquals(0, httpLatencies.getEvents().stream().mapToInt(Long::intValue).sum());
+        Assert.assertEquals(0, httpLatencies.getSegments().stream().mapToInt(Long::intValue).sum());
+        Assert.assertEquals(0, httpLatencies.getImpressions().stream().mapToInt(Long::intValue).sum());
+        Assert.assertEquals(0, httpLatencies.getImpressionsCount().stream().mapToInt(Long::intValue).sum());
+        Assert.assertEquals(0, httpLatencies.getToken().stream().mapToInt(Long::intValue).sum());
 
 
         //Exceptions
@@ -191,13 +191,13 @@ public class InMemoryTelemetryStorageTest{
         telemetryStorage.recordSuccessfulSync(LastSynchronizationRecordsEnum.TOKEN, 129);
 
         LastSynchronization lastSynchronization = telemetryStorage.getLastSynchronization();
-        Assert.assertEquals(800, lastSynchronization.get_events());
-        Assert.assertEquals(129, lastSynchronization.get_token());
-        Assert.assertEquals(1580, lastSynchronization.get_segments());
-        Assert.assertEquals(0, lastSynchronization.get_splits());
-        Assert.assertEquals(10500, lastSynchronization.get_impressions());
-        Assert.assertEquals(1500, lastSynchronization.get_impressionsCount());
-        Assert.assertEquals(265, lastSynchronization.get_telemetry());
+        Assert.assertEquals(800, lastSynchronization.getEvents());
+        Assert.assertEquals(129, lastSynchronization.getToken());
+        Assert.assertEquals(1580, lastSynchronization.getSegments());
+        Assert.assertEquals(0, lastSynchronization.getSplits());
+        Assert.assertEquals(10500, lastSynchronization.getImpressions());
+        Assert.assertEquals(1500, lastSynchronization.getImpressionsCount());
+        Assert.assertEquals(265, lastSynchronization.getTelemetry());
 
         //Session length
         telemetryStorage.recordSessionLength(91218);
@@ -216,21 +216,21 @@ public class InMemoryTelemetryStorageTest{
         telemetryStorage.recordSyncError(ResourceEnum.TOKEN_SYNC, 403);
 
         HTTPErrors httpErrors = telemetryStorage.popHTTPErrors();
-        Assert.assertEquals(2, httpErrors.get_telemetry().get(400l).intValue());
-        Assert.assertEquals(1, httpErrors.get_segments().get(501l).intValue());
-        Assert.assertEquals(2, httpErrors.get_impressions().get(403l).intValue());
-        Assert.assertEquals(1, httpErrors.get_impressionsCount().get(403l).intValue());
-        Assert.assertEquals(1, httpErrors.get_events().get(503l).intValue());
-        Assert.assertEquals(1, httpErrors.get_splits().get(403l).intValue());
-        Assert.assertEquals(1, httpErrors.get_token().get(403l).intValue());
+        Assert.assertEquals(2, httpErrors.getTelemetry().get(400l).intValue());
+        Assert.assertEquals(1, httpErrors.getSegments().get(501l).intValue());
+        Assert.assertEquals(2, httpErrors.getImpressions().get(403l).intValue());
+        Assert.assertEquals(1, httpErrors.getImpressionsCount().get(403l).intValue());
+        Assert.assertEquals(1, httpErrors.getEvents().get(503l).intValue());
+        Assert.assertEquals(1, httpErrors.getSplits().get(403l).intValue());
+        Assert.assertEquals(1, httpErrors.getToken().get(403l).intValue());
 
         //Streaming events
         StreamingEvent streamingEvent = new StreamingEvent(1, 290, 91218);
         telemetryStorage.recordStreamingEvents(streamingEvent);
 
         List<StreamingEvent> streamingEvents = telemetryStorage.popStreamingEvents();
-        Assert.assertEquals(290, streamingEvents.get(0).get_data());
-        Assert.assertEquals(1, streamingEvents.get(0).get_type());
+        Assert.assertEquals(290, streamingEvents.get(0).getData());
+        Assert.assertEquals(1, streamingEvents.get(0).getType());
         Assert.assertEquals(91218, streamingEvents.get(0).getTimestamp());
 
         //Check list has been cleared

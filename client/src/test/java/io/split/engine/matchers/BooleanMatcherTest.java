@@ -8,7 +8,7 @@ import static org.hamcrest.Matchers.is;
 public class BooleanMatcherTest {
 
     @Test
-    public void works_true() {
+    public void worksTrue() {
         BooleanMatcher matcher = new BooleanMatcher(true);
         assertThat(matcher.match(null, null, null, null), is(false));
         assertThat(matcher.match(true, null, null, null), is(true));
@@ -23,7 +23,7 @@ public class BooleanMatcherTest {
     }
 
     @Test
-    public void works_false() {
+    public void worksFalse() {
         BooleanMatcher matcher = new BooleanMatcher(false);
         assertThat(matcher.match(null, null, null, null), is(false));
         assertThat(matcher.match(true, null, null, null), is(false));

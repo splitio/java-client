@@ -39,59 +39,59 @@ public class HTTPErrors {
         _telemetry = new ConcurrentHashMap<>();
     }
 
-    public Map<Long, Long> get_splits() {
+    public Map<Long, Long> getSplits() {
         return _splits;
     }
 
-    public void set_splits(Map<Long, Long> _splits) {
+    public void setSplits(Map<Long, Long> _splits) {
         this._splits = _splits;
     }
 
-    public Map<Long, Long> get_segments() {
+    public Map<Long, Long> getSegments() {
         return _segments;
     }
 
-    public void set_segments(Map<Long, Long> _segments) {
+    public void setSegments(Map<Long, Long> _segments) {
         this._segments = _segments;
     }
 
-    public Map<Long, Long> get_impressions() {
+    public Map<Long, Long> getImpressions() {
         return _impressions;
     }
 
-    public void set_impressions(Map<Long, Long> _impressions) {
+    public void setImpressions(Map<Long, Long> _impressions) {
         this._impressions = _impressions;
     }
 
-    public Map<Long, Long> get_events() {
+    public Map<Long, Long> getEvents() {
         return _events;
     }
 
-    public void set_events(Map<Long, Long> _events) {
+    public void setEvents(Map<Long, Long> _events) {
         this._events = _events;
     }
 
-    public Map<Long, Long> get_token() {
+    public Map<Long, Long> getToken() {
         return _token;
     }
 
-    public void set_token(Map<Long, Long> _token) {
+    public void setToken(Map<Long, Long> _token) {
         this._token = _token;
     }
 
-    public Map<Long, Long> get_telemetry() {
+    public Map<Long, Long> getTelemetry() {
         return _telemetry;
     }
 
-    public void set_telemetry(Map<Long, Long> _telemetry) {
+    public void setTelemetry(Map<Long, Long> _telemetry) {
         this._telemetry = _telemetry;
     }
 
-    public Map<Long, Long> get_impressionsCount() {
+    public Map<Long, Long> getImpressionsCount() {
         return _impressionsCount;
     }
 
-    public void set_impressionsCount(Map<Long, Long> _impressionsCount) {
+    public void setImpressionsCount(Map<Long, Long> _impressionsCount) {
         this._impressionsCount = _impressionsCount;
     }
 }

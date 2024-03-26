@@ -12,7 +12,6 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
 import java.net.URL;
-import java.nio.charset.Charset;
 
 public class HashConsistencyTest {
     @Test
@@ -77,7 +76,7 @@ public class HashConsistencyTest {
             int expected_hash = Integer.parseInt(parts[2]);
             int expected_bucket = Integer.parseInt(parts[3]);
 
-            int hash = Splitter.legacy_hash(key, seed);
+            int hash = Splitter.legacyHash(key, seed);
             int bucket = Splitter.bucket(hash);
 
             Assert.assertEquals(expected_hash, hash);
@@ -98,7 +97,7 @@ public class HashConsistencyTest {
             long expected_hash = Long.parseLong(parts[2]);
             int expected_bucket = Integer.parseInt(parts[3]);
 
-            long hash = Splitter.murmur_hash(key, seed);
+            long hash = Splitter.murmurHash(key, seed);
             int bucket = Splitter.bucket(hash);
 
             Assert.assertEquals(expected_hash, hash);

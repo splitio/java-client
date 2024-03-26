@@ -20,43 +20,43 @@ public class Rates {
     @SerializedName(FIELD_TELEMETRY)
     private long _telemetry;
 
-    public long get_splits() {
+    public long getSplits() {
         return _splits;
     }
 
-    public void set_splits(long _splits) {
+    public void setSplits(long _splits) {
         this._splits = _splits;
     }
 
-    public long get_segments() {
+    public long getSegments() {
         return _segments;
     }
 
-    public void set_segments(long _segments) {
+    public void setSegments(long _segments) {
         this._segments = _segments;
     }
 
-    public long get_impressions() {
+    public long getImpressions() {
         return _impressions;
     }
 
-    public void set_impressions(long _impressions) {
+    public void setImpressions(long _impressions) {
         this._impressions = _impressions;
     }
 
-    public long get_events() {
+    public long getEvents() {
         return _events;
     }
 
-    public void set_events(long _events) {
+    public void setEvents(long _events) {
         this._events = _events;
     }
 
-    public long get_telemetry() {
+    public long getTelemetry() {
         return _telemetry;
     }
 
-    public void set_telemetry(long _telemetry) {
+    public void setTelemetry(long _telemetry) {
         this._telemetry = _telemetry;
     }
 }

@@ -152,13 +152,13 @@ public class InMemoryTelemetryStorage implements TelemetryStorage{
     @Override
     public LastSynchronization getLastSynchronization() {
         LastSynchronization lastSynchronization = new LastSynchronization();
-        lastSynchronization.set_splits(_lastSynchronizationRecords.get(LastSynchronizationRecordsEnum.SPLITS).get());
-        lastSynchronization.set_segments(_lastSynchronizationRecords.get(LastSynchronizationRecordsEnum.SEGMENTS).get());
-        lastSynchronization.set_impressions(_lastSynchronizationRecords.get(LastSynchronizationRecordsEnum.IMPRESSIONS).get());
-        lastSynchronization.set_impressionsCount(_lastSynchronizationRecords.get(LastSynchronizationRecordsEnum.IMPRESSIONS_COUNT).get());
-        lastSynchronization.set_events(_lastSynchronizationRecords.get(LastSynchronizationRecordsEnum.EVENTS).get());
-        lastSynchronization.set_telemetry(_lastSynchronizationRecords.get(LastSynchronizationRecordsEnum.TELEMETRY).get());
-        lastSynchronization.set_token(_lastSynchronizationRecords.get(LastSynchronizationRecordsEnum.TOKEN).get());
+        lastSynchronization.setSplits(_lastSynchronizationRecords.get(LastSynchronizationRecordsEnum.SPLITS).get());
+        lastSynchronization.setSegments(_lastSynchronizationRecords.get(LastSynchronizationRecordsEnum.SEGMENTS).get());
+        lastSynchronization.setImpressions(_lastSynchronizationRecords.get(LastSynchronizationRecordsEnum.IMPRESSIONS).get());
+        lastSynchronization.setImpressionsCount(_lastSynchronizationRecords.get(LastSynchronizationRecordsEnum.IMPRESSIONS_COUNT).get());
+        lastSynchronization.setEvents(_lastSynchronizationRecords.get(LastSynchronizationRecordsEnum.EVENTS).get());
+        lastSynchronization.setTelemetry(_lastSynchronizationRecords.get(LastSynchronizationRecordsEnum.TELEMETRY).get());
+        lastSynchronization.setToken(_lastSynchronizationRecords.get(LastSynchronizationRecordsEnum.TOKEN).get());
 
         return lastSynchronization;
     }
@@ -166,13 +166,13 @@ public class InMemoryTelemetryStorage implements TelemetryStorage{
     @Override
     public HTTPErrors popHTTPErrors() {
         HTTPErrors errors = new HTTPErrors();
-        errors.set_splits(_httpErrors.get(ResourceEnum.SPLIT_SYNC));
-        errors.set_segments(_httpErrors.get(ResourceEnum.SEGMENT_SYNC));
-        errors.set_impressions(_httpErrors.get(ResourceEnum.IMPRESSION_SYNC));
-        errors.set_impressionsCount(_httpErrors.get(ResourceEnum.IMPRESSION_COUNT_SYNC));
-        errors.set_events(_httpErrors.get(ResourceEnum.EVENT_SYNC));
-        errors.set_telemetry(_httpErrors.get(ResourceEnum.TELEMETRY_SYNC));
-        errors.set_token(_httpErrors.get(ResourceEnum.TOKEN_SYNC));
+        errors.setSplits(_httpErrors.get(ResourceEnum.SPLIT_SYNC));
+        errors.setSegments(_httpErrors.get(ResourceEnum.SEGMENT_SYNC));
+        errors.setImpressions(_httpErrors.get(ResourceEnum.IMPRESSION_SYNC));
+        errors.setImpressionsCount(_httpErrors.get(ResourceEnum.IMPRESSION_COUNT_SYNC));
+        errors.setEvents(_httpErrors.get(ResourceEnum.EVENT_SYNC));
+        errors.setTelemetry(_httpErrors.get(ResourceEnum.TELEMETRY_SYNC));
+        errors.setToken(_httpErrors.get(ResourceEnum.TOKEN_SYNC));
 
         _httpErrors.clear();
         initHttpErrors();
@@ -183,13 +183,13 @@ public class InMemoryTelemetryStorage implements TelemetryStorage{
     @Override
     public HTTPLatencies popHTTPLatencies(){
         HTTPLatencies latencies = new HTTPLatencies();
-        latencies.set_splits(_httpLatencies.get(HTTPLatenciesEnum.SPLITS).fetchAndClearAll());
-        latencies.set_segments(_httpLatencies.get(HTTPLatenciesEnum.SEGMENTS).fetchAndClearAll());
-        latencies.set_impressions(_httpLatencies.get(HTTPLatenciesEnum.IMPRESSIONS).fetchAndClearAll());
-        latencies.set_impressionsCount(_httpLatencies.get(HTTPLatenciesEnum.IMPRESSIONS_COUNT).fetchAndClearAll());
-        latencies.set_events(_httpLatencies.get(HTTPLatenciesEnum.EVENTS).fetchAndClearAll());
-        latencies.set_telemetry(_httpLatencies.get(HTTPLatenciesEnum.TELEMETRY).fetchAndClearAll());
-        latencies.set_token(_httpLatencies.get(HTTPLatenciesEnum.TOKEN).fetchAndClearAll());
+        latencies.setSplits(_httpLatencies.get(HTTPLatenciesEnum.SPLITS).fetchAndClearAll());
+        latencies.setSegments(_httpLatencies.get(HTTPLatenciesEnum.SEGMENTS).fetchAndClearAll());
+        latencies.setImpressions(_httpLatencies.get(HTTPLatenciesEnum.IMPRESSIONS).fetchAndClearAll());
+        latencies.setImpressionsCount(_httpLatencies.get(HTTPLatenciesEnum.IMPRESSIONS_COUNT).fetchAndClearAll());
+        latencies.setEvents(_httpLatencies.get(HTTPLatenciesEnum.EVENTS).fetchAndClearAll());
+        latencies.setTelemetry(_httpLatencies.get(HTTPLatenciesEnum.TELEMETRY).fetchAndClearAll());
+        latencies.setToken(_httpLatencies.get(HTTPLatenciesEnum.TOKEN).fetchAndClearAll());
 
         return latencies;
     }

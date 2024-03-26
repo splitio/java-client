@@ -20,43 +20,43 @@ public class URLOverrides {
     @SerializedName(FIELD_TELEMETRY)
     private boolean _telemetry;
 
-    public boolean is_sdk() {
+    public boolean isSdk() {
         return _sdk;
     }
 
-    public void set_sdk(boolean _sdk) {
+    public void setSdk(boolean _sdk) {
         this._sdk = _sdk;
     }
 
-    public boolean is_events() {
+    public boolean isEvents() {
         return _events;
     }
 
-    public void set_events(boolean _events) {
+    public void setEvents(boolean _events) {
         this._events = _events;
     }
 
-    public boolean is_auth() {
+    public boolean isAuth() {
         return _auth;
     }
 
-    public void set_auth(boolean _auth) {
+    public void setAuth(boolean _auth) {
         this._auth = _auth;
     }
 
-    public boolean is_stream() {
+    public boolean isStream() {
         return _stream;
     }
 
-    public void set_stream(boolean _stream) {
+    public void setStream(boolean _stream) {
         this._stream = _stream;
     }
 
-    public boolean is_telemetry() {
+    public boolean isTelemetry() {
         return _telemetry;
     }
 
-    public void set_telemetry(boolean _telemetry) {
+    public void setTelemetry(boolean _telemetry) {
         this._telemetry = _telemetry;
     }
 }
