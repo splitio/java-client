@@ -12,7 +12,7 @@
 - Added getTreatmentsByFlagSets without attributes.
 - Fixed some issues for flag sets: Not logging a warning when using flag sets that don't contain cached feature flags.
 
-4.10.1 (Nov 9, 2023)
+4.10.1 (Nov 8, 2023)
 - Fixed handler for response http headers.
 
 4.10.0 (Nov 2, 2023)
