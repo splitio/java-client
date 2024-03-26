@@ -39,6 +39,7 @@ public class RequestDecoratorTest {
         MyCustomHeaders myHeaders = new MyCustomHeaders();
         RequestDecorator decorator = new RequestDecorator(myHeaders);
         HttpGet request = new HttpGet("http://anyhost");
+        request.addHeader("first", "myfirstheader");
         request  = (HttpGet) decorator.decorateHeaders(request);
         Assert.assertEquals(3, request.getHeaders().length);
         Assert.assertEquals("1", request.getHeader("first").getValue());

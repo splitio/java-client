@@ -44,7 +44,7 @@ public final class RequestDecorator {
             Map<String, String> headers = _headerDecorator.getHeaderOverrides();
             for (Map.Entry entry : headers.entrySet()) {
                 if (isHeaderAllowed(entry.getKey().toString())) {
-                    request.addHeader(entry.getKey().toString(), entry.getValue());
+                    request.setHeader(entry.getKey().toString(), entry.getValue());
                 }
             }
         } catch (Exception e) {
