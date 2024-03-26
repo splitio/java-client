@@ -4,6 +4,8 @@ import io.split.TestHelper;
 import io.split.client.dtos.SegmentChange;
 import io.split.engine.common.FetchOptions;
 import io.split.engine.metrics.Metrics;
+import io.split.service.SplitHttpClient;
+import io.split.service.SplitHttpClientImpl;
 import io.split.telemetry.storage.InMemoryTelemetryStorage;
 import io.split.telemetry.storage.TelemetryStorage;
 import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
@@ -31,8 +33,9 @@ public class HttpSegmentChangeFetcherTest {
     public void testDefaultURL() throws URISyntaxException {
         URI rootTarget = URI.create("https://api.split.io");
         CloseableHttpClient httpClient = HttpClients.custom().build();
+        SplitHttpClient splitHtpClient = SplitHttpClientImpl.create(httpClient, new RequestDecorator(null));
         Metrics.NoopMetrics metrics = new Metrics.NoopMetrics();
-        HttpSegmentChangeFetcher fetcher = HttpSegmentChangeFetcher.create(httpClient, rootTarget, TELEMETRY_STORAGE);
+        HttpSegmentChangeFetcher fetcher = HttpSegmentChangeFetcher.create(splitHtpClient, rootTarget, TELEMETRY_STORAGE);
         Assert.assertThat(fetcher.getTarget().toString(), Matchers.is(Matchers.equalTo("https://api.split.io/api/segmentChanges")));
     }
 
@@ -40,8 +43,9 @@ public class HttpSegmentChangeFetcherTest {
     public void testCustomURLNoPathNoBackslash() throws URISyntaxException {
         URI rootTarget = URI.create("https://kubernetesturl.com/split");
         CloseableHttpClient httpClient = HttpClients.custom().build();
+        SplitHttpClient splitHtpClient = SplitHttpClientImpl.create(httpClient, new RequestDecorator(null));
         Metrics.NoopMetrics metrics = new Metrics.NoopMetrics();
-        HttpSegmentChangeFetcher fetcher = HttpSegmentChangeFetcher.create(httpClient, rootTarget, TELEMETRY_STORAGE);
+        HttpSegmentChangeFetcher fetcher = HttpSegmentChangeFetcher.create(splitHtpClient, rootTarget, TELEMETRY_STORAGE);
         Assert.assertThat(fetcher.getTarget().toString(), Matchers.is(Matchers.equalTo("https://kubernetesturl.com/split/api/segmentChanges")));
     }
 
@@ -49,8 +53,9 @@ public class HttpSegmentChangeFetcherTest {
     public void testCustomURLAppendingPath() throws URISyntaxException {
         URI rootTarget = URI.create("https://kubernetesturl.com/split/");
         CloseableHttpClient httpClient = HttpClients.custom().build();
+        SplitHttpClient splitHtpClient = SplitHttpClientImpl.create(httpClient, new RequestDecorator(null));
         Metrics.NoopMetrics metrics = new Metrics.NoopMetrics();
-        HttpSegmentChangeFetcher fetcher = HttpSegmentChangeFetcher.create(httpClient, rootTarget, TELEMETRY_STORAGE);
+        HttpSegmentChangeFetcher fetcher = HttpSegmentChangeFetcher.create(splitHtpClient, rootTarget, TELEMETRY_STORAGE);
         Assert.assertThat(fetcher.getTarget().toString(), Matchers.is(Matchers.equalTo("https://kubernetesturl.com/split/api/segmentChanges")));
     }
 
@@ -58,8 +63,9 @@ public class HttpSegmentChangeFetcherTest {
     public void testCustomURLAppendingPathNoBackslash() throws URISyntaxException {
         URI rootTarget = URI.create("https://kubernetesturl.com/split");
         CloseableHttpClient httpClient = HttpClients.custom().build();
+        SplitHttpClient splitHtpClient = SplitHttpClientImpl.create(httpClient, new RequestDecorator(null));
         Metrics.NoopMetrics metrics = new Metrics.NoopMetrics();
-        HttpSegmentChangeFetcher fetcher = HttpSegmentChangeFetcher.create(httpClient, rootTarget, TELEMETRY_STORAGE);
+        HttpSegmentChangeFetcher fetcher = HttpSegmentChangeFetcher.create(splitHtpClient, rootTarget, TELEMETRY_STORAGE);
         Assert.assertThat(fetcher.getTarget().toString(), Matchers.is(Matchers.equalTo("https://kubernetesturl.com/split/api/segmentChanges")));
     }
 
@@ -68,9 +74,10 @@ public class HttpSegmentChangeFetcherTest {
         URI rootTarget = URI.create("https://api.split.io/api/segmentChanges");
 
         CloseableHttpClient httpClientMock = TestHelper.mockHttpClient("segment-change-special-chatacters.json", HttpStatus.SC_OK);
+        SplitHttpClient splitHtpClient = SplitHttpClientImpl.create(httpClientMock, new RequestDecorator(null));
 
         Metrics.NoopMetrics metrics = new Metrics.NoopMetrics();
-        HttpSegmentChangeFetcher fetcher = HttpSegmentChangeFetcher.create(httpClientMock, rootTarget, TELEMETRY_STORAGE);
+        HttpSegmentChangeFetcher fetcher = HttpSegmentChangeFetcher.create(splitHtpClient, rootTarget, TELEMETRY_STORAGE);
 
         SegmentChange change = fetcher.fetch("some_segment", 1234567, new FetchOptions.Builder().build());
 
@@ -94,10 +101,12 @@ public class HttpSegmentChangeFetcherTest {
 
         ArgumentCaptor<ClassicHttpRequest> requestCaptor = ArgumentCaptor.forClass(ClassicHttpRequest.class);
         CloseableHttpClient httpClientMock = Mockito.mock(CloseableHttpClient.class);
+        SplitHttpClient splitHtpClient = SplitHttpClientImpl.create(httpClientMock, new RequestDecorator(null));
+
         when(httpClientMock.execute(requestCaptor.capture())).thenReturn(TestHelper.classicResponseToCloseableMock(response));
 
         Metrics.NoopMetrics metrics = new Metrics.NoopMetrics();
-        HttpSegmentChangeFetcher fetcher = HttpSegmentChangeFetcher.create(httpClientMock, rootTarget, Mockito.mock(TelemetryStorage.class));
+        HttpSegmentChangeFetcher fetcher = HttpSegmentChangeFetcher.create(splitHtpClient, rootTarget, Mockito.mock(TelemetryStorage.class));
 
         fetcher.fetch("someSegment", -1, new FetchOptions.Builder().targetChangeNumber(123).build());
         fetcher.fetch("someSegment2",-1, new FetchOptions.Builder().build());
@@ -107,4 +116,26 @@ public class HttpSegmentChangeFetcherTest {
         Assert.assertFalse(captured.get(1).getUri().toString().contains("till="));
     }
 
+    @Test(expected = IllegalStateException.class)
+    public void testFetcherWithError() throws IOException, URISyntaxException, IllegalAccessException, NoSuchMethodException, InvocationTargetException {
+        URI rootTarget = URI.create("https://api.split.io");
+
+        HttpEntity entityMock = Mockito.mock(HttpEntity.class);
+        when(entityMock.getContent()).thenReturn(new StringBufferInputStream("{\"till\": 1}"));
+        ClassicHttpResponse response = Mockito.mock(ClassicHttpResponse.class);
+        when(response.getCode()).thenReturn(400);
+        when(response.getEntity()).thenReturn(entityMock);
+        when(response.getHeaders()).thenReturn(new Header[0]);
+
+        ArgumentCaptor<ClassicHttpRequest> requestCaptor = ArgumentCaptor.forClass(ClassicHttpRequest.class);
+        CloseableHttpClient httpClientMock = Mockito.mock(CloseableHttpClient.class);
+        SplitHttpClient splitHtpClient = SplitHttpClientImpl.create(httpClientMock, new RequestDecorator(null));
+
+        when(httpClientMock.execute(requestCaptor.capture())).thenReturn(TestHelper.classicResponseToCloseableMock(response));
+
+        Metrics.NoopMetrics metrics = new Metrics.NoopMetrics();
+        HttpSegmentChangeFetcher fetcher = HttpSegmentChangeFetcher.create(splitHtpClient, rootTarget, Mockito.mock(TelemetryStorage.class));
+
+        fetcher.fetch("someSegment", -1, new FetchOptions.Builder().build());
+    }
 }

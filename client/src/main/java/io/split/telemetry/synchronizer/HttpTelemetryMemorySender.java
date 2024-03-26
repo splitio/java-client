@@ -4,11 +4,11 @@ import com.google.common.annotations.VisibleForTesting;
 import io.split.client.dtos.UniqueKeys;
 import io.split.client.utils.Utils;
 import io.split.service.HttpPostImp;
+import io.split.service.SplitHttpClient;
 import io.split.telemetry.domain.Config;
 import io.split.telemetry.domain.Stats;
 import io.split.telemetry.domain.enums.HttpParamsWrapper;
 import io.split.telemetry.storage.TelemetryRuntimeProducer;
-import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -31,7 +31,7 @@ public class HttpTelemetryMemorySender{
     private final URI _uniqueKeysTarget;
     private final HttpPostImp _httpPost;
 
-    public static HttpTelemetryMemorySender create(CloseableHttpClient client, URI telemetryRootEndpoint,
+    public static HttpTelemetryMemorySender create(SplitHttpClient client, URI telemetryRootEndpoint,
                                                    TelemetryRuntimeProducer telemetryRuntimeProducer) throws URISyntaxException {
         return new HttpTelemetryMemorySender(client,
                 Utils.appendPath(telemetryRootEndpoint,CONFIG_ENDPOINT_PATH),
@@ -42,7 +42,7 @@ public class HttpTelemetryMemorySender{
     }
 
     @VisibleForTesting
-    HttpTelemetryMemorySender(CloseableHttpClient client, URI impressionConfigTarget, URI impressionStatsTarget,
+    HttpTelemetryMemorySender(SplitHttpClient client, URI impressionConfigTarget, URI impressionStatsTarget,
                               URI uniqueKeysTarget,TelemetryRuntimeProducer telemetryRuntimeProducer) {
         _httpPost = new HttpPostImp(client, telemetryRuntimeProducer);
         _impressionConfigTarget = impressionConfigTarget;

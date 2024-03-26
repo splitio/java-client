@@ -1,6 +1,7 @@
 package io.split.service;
 
 import io.split.TestHelper;
+import io.split.client.RequestDecorator;
 import io.split.telemetry.domain.enums.HttpParamsWrapper;
 import io.split.telemetry.storage.InMemoryTelemetryStorage;
 import io.split.telemetry.storage.TelemetryStorage;
@@ -13,16 +14,18 @@ import org.mockito.Mockito;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.net.URI;
+import java.net.URISyntaxException;
 
 public class HttpPostImpTest{
 
     private static final String URL = "www.split.io";
 
     @Test
-    public void testPostWith200() throws InvocationTargetException, NoSuchMethodException, IllegalAccessException, IOException {
+    public void testPostWith200() throws InvocationTargetException, NoSuchMethodException, IllegalAccessException, IOException, URISyntaxException {
         CloseableHttpClient client =TestHelper.mockHttpClient(URL, HttpStatus.SC_OK);
+        SplitHttpClient splitHttpClient = SplitHttpClientImpl.create(client, new RequestDecorator(null));
         TelemetryStorage telemetryStorage = new InMemoryTelemetryStorage();
-        HttpPostImp httpPostImp = new HttpPostImp(client, telemetryStorage);
+        HttpPostImp httpPostImp = new HttpPostImp(splitHttpClient, telemetryStorage);
         httpPostImp.post(URI.create(URL), new Object(), "Metrics", HttpParamsWrapper.TELEMETRY);
         Mockito.verify(client, Mockito.times(1)).execute(Mockito.any());
         Assert.assertNotEquals(0, telemetryStorage.getLastSynchronization().get_telemetry());
@@ -30,10 +33,11 @@ public class HttpPostImpTest{
     }
 
     @Test
-    public void testPostWith400() throws InvocationTargetException, NoSuchMethodException, IllegalAccessException, IOException {
+    public void testPostWith400() throws InvocationTargetException, NoSuchMethodException, IllegalAccessException, IOException, URISyntaxException {
         CloseableHttpClient client =TestHelper.mockHttpClient(URL, HttpStatus.SC_CLIENT_ERROR);
+        SplitHttpClient splitHttpClient = SplitHttpClientImpl.create(client, new RequestDecorator(null));
         TelemetryStorage telemetryStorage = new InMemoryTelemetryStorage();
-        HttpPostImp httpPostImp = new HttpPostImp(client, telemetryStorage);
+        HttpPostImp httpPostImp = new HttpPostImp(splitHttpClient, telemetryStorage);
         httpPostImp.post(URI.create(URL), new Object(), "Metrics", HttpParamsWrapper.TELEMETRY);
         Mockito.verify(client, Mockito.times(1)).execute(Mockito.any());
 
