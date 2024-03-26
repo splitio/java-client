@@ -70,15 +70,15 @@ public final class HttpSplitChangeFetcher implements SplitChangeFetcher {
             URI uri = uriBuilder.build();
             response = _client.get(uri, options);
 
-            int statusCode = response.statusCode;
-
-            if (statusCode < HttpStatus.SC_OK || statusCode >= HttpStatus.SC_MULTIPLE_CHOICES) {
-                if (statusCode == HttpStatus.SC_REQUEST_URI_TOO_LONG) {
+            if (response.statusCode < HttpStatus.SC_OK || response.statusCode >= HttpStatus.SC_MULTIPLE_CHOICES) {
+                if (response.statusCode == HttpStatus.SC_REQUEST_URI_TOO_LONG) {
                     _log.error("The amount of flag sets provided are big causing uri length error.");
-                    throw new UriTooLongException(String.format("Status code: %s. Message: %s", statusCode, response.statusMessage));
+                    throw new UriTooLongException(String.format("Status code: %s. Message: %s", response.statusCode, response.statusMessage));
                 }
-                _telemetryRuntimeProducer.recordSyncError(ResourceEnum.SPLIT_SYNC, statusCode);
-                throw new IllegalStateException(String.format("Could not retrieve splitChanges since %s; http return code %s", since, statusCode));
+                _telemetryRuntimeProducer.recordSyncError(ResourceEnum.SPLIT_SYNC, response.statusCode);
+                throw new IllegalStateException(
+                        String.format("Could not retrieve splitChanges since %s; http return code %s", since, response.statusCode)
+                );
             }
 
             return Json.fromJson(response.body, SplitChange.class);

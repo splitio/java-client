@@ -28,10 +28,9 @@ import java.lang.reflect.InvocationTargetException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.nio.charset.StandardCharsets;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.sql.Array;
+import java.util.*;
+import java.util.stream.Collectors;
 
 import static org.mockito.Mockito.when;
 
@@ -142,5 +141,31 @@ public class HttpSplitChangeFetcherTest {
         }
 
         Assert.assertTrue(seen.size() >= (total * 0.9999));
+    }
+
+    @Test(expected = IllegalStateException.class)
+    public void testURLTooLong() throws IOException, URISyntaxException, IllegalAccessException, NoSuchMethodException, InvocationTargetException {
+        URI rootTarget = URI.create("https://api.split.io");
+
+        HttpEntity entityMock = Mockito.mock(HttpEntity.class);
+        when(entityMock.getContent()).thenReturn(new ByteArrayInputStream("{\"till\": 1}".getBytes(StandardCharsets.UTF_8)));
+        ClassicHttpResponse response = Mockito.mock(ClassicHttpResponse.class);
+        when(response.getCode()).thenReturn(414);
+        when(response.getEntity()).thenReturn(entityMock);
+        when(response.getHeaders()).thenReturn(new Header[0]);
+        CloseableHttpClient httpClientMock = Mockito.mock(CloseableHttpClient.class);
+        ArgumentCaptor<ClassicHttpRequest> requestCaptor = ArgumentCaptor.forClass(ClassicHttpRequest.class);
+        when(httpClientMock.execute(requestCaptor.capture())).thenReturn(TestHelper.classicResponseToCloseableMock(response));
+
+        SplitHttpClient splitHtpClient = SplitHttpClientImpl.create(httpClientMock, new RequestDecorator(null));
+        HttpSplitChangeFetcher fetcher = HttpSplitChangeFetcher.create(splitHtpClient, rootTarget, Mockito.mock(TelemetryRuntimeProducer.class));
+        List<String> sets = new ArrayList<String>();
+        for (Integer i=0; i<100; i++) {
+            sets.add("set" + i.toString());
+        }
+        String result = sets.stream()
+                .map(n -> String.valueOf(n))
+                .collect(Collectors.joining(",", "", ""));
+        fetcher.fetch(-1, new FetchOptions.Builder().flagSetsFilter(result).cacheControlHeaders(false).build());
     }
 }

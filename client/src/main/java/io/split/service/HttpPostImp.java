@@ -8,7 +8,6 @@ import org.apache.hc.core5.http.HttpEntity;
 import org.apache.hc.core5.http.HttpStatus;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.apache.hc.client5.http.classic.methods.HttpPost;
 
 import java.net.URI;
 
@@ -28,18 +27,10 @@ public class HttpPostImp {
         long initTime = System.currentTimeMillis();
         HttpEntity entity = Utils.toJsonEntity(object);
 
-        HttpPost request = new HttpPost(uri);
-        request.setEntity(entity);
-
-        if (_logger.isDebugEnabled()) {
-            _logger.debug(String.format("[%s] %s", request.getMethod(), uri));
-        }
-
         try {
             SplitHttpResponse response = _client.post(uri, entity, null);
-            int status = response.statusCode;
-            if (status < HttpStatus.SC_OK || status >= HttpStatus.SC_MULTIPLE_CHOICES) {
-                _telemetryRuntimeProducer.recordSyncError(httpParamsWrapper.getResourceEnum(), status);
+            if (response.statusCode < HttpStatus.SC_OK || response.statusCode >= HttpStatus.SC_MULTIPLE_CHOICES) {
+                _telemetryRuntimeProducer.recordSyncError(httpParamsWrapper.getResourceEnum(), response.statusCode);
                 return;
             }
             _telemetryRuntimeProducer.recordSyncLatency(httpParamsWrapper.getHttpLatenciesEnum(), System.currentTimeMillis() - initTime);

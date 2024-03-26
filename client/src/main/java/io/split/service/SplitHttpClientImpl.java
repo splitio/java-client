@@ -52,19 +52,17 @@ public final class SplitHttpClientImpl implements SplitHttpClient {
 
             response = _client.execute(request);
 
-            int statusCode = response.getCode();
-
             if (_log.isDebugEnabled()) {
-                _log.debug(String.format("[%s] %s. Status code: %s", request.getMethod(), uri.toURL(), statusCode));
+                _log.debug(String.format("[%s] %s. Status code: %s", request.getMethod(), uri.toURL(), response.getCode()));
             }
 
             SplitHttpResponse httpResponse = new SplitHttpResponse();
             httpResponse.statusMessage = "";
-            if (statusCode < HttpStatus.SC_OK || statusCode >= HttpStatus.SC_MULTIPLE_CHOICES) {
-                _log.warn(String.format("Response status was: %s. Reason: %s", statusCode , response.getReasonPhrase()));
+            if (response.getCode() < HttpStatus.SC_OK || response.getCode() >= HttpStatus.SC_MULTIPLE_CHOICES) {
+                _log.warn(String.format("Response status was: %s. Reason: %s", response.getCode() , response.getReasonPhrase()));
                 httpResponse.statusMessage = response.getReasonPhrase();
             }
-            httpResponse.statusCode = statusCode;
+            httpResponse.statusCode = response.getCode();
             httpResponse.body = EntityUtils.toString(response.getEntity(), StandardCharsets.UTF_8);
             return httpResponse;
         } catch (Exception e) {

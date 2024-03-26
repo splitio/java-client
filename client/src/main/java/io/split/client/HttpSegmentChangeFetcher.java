@@ -51,7 +51,7 @@ public final class HttpSegmentChangeFetcher implements SegmentChangeFetcher {
     public SegmentChange fetch(String segmentName, long since, FetchOptions options) {
         long start = System.currentTimeMillis();
 
-        SplitHttpResponse response = null;
+        SplitHttpResponse response;
 
         try {
             String path = _target.getPath() + "/" + segmentName;
@@ -65,16 +65,15 @@ public final class HttpSegmentChangeFetcher implements SegmentChangeFetcher {
             URI uri = uriBuilder.build();
 
             response = _client.get(uri, options);
-            int statusCode = response.statusCode;
 
-            if (statusCode < HttpStatus.SC_OK || statusCode >= HttpStatus.SC_MULTIPLE_CHOICES) {
-                _telemetryRuntimeProducer.recordSyncError(ResourceEnum.SEGMENT_SYNC, statusCode);
-                if (statusCode == HttpStatus.SC_FORBIDDEN) {
+            if (response.statusCode < HttpStatus.SC_OK || response.statusCode >= HttpStatus.SC_MULTIPLE_CHOICES) {
+                _telemetryRuntimeProducer.recordSyncError(ResourceEnum.SEGMENT_SYNC, response.statusCode);
+                if (response.statusCode == HttpStatus.SC_FORBIDDEN) {
                     _log.error("factory instantiation: you passed a client side type sdkKey, " +
                             "please grab an sdk key from the Split user interface that is of type server side");
                 }
                 throw new IllegalStateException(String.format("Could not retrieve segment changes for %s, since %s; http return code %s",
-                        segmentName, since, statusCode));
+                        segmentName, since, response.statusCode));
             }
             _telemetryRuntimeProducer.recordSuccessfulSync(LastSynchronizationRecordsEnum.SEGMENTS, System.currentTimeMillis());
 
@@ -85,8 +84,6 @@ public final class HttpSegmentChangeFetcher implements SegmentChangeFetcher {
         } finally {
             _telemetryRuntimeProducer.recordSyncLatency(HTTPLatenciesEnum.SEGMENTS, System.currentTimeMillis()-start);
         }
-
-
     }
 
     @VisibleForTesting

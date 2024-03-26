@@ -27,6 +27,7 @@ import java.io.InputStreamReader;
 import java.lang.reflect.InvocationTargetException;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
@@ -142,7 +143,7 @@ public class HttpImpressionsSenderTest {
                 KeyImpression.fromImpression(new Impression("k1", null, "t1", "on", 123L, "r1", 456L, null)),
                 KeyImpression.fromImpression(new Impression("k2", null, "t1", "on", 123L, "r1", 456L, null)),
                 KeyImpression.fromImpression(new Impression("k3", null, "t1", "on", 123L, "r1", 456L, null))
-            )), new TestImpressions("t2", Arrays.asList(
+        )), new TestImpressions("t2", Arrays.asList(
                 KeyImpression.fromImpression(new Impression("k1", null, "t2", "on", 123L, "r1", 456L, null)),
                 KeyImpression.fromImpression(new Impression("k2", null, "t2", "on", 123L, "r1", 456L, null)),
                 KeyImpression.fromImpression(new Impression("k3", null, "t2", "on", 123L, "r1", 456L, null))
@@ -160,7 +161,8 @@ public class HttpImpressionsSenderTest {
         HttpPost asPostRequest = (HttpPost) request;
         InputStreamReader reader = new InputStreamReader(asPostRequest.getEntity().getContent());
         Gson gson = new Gson();
-        List<TestImpressions> payload = gson.fromJson(reader, new TypeToken<List<TestImpressions>>() { }.getType());
+        List<TestImpressions> payload = gson.fromJson(reader, new TypeToken<List<TestImpressions>>() {
+        }.getType());
         assertThat(payload.size(), is(equalTo(2)));
 
         // Do the same flow for imrpessionsMode = debug
@@ -174,5 +176,16 @@ public class HttpImpressionsSenderTest {
         request = captor.getValue();
         assertThat(request.getHeaders().length, is(1));
         assertThat(request.getFirstHeader("SplitSDKImpressionsMode").getValue(), is(equalTo("DEBUG")));
+    }
+
+    @Test
+    public void testHttpError() throws URISyntaxException, IOException, IllegalAccessException, NoSuchMethodException, InvocationTargetException {
+        URI rootTarget = URI.create("https://kubernetesturl.com/split");
+        CloseableHttpClient httpClient = TestHelper.mockHttpClient("", HttpStatus.SC_BAD_REQUEST);
+        SplitHttpClient splitHtpClient = SplitHttpClientImpl.create(httpClient, new RequestDecorator(null));
+        HttpImpressionsSender sender = HttpImpressionsSender.create(splitHtpClient, rootTarget, ImpressionsManager.Mode.OPTIMIZED, TELEMETRY_STORAGE);
+        // Should not raise exception
+        sender.postImpressionsBulk(new ArrayList<>());
+        sender.postCounters(new HashMap<>());
     }
 }

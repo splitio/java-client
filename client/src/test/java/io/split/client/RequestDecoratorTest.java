@@ -61,6 +61,18 @@ public class RequestDecoratorTest {
                 {{
                     put("first", "1");
                     put("SplitSDKVersion", "2.4");
+                    put("SplitMachineip", "xx");
+                    put("splitMachineName", "xx");
+                    put("splitimpressionsmode", "xx");
+                    put("HOST", "xx");
+                    put("referrer", "xx");
+                    put("content-type", "xx");
+                    put("content-length", "xx");
+                    put("content-encoding", "xx");
+                    put("ACCEPT", "xx");
+                    put("keep-alive", "xx");
+                    put("x-fastly-debug", "xx");
+
                 }};
             }
         }
