@@ -29,7 +29,7 @@ import static com.google.common.base.Preconditions.checkNotNull;
 import static io.split.client.utils.SplitExecutorFactory.buildExecutorService;
 
 public class SyncManagerImp implements SyncManager {
-    private static final Logger _log = LoggerFactory.getLogger(SyncManager.class);
+    private static final Logger _log = LoggerFactory.getLogger(SyncManagerImp.class);
 
     private final AtomicBoolean _streamingEnabledConfig;
     private final Synchronizer _synchronizer;

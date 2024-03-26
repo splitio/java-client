@@ -48,6 +48,7 @@ public final class SplitClientImpl implements SplitClient {
     public static final SplitResult SPLIT_RESULT_CONTROL = new SplitResult(Treatments.CONTROL, null);
     private static final String CLIENT_DESTROY = "Client has already been destroyed - no calls possible";
     private static final String CATCHALL_EXCEPTION = "CatchAll Exception";
+    private static final String MATCHING_KEY = "matchingKey";
 
     private static final Logger _log = LoggerFactory.getLogger(SplitClientImpl.class);
 
@@ -151,6 +152,13 @@ public final class SplitClientImpl implements SplitClient {
     }
 
     @Override
+    public Map<String, String> getTreatmentsByFlagSet(String key, String flagSet) {
+        return getTreatmentsBySetsWithConfigInternal(key, null, new ArrayList<>(Arrays.asList(flagSet)),
+                null, MethodEnum.TREATMENTS_BY_FLAG_SET).entrySet().stream()
+                .collect(Collectors.toMap(Map.Entry::getKey, e -> e.getValue().treatment()));
+    }
+
+    @Override
     public Map<String, String> getTreatmentsByFlagSet(String key, String flagSet, Map<String, Object> attributes) {
         return getTreatmentsBySetsWithConfigInternal(key, null, new ArrayList<>(Arrays.asList(flagSet)),
                 attributes, MethodEnum.TREATMENTS_BY_FLAG_SET).entrySet().stream()
@@ -161,6 +169,13 @@ public final class SplitClientImpl implements SplitClient {
     public Map<String, String> getTreatmentsByFlagSet(Key key, String flagSet, Map<String, Object> attributes) {
         return getTreatmentsBySetsWithConfigInternal(key.matchingKey(), key.bucketingKey(), new ArrayList<>(Arrays.asList(flagSet)),
                 attributes, MethodEnum.TREATMENTS_BY_FLAG_SET).entrySet().stream()
+                .collect(Collectors.toMap(Map.Entry::getKey, e -> e.getValue().treatment()));
+    }
+
+    @Override
+    public Map<String, String> getTreatmentsByFlagSets(String key, List<String> flagSets) {
+        return getTreatmentsBySetsWithConfigInternal(key, null, flagSets,
+                null, MethodEnum.TREATMENTS_BY_FLAG_SETS).entrySet().stream()
                 .collect(Collectors.toMap(Map.Entry::getKey, e -> e.getValue().treatment()));
     }
 
@@ -179,6 +194,12 @@ public final class SplitClientImpl implements SplitClient {
     }
 
     @Override
+    public Map<String, SplitResult> getTreatmentsWithConfigByFlagSet(String key, String flagSet) {
+        return getTreatmentsBySetsWithConfigInternal(key, null, new ArrayList<>(Arrays.asList(flagSet)),
+                null, MethodEnum.TREATMENTS_WITH_CONFIG_BY_FLAG_SET);
+    }
+
+    @Override
     public Map<String, SplitResult> getTreatmentsWithConfigByFlagSet(String key, String flagSet, Map<String, Object> attributes) {
         return getTreatmentsBySetsWithConfigInternal(key, null, new ArrayList<>(Arrays.asList(flagSet)),
                 attributes, MethodEnum.TREATMENTS_WITH_CONFIG_BY_FLAG_SET);
@@ -188,6 +209,12 @@ public final class SplitClientImpl implements SplitClient {
     public Map<String, SplitResult> getTreatmentsWithConfigByFlagSet(Key key, String flagSet, Map<String, Object> attributes) {
         return getTreatmentsBySetsWithConfigInternal(key.matchingKey(), key.bucketingKey(), new ArrayList<>(Arrays.asList(flagSet)),
                 attributes, MethodEnum.TREATMENTS_WITH_CONFIG_BY_FLAG_SET);
+    }
+
+    @Override
+    public Map<String, SplitResult> getTreatmentsWithConfigByFlagSets(String key, List<String> flagSets) {
+        return getTreatmentsBySetsWithConfigInternal(key, null, flagSets,
+                null, MethodEnum.TREATMENTS_WITH_CONFIG_BY_FLAG_SETS);
     }
 
     @Override
@@ -295,7 +322,7 @@ public final class SplitClientImpl implements SplitClient {
                 return SPLIT_RESULT_CONTROL;
             }
 
-            if (!KeyValidator.isValid(matchingKey, "matchingKey", _config.maxStringLength(), methodEnum.getMethod())) {
+            if (!KeyValidator.isValid(matchingKey, MATCHING_KEY, _config.maxStringLength(), methodEnum.getMethod())) {
                 return SPLIT_RESULT_CONTROL;
             }
 
@@ -381,14 +408,14 @@ public final class SplitClientImpl implements SplitClient {
             return new HashMap<>();
         }
         Set cleanFlagSets = cleanup(sets);
-        if (filterSetsAreInConfig(cleanFlagSets, methodEnum).isEmpty()) {
+        cleanFlagSets = filterSetsAreInConfig(cleanFlagSets, methodEnum);
+        if (cleanFlagSets.isEmpty()) {
             return new HashMap<>();
         }
         List<String> featureFlagNames = new ArrayList<>();
         try {
             checkSDKReady(methodEnum);
-            featureFlagNames = getAllFlags(cleanFlagSets);
-            Map<String, SplitResult> result = validateBeforeEvaluate(featureFlagNames, matchingKey, methodEnum,bucketingKey);
+            Map<String, SplitResult> result = validateBeforeEvaluateByFlagSets(matchingKey, methodEnum,bucketingKey);
             if(result != null) {
                 return result;
             }
@@ -405,7 +432,6 @@ public final class SplitClientImpl implements SplitClient {
             return createMapControl(featureFlagNames);
         }
     }
-
     private Map<String, SplitResult> processEvaluatorResult(Map<String, EvaluatorImp.TreatmentLabelAndChangeNumber> evaluatorResult,
                                                             MethodEnum methodEnum, String matchingKey, String bucketingKey, Map<String,
                                                             Object> attributes, long initTime){
@@ -430,13 +456,28 @@ public final class SplitClientImpl implements SplitClient {
         return result;
     }
 
+    private Map<String, SplitResult> validateBeforeEvaluateByFlagSets(String matchingKey, MethodEnum methodEnum,
+                                                            String bucketingKey) {
+        if (_container.isDestroyed()) {
+            _log.error(CLIENT_DESTROY);
+            return new HashMap<>();
+        }
+        if (!KeyValidator.isValid(matchingKey, MATCHING_KEY, _config.maxStringLength(), methodEnum.getMethod())) {
+            return new HashMap<>();
+        }
+        if (!KeyValidator.bucketingKeyIsValid(bucketingKey, _config.maxStringLength(), methodEnum.getMethod())) {
+            return new HashMap<>();
+        }
+        return null;
+    }
+
     private Map<String, SplitResult> validateBeforeEvaluate(List<String> featureFlagNames, String matchingKey, MethodEnum methodEnum,
                                                             String bucketingKey) {
         if (_container.isDestroyed()) {
             _log.error(CLIENT_DESTROY);
             return createMapControl(featureFlagNames);
         }
-        if (!KeyValidator.isValid(matchingKey, "matchingKey", _config.maxStringLength(), methodEnum.getMethod())) {
+        if (!KeyValidator.isValid(matchingKey, MATCHING_KEY, _config.maxStringLength(), methodEnum.getMethod())) {
             return createMapControl(featureFlagNames);
         }
         if (!KeyValidator.bucketingKeyIsValid(bucketingKey, _config.maxStringLength(), methodEnum.getMethod())) {
@@ -447,8 +488,8 @@ public final class SplitClientImpl implements SplitClient {
         }
         return null;
     }
-    private List<String> filterSetsAreInConfig(Set<String> sets, MethodEnum methodEnum) {
-        List<String> setsToReturn = new ArrayList<>();
+    private Set<String> filterSetsAreInConfig(Set<String> sets, MethodEnum methodEnum) {
+        Set<String> setsToReturn = new HashSet<>();
         for (String set : sets) {
             if (!_flagSetsFilter.intersect(set)) {
                 _log.warn(String.format("%s: you passed %s which is not part of the configured FlagSetsFilter, " +
@@ -459,16 +500,6 @@ public final class SplitClientImpl implements SplitClient {
         }
         return setsToReturn;
     }
-
-    private List<String> getAllFlags(Set<String> sets) {
-        Map<String, HashSet<String>> namesBySets = _splitCacheConsumer.getNamesByFlagSets(new ArrayList<>(sets));
-        HashSet<String> flags = new HashSet<>();
-        for (String set: namesBySets.keySet()) {
-            flags.addAll(namesBySets.get(set));
-        }
-        return new ArrayList<>(flags);
-    }
-
     private void recordStats(String matchingKey, String bucketingKey, String featureFlagName, long start, String result,
                              String operation, String label, Long changeNumber, Map<String, Object> attributes) {
         try {

@@ -153,9 +153,10 @@ public class EvaluatorTest {
     @Test
     public void evaluateWithSets() {
         ParsedSplit split = ParsedSplit.createParsedSplitForTests(SPLIT_NAME, 0, false, DEFAULT_TREATMENT_VALUE, _conditions, TRAFFIC_TYPE_VALUE, CHANGE_NUMBER, 2, new HashSet<>(Arrays.asList("set1", "set2")));
-        List<String> sets = new ArrayList<>(Arrays.asList("set1"));
+        List<String> sets = new ArrayList<>(Arrays.asList("set1", "empty_set"));
         Map<String, HashSet<String>> flagSets = new HashMap<>();
         flagSets.put("set1", new HashSet<>(Arrays.asList(SPLIT_NAME)));
+        flagSets.put("empty_set", null);
         Mockito.when(_splitCacheConsumer.getNamesByFlagSets(sets)).thenReturn(flagSets);
         Map<String, ParsedSplit> parsedSplits = new HashMap<>();
         parsedSplits.put(SPLIT_NAME, split);

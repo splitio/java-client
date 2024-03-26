@@ -110,9 +110,7 @@ public class InMemoryCacheImp implements SplitCache {
         Map<String, HashSet<String>> toReturn = new HashMap<>();
         for (String set: flagSets) {
             HashSet<String> keys = _flagSets.get(set);
-            if(keys != null){
-                toReturn.put(set, keys);
-            }
+            toReturn.put(set, keys);
         }
         return toReturn;
     }

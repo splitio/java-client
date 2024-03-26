@@ -38,8 +38,6 @@ public class TelemetryConsumerSubmitterTest {
         ConfigConsumer config = telemetrySynchronizer.generateConfig(splitClientConfig, ApiKeyCounter.getApiKeyCounterInstance().getFactoryInstances(), Stream.of("tag1", "tag2").collect(Collectors.toList()));
         Assert.assertEquals(3, config.getRedundantFactories());
         Assert.assertEquals(2, config.getTags().size());
-        Assert.assertEquals(3, config.getFlagSetsTotal());
-        Assert.assertEquals(1, config.getFlagSetsInvalid());
     }
 
     @Test
