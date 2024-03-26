@@ -57,8 +57,6 @@ public final class HttpSplitChangeFetcher implements SplitChangeFetcher {
 
         long start = System.currentTimeMillis();
 
-        SplitHttpResponse response = null;
-
         try {
             URIBuilder uriBuilder = new URIBuilder(_target).addParameter(SINCE, "" + since);
             if (options.hasCustomCN()) {
@@ -68,7 +66,7 @@ public final class HttpSplitChangeFetcher implements SplitChangeFetcher {
                 uriBuilder.addParameter(SETS, "" + options.flagSetsFilter());
             }
             URI uri = uriBuilder.build();
-            response = _client.get(uri, options);
+            SplitHttpResponse response = _client.get(uri, options, null);
 
             if (response.statusCode < HttpStatus.SC_OK || response.statusCode >= HttpStatus.SC_MULTIPLE_CHOICES) {
                 if (response.statusCode == HttpStatus.SC_REQUEST_URI_TOO_LONG) {

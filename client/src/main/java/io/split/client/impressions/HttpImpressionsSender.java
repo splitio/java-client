@@ -62,14 +62,12 @@ public class HttpImpressionsSender implements ImpressionsSender {
 
     @Override
     public void postImpressionsBulk(List<TestImpressions> impressions) {
-
-        SplitHttpResponse response;
         long initTime = System.currentTimeMillis();
         try {
             HttpEntity entity = Utils.toJsonEntity(impressions);
             Map<String, String> additionalHeader = new HashMap<>();
             additionalHeader.put(IMPRESSIONS_MODE_HEADER, _mode.toString());
-            response = _client.post(_impressionBulkTarget, entity, additionalHeader);
+            SplitHttpResponse response = _client.post(_impressionBulkTarget, entity, additionalHeader);
 
             if (response.statusCode < HttpStatus.SC_OK || response.statusCode >= HttpStatus.SC_MULTIPLE_CHOICES) {
                 _telemetryRuntimeProducer.recordSyncError(ResourceEnum.IMPRESSION_SYNC, response.statusCode);

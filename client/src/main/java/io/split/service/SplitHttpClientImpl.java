@@ -40,11 +40,16 @@ public final class SplitHttpClientImpl implements SplitHttpClient {
         _requestDecorator = requestDecorator;
     }
 
-    public SplitHttpResponse get(URI uri, FetchOptions options) {
+    public SplitHttpResponse get(URI uri, FetchOptions options, Map<String, String> additionalHeaders) {
         CloseableHttpResponse response = null;
 
         try {
             HttpGet request = new HttpGet(uri);
+            if (additionalHeaders != null) {
+                for (Map.Entry entry : additionalHeaders.entrySet()) {
+                    request.addHeader(entry.getKey().toString(), entry.getValue());
+                }
+            }
             if(options.cacheControlHeadersEnabled()) {
                 request.setHeader(HEADER_CACHE_CONTROL_NAME, HEADER_CACHE_CONTROL_VALUE);
             }
@@ -58,6 +63,7 @@ public final class SplitHttpClientImpl implements SplitHttpClient {
 
             SplitHttpResponse httpResponse = new SplitHttpResponse();
             httpResponse.statusMessage = "";
+            httpResponse.responseHeaders = response.getHeaders();
             if (response.getCode() < HttpStatus.SC_OK || response.getCode() >= HttpStatus.SC_MULTIPLE_CHOICES) {
                 _log.warn(String.format("Response status was: %s. Reason: %s", response.getCode() , response.getReasonPhrase()));
                 httpResponse.statusMessage = response.getReasonPhrase();
@@ -89,17 +95,16 @@ public final class SplitHttpClientImpl implements SplitHttpClient {
 
             response = _client.execute(request);
 
-            int status = response.getCode();
-
             String statusMessage = "";
-            if (status < HttpStatus.SC_OK || status >= HttpStatus.SC_MULTIPLE_CHOICES) {
+            if (response.getCode() < HttpStatus.SC_OK || response.getCode() >= HttpStatus.SC_MULTIPLE_CHOICES) {
                 statusMessage = response.getReasonPhrase();
-                _log.warn(String.format("Response status was: %s. Reason: %s", status, response.getReasonPhrase()));
+                _log.warn(String.format("Response status was: %s. Reason: %s", response.getCode(), response.getReasonPhrase()));
             }
             SplitHttpResponse httpResponse = new SplitHttpResponse();
-            httpResponse.statusCode = status;
+            httpResponse.statusCode = response.getCode();
             httpResponse.body = "";
             httpResponse.statusMessage = statusMessage;
+            httpResponse.responseHeaders = response.getHeaders();
             return httpResponse;
         } catch (Exception e) {
             throw new IOException(String.format("Problem in http post operation: %s", e), e);

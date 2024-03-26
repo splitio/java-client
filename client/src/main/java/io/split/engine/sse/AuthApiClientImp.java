@@ -37,7 +37,7 @@ public class AuthApiClientImp implements AuthApiClient {
         try {
             long initTime = System.currentTimeMillis();
             URI uri = new URIBuilder(_target).build();
-            SplitHttpResponse response = _httpClient.get(uri, new FetchOptions.Builder().cacheControlHeaders(false).build());
+            SplitHttpResponse response = _httpClient.get(uri, new FetchOptions.Builder().cacheControlHeaders(false).build(), null);
             Integer statusCode = response.statusCode;
 
             if (statusCode == HttpStatus.SC_OK) {

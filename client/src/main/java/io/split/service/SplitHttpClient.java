@@ -16,7 +16,7 @@ public interface SplitHttpClient {
      * @param options The FetchOptions object that contains headers.
      * @return The response structure SplitHttpResponse
      */
-    public SplitHttpResponse get(URI uri, FetchOptions options);
+    public SplitHttpResponse get(URI uri, FetchOptions options, Map<String, String> additionalHeaders);
     /**
      * Wrapper for HTTP post method
      * @param uri the URL to be used

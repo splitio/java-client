@@ -51,8 +51,6 @@ public final class HttpSegmentChangeFetcher implements SegmentChangeFetcher {
     public SegmentChange fetch(String segmentName, long since, FetchOptions options) {
         long start = System.currentTimeMillis();
 
-        SplitHttpResponse response;
-
         try {
             String path = _target.getPath() + "/" + segmentName;
             URIBuilder uriBuilder = new URIBuilder(_target)
@@ -64,7 +62,7 @@ public final class HttpSegmentChangeFetcher implements SegmentChangeFetcher {
 
             URI uri = uriBuilder.build();
 
-            response = _client.get(uri, options);
+            SplitHttpResponse response = _client.get(uri, options, null);
 
             if (response.statusCode < HttpStatus.SC_OK || response.statusCode >= HttpStatus.SC_MULTIPLE_CHOICES) {
                 _telemetryRuntimeProducer.recordSyncError(ResourceEnum.SEGMENT_SYNC, response.statusCode);
