@@ -13,9 +13,9 @@ import java.io.IOException;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
-import java.io.InputStream;
 import java.util.Properties;
 import java.util.concurrent.ThreadFactory;
+import java.io.InputStream;
 
 import static io.split.inputValidation.FlagSetsValidator.cleanup;
 
@@ -90,6 +90,8 @@ public class SplitClientConfig {
     private final long _lastSeenCacheSize;
     private final HashSet<String> _flagSetsFilter;
     private final int _invalidSets;
+    private final UserCustomHeaderDecorator _userCustomHeaderDecorator;
+
 
     public static Builder builder() {
         return new Builder();
@@ -145,7 +147,8 @@ public class SplitClientConfig {
                               long lastSeenCacheSize,
                               ThreadFactory threadFactory,
                               HashSet<String> flagSetsFilter,
-                              int invalidSets) {
+                              int invalidSets,
+                              UserCustomHeaderDecorator userCustomHeaderDecorator) {
         _endpoint = endpoint;
         _eventsEndpoint = eventsEndpoint;
         _featuresRefreshRate = pollForFeatureChangesEveryNSeconds;
@@ -197,6 +200,7 @@ public class SplitClientConfig {
         _threadFactory = threadFactory;
         _flagSetsFilter = flagSetsFilter;
         _invalidSets = invalidSets;
+        _userCustomHeaderDecorator = userCustomHeaderDecorator;
 
         Properties props = new Properties();
         try {
@@ -393,6 +397,10 @@ public class SplitClientConfig {
         return _invalidSets;
     }
 
+    public UserCustomHeaderDecorator userCustomHeaderDecorator() {
+        return _userCustomHeaderDecorator;
+    }
+
     public static final class Builder {
 
         private String _endpoint = SDK_ENDPOINT;
@@ -449,6 +457,7 @@ public class SplitClientConfig {
         private ThreadFactory _threadFactory;
         private HashSet<String> _flagSetsFilter = new HashSet<>();
         private int _invalidSetsCount = 0;
+        private UserCustomHeaderDecorator _userCustomHeaderDecorator = null;
 
         public Builder() {
         }
@@ -933,6 +942,17 @@ public class SplitClientConfig {
         }
 
         /**
+         * User Custom Header Decorator
+         *
+         * @param userCustomHeaderDecorator
+         * @return this builder
+         */
+        public Builder userCustomHeaderDecorator(UserCustomHeaderDecorator userCustomHeaderDecorator) {
+            _userCustomHeaderDecorator = userCustomHeaderDecorator;
+            return this;
+        }
+
+        /**
          * Thread Factory
          *
          * @param threadFactory
@@ -1091,7 +1111,8 @@ public class SplitClientConfig {
                     _lastSeenCacheSize,
                     _threadFactory,
                     _flagSetsFilter,
-                    _invalidSetsCount);
+                    _invalidSetsCount,
+                    _userCustomHeaderDecorator);
         }
     }
 }

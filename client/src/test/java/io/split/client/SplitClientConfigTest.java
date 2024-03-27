@@ -10,6 +10,7 @@ import org.junit.Test;
 import org.mockito.Mockito;
 
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -234,5 +235,22 @@ public class SplitClientConfigTest {
         Assert.assertNotNull(config.integrationsConfig());
         Assert.assertEquals(0, config.integrationsConfig().getImpressionsListeners(IntegrationsConfig.Execution.SYNC).size());
         Assert.assertEquals(1, config.integrationsConfig().getImpressionsListeners(IntegrationsConfig.Execution.ASYNC).size());
+    }
+
+    @Test
+    public void checkUserCustomdHeaderDecorator() {
+        UserCustomHeaderDecorator ucd = new UserCustomHeaderDecorator() {
+            @Override
+            public Map<String, String> getHeaderOverrides() {
+                return null;
+            }
+        };
+        SplitClientConfig config = SplitClientConfig.builder().userCustomHeaderDecorator(ucd).build();
+        Assert.assertNotNull(config.userCustomHeaderDecorator());
+        Assert.assertEquals(ucd, config.userCustomHeaderDecorator());
+
+        SplitClientConfig config2 = SplitClientConfig.builder().build();
+        Assert.assertNull(config2.userCustomHeaderDecorator());
+
     }
 }
