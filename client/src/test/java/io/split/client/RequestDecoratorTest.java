@@ -3,13 +3,14 @@ package io.split.client;
 import org.apache.hc.client5.http.classic.methods.HttpGet;
 import org.apache.hc.client5.http.classic.methods.HttpPost;
 import org.apache.hc.core5.http.Header;
-import org.apache.hc.core5.http.HeaderElement;
 import org.apache.hc.core5.http.ProtocolException;
 import org.junit.Assert;
 import org.junit.Test;
 import static org.hamcrest.core.IsEqual.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.Is.is;
+
+import io.split.client.dtos.RequestContext;
 
 import java.util.List;
 import java.util.Arrays;
@@ -34,13 +35,12 @@ public class RequestDecoratorTest {
         class MyCustomHeaders implements CustomHeaderDecorator {
             public MyCustomHeaders() {}
             @Override
-            public Map<String, List<String>> getHeaderOverrides() {
-                return new HashMap<String, List<String>>()
-                {{
-                    put("first", Arrays.asList("1"));
-                    put("second", Arrays.asList("2.1", "2.2"));
-                    put("third", Arrays.asList("3"));
-                }};
+            public Map<String, List<String>> getHeaderOverrides(RequestContext context) {
+                Map<String, List<String>> additionalHeaders = context.headers();
+                additionalHeaders.put("first", Arrays.asList("1"));
+                additionalHeaders.put("second", Arrays.asList("2.1", "2.2"));
+                additionalHeaders.put("third", Arrays.asList("3"));
+                return additionalHeaders;
             }
         }
         MyCustomHeaders myHeaders = new MyCustomHeaders();
@@ -68,24 +68,22 @@ public class RequestDecoratorTest {
         class MyCustomHeaders implements  CustomHeaderDecorator {
             public MyCustomHeaders() {}
             @Override
-            public Map<String, List<String>> getHeaderOverrides() {
-                return new HashMap<String, List<String>>()
-                {{
-                    put("first", Arrays.asList("1"));
-                    put("SplitSDKVersion", Arrays.asList("2.4"));
-                    put("SplitMachineip", Arrays.asList("xx"));
-                    put("splitMachineName", Arrays.asList("xx"));
-                    put("splitimpressionsmode", Arrays.asList("xx"));
-                    put("HOST", Arrays.asList("xx"));
-                    put("referrer", Arrays.asList("xx"));
-                    put("content-type", Arrays.asList("xx"));
-                    put("content-length", Arrays.asList("xx"));
-                    put("content-encoding", Arrays.asList("xx"));
-                    put("ACCEPT", Arrays.asList("xx"));
-                    put("keep-alive", Arrays.asList("xx"));
-                    put("x-fastly-debug", Arrays.asList("xx"));
-
-                }};
+            public Map<String, List<String>> getHeaderOverrides(RequestContext context) {
+                Map<String, List<String>> additionalHeaders = context.headers();
+                additionalHeaders.put("first", Arrays.asList("1"));
+                additionalHeaders.put("SplitSDKVersion", Arrays.asList("2.4"));
+                additionalHeaders.put("SplitMachineip", Arrays.asList("xx"));
+                additionalHeaders.put("splitMachineName", Arrays.asList("xx"));
+                additionalHeaders.put("splitimpressionsmode", Arrays.asList("xx"));
+                additionalHeaders.put("HOST", Arrays.asList("xx"));
+                additionalHeaders.put("referrer", Arrays.asList("xx"));
+                additionalHeaders.put("content-type", Arrays.asList("xx"));
+                additionalHeaders.put("content-length", Arrays.asList("xx"));
+                additionalHeaders.put("content-encoding", Arrays.asList("xx"));
+                additionalHeaders.put("ACCEPT", Arrays.asList("xx"));
+                additionalHeaders.put("keep-alive", Arrays.asList("xx"));
+                additionalHeaders.put("x-fastly-debug", Arrays.asList("xx"));
+                return additionalHeaders;
             }
         }
         MyCustomHeaders myHeaders = new MyCustomHeaders();
@@ -101,7 +99,7 @@ public class RequestDecoratorTest {
         class MyCustomHeaders implements  CustomHeaderDecorator {
             public MyCustomHeaders() {}
             @Override
-            public Map<String, List<String>> getHeaderOverrides() {
+            public Map<String, List<String>> getHeaderOverrides(RequestContext context) {
                 throw new RuntimeException();
             }
         }

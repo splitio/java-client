@@ -4,6 +4,7 @@ import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import io.split.client.impressions.Impression;
 import io.split.client.impressions.ImpressionListener;
 import io.split.client.impressions.ImpressionsManager;
+import io.split.client.dtos.RequestContext;
 import io.split.integrations.IntegrationsConfig;
 import org.junit.Assert;
 import org.junit.Test;
@@ -241,7 +242,7 @@ public class SplitClientConfigTest {
     public void checkUserCustomdHeaderDecorator() {
         CustomHeaderDecorator ucd = new CustomHeaderDecorator() {
             @Override
-            public Map<String, List<String>> getHeaderOverrides() {
+            public Map<String, List<String>> getHeaderOverrides(RequestContext context) {
                 return null;
             }
         };
