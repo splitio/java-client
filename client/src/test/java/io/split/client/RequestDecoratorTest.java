@@ -13,7 +13,6 @@ import static org.hamcrest.core.Is.is;
 
 import java.util.List;
 import java.util.Arrays;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -38,9 +37,9 @@ public class RequestDecoratorTest {
             public Map<String, List<String>> getHeaderOverrides() {
                 return new HashMap<String, List<String>>()
                 {{
-                    put("first", List.of("1"));
-                    put("second", List.of("2.1", "2.2"));
-                    put("third", List.of("3"));
+                    put("first", Arrays.asList("1"));
+                    put("second", Arrays.asList("2.1", "2.2"));
+                    put("third", Arrays.asList("3"));
                 }};
             }
         }
