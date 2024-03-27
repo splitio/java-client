@@ -71,19 +71,19 @@ public class RequestDecoratorTest {
             public Map<String, List<String>> getHeaderOverrides() {
                 return new HashMap<String, List<String>>()
                 {{
-                    put("first", List.of("1"));
-                    put("SplitSDKVersion", List.of("2.4"));
-                    put("SplitMachineip", List.of("xx"));
-                    put("splitMachineName", List.of("xx"));
-                    put("splitimpressionsmode", List.of("xx"));
-                    put("HOST", List.of("xx"));
-                    put("referrer", List.of("xx"));
-                    put("content-type", List.of("xx"));
-                    put("content-length", List.of("xx"));
-                    put("content-encoding", List.of("xx"));
-                    put("ACCEPT", List.of("xx"));
-                    put("keep-alive", List.of("xx"));
-                    put("x-fastly-debug", List.of("xx"));
+                    put("first", Arrays.asList("1"));
+                    put("SplitSDKVersion", Arrays.asList("2.4"));
+                    put("SplitMachineip", Arrays.asList("xx"));
+                    put("splitMachineName", Arrays.asList("xx"));
+                    put("splitimpressionsmode", Arrays.asList("xx"));
+                    put("HOST", Arrays.asList("xx"));
+                    put("referrer", Arrays.asList("xx"));
+                    put("content-type", Arrays.asList("xx"));
+                    put("content-length", Arrays.asList("xx"));
+                    put("content-encoding", Arrays.asList("xx"));
+                    put("ACCEPT", Arrays.asList("xx"));
+                    put("keep-alive", Arrays.asListf("xx"));
+                    put("x-fastly-debug", Arrays.asList("xx"));
 
                 }};
             }
