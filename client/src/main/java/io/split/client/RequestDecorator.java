@@ -6,11 +6,12 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Arrays;
 import java.util.Set;
+import java.util.List;
 
 class NoOpHeaderDecorator implements  UserCustomHeaderDecorator {
     public NoOpHeaderDecorator() {}
     @Override
-    public Map<String, String> getHeaderOverrides() {
+    public Map<String, List<String>> getHeaderOverrides() {
         return new HashMap<>();
     }
 }
@@ -41,10 +42,17 @@ public final class RequestDecorator {
 
     public HttpUriRequestBase decorateHeaders(HttpUriRequestBase request) {
         try {
-            Map<String, String> headers = _headerDecorator.getHeaderOverrides();
+            Map<String, List<String>> headers = _headerDecorator.getHeaderOverrides();
             for (Map.Entry entry : headers.entrySet()) {
                 if (isHeaderAllowed(entry.getKey().toString())) {
-                    request.setHeader(entry.getKey().toString(), entry.getValue());
+                    List<String> values = (List<String>) entry.getValue();
+                    for (int i = 0; i < values.size(); i++) {
+                        if (i == 0) {
+                            request.setHeader(entry.getKey().toString(), values.get(i));
+                        } else {
+                            request.addHeader(entry.getKey().toString(), values.get(i));
+                        }
+                    }
                 }
             }
         } catch (Exception e) {

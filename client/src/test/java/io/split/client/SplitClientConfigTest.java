@@ -241,7 +241,7 @@ public class SplitClientConfigTest {
     public void checkUserCustomdHeaderDecorator() {
         UserCustomHeaderDecorator ucd = new UserCustomHeaderDecorator() {
             @Override
-            public Map<String, String> getHeaderOverrides() {
+            public Map<String, List<String>> getHeaderOverrides() {
                 return null;
             }
         };

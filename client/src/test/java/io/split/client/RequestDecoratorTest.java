@@ -2,10 +2,18 @@ package io.split.client;
 
 import org.apache.hc.client5.http.classic.methods.HttpGet;
 import org.apache.hc.client5.http.classic.methods.HttpPost;
+import org.apache.hc.core5.http.Header;
+import org.apache.hc.core5.http.HeaderElement;
 import org.apache.hc.core5.http.ProtocolException;
 import org.junit.Assert;
 import org.junit.Test;
+import static org.hamcrest.core.IsEqual.equalTo;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.core.Is.is;
 
+import java.util.List;
+import java.util.Arrays;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -24,15 +32,15 @@ public class RequestDecoratorTest {
 
     @Test
     public void testAddCustomHeaders() throws ProtocolException {
-        class MyCustomHeaders implements  UserCustomHeaderDecorator {
+        class MyCustomHeaders implements UserCustomHeaderDecorator {
             public MyCustomHeaders() {}
             @Override
-            public Map<String, String> getHeaderOverrides() {
-                return new HashMap<String, String>()
+            public Map<String, List<String>> getHeaderOverrides() {
+                return new HashMap<String, List<String>>()
                 {{
-                    put("first", "1");
-                    put("second", "2");
-                    put("third", "3");
+                    put("first", List.of("1"));
+                    put("second", List.of("2.1", "2.2"));
+                    put("third", List.of("3"));
                 }};
             }
         }
@@ -41,15 +49,19 @@ public class RequestDecoratorTest {
         HttpGet request = new HttpGet("http://anyhost");
         request.addHeader("first", "myfirstheader");
         request  = (HttpGet) decorator.decorateHeaders(request);
-        Assert.assertEquals(3, request.getHeaders().length);
+
+        Assert.assertEquals(4, request.getHeaders().length);
         Assert.assertEquals("1", request.getHeader("first").getValue());
-        Assert.assertEquals("2", request.getHeader("second").getValue());
+
+        Header[] second = request.getHeaders("second");
+        Assert.assertEquals("2.1", second[0].getValue());
+        Assert.assertEquals("2.2", second[1].getValue());
         Assert.assertEquals("3", request.getHeader("third").getValue());
 
         HttpPost request2 = new HttpPost("http://anyhost");
         request2.addHeader("myheader", "value");
         request2  = (HttpPost) decorator.decorateHeaders(request2);
-        Assert.assertEquals(4, request2.getHeaders().length);
+        Assert.assertEquals(5, request2.getHeaders().length);
     }
 
     @Test
@@ -57,22 +69,22 @@ public class RequestDecoratorTest {
         class MyCustomHeaders implements  UserCustomHeaderDecorator {
             public MyCustomHeaders() {}
             @Override
-            public Map<String, String> getHeaderOverrides() {
-                return new HashMap<String, String>()
+            public Map<String, List<String>> getHeaderOverrides() {
+                return new HashMap<String, List<String>>()
                 {{
-                    put("first", "1");
-                    put("SplitSDKVersion", "2.4");
-                    put("SplitMachineip", "xx");
-                    put("splitMachineName", "xx");
-                    put("splitimpressionsmode", "xx");
-                    put("HOST", "xx");
-                    put("referrer", "xx");
-                    put("content-type", "xx");
-                    put("content-length", "xx");
-                    put("content-encoding", "xx");
-                    put("ACCEPT", "xx");
-                    put("keep-alive", "xx");
-                    put("x-fastly-debug", "xx");
+                    put("first", List.of("1"));
+                    put("SplitSDKVersion", List.of("2.4"));
+                    put("SplitMachineip", List.of("xx"));
+                    put("splitMachineName", List.of("xx"));
+                    put("splitimpressionsmode", List.of("xx"));
+                    put("HOST", List.of("xx"));
+                    put("referrer", List.of("xx"));
+                    put("content-type", List.of("xx"));
+                    put("content-length", List.of("xx"));
+                    put("content-encoding", List.of("xx"));
+                    put("ACCEPT", List.of("xx"));
+                    put("keep-alive", List.of("xx"));
+                    put("x-fastly-debug", List.of("xx"));
 
                 }};
             }
@@ -90,7 +102,7 @@ public class RequestDecoratorTest {
         class MyCustomHeaders implements  UserCustomHeaderDecorator {
             public MyCustomHeaders() {}
             @Override
-            public Map<String, String> getHeaderOverrides() {
+            public Map<String, List<String>> getHeaderOverrides() {
                 throw new RuntimeException();
             }
         }
