@@ -29,8 +29,8 @@ public class HttpPostImp {
 
         try {
             SplitHttpResponse response = _client.post(uri, entity, null);
-            if (response.statusCode < HttpStatus.SC_OK || response.statusCode >= HttpStatus.SC_MULTIPLE_CHOICES) {
-                _telemetryRuntimeProducer.recordSyncError(httpParamsWrapper.getResourceEnum(), response.statusCode);
+            if (response.statusCode() < HttpStatus.SC_OK || response.statusCode() >= HttpStatus.SC_MULTIPLE_CHOICES) {
+                _telemetryRuntimeProducer.recordSyncError(httpParamsWrapper.getResourceEnum(), response.statusCode());
                 return;
             }
             _telemetryRuntimeProducer.recordSyncLatency(httpParamsWrapper.getHttpLatenciesEnum(), System.currentTimeMillis() - initTime);

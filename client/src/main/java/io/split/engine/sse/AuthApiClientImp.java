@@ -38,7 +38,7 @@ public class AuthApiClientImp implements AuthApiClient {
             long initTime = System.currentTimeMillis();
             URI uri = new URIBuilder(_target).build();
             SplitHttpResponse response = _httpClient.get(uri, new FetchOptions.Builder().cacheControlHeaders(false).build(), null);
-            Integer statusCode = response.statusCode;
+            Integer statusCode = response.statusCode();
 
             if (statusCode == HttpStatus.SC_OK) {
                 _log.debug(String.format("Success connection to: %s", _target));
@@ -46,7 +46,7 @@ public class AuthApiClientImp implements AuthApiClient {
                 _telemetryRuntimeProducer.recordTokenRefreshes();
                 _telemetryRuntimeProducer.recordSuccessfulSync(LastSynchronizationRecordsEnum.TOKEN, System.currentTimeMillis());
                 _telemetryRuntimeProducer.recordSyncLatency(HTTPLatenciesEnum.TOKEN, System.currentTimeMillis()-initTime);
-                return getSuccessResponse(response.body);
+                return getSuccessResponse(response.body());
             }
 
             _log.error(String.format("Problem to connect to : %s. Response status: %s", _target, statusCode));

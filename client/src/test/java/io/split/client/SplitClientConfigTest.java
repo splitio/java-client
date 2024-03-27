@@ -239,18 +239,18 @@ public class SplitClientConfigTest {
 
     @Test
     public void checkUserCustomdHeaderDecorator() {
-        UserCustomHeaderDecorator ucd = new UserCustomHeaderDecorator() {
+        CustomHeaderDecorator ucd = new CustomHeaderDecorator() {
             @Override
             public Map<String, List<String>> getHeaderOverrides() {
                 return null;
             }
         };
-        SplitClientConfig config = SplitClientConfig.builder().userCustomHeaderDecorator(ucd).build();
-        Assert.assertNotNull(config.userCustomHeaderDecorator());
-        Assert.assertEquals(ucd, config.userCustomHeaderDecorator());
+        SplitClientConfig config = SplitClientConfig.builder().customHeaderDecorator(ucd).build();
+        Assert.assertNotNull(config.customHeaderDecorator());
+        Assert.assertEquals(ucd, config.customHeaderDecorator());
 
         SplitClientConfig config2 = SplitClientConfig.builder().build();
-        Assert.assertNull(config2.userCustomHeaderDecorator());
+        Assert.assertNull(config2.customHeaderDecorator());
 
     }
 }

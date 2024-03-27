@@ -31,7 +31,7 @@ public class RequestDecoratorTest {
 
     @Test
     public void testAddCustomHeaders() throws ProtocolException {
-        class MyCustomHeaders implements UserCustomHeaderDecorator {
+        class MyCustomHeaders implements CustomHeaderDecorator {
             public MyCustomHeaders() {}
             @Override
             public Map<String, List<String>> getHeaderOverrides() {
@@ -65,7 +65,7 @@ public class RequestDecoratorTest {
 
     @Test
     public void testAddBlockedHeaders() throws ProtocolException {
-        class MyCustomHeaders implements  UserCustomHeaderDecorator {
+        class MyCustomHeaders implements  CustomHeaderDecorator {
             public MyCustomHeaders() {}
             @Override
             public Map<String, List<String>> getHeaderOverrides() {
@@ -82,7 +82,7 @@ public class RequestDecoratorTest {
                     put("content-length", Arrays.asList("xx"));
                     put("content-encoding", Arrays.asList("xx"));
                     put("ACCEPT", Arrays.asList("xx"));
-                    put("keep-alive", Arrays.asListf("xx"));
+                    put("keep-alive", Arrays.asList("xx"));
                     put("x-fastly-debug", Arrays.asList("xx"));
 
                 }};
@@ -98,7 +98,7 @@ public class RequestDecoratorTest {
 
     @Test(expected = IllegalArgumentException.class)
     public void customDecoratorError() {
-        class MyCustomHeaders implements  UserCustomHeaderDecorator {
+        class MyCustomHeaders implements  CustomHeaderDecorator {
             public MyCustomHeaders() {}
             @Override
             public Map<String, List<String>> getHeaderOverrides() {

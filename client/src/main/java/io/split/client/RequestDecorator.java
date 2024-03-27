@@ -8,7 +8,7 @@ import java.util.Arrays;
 import java.util.Set;
 import java.util.List;
 
-class NoOpHeaderDecorator implements  UserCustomHeaderDecorator {
+class NoOpHeaderDecorator implements  CustomHeaderDecorator {
     public NoOpHeaderDecorator() {}
     @Override
     public Map<String, List<String>> getHeaderOverrides() {
@@ -17,7 +17,7 @@ class NoOpHeaderDecorator implements  UserCustomHeaderDecorator {
 }
 
 public final class RequestDecorator {
-    UserCustomHeaderDecorator _headerDecorator;
+    CustomHeaderDecorator _headerDecorator;
 
     private static final Set<String> forbiddenHeaders = new HashSet<>(Arrays.asList(
             "splitsdkversion",
@@ -34,7 +34,7 @@ public final class RequestDecorator {
             "x-fastly-debug"
     ));
 
-    public RequestDecorator(UserCustomHeaderDecorator headerDecorator) {
+    public RequestDecorator(CustomHeaderDecorator headerDecorator) {
         _headerDecorator = (headerDecorator == null)
                 ? new NoOpHeaderDecorator()
                 : headerDecorator;

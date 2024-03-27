@@ -64,18 +64,18 @@ public final class HttpSegmentChangeFetcher implements SegmentChangeFetcher {
 
             SplitHttpResponse response = _client.get(uri, options, null);
 
-            if (response.statusCode < HttpStatus.SC_OK || response.statusCode >= HttpStatus.SC_MULTIPLE_CHOICES) {
-                _telemetryRuntimeProducer.recordSyncError(ResourceEnum.SEGMENT_SYNC, response.statusCode);
-                if (response.statusCode == HttpStatus.SC_FORBIDDEN) {
+            if (response.statusCode() < HttpStatus.SC_OK || response.statusCode() >= HttpStatus.SC_MULTIPLE_CHOICES) {
+                _telemetryRuntimeProducer.recordSyncError(ResourceEnum.SEGMENT_SYNC, response.statusCode());
+                if (response.statusCode() == HttpStatus.SC_FORBIDDEN) {
                     _log.error("factory instantiation: you passed a client side type sdkKey, " +
                             "please grab an sdk key from the Split user interface that is of type server side");
                 }
                 throw new IllegalStateException(String.format("Could not retrieve segment changes for %s, since %s; http return code %s",
-                        segmentName, since, response.statusCode));
+                        segmentName, since, response.statusCode()));
             }
             _telemetryRuntimeProducer.recordSuccessfulSync(LastSynchronizationRecordsEnum.SEGMENTS, System.currentTimeMillis());
 
-            return Json.fromJson(response.body, SegmentChange.class);
+            return Json.fromJson(response.body(), SegmentChange.class);
         } catch (Exception e) {
             throw new IllegalStateException(String.format("Error occurred when trying to sync segment: %s, since: %s. Details: %s",
                     segmentName, since, e), e);
