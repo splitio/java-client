@@ -57,8 +57,6 @@ public final class HttpSplitChangeFetcher implements SplitChangeFetcher {
 
         long start = System.currentTimeMillis();
 
-        SplitHttpResponse response = null;
-
         try {
             URIBuilder uriBuilder = new URIBuilder(_target).addParameter(SINCE, "" + since);
             if (options.hasCustomCN()) {
@@ -68,20 +66,20 @@ public final class HttpSplitChangeFetcher implements SplitChangeFetcher {
                 uriBuilder.addParameter(SETS, "" + options.flagSetsFilter());
             }
             URI uri = uriBuilder.build();
-            response = _client.get(uri, options);
+            SplitHttpResponse response = _client.get(uri, options, null);
 
-            if (response.statusCode < HttpStatus.SC_OK || response.statusCode >= HttpStatus.SC_MULTIPLE_CHOICES) {
-                if (response.statusCode == HttpStatus.SC_REQUEST_URI_TOO_LONG) {
+            if (response.statusCode() < HttpStatus.SC_OK || response.statusCode() >= HttpStatus.SC_MULTIPLE_CHOICES) {
+                if (response.statusCode() == HttpStatus.SC_REQUEST_URI_TOO_LONG) {
                     _log.error("The amount of flag sets provided are big causing uri length error.");
-                    throw new UriTooLongException(String.format("Status code: %s. Message: %s", response.statusCode, response.statusMessage));
+                    throw new UriTooLongException(String.format("Status code: %s. Message: %s", response.statusCode(), response.statusMessage()));
                 }
-                _telemetryRuntimeProducer.recordSyncError(ResourceEnum.SPLIT_SYNC, response.statusCode);
+                _telemetryRuntimeProducer.recordSyncError(ResourceEnum.SPLIT_SYNC, response.statusCode());
                 throw new IllegalStateException(
-                        String.format("Could not retrieve splitChanges since %s; http return code %s", since, response.statusCode)
+                        String.format("Could not retrieve splitChanges since %s; http return code %s", since, response.statusCode())
                 );
             }
 
-            return Json.fromJson(response.body, SplitChange.class);
+            return Json.fromJson(response.body(), SplitChange.class);
         } catch (Exception e) {
             throw new IllegalStateException(String.format("Problem fetching splitChanges since %s: %s", since, e), e);
         } finally {

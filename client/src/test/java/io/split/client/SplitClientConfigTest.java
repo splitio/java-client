@@ -4,6 +4,7 @@ import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import io.split.client.impressions.Impression;
 import io.split.client.impressions.ImpressionListener;
 import io.split.client.impressions.ImpressionsManager;
+import io.split.client.dtos.RequestContext;
 import io.split.integrations.IntegrationsConfig;
 import org.junit.Assert;
 import org.junit.Test;
@@ -239,18 +240,18 @@ public class SplitClientConfigTest {
 
     @Test
     public void checkUserCustomdHeaderDecorator() {
-        UserCustomHeaderDecorator ucd = new UserCustomHeaderDecorator() {
+        CustomHeaderDecorator ucd = new CustomHeaderDecorator() {
             @Override
-            public Map<String, String> getHeaderOverrides() {
+            public Map<String, List<String>> getHeaderOverrides(RequestContext context) {
                 return null;
             }
         };
-        SplitClientConfig config = SplitClientConfig.builder().userCustomHeaderDecorator(ucd).build();
-        Assert.assertNotNull(config.userCustomHeaderDecorator());
-        Assert.assertEquals(ucd, config.userCustomHeaderDecorator());
+        SplitClientConfig config = SplitClientConfig.builder().customHeaderDecorator(ucd).build();
+        Assert.assertNotNull(config.customHeaderDecorator());
+        Assert.assertEquals(ucd, config.customHeaderDecorator());
 
         SplitClientConfig config2 = SplitClientConfig.builder().build();
-        Assert.assertNull(config2.userCustomHeaderDecorator());
+        Assert.assertNull(config2.customHeaderDecorator());
 
     }
 }

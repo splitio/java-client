@@ -508,7 +508,7 @@ public class SplitFactoryImpl implements SplitFactory {
             httpClientbuilder = setupProxy(httpClientbuilder, config);
         }
 
-        return SplitHttpClientImpl.create(httpClientbuilder.build(), new RequestDecorator(config.userCustomHeaderDecorator()));
+        return SplitHttpClientImpl.create(httpClientbuilder.build(), new RequestDecorator(config.customHeaderDecorator()));
     }
 
     private static CloseableHttpClient buildSSEdHttpClient(String apiToken, SplitClientConfig config, SDKMetadata sdkMetadata) {
