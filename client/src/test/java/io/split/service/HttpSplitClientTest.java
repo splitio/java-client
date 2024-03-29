@@ -14,7 +14,8 @@ import io.split.service.SplitHttpClientImpl;
 import org.apache.hc.client5.http.classic.methods.HttpPost;
 import org.apache.hc.client5.http.classic.methods.HttpUriRequest;
 import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
-import org.apache.hc.core5.http.*;
+import org.apache.hc.core5.http.HttpStatus;
+import org.apache.hc.core5.http.Header;
 import org.junit.Assert;
 import org.junit.Test;
 import org.mockito.ArgumentCaptor;
@@ -41,11 +42,21 @@ public class HttpSplitClientTest {
         RequestDecorator decorator = new RequestDecorator(null);
 
         SplitHttpClient splitHtpClient = SplitHttpClientImpl.create(httpClientMock, decorator);
+        Map<String, String> additionalHeaders = new HashMap<>();
+        additionalHeaders.put("AdditionalHeader", "add");
 
         SplitHttpResponse splitHttpResponse = splitHtpClient.get(rootTarget,
-                new FetchOptions.Builder().cacheControlHeaders(true).build());
-        SplitChange change = Json.fromJson(splitHttpResponse.body, SplitChange.class);
+                new FetchOptions.Builder().cacheControlHeaders(true).build(), additionalHeaders);
+        SplitChange change = Json.fromJson(splitHttpResponse.body(), SplitChange.class);
 
+        ArgumentCaptor<HttpUriRequest> captor = ArgumentCaptor.forClass(HttpUriRequest.class);
+        verify(httpClientMock).execute(captor.capture());
+        HttpUriRequest request = captor.getValue();
+        assertThat(request.getFirstHeader("AdditionalHeader").getValue(), is(equalTo("add")));
+
+        Header[] headers = splitHttpResponse.responseHeaders();
+        assertThat(headers[0].getName(), is(equalTo("Via")));
+        assertThat(headers[0].getValue(), is(equalTo("HTTP/1.1 m_proxy_rio1")));
         Assert.assertNotNull(change);
         Assert.assertEquals(1, change.splits.size());
         Assert.assertNotNull(change.splits.get(0));
@@ -66,8 +77,8 @@ public class HttpSplitClientTest {
 
         SplitHttpClient splitHtpClient = SplitHttpClientImpl.create(httpClientMock, decorator);
         SplitHttpResponse splitHttpResponse = splitHtpClient.get(rootTarget,
-                new FetchOptions.Builder().cacheControlHeaders(true).build());
-        Assert.assertEquals(HttpStatus.SC_INTERNAL_SERVER_ERROR, (long) splitHttpResponse.statusCode);
+                new FetchOptions.Builder().cacheControlHeaders(true).build(), null);
+        Assert.assertEquals(HttpStatus.SC_INTERNAL_SERVER_ERROR, (long) splitHttpResponse.statusCode());
     }
 
     @Test(expected = IllegalStateException.class)
@@ -78,7 +89,7 @@ public class HttpSplitClientTest {
 
         SplitHttpClient splitHtpClient = SplitHttpClientImpl.create(httpClientMock, decorator);
         splitHtpClient.get(rootTarget,
-                new FetchOptions.Builder().cacheControlHeaders(true).build());
+                new FetchOptions.Builder().cacheControlHeaders(true).build(), null);
     }
 
     @Test
@@ -118,7 +129,7 @@ public class HttpSplitClientTest {
         Gson gson = new Gson();
         List<TestImpressions> payload = gson.fromJson(reader, new TypeToken<List<TestImpressions>>() { }.getType());
         assertThat(payload.size(), is(equalTo(2)));
-        Assert.assertEquals(200,(long) splitHttpResponse.statusCode);
+        Assert.assertEquals(200,(long) splitHttpResponse.statusCode());
     }
 
     @Test
@@ -129,7 +140,7 @@ public class HttpSplitClientTest {
 
         SplitHttpClient splitHtpClient = SplitHttpClientImpl.create(httpClientMock, decorator);
         SplitHttpResponse splitHttpResponse = splitHtpClient.post(rootTarget, Utils.toJsonEntity(Arrays.asList( new String[] { "A", "B", "C", "D" })), null);
-        Assert.assertEquals(500, (long) splitHttpResponse.statusCode);
+        Assert.assertEquals(500, (long) splitHttpResponse.statusCode());
 
     }
 

@@ -2,10 +2,18 @@ package io.split.client;
 
 import org.apache.hc.client5.http.classic.methods.HttpGet;
 import org.apache.hc.client5.http.classic.methods.HttpPost;
+import org.apache.hc.core5.http.Header;
 import org.apache.hc.core5.http.ProtocolException;
 import org.junit.Assert;
 import org.junit.Test;
+import static org.hamcrest.core.IsEqual.equalTo;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.core.Is.is;
 
+import io.split.client.dtos.RequestContext;
+
+import java.util.List;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -24,56 +32,58 @@ public class RequestDecoratorTest {
 
     @Test
     public void testAddCustomHeaders() throws ProtocolException {
-        class MyCustomHeaders implements  UserCustomHeaderDecorator {
+        class MyCustomHeaders implements CustomHeaderDecorator {
             public MyCustomHeaders() {}
             @Override
-            public Map<String, String> getHeaderOverrides() {
-                return new HashMap<String, String>()
-                {{
-                    put("first", "1");
-                    put("second", "2");
-                    put("third", "3");
-                }};
+            public Map<String, List<String>> getHeaderOverrides(RequestContext context) {
+                Map<String, List<String>> additionalHeaders = context.headers();
+                additionalHeaders.put("first", Arrays.asList("1"));
+                additionalHeaders.put("second", Arrays.asList("2.1", "2.2"));
+                additionalHeaders.put("third", Arrays.asList("3"));
+                return additionalHeaders;
             }
         }
         MyCustomHeaders myHeaders = new MyCustomHeaders();
         RequestDecorator decorator = new RequestDecorator(myHeaders);
         HttpGet request = new HttpGet("http://anyhost");
+        request.addHeader("first", "myfirstheader");
         request  = (HttpGet) decorator.decorateHeaders(request);
-        Assert.assertEquals(3, request.getHeaders().length);
+
+        Assert.assertEquals(4, request.getHeaders().length);
         Assert.assertEquals("1", request.getHeader("first").getValue());
-        Assert.assertEquals("2", request.getHeader("second").getValue());
+
+        Header[] second = request.getHeaders("second");
+        Assert.assertEquals("2.1", second[0].getValue());
+        Assert.assertEquals("2.2", second[1].getValue());
         Assert.assertEquals("3", request.getHeader("third").getValue());
 
         HttpPost request2 = new HttpPost("http://anyhost");
         request2.addHeader("myheader", "value");
         request2  = (HttpPost) decorator.decorateHeaders(request2);
-        Assert.assertEquals(4, request2.getHeaders().length);
+        Assert.assertEquals(5, request2.getHeaders().length);
     }
 
     @Test
     public void testAddBlockedHeaders() throws ProtocolException {
-        class MyCustomHeaders implements  UserCustomHeaderDecorator {
+        class MyCustomHeaders implements  CustomHeaderDecorator {
             public MyCustomHeaders() {}
             @Override
-            public Map<String, String> getHeaderOverrides() {
-                return new HashMap<String, String>()
-                {{
-                    put("first", "1");
-                    put("SplitSDKVersion", "2.4");
-                    put("SplitMachineip", "xx");
-                    put("splitMachineName", "xx");
-                    put("splitimpressionsmode", "xx");
-                    put("HOST", "xx");
-                    put("referrer", "xx");
-                    put("content-type", "xx");
-                    put("content-length", "xx");
-                    put("content-encoding", "xx");
-                    put("ACCEPT", "xx");
-                    put("keep-alive", "xx");
-                    put("x-fastly-debug", "xx");
-
-                }};
+            public Map<String, List<String>> getHeaderOverrides(RequestContext context) {
+                Map<String, List<String>> additionalHeaders = context.headers();
+                additionalHeaders.put("first", Arrays.asList("1"));
+                additionalHeaders.put("SplitSDKVersion", Arrays.asList("2.4"));
+                additionalHeaders.put("SplitMachineip", Arrays.asList("xx"));
+                additionalHeaders.put("splitMachineName", Arrays.asList("xx"));
+                additionalHeaders.put("splitimpressionsmode", Arrays.asList("xx"));
+                additionalHeaders.put("HOST", Arrays.asList("xx"));
+                additionalHeaders.put("referrer", Arrays.asList("xx"));
+                additionalHeaders.put("content-type", Arrays.asList("xx"));
+                additionalHeaders.put("content-length", Arrays.asList("xx"));
+                additionalHeaders.put("content-encoding", Arrays.asList("xx"));
+                additionalHeaders.put("ACCEPT", Arrays.asList("xx"));
+                additionalHeaders.put("keep-alive", Arrays.asList("xx"));
+                additionalHeaders.put("x-fastly-debug", Arrays.asList("xx"));
+                return additionalHeaders;
             }
         }
         MyCustomHeaders myHeaders = new MyCustomHeaders();
@@ -86,10 +96,10 @@ public class RequestDecoratorTest {
 
     @Test(expected = IllegalArgumentException.class)
     public void customDecoratorError() {
-        class MyCustomHeaders implements  UserCustomHeaderDecorator {
+        class MyCustomHeaders implements  CustomHeaderDecorator {
             public MyCustomHeaders() {}
             @Override
-            public Map<String, String> getHeaderOverrides() {
+            public Map<String, List<String>> getHeaderOverrides(RequestContext context) {
                 throw new RuntimeException();
             }
         }

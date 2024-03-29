@@ -1,22 +1,28 @@
 package io.split.client;
 
+import io.split.client.dtos.RequestContext;
+
 import org.apache.hc.client5.http.classic.methods.HttpUriRequestBase;
+import org.apache.hc.core5.http.Header;
+
 import java.util.HashSet;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Arrays;
+import java.util.ArrayList;
 import java.util.Set;
+import java.util.List;
 
-class NoOpHeaderDecorator implements  UserCustomHeaderDecorator {
+class NoOpHeaderDecorator implements  CustomHeaderDecorator {
     public NoOpHeaderDecorator() {}
     @Override
-    public Map<String, String> getHeaderOverrides() {
+    public Map<String, List<String>> getHeaderOverrides(RequestContext context) {
         return new HashMap<>();
     }
 }
 
 public final class RequestDecorator {
-    UserCustomHeaderDecorator _headerDecorator;
+    CustomHeaderDecorator _headerDecorator;
 
     private static final Set<String> forbiddenHeaders = new HashSet<>(Arrays.asList(
             "splitsdkversion",
@@ -33,7 +39,7 @@ public final class RequestDecorator {
             "x-fastly-debug"
     ));
 
-    public RequestDecorator(UserCustomHeaderDecorator headerDecorator) {
+    public RequestDecorator(CustomHeaderDecorator headerDecorator) {
         _headerDecorator = (headerDecorator == null)
                 ? new NoOpHeaderDecorator()
                 : headerDecorator;
@@ -41,10 +47,17 @@ public final class RequestDecorator {
 
     public HttpUriRequestBase decorateHeaders(HttpUriRequestBase request) {
         try {
-            Map<String, String> headers = _headerDecorator.getHeaderOverrides();
+            Map<String, List<String>> headers = _headerDecorator.getHeaderOverrides(new RequestContext(convertToMap(request.getHeaders())));
             for (Map.Entry entry : headers.entrySet()) {
                 if (isHeaderAllowed(entry.getKey().toString())) {
-                    request.addHeader(entry.getKey().toString(), entry.getValue());
+                    List<String> values = (List<String>) entry.getValue();
+                    for (int i = 0; i < values.size(); i++) {
+                        if (i == 0) {
+                            request.setHeader(entry.getKey().toString(), values.get(i));
+                        } else {
+                            request.addHeader(entry.getKey().toString(), values.get(i));
+                        }
+                    }
                 }
             }
         } catch (Exception e) {
@@ -56,5 +69,15 @@ public final class RequestDecorator {
 
     private boolean isHeaderAllowed(String headerName) {
         return !forbiddenHeaders.contains(headerName.toLowerCase());
+    }
+    private Map<String, List<String>> convertToMap(Header[] to_convert) {
+        Map<String, List<String>> to_return = new HashMap<String, List<String>>();
+        for (Integer i = 0; i < to_convert.length; i++ ) {
+            if (!to_return.containsKey(to_convert[i].getName())) {
+                to_return.put(to_convert[i].getName(), new ArrayList<String>());
+            }
+            to_return.get(to_convert[i].getName()).add(to_convert[i].getValue());
+        }
+        return to_return;
     }
 }

@@ -90,7 +90,7 @@ public class SplitClientConfig {
     private final long _lastSeenCacheSize;
     private final HashSet<String> _flagSetsFilter;
     private final int _invalidSets;
-    private final UserCustomHeaderDecorator _userCustomHeaderDecorator;
+    private final CustomHeaderDecorator _customHeaderDecorator;
 
 
     public static Builder builder() {
@@ -148,7 +148,7 @@ public class SplitClientConfig {
                               ThreadFactory threadFactory,
                               HashSet<String> flagSetsFilter,
                               int invalidSets,
-                              UserCustomHeaderDecorator userCustomHeaderDecorator) {
+                              CustomHeaderDecorator customHeaderDecorator) {
         _endpoint = endpoint;
         _eventsEndpoint = eventsEndpoint;
         _featuresRefreshRate = pollForFeatureChangesEveryNSeconds;
@@ -200,7 +200,7 @@ public class SplitClientConfig {
         _threadFactory = threadFactory;
         _flagSetsFilter = flagSetsFilter;
         _invalidSets = invalidSets;
-        _userCustomHeaderDecorator = userCustomHeaderDecorator;
+        _customHeaderDecorator = customHeaderDecorator;
 
         Properties props = new Properties();
         try {
@@ -397,8 +397,8 @@ public class SplitClientConfig {
         return _invalidSets;
     }
 
-    public UserCustomHeaderDecorator userCustomHeaderDecorator() {
-        return _userCustomHeaderDecorator;
+    public CustomHeaderDecorator customHeaderDecorator() {
+        return _customHeaderDecorator;
     }
 
     public static final class Builder {
@@ -457,7 +457,7 @@ public class SplitClientConfig {
         private ThreadFactory _threadFactory;
         private HashSet<String> _flagSetsFilter = new HashSet<>();
         private int _invalidSetsCount = 0;
-        private UserCustomHeaderDecorator _userCustomHeaderDecorator = null;
+        private CustomHeaderDecorator _customHeaderDecorator = null;
 
         public Builder() {
         }
@@ -944,11 +944,11 @@ public class SplitClientConfig {
         /**
          * User Custom Header Decorator
          *
-         * @param userCustomHeaderDecorator
+         * @param customHeaderDecorator
          * @return this builder
          */
-        public Builder userCustomHeaderDecorator(UserCustomHeaderDecorator userCustomHeaderDecorator) {
-            _userCustomHeaderDecorator = userCustomHeaderDecorator;
+        public Builder customHeaderDecorator(CustomHeaderDecorator customHeaderDecorator) {
+            _customHeaderDecorator = customHeaderDecorator;
             return this;
         }
 
@@ -1112,7 +1112,7 @@ public class SplitClientConfig {
                     _threadFactory,
                     _flagSetsFilter,
                     _invalidSetsCount,
-                    _userCustomHeaderDecorator);
+                    _customHeaderDecorator);
         }
     }
 }
