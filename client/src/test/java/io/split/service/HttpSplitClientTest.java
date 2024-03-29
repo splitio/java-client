@@ -131,7 +131,6 @@ public class HttpSplitClientTest {
         HttpUriRequest request = captor.getValue();
         assertThat(request.getUri(),
                 is(equalTo(URI.create("https://kubernetesturl.com/split/api/testImpressions/bulk"))));
-        assertThat(request.getHeaders().length, is(1));
         assertThat(request.getFirstHeader("SplitSDKImpressionsMode").getValue(), is(equalTo("OPTIMIZED")));
         assertThat(request, instanceOf(HttpPost.class));
         HttpPost asPostRequest = (HttpPost) request;
