@@ -69,7 +69,7 @@ public class HttpImpressionsSender implements ImpressionsSender {
         try {
             HttpEntity entity = Utils.toJsonEntity(impressions);
             Map<String, List<String>> additionalHeaders = Collections.singletonMap(IMPRESSIONS_MODE_HEADER,
-                    List.of(_mode.toString()));
+                    Collections.singletonList(_mode.toString()));
             SplitHttpResponse response = _client.post(_impressionBulkTarget, entity, additionalHeaders);
 
             if (response.statusCode() < HttpStatus.SC_OK || response.statusCode() >= HttpStatus.SC_MULTIPLE_CHOICES) {

@@ -45,7 +45,8 @@ public class HttpSplitClientTest {
         RequestDecorator decorator = new RequestDecorator(null);
 
         SplitHttpClient splitHtpClient = SplitHttpClientImpl.create(httpClientMock, decorator, "qwerty", metadata());
-        Map<String, List<String>> additionalHeaders = Collections.singletonMap("AdditionalHeader", List.of("add"));
+        Map<String, List<String>> additionalHeaders = Collections.singletonMap("AdditionalHeader",
+                Collections.singletonList("add"));
 
         SplitHttpResponse splitHttpResponse = splitHtpClient.get(rootTarget,
                 new FetchOptions.Builder().cacheControlHeaders(true).build(), additionalHeaders);
@@ -119,7 +120,8 @@ public class HttpSplitClientTest {
                         KeyImpression.fromImpression(new Impression("k2", null, "t2", "on", 123L, "r1", 456L, null)),
                         KeyImpression.fromImpression(new Impression("k3", null, "t2", "on", 123L, "r1", 456L, null)))));
 
-        Map<String, List<String>> additionalHeaders = Collections.singletonMap("AdditionalHeader", List.of("add"));
+        Map<String, List<String>> additionalHeaders = Collections.singletonMap("AdditionalHeader",
+                Collections.singletonList("add"));
         SplitHttpResponse splitHttpResponse = splitHtpClient.post(rootTarget, Utils.toJsonEntity(toSend),
                 additionalHeaders);
 
