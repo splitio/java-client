@@ -13,14 +13,6 @@ import java.util.ArrayList;
 import java.util.Set;
 import java.util.List;
 
-class NoOpHeaderDecorator implements  CustomHeaderDecorator {
-    public NoOpHeaderDecorator() {}
-    @Override
-    public Map<String, List<String>> getHeaderOverrides(RequestContext context) {
-        return new HashMap<>();
-    }
-}
-
 public final class RequestDecorator {
     CustomHeaderDecorator _headerDecorator;
 

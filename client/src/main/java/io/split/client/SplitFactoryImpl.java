@@ -185,7 +185,8 @@ public class SplitFactoryImpl implements SplitFactory {
         _gates = new SDKReadinessGates();
 
         // HttpClient
-        _splitHttpClient = buildSplitHttpClient(apiToken, config, _sdkMetadata);
+        RequestDecorator requestDecorator = new RequestDecorator(config.customHeaderDecorator());
+        _splitHttpClient = buildSplitHttpClient(apiToken, config, _sdkMetadata, requestDecorator);
 
         // Roots
         _rootTarget = URI.create(config.endpoint());
@@ -252,7 +253,7 @@ public class SplitFactoryImpl implements SplitFactory {
         // SyncManager
         SplitTasks splitTasks = SplitTasks.build(_splitSynchronizationTask, _segmentSynchronizationTaskImp,
                 _impressionsManager, _eventsTask, _telemetrySyncTask, _uniqueKeysTracker);
-        SplitAPI splitAPI = SplitAPI.build(_splitHttpClient, buildSSEdHttpClient(apiToken, config, _sdkMetadata));
+        SplitAPI splitAPI = SplitAPI.build(_splitHttpClient, buildSSEdHttpClient(apiToken, config, _sdkMetadata), requestDecorator);
 
         _syncManager = SyncManagerImp.build(splitTasks, _splitFetcher, splitCache, splitAPI,
                 segmentCache, _gates, _telemetryStorageProducer, _telemetrySynchronizer, config, splitParser, flagSetsFilter);
@@ -473,7 +474,12 @@ public class SplitFactoryImpl implements SplitFactory {
         return isTerminated;
     }
 
-    private static SplitHttpClient buildSplitHttpClient(String apiToken, SplitClientConfig config, SDKMetadata sdkMetadata)
+    private static SplitHttpClient buildSplitHttpClient(
+            String apiToken,
+            SplitClientConfig config,
+            SDKMetadata sdkMetadata,
+            RequestDecorator requestDecorator
+    )
             throws URISyntaxException {
         SSLConnectionSocketFactory sslSocketFactory = SSLConnectionSocketFactoryBuilder.create()
                 .setSslContext(SSLContexts.createSystemDefault())
@@ -508,7 +514,7 @@ public class SplitFactoryImpl implements SplitFactory {
             httpClientbuilder = setupProxy(httpClientbuilder, config);
         }
 
-        return SplitHttpClientImpl.create(httpClientbuilder.build(), new RequestDecorator(config.customHeaderDecorator()));
+        return SplitHttpClientImpl.create(httpClientbuilder.build(), requestDecorator);
     }
 
     private static CloseableHttpClient buildSSEdHttpClient(String apiToken, SplitClientConfig config, SDKMetadata sdkMetadata) {
