@@ -4,12 +4,14 @@ import io.split.engine.common.FetchOptions;
 import io.split.client.dtos.SplitHttpResponse;
 
 import org.apache.hc.core5.http.HttpEntity;
+
+import java.io.Closeable;
 import java.io.IOException;
 import java.net.URI;
 import java.util.List;
 import java.util.Map;
 
-public interface SplitHttpClient {
+public interface SplitHttpClient extends Closeable {
     /**
      * Wrapper for HTTP get method
      * 
