@@ -120,8 +120,8 @@ public class HttpSplitClientTest {
                         KeyImpression.fromImpression(new Impression("k2", null, "t2", "on", 123L, "r1", 456L, null)),
                         KeyImpression.fromImpression(new Impression("k3", null, "t2", "on", 123L, "r1", 456L, null)))));
 
-        Map<String, List<String>> additionalHeaders = Collections.singletonMap("AdditionalHeader",
-                Collections.singletonList("add"));
+        Map<String, List<String>> additionalHeaders = Collections.singletonMap("SplitSDKImpressionsMode",
+                Collections.singletonList("OPTIMIZED"));
         SplitHttpResponse splitHttpResponse = splitHtpClient.post(rootTarget, Utils.toJsonEntity(toSend),
                 additionalHeaders);
 
