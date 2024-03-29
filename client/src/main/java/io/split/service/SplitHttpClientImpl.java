@@ -63,7 +63,9 @@ public final class SplitHttpClientImpl implements SplitHttpClient {
             setBasicHeaders(request);
             if (additionalHeaders != null) {
                 for (Map.Entry<String, List<String>> entry : additionalHeaders.entrySet()) {
-                    request.addHeader(entry.getKey(), entry.getValue());
+                    for (String value : entry.getValue()) {
+                        request.addHeader(entry.getKey(), value);
+                    }
                 }
             }
             if (options.cacheControlHeadersEnabled()) {
@@ -105,7 +107,9 @@ public final class SplitHttpClientImpl implements SplitHttpClient {
             setBasicHeaders(request);
             if (additionalHeaders != null) {
                 for (Map.Entry<String, List<String>> entry : additionalHeaders.entrySet()) {
-                    request.addHeader(entry.getKey(), entry.getValue());
+                    for (String value : entry.getValue()) {
+                        request.addHeader(entry.getKey(), value);
+                    }
                 }
             }
             request.setEntity(entity);
