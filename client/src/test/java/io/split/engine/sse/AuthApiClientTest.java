@@ -2,6 +2,7 @@ package io.split.engine.sse;
 
 import io.split.TestHelper;
 import io.split.client.RequestDecorator;
+import io.split.client.utils.SDKMetadata;
 import io.split.engine.sse.dtos.AuthenticationResponse;
 import io.split.service.SplitHttpClient;
 import io.split.service.SplitHttpClientImpl;
@@ -26,11 +27,15 @@ public class AuthApiClientTest {
     public void setUp() {
         TELEMETRY_STORAGE = Mockito.mock(InMemoryTelemetryStorage.class);
     }
+
     @Test
-    public void authenticateWithPushEnabledShouldReturnSuccess() throws IOException, IllegalAccessException, NoSuchMethodException, InvocationTargetException, URISyntaxException {
-        CloseableHttpClient httpClientMock = TestHelper.mockHttpClient("streaming-auth-push-enabled.json", HttpStatus.SC_OK);
-        SplitHttpClient splitHttpClient = SplitHttpClientImpl.create(httpClientMock, new RequestDecorator(null));
-        AuthApiClient authApiClient = new AuthApiClientImp( "www.split-test.io", splitHttpClient, TELEMETRY_STORAGE);
+    public void authenticateWithPushEnabledShouldReturnSuccess() throws IOException, IllegalAccessException,
+            NoSuchMethodException, InvocationTargetException, URISyntaxException {
+        CloseableHttpClient httpClientMock = TestHelper.mockHttpClient("streaming-auth-push-enabled.json",
+                HttpStatus.SC_OK);
+        SplitHttpClient splitHttpClient = SplitHttpClientImpl.create(httpClientMock, new RequestDecorator(null),
+                "qwerty", metadata());
+        AuthApiClient authApiClient = new AuthApiClientImp("www.split-test.io", splitHttpClient, TELEMETRY_STORAGE);
         AuthenticationResponse result = authApiClient.Authenticate();
 
         Assert.assertTrue(result.isPushEnabled());
@@ -40,16 +45,20 @@ public class AuthApiClientTest {
         Assert.assertTrue(result.getExpiration() > 0);
         Mockito.verify(TELEMETRY_STORAGE, Mockito.times(1)).recordTokenRefreshes();
         Mockito.verify(TELEMETRY_STORAGE, Mockito.times(1)).recordSyncLatency(Mockito.anyObject(), Mockito.anyLong());
-        Mockito.verify(TELEMETRY_STORAGE, Mockito.times(1)).recordSuccessfulSync(Mockito.anyObject(), Mockito.anyLong());
+        Mockito.verify(TELEMETRY_STORAGE, Mockito.times(1)).recordSuccessfulSync(Mockito.anyObject(),
+                Mockito.anyLong());
 
     }
 
     @Test
-    public void authenticateWithPushEnabledWithWrongTokenShouldReturnError() throws IOException, IllegalAccessException, NoSuchMethodException, InvocationTargetException, URISyntaxException {
-        CloseableHttpClient httpClientMock = TestHelper.mockHttpClient("streaming-auth-push-enabled-wrong-token.json", HttpStatus.SC_OK);
-        SplitHttpClient splitHttpClient = SplitHttpClientImpl.create(httpClientMock, new RequestDecorator(null));
+    public void authenticateWithPushEnabledWithWrongTokenShouldReturnError() throws IOException, IllegalAccessException,
+            NoSuchMethodException, InvocationTargetException, URISyntaxException {
+        CloseableHttpClient httpClientMock = TestHelper.mockHttpClient("streaming-auth-push-enabled-wrong-token.json",
+                HttpStatus.SC_OK);
+        SplitHttpClient splitHttpClient = SplitHttpClientImpl.create(httpClientMock, new RequestDecorator(null),
+                "qwerty", metadata());
 
-        AuthApiClient authApiClient = new AuthApiClientImp( "www.split-test.io", splitHttpClient, TELEMETRY_STORAGE);
+        AuthApiClient authApiClient = new AuthApiClientImp("www.split-test.io", splitHttpClient, TELEMETRY_STORAGE);
         AuthenticationResponse result = authApiClient.Authenticate();
 
         Assert.assertFalse(result.isPushEnabled());
@@ -60,9 +69,12 @@ public class AuthApiClientTest {
     }
 
     @Test
-    public void authenticateWithPushDisabledShouldReturnSuccess() throws IOException, IllegalAccessException, NoSuchMethodException, InvocationTargetException, URISyntaxException {
-        CloseableHttpClient httpClientMock = TestHelper.mockHttpClient("streaming-auth-push-disabled.json", HttpStatus.SC_OK);
-        SplitHttpClient splitHttpClient = SplitHttpClientImpl.create(httpClientMock, new RequestDecorator(null));
+    public void authenticateWithPushDisabledShouldReturnSuccess() throws IOException, IllegalAccessException,
+            NoSuchMethodException, InvocationTargetException, URISyntaxException {
+        CloseableHttpClient httpClientMock = TestHelper.mockHttpClient("streaming-auth-push-disabled.json",
+                HttpStatus.SC_OK);
+        SplitHttpClient splitHttpClient = SplitHttpClientImpl.create(httpClientMock, new RequestDecorator(null),
+                "qwerty", metadata());
 
         AuthApiClient authApiClient = new AuthApiClientImp("www.split-test.io", splitHttpClient, TELEMETRY_STORAGE);
         AuthenticationResponse result = authApiClient.Authenticate();
@@ -74,9 +86,11 @@ public class AuthApiClientTest {
     }
 
     @Test
-    public void authenticateServerErrorShouldReturnErrorWithRetry() throws IOException, IllegalAccessException, NoSuchMethodException, InvocationTargetException, URISyntaxException {
+    public void authenticateServerErrorShouldReturnErrorWithRetry() throws IOException, IllegalAccessException,
+            NoSuchMethodException, InvocationTargetException, URISyntaxException {
         CloseableHttpClient httpClientMock = TestHelper.mockHttpClient("", HttpStatus.SC_INTERNAL_SERVER_ERROR);
-        SplitHttpClient splitHttpClient = SplitHttpClientImpl.create(httpClientMock, new RequestDecorator(null));
+        SplitHttpClient splitHttpClient = SplitHttpClientImpl.create(httpClientMock, new RequestDecorator(null),
+                "qwerty", metadata());
 
         AuthApiClient authApiClient = new AuthApiClientImp("www.split-test.io", splitHttpClient, TELEMETRY_STORAGE);
         AuthenticationResponse result = authApiClient.Authenticate();
@@ -88,10 +102,12 @@ public class AuthApiClientTest {
     }
 
     @Test
-    public void authenticateServerBadRequestShouldReturnErrorWithoutRetry() throws IOException, IllegalAccessException, NoSuchMethodException, InvocationTargetException, URISyntaxException {
+    public void authenticateServerBadRequestShouldReturnErrorWithoutRetry() throws IOException, IllegalAccessException,
+            NoSuchMethodException, InvocationTargetException, URISyntaxException {
         CloseableHttpClient httpClientMock = TestHelper.mockHttpClient("", HttpStatus.SC_BAD_REQUEST);
-        SplitHttpClient splitHttpClient = SplitHttpClientImpl.create(httpClientMock, new RequestDecorator(null));
 
+        SplitHttpClient splitHttpClient = SplitHttpClientImpl.create(httpClientMock, new RequestDecorator(null),
+                "qwerty", metadata());
         AuthApiClient authApiClient = new AuthApiClientImp("www.split-test.io", splitHttpClient, TELEMETRY_STORAGE);
         AuthenticationResponse result = authApiClient.Authenticate();
 
@@ -102,9 +118,11 @@ public class AuthApiClientTest {
     }
 
     @Test
-    public void authenticateServerUnauthorizedShouldReturnErrorWithoutRetry() throws IOException, IllegalAccessException, NoSuchMethodException, InvocationTargetException, URISyntaxException {
+    public void authenticateServerUnauthorizedShouldReturnErrorWithoutRetry() throws IOException,
+            IllegalAccessException, NoSuchMethodException, InvocationTargetException, URISyntaxException {
         CloseableHttpClient httpClientMock = TestHelper.mockHttpClient("", HttpStatus.SC_UNAUTHORIZED);
-        SplitHttpClient splitHttpClient = SplitHttpClientImpl.create(httpClientMock, new RequestDecorator(null));
+        SplitHttpClient splitHttpClient = SplitHttpClientImpl.create(httpClientMock, new RequestDecorator(null),
+                "qwerty", metadata());
 
         AuthApiClient authApiClient = new AuthApiClientImp("www.split-test.io", splitHttpClient, TELEMETRY_STORAGE);
         AuthenticationResponse result = authApiClient.Authenticate();
@@ -115,4 +133,9 @@ public class AuthApiClientTest {
         Assert.assertFalse(result.isRetry());
         Mockito.verify(TELEMETRY_STORAGE, Mockito.times(1)).recordAuthRejections();
     }
+
+    private SDKMetadata metadata() {
+        return new SDKMetadata("java-1.2.3", "1.2.3.4", "someIP");
+    }
+
 }

@@ -7,6 +7,7 @@ import io.split.client.RequestDecorator;
 import io.split.client.dtos.ImpressionCount;
 import io.split.client.dtos.KeyImpression;
 import io.split.client.dtos.TestImpressions;
+import io.split.client.utils.SDKMetadata;
 import io.split.service.SplitHttpClient;
 import io.split.service.SplitHttpClientImpl;
 import io.split.telemetry.storage.InMemoryTelemetryStorage;
@@ -46,48 +47,63 @@ public class HttpImpressionsSenderTest {
     public void testDefaultURL() throws URISyntaxException {
         URI rootTarget = URI.create("https://api.split.io");
         CloseableHttpClient httpClient = HttpClients.custom().build();
-        SplitHttpClient splitHtpClient = SplitHttpClientImpl.create(httpClient, new RequestDecorator(null));
-        HttpImpressionsSender fetcher = HttpImpressionsSender.create(splitHtpClient, rootTarget, ImpressionsManager.Mode.DEBUG, TELEMETRY_STORAGE);
-        Assert.assertThat(fetcher.getTarget().toString(), Matchers.is(Matchers.equalTo("https://api.split.io/api/testImpressions/bulk")));
+        SplitHttpClient splitHtpClient = SplitHttpClientImpl.create(httpClient, new RequestDecorator(null), "qwerty",
+                metadata());
+        HttpImpressionsSender fetcher = HttpImpressionsSender.create(splitHtpClient, rootTarget,
+                ImpressionsManager.Mode.DEBUG, TELEMETRY_STORAGE);
+        Assert.assertThat(fetcher.getTarget().toString(),
+                Matchers.is(Matchers.equalTo("https://api.split.io/api/testImpressions/bulk")));
     }
 
     @Test
     public void testCustomURLNoPathNoBackslash() throws URISyntaxException {
         URI rootTarget = URI.create("https://kubernetesturl.com");
         CloseableHttpClient httpClient = HttpClients.custom().build();
-        SplitHttpClient splitHtpClient = SplitHttpClientImpl.create(httpClient, new RequestDecorator(null));
-        HttpImpressionsSender fetcher = HttpImpressionsSender.create(splitHtpClient, rootTarget, ImpressionsManager.Mode.DEBUG, TELEMETRY_STORAGE);
-        Assert.assertThat(fetcher.getTarget().toString(), Matchers.is(Matchers.equalTo("https://kubernetesturl.com/api/testImpressions/bulk")));
+        SplitHttpClient splitHtpClient = SplitHttpClientImpl.create(httpClient, new RequestDecorator(null), "qwerty",
+                metadata());
+        HttpImpressionsSender fetcher = HttpImpressionsSender.create(splitHtpClient, rootTarget,
+                ImpressionsManager.Mode.DEBUG, TELEMETRY_STORAGE);
+        Assert.assertThat(fetcher.getTarget().toString(),
+                Matchers.is(Matchers.equalTo("https://kubernetesturl.com/api/testImpressions/bulk")));
     }
 
     @Test
     public void testCustomURLAppendingPath() throws URISyntaxException {
         URI rootTarget = URI.create("https://kubernetesturl.com/split/");
         CloseableHttpClient httpClient = HttpClients.custom().build();
-        SplitHttpClient splitHtpClient = SplitHttpClientImpl.create(httpClient, new RequestDecorator(null));
-        HttpImpressionsSender fetcher = HttpImpressionsSender.create(splitHtpClient, rootTarget, ImpressionsManager.Mode.DEBUG, TELEMETRY_STORAGE);
-        Assert.assertThat(fetcher.getTarget().toString(), Matchers.is(Matchers.equalTo("https://kubernetesturl.com/split/api/testImpressions/bulk")));
+        SplitHttpClient splitHtpClient = SplitHttpClientImpl.create(httpClient, new RequestDecorator(null), "qwerty",
+                metadata());
+        HttpImpressionsSender fetcher = HttpImpressionsSender.create(splitHtpClient, rootTarget,
+                ImpressionsManager.Mode.DEBUG, TELEMETRY_STORAGE);
+        Assert.assertThat(fetcher.getTarget().toString(),
+                Matchers.is(Matchers.equalTo("https://kubernetesturl.com/split/api/testImpressions/bulk")));
     }
 
     @Test
     public void testCustomURLAppendingPathNoBackslash() throws URISyntaxException {
         URI rootTarget = URI.create("https://kubernetesturl.com/split");
         CloseableHttpClient httpClient = HttpClients.custom().build();
-        SplitHttpClient splitHtpClient = SplitHttpClientImpl.create(httpClient, new RequestDecorator(null));
-        HttpImpressionsSender fetcher = HttpImpressionsSender.create(splitHtpClient, rootTarget, ImpressionsManager.Mode.DEBUG, TELEMETRY_STORAGE);
-        Assert.assertThat(fetcher.getTarget().toString(), Matchers.is(Matchers.equalTo("https://kubernetesturl.com/split/api/testImpressions/bulk")));
+        SplitHttpClient splitHtpClient = SplitHttpClientImpl.create(httpClient, new RequestDecorator(null), "qwerty",
+                metadata());
+        HttpImpressionsSender fetcher = HttpImpressionsSender.create(splitHtpClient, rootTarget,
+                ImpressionsManager.Mode.DEBUG, TELEMETRY_STORAGE);
+        Assert.assertThat(fetcher.getTarget().toString(),
+                Matchers.is(Matchers.equalTo("https://kubernetesturl.com/split/api/testImpressions/bulk")));
     }
 
     @Test
-    public void testImpressionCountsEndpointOptimized() throws URISyntaxException, IOException, IllegalAccessException, NoSuchMethodException, InvocationTargetException {
+    public void testImpressionCountsEndpointOptimized() throws URISyntaxException, IOException, IllegalAccessException,
+            NoSuchMethodException, InvocationTargetException {
         URI rootTarget = URI.create("https://kubernetesturl.com/split");
 
         // Setup response mock
         CloseableHttpClient httpClient = TestHelper.mockHttpClient("", HttpStatus.SC_OK);
-        SplitHttpClient splitHtpClient = SplitHttpClientImpl.create(httpClient, new RequestDecorator(null));
+        SplitHttpClient splitHtpClient = SplitHttpClientImpl.create(httpClient, new RequestDecorator(null), "qwerty",
+                metadata());
 
         // Send counters
-        HttpImpressionsSender sender = HttpImpressionsSender.create(splitHtpClient, rootTarget, ImpressionsManager.Mode.OPTIMIZED, TELEMETRY_STORAGE);
+        HttpImpressionsSender sender = HttpImpressionsSender.create(splitHtpClient, rootTarget,
+                ImpressionsManager.Mode.OPTIMIZED, TELEMETRY_STORAGE);
         HashMap<ImpressionCounter.Key, Integer> toSend = new HashMap<>();
         toSend.put(new ImpressionCounter.Key("test1", 0), 4);
         toSend.put(new ImpressionCounter.Key("test2", 0), 5);
@@ -97,8 +113,8 @@ public class HttpImpressionsSenderTest {
         ArgumentCaptor<HttpUriRequest> captor = ArgumentCaptor.forClass(HttpUriRequest.class);
         verify(httpClient).execute(captor.capture());
         HttpUriRequest request = captor.getValue();
-        assertThat(request.getUri(), is(equalTo(URI.create("https://kubernetesturl.com/split/api/testImpressions/count"))));
-        assertThat(request.getHeaders().length, is(0));
+        assertThat(request.getUri(),
+                is(equalTo(URI.create("https://kubernetesturl.com/split/api/testImpressions/count"))));
         assertThat(request, instanceOf(HttpPost.class));
         HttpPost asPostRequest = (HttpPost) request;
         InputStreamReader reader = new InputStreamReader(asPostRequest.getEntity().getContent());
@@ -110,15 +126,18 @@ public class HttpImpressionsSenderTest {
     }
 
     @Test
-    public void testImpressionCountsEndpointDebug() throws URISyntaxException, IOException, IllegalAccessException, NoSuchMethodException, InvocationTargetException {
+    public void testImpressionCountsEndpointDebug() throws URISyntaxException, IOException, IllegalAccessException,
+            NoSuchMethodException, InvocationTargetException {
         URI rootTarget = URI.create("https://kubernetesturl.com/split");
 
         // Setup response mock
         CloseableHttpClient httpClient = TestHelper.mockHttpClient("", HttpStatus.SC_OK);
-        SplitHttpClient splitHtpClient = SplitHttpClientImpl.create(httpClient, new RequestDecorator(null));
+        SplitHttpClient splitHtpClient = SplitHttpClientImpl.create(httpClient, new RequestDecorator(null), "qwerty",
+                metadata());
 
         // Send counters
-        HttpImpressionsSender sender = HttpImpressionsSender.create(splitHtpClient, rootTarget, ImpressionsManager.Mode.DEBUG, TELEMETRY_STORAGE);
+        HttpImpressionsSender sender = HttpImpressionsSender.create(splitHtpClient, rootTarget,
+                ImpressionsManager.Mode.DEBUG, TELEMETRY_STORAGE);
         HashMap<ImpressionCounter.Key, Integer> toSend = new HashMap<>();
         toSend.put(new ImpressionCounter.Key("test1", 0), 4);
         toSend.put(new ImpressionCounter.Key("test2", 0), 5);
@@ -129,33 +148,35 @@ public class HttpImpressionsSenderTest {
     }
 
     @Test
-    public void testImpressionBulksEndpoint() throws URISyntaxException, IOException, IllegalAccessException, NoSuchMethodException, InvocationTargetException {
+    public void testImpressionBulksEndpoint() throws URISyntaxException, IOException, IllegalAccessException,
+            NoSuchMethodException, InvocationTargetException {
         URI rootTarget = URI.create("https://kubernetesturl.com/split");
 
         // Setup response mock
         CloseableHttpClient httpClient = TestHelper.mockHttpClient("", HttpStatus.SC_OK);
-        SplitHttpClient splitHtpClient = SplitHttpClientImpl.create(httpClient, new RequestDecorator(null));
+        SplitHttpClient splitHtpClient = SplitHttpClientImpl.create(httpClient, new RequestDecorator(null), "qwerty",
+                metadata());
 
-        HttpImpressionsSender sender = HttpImpressionsSender.create(splitHtpClient, rootTarget, ImpressionsManager.Mode.OPTIMIZED, TELEMETRY_STORAGE);
+        HttpImpressionsSender sender = HttpImpressionsSender.create(splitHtpClient, rootTarget,
+                ImpressionsManager.Mode.OPTIMIZED, TELEMETRY_STORAGE);
 
         // Send impressions
         List<TestImpressions> toSend = Arrays.asList(new TestImpressions("t1", Arrays.asList(
                 KeyImpression.fromImpression(new Impression("k1", null, "t1", "on", 123L, "r1", 456L, null)),
                 KeyImpression.fromImpression(new Impression("k2", null, "t1", "on", 123L, "r1", 456L, null)),
-                KeyImpression.fromImpression(new Impression("k3", null, "t1", "on", 123L, "r1", 456L, null))
-        )), new TestImpressions("t2", Arrays.asList(
-                KeyImpression.fromImpression(new Impression("k1", null, "t2", "on", 123L, "r1", 456L, null)),
-                KeyImpression.fromImpression(new Impression("k2", null, "t2", "on", 123L, "r1", 456L, null)),
-                KeyImpression.fromImpression(new Impression("k3", null, "t2", "on", 123L, "r1", 456L, null))
-        )));
+                KeyImpression.fromImpression(new Impression("k3", null, "t1", "on", 123L, "r1", 456L, null)))),
+                new TestImpressions("t2", Arrays.asList(
+                        KeyImpression.fromImpression(new Impression("k1", null, "t2", "on", 123L, "r1", 456L, null)),
+                        KeyImpression.fromImpression(new Impression("k2", null, "t2", "on", 123L, "r1", 456L, null)),
+                        KeyImpression.fromImpression(new Impression("k3", null, "t2", "on", 123L, "r1", 456L, null)))));
         sender.postImpressionsBulk(toSend);
 
         // Capture outgoing request and validate it
         ArgumentCaptor<HttpUriRequest> captor = ArgumentCaptor.forClass(HttpUriRequest.class);
         verify(httpClient).execute(captor.capture());
         HttpUriRequest request = captor.getValue();
-        assertThat(request.getUri(), is(equalTo(URI.create("https://kubernetesturl.com/split/api/testImpressions/bulk"))));
-        assertThat(request.getHeaders().length, is(1));
+        assertThat(request.getUri(),
+                is(equalTo(URI.create("https://kubernetesturl.com/split/api/testImpressions/bulk"))));
         assertThat(request.getFirstHeader("SplitSDKImpressionsMode").getValue(), is(equalTo("OPTIMIZED")));
         assertThat(request, instanceOf(HttpPost.class));
         HttpPost asPostRequest = (HttpPost) request;
@@ -167,25 +188,34 @@ public class HttpImpressionsSenderTest {
 
         // Do the same flow for imrpessionsMode = debug
         CloseableHttpClient httpClientDebugMode = TestHelper.mockHttpClient("", HttpStatus.SC_OK);
-        SplitHttpClient splitHtpClient2 = SplitHttpClientImpl.create(httpClientDebugMode, new RequestDecorator(null));
+        SplitHttpClient splitHtpClient2 = SplitHttpClientImpl.create(httpClientDebugMode, new RequestDecorator(null),
+                "qwerty", metadata());
 
-        sender = HttpImpressionsSender.create(splitHtpClient2, rootTarget, ImpressionsManager.Mode.DEBUG, TELEMETRY_STORAGE);
+        sender = HttpImpressionsSender.create(splitHtpClient2, rootTarget, ImpressionsManager.Mode.DEBUG,
+                TELEMETRY_STORAGE);
         sender.postImpressionsBulk(toSend);
         captor = ArgumentCaptor.forClass(HttpUriRequest.class);
         verify(httpClientDebugMode).execute(captor.capture());
         request = captor.getValue();
-        assertThat(request.getHeaders().length, is(1));
         assertThat(request.getFirstHeader("SplitSDKImpressionsMode").getValue(), is(equalTo("DEBUG")));
     }
 
     @Test
-    public void testHttpError() throws URISyntaxException, IOException, IllegalAccessException, NoSuchMethodException, InvocationTargetException {
+    public void testHttpError() throws URISyntaxException, IOException, IllegalAccessException, NoSuchMethodException,
+            InvocationTargetException {
         URI rootTarget = URI.create("https://kubernetesturl.com/split");
         CloseableHttpClient httpClient = TestHelper.mockHttpClient("", HttpStatus.SC_BAD_REQUEST);
-        SplitHttpClient splitHtpClient = SplitHttpClientImpl.create(httpClient, new RequestDecorator(null));
-        HttpImpressionsSender sender = HttpImpressionsSender.create(splitHtpClient, rootTarget, ImpressionsManager.Mode.OPTIMIZED, TELEMETRY_STORAGE);
+        SplitHttpClient splitHtpClient = SplitHttpClientImpl.create(httpClient, new RequestDecorator(null), "qwerty",
+                metadata());
+        HttpImpressionsSender sender = HttpImpressionsSender.create(splitHtpClient, rootTarget,
+                ImpressionsManager.Mode.OPTIMIZED, TELEMETRY_STORAGE);
         // Should not raise exception
         sender.postImpressionsBulk(new ArrayList<>());
         sender.postCounters(new HashMap<>());
     }
+
+    private SDKMetadata metadata() {
+        return new SDKMetadata("java-1.2.3", "1.2.3.4", "someIP");
+    }
+
 }
