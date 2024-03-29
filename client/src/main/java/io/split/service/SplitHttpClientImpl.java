@@ -40,11 +40,16 @@ public final class SplitHttpClientImpl implements SplitHttpClient {
         _requestDecorator = requestDecorator;
     }
 
-    public SplitHttpResponse get(URI uri, FetchOptions options) {
+    public SplitHttpResponse get(URI uri, FetchOptions options, Map<String, String> additionalHeaders) {
         CloseableHttpResponse response = null;
 
         try {
             HttpGet request = new HttpGet(uri);
+            if (additionalHeaders != null) {
+                for (Map.Entry entry : additionalHeaders.entrySet()) {
+                    request.addHeader(entry.getKey().toString(), entry.getValue());
+                }
+            }
             if(options.cacheControlHeadersEnabled()) {
                 request.setHeader(HEADER_CACHE_CONTROL_NAME, HEADER_CACHE_CONTROL_VALUE);
             }
@@ -56,15 +61,15 @@ public final class SplitHttpClientImpl implements SplitHttpClient {
                 _log.debug(String.format("[%s] %s. Status code: %s", request.getMethod(), uri.toURL(), response.getCode()));
             }
 
-            SplitHttpResponse httpResponse = new SplitHttpResponse();
-            httpResponse.statusMessage = "";
+            String statusMessage = "";
             if (response.getCode() < HttpStatus.SC_OK || response.getCode() >= HttpStatus.SC_MULTIPLE_CHOICES) {
                 _log.warn(String.format("Response status was: %s. Reason: %s", response.getCode() , response.getReasonPhrase()));
-                httpResponse.statusMessage = response.getReasonPhrase();
+                statusMessage = response.getReasonPhrase();
             }
-            httpResponse.statusCode = response.getCode();
-            httpResponse.body = EntityUtils.toString(response.getEntity(), StandardCharsets.UTF_8);
-            return httpResponse;
+            return new SplitHttpResponse(response.getCode(),
+                                         statusMessage,
+                                         EntityUtils.toString(response.getEntity(), StandardCharsets.UTF_8),
+                                         response.getHeaders());
         } catch (Exception e) {
             throw new IllegalStateException(String.format("Problem in http get operation: %s", e), e);
         } finally {
@@ -89,18 +94,12 @@ public final class SplitHttpClientImpl implements SplitHttpClient {
 
             response = _client.execute(request);
 
-            int status = response.getCode();
-
             String statusMessage = "";
-            if (status < HttpStatus.SC_OK || status >= HttpStatus.SC_MULTIPLE_CHOICES) {
+            if (response.getCode() < HttpStatus.SC_OK || response.getCode() >= HttpStatus.SC_MULTIPLE_CHOICES) {
                 statusMessage = response.getReasonPhrase();
-                _log.warn(String.format("Response status was: %s. Reason: %s", status, response.getReasonPhrase()));
+                _log.warn(String.format("Response status was: %s. Reason: %s", response.getCode(), response.getReasonPhrase()));
             }
-            SplitHttpResponse httpResponse = new SplitHttpResponse();
-            httpResponse.statusCode = status;
-            httpResponse.body = "";
-            httpResponse.statusMessage = statusMessage;
-            return httpResponse;
+            return new SplitHttpResponse(response.getCode(), statusMessage, "", response.getHeaders());
         } catch (Exception e) {
             throw new IOException(String.format("Problem in http post operation: %s", e), e);
         } finally {
