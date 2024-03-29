@@ -7,6 +7,7 @@ import io.split.client.RequestDecorator;
 import io.split.client.dtos.*;
 import io.split.client.impressions.Impression;
 import io.split.client.utils.Json;
+import io.split.client.utils.SDKMetadata;
 import io.split.client.utils.Utils;
 import io.split.engine.common.FetchOptions;
 import io.split.service.SplitHttpClient;
@@ -36,14 +37,15 @@ import static org.mockito.Mockito.verify;
 public class HttpSplitClientTest {
 
     @Test
-    public void testGetWithSpecialCharacters() throws URISyntaxException, InvocationTargetException, NoSuchMethodException, IllegalAccessException, IOException {
+    public void testGetWithSpecialCharacters() throws URISyntaxException, InvocationTargetException,
+            NoSuchMethodException, IllegalAccessException, IOException {
         URI rootTarget = URI.create("https://api.split.io/splitChanges?since=1234567");
-        CloseableHttpClient httpClientMock = TestHelper.mockHttpClient("split-change-special-characters.json", HttpStatus.SC_OK);
+        CloseableHttpClient httpClientMock = TestHelper.mockHttpClient("split-change-special-characters.json",
+                HttpStatus.SC_OK);
         RequestDecorator decorator = new RequestDecorator(null);
 
-        SplitHttpClient splitHtpClient = SplitHttpClientImpl.create(httpClientMock, decorator);
-        Map<String, String> additionalHeaders = new HashMap<>();
-        additionalHeaders.put("AdditionalHeader", "add");
+        SplitHttpClient splitHtpClient = SplitHttpClientImpl.create(httpClientMock, decorator, "qwerty", metadata());
+        Map<String, List<String>> additionalHeaders = Collections.singletonMap("AdditionalHeader", List.of("add"));
 
         SplitHttpResponse splitHttpResponse = splitHtpClient.get(rootTarget,
                 new FetchOptions.Builder().cacheControlHeaders(true).build(), additionalHeaders);
@@ -70,86 +72,103 @@ public class HttpSplitClientTest {
     }
 
     @Test
-    public void testGetError() throws URISyntaxException, InvocationTargetException, NoSuchMethodException, IllegalAccessException, IOException {
+    public void testGetError() throws URISyntaxException, InvocationTargetException, NoSuchMethodException,
+            IllegalAccessException, IOException {
         URI rootTarget = URI.create("https://api.split.io/splitChanges?since=1234567");
-        CloseableHttpClient httpClientMock = TestHelper.mockHttpClient("split-change-special-characters.json", HttpStatus.SC_INTERNAL_SERVER_ERROR);
+        CloseableHttpClient httpClientMock = TestHelper.mockHttpClient("split-change-special-characters.json",
+                HttpStatus.SC_INTERNAL_SERVER_ERROR);
         RequestDecorator decorator = new RequestDecorator(null);
 
-        SplitHttpClient splitHtpClient = SplitHttpClientImpl.create(httpClientMock, decorator);
+        SplitHttpClient splitHtpClient = SplitHttpClientImpl.create(httpClientMock, decorator, "qwerty", metadata());
         SplitHttpResponse splitHttpResponse = splitHtpClient.get(rootTarget,
                 new FetchOptions.Builder().cacheControlHeaders(true).build(), null);
         Assert.assertEquals(HttpStatus.SC_INTERNAL_SERVER_ERROR, (long) splitHttpResponse.statusCode());
     }
 
     @Test(expected = IllegalStateException.class)
-    public void testException() throws URISyntaxException, InvocationTargetException, NoSuchMethodException, IllegalAccessException, IOException {
+    public void testException() throws URISyntaxException, InvocationTargetException, NoSuchMethodException,
+            IllegalAccessException, IOException {
         URI rootTarget = URI.create("https://api.split.io/splitChanges?since=1234567");
-        CloseableHttpClient httpClientMock = TestHelper.mockHttpClient("split-change-special-characters.json", HttpStatus.SC_INTERNAL_SERVER_ERROR);
+        CloseableHttpClient httpClientMock = TestHelper.mockHttpClient("split-change-special-characters.json",
+                HttpStatus.SC_INTERNAL_SERVER_ERROR);
         RequestDecorator decorator = null;
 
-        SplitHttpClient splitHtpClient = SplitHttpClientImpl.create(httpClientMock, decorator);
+        SplitHttpClient splitHtpClient = SplitHttpClientImpl.create(httpClientMock, decorator, "qwerty", metadata());
         splitHtpClient.get(rootTarget,
                 new FetchOptions.Builder().cacheControlHeaders(true).build(), null);
     }
 
     @Test
-    public void testPost() throws URISyntaxException, IOException, IllegalAccessException, NoSuchMethodException, InvocationTargetException {
+    public void testPost() throws URISyntaxException, IOException, IllegalAccessException, NoSuchMethodException,
+            InvocationTargetException {
         URI rootTarget = URI.create("https://kubernetesturl.com/split/api/testImpressions/bulk");
 
         // Setup response mock
         CloseableHttpClient httpClient = TestHelper.mockHttpClient("", HttpStatus.SC_OK);
         RequestDecorator decorator = new RequestDecorator(null);
 
-        SplitHttpClient splitHtpClient = SplitHttpClientImpl.create(httpClient, decorator);
+        SplitHttpClient splitHtpClient = SplitHttpClientImpl.create(httpClient, decorator, "qwerty", metadata());
 
         // Send impressions
         List<TestImpressions> toSend = Arrays.asList(new TestImpressions("t1", Arrays.asList(
                 KeyImpression.fromImpression(new Impression("k1", null, "t1", "on", 123L, "r1", 456L, null)),
                 KeyImpression.fromImpression(new Impression("k2", null, "t1", "on", 123L, "r1", 456L, null)),
-                KeyImpression.fromImpression(new Impression("k3", null, "t1", "on", 123L, "r1", 456L, null))
-        )), new TestImpressions("t2", Arrays.asList(
-                KeyImpression.fromImpression(new Impression("k1", null, "t2", "on", 123L, "r1", 456L, null)),
-                KeyImpression.fromImpression(new Impression("k2", null, "t2", "on", 123L, "r1", 456L, null)),
-                KeyImpression.fromImpression(new Impression("k3", null, "t2", "on", 123L, "r1", 456L, null))
-        )));
-        Map<String, String> additionalHeaders = new HashMap<>();
-        additionalHeaders.put("SplitSDKImpressionsMode", "OPTIMIZED");
-        SplitHttpResponse splitHttpResponse = splitHtpClient.post(rootTarget, Utils.toJsonEntity(toSend), additionalHeaders);
+                KeyImpression.fromImpression(new Impression("k3", null, "t1", "on", 123L, "r1", 456L, null)))),
+                new TestImpressions("t2", Arrays.asList(
+                        KeyImpression.fromImpression(new Impression("k1", null, "t2", "on", 123L, "r1", 456L, null)),
+                        KeyImpression.fromImpression(new Impression("k2", null, "t2", "on", 123L, "r1", 456L, null)),
+                        KeyImpression.fromImpression(new Impression("k3", null, "t2", "on", 123L, "r1", 456L, null)))));
+
+        Map<String, List<String>> additionalHeaders = Collections.singletonMap("AdditionalHeader", List.of("add"));
+        SplitHttpResponse splitHttpResponse = splitHtpClient.post(rootTarget, Utils.toJsonEntity(toSend),
+                additionalHeaders);
 
         // Capture outgoing request and validate it
         ArgumentCaptor<HttpUriRequest> captor = ArgumentCaptor.forClass(HttpUriRequest.class);
         verify(httpClient).execute(captor.capture());
         HttpUriRequest request = captor.getValue();
-        assertThat(request.getUri(), is(equalTo(URI.create("https://kubernetesturl.com/split/api/testImpressions/bulk"))));
+        assertThat(request.getUri(),
+                is(equalTo(URI.create("https://kubernetesturl.com/split/api/testImpressions/bulk"))));
         assertThat(request.getHeaders().length, is(1));
         assertThat(request.getFirstHeader("SplitSDKImpressionsMode").getValue(), is(equalTo("OPTIMIZED")));
         assertThat(request, instanceOf(HttpPost.class));
         HttpPost asPostRequest = (HttpPost) request;
         InputStreamReader reader = new InputStreamReader(asPostRequest.getEntity().getContent());
         Gson gson = new Gson();
-        List<TestImpressions> payload = gson.fromJson(reader, new TypeToken<List<TestImpressions>>() { }.getType());
+        List<TestImpressions> payload = gson.fromJson(reader, new TypeToken<List<TestImpressions>>() {
+        }.getType());
         assertThat(payload.size(), is(equalTo(2)));
-        Assert.assertEquals(200,(long) splitHttpResponse.statusCode());
+        Assert.assertEquals(200, (long) splitHttpResponse.statusCode());
     }
 
     @Test
-    public void testPosttNoExceptionOnHttpErrorCode() throws URISyntaxException, InvocationTargetException, NoSuchMethodException, IllegalAccessException, IOException {
+    public void testPosttNoExceptionOnHttpErrorCode() throws URISyntaxException, InvocationTargetException,
+            NoSuchMethodException, IllegalAccessException, IOException {
         URI rootTarget = URI.create("https://api.split.io/splitChanges?since=1234567");
-        CloseableHttpClient httpClientMock = TestHelper.mockHttpClient("split-change-special-characters.json", HttpStatus.SC_INTERNAL_SERVER_ERROR);
+        CloseableHttpClient httpClientMock = TestHelper.mockHttpClient("split-change-special-characters.json",
+                HttpStatus.SC_INTERNAL_SERVER_ERROR);
         RequestDecorator decorator = new RequestDecorator(null);
 
-        SplitHttpClient splitHtpClient = SplitHttpClientImpl.create(httpClientMock, decorator);
-        SplitHttpResponse splitHttpResponse = splitHtpClient.post(rootTarget, Utils.toJsonEntity(Arrays.asList( new String[] { "A", "B", "C", "D" })), null);
+        SplitHttpClient splitHtpClient = SplitHttpClientImpl.create(httpClientMock, decorator, "qwerty", metadata());
+        SplitHttpResponse splitHttpResponse = splitHtpClient.post(rootTarget,
+                Utils.toJsonEntity(Arrays.asList(new String[] { "A", "B", "C", "D" })), null);
         Assert.assertEquals(500, (long) splitHttpResponse.statusCode());
 
     }
 
     @Test(expected = IOException.class)
-    public void testPosttException() throws URISyntaxException, InvocationTargetException, NoSuchMethodException, IllegalAccessException, IOException {
+    public void testPosttException() throws URISyntaxException, InvocationTargetException, NoSuchMethodException,
+            IllegalAccessException, IOException {
         URI rootTarget = URI.create("https://api.split.io/splitChanges?since=1234567");
-        CloseableHttpClient httpClientMock = TestHelper.mockHttpClient("split-change-special-characters.json", HttpStatus.SC_INTERNAL_SERVER_ERROR);
+        CloseableHttpClient httpClientMock = TestHelper.mockHttpClient("split-change-special-characters.json",
+                HttpStatus.SC_INTERNAL_SERVER_ERROR);
 
-        SplitHttpClient splitHtpClient = SplitHttpClientImpl.create(httpClientMock, null);
-        splitHtpClient.post(rootTarget, Utils.toJsonEntity(Arrays.asList( new String[] { "A", "B", "C", "D" })), null);
+        SplitHttpClient splitHtpClient = SplitHttpClientImpl.create(httpClientMock, null, "qwerty", metadata());
+        splitHtpClient.post(rootTarget, Utils.toJsonEntity(Arrays.asList(new String[] { "A", "B", "C", "D" })), null);
     }
+
+    private SDKMetadata metadata() {
+        return new SDKMetadata("java-1.2.3", "1.2.3.4", "someIP");
+    }
+
 }
