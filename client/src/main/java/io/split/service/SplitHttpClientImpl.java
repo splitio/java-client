@@ -140,4 +140,9 @@ public final class SplitHttpClientImpl implements SplitHttpClient {
                 ? _apikey.substring(_apikey.length() - 4)
                 : _apikey);
     }
+
+    @Override
+    public void close() throws IOException {
+        _client.close();
+    }
 }

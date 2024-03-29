@@ -19,7 +19,8 @@ public class SplitAPI {
         _requestDecorator = requestDecorator;
     }
 
-    public static SplitAPI build(SplitHttpClient httpClient, CloseableHttpClient sseHttpClient, RequestDecorator requestDecorator){
+    public static SplitAPI build(SplitHttpClient httpClient, CloseableHttpClient sseHttpClient,
+            RequestDecorator requestDecorator) {
         return new SplitAPI(httpClient, sseHttpClient, requestDecorator);
     }
 
@@ -31,12 +32,19 @@ public class SplitAPI {
         return _sseHttpClient;
     }
 
-    public RequestDecorator getRequestDecorator() { return  _requestDecorator; }
+    public RequestDecorator getRequestDecorator() {
+        return _requestDecorator;
+    }
 
-    public void close(){
+    public void close() {
+        try {
+            _httpClient.close();
+        } catch (Exception e) {
+            _log.error("Error trying to close regular http client", e);
+        }
         try {
             _sseHttpClient.close();
-        } catch (Exception e){
+        } catch (Exception e) {
             _log.error("Error trying to close sseHttpClient", e);
         }
     }
