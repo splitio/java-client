@@ -187,7 +187,8 @@ public class SplitFactoryImpl implements SplitFactory {
         _gates = new SDKReadinessGates();
 
         // HttpClient
-        _splitHttpClient = buildSplitHttpClient(apiToken, config, _sdkMetadata);
+        RequestDecorator requestDecorator = new RequestDecorator(config.customHeaderDecorator());
+        _splitHttpClient = buildSplitHttpClient(apiToken, config, _sdkMetadata, requestDecorator);
 
         // Roots
         _rootTarget = URI.create(config.endpoint());
@@ -258,7 +259,7 @@ public class SplitFactoryImpl implements SplitFactory {
         // SyncManager
         SplitTasks splitTasks = SplitTasks.build(_splitSynchronizationTask, _segmentSynchronizationTaskImp,
                 _impressionsManager, _eventsTask, _telemetrySyncTask, _uniqueKeysTracker);
-        SplitAPI splitAPI = SplitAPI.build(_splitHttpClient, buildSSEdHttpClient(apiToken, config, _sdkMetadata));
+        SplitAPI splitAPI = SplitAPI.build(_splitHttpClient, buildSSEdHttpClient(apiToken, config, _sdkMetadata), requestDecorator);
 
         _syncManager = SyncManagerImp.build(splitTasks, _splitFetcher, splitCache, splitAPI,
                 segmentCache, _gates, _telemetryStorageProducer, _telemetrySynchronizer, config, splitParser,
@@ -495,7 +496,7 @@ public class SplitFactoryImpl implements SplitFactory {
     }
 
     private static SplitHttpClient buildSplitHttpClient(String apiToken, SplitClientConfig config,
-            SDKMetadata sdkMetadata)
+            SDKMetadata sdkMetadata, RequestDecorator requestDecorator)
             throws URISyntaxException {
         SSLConnectionSocketFactory sslSocketFactory = SSLConnectionSocketFactoryBuilder.create()
                 .setSslContext(SSLContexts.createSystemDefault())
@@ -529,7 +530,7 @@ public class SplitFactoryImpl implements SplitFactory {
         }
 
         return SplitHttpClientImpl.create(httpClientbuilder.build(),
-                new RequestDecorator(config.customHeaderDecorator()),
+                requestDecorator,
                 apiToken,
                 sdkMetadata);
     }

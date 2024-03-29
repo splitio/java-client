@@ -1,10 +1,12 @@
 package io.split.engine.sse.client;
 
 import com.google.common.base.Strings;
+import io.split.client.RequestDecorator;
 import io.split.telemetry.domain.StreamingEvent;
 import io.split.telemetry.domain.enums.StreamEventsEnum;
 import io.split.telemetry.storage.TelemetryRuntimeProducer;
 import org.apache.hc.client5.http.classic.methods.HttpGet;
+import org.apache.hc.client5.http.classic.methods.HttpPost;
 import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
 import org.apache.hc.client5.http.impl.classic.CloseableHttpResponse;
 import org.slf4j.Logger;
@@ -56,6 +58,7 @@ public class SSEClient {
     private final AtomicReference<CloseableHttpResponse> _ongoingResponse = new AtomicReference<>();
     private final AtomicReference<HttpGet> _ongoingRequest = new AtomicReference<>();
     private AtomicBoolean _forcedStop;
+    private final RequestDecorator _requestDecorator;
 
     private final TelemetryRuntimeProducer _telemetryRuntimeProducer;
 
@@ -63,13 +66,15 @@ public class SSEClient {
                      Function<StatusMessage, Void> statusCallback,
                      CloseableHttpClient client,
                      TelemetryRuntimeProducer telemetryRuntimeProducer,
-                     ThreadFactory threadFactory) {
+                     ThreadFactory threadFactory,
+                     RequestDecorator requestDecorator) {
         _eventCallback = eventCallback;
         _statusCallback = statusCallback;
         _client = client;
         _forcedStop = new AtomicBoolean();
         _telemetryRuntimeProducer = checkNotNull(telemetryRuntimeProducer);
         _connectionExecutor = buildExecutorService(threadFactory, "SPLIT-SSEConnection-%d");
+        _requestDecorator = requestDecorator;
     }
 
     public synchronized boolean open(URI uri) {
@@ -177,7 +182,9 @@ public class SSEClient {
     }
 
     private boolean establishConnection(URI uri, CountDownLatch signal) {
-        _ongoingRequest.set(new HttpGet(uri));
+        HttpGet request = new HttpGet(uri);
+        request = (HttpGet) _requestDecorator.decorateHeaders(request);
+        _ongoingRequest.set(request);
         try {
             _ongoingResponse.set(_client.execute(_ongoingRequest.get()));
             if (_ongoingResponse.get().getCode() != 200) {

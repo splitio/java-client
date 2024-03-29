@@ -83,7 +83,7 @@ public class PushManagerImp implements PushManager {
         PushStatusTracker pushStatusTracker = new PushStatusTrackerImp(statusMessages, telemetryRuntimeProducer);
         return new PushManagerImp(new AuthApiClientImp(authUrl, splitAPI.getHttpClient(), telemetryRuntimeProducer),
                 EventSourceClientImp.build(streamingUrl, featureFlagsWorker, segmentWorker, pushStatusTracker, splitAPI.getSseHttpClient(),
-                        telemetryRuntimeProducer, threadFactory),
+                        telemetryRuntimeProducer, threadFactory, splitAPI.getRequestDecorator()),
                 featureFlagsWorker,
                 segmentWorker,
                 pushStatusTracker,

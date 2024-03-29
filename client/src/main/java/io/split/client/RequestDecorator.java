@@ -2,7 +2,6 @@ package io.split.client;
 
 import io.split.client.dtos.RequestContext;
 
-//`import org.apache.hc.client5.http.classic.methods.HttpUriRequestBase;
 import org.apache.hc.core5.http.HttpRequest;
 import org.apache.hc.core5.http.Header;
 
@@ -13,16 +12,6 @@ import java.util.Arrays;
 import java.util.ArrayList;
 import java.util.Set;
 import java.util.List;
-
-class NoOpHeaderDecorator implements CustomHeaderDecorator {
-    public NoOpHeaderDecorator() {
-    }
-
-    @Override
-    public Map<String, List<String>> getHeaderOverrides(RequestContext context) {
-        return new HashMap<>();
-    }
-}
 
 public final class RequestDecorator {
     CustomHeaderDecorator _headerDecorator;

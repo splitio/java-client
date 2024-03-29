@@ -1,5 +1,6 @@
 package io.split.engine.common;
 
+import io.split.client.RequestDecorator;
 import io.split.service.SplitHttpClient;
 import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
 import org.slf4j.Logger;
@@ -9,15 +10,17 @@ public class SplitAPI {
 
     private final SplitHttpClient _httpClient;
     private final CloseableHttpClient _sseHttpClient;
+    private final RequestDecorator _requestDecorator;
     private static final Logger _log = LoggerFactory.getLogger(SplitAPI.class);
 
-    private SplitAPI(SplitHttpClient httpClient, CloseableHttpClient sseHttpClient) {
+    private SplitAPI(SplitHttpClient httpClient, CloseableHttpClient sseHttpClient, RequestDecorator requestDecorator) {
         _httpClient = httpClient;
         _sseHttpClient = sseHttpClient;
+        _requestDecorator = requestDecorator;
     }
 
-    public static SplitAPI build(SplitHttpClient httpClient, CloseableHttpClient sseHttpClient){
-        return new SplitAPI(httpClient,sseHttpClient);
+    public static SplitAPI build(SplitHttpClient httpClient, CloseableHttpClient sseHttpClient, RequestDecorator requestDecorator){
+        return new SplitAPI(httpClient, sseHttpClient, requestDecorator);
     }
 
     public SplitHttpClient getHttpClient() {
@@ -27,6 +30,8 @@ public class SplitAPI {
     public CloseableHttpClient getSseHttpClient() {
         return _sseHttpClient;
     }
+
+    public RequestDecorator getRequestDecorator() { return  _requestDecorator; }
 
     public void close(){
         try {
