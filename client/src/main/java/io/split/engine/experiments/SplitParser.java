@@ -1,7 +1,12 @@
 package io.split.engine.experiments;
 
 import com.google.common.collect.Lists;
-import io.split.client.dtos.*;
+import io.split.client.dtos.Condition;
+import io.split.client.dtos.Matcher;
+import io.split.client.dtos.MatcherGroup;
+import io.split.client.dtos.Partition;
+import io.split.client.dtos.Split;
+import io.split.client.dtos.ConditionType;
 import io.split.engine.matchers.AllKeysMatcher;
 import io.split.engine.matchers.AttributeMatcher;
 import io.split.engine.matchers.BetweenMatcher;
