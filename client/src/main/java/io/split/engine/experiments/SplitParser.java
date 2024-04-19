@@ -75,15 +75,18 @@ public final class SplitParser {
     }
 
     private boolean checkUnsupportedMatcherExist(List<io.split.client.dtos.Matcher> matchers) {
+        MatcherType typeCheck = null;
         for (io.split.client.dtos.Matcher matcher : matchers) {
+            typeCheck = null;
             try {
-                MatcherType typeCheck = matcher.matcherType;
+                typeCheck = matcher.matcherType;
             } catch (NullPointerException e) {
                 // If the exception is caught, it means unsupported matcher
-                return true;
+                break;
             }
         }
-        return false;
+        if (typeCheck != null)  return false;
+        return true;
     }
 
     private ParsedCondition getTemplateCondition() {
