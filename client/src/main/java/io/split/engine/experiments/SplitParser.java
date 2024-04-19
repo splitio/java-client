@@ -7,6 +7,7 @@ import io.split.client.dtos.MatcherGroup;
 import io.split.client.dtos.Partition;
 import io.split.client.dtos.Split;
 import io.split.client.dtos.ConditionType;
+import io.split.client.dtos.MatcherType;
 import io.split.engine.matchers.AllKeysMatcher;
 import io.split.engine.matchers.AttributeMatcher;
 import io.split.engine.matchers.BetweenMatcher;
@@ -76,7 +77,7 @@ public final class SplitParser {
     private boolean checkUnsupportedMatcherExist(List<io.split.client.dtos.Matcher> matchers) {
         for (io.split.client.dtos.Matcher matcher : matchers) {
             try {
-                matcher.matcherType.equals(null);
+                MatcherType typeCheck = matcher.matcherType;
             } catch (NullPointerException e) {
                 // If the exception is caught, it means unsupported matcher
                 return true;
