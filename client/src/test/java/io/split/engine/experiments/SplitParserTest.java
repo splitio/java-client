@@ -5,6 +5,7 @@ import io.split.client.utils.Json;
 import io.split.storages.SegmentCache;
 import io.split.storages.memory.SegmentCacheInMemoryImpl;
 import io.split.client.dtos.*;
+import io.split.engine.evaluator.Labels;
 import io.split.engine.ConditionsTestUtil;
 import io.split.engine.SDKReadinessGates;
 import io.split.engine.matchers.AttributeMatcher;
@@ -531,6 +532,7 @@ public class SplitParserTest {
         set_matcher_test(c, m);
     }
 
+    @Test
     public void unsupportedMatcher() {
         SplitParser parser = new SplitParser();
         String splitWithUndefinedMatcher = "{\"since\":-1,\"till\": 1457726098069,\"splits\": [{ \"changeNumber\": 123, \"trafficTypeName\": \"user\", \"name\": \"some_name\","
@@ -544,6 +546,7 @@ public class SplitParserTest {
             // should not cause exception
             ParsedSplit parsedSplit = parser.parse(split);
             for (ParsedCondition parsedCondition : parsedSplit.parsedConditions()) {
+                assertTrue(parsedCondition.label() == Labels.UNSUPPORTED_MATCHER);
                 for (AttributeMatcher matcher : parsedCondition.matcher().attributeMatchers()) {
                     // Check the matcher is ALL_KEYS
                     assertTrue(matcher.matcher().toString().equals(" in segment all"));

@@ -8,6 +8,7 @@ import io.split.client.dtos.Partition;
 import io.split.client.dtos.Split;
 import io.split.client.dtos.ConditionType;
 import io.split.client.dtos.MatcherType;
+import io.split.engine.evaluator.Labels;
 import io.split.engine.matchers.AllKeysMatcher;
 import io.split.engine.matchers.AttributeMatcher;
 import io.split.engine.matchers.BetweenMatcher;
@@ -63,6 +64,7 @@ public final class SplitParser {
             List<Partition> partitions = condition.partitions;
             if (checkUnsupportedMatcherExist(condition.matcherGroup.matchers)) {
                 _log.error("Unsupported matcher type found for feature flag: " + split.name + " , will revert to default template matcher.");
+                parsedConditionList.clear();
                 parsedConditionList.add(getTemplateCondition());
                 break;
             }
@@ -99,7 +101,7 @@ public final class SplitParser {
                 ConditionType.ROLLOUT,
                 CombiningMatcher.of(new AllKeysMatcher()),
                 templatePartitions,
-                "unsupported matcher type");
+                Labels.UNSUPPORTED_MATCHER);
     }
 
     private CombiningMatcher toMatcher(MatcherGroup matcherGroup) {
