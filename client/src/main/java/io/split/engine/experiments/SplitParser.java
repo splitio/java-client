@@ -6,6 +6,9 @@ import io.split.client.dtos.Matcher;
 import io.split.client.dtos.MatcherGroup;
 import io.split.client.dtos.Partition;
 import io.split.client.dtos.Split;
+import io.split.client.dtos.ConditionType;
+import io.split.client.dtos.MatcherType;
+import io.split.engine.evaluator.Labels;
 import io.split.engine.matchers.AllKeysMatcher;
 import io.split.engine.matchers.AttributeMatcher;
 import io.split.engine.matchers.BetweenMatcher;
@@ -59,12 +62,46 @@ public final class SplitParser {
 
         for (Condition condition : split.conditions) {
             List<Partition> partitions = condition.partitions;
+            if (checkUnsupportedMatcherExist(condition.matcherGroup.matchers)) {
+                _log.error("Unsupported matcher type found for feature flag: " + split.name + " , will revert to default template matcher.");
+                parsedConditionList.clear();
+                parsedConditionList.add(getTemplateCondition());
+                break;
+            }
             CombiningMatcher matcher = toMatcher(condition.matcherGroup);
             parsedConditionList.add(new ParsedCondition(condition.conditionType, matcher, partitions, condition.label));
         }
 
         return new ParsedSplit(split.name, split.seed, split.killed, split.defaultTreatment, parsedConditionList, split.trafficTypeName,
                 split.changeNumber, split.trafficAllocation, split.trafficAllocationSeed, split.algo, split.configurations, split.sets);
+    }
+
+    private boolean checkUnsupportedMatcherExist(List<io.split.client.dtos.Matcher> matchers) {
+        MatcherType typeCheck = null;
+        for (io.split.client.dtos.Matcher matcher : matchers) {
+            typeCheck = null;
+            try {
+                typeCheck = matcher.matcherType;
+            } catch (NullPointerException e) {
+                // If the exception is caught, it means unsupported matcher
+                break;
+            }
+        }
+        if (typeCheck != null)  return false;
+        return true;
+    }
+
+    private ParsedCondition getTemplateCondition() {
+        List<Partition> templatePartitions = Lists.newArrayList();
+        Partition partition = new Partition();
+        partition.treatment = "control";
+        partition.size = 100;
+        templatePartitions.add(partition);
+        return new ParsedCondition(
+                ConditionType.ROLLOUT,
+                CombiningMatcher.of(new AllKeysMatcher()),
+                templatePartitions,
+                Labels.UNSUPPORTED_MATCHER);
     }
 
     private CombiningMatcher toMatcher(MatcherGroup matcherGroup) {
