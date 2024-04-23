@@ -1,0 +1,7 @@
+version1,version2,equals
+1.1.1,1.1.1,true
+1.1.1,1.1.1+metadata,false
+1.1.1,1.1.1-rc.1,false
+88.88.88,88.88.88,true
+1.2.3----RC-SNAPSHOT.12.9.1--.12,1.2.3----RC-SNAPSHOT.12.9.1--.12,true
+10.2.3-DEV-SNAPSHOT,10.2.3-SNAPSHOT-123,false
