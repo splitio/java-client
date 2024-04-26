@@ -8,7 +8,7 @@ import static org.junit.Assert.assertTrue;
  * Tests for EqualToSemverMatcher
  */
 
-public class GreaterThanOrEqualToSemverTest {
+public class GreaterThanOrEqualToSemverMatcherTest {
 
     @Test
     public void works() {
