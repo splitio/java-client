@@ -9,16 +9,7 @@ import io.split.client.dtos.Split;
 import io.split.client.dtos.ConditionType;
 import io.split.client.dtos.MatcherType;
 import io.split.engine.evaluator.Labels;
-import io.split.engine.matchers.AllKeysMatcher;
-import io.split.engine.matchers.AttributeMatcher;
-import io.split.engine.matchers.BetweenMatcher;
-import io.split.engine.matchers.BooleanMatcher;
-import io.split.engine.matchers.CombiningMatcher;
-import io.split.engine.matchers.DependencyMatcher;
-import io.split.engine.matchers.EqualToMatcher;
-import io.split.engine.matchers.GreaterThanOrEqualToMatcher;
-import io.split.engine.matchers.LessThanOrEqualToMatcher;
-import io.split.engine.matchers.UserDefinedSegmentMatcher;
+import io.split.engine.matchers.*;
 import io.split.engine.matchers.collections.ContainsAllOfSetMatcher;
 import io.split.engine.matchers.collections.ContainsAnyOfSetMatcher;
 import io.split.engine.matchers.collections.EqualToSetMatcher;
@@ -192,6 +183,10 @@ public final class SplitParser {
                         "MatcherType is " + matcher.matcherType
                                 + ". matcher.booleanMatcherData() MUST NOT BE null");
                 delegate = new BooleanMatcher(matcher.booleanMatcherData);
+                break;
+            case EQUAL_TO_SEMVER:
+                checkNotNull(matcher.stringMatcherData);
+                delegate = new EqualToMatcherSemver(matcher.stringMatcherData);
                 break;
             default:
                 throw new IllegalArgumentException("Unknown matcher type: " + matcher.matcherType);
