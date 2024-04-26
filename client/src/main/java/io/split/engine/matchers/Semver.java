@@ -6,7 +6,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import com.google.common.primitives.Ints;
 
-import java.sql.Array;
 import java.util.Arrays;
 
 public class Semver {
