@@ -4,15 +4,12 @@ import io.split.engine.evaluator.EvaluationContext;
 
 import java.util.Map;
 
-/**
- * Created by adilaijaz on 3/7/16.
- */
 public class EqualToMatcherSemver implements Matcher {
 
     private final Semver _semVer;
 
-    public EqualToMatcherSemver(String dataType) {
-        _semVer = Semver.build(dataType.toString());
+    public EqualToMatcherSemver(String semVer) {
+        _semVer = Semver.build(semVer);
     }
 
     @Override
