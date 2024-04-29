@@ -20,7 +20,7 @@ public class BetweenSemverMatcher implements Matcher {
             return false;
         }
         Semver matchSemver = Semver.build(matchValue.toString());
-        if (matchSemver == null || _semverStart == null || _semverStart == null) {
+        if (matchSemver == null || _semverStart == null || _semverEnd == null) {
             return false;
         }
 
