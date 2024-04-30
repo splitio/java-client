@@ -18,10 +18,12 @@ import org.slf4j.LoggerFactory;
 import java.net.URI;
 
 import static com.google.common.base.Preconditions.checkNotNull;
+import static io.split.Spec.SPEC_VERSION;
 
 public class AuthApiClientImp implements AuthApiClient {
     private static final Logger _log = LoggerFactory.getLogger(AuthApiClientImp.class);
 
+    private static final String SPEC = "s";
     private final SplitHttpClient _httpClient;
     private final String _target;
     private final TelemetryRuntimeProducer _telemetryRuntimeProducer;
@@ -36,7 +38,7 @@ public class AuthApiClientImp implements AuthApiClient {
     public AuthenticationResponse Authenticate() {
         try {
             long initTime = System.currentTimeMillis();
-            URI uri = new URIBuilder(_target).build();
+            URI uri = new URIBuilder(_target).addParameter(SPEC, "" + SPEC_VERSION).build();
             SplitHttpResponse response = _httpClient.get(uri, new FetchOptions.Builder().cacheControlHeaders(false).build(), null);
             Integer statusCode = response.statusCode();
 

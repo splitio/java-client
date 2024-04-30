@@ -9,16 +9,16 @@ import java.io.InputStream;
 import java.util.*;
 
 public class CustomDispatcher extends Dispatcher {
-    public static final String INITIAL_SPLIT_CHANGES = "/api/splitChanges?since=-1";
-    public static final String INITIAL_FLAGS_BY_SETS = "/api/splitChanges?since=-1&sets=set1%2Cset2";
-    public static final String SINCE_1602796638344 = "/api/splitChanges?since=1602796638344&sets=set1%2Cset2";
-    public static final String AUTH_ENABLED = "/api/auth/enabled";
-    public static final String AUTH_DISABLED = "/api/auth/disabled";
-    public static final String SINCE_1585948850109 = "/api/splitChanges?since=1585948850109";
-    public static final String SINCE_1585948850109_FLAG_SET = "/api/splitChanges?since=-1&sets=set_1%2Cset_2";
-    public static final String SINCE_1585948850110 = "/api/splitChanges?since=1585948850110";
-    public static final String SINCE_1585948850111 = "/api/splitChanges?since=1585948850111";
-    public static final String SINCE_1585948850112 = "/api/splitChanges?since=1585948850112";
+    public static final String INITIAL_SPLIT_CHANGES = "/api/splitChanges?s=1.1&since=-1";
+    public static final String INITIAL_FLAGS_BY_SETS = "/api/splitChanges?s=1.1&since=-1&sets=set1%2Cset2";
+    public static final String SINCE_1602796638344 = "/api/splitChanges?s=1.1&since=1602796638344&sets=set1%2Cset2";
+    public static final String AUTH_ENABLED = "/api/auth/enabled?s=1.1";
+    public static final String AUTH_DISABLED = "/api/auth/disabled?s=1.1";
+    public static final String SINCE_1585948850109 = "/api/splitChanges?s=1.1&since=1585948850109";
+    public static final String SINCE_1585948850109_FLAG_SET = "/api/splitChanges?s=1.1&since=-1&sets=set_1%2Cset_2";
+    public static final String SINCE_1585948850110 = "/api/splitChanges?s=1.1&since=1585948850110";
+    public static final String SINCE_1585948850111 = "/api/splitChanges?s=1.1&since=1585948850111";
+    public static final String SINCE_1585948850112 = "/api/splitChanges?s=1.1&since=1585948850112";
     public static final String SEGMENT_TEST_INITIAL = "/api/segmentChanges/segment-test?since=-1";
     public static final String SEGMENT3_INITIAL = "/api/segmentChanges/segment3?since=-1";
     public static final String SEGMENT3_SINCE_1585948850110 = "/api/segmentChanges/segment3?since=1585948850110";

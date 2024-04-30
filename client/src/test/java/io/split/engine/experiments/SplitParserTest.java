@@ -30,6 +30,10 @@ import org.junit.Assert;
 import org.junit.Test;
 import org.mockito.Mockito;
 
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -533,7 +537,7 @@ public class SplitParserTest {
     }
 
     @Test
-    public void unsupportedMatcher() {
+    public void UnsupportedMatcher() {
         SplitParser parser = new SplitParser();
         String splitWithUndefinedMatcher = "{\"since\":-1,\"till\": 1457726098069,\"splits\": [{ \"changeNumber\": 123, \"trafficTypeName\": \"user\", \"name\": \"some_name\","
                 + "\"trafficAllocation\": 100, \"trafficAllocationSeed\": 123456, \"seed\": 321654, \"status\": \"ACTIVE\","
@@ -553,6 +557,116 @@ public class SplitParserTest {
                 }
             }
         }
+    }
+
+    @Test
+    public void EqualToSemverMatcher() throws IOException {
+        SplitParser parser = new SplitParser();
+        String splits = new String(Files.readAllBytes(Paths.get("src/test/resources/semver/semver-splits.json")), StandardCharsets.UTF_8);
+        SplitChange change = Json.fromJson(splits, SplitChange.class);
+        for (Split split : change.splits) {
+            // should not cause exception
+            ParsedSplit parsedSplit = parser.parse(split);
+            if (split.name.equals("semver_equalto")) {
+                for (ParsedCondition parsedCondition : parsedSplit.parsedConditions()) {
+                    assertTrue(parsedCondition.label().equals("equal to semver"));
+                    for (AttributeMatcher matcher : parsedCondition.matcher().attributeMatchers()) {
+                        // Check the matcher is ALL_KEYS
+                        assertTrue(matcher.matcher().toString().equals(" == semver 1\\.22\\.9"));
+                        return;
+                    }
+                }
+            }
+        }
+        assertTrue(false);
+    }
+
+    @Test
+    public void GreaterThanOrEqualSemverMatcher() throws IOException {
+        SplitParser parser = new SplitParser();
+        String splits = new String(Files.readAllBytes(Paths.get("src/test/resources/semver/semver-splits.json")), StandardCharsets.UTF_8);
+        SplitChange change = Json.fromJson(splits, SplitChange.class);
+        for (Split split : change.splits) {
+            // should not cause exception
+            ParsedSplit parsedSplit = parser.parse(split);
+            if (split.name.equals("semver_greater_or_equalto")) {
+                for (ParsedCondition parsedCondition : parsedSplit.parsedConditions()) {
+                    assertTrue(parsedCondition.label().equals("greater than or equal to semver"));
+                    for (AttributeMatcher matcher : parsedCondition.matcher().attributeMatchers()) {
+                        // Check the matcher is ALL_KEYS
+                        assertTrue(matcher.matcher().toString().equals(" >= semver 1\\.22\\.9"));
+                        return;
+                    }
+                }
+            }
+        }
+        assertTrue(false);
+    }
+
+    @Test
+    public void LessThanOrEqualSemverMatcher() throws IOException {
+        SplitParser parser = new SplitParser();
+        String splits = new String(Files.readAllBytes(Paths.get("src/test/resources/semver/semver-splits.json")), StandardCharsets.UTF_8);
+        SplitChange change = Json.fromJson(splits, SplitChange.class);
+        for (Split split : change.splits) {
+            // should not cause exception
+            ParsedSplit parsedSplit = parser.parse(split);
+            if (split.name.equals("semver_less_or_equalto")) {
+                for (ParsedCondition parsedCondition : parsedSplit.parsedConditions()) {
+                    assertTrue(parsedCondition.label().equals("less than or equal to semver"));
+                    for (AttributeMatcher matcher : parsedCondition.matcher().attributeMatchers()) {
+                        // Check the matcher is ALL_KEYS
+                        assertTrue(matcher.matcher().toString().equals(" <= semver 1\\.22\\.9"));
+                        return;
+                    }
+                }
+            }
+        }
+        assertTrue(false);
+    }
+
+    @Test
+    public void BetweenSemverMatcher() throws IOException {
+        SplitParser parser = new SplitParser();
+        String splits = new String(Files.readAllBytes(Paths.get("src/test/resources/semver/semver-splits.json")), StandardCharsets.UTF_8);
+        SplitChange change = Json.fromJson(splits, SplitChange.class);
+        for (Split split : change.splits) {
+            // should not cause exception
+            ParsedSplit parsedSplit = parser.parse(split);
+            if (split.name.equals("semver_between")) {
+                for (ParsedCondition parsedCondition : parsedSplit.parsedConditions()) {
+                    assertTrue(parsedCondition.label().equals("between semver"));
+                    for (AttributeMatcher matcher : parsedCondition.matcher().attributeMatchers()) {
+                        // Check the matcher is ALL_KEYS
+                        assertTrue(matcher.matcher().toString().equals(" between semver 1\\.22\\.9 and 2\\.1\\.0"));
+                        return;
+                    }
+                }
+            }
+        }
+        assertTrue(false);
+    }
+
+    @Test
+    public void InListSemverMatcher() throws IOException {
+        SplitParser parser = new SplitParser();
+        String splits = new String(Files.readAllBytes(Paths.get("src/test/resources/semver/semver-splits.json")), StandardCharsets.UTF_8);
+        SplitChange change = Json.fromJson(splits, SplitChange.class);
+        for (Split split : change.splits) {
+            // should not cause exception
+            ParsedSplit parsedSplit = parser.parse(split);
+            if (split.name.equals("semver_inlist")) {
+                for (ParsedCondition parsedCondition : parsedSplit.parsedConditions()) {
+                    assertTrue(parsedCondition.label().equals("in list semver"));
+                    for (AttributeMatcher matcher : parsedCondition.matcher().attributeMatchers()) {
+                        // Check the matcher is ALL_KEYS
+                        assertTrue(matcher.matcher().toString().equals(" in semver list [\"1\\.22\\.9\",\"2\\.1\\.0\"]"));
+                        return;
+                    }
+                }
+            }
+        }
+        assertTrue(false);
     }
 
     public void set_matcher_test(Condition c, io.split.engine.matchers.Matcher m) {

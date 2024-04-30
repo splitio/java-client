@@ -28,7 +28,7 @@ public class GreaterThanOrEqualToSemverMatcher implements Matcher {
     @Override
     public String toString() {
         StringBuilder bldr = new StringBuilder();
-        bldr.append("== ");
+        bldr.append(">= semver ");
         bldr.append(_semVer.Version());
         return bldr.toString();
     }
