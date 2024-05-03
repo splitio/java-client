@@ -29,6 +29,8 @@ import io.split.engine.matchers.strings.EndsWithAnyOfMatcher;
 import io.split.engine.matchers.strings.RegularExpressionMatcher;
 import io.split.engine.matchers.strings.StartsWithAnyOfMatcher;
 import io.split.engine.matchers.strings.WhitelistMatcher;
+import io.split.engine.matchers.GreaterThanOrEqualToSemverMatcher;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -197,6 +199,10 @@ public final class SplitParser {
             case EQUAL_TO_SEMVER:
                 checkNotNull(matcher.stringMatcherData);
                 delegate = new EqualToSemverMatcher(matcher.stringMatcherData);
+                break;
+            case GREATER_THAN_OR_EQUAL_TO_SEMVER:
+                checkNotNull(matcher.stringMatcherData);
+                delegate = new GreaterThanOrEqualToSemverMatcher(matcher.stringMatcherData);
                 break;
             default:
                 throw new IllegalArgumentException("Unknown matcher type: " + matcher.matcherType);

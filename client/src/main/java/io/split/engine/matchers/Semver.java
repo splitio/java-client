@@ -5,6 +5,7 @@ import io.split.engine.experiments.SplitParser;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import com.google.common.primitives.Ints;
+
 import java.util.Arrays;
 
 public class Semver {
@@ -17,7 +18,7 @@ public class Semver {
     private Long _major;
     private Long _minor;
     private Long _patch;
-    private String[] _preRelease;
+    private String[] _preRelease = new String[] {};
     private boolean _isStable;
     private String _metadata;
     private String _version;

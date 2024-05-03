@@ -33,5 +33,6 @@ public enum MatcherType {
     IN_SPLIT_TREATMENT,
 
     /* Semver matchers */
-    EQUAL_TO_SEMVER
+    EQUAL_TO_SEMVER,
+    GREATER_THAN_OR_EQUAL_TO_SEMVER
 }
