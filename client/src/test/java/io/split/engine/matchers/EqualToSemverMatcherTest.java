@@ -19,5 +19,16 @@ public class EqualToSemverMatcherTest {
         assertFalse(equalToSemverMatcher.match("2.1.9", null, null, null));
         assertFalse(equalToSemverMatcher.match("2.1.8-rc", null, null, null));
         assertFalse( equalToSemverMatcher.match("2.1.8+build", null, null, null));
+        assertTrue(equalToSemverMatcher.equals(equalToSemverMatcher));
+        assertTrue(equalToSemverMatcher.hashCode() != 0);
+    }
+
+    @Test
+    public void testNull() {
+        EqualToSemverMatcher equalToSemverMatcher = new EqualToSemverMatcher("2.1.8");
+        assertFalse( equalToSemverMatcher.match(null, null, null, null));
+
+        equalToSemverMatcher = new EqualToSemverMatcher("2.ee.8");
+        assertFalse(equalToSemverMatcher.match("2.ee.8", null, null, null));
     }
 }
