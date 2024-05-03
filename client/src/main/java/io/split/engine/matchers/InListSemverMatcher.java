@@ -40,7 +40,7 @@ public class InListSemverMatcher implements Matcher {
     @Override
     public String toString() {
         StringBuilder bldr = new StringBuilder();
-        bldr.append("in semver list ");
+        bldr.append("in semver list [");
         boolean first = true;
 
         for (Semver item : _semverlist) {
