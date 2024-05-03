@@ -22,7 +22,7 @@ public class InListSemverMatcher implements Matcher {
 
     @Override
     public boolean match(Object matchValue, String bucketingKey, Map<String, Object> attributes, EvaluationContext evaluationContext) {
-        if (matchValue == null) {
+        if (matchValue == null || _semverlist.isEmpty()) {
             return false;
         }
         Semver matchSemver = Semver.build(matchValue.toString());
