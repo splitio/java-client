@@ -144,19 +144,36 @@ public class Semver {
         String[] vParts = version.split(ValueDelimiter);
         if (vParts.length != 3)
             throw new SemverParseException("Unable to convert to Semver, incorrect format: " + version);
-        _major = Long.parseUnsignedLong(vParts[0]);
-        _minor = Long.parseUnsignedLong(vParts[1]);
-        _patch = Long.parseUnsignedLong(vParts[2]);
+        _major = Long.parseLong(vParts[0]);
+        _minor = Long.parseLong(vParts[1]);
+        _patch = Long.parseLong(vParts[2]);
     }
 
     private String setVersion() {
         String toReturn = _major + ValueDelimiter + _minor + ValueDelimiter + _patch;
-        if (_preRelease != null && _preRelease.length != 0) {
+        if (_preRelease != null && _preRelease.length != 0)
+        {
+            for (int i = 0; i < _preRelease.length; i++)
+            {
+                if (isNumeric(_preRelease[i]))
+                {
+                    _preRelease[i] = Long.toString(Long.parseLong(_preRelease[i]));
+                }
+            }
             toReturn = toReturn + PreReleaseDelimiter + String.join(ValueDelimiter, _preRelease);
         }
         if (_metadata != null && !_metadata.isEmpty()) {
             toReturn = toReturn + MetadataDelimiter + _metadata;
         }
         return toReturn;
+    }
+
+    private static boolean isNumeric(String str) {
+        try {
+            Double.parseDouble(str);
+            return true;
+        } catch(NumberFormatException e){
+            return false;
+        }
     }
 }

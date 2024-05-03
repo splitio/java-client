@@ -28,8 +28,8 @@ public class LessThanOrEqualToSemverMatcher implements Matcher {
     @Override
     public String toString() {
         StringBuilder bldr = new StringBuilder();
-        bldr.append("== ");
-        bldr.append(_semVer);
+        bldr.append("<= semver ");
+        bldr.append(_semVer.Version());
         return bldr.toString();
     }
 
