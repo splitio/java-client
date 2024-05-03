@@ -30,6 +30,8 @@ import io.split.engine.matchers.strings.RegularExpressionMatcher;
 import io.split.engine.matchers.strings.StartsWithAnyOfMatcher;
 import io.split.engine.matchers.strings.WhitelistMatcher;
 import io.split.engine.matchers.GreaterThanOrEqualToSemverMatcher;
+import io.split.engine.matchers.LessThanOrEqualToSemverMatcher;
+import io.split.engine.matchers.InListSemverMatcher;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -197,12 +199,20 @@ public final class SplitParser {
                 delegate = new BooleanMatcher(matcher.booleanMatcherData);
                 break;
             case EQUAL_TO_SEMVER:
-                checkNotNull(matcher.stringMatcherData);
+                checkNotNull(matcher.stringMatcherData, "stringMatcherData is required for EQUAL_TO_SEMVER matcher type");
                 delegate = new EqualToSemverMatcher(matcher.stringMatcherData);
                 break;
             case GREATER_THAN_OR_EQUAL_TO_SEMVER:
-                checkNotNull(matcher.stringMatcherData);
+                checkNotNull(matcher.stringMatcherData, "stringMatcherData is required for GREATER_THAN_OR_EQUAL_TO_SEMVER matcher type");
                 delegate = new GreaterThanOrEqualToSemverMatcher(matcher.stringMatcherData);
+                break;
+            case LESS_THAN_OR_EQUAL_TO_SEMVER:
+                checkNotNull(matcher.stringMatcherData, "stringMatcherData is required for LESS_THAN_OR_EQUAL_SEMVER matcher type");
+                delegate = new LessThanOrEqualToSemverMatcher(matcher.stringMatcherData);
+                break;
+            case IN_LIST_SEMVER:
+                checkNotNull(matcher.whitelistMatcherData, "whitelistMatcherData is required for IN_LIST_SEMVER matcher type");
+                delegate = new InListSemverMatcher(matcher.whitelistMatcherData.whitelist);
                 break;
             default:
                 throw new IllegalArgumentException("Unknown matcher type: " + matcher.matcherType);

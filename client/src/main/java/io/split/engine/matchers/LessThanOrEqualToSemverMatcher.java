@@ -4,17 +4,17 @@ import io.split.engine.evaluator.EvaluationContext;
 
 import java.util.Map;
 
-public class EqualToSemverMatcher implements Matcher {
+public class LessThanOrEqualToSemverMatcher implements Matcher {
 
     private final Semver _semVer;
 
-    public EqualToSemverMatcher(String semVer) {
+    public LessThanOrEqualToSemverMatcher(String semVer) {
         _semVer = Semver.build(semVer);
     }
 
     @Override
     public boolean match(Object matchValue, String bucketingKey, Map<String, Object> attributes, EvaluationContext evaluationContext) {
-        if (matchValue == null || _semVer == null) {
+        if (matchValue == null) {
             return false;
         }
         Semver matchSemver = Semver.build(matchValue.toString());
@@ -22,7 +22,7 @@ public class EqualToSemverMatcher implements Matcher {
             return false;
         }
 
-        return matchSemver.Version().equals(_semVer.Version());
+        return _semVer != null && matchSemver.Compare(_semVer) <= 0;
     }
 
     @Override
@@ -44,9 +44,9 @@ public class EqualToSemverMatcher implements Matcher {
     public boolean equals(Object obj) {
         if (obj == null) return false;
         if (this == obj) return true;
-        if (!(obj instanceof EqualToSemverMatcher)) return false;
+        if (!(obj instanceof LessThanOrEqualToSemverMatcher)) return false;
 
-        EqualToSemverMatcher other = (EqualToSemverMatcher) obj;
+        LessThanOrEqualToSemverMatcher other = (LessThanOrEqualToSemverMatcher) obj;
 
         return _semVer == other._semVer;
     }
