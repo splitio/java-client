@@ -32,6 +32,7 @@ import io.split.engine.matchers.strings.WhitelistMatcher;
 import io.split.engine.matchers.GreaterThanOrEqualToSemverMatcher;
 import io.split.engine.matchers.LessThanOrEqualToSemverMatcher;
 import io.split.engine.matchers.InListSemverMatcher;
+import io.split.engine.matchers.BetweenSemverMatcher;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -213,6 +214,10 @@ public final class SplitParser {
             case IN_LIST_SEMVER:
                 checkNotNull(matcher.whitelistMatcherData, "whitelistMatcherData is required for IN_LIST_SEMVER matcher type");
                 delegate = new InListSemverMatcher(matcher.whitelistMatcherData.whitelist);
+                break;
+            case BETWEEN_SEMVER:
+                checkNotNull(matcher.betweenStringMatcherData, "betweenStringMatcherData is required for BETWEEN_SEMVER matcher type");
+                delegate = new BetweenSemverMatcher(matcher.betweenStringMatcherData.start, matcher.betweenStringMatcherData.end);
                 break;
             default:
                 throw new IllegalArgumentException("Unknown matcher type: " + matcher.matcherType);
