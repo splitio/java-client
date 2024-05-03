@@ -14,7 +14,7 @@ public class EqualToSemverMatcher implements Matcher {
 
     @Override
     public boolean match(Object matchValue, String bucketingKey, Map<String, Object> attributes, EvaluationContext evaluationContext) {
-        if (matchValue == null) {
+        if (matchValue == null || _semVer == null) {
             return false;
         }
         Semver matchSemver = Semver.build(matchValue.toString());
@@ -22,7 +22,7 @@ public class EqualToSemverMatcher implements Matcher {
             return false;
         }
 
-        return _semVer != null && matchSemver.Version().equals(_semVer.Version());
+        return matchSemver.Version().equals(_semVer.Version());
     }
 
     @Override
