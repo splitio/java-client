@@ -9,9 +9,12 @@ import io.split.client.dtos.MatcherType;
 import io.split.client.dtos.Partition;
 import io.split.client.dtos.SegmentChange;
 import io.split.client.dtos.Split;
+import io.split.client.dtos.SplitChange;
 import io.split.client.dtos.Status;
 import io.split.storages.SegmentCache;
 import io.split.storages.memory.SegmentCacheInMemoryImpl;
+import io.split.client.utils.Json;
+import io.split.engine.evaluator.Labels;
 import io.split.engine.ConditionsTestUtil;
 import io.split.engine.matchers.AttributeMatcher;
 import io.split.engine.matchers.BetweenMatcher;
@@ -40,6 +43,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+
+import static org.junit.Assert.assertTrue;
 
 /**
  * Tests for ExperimentParser
@@ -495,6 +500,29 @@ public class SplitParserTest {
         ContainsAnyOfMatcher m = new ContainsAnyOfMatcher(set);
 
         setMatcherTest(c, m);
+    }
+
+    @Test
+    public void unsupportedMatcher() {
+        SplitParser parser = new SplitParser();
+        String splitWithUndefinedMatcher = "{\"since\":-1,\"till\": 1457726098069,\"splits\": [{ \"changeNumber\": 123, \"trafficTypeName\": \"user\", \"name\": \"some_name\","
+                + "\"trafficAllocation\": 100, \"trafficAllocationSeed\": 123456, \"seed\": 321654, \"status\": \"ACTIVE\","
+                + "\"killed\": false, \"defaultTreatment\": \"off\", \"algo\": 2,\"conditions\": [{ \"partitions\": ["
+                + "{\"treatment\": \"on\", \"size\": 50}, {\"treatment\": \"off\", \"size\": 50}], \"contitionType\": \"ROLLOUT\","
+                + "\"label\": \"some_label\", \"matcherGroup\": { \"matchers\": [{ \"matcherType\": \"UNKNOWN\", \"negate\": false}],"
+                + "\"combiner\": \"AND\"}}], \"sets\": [\"set1\"]}]}";
+        SplitChange change = Json.fromJson(splitWithUndefinedMatcher, SplitChange.class);
+        for (Split split : change.splits) {
+            // should not cause exception
+            ParsedSplit parsedSplit = parser.parse(split);
+            for (ParsedCondition parsedCondition : parsedSplit.parsedConditions()) {
+                assertTrue(parsedCondition.label() == Labels.UNSUPPORTED_MATCHER);
+                for (AttributeMatcher matcher : parsedCondition.matcher().attributeMatchers()) {
+                    // Check the matcher is ALL_KEYS
+                    assertTrue(matcher.matcher().toString().equals(" in segment all"));
+                }
+            }
+        }
     }
 
     public void setMatcherTest(Condition c, io.split.engine.matchers.Matcher m) {
