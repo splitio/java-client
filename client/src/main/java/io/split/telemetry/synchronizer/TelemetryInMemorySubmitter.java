@@ -109,17 +109,17 @@ public class TelemetryInMemorySubmitter implements TelemetrySynchronizer{
         }
         List<String> impressions = getImpressions(impressionsListeners);
 
-        rates.set_telemetry(splitClientConfig.get_telemetryRefreshRate());
-        rates.set_events(splitClientConfig.eventSendIntervalInMillis());
-        rates.set_impressions(splitClientConfig.impressionsRefreshRate());
-        rates.set_segments(splitClientConfig.segmentsRefreshRate());
-        rates.set_splits(splitClientConfig.featuresRefreshRate());
+        rates.setTelemetry(splitClientConfig.getTelemetryRefreshRate());
+        rates.setEvents(splitClientConfig.eventSendIntervalInMillis());
+        rates.setImpressions(splitClientConfig.impressionsRefreshRate());
+        rates.setSegments(splitClientConfig.segmentsRefreshRate());
+        rates.setSplits(splitClientConfig.featuresRefreshRate());
 
-        urlOverrides.set_auth(!SplitClientConfig.AUTH_ENDPOINT.equals(splitClientConfig.authServiceURL()));
-        urlOverrides.set_stream(!SplitClientConfig.STREAMING_ENDPOINT.equals(splitClientConfig.streamingServiceURL()));
-        urlOverrides.set_sdk(!SplitClientConfig.SDK_ENDPOINT.equals(splitClientConfig.endpoint()));
-        urlOverrides.set_events(!SplitClientConfig.EVENTS_ENDPOINT.equals(splitClientConfig.eventsEndpoint()));
-        urlOverrides.set_telemetry(!SplitClientConfig.TELEMETRY_ENDPOINT.equals(splitClientConfig.telemetryURL()));
+        urlOverrides.setAuth(!SplitClientConfig.AUTH_ENDPOINT.equals(splitClientConfig.authServiceURL()));
+        urlOverrides.setStream(!SplitClientConfig.STREAMING_ENDPOINT.equals(splitClientConfig.streamingServiceURL()));
+        urlOverrides.setSdk(!SplitClientConfig.SDK_ENDPOINT.equals(splitClientConfig.endpoint()));
+        urlOverrides.setEvents(!SplitClientConfig.EVENTS_ENDPOINT.equals(splitClientConfig.eventsEndpoint()));
+        urlOverrides.setTelemetry(!SplitClientConfig.TELEMETRY_ENDPOINT.equals(splitClientConfig.telemetryURL()));
 
         config.setBurTimeouts(_telemetryStorageConsumer.getBURTimeouts());
         config.setNonReadyUsages(_telemetryStorageConsumer.getNonReadyUsages());

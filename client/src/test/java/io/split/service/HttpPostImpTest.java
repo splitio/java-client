@@ -31,9 +31,8 @@ public class HttpPostImpTest {
         HttpPostImp httpPostImp = new HttpPostImp(splitHttpClient, telemetryStorage);
         httpPostImp.post(URI.create(URL), new Object(), "Metrics", HttpParamsWrapper.TELEMETRY);
         Mockito.verify(client, Mockito.times(1)).execute(Mockito.any());
-        Assert.assertNotEquals(0, telemetryStorage.getLastSynchronization().get_telemetry());
-        Assert.assertEquals(1,
-                telemetryStorage.popHTTPLatencies().get_telemetry().stream().mapToInt(Long::intValue).sum());
+        Assert.assertNotEquals(0, telemetryStorage.getLastSynchronization().getTelemetry());
+        Assert.assertEquals(1, telemetryStorage.popHTTPLatencies().getTelemetry().stream().mapToInt(Long::intValue).sum());
     }
 
     @Test
@@ -46,9 +45,7 @@ public class HttpPostImpTest {
         HttpPostImp httpPostImp = new HttpPostImp(splitHttpClient, telemetryStorage);
         httpPostImp.post(URI.create(URL), new Object(), "Metrics", HttpParamsWrapper.TELEMETRY);
         Mockito.verify(client, Mockito.times(1)).execute(Mockito.any());
-
-        Assert.assertEquals(1, telemetryStorage.popHTTPErrors().get_telemetry()
-                .get(Long.valueOf(HttpStatus.SC_CLIENT_ERROR)).intValue());
+        Assert.assertEquals(1, telemetryStorage.popHTTPErrors().getTelemetry().get(Long.valueOf(HttpStatus.SC_CLIENT_ERROR)).intValue());
     }
 
     private SDKMetadata metadata() {

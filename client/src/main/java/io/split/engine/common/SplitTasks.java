@@ -5,10 +5,7 @@ import io.split.client.impressions.ImpressionsManager;
 import io.split.client.impressions.UniqueKeysTracker;
 import io.split.engine.experiments.SplitSynchronizationTask;
 import io.split.engine.segments.SegmentSynchronizationTask;
-import io.split.engine.segments.SegmentSynchronizationTaskImp;
 import io.split.telemetry.synchronizer.TelemetrySyncTask;
-
-import static com.google.common.base.Preconditions.checkNotNull;
 
 public class SplitTasks {
     private final SplitSynchronizationTask _splitSynchronizationTask;

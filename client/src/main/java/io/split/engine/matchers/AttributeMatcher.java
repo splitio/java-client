@@ -1,7 +1,6 @@
 package io.split.engine.matchers;
 
 import io.split.engine.evaluator.EvaluationContext;
-import io.split.engine.evaluator.Evaluator;
 
 import java.util.Map;
 import java.util.Objects;
