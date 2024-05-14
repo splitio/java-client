@@ -86,6 +86,23 @@ public class AuthApiClientTest {
     }
 
     @Test
+    public void authenticateWithPushDisabledWithEmptyTokenShouldReturnSuccess() throws IOException, IllegalAccessException,
+            NoSuchMethodException, InvocationTargetException, URISyntaxException {
+        CloseableHttpClient httpClientMock = TestHelper.mockHttpClient("streaming-auth-push-disabled-empty-token.json",
+                HttpStatus.SC_OK);
+        SplitHttpClient splitHttpClient = SplitHttpClientImpl.create(httpClientMock, new RequestDecorator(null),
+                "qwerty", metadata());
+
+        AuthApiClient authApiClient = new AuthApiClientImp("www.split-test.io", splitHttpClient, TELEMETRY_STORAGE);
+        AuthenticationResponse result = authApiClient.Authenticate();
+
+        Assert.assertFalse(result.isPushEnabled());
+        Assert.assertTrue(StringUtils.isEmpty(result.getChannels()));
+        Assert.assertFalse(result.isRetry());
+        Assert.assertTrue(StringUtils.isEmpty(result.getToken()));
+    }
+
+    @Test
     public void authenticateServerErrorShouldReturnErrorWithRetry() throws IOException, IllegalAccessException,
             NoSuchMethodException, InvocationTargetException, URISyntaxException {
         CloseableHttpClient httpClientMock = TestHelper.mockHttpClient("", HttpStatus.SC_INTERNAL_SERVER_ERROR);
