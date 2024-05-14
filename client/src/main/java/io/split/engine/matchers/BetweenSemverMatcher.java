@@ -16,7 +16,7 @@ public class BetweenSemverMatcher implements Matcher {
 
     @Override
     public boolean match(Object matchValue, String bucketingKey, Map<String, Object> attributes, EvaluationContext evaluationContext) {
-        if (matchValue == null || _semverStart == null || _semverEnd == null) {
+        if (matchValue == null || _semverStart == null || _semverEnd == null || !(matchValue instanceof String)) {
             return false;
         }
         Semver matchSemver = Semver.build(matchValue.toString());

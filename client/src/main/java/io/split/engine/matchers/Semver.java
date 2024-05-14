@@ -4,7 +4,6 @@ import io.split.client.exceptions.SemverParseException;
 import io.split.engine.experiments.SplitParser;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import com.google.common.primitives.Ints;
 
 import java.util.Arrays;
 
@@ -96,8 +95,8 @@ public class Semver {
             if (_preRelease[i].equals(toCompare.PreRelease()[i])) {
                 continue;
             }
-            if ( Ints.tryParse(_preRelease[i]) != null &&  Ints.tryParse(toCompare._preRelease[i]) != null) {
-                return Integer.compare(Integer.parseInt(_preRelease[i]), Integer.parseInt(toCompare._preRelease[i]));
+            if ( isNumeric(_preRelease[i]) &&  isNumeric(toCompare._preRelease[i])) {
+                return Long.compare(Integer.parseInt(_preRelease[i]), Long.parseLong(toCompare._preRelease[i]));
             }
             return AdjustNumber(_preRelease[i].compareTo(toCompare._preRelease[i]));
         }

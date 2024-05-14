@@ -14,7 +14,7 @@ public class GreaterThanOrEqualToSemverMatcher implements Matcher {
 
     @Override
     public boolean match(Object matchValue, String bucketingKey, Map<String, Object> attributes, EvaluationContext evaluationContext) {
-        if (matchValue == null || _semVer == null) {
+        if (matchValue == null || _semVer == null || !(matchValue instanceof String)) {
             return false;
         }
         Semver matchSemver = Semver.build(matchValue.toString());
