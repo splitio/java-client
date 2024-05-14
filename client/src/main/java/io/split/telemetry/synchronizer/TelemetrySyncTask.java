@@ -41,5 +41,4 @@ public class TelemetrySyncTask {
         }
         _telemetrySyncScheduledExecutorService.shutdown();
     }
-
 }
