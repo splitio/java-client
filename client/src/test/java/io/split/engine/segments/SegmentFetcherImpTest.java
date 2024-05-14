@@ -36,18 +36,17 @@ public class SegmentFetcherImpTest {
     private static final TelemetryStorage TELEMETRY_STORAGE = Mockito.mock(InMemoryTelemetryStorage.class);
 
     @Test
-    public void works_when_we_start_without_state() throws InterruptedException {
+    public void worksWhenWeStartWithoutState() throws InterruptedException {
         works(-1L);
     }
 
     @Test
-    public void works_when_we_start_with_state() throws InterruptedException {
+    public void worksWhenWeStartWithState() throws InterruptedException {
         works(20L);
     }
 
     @Test
-    public void works_when_there_are_no_changes() throws InterruptedException {
-        long startingChangeNumber = -1L;
+    public void worksWhenThereAreNoChanges() throws InterruptedException {
         SegmentCache segmentCache = new SegmentCacheInMemoryImpl();
 
         SegmentChangeFetcher segmentChangeFetcher = Mockito.mock(SegmentChangeFetcher.class);
@@ -112,13 +111,13 @@ public class SegmentFetcherImpTest {
 
 
     @Test(expected = NullPointerException.class)
-    public void does_not_work_if_segment_change_fetcher_is_null() {
+    public void doesNotWorkIfSegmentChangeFetcherIsNull() {
         SegmentCacheProducer segmentCacheProducer = Mockito.mock(SegmentCacheProducer.class);
         SegmentFetcher fetcher = new SegmentFetcherImp(SEGMENT_NAME, null, segmentCacheProducer, TELEMETRY_STORAGE);
     }
 
     @Test(expected = NullPointerException.class)
-    public void does_not_work_if_segment_name_is_null() {
+    public void doesNotWorkIfSegmentNameIsNull() {
         SegmentCacheProducer segmentCacheProducer = Mockito.mock(SegmentCacheProducer.class);
         SegmentChangeFetcher segmentChangeFetcher = Mockito.mock(SegmentChangeFetcher.class);
         SegmentFetcher fetcher = new SegmentFetcherImp(null, segmentChangeFetcher, segmentCacheProducer, TELEMETRY_STORAGE);

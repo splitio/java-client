@@ -2,10 +2,8 @@ package io.split.engine.matchers;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
-import io.split.client.SplitClientImpl;
 import io.split.client.dtos.MatcherCombiner;
 import io.split.engine.evaluator.EvaluationContext;
-import io.split.engine.evaluator.Evaluator;
 
 import java.util.List;
 import java.util.Map;
