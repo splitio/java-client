@@ -16,7 +16,7 @@ public class BetweenSemverMatcher implements Matcher {
 
     @Override
     public boolean match(Object matchValue, String bucketingKey, Map<String, Object> attributes, EvaluationContext evaluationContext) {
-        if (matchValue == null || _semverStart == null || _semverEnd == null || !(matchValue instanceof String)) {
+        if (!(matchValue instanceof String) || _semverStart == null || _semverEnd == null) {
             return false;
         }
         Semver matchSemver = Semver.build(matchValue.toString());
@@ -24,16 +24,16 @@ public class BetweenSemverMatcher implements Matcher {
             return false;
         }
 
-        return matchSemver.Compare(_semverStart) >= 0 && matchSemver.Compare(_semverEnd) <= 0;
+        return matchSemver.compare(_semverStart) >= 0 && matchSemver.compare(_semverEnd) <= 0;
     }
 
     @Override
     public String toString() {
         StringBuilder bldr = new StringBuilder();
         bldr.append("between semver ");
-        bldr.append(_semverStart.Version());
+        bldr.append(_semverStart.version());
         bldr.append(" and ");
-        bldr.append(_semverEnd.Version());
+        bldr.append(_semverEnd.version());
         return bldr.toString();
     }
 

@@ -7,9 +7,9 @@ import org.slf4j.LoggerFactory;
 import java.util.Arrays;
 
 public class Semver {
-    private static final String MetadataDelimiter = "+";
-    private static final String PreReleaseDelimiter = "-";
-    private static final String ValueDelimiter = "\\.";
+    private static final String METADATA_DELIMITER = "+";
+    private static final String PRERELEASE_DELIMITER = "-";
+    private static final String VALUE_DELIMITER = "\\.";
     private static final Logger _log = LoggerFactory.getLogger(Semver.class);
 
     private Long _major;
@@ -30,31 +30,31 @@ public class Semver {
         }
     }
 
-    public String Version() {
+    public String version() {
       return _version;
     }
 
-    public Long Major() {
+    public Long major() {
         return _major;
     }
 
-    public Long Minor() {
+    public Long minor() {
         return _minor;
     }
 
-    public Long Patch() {
+    public Long patch() {
         return _patch;
     }
 
-    public String[] PreRelease() {
+    public String[] prerelease() {
         return _preRelease;
     }
 
-    public String Metadata() {
+    public String metadata() {
         return _metadata;
     }
 
-    public boolean IsStable() {
+    public boolean isStable() {
         return _isStable;
     }
 
@@ -65,44 +65,44 @@ public class Semver {
      *         a value less than {@code 0} if {@code this < toCompare}; and
      *         a value greater than {@code 0} if {@code this > toCompare}
      */
-    public int Compare(Semver toCompare) {
-        if (_version.equals(toCompare.Version())) {
+    public int compare(Semver toCompare) {
+        if (_version.equals(toCompare.version())) {
             return 0;
         }
         // Compare major, minor, and patch versions numerically
-        int result = Long.compare(_major, toCompare.Major());
+        int result = Long.compare(_major, toCompare.major());
         if (result != 0) {
             return result;
         }
-        result = Long.compare(_minor, toCompare.Minor());
+        result = Long.compare(_minor, toCompare.minor());
         if (result != 0) {
             return result;
         }
-        result = Long.compare(_patch, toCompare.Patch());
+        result = Long.compare(_patch, toCompare.patch());
         if (result != 0) {
             return result;
         }
-        if (!_isStable && toCompare.IsStable()) {
+        if (!_isStable && toCompare.isStable()) {
             return -1;
-        } else if (_isStable && !toCompare.IsStable()) {
+        } else if (_isStable && !toCompare.isStable()) {
             return 1;
         }
         // Compare pre-release versions lexically
-        int minLength = Math.min(_preRelease.length, toCompare.PreRelease().length);
+        int minLength = Math.min(_preRelease.length, toCompare.prerelease().length);
         for (int i = 0; i < minLength; i++) {
-            if (_preRelease[i].equals(toCompare.PreRelease()[i])) {
+            if (_preRelease[i].equals(toCompare.prerelease()[i])) {
                 continue;
             }
             if ( isNumeric(_preRelease[i]) &&  isNumeric(toCompare._preRelease[i])) {
                 return Long.compare(Integer.parseInt(_preRelease[i]), Long.parseLong(toCompare._preRelease[i]));
             }
-            return AdjustNumber(_preRelease[i].compareTo(toCompare._preRelease[i]));
+            return adjustNumber(_preRelease[i].compareTo(toCompare._preRelease[i]));
         }
         // Compare lengths of pre-release versions
         return Integer.compare(_preRelease.length, toCompare._preRelease.length);
     }
 
-    private int AdjustNumber(int number) {
+    private int adjustNumber(int number) {
         if (number > 0) return 1;
         if (number < 0) return -1;
         return 0;
@@ -114,7 +114,7 @@ public class Semver {
         _version = setVersion();
     }
     private String setAndRemoveMetadataIfExists(String version) throws SemverParseException {
-        int index = version.indexOf(MetadataDelimiter);
+        int index = version.indexOf(METADATA_DELIMITER);
         if (index == -1) {
             return version;
         }
@@ -125,20 +125,20 @@ public class Semver {
         return version.substring(0, index);
     }
     private String setAndRemovePreReleaseIfExists(String vWithoutMetadata) throws SemverParseException {
-        int index = vWithoutMetadata.indexOf(PreReleaseDelimiter);
+        int index = vWithoutMetadata.indexOf(PRERELEASE_DELIMITER);
         if (index == -1) {
             _isStable = true;
             return vWithoutMetadata;
         }
         String preReleaseData = vWithoutMetadata.substring(index+1);
-        _preRelease = preReleaseData.split(ValueDelimiter);
+        _preRelease = preReleaseData.split(VALUE_DELIMITER);
         if (_preRelease == null || Arrays.stream(_preRelease).allMatch(pr -> pr == null || pr.isEmpty())) {
             throw new SemverParseException("Unable to convert to Semver, incorrect pre release data");
         }
         return vWithoutMetadata.substring(0, index);
     }
     private void setMajorMinorAndPatch(String version) throws SemverParseException {
-        String[] vParts = version.split(ValueDelimiter);
+        String[] vParts = version.split(VALUE_DELIMITER);
         if (vParts.length != 3)
             throw new SemverParseException("Unable to convert to Semver, incorrect format: " + version);
         _major = Long.parseLong(vParts[0]);
@@ -147,7 +147,7 @@ public class Semver {
     }
 
     private String setVersion() {
-        String toReturn = _major + ValueDelimiter + _minor + ValueDelimiter + _patch;
+        String toReturn = _major + VALUE_DELIMITER + _minor + VALUE_DELIMITER + _patch;
         if (_preRelease != null && _preRelease.length != 0)
         {
             for (int i = 0; i < _preRelease.length; i++)
@@ -157,10 +157,10 @@ public class Semver {
                     _preRelease[i] = Long.toString(Long.parseLong(_preRelease[i]));
                 }
             }
-            toReturn = toReturn + PreReleaseDelimiter + String.join(ValueDelimiter, _preRelease);
+            toReturn = toReturn + PRERELEASE_DELIMITER + String.join(VALUE_DELIMITER, _preRelease);
         }
         if (_metadata != null && !_metadata.isEmpty()) {
-            toReturn = toReturn + MetadataDelimiter + _metadata;
+            toReturn = toReturn + METADATA_DELIMITER + _metadata;
         }
         return toReturn;
     }

@@ -14,7 +14,7 @@ public class LessThanOrEqualToSemverMatcher implements Matcher {
 
     @Override
     public boolean match(Object matchValue, String bucketingKey, Map<String, Object> attributes, EvaluationContext evaluationContext) {
-        if (matchValue == null || !(matchValue instanceof String) || _semVer == null) {
+        if (!(matchValue instanceof String) || _semVer == null) {
             return false;
         }
         Semver matchSemver = Semver.build(matchValue.toString());
@@ -22,14 +22,14 @@ public class LessThanOrEqualToSemverMatcher implements Matcher {
             return false;
         }
 
-        return matchSemver.Compare(_semVer) <= 0;
+        return matchSemver.compare(_semVer) <= 0;
     }
 
     @Override
     public String toString() {
         StringBuilder bldr = new StringBuilder();
         bldr.append("<= semver ");
-        bldr.append(_semVer.Version());
+        bldr.append(_semVer.version());
         return bldr.toString();
     }
 
