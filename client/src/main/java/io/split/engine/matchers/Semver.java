@@ -1,18 +1,16 @@
 package io.split.engine.matchers;
 
 import io.split.client.exceptions.SemverParseException;
-import io.split.engine.experiments.SplitParser;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.Arrays;
 
 public class Semver {
-    private final String MetadataDelimiter = "+";
-    private final String PreReleaseDelimiter = "-";
-    private final String ValueDelimiter = "\\.";
-
-    private static final Logger _log = LoggerFactory.getLogger(SplitParser.class);
+    private static final String MetadataDelimiter = "+";
+    private static final String PreReleaseDelimiter = "-";
+    private static final String ValueDelimiter = "\\.";
+    private static final Logger _log = LoggerFactory.getLogger(Semver.class);
 
     private Long _major;
     private Long _minor;
