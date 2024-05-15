@@ -1,25 +1,30 @@
 package io.split.engine.common;
 
+import io.split.client.RequestDecorator;
+import io.split.service.SplitHttpClient;
 import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class SplitAPI {
 
-    private final CloseableHttpClient _httpClient;
+    private final SplitHttpClient _httpClient;
     private final CloseableHttpClient _sseHttpClient;
+    private final RequestDecorator _requestDecorator;
     private static final Logger _log = LoggerFactory.getLogger(SplitAPI.class);
 
-    private SplitAPI(CloseableHttpClient httpClient, CloseableHttpClient sseHttpClient) {
+    private SplitAPI(SplitHttpClient httpClient, CloseableHttpClient sseHttpClient, RequestDecorator requestDecorator) {
         _httpClient = httpClient;
         _sseHttpClient = sseHttpClient;
+        _requestDecorator = requestDecorator;
     }
 
-    public static SplitAPI build(CloseableHttpClient httpClient, CloseableHttpClient sseHttpClient){
-        return new SplitAPI(httpClient,sseHttpClient);
+    public static SplitAPI build(SplitHttpClient httpClient, CloseableHttpClient sseHttpClient,
+            RequestDecorator requestDecorator) {
+        return new SplitAPI(httpClient, sseHttpClient, requestDecorator);
     }
 
-    public CloseableHttpClient getHttpClient() {
+    public SplitHttpClient getHttpClient() {
         return _httpClient;
     }
 
@@ -27,15 +32,19 @@ public class SplitAPI {
         return _sseHttpClient;
     }
 
-    public void close(){
+    public RequestDecorator getRequestDecorator() {
+        return _requestDecorator;
+    }
+
+    public void close() {
         try {
             _httpClient.close();
-        } catch (Exception e){
-            _log.error("Error trying to close httpcClient", e);
+        } catch (Exception e) {
+            _log.error("Error trying to close regular http client", e);
         }
         try {
             _sseHttpClient.close();
-        } catch (Exception e){
+        } catch (Exception e) {
             _log.error("Error trying to close sseHttpClient", e);
         }
     }

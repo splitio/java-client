@@ -2,6 +2,7 @@ package io.split.engine.sse;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Strings;
+import io.split.client.RequestDecorator;
 import io.split.engine.sse.client.RawEvent;
 import io.split.engine.sse.client.SSEClient;
 import io.split.engine.sse.dtos.SegmentQueueDto;
@@ -40,7 +41,8 @@ public class EventSourceClientImp implements EventSourceClient {
                                                PushStatusTracker pushStatusTracker,
                                                CloseableHttpClient sseHttpClient,
                                                TelemetryRuntimeProducer telemetryRuntimeProducer,
-                                               ThreadFactory threadFactory) {
+                                               ThreadFactory threadFactory,
+                                               RequestDecorator requestDecorator) {
         _baseStreamingUrl = checkNotNull(baseStreamingUrl);
         _notificationParser = checkNotNull(notificationParser);
         _notificationProcessor = checkNotNull(notificationProcessor);
@@ -51,7 +53,8 @@ public class EventSourceClientImp implements EventSourceClient {
                 status -> { _pushStatusTracker.handleSseStatus(status); return null; },
                 sseHttpClient,
                 telemetryRuntimeProducer,
-                threadFactory);
+                threadFactory,
+                requestDecorator);
         _firstEvent = new AtomicBoolean();
     }
 
@@ -61,14 +64,16 @@ public class EventSourceClientImp implements EventSourceClient {
                                              PushStatusTracker pushStatusTracker,
                                              CloseableHttpClient sseHttpClient,
                                              TelemetryRuntimeProducer telemetryRuntimeProducer,
-                                             ThreadFactory threadFactory) {
+                                             ThreadFactory threadFactory,
+                                             RequestDecorator requestDecorator) {
         return new EventSourceClientImp(baseStreamingUrl,
                 new NotificationParserImp(),
                 NotificationProcessorImp.build(featureFlagsWorker, segmentWorker, pushStatusTracker),
                 pushStatusTracker,
                 sseHttpClient,
                 telemetryRuntimeProducer,
-                threadFactory);
+                threadFactory,
+                requestDecorator);
     }
 
     @Override
