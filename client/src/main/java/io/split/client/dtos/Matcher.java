@@ -13,6 +13,7 @@ public class Matcher {
     public WhitelistMatcherData whitelistMatcherData;
     public UnaryNumericMatcherData unaryNumericMatcherData;
     public BetweenMatcherData betweenMatcherData;
+    public BetweenStringMatcherData betweenStringMatcherData;
     public DependencyMatcherData dependencyMatcherData;
     public Boolean booleanMatcherData;
     public String stringMatcherData;

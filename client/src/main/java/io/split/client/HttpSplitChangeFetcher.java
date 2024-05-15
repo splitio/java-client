@@ -1,6 +1,7 @@
 package io.split.client;
 
 import com.google.common.annotations.VisibleForTesting;
+
 import io.split.client.dtos.SplitChange;
 import io.split.client.dtos.SplitHttpResponse;
 import io.split.client.exceptions.UriTooLongException;
@@ -21,6 +22,7 @@ import java.net.URI;
 import java.net.URISyntaxException;
 
 import static com.google.common.base.Preconditions.checkNotNull;
+import static io.split.Spec.SPEC_VERSION;
 
 /**
  * Created by adilaijaz on 5/30/15.
@@ -31,6 +33,7 @@ public final class HttpSplitChangeFetcher implements SplitChangeFetcher {
     private static final String SINCE = "since";
     private static final String TILL = "till";
     private static final String SETS = "sets";
+    private static final String SPEC = "s";
     private final SplitHttpClient _client;
     private final URI _target;
     private final TelemetryRuntimeProducer _telemetryRuntimeProducer;
@@ -58,12 +61,13 @@ public final class HttpSplitChangeFetcher implements SplitChangeFetcher {
         long start = System.currentTimeMillis();
 
         try {
-            URIBuilder uriBuilder = new URIBuilder(_target).addParameter(SINCE, "" + since);
-            if (options.hasCustomCN()) {
-                uriBuilder.addParameter(TILL, "" + options.targetCN());
-            }
+            URIBuilder uriBuilder = new URIBuilder(_target).addParameter(SPEC, "" + SPEC_VERSION);
+            uriBuilder.addParameter(SINCE, "" + since);
             if (!options.flagSetsFilter().isEmpty()) {
                 uriBuilder.addParameter(SETS, "" + options.flagSetsFilter());
+            }
+            if (options.hasCustomCN()) {
+                uriBuilder.addParameter(TILL, "" + options.targetCN());
             }
             URI uri = uriBuilder.build();
             SplitHttpResponse response = _client.get(uri, options, null);
