@@ -39,59 +39,59 @@ public class HTTPLatencies {
         _telemetry = new ArrayList<>();
     }
 
-    public List<Long> get_splits() {
+    public List<Long> getSplits() {
         return _splits;
     }
 
-    public void set_splits(List<Long> _splits) {
+    public void setSplits(List<Long> _splits) {
         this._splits = _splits;
     }
 
-    public List<Long> get_segments() {
+    public List<Long> getSegments() {
         return _segments;
     }
 
-    public void set_segments(List<Long> _segments) {
+    public void setSegments(List<Long> _segments) {
         this._segments = _segments;
     }
 
-    public List<Long> get_impressions() {
+    public List<Long> getImpressions() {
         return _impressions;
     }
 
-    public void set_impressions(List<Long> _impressions) {
+    public void setImpressions(List<Long> _impressions) {
         this._impressions = _impressions;
     }
 
-    public List<Long> get_events() {
+    public List<Long> getEvents() {
         return _events;
     }
 
-    public void set_events(List<Long> _events) {
+    public void setEvents(List<Long> _events) {
         this._events = _events;
     }
 
-    public List<Long> get_token() {
+    public List<Long> getToken() {
         return _token;
     }
 
-    public void set_token(List<Long> _token) {
+    public void setToken(List<Long> _token) {
         this._token = _token;
     }
 
-    public List<Long> get_telemetry() {
+    public List<Long> getTelemetry() {
         return _telemetry;
     }
 
-    public void set_telemetry(List<Long> _telemetry) {
+    public void setTelemetry(List<Long> _telemetry) {
         this._telemetry = _telemetry;
     }
 
-    public List<Long> get_impressionsCount() {
+    public List<Long> getImpressionsCount() {
         return _impressionsCount;
     }
 
-    public void set_impressionsCount(List<Long> _impressionsCount) {
+    public void setImpressionsCount(List<Long> _impressionsCount) {
         this._impressionsCount = _impressionsCount;
     }
 }

@@ -1,11 +1,21 @@
 package io.split.engine.experiments;
 
 import com.google.common.collect.Lists;
+import io.split.client.dtos.Condition;
+import io.split.client.dtos.DataType;
+import io.split.client.dtos.Matcher;
+import io.split.client.dtos.MatcherCombiner;
+import io.split.client.dtos.MatcherType;
+import io.split.client.dtos.Partition;
+import io.split.client.dtos.SegmentChange;
+import io.split.client.dtos.Split;
+import io.split.client.dtos.SplitChange;
+import io.split.client.dtos.Status;
 import io.split.storages.SegmentCache;
 import io.split.storages.memory.SegmentCacheInMemoryImpl;
-import io.split.client.dtos.*;
+import io.split.client.utils.Json;
+import io.split.engine.evaluator.Labels;
 import io.split.engine.ConditionsTestUtil;
-import io.split.engine.SDKReadinessGates;
 import io.split.engine.matchers.AttributeMatcher;
 import io.split.engine.matchers.BetweenMatcher;
 import io.split.engine.matchers.CombiningMatcher;
@@ -22,12 +32,14 @@ import io.split.engine.matchers.strings.EndsWithAnyOfMatcher;
 import io.split.engine.matchers.strings.StartsWithAnyOfMatcher;
 import io.split.engine.segments.SegmentChangeFetcher;
 import io.split.grammar.Treatments;
-import io.split.telemetry.storage.InMemoryTelemetryStorage;
-import io.split.telemetry.storage.TelemetryStorage;
 import org.junit.Assert;
 import org.junit.Test;
 import org.mockito.Mockito;
 
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -36,9 +48,7 @@ import java.util.Map;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import static org.hamcrest.Matchers.equalTo;
-import static org.hamcrest.Matchers.is;
-import static org.junit.Assert.assertThat;
+import static org.junit.Assert.assertTrue;
 
 /**
  * Tests for ExperimentParser
@@ -50,11 +60,9 @@ public class SplitParserTest {
     public static final String EMPLOYEES = "employees";
     public static final String SALES_PEOPLE = "salespeople";
     public static final int CONDITIONS_UPPER_LIMIT = 50;
-    private static final TelemetryStorage TELEMETRY_STORAGE = Mockito.mock(InMemoryTelemetryStorage.class);
 
     @Test
     public void works() {
-        SDKReadinessGates gates = new SDKReadinessGates();
         SegmentCache segmentCache = new SegmentCacheInMemoryImpl();
         segmentCache.updateSegment(EMPLOYEES, Stream.of("adil", "pato", "trevor").collect(Collectors.toList()), new ArrayList<>(), 1L);
         segmentCache.updateSegment(SALES_PEOPLE, Stream.of("kunal").collect(Collectors.toList()), new ArrayList<>(), 1L);
@@ -87,12 +95,11 @@ public class SplitParserTest {
 
         ParsedSplit expected = ParsedSplit.createParsedSplitForTests("first.name", 123, false, Treatments.OFF, listOfMatcherAndSplits, "user", 1, 1, new HashSet<>());
 
-        assertThat(actual, is(equalTo(expected)));
+        Assert.assertEquals(actual, expected);
     }
 
     @Test
     public void worksWithConfig() {
-        SDKReadinessGates gates = new SDKReadinessGates();
         SegmentCache segmentCache = new SegmentCacheInMemoryImpl();
         segmentCache.updateSegment(EMPLOYEES, Stream.of("adil", "pato", "trevor").collect(Collectors.toList()), new ArrayList<>(), 1L);
         segmentCache.updateSegment(SALES_PEOPLE, Stream.of("kunal").collect(Collectors.toList()), new ArrayList<>(), 1L);
@@ -129,12 +136,12 @@ public class SplitParserTest {
         ParsedSplit expected = ParsedSplit.createParsedSplitForTests("first.name", 123, false, Treatments.OFF,
                 listOfMatcherAndSplits, "user", 1, 1, configurations, new HashSet<>());
 
-        assertThat(actual, is(equalTo(expected)));
-        assertThat(actual.configurations().get("on"), is(equalTo(configurations.get("on"))));
+        Assert.assertEquals(actual, expected);
+        Assert.assertEquals(actual.configurations().get("on"), configurations.get("on"));
     }
 
     @Test
-    public void works_for_two_conditions() {
+    public void worksForTwoConditions() {
         SegmentCache segmentCache = new SegmentCacheInMemoryImpl();
         segmentCache.updateSegment(EMPLOYEES, Stream.of("adil", "pato", "trevor").collect(Collectors.toList()), new ArrayList<>(), 1L);
         segmentCache.updateSegment(SALES_PEOPLE, Stream.of("kunal").collect(Collectors.toList()), new ArrayList<>(), 1L);
@@ -168,12 +175,11 @@ public class SplitParserTest {
 
         ParsedSplit expected = ParsedSplit.createParsedSplitForTests("first.name", 123, false, Treatments.OFF, listOfParsedConditions, "user", 1, 1, new HashSet<>());
 
-        assertThat(actual, is(equalTo(expected)));
+        Assert.assertEquals(actual, expected);
     }
 
     @Test
-    public void success_for_long_conditions() {
-        SDKReadinessGates gates = new SDKReadinessGates();
+    public void successForLongConditions() {
         SegmentCache segmentCache = new SegmentCacheInMemoryImpl();
         segmentCache.updateSegment(EMPLOYEES, Stream.of("adil", "pato", "trevor").collect(Collectors.toList()), new ArrayList<>(), 1L);
         segmentCache.updateSegment(SALES_PEOPLE, Stream.of("kunal").collect(Collectors.toList()), new ArrayList<>(), 1L);
@@ -200,8 +206,7 @@ public class SplitParserTest {
 
 
     @Test
-    public void works_with_attributes() {
-        SDKReadinessGates gates = new SDKReadinessGates();
+    public void worksWithAttributes() {
         SegmentCache segmentCache = new SegmentCacheInMemoryImpl();
         segmentCache.updateSegment(EMPLOYEES, Stream.of("adil", "pato", "trevor").collect(Collectors.toList()), new ArrayList<>(), 1L);
         segmentCache.updateSegment(SALES_PEOPLE, Stream.of("kunal").collect(Collectors.toList()), new ArrayList<>(), 1L);
@@ -239,17 +244,11 @@ public class SplitParserTest {
 
         ParsedSplit expected = ParsedSplit.createParsedSplitForTests("first.name", 123, false, Treatments.OFF, listOfMatcherAndSplits, "user", 1, 1, new HashSet<>());
 
-        assertThat(actual, is(equalTo(expected)));
+        Assert.assertEquals(actual, expected);
     }
 
     @Test
-    public void less_than_or_equal_to() {
-
-
-//        SegmentSynchronizationTask segmentFetcher = new SegmentSynchronizationTaskImp(fetcherMap);
-//        SegmentCache segmentCache = new SegmentCacheInMemoryImpl();
-        SDKReadinessGates gates = new SDKReadinessGates();
-        SegmentCache segmentCache = new SegmentCacheInMemoryImpl();
+    public void lessThanOrEqualTo() {
         SegmentChangeFetcher segmentChangeFetcher = Mockito.mock(SegmentChangeFetcher.class);
         SegmentChange segmentChangeEmployee = getSegmentChange(-1L, -1L, EMPLOYEES);
         SegmentChange segmentChangeSalesPeople = getSegmentChange(-1L, -1L, SALES_PEOPLE);
@@ -278,16 +277,11 @@ public class SplitParserTest {
 
         ParsedSplit expected = ParsedSplit.createParsedSplitForTests("first.name", 123, false, Treatments.OFF, listOfMatcherAndSplits, "user", 1, 1, new HashSet<>());
 
-        assertThat(actual, is(equalTo(expected)));
+        Assert.assertEquals(actual, expected);
     }
 
     @Test
-    public void equal_to() {
-
-//        SegmentSynchronizationTask segmentFetcher = new SegmentSynchronizationTaskImp(fetcherMap);
-//        SegmentCache segmentCache = new SegmentCacheInMemoryImpl();
-        SDKReadinessGates gates = new SDKReadinessGates();
-        SegmentCache segmentCache = new SegmentCacheInMemoryImpl();
+    public void equalTo() {
         SegmentChangeFetcher segmentChangeFetcher = Mockito.mock(SegmentChangeFetcher.class);
         SegmentChange segmentChangeEmployee = getSegmentChange(-1L, -1L, EMPLOYEES);
         SegmentChange segmentChangeSalesPeople = getSegmentChange(-1L, -1L, SALES_PEOPLE);
@@ -315,16 +309,11 @@ public class SplitParserTest {
 
         ParsedSplit expected = ParsedSplit.createParsedSplitForTests("first.name", 123, false, Treatments.OFF, listOfMatcherAndSplits, "user", 1, 1, new HashSet<>());
 
-        assertThat(actual, is(equalTo(expected)));
+        Assert.assertEquals(actual, expected);
     }
 
     @Test
-    public void equal_to_negative_number() {
-
-//        SegmentSynchronizationTask segmentFetcher = new SegmentSynchronizationTaskImp(fetcherMap);
-//        SegmentCache segmentCache = new SegmentCacheInMemoryImpl();
-        SDKReadinessGates gates = new SDKReadinessGates();
-        SegmentCache segmentCache = new SegmentCacheInMemoryImpl();
+    public void equalToNegativeNumber() {
         SegmentChangeFetcher segmentChangeFetcher = Mockito.mock(SegmentChangeFetcher.class);
         SegmentChange segmentChangeEmployee = getSegmentChange(-1L, -1L, EMPLOYEES);
         SegmentChange segmentChangeSalesPeople = getSegmentChange(-1L, -1L, SALES_PEOPLE);
@@ -351,16 +340,11 @@ public class SplitParserTest {
 
         ParsedSplit expected = ParsedSplit.createParsedSplitForTests("first.name", 123, false, Treatments.OFF, listOfMatcherAndSplits, "user", 1, 1, new HashSet<>());
 
-        assertThat(actual, is(equalTo(expected)));
+        Assert.assertEquals(actual, expected);
     }
 
     @Test
     public void between() {
-
-//        SegmentSynchronizationTask segmentFetcher = new SegmentSynchronizationTaskImp(fetcherMap);
-//        SegmentCache segmentCache = new SegmentCacheInMemoryImpl();
-        SDKReadinessGates gates = new SDKReadinessGates();
-        SegmentCache segmentCache = new SegmentCacheInMemoryImpl();
         SegmentChangeFetcher segmentChangeFetcher = Mockito.mock(SegmentChangeFetcher.class);
         SegmentChange segmentChangeEmployee = getSegmentChange(-1L, -1L, EMPLOYEES);
         SegmentChange segmentChangeSalesPeople = getSegmentChange(-1L, -1L, SALES_PEOPLE);
@@ -392,12 +376,11 @@ public class SplitParserTest {
 
         ParsedSplit expected = ParsedSplit.createParsedSplitForTests("first.name", 123, false, Treatments.OFF, listOfMatcherAndSplits, "user", 1, 1, new HashSet<>());
 
-        assertThat(actual, is(equalTo(expected)));
+        Assert.assertEquals(actual, expected);
     }
 
     @Test
-    public void contains_any_of_set() {
-
+    public void containsAnyOfSet() {
         ArrayList<String> set = Lists.<String>newArrayList("sms", "voice");
 
         List<Partition> partitions = Lists.newArrayList(ConditionsTestUtil.partition("on", 100));
@@ -411,12 +394,11 @@ public class SplitParserTest {
 
         ContainsAnyOfSetMatcher m = new ContainsAnyOfSetMatcher(set);
 
-        set_matcher_test(c, m);
+        setMatcherTest(c, m);
     }
 
     @Test
-    public void contains_all_of_set() {
-
+    public void containsAllOfSet() {
         ArrayList<String> set = Lists.<String>newArrayList("sms", "voice");
 
         List<Partition> partitions = Lists.newArrayList(ConditionsTestUtil.partition("on", 100));
@@ -430,12 +412,11 @@ public class SplitParserTest {
 
         ContainsAllOfSetMatcher m = new ContainsAllOfSetMatcher(set);
 
-        set_matcher_test(c, m);
+        setMatcherTest(c, m);
     }
 
     @Test
-    public void equal_to_set() {
-
+    public void equalToSet() {
         ArrayList<String> set = Lists.<String>newArrayList("sms", "voice");
 
         List<Partition> partitions = Lists.newArrayList(ConditionsTestUtil.partition("on", 100));
@@ -449,12 +430,11 @@ public class SplitParserTest {
 
         EqualToSetMatcher m = new EqualToSetMatcher(set);
 
-        set_matcher_test(c, m);
+        setMatcherTest(c, m);
     }
 
     @Test
-    public void is_part_of_set() {
-
+    public void isPartOfSet() {
         ArrayList<String> set = Lists.<String>newArrayList("sms", "voice");
 
         List<Partition> partitions = Lists.newArrayList(ConditionsTestUtil.partition("on", 100));
@@ -468,12 +448,11 @@ public class SplitParserTest {
 
         PartOfSetMatcher m = new PartOfSetMatcher(set);
 
-        set_matcher_test(c, m);
+        setMatcherTest(c, m);
     }
 
     @Test
-    public void starts_with_string() {
-
+    public void startsWithString() {
         ArrayList<String> set = Lists.<String>newArrayList("sms", "voice");
 
         List<Partition> partitions = Lists.newArrayList(ConditionsTestUtil.partition("on", 100));
@@ -487,12 +466,11 @@ public class SplitParserTest {
 
         StartsWithAnyOfMatcher m = new StartsWithAnyOfMatcher(set);
 
-        set_matcher_test(c, m);
+        setMatcherTest(c, m);
     }
 
     @Test
-    public void ends_with_string() {
-
+    public void endsWithString() {
         ArrayList<String> set = Lists.<String>newArrayList("sms", "voice");
 
         List<Partition> partitions = Lists.newArrayList(ConditionsTestUtil.partition("on", 100));
@@ -506,13 +484,12 @@ public class SplitParserTest {
 
         EndsWithAnyOfMatcher m = new EndsWithAnyOfMatcher(set);
 
-        set_matcher_test(c, m);
+        setMatcherTest(c, m);
     }
 
 
     @Test
-    public void contains_string() {
-
+    public void containsString() {
         ArrayList<String> set = Lists.<String>newArrayList("sms", "voice");
 
         List<Partition> partitions = Lists.newArrayList(ConditionsTestUtil.partition("on", 100));
@@ -526,15 +503,144 @@ public class SplitParserTest {
 
         ContainsAnyOfMatcher m = new ContainsAnyOfMatcher(set);
 
-        set_matcher_test(c, m);
+        setMatcherTest(c, m);
     }
 
-    public void set_matcher_test(Condition c, io.split.engine.matchers.Matcher m) {
+    @Test
+    public void UnsupportedMatcher() {
+        SplitParser parser = new SplitParser();
+        String splitWithUndefinedMatcher = "{\"since\":-1,\"till\": 1457726098069,\"splits\": [{ \"changeNumber\": 123, \"trafficTypeName\": \"user\", \"name\": \"some_name\","
+                + "\"trafficAllocation\": 100, \"trafficAllocationSeed\": 123456, \"seed\": 321654, \"status\": \"ACTIVE\","
+                + "\"killed\": false, \"defaultTreatment\": \"off\", \"algo\": 2,\"conditions\": [{ \"partitions\": ["
+                + "{\"treatment\": \"on\", \"size\": 50}, {\"treatment\": \"off\", \"size\": 50}], \"contitionType\": \"ROLLOUT\","
+                + "\"label\": \"some_label\", \"matcherGroup\": { \"matchers\": [{ \"matcherType\": \"UNKNOWN\", \"negate\": false}],"
+                + "\"combiner\": \"AND\"}}], \"sets\": [\"set1\"]}]}";
+        SplitChange change = Json.fromJson(splitWithUndefinedMatcher, SplitChange.class);
+        for (Split split : change.splits) {
+            // should not cause exception
+            ParsedSplit parsedSplit = parser.parse(split);
+            for (ParsedCondition parsedCondition : parsedSplit.parsedConditions()) {
+                assertTrue(parsedCondition.label() == Labels.UNSUPPORTED_MATCHER);
+                for (AttributeMatcher matcher : parsedCondition.matcher().attributeMatchers()) {
+                    // Check the matcher is ALL_KEYS
+                    assertTrue(matcher.matcher().toString().equals(" in segment all"));
+                }
+            }
+        }
+    }
 
-//        SegmentSynchronizationTask segmentFetcher = new SegmentSynchronizationTaskImp(fetcherMap);
-//        SegmentCache segmentCache = new SegmentCacheInMemoryImpl();
-        SDKReadinessGates gates = new SDKReadinessGates();
-        SegmentCache segmentCache = new SegmentCacheInMemoryImpl();
+    @Test
+    public void EqualToSemverMatcher() throws IOException {
+        SplitParser parser = new SplitParser();
+        String splits = new String(Files.readAllBytes(Paths.get("src/test/resources/semver/semver-splits.json")), StandardCharsets.UTF_8);
+        SplitChange change = Json.fromJson(splits, SplitChange.class);
+        for (Split split : change.splits) {
+            // should not cause exception
+            ParsedSplit parsedSplit = parser.parse(split);
+            if (split.name.equals("semver_equalto")) {
+                for (ParsedCondition parsedCondition : parsedSplit.parsedConditions()) {
+                    assertTrue(parsedCondition.label().equals("equal to semver"));
+                    for (AttributeMatcher matcher : parsedCondition.matcher().attributeMatchers()) {
+                        // Check the matcher is ALL_KEYS
+                        assertTrue(matcher.matcher().toString().equals(" == semver 1\\.22\\.9"));
+                        return;
+                    }
+                }
+            }
+        }
+        assertTrue(false);
+    }
+
+    @Test
+    public void GreaterThanOrEqualSemverMatcher() throws IOException {
+        SplitParser parser = new SplitParser();
+        String splits = new String(Files.readAllBytes(Paths.get("src/test/resources/semver/semver-splits.json")), StandardCharsets.UTF_8);
+        SplitChange change = Json.fromJson(splits, SplitChange.class);
+        for (Split split : change.splits) {
+            // should not cause exception
+            ParsedSplit parsedSplit = parser.parse(split);
+            if (split.name.equals("semver_greater_or_equalto")) {
+                for (ParsedCondition parsedCondition : parsedSplit.parsedConditions()) {
+                    assertTrue(parsedCondition.label().equals("greater than or equal to semver"));
+                    for (AttributeMatcher matcher : parsedCondition.matcher().attributeMatchers()) {
+                        // Check the matcher is ALL_KEYS
+                        assertTrue(matcher.matcher().toString().equals(" >= semver 1\\.22\\.9"));
+                        return;
+                    }
+                }
+            }
+        }
+        assertTrue(false);
+    }
+
+    @Test
+    public void LessThanOrEqualSemverMatcher() throws IOException {
+        SplitParser parser = new SplitParser();
+        String splits = new String(Files.readAllBytes(Paths.get("src/test/resources/semver/semver-splits.json")), StandardCharsets.UTF_8);
+        SplitChange change = Json.fromJson(splits, SplitChange.class);
+        for (Split split : change.splits) {
+            // should not cause exception
+            ParsedSplit parsedSplit = parser.parse(split);
+            if (split.name.equals("semver_less_or_equalto")) {
+                for (ParsedCondition parsedCondition : parsedSplit.parsedConditions()) {
+                    assertTrue(parsedCondition.label().equals("less than or equal to semver"));
+                    for (AttributeMatcher matcher : parsedCondition.matcher().attributeMatchers()) {
+                        // Check the matcher is ALL_KEYS
+                        assertTrue(matcher.matcher().toString().equals(" <= semver 1\\.22\\.9"));
+                        return;
+                    }
+                }
+            }
+        }
+        assertTrue(false);
+    }
+
+    @Test
+    public void BetweenSemverMatcher() throws IOException {
+        SplitParser parser = new SplitParser();
+        String splits = new String(Files.readAllBytes(Paths.get("src/test/resources/semver/semver-splits.json")), StandardCharsets.UTF_8);
+        SplitChange change = Json.fromJson(splits, SplitChange.class);
+        for (Split split : change.splits) {
+            // should not cause exception
+            ParsedSplit parsedSplit = parser.parse(split);
+            if (split.name.equals("semver_between")) {
+                for (ParsedCondition parsedCondition : parsedSplit.parsedConditions()) {
+                    assertTrue(parsedCondition.label().equals("between semver"));
+                    for (AttributeMatcher matcher : parsedCondition.matcher().attributeMatchers()) {
+                        // Check the matcher is ALL_KEYS
+                        assertTrue(matcher.matcher().toString().equals(" between semver 1\\.22\\.9 and 2\\.1\\.0"));
+                        return;
+                    }
+                }
+            }
+        }
+        assertTrue(false);
+    }
+
+    @Test
+    public void InListSemverMatcher() throws IOException {
+        SplitParser parser = new SplitParser();
+        String splits = new String(Files.readAllBytes(Paths.get("src/test/resources/semver/semver-splits.json")), StandardCharsets.UTF_8);
+        SplitChange change = Json.fromJson(splits, SplitChange.class);
+        for (Split split : change.splits) {
+            // should not cause exception
+            ParsedSplit parsedSplit = parser.parse(split);
+            if (split.name.equals("semver_inlist")) {
+                for (ParsedCondition parsedCondition : parsedSplit.parsedConditions()) {
+                    assertTrue(parsedCondition.label().equals("in list semver"));
+                    for (AttributeMatcher matcher : parsedCondition.matcher().attributeMatchers()) {
+                        // Check the matcher is ALL_KEYS
+                        assertTrue(matcher.matcher().toString().startsWith(" in semver list"));
+                        return;
+                    }
+                }
+            }
+        }
+        assertTrue(false);
+    }
+
+    public void setMatcherTest(Condition c, io.split.engine.matchers.Matcher m) {
+
         SegmentChangeFetcher segmentChangeFetcher = Mockito.mock(SegmentChangeFetcher.class);
         SegmentChange segmentChangeEmployee = getSegmentChange(-1L, -1L, EMPLOYEES);
         SegmentChange segmentChangeSalesPeople = getSegmentChange(-1L, -1L, SALES_PEOPLE);
@@ -560,7 +666,7 @@ public class SplitParserTest {
 
         ParsedSplit expected = ParsedSplit.createParsedSplitForTests("splitName", 123, false, Treatments.OFF, listOfMatcherAndSplits, "user", 1, 1, new HashSet<>());
 
-        assertThat(actual, is(equalTo(expected)));
+        Assert.assertEquals(actual, expected);
     }
 
     private Split makeSplit(String name, int seed, List<Condition> conditions, long changeNumber) {
@@ -592,5 +698,4 @@ public class SplitParserTest {
         segmentChange.removed = new ArrayList<>();
         return  segmentChange;
     }
-
 }

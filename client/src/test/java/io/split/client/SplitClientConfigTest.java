@@ -4,12 +4,14 @@ import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import io.split.client.impressions.Impression;
 import io.split.client.impressions.ImpressionListener;
 import io.split.client.impressions.ImpressionsManager;
+import io.split.client.dtos.RequestContext;
 import io.split.integrations.IntegrationsConfig;
 import org.junit.Assert;
 import org.junit.Test;
 import org.mockito.Mockito;
 
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -234,5 +236,22 @@ public class SplitClientConfigTest {
         Assert.assertNotNull(config.integrationsConfig());
         Assert.assertEquals(0, config.integrationsConfig().getImpressionsListeners(IntegrationsConfig.Execution.SYNC).size());
         Assert.assertEquals(1, config.integrationsConfig().getImpressionsListeners(IntegrationsConfig.Execution.ASYNC).size());
+    }
+
+    @Test
+    public void checkUserCustomdHeaderDecorator() {
+        CustomHeaderDecorator ucd = new CustomHeaderDecorator() {
+            @Override
+            public Map<String, List<String>> getHeaderOverrides(RequestContext context) {
+                return null;
+            }
+        };
+        SplitClientConfig config = SplitClientConfig.builder().customHeaderDecorator(ucd).build();
+        Assert.assertNotNull(config.customHeaderDecorator());
+        Assert.assertEquals(ucd, config.customHeaderDecorator());
+
+        SplitClientConfig config2 = SplitClientConfig.builder().build();
+        Assert.assertNull(config2.customHeaderDecorator());
+
     }
 }

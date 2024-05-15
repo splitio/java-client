@@ -1,7 +1,11 @@
 package io.split.telemetry.synchronizer;
 
 import io.split.TestHelper;
+import io.split.client.RequestDecorator;
 import io.split.client.dtos.UniqueKeys;
+import io.split.client.utils.SDKMetadata;
+import io.split.service.SplitHttpClient;
+import io.split.service.SplitHttpClientImpl;
 import io.split.storages.SegmentCacheConsumer;
 import io.split.storages.SplitCacheConsumer;
 import io.split.client.ApiKeyCounter;
@@ -44,20 +48,25 @@ public class TelemetryInMemorySubmitterTest {
     public static final String TELEMETRY_ENDPOINT = "https://telemetry.split.io/api/v1";
 
     @Test
-    public void testSynchronizeConfig() throws URISyntaxException, NoSuchMethodException, IOException, IllegalAccessException, InvocationTargetException {
+    public void testSynchronizeConfig() throws URISyntaxException, NoSuchMethodException, IOException,
+            IllegalAccessException, InvocationTargetException {
         CloseableHttpClient httpClient = TestHelper.mockHttpClient(TELEMETRY_ENDPOINT, HttpStatus.SC_OK);
-        TelemetrySynchronizer telemetrySynchronizer = getTelemetrySynchronizer(httpClient);
+        SplitHttpClient splitHttpClient = SplitHttpClientImpl.create(httpClient, new RequestDecorator(null), "qwerty",
+                metadata());
+        TelemetrySynchronizer telemetrySynchronizer = getTelemetrySynchronizer(splitHttpClient);
         SplitClientConfig splitClientConfig = SplitClientConfig.builder().build();
 
-        telemetrySynchronizer.synchronizeConfig(splitClientConfig, 100l, new HashMap<String,Long>(), new ArrayList<String>());
+        telemetrySynchronizer.synchronizeConfig(splitClientConfig, 100l, new HashMap<String, Long>(),
+                new ArrayList<String>());
         Mockito.verify(httpClient, Mockito.times(1)).execute(Mockito.any());
     }
-
 
     @Test
     public void testSynchronizeStats() throws Exception {
         CloseableHttpClient httpClient = TestHelper.mockHttpClient(TELEMETRY_ENDPOINT, HttpStatus.SC_OK);
-        TelemetrySynchronizer telemetrySynchronizer = getTelemetrySynchronizer(httpClient);
+        SplitHttpClient splitHttpClient = SplitHttpClientImpl.create(httpClient, new RequestDecorator(null), "qwerty",
+                metadata());
+        TelemetrySynchronizer telemetrySynchronizer = getTelemetrySynchronizer(splitHttpClient);
 
         telemetrySynchronizer.synchronizeStats();
         Mockito.verify(httpClient, Mockito.times(1)).execute(Mockito.any());
@@ -66,7 +75,9 @@ public class TelemetryInMemorySubmitterTest {
     @Test
     public void testSynchronizeUniqueKeys() throws Exception {
         CloseableHttpClient httpClient = TestHelper.mockHttpClient(TELEMETRY_ENDPOINT, HttpStatus.SC_OK);
-        TelemetrySynchronizer telemetrySynchronizer = getTelemetrySynchronizer(httpClient);
+        SplitHttpClient splitHttpClient = SplitHttpClientImpl.create(httpClient, new RequestDecorator(null), "qwerty",
+                metadata());
+        TelemetrySynchronizer telemetrySynchronizer = getTelemetrySynchronizer(splitHttpClient);
 
         List<String> keys = new ArrayList<>();
         keys.add("key-1");
@@ -80,7 +91,8 @@ public class TelemetryInMemorySubmitterTest {
     }
 
     @Test
-    public void testConfig() throws InvocationTargetException, NoSuchMethodException, IllegalAccessException, IOException, URISyntaxException, NoSuchFieldException {
+    public void testConfig() throws InvocationTargetException, NoSuchMethodException, IllegalAccessException,
+            IOException, URISyntaxException, NoSuchFieldException {
         ApiKeyCounter.getApiKeyCounterInstance().clearApiKeys();
         ApiKeyCounter.getApiKeyCounterInstance().add(FIRST_KEY);
         ApiKeyCounter.getApiKeyCounterInstance().add(FIRST_KEY);
@@ -89,8 +101,11 @@ public class TelemetryInMemorySubmitterTest {
         ApiKeyCounter.getApiKeyCounterInstance().add(SECOND_KEY);
         TelemetryStorage telemetryStorage = new InMemoryTelemetryStorage();
         CloseableHttpClient httpClient = TestHelper.mockHttpClient(TELEMETRY_ENDPOINT, HttpStatus.SC_OK);
-        TelemetryInMemorySubmitter telemetrySynchronizer = getTelemetrySynchronizer(httpClient);
-        SplitClientConfig splitClientConfig = SplitClientConfig.builder().flagSetsFilter(Arrays.asList("a", "_b", "a", "a", "c", "d", "_d")).build();
+        SplitHttpClient splitHttpClient = SplitHttpClientImpl.create(httpClient, new RequestDecorator(null), "qwerty",
+                metadata());
+        TelemetryInMemorySubmitter telemetrySynchronizer = getTelemetrySynchronizer(splitHttpClient);
+        SplitClientConfig splitClientConfig = SplitClientConfig.builder()
+                .flagSetsFilter(Arrays.asList("a", "_b", "a", "a", "c", "d", "_d")).build();
         populateConfig(telemetryStorage);
         Field telemetryStorageConsumer = TelemetryInMemorySubmitter.class.getDeclaredField("_telemetryStorageConsumer");
         telemetryStorageConsumer.setAccessible(true);
@@ -98,7 +113,8 @@ public class TelemetryInMemorySubmitterTest {
         modifiersField.setAccessible(true);
         modifiersField.setInt(telemetryStorageConsumer, telemetryStorageConsumer.getModifiers() & ~Modifier.FINAL);
         telemetryStorageConsumer.set(telemetrySynchronizer, telemetryStorage);
-        Config config = telemetrySynchronizer.generateConfig(splitClientConfig, 100l, ApiKeyCounter.getApiKeyCounterInstance().getFactoryInstances(), new ArrayList<>());
+        Config config = telemetrySynchronizer.generateConfig(splitClientConfig, 100l,
+                ApiKeyCounter.getApiKeyCounterInstance().getFactoryInstances(), new ArrayList<>());
         Assert.assertEquals(3, config.getRedundantFactories());
         Assert.assertEquals(2, config.getBurTimeouts());
         Assert.assertEquals(3, config.getNonReadyUsages());
@@ -110,7 +126,9 @@ public class TelemetryInMemorySubmitterTest {
     public void testStats() throws Exception {
         TelemetryStorage telemetryStorage = new InMemoryTelemetryStorage();
         CloseableHttpClient httpClient = TestHelper.mockHttpClient(TELEMETRY_ENDPOINT, HttpStatus.SC_OK);
-        TelemetryInMemorySubmitter telemetrySynchronizer = getTelemetrySynchronizer(httpClient);
+        SplitHttpClient splitHttpClient = SplitHttpClientImpl.create(httpClient, new RequestDecorator(null), "qwerty",
+                metadata());
+        TelemetryInMemorySubmitter telemetrySynchronizer = getTelemetrySynchronizer(splitHttpClient);
         populateStats(telemetryStorage);
         Field telemetryStorageConsumer = TelemetryInMemorySubmitter.class.getDeclaredField("_telemetryStorageConsumer");
         telemetryStorageConsumer.setAccessible(true);
@@ -122,20 +140,26 @@ public class TelemetryInMemorySubmitterTest {
         Stats stats = telemetrySynchronizer.generateStats();
         Assert.assertEquals(2, stats.getMethodLatencies().getTreatment().stream().mapToInt(Long::intValue).sum());
         Assert.assertEquals(2, stats.getMethodLatencies().getTreatments().stream().mapToInt(Long::intValue).sum());
-        Assert.assertEquals(1, stats.getMethodLatencies().getTreatmentsWithConfig().stream().mapToInt(Long::intValue).sum());
-        Assert.assertEquals(1, stats.getMethodLatencies().getTreatmentWithConfig().stream().mapToInt(Long::intValue).sum());
-        Assert.assertEquals(1, stats.getMethodLatencies().getTreatmentByFlagSet().stream().mapToInt(Long::intValue).sum());
-        Assert.assertEquals(1, stats.getMethodLatencies().getTreatmentByFlagSets().stream().mapToInt(Long::intValue).sum());
-        Assert.assertEquals(1, stats.getMethodLatencies().getTreatmentWithConfigByFlagSet().stream().mapToInt(Long::intValue).sum());
-        Assert.assertEquals(1, stats.getMethodLatencies().getTreatmentWithConfigByFlagSets().stream().mapToInt(Long::intValue).sum());
+        Assert.assertEquals(1,
+                stats.getMethodLatencies().getTreatmentsWithConfig().stream().mapToInt(Long::intValue).sum());
+        Assert.assertEquals(1,
+                stats.getMethodLatencies().getTreatmentWithConfig().stream().mapToInt(Long::intValue).sum());
+        Assert.assertEquals(1,
+                stats.getMethodLatencies().getTreatmentByFlagSet().stream().mapToInt(Long::intValue).sum());
+        Assert.assertEquals(1,
+                stats.getMethodLatencies().getTreatmentByFlagSets().stream().mapToInt(Long::intValue).sum());
+        Assert.assertEquals(1,
+                stats.getMethodLatencies().getTreatmentWithConfigByFlagSet().stream().mapToInt(Long::intValue).sum());
+        Assert.assertEquals(1,
+                stats.getMethodLatencies().getTreatmentWithConfigByFlagSets().stream().mapToInt(Long::intValue).sum());
         Assert.assertEquals(0, stats.getMethodLatencies().getTrack().stream().mapToInt(Long::intValue).sum());
-        Assert.assertEquals(3, stats.getHttpLatencies().get_splits().stream().mapToInt(Long::intValue).sum());
-        Assert.assertEquals(2, stats.getHttpLatencies().get_telemetry().stream().mapToInt(Long::intValue).sum());
-        Assert.assertEquals(2, stats.getHttpLatencies().get_events().stream().mapToInt(Long::intValue).sum());
-        Assert.assertEquals(1, stats.getHttpLatencies().get_segments().stream().mapToInt(Long::intValue).sum());
-        Assert.assertEquals(1, stats.getHttpLatencies().get_impressions().stream().mapToInt(Long::intValue).sum());
-        Assert.assertEquals(1, stats.getHttpLatencies().get_impressionsCount().stream().mapToInt(Long::intValue).sum());
-        Assert.assertEquals(0, stats.getHttpLatencies().get_token().stream().mapToInt(Long::intValue).sum());
+        Assert.assertEquals(3, stats.getHttpLatencies().getSplits().stream().mapToInt(Long::intValue).sum());
+        Assert.assertEquals(2, stats.getHttpLatencies().getTelemetry().stream().mapToInt(Long::intValue).sum());
+        Assert.assertEquals(2, stats.getHttpLatencies().getEvents().stream().mapToInt(Long::intValue).sum());
+        Assert.assertEquals(1, stats.getHttpLatencies().getSegments().stream().mapToInt(Long::intValue).sum());
+        Assert.assertEquals(1, stats.getHttpLatencies().getImpressions().stream().mapToInt(Long::intValue).sum());
+        Assert.assertEquals(1, stats.getHttpLatencies().getImpressionsCount().stream().mapToInt(Long::intValue).sum());
+        Assert.assertEquals(0, stats.getHttpLatencies().getToken().stream().mapToInt(Long::intValue).sum());
         Assert.assertEquals(2, stats.getMethodExceptions().getTreatment());
         Assert.assertEquals(2, stats.getMethodExceptions().getTreatments());
         Assert.assertEquals(1, stats.getMethodExceptions().getTreatmentsWithConfig());
@@ -153,34 +177,36 @@ public class TelemetryInMemorySubmitterTest {
         Assert.assertEquals(0, stats.getImpressionsQueued());
         Assert.assertEquals(10, stats.getEventsDropped());
         Assert.assertEquals(3, stats.getEventsQueued());
-        Assert.assertEquals(800, stats.getLastSynchronization().get_events());
-        Assert.assertEquals(129, stats.getLastSynchronization().get_token());
-        Assert.assertEquals(1580, stats.getLastSynchronization().get_segments());
-        Assert.assertEquals(0, stats.getLastSynchronization().get_splits());
-        Assert.assertEquals(10500, stats.getLastSynchronization().get_impressions());
-        Assert.assertEquals(1500, stats.getLastSynchronization().get_impressionsCount());
-        Assert.assertEquals(265, stats.getLastSynchronization().get_telemetry());
+        Assert.assertEquals(800, stats.getLastSynchronization().getEvents());
+        Assert.assertEquals(129, stats.getLastSynchronization().getToken());
+        Assert.assertEquals(1580, stats.getLastSynchronization().getSegments());
+        Assert.assertEquals(0, stats.getLastSynchronization().getSplits());
+        Assert.assertEquals(10500, stats.getLastSynchronization().getImpressions());
+        Assert.assertEquals(1500, stats.getLastSynchronization().getImpressionsCount());
+        Assert.assertEquals(265, stats.getLastSynchronization().getTelemetry());
         Assert.assertEquals(91218, stats.getSessionLengthMs());
-        Assert.assertEquals(2, stats.getHttpErrors().get_telemetry().get(400l).intValue());
-        Assert.assertEquals(1, stats.getHttpErrors().get_segments().get(501l).intValue());
-        Assert.assertEquals(2, stats.getHttpErrors().get_impressions().get(403l).intValue());
-        Assert.assertEquals(1, stats.getHttpErrors().get_impressionsCount().get(403l).intValue());
-        Assert.assertEquals(1, stats.getHttpErrors().get_events().get(503l).intValue());
-        Assert.assertEquals(1, stats.getHttpErrors().get_splits().get(403l).intValue());
-        Assert.assertEquals(1, stats.getHttpErrors().get_token().get(403l).intValue());
+        Assert.assertEquals(2, stats.getHttpErrors().getTelemetry().get(400l).intValue());
+        Assert.assertEquals(1, stats.getHttpErrors().getSegments().get(501l).intValue());
+        Assert.assertEquals(2, stats.getHttpErrors().getImpressions().get(403l).intValue());
+        Assert.assertEquals(1, stats.getHttpErrors().getImpressionsCount().get(403l).intValue());
+        Assert.assertEquals(1, stats.getHttpErrors().getEvents().get(503l).intValue());
+        Assert.assertEquals(1, stats.getHttpErrors().getSplits().get(403l).intValue());
+        Assert.assertEquals(1, stats.getHttpErrors().getToken().get(403l).intValue());
         List<StreamingEvent> streamingEvents = stats.getStreamingEvents();
-        Assert.assertEquals(290, streamingEvents.get(0).get_data());
-        Assert.assertEquals(1, streamingEvents.get(0).get_type());
+        Assert.assertEquals(290, streamingEvents.get(0).getData());
+        Assert.assertEquals(1, streamingEvents.get(0).getType());
         Assert.assertEquals(91218, streamingEvents.get(0).getTimestamp());
         Assert.assertEquals(1, stats.getUpdatesFromSSE().getSplits());
     }
 
-    private TelemetryInMemorySubmitter getTelemetrySynchronizer(CloseableHttpClient httpClient) throws URISyntaxException {
+    private TelemetryInMemorySubmitter getTelemetrySynchronizer(SplitHttpClient httpClient) throws URISyntaxException {
         TelemetryStorageConsumer consumer = Mockito.mock(InMemoryTelemetryStorage.class);
         TelemetryRuntimeProducer telemetryRuntimeProducer = Mockito.mock(TelemetryRuntimeProducer.class);
         SplitCacheConsumer splitCacheConsumer = Mockito.mock(SplitCacheConsumer.class);
         SegmentCacheConsumer segmentCacheConsumer = Mockito.mock(SegmentCacheConsumer.class);
-        TelemetryInMemorySubmitter telemetrySynchronizer = new TelemetryInMemorySubmitter(httpClient, URI.create(TELEMETRY_ENDPOINT), consumer, splitCacheConsumer, segmentCacheConsumer, telemetryRuntimeProducer, 0l);
+        TelemetryInMemorySubmitter telemetrySynchronizer = new TelemetryInMemorySubmitter(httpClient,
+                URI.create(TELEMETRY_ENDPOINT), consumer, splitCacheConsumer, segmentCacheConsumer,
+                telemetryRuntimeProducer, 0l);
         return telemetrySynchronizer;
     }
 
@@ -266,4 +292,9 @@ public class TelemetryInMemorySubmitterTest {
         telemetryStorage.recordNonReadyUsage();
         telemetryStorage.recordNonReadyUsage();
     }
+
+    private SDKMetadata metadata() {
+        return new SDKMetadata("java-1.2.3", "1.2.3.4", "someIP");
+    }
+
 }

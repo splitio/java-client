@@ -6,6 +6,9 @@ import io.split.client.dtos.Matcher;
 import io.split.client.dtos.MatcherGroup;
 import io.split.client.dtos.Partition;
 import io.split.client.dtos.Split;
+import io.split.client.dtos.ConditionType;
+import io.split.client.dtos.MatcherType;
+import io.split.engine.evaluator.Labels;
 import io.split.engine.matchers.AllKeysMatcher;
 import io.split.engine.matchers.AttributeMatcher;
 import io.split.engine.matchers.BetweenMatcher;
@@ -16,6 +19,7 @@ import io.split.engine.matchers.EqualToMatcher;
 import io.split.engine.matchers.GreaterThanOrEqualToMatcher;
 import io.split.engine.matchers.LessThanOrEqualToMatcher;
 import io.split.engine.matchers.UserDefinedSegmentMatcher;
+import io.split.engine.matchers.EqualToSemverMatcher;
 import io.split.engine.matchers.collections.ContainsAllOfSetMatcher;
 import io.split.engine.matchers.collections.ContainsAnyOfSetMatcher;
 import io.split.engine.matchers.collections.EqualToSetMatcher;
@@ -25,6 +29,11 @@ import io.split.engine.matchers.strings.EndsWithAnyOfMatcher;
 import io.split.engine.matchers.strings.RegularExpressionMatcher;
 import io.split.engine.matchers.strings.StartsWithAnyOfMatcher;
 import io.split.engine.matchers.strings.WhitelistMatcher;
+import io.split.engine.matchers.GreaterThanOrEqualToSemverMatcher;
+import io.split.engine.matchers.LessThanOrEqualToSemverMatcher;
+import io.split.engine.matchers.InListSemverMatcher;
+import io.split.engine.matchers.BetweenSemverMatcher;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -59,12 +68,46 @@ public final class SplitParser {
 
         for (Condition condition : split.conditions) {
             List<Partition> partitions = condition.partitions;
+            if (checkUnsupportedMatcherExist(condition.matcherGroup.matchers)) {
+                _log.error("Unsupported matcher type found for feature flag: " + split.name + " , will revert to default template matcher.");
+                parsedConditionList.clear();
+                parsedConditionList.add(getTemplateCondition());
+                break;
+            }
             CombiningMatcher matcher = toMatcher(condition.matcherGroup);
             parsedConditionList.add(new ParsedCondition(condition.conditionType, matcher, partitions, condition.label));
         }
 
         return new ParsedSplit(split.name, split.seed, split.killed, split.defaultTreatment, parsedConditionList, split.trafficTypeName,
                 split.changeNumber, split.trafficAllocation, split.trafficAllocationSeed, split.algo, split.configurations, split.sets);
+    }
+
+    private boolean checkUnsupportedMatcherExist(List<io.split.client.dtos.Matcher> matchers) {
+        MatcherType typeCheck = null;
+        for (io.split.client.dtos.Matcher matcher : matchers) {
+            typeCheck = null;
+            try {
+                typeCheck = matcher.matcherType;
+            } catch (NullPointerException e) {
+                // If the exception is caught, it means unsupported matcher
+                break;
+            }
+        }
+        if (typeCheck != null)  return false;
+        return true;
+    }
+
+    private ParsedCondition getTemplateCondition() {
+        List<Partition> templatePartitions = Lists.newArrayList();
+        Partition partition = new Partition();
+        partition.treatment = "control";
+        partition.size = 100;
+        templatePartitions.add(partition);
+        return new ParsedCondition(
+                ConditionType.ROLLOUT,
+                CombiningMatcher.of(new AllKeysMatcher()),
+                templatePartitions,
+                Labels.UNSUPPORTED_MATCHER);
     }
 
     private CombiningMatcher toMatcher(MatcherGroup matcherGroup) {
@@ -155,6 +198,26 @@ public final class SplitParser {
                         "MatcherType is " + matcher.matcherType
                                 + ". matcher.booleanMatcherData() MUST NOT BE null");
                 delegate = new BooleanMatcher(matcher.booleanMatcherData);
+                break;
+            case EQUAL_TO_SEMVER:
+                checkNotNull(matcher.stringMatcherData, "stringMatcherData is required for EQUAL_TO_SEMVER matcher type");
+                delegate = new EqualToSemverMatcher(matcher.stringMatcherData);
+                break;
+            case GREATER_THAN_OR_EQUAL_TO_SEMVER:
+                checkNotNull(matcher.stringMatcherData, "stringMatcherData is required for GREATER_THAN_OR_EQUAL_TO_SEMVER matcher type");
+                delegate = new GreaterThanOrEqualToSemverMatcher(matcher.stringMatcherData);
+                break;
+            case LESS_THAN_OR_EQUAL_TO_SEMVER:
+                checkNotNull(matcher.stringMatcherData, "stringMatcherData is required for LESS_THAN_OR_EQUAL_SEMVER matcher type");
+                delegate = new LessThanOrEqualToSemverMatcher(matcher.stringMatcherData);
+                break;
+            case IN_LIST_SEMVER:
+                checkNotNull(matcher.whitelistMatcherData, "whitelistMatcherData is required for IN_LIST_SEMVER matcher type");
+                delegate = new InListSemverMatcher(matcher.whitelistMatcherData.whitelist);
+                break;
+            case BETWEEN_SEMVER:
+                checkNotNull(matcher.betweenStringMatcherData, "betweenStringMatcherData is required for BETWEEN_SEMVER matcher type");
+                delegate = new BetweenSemverMatcher(matcher.betweenStringMatcherData.start, matcher.betweenStringMatcherData.end);
                 break;
             default:
                 throw new IllegalArgumentException("Unknown matcher type: " + matcher.matcherType);

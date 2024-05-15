@@ -22,7 +22,7 @@ public class RawAuthResponse {
         this.pushEnabled = pushEnabled;
         this.token = token;
 
-        if (token != null && token != "") {
+        if (token != null && !token.isEmpty()) {
             String tokenDecoded = decodeJwt();
             this.jwt = Json.fromJson(tokenDecoded, Jwt.class);
         } else {
