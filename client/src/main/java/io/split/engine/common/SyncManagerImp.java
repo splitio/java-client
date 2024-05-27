@@ -218,7 +218,6 @@ public class SyncManagerImp implements SyncManager {
                         long howLong = _backoff.interval();
                         _log.info(String.format("Retryable error in streaming subsystem. Switching to polling and retrying in %d seconds", howLong));
                         _synchronizer.startPeriodicFetching();
-                        _pushManager.stopWorkers();
                         _pushManager.stop();
                         Thread.sleep(howLong * 1000);
                         _incomingPushStatus.clear();

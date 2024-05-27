@@ -102,7 +102,7 @@ public class PushManagerImp implements PushManager {
             return;
         }
 
-        stop();
+        cleanUpResources();
         if (response.isRetry()) {
             _pushStatusTracker.handleSseStatus(SSEClient.StatusMessage.RETRYABLE_ERROR);
         } else {
@@ -113,16 +113,11 @@ public class PushManagerImp implements PushManager {
     @Override
     public synchronized void stop() {
         _log.debug("Stopping PushManagerImp");
-        _eventSourceClient.stop();
-        stopWorkers();
-        if (_nextTokenRefreshTask != null) {
-            _log.debug("Cancel nextTokenRefreshTask");
-            _nextTokenRefreshTask.cancel(false);
-        }
+        cleanUpResources();
     }
 
     @Override
-    public synchronized void scheduleConnectionReset() {
+    public void scheduleConnectionReset() {
         _log.debug(String.format("scheduleNextTokenRefresh in %s SECONDS", _expirationTime));
         _nextTokenRefreshTask = _scheduledExecutorService.schedule(() -> {
             _log.debug("Starting scheduleNextTokenRefresh ...");
@@ -142,14 +137,23 @@ public class PushManagerImp implements PushManager {
     }
 
     @Override
-    public synchronized void startWorkers() {
+    public void startWorkers() {
         _featureFlagsWorker.start();
         _segmentWorker.start();
     }
 
     @Override
-    public synchronized void stopWorkers() {
+    public void stopWorkers() {
         _featureFlagsWorker.stop();
         _segmentWorker.stop();
+    }
+
+    private void cleanUpResources() {
+        _eventSourceClient.stop();
+        stopWorkers();
+        if (_nextTokenRefreshTask != null) {
+            _log.debug("Cancel nextTokenRefreshTask");
+            _nextTokenRefreshTask.cancel(false);
+        }
     }
 }
