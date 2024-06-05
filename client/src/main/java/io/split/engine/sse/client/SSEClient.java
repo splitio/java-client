@@ -59,8 +59,8 @@ public class SSEClient {
     private final AtomicReference<HttpGet> _ongoingRequest = new AtomicReference<>();
     private AtomicBoolean _forcedStop;
     private final RequestDecorator _requestDecorator;
-
     private final TelemetryRuntimeProducer _telemetryRuntimeProducer;
+    private final AtomicBoolean openGuard = new AtomicBoolean(false);
 
     public SSEClient(Function<RawEvent, Void> eventCallback,
                      Function<StatusMessage, Void> statusCallback,
@@ -77,9 +77,14 @@ public class SSEClient {
         _requestDecorator = requestDecorator;
     }
 
-    public synchronized boolean open(URI uri) {
+    public boolean open(URI uri) {
         if (isOpen()) {
             _log.info("SSEClient already open.");
+            return false;
+        }
+
+        if (!openGuard.compareAndSet(false, true)) {
+            _log.debug("Open SSEClient already running");
             return false;
         }
 
@@ -99,6 +104,8 @@ public class SSEClient {
             }
             _log.info(e.getMessage());
             return false;
+        } finally {
+            openGuard.set(false);
         }
         return isOpen();
     }
