@@ -30,6 +30,8 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 import static io.split.client.utils.SplitExecutorFactory.buildSingleThreadScheduledExecutor;
@@ -42,6 +44,8 @@ public class PushManagerImp implements PushManager {
     private final FeatureFlagsWorker _featureFlagsWorker;
     private final Worker<SegmentQueueDto> _segmentWorker;
     private final PushStatusTracker _pushStatusTracker;
+    private static final Lock startLock = new ReentrantLock();
+    private static final Lock stopLock = new ReentrantLock();
 
     private Future<?> _nextTokenRefreshTask;
     private final ScheduledExecutorService _scheduledExecutorService;
@@ -92,28 +96,38 @@ public class PushManagerImp implements PushManager {
     }
 
     @Override
-    public synchronized void start() {
-        AuthenticationResponse response = _authApiClient.Authenticate();
-        _log.debug(String.format("Auth service response pushEnabled: %s", response.isPushEnabled()));
-        if (response.isPushEnabled() && startSse(response.getToken(), response.getChannels())) {
-            _expirationTime.set(response.getExpiration());
-            _telemetryRuntimeProducer.recordStreamingEvents(new StreamingEvent(StreamEventsEnum.TOKEN_REFRESH.getType(),
-                    response.getExpiration(), System.currentTimeMillis()));
-            return;
-        }
+    public void start() {
+        try {
+            startLock.lock();
+            AuthenticationResponse response = _authApiClient.Authenticate();
+            _log.debug(String.format("Auth service response pushEnabled: %s", response.isPushEnabled()));
+            if (response.isPushEnabled() && startSse(response.getToken(), response.getChannels())) {
+                _expirationTime.set(response.getExpiration());
+                _telemetryRuntimeProducer.recordStreamingEvents(new StreamingEvent(StreamEventsEnum.TOKEN_REFRESH.getType(),
+                        response.getExpiration(), System.currentTimeMillis()));
+                return;
+            }
 
-        cleanUpResources();
-        if (response.isRetry()) {
-            _pushStatusTracker.handleSseStatus(SSEClient.StatusMessage.RETRYABLE_ERROR);
-        } else {
-            _pushStatusTracker.forcePushDisable();
+            cleanUpResources();
+            if (response.isRetry()) {
+                _pushStatusTracker.handleSseStatus(SSEClient.StatusMessage.RETRYABLE_ERROR);
+            } else {
+                _pushStatusTracker.forcePushDisable();
+            }
+        } finally {
+            startLock.unlock();
         }
     }
 
     @Override
-    public synchronized void stop() {
-        _log.debug("Stopping PushManagerImp");
-        cleanUpResources();
+    public void stop() {
+        try {
+            stopLock.lock();
+            _log.debug("Stopping PushManagerImp");
+            cleanUpResources();
+        } finally {
+            stopLock.unlock();
+        }
     }
 
     @Override
