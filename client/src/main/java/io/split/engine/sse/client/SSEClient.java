@@ -50,8 +50,7 @@ public class SSEClient {
     private final static String SOCKET_CLOSED_MESSAGE = "Socket closed";
     private final static String KEEP_ALIVE_PAYLOAD = ":keepalive\n";
     private final static long CONNECT_TIMEOUT = 30000;
-    private static final Lock openLock = new ReentrantLock();
-    private static final Lock closeLock = new ReentrantLock();
+    private static final Lock lock = new ReentrantLock();
     private static final Logger _log = LoggerFactory.getLogger(SSEClient.class);
     private final ExecutorService _connectionExecutor;
     private final CloseableHttpClient _client;
@@ -81,7 +80,7 @@ public class SSEClient {
 
     public boolean open(URI uri) {
         try {
-            openLock.lock();
+            lock.lock();
             if (isOpen()) {
                 _log.info("SSEClient already open.");
                 return false;
@@ -106,7 +105,7 @@ public class SSEClient {
             }
             return isOpen();
         } finally {
-            openLock.unlock();
+            lock.unlock();
         }
     }
 
@@ -116,7 +115,7 @@ public class SSEClient {
 
     public void close() {
         try {
-            closeLock.lock();
+            lock.lock();
             _forcedStop.set(true);
             if (_state.compareAndSet(ConnectionState.OPEN, ConnectionState.CLOSED)) {
                 if (_ongoingResponse.get() != null) {
@@ -129,7 +128,7 @@ public class SSEClient {
                 }
             }
         } finally {
-            closeLock.unlock();
+            lock.unlock();
         }
     }
 

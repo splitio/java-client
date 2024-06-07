@@ -44,8 +44,7 @@ public class PushManagerImp implements PushManager {
     private final FeatureFlagsWorker _featureFlagsWorker;
     private final Worker<SegmentQueueDto> _segmentWorker;
     private final PushStatusTracker _pushStatusTracker;
-    private static final Lock startLock = new ReentrantLock();
-    private static final Lock stopLock = new ReentrantLock();
+    private static final Lock lock = new ReentrantLock();
 
     private Future<?> _nextTokenRefreshTask;
     private final ScheduledExecutorService _scheduledExecutorService;
@@ -98,7 +97,7 @@ public class PushManagerImp implements PushManager {
     @Override
     public void start() {
         try {
-            startLock.lock();
+            lock.lock();
             AuthenticationResponse response = _authApiClient.Authenticate();
             _log.debug(String.format("Auth service response pushEnabled: %s", response.isPushEnabled()));
             if (response.isPushEnabled() && startSse(response.getToken(), response.getChannels())) {
@@ -115,18 +114,18 @@ public class PushManagerImp implements PushManager {
                 _pushStatusTracker.forcePushDisable();
             }
         } finally {
-            startLock.unlock();
+            lock.unlock();
         }
     }
 
     @Override
     public void stop() {
         try {
-            stopLock.lock();
+            lock.lock();
             _log.debug("Stopping PushManagerImp");
             cleanUpResources();
         } finally {
-            stopLock.unlock();
+            lock.unlock();
         }
     }
 
