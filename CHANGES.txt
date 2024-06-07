@@ -1,3 +1,6 @@
+4.12.1 (Jun 10, 2024)
+- Fixed deadlock for virtual thread in Push Manager and SSE Client.
+
 4.12.0 (May 15, 2024)
 - Added support for targeting rules based on semantic versions (https://semver.org/).
 - Added the logic to handle correctly when the SDK receives an unsupported Matcher type.
