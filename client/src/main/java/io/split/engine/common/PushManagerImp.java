@@ -30,6 +30,8 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 import static io.split.client.utils.SplitExecutorFactory.buildSingleThreadScheduledExecutor;
@@ -42,6 +44,7 @@ public class PushManagerImp implements PushManager {
     private final FeatureFlagsWorker _featureFlagsWorker;
     private final Worker<SegmentQueueDto> _segmentWorker;
     private final PushStatusTracker _pushStatusTracker;
+    private static final Lock lock = new ReentrantLock();
 
     private Future<?> _nextTokenRefreshTask;
     private final ScheduledExecutorService _scheduledExecutorService;
@@ -92,37 +95,42 @@ public class PushManagerImp implements PushManager {
     }
 
     @Override
-    public synchronized void start() {
-        AuthenticationResponse response = _authApiClient.Authenticate();
-        _log.debug(String.format("Auth service response pushEnabled: %s", response.isPushEnabled()));
-        if (response.isPushEnabled() && startSse(response.getToken(), response.getChannels())) {
-            _expirationTime.set(response.getExpiration());
-            _telemetryRuntimeProducer.recordStreamingEvents(new StreamingEvent(StreamEventsEnum.TOKEN_REFRESH.getType(),
-                    response.getExpiration(), System.currentTimeMillis()));
-            return;
-        }
+    public void start() {
+        try {
+            lock.lock();
+            AuthenticationResponse response = _authApiClient.Authenticate();
+            _log.debug(String.format("Auth service response pushEnabled: %s", response.isPushEnabled()));
+            if (response.isPushEnabled() && startSse(response.getToken(), response.getChannels())) {
+                _expirationTime.set(response.getExpiration());
+                _telemetryRuntimeProducer.recordStreamingEvents(new StreamingEvent(StreamEventsEnum.TOKEN_REFRESH.getType(),
+                        response.getExpiration(), System.currentTimeMillis()));
+                return;
+            }
 
-        stop();
-        if (response.isRetry()) {
-            _pushStatusTracker.handleSseStatus(SSEClient.StatusMessage.RETRYABLE_ERROR);
-        } else {
-            _pushStatusTracker.forcePushDisable();
-        }
-    }
-
-    @Override
-    public synchronized void stop() {
-        _log.debug("Stopping PushManagerImp");
-        _eventSourceClient.stop();
-        stopWorkers();
-        if (_nextTokenRefreshTask != null) {
-            _log.debug("Cancel nextTokenRefreshTask");
-            _nextTokenRefreshTask.cancel(false);
+            cleanUpResources();
+            if (response.isRetry()) {
+                _pushStatusTracker.handleSseStatus(SSEClient.StatusMessage.RETRYABLE_ERROR);
+            } else {
+                _pushStatusTracker.forcePushDisable();
+            }
+        } finally {
+            lock.unlock();
         }
     }
 
     @Override
-    public synchronized void scheduleConnectionReset() {
+    public void stop() {
+        try {
+            lock.lock();
+            _log.debug("Stopping PushManagerImp");
+            cleanUpResources();
+        } finally {
+            lock.unlock();
+        }
+    }
+
+    @Override
+    public void scheduleConnectionReset() {
         _log.debug(String.format("scheduleNextTokenRefresh in %s SECONDS", _expirationTime));
         _nextTokenRefreshTask = _scheduledExecutorService.schedule(() -> {
             _log.debug("Starting scheduleNextTokenRefresh ...");
@@ -142,14 +150,23 @@ public class PushManagerImp implements PushManager {
     }
 
     @Override
-    public synchronized void startWorkers() {
+    public void startWorkers() {
         _featureFlagsWorker.start();
         _segmentWorker.start();
     }
 
     @Override
-    public synchronized void stopWorkers() {
+    public void stopWorkers() {
         _featureFlagsWorker.stop();
         _segmentWorker.stop();
+    }
+
+    private void cleanUpResources() {
+        _eventSourceClient.stop();
+        stopWorkers();
+        if (_nextTokenRefreshTask != null) {
+            _log.debug("Cancel nextTokenRefreshTask");
+            _nextTokenRefreshTask.cancel(false);
+        }
     }
 }

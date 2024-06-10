@@ -22,9 +22,13 @@ public class PushManagerTest {
     private PushManager _pushManager;
     private PushStatusTracker _pushStatusTracker;
     private TelemetryStorage _telemetryStorage;
+    private FeatureFlagsWorker _featureFlagsWorker;
+    private SegmentsWorkerImp _segmentsWorkerImp;
 
     @Before
     public void setUp() {
+        _featureFlagsWorker = Mockito.mock(FeatureFlagsWorker.class);
+        _segmentsWorkerImp = Mockito.mock(SegmentsWorkerImp.class);
         _authApiClient = Mockito.mock(AuthApiClient.class);
         _eventSourceClient = Mockito.mock(EventSourceClient.class);
         _backoff = Mockito.mock(Backoff.class);
@@ -32,8 +36,8 @@ public class PushManagerTest {
         _telemetryStorage = new InMemoryTelemetryStorage();
         _pushManager = new PushManagerImp(_authApiClient,
                 _eventSourceClient,
-                Mockito.mock(FeatureFlagsWorker.class),
-                Mockito.mock(SegmentsWorkerImp.class),
+                _featureFlagsWorker,
+                _segmentsWorkerImp,
                 _pushStatusTracker,
                 _telemetryStorage,
                 null);
@@ -106,5 +110,61 @@ public class PushManagerTest {
 
         Thread.sleep(1500);
         Mockito.verify(_pushStatusTracker, Mockito.times(1)).handleSseStatus(SSEClient.StatusMessage.RETRYABLE_ERROR);
+    }
+
+
+    @Test
+    public void startAndStop() throws InterruptedException {
+        AuthenticationResponse response = new AuthenticationResponse(true, "token-test", "channels-test", 1, false);
+
+        Mockito.when(_authApiClient.Authenticate())
+                .thenReturn(response);
+
+        Mockito.when(_eventSourceClient.start(response.getChannels(), response.getToken()))
+                .thenReturn(true);
+
+        _pushManager.start();
+
+        Mockito.verify(_authApiClient, Mockito.times(1)).Authenticate();
+        Mockito.verify(_eventSourceClient, Mockito.times(1)).start(response.getChannels(), response.getToken());
+
+        Thread.sleep(1500);
+
+        Mockito.verify(_pushStatusTracker, Mockito.times(0)).handleSseStatus(SSEClient.StatusMessage.RETRYABLE_ERROR);
+        Mockito.verify(_pushStatusTracker, Mockito.times(0)).forcePushDisable();
+        Assert.assertEquals(1, _telemetryStorage.popStreamingEvents().size());
+
+        _pushManager.stop();
+
+        Mockito.verify(_eventSourceClient, Mockito.times(1)).stop();
+        Mockito.verify(_featureFlagsWorker, Mockito.times(1)).stop();
+        Mockito.verify(_segmentsWorkerImp, Mockito.times(1)).stop();
+    }
+
+    @Test
+    public void validateStartWorkers() {
+        _pushManager.startWorkers();
+        Mockito.verify(_featureFlagsWorker, Mockito.times(1)).start();
+        Mockito.verify(_segmentsWorkerImp, Mockito.times(1)).start();
+    }
+
+    @Test
+    public void validateScheduleConnectionReset() throws InterruptedException {
+        AuthenticationResponse response = new AuthenticationResponse(false, "token-test", "channels-test", 3, false);
+
+        Mockito.when(_authApiClient.Authenticate())
+                .thenReturn(response);
+
+        Mockito.when(_eventSourceClient.start(response.getChannels(), response.getToken()))
+                .thenReturn(true);
+
+        _pushManager.start();
+
+        _pushManager.scheduleConnectionReset();
+        Thread.sleep(1000);
+
+        Mockito.verify(_eventSourceClient, Mockito.times(3)).stop();
+        Mockito.verify(_featureFlagsWorker, Mockito.times(3)).stop();
+        Mockito.verify(_segmentsWorkerImp, Mockito.times(3)).stop();
     }
 }

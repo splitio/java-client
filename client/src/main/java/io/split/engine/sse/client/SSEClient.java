@@ -6,7 +6,6 @@ import io.split.telemetry.domain.StreamingEvent;
 import io.split.telemetry.domain.enums.StreamEventsEnum;
 import io.split.telemetry.storage.TelemetryRuntimeProducer;
 import org.apache.hc.client5.http.classic.methods.HttpGet;
-import org.apache.hc.client5.http.classic.methods.HttpPost;
 import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
 import org.apache.hc.client5.http.impl.classic.CloseableHttpResponse;
 import org.slf4j.Logger;
@@ -25,6 +24,8 @@ import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
 import java.util.function.Function;
 
 import static com.google.common.base.Preconditions.checkNotNull;
@@ -49,6 +50,7 @@ public class SSEClient {
     private final static String SOCKET_CLOSED_MESSAGE = "Socket closed";
     private final static String KEEP_ALIVE_PAYLOAD = ":keepalive\n";
     private final static long CONNECT_TIMEOUT = 30000;
+    private static final Lock lock = new ReentrantLock();
     private static final Logger _log = LoggerFactory.getLogger(SSEClient.class);
     private final ExecutorService _connectionExecutor;
     private final CloseableHttpClient _client;
@@ -59,7 +61,6 @@ public class SSEClient {
     private final AtomicReference<HttpGet> _ongoingRequest = new AtomicReference<>();
     private AtomicBoolean _forcedStop;
     private final RequestDecorator _requestDecorator;
-
     private final TelemetryRuntimeProducer _telemetryRuntimeProducer;
 
     public SSEClient(Function<RawEvent, Void> eventCallback,
@@ -77,47 +78,57 @@ public class SSEClient {
         _requestDecorator = requestDecorator;
     }
 
-    public synchronized boolean open(URI uri) {
-        if (isOpen()) {
-            _log.info("SSEClient already open.");
-            return false;
-        }
-
-        _statusCallback.apply(StatusMessage.INITIALIZATION_IN_PROGRESS);
-
-        CountDownLatch signal = new CountDownLatch(1);
-        _connectionExecutor.submit(() -> connectAndLoop(uri, signal));
+    public boolean open(URI uri) {
         try {
-            if (!signal.await(CONNECT_TIMEOUT, TimeUnit.SECONDS)) {
+            lock.lock();
+            if (isOpen()) {
+                _log.info("SSEClient already open.");
                 return false;
             }
-        } catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
-            if(e.getMessage() == null){
-                _log.info("The thread was interrupted while opening SSEClient");
+
+            _statusCallback.apply(StatusMessage.INITIALIZATION_IN_PROGRESS);
+
+            CountDownLatch signal = new CountDownLatch(1);
+            _connectionExecutor.submit(() -> connectAndLoop(uri, signal));
+            try {
+                if (!signal.await(CONNECT_TIMEOUT, TimeUnit.SECONDS)) {
+                    return false;
+                }
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+                if(e.getMessage() == null){
+                    _log.info("The thread was interrupted while opening SSEClient");
+                    return false;
+                }
+                _log.info(e.getMessage());
                 return false;
             }
-            _log.info(e.getMessage());
-            return false;
+            return isOpen();
+        } finally {
+            lock.unlock();
         }
-        return isOpen();
     }
 
     public boolean isOpen() {
         return (ConnectionState.OPEN.equals(_state.get()));
     }
 
-    public synchronized void close() {
-        _forcedStop.set(true);
-        if (_state.compareAndSet(ConnectionState.OPEN, ConnectionState.CLOSED)) {
-            if (_ongoingResponse.get() != null) {
-                try {
-                    _ongoingRequest.get().abort();
-                    _ongoingResponse.get().close();
-                } catch (IOException e) {
-                    _log.debug(String.format("SSEClient close forced: %s", e.getMessage()));
+    public void close() {
+        try {
+            lock.lock();
+            _forcedStop.set(true);
+            if (_state.compareAndSet(ConnectionState.OPEN, ConnectionState.CLOSED)) {
+                if (_ongoingResponse.get() != null) {
+                    try {
+                        _ongoingRequest.get().abort();
+                        _ongoingResponse.get().close();
+                    } catch (IOException e) {
+                        _log.debug(String.format("SSEClient close forced: %s", e.getMessage()));
+                    }
                 }
             }
+        } finally {
+            lock.unlock();
         }
     }
 
