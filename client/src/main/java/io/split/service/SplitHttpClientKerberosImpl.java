@@ -59,9 +59,9 @@ public class SplitHttpClientKerberosImpl implements SplitHttpClient {
             throw new IllegalStateException(String.format("Problem in http get operation: %s", e), e);
         } finally {
             try {
-                getHttpURLConnection.disconnect();
-            } catch (NullPointerException e) {
-                _log.error(String.format("HTTP URL Connection is not initialized: %s", e), e);
+                if (getHttpURLConnection != null) {
+                    getHttpURLConnection.disconnect();
+                }
             } catch (Exception e) {
                 _log.error(String.format("Could not close HTTP URL Connection: %s", e), e);
             }
@@ -112,9 +112,9 @@ public class SplitHttpClientKerberosImpl implements SplitHttpClient {
             throw new IllegalStateException(String.format("Problem in http get operation: %s", e), e);
         } finally {
             try {
-                inputStreamReader.close();
-            } catch (NullPointerException e) {
-                _log.error(String.format("HTTP Stream is not initialized: %s", e), e);
+                if (inputStreamReader != null) {
+                    inputStreamReader.close();
+                }
             } catch (Exception e) {
                 _log.error(String.format("Could not close HTTP Stream: %s", e), e);
             }
@@ -130,9 +130,9 @@ public class SplitHttpClientKerberosImpl implements SplitHttpClient {
             throw new IllegalStateException(String.format("Problem in http post operation: %s", e), e);
         } finally {
             try {
-                postHttpURLConnection.disconnect();
-            } catch (NullPointerException e) {
-                _log.error(String.format("URL Connection is not initialized: %s", e), e);
+                if (postHttpURLConnection != null) {
+                    postHttpURLConnection.disconnect();
+                }
             } catch (Exception e) {
                 _log.error(String.format("Could not close URL Connection: %s", e), e);
             }
