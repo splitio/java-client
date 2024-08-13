@@ -99,7 +99,7 @@ public class HttpSplitClientKerberosTest {
 
         Mockito.when(mockHttpURLConnection.getResponseCode()).thenReturn(HttpURLConnection.HTTP_INTERNAL_ERROR);
         ByteArrayInputStream stubInputStream = new ByteArrayInputStream(Files.asCharSource(
-                new File("/Users/bilalal-shahwany/repos/java/kerberos/java-client/client/src/test/resources/split-change-special-characters.json"), Charsets.UTF_8).read().getBytes(Charsets.UTF_8));
+                new File("src/test/resources/split-change-special-characters.json"), Charsets.UTF_8).read().getBytes(Charsets.UTF_8));
         when(mockHttpURLConnection.getInputStream()).thenReturn(stubInputStream);
 
         SplitHttpClientKerberosImpl splitHtpClientKerberos = SplitHttpClientKerberosImpl.create(decorator, "qwerty", metadata());
@@ -111,13 +111,16 @@ public class HttpSplitClientKerberosTest {
     @Test(expected = IllegalStateException.class)
     public void testException() throws URISyntaxException, InvocationTargetException, NoSuchMethodException,
             IllegalAccessException, IOException {
-        URI rootTarget = URI.create("https://api.split.io/splitChanges?since=1234567");
-        CloseableHttpClient httpClientMock = TestHelper.mockHttpClient("split-change-special-characters.json",
-                HttpStatus.SC_INTERNAL_SERVER_ERROR);
+        HttpURLConnection mockHttpURLConnection = Mockito.mock(HttpURLConnection.class);
         RequestDecorator decorator = null;
 
-        SplitHttpClient splitHtpClient = SplitHttpClientImpl.create(httpClientMock, decorator, "qwerty", metadata());
-        splitHtpClient.get(rootTarget,
+        Mockito.when(mockHttpURLConnection.getResponseCode()).thenReturn(HttpURLConnection.HTTP_INTERNAL_ERROR);
+        ByteArrayInputStream stubInputStream = new ByteArrayInputStream(Files.asCharSource(
+                new File("src/test/resources/split-change-special-characters.json"), Charsets.UTF_8).read().getBytes(Charsets.UTF_8));
+        when(mockHttpURLConnection.getInputStream()).thenReturn(stubInputStream);
+
+        SplitHttpClientKerberosImpl splitHtpClientKerberos = SplitHttpClientKerberosImpl.create(decorator, "qwerty", metadata());
+        SplitHttpResponse splitHttpResponse = splitHtpClientKerberos._get(mockHttpURLConnection,
                 new FetchOptions.Builder().cacheControlHeaders(true).build(), null);
     }
 
@@ -178,17 +181,30 @@ public class HttpSplitClientKerberosTest {
         assertThat(connectionCaptor.getValue().getURL().toString(), is(equalTo(new URL("https://kubernetesturl.com/split/api/testImpressions/bulk").toString())));
     }
 
-    @Test(expected = IOException.class)
-    public void testPosttException() throws URISyntaxException, IOException {
+    @Test
+    public void testPosttError() throws URISyntaxException, IOException {
         HttpURLConnection mockHttpURLConnection = Mockito.mock(HttpURLConnection.class);
         RequestDecorator decorator = new RequestDecorator(null);
+        ByteArrayOutputStream mockOs = Mockito.mock( ByteArrayOutputStream.class);
         Mockito.when(mockHttpURLConnection.getResponseCode()).thenReturn(HttpURLConnection.HTTP_INTERNAL_ERROR);
+        when(mockHttpURLConnection.getOutputStream()).thenReturn(mockOs);
 
         SplitHttpClientKerberosImpl splitHtpClientKerberos = SplitHttpClientKerberosImpl.create(decorator, "qwerty", metadata());
         SplitHttpResponse splitHttpResponse = splitHtpClientKerberos._post(mockHttpURLConnection,
                 Utils.toJsonEntity(Arrays.asList(new String[] { "A", "B", "C", "D" })), null);
 
         Assert.assertEquals(HttpStatus.SC_INTERNAL_SERVER_ERROR, (long) splitHttpResponse.statusCode());
+    }
+
+    @Test(expected = IllegalStateException.class)
+    public void testPosttException() throws URISyntaxException, IOException {
+        HttpURLConnection mockHttpURLConnection = Mockito.mock(HttpURLConnection.class);
+        RequestDecorator decorator = null;
+        Mockito.when(mockHttpURLConnection.getResponseCode()).thenReturn(HttpURLConnection.HTTP_OK);
+
+        SplitHttpClientKerberosImpl splitHtpClientKerberos = SplitHttpClientKerberosImpl.create(decorator, "qwerty", metadata());
+        SplitHttpResponse splitHttpResponse = splitHtpClientKerberos._post(mockHttpURLConnection,
+                Utils.toJsonEntity(Arrays.asList(new String[] { "A", "B", "C", "D" })), null);
     }
 
     private SDKMetadata metadata() {

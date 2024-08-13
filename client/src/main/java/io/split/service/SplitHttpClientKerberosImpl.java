@@ -123,7 +123,7 @@ public class SplitHttpClientKerberosImpl implements SplitHttpClient {
             postHttpURLConnection = (HttpURLConnection) uri.toURL().openConnection();
             return _post(postHttpURLConnection, entity, additionalHeaders);
         } catch  (Exception e) {
-            throw new IOException(String.format("Problem in http post operation: %s", e), e);
+            throw new IllegalStateException(String.format("Problem in http post operation: %s", e), e);
         } finally {
             try {
                 postHttpURLConnection.disconnect();
@@ -165,7 +165,7 @@ public class SplitHttpClientKerberosImpl implements SplitHttpClient {
             }
             return new SplitHttpResponse(responseCode, statusMessage, "", getResponseHeaders(postHttpURLConnection));
         } catch (Exception e) {
-            throw new IOException(String.format("Problem in http post operation: %s", e), e);
+            throw new IllegalStateException(String.format("Problem in http post operation: %s", e), e);
         }
     }
 
@@ -209,6 +209,6 @@ public class SplitHttpClientKerberosImpl implements SplitHttpClient {
     }
     @Override
     public void close() throws IOException {
-//        _client.close();
+
     }
 }
