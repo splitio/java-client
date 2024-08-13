@@ -6,6 +6,7 @@ import io.split.client.impressions.ImpressionListener;
 import io.split.client.impressions.ImpressionsManager;
 import io.split.client.dtos.RequestContext;
 import io.split.integrations.IntegrationsConfig;
+import io.split.service.HttpAuthScheme;
 import org.junit.Assert;
 import org.junit.Test;
 import org.mockito.Mockito;
@@ -258,24 +259,11 @@ public class SplitClientConfigTest {
     @Test
     public void checkExpectedAuthScheme() {
         SplitClientConfig cfg = SplitClientConfig.builder()
-                .authScheme("kerberos")
+                .authScheme(HttpAuthScheme.KERBEROS)
                 .build();
-        Assert.assertEquals("kerberos", cfg.authScheme());
+        Assert.assertEquals(HttpAuthScheme.KERBEROS, cfg.authScheme());
 
         cfg = SplitClientConfig.builder()
-                .authScheme("KERberos")
-                .build();
-        Assert.assertEquals("kerberos", cfg.authScheme());
-
-        cfg = SplitClientConfig.builder()
-                .build();
-        Assert.assertEquals(null, cfg.authScheme());
-    }
-
-    @Test(expected = IllegalArgumentException.class)
-    public void checkUnexpectedAuthScheme() {
-        SplitClientConfig cfg = SplitClientConfig.builder()
-                .authScheme("proxy")
                 .build();
         Assert.assertEquals(null, cfg.authScheme());
     }

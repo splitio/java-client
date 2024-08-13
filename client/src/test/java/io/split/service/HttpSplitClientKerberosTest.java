@@ -53,7 +53,7 @@ public class HttpSplitClientKerberosTest {
         Map<String, List<String>> additionalHeaders = Collections.singletonMap("AdditionalHeader",
                 Collections.singletonList("add"));
 
-        SplitHttpResponse splitHttpResponse = splitHtpClientKerberos._get(mockHttpURLConnection,
+        SplitHttpResponse splitHttpResponse = splitHtpClientKerberos.doGet(mockHttpURLConnection,
                 new FetchOptions.Builder().cacheControlHeaders(true).build(), additionalHeaders);
         SplitChange change = Json.fromJson(splitHttpResponse.body(), SplitChange.class);
 
@@ -84,7 +84,7 @@ public class HttpSplitClientKerberosTest {
         ArgumentCaptor<HttpURLConnection> connectionCaptor = ArgumentCaptor.forClass(HttpURLConnection.class);
         ArgumentCaptor<FetchOptions> optionsCaptor = ArgumentCaptor.forClass(FetchOptions.class);
         ArgumentCaptor<HashMap> headersCaptor = ArgumentCaptor.forClass(HashMap.class);
-        verify(splitHtpClientKerberos)._get(connectionCaptor.capture(), optionsCaptor.capture(), headersCaptor.capture());
+        verify(splitHtpClientKerberos).doGet(connectionCaptor.capture(), optionsCaptor.capture(), headersCaptor.capture());
 
         assertThat(connectionCaptor.getValue().getRequestMethod(), is(equalTo("GET")));
         assertThat(connectionCaptor.getValue().getURL().toString(), is(equalTo(new URL("https://api.split.io/splitChanges?since=1234567").toString())));
@@ -103,7 +103,7 @@ public class HttpSplitClientKerberosTest {
         when(mockHttpURLConnection.getInputStream()).thenReturn(stubInputStream);
 
         SplitHttpClientKerberosImpl splitHtpClientKerberos = SplitHttpClientKerberosImpl.create(decorator, "qwerty", metadata());
-        SplitHttpResponse splitHttpResponse = splitHtpClientKerberos._get(mockHttpURLConnection,
+        SplitHttpResponse splitHttpResponse = splitHtpClientKerberos.doGet(mockHttpURLConnection,
                 new FetchOptions.Builder().cacheControlHeaders(true).build(), null);
         Assert.assertEquals(HttpStatus.SC_INTERNAL_SERVER_ERROR, (long) splitHttpResponse.statusCode());
     }
@@ -120,7 +120,7 @@ public class HttpSplitClientKerberosTest {
         when(mockHttpURLConnection.getInputStream()).thenReturn(stubInputStream);
 
         SplitHttpClientKerberosImpl splitHtpClientKerberos = SplitHttpClientKerberosImpl.create(decorator, "qwerty", metadata());
-        SplitHttpResponse splitHttpResponse = splitHtpClientKerberos._get(mockHttpURLConnection,
+        SplitHttpResponse splitHttpResponse = splitHtpClientKerberos.doGet(mockHttpURLConnection,
                 new FetchOptions.Builder().cacheControlHeaders(true).build(), null);
     }
 
@@ -149,7 +149,7 @@ public class HttpSplitClientKerberosTest {
         ByteArrayOutputStream mockOs = Mockito.mock( ByteArrayOutputStream.class);
         when(mockHttpURLConnection.getOutputStream()).thenReturn(mockOs);
 
-        SplitHttpResponse splitHttpResponse = splitHtpClientKerberos._post(mockHttpURLConnection, Utils.toJsonEntity(toSend),
+        SplitHttpResponse splitHttpResponse = splitHtpClientKerberos.doPost(mockHttpURLConnection, Utils.toJsonEntity(toSend),
                 additionalHeaders);
 
         // Capture outgoing request and validate it
@@ -176,7 +176,7 @@ public class HttpSplitClientKerberosTest {
         ArgumentCaptor<HttpURLConnection> connectionCaptor = ArgumentCaptor.forClass(HttpURLConnection.class);
         ArgumentCaptor<HttpEntity> entityCaptor = ArgumentCaptor.forClass(HttpEntity.class);
         ArgumentCaptor<HashMap> headersCaptor = ArgumentCaptor.forClass(HashMap.class);
-        verify(splitHtpClientKerberos)._post(connectionCaptor.capture(), entityCaptor.capture(), headersCaptor.capture());
+        verify(splitHtpClientKerberos).doPost(connectionCaptor.capture(), entityCaptor.capture(), headersCaptor.capture());
 
         assertThat(connectionCaptor.getValue().getURL().toString(), is(equalTo(new URL("https://kubernetesturl.com/split/api/testImpressions/bulk").toString())));
     }
@@ -190,7 +190,7 @@ public class HttpSplitClientKerberosTest {
         when(mockHttpURLConnection.getOutputStream()).thenReturn(mockOs);
 
         SplitHttpClientKerberosImpl splitHtpClientKerberos = SplitHttpClientKerberosImpl.create(decorator, "qwerty", metadata());
-        SplitHttpResponse splitHttpResponse = splitHtpClientKerberos._post(mockHttpURLConnection,
+        SplitHttpResponse splitHttpResponse = splitHtpClientKerberos.doPost(mockHttpURLConnection,
                 Utils.toJsonEntity(Arrays.asList(new String[] { "A", "B", "C", "D" })), null);
 
         Assert.assertEquals(HttpStatus.SC_INTERNAL_SERVER_ERROR, (long) splitHttpResponse.statusCode());
@@ -203,7 +203,7 @@ public class HttpSplitClientKerberosTest {
         Mockito.when(mockHttpURLConnection.getResponseCode()).thenReturn(HttpURLConnection.HTTP_OK);
 
         SplitHttpClientKerberosImpl splitHtpClientKerberos = SplitHttpClientKerberosImpl.create(decorator, "qwerty", metadata());
-        SplitHttpResponse splitHttpResponse = splitHtpClientKerberos._post(mockHttpURLConnection,
+        SplitHttpResponse splitHttpResponse = splitHtpClientKerberos.doPost(mockHttpURLConnection,
                 Utils.toJsonEntity(Arrays.asList(new String[] { "A", "B", "C", "D" })), null);
     }
 

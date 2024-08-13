@@ -4,6 +4,7 @@ import io.split.client.impressions.ImpressionsManager;
 import io.split.client.utils.FileTypeEnum;
 import io.split.client.utils.SDKMetadata;
 import io.split.integrations.IntegrationsConfig;
+import io.split.service.HttpAuthScheme;
 import io.split.service.SplitHttpClientKerberosImpl;
 import io.split.storages.enums.OperationMode;
 import io.split.storages.pluggable.domain.UserStorageWrapper;
@@ -353,7 +354,7 @@ public class SplitFactoryImplTest extends TestCase {
     public void testFactoryKerberosInstance() throws URISyntaxException, NoSuchMethodException, InvocationTargetException, IllegalAccessException {
         SplitClientConfig splitClientConfig = SplitClientConfig.builder()
                 .setBlockUntilReadyTimeout(10000)
-                .authScheme("kerberos")
+                .authScheme(HttpAuthScheme.KERBEROS)
                 .build();
         SplitFactoryImpl splitFactory = new SplitFactoryImpl("asdf", splitClientConfig);
 

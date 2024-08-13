@@ -23,7 +23,7 @@ import java.util.Map;
 
 public class SplitHttpClientKerberosImpl implements SplitHttpClient {
 
-    private static final Logger _log = LoggerFactory.getLogger(SplitHttpClient.class);
+    private static final Logger _log = LoggerFactory.getLogger(SplitHttpClientKerberosImpl.class);
     private static final String HEADER_CACHE_CONTROL_NAME = "Cache-Control";
     private static final String HEADER_CACHE_CONTROL_VALUE = "no-cache";
     private static final String HEADER_API_KEY = "Authorization";
@@ -54,7 +54,7 @@ public class SplitHttpClientKerberosImpl implements SplitHttpClient {
         HttpURLConnection getHttpURLConnection = null;
         try {
             getHttpURLConnection = (HttpURLConnection) uri.toURL().openConnection();
-            return _get(getHttpURLConnection, options, additionalHeaders);
+            return doGet(getHttpURLConnection, options, additionalHeaders);
         } catch  (Exception e) {
             throw new IllegalStateException(String.format("Problem in http get operation: %s", e), e);
         } finally {
@@ -67,11 +67,10 @@ public class SplitHttpClientKerberosImpl implements SplitHttpClient {
             }
         }
     }
-    public SplitHttpResponse _get(HttpURLConnection getHttpURLConnection, FetchOptions options, Map<String, List<String>> additionalHeaders) {
+    public SplitHttpResponse doGet(HttpURLConnection getHttpURLConnection, FetchOptions options, Map<String, List<String>> additionalHeaders) {
         InputStreamReader inputStreamReader = null;
         try {
             getHttpURLConnection.setRequestMethod("GET");
-
             setBasicHeaders(getHttpURLConnection);
             setAdditionalAndDecoratedHeaders(getHttpURLConnection, additionalHeaders);
 
@@ -125,7 +124,7 @@ public class SplitHttpClientKerberosImpl implements SplitHttpClient {
         HttpURLConnection postHttpURLConnection = null;
         try {
             postHttpURLConnection = (HttpURLConnection) uri.toURL().openConnection();
-            return _post(postHttpURLConnection, entity, additionalHeaders);
+            return doPost(postHttpURLConnection, entity, additionalHeaders);
         } catch  (Exception e) {
             throw new IllegalStateException(String.format("Problem in http post operation: %s", e), e);
         } finally {
@@ -139,18 +138,15 @@ public class SplitHttpClientKerberosImpl implements SplitHttpClient {
         }
     }
 
-    public SplitHttpResponse _post(HttpURLConnection postHttpURLConnection,
+    public SplitHttpResponse doPost(HttpURLConnection postHttpURLConnection,
                                                 HttpEntity entity,
-                                                Map<String, List<String>> additionalHeaders)
-            throws IOException {
+                                                Map<String, List<String>> additionalHeaders) {
         try {
             postHttpURLConnection.setRequestMethod("POST");
             setBasicHeaders(postHttpURLConnection);
             setAdditionalAndDecoratedHeaders(postHttpURLConnection, additionalHeaders);
 
-            if (postHttpURLConnection.getHeaderField("Accept-Encoding") == null) {
-                postHttpURLConnection.setRequestProperty("Accept-Encoding", "gzip");
-            }
+            postHttpURLConnection.setRequestProperty("Accept-Encoding", "gzip");
             postHttpURLConnection.setRequestProperty("Content-Type", "application/json");
             _log.debug(String.format("Request Headers: %s", postHttpURLConnection.getRequestProperties()));
 
@@ -198,7 +194,6 @@ public class SplitHttpClientKerberosImpl implements SplitHttpClient {
         for (Header header : request.getHeaders()) {
             urlConnection.setRequestProperty(header.getName(), header.getValue());
         }
-        request = null;
     }
 
     private Header[] getResponseHeaders(HttpURLConnection urlConnection) {
@@ -211,7 +206,6 @@ public class SplitHttpClientKerberosImpl implements SplitHttpClient {
             }
         }
         return responseHeaders.toArray(new Header[0]);
-
     }
     @Override
     public void close() throws IOException {

@@ -6,6 +6,7 @@ import io.split.client.utils.FileTypeEnum;
 import io.split.integrations.IntegrationsConfig;
 import io.split.storages.enums.OperationMode;
 import io.split.storages.enums.StorageMode;
+import io.split.service.HttpAuthScheme;
 import org.apache.hc.core5.http.HttpHost;
 import pluggable.CustomStorageWrapper;
 
@@ -92,7 +93,7 @@ public class SplitClientConfig {
     private final HashSet<String> _flagSetsFilter;
     private final int _invalidSets;
     private final CustomHeaderDecorator _customHeaderDecorator;
-    private final String _authScheme;
+    private final HttpAuthScheme _authScheme;
 
 
     public static Builder builder() {
@@ -151,7 +152,7 @@ public class SplitClientConfig {
                               HashSet<String> flagSetsFilter,
                               int invalidSets,
                               CustomHeaderDecorator customHeaderDecorator,
-                              String authScheme) {
+                              HttpAuthScheme authScheme) {
         _endpoint = endpoint;
         _eventsEndpoint = eventsEndpoint;
         _featuresRefreshRate = pollForFeatureChangesEveryNSeconds;
@@ -412,7 +413,7 @@ public class SplitClientConfig {
     public CustomHeaderDecorator customHeaderDecorator() {
         return _customHeaderDecorator;
     }
-    public String authScheme() {
+    public HttpAuthScheme authScheme() {
         return _authScheme;
     }
 
@@ -473,7 +474,7 @@ public class SplitClientConfig {
         private HashSet<String> _flagSetsFilter = new HashSet<>();
         private int _invalidSetsCount = 0;
         private CustomHeaderDecorator _customHeaderDecorator = null;
-        private String _authScheme = null;
+        private HttpAuthScheme _authScheme = null;
 
         public Builder() {
         }
@@ -974,7 +975,7 @@ public class SplitClientConfig {
          * @param authScheme
          * @return this builder
          */
-        public Builder authScheme(String authScheme) {
+        public Builder authScheme(HttpAuthScheme authScheme) {
             _authScheme = authScheme;
             return this;
         }
@@ -1085,13 +1086,6 @@ public class SplitClientConfig {
                     throw new IllegalStateException("Custom Storage must not be null on Consumer mode.");
                 }
                 _storageMode = StorageMode.PLUGGABLE;
-            }
-
-            if(_authScheme != null) {
-                if (!_authScheme.toLowerCase(Locale.ROOT).equals("kerberos")) {
-                    throw new IllegalArgumentException("authScheme must be either null or `kerberos`.");
-                }
-                _authScheme = "kerberos";
             }
 
             return new SplitClientConfig(

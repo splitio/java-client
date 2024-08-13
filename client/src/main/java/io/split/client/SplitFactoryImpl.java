@@ -57,6 +57,7 @@ import io.split.engine.experiments.SplitSynchronizationTask;
 import io.split.engine.segments.SegmentChangeFetcher;
 import io.split.engine.segments.SegmentSynchronizationTaskImp;
 import io.split.integrations.IntegrationsConfig;
+import io.split.service.HttpAuthScheme;
 import io.split.service.SplitHttpClient;
 import io.split.service.SplitHttpClientImpl;
 import io.split.service.SplitHttpClientKerberosImpl;
@@ -526,7 +527,7 @@ public class SplitFactoryImpl implements SplitFactory {
             httpClientbuilder = setupProxy(httpClientbuilder, config);
         }
 
-        if (config.authScheme() != null) {
+        if (config.authScheme() == HttpAuthScheme.KERBEROS) {
             return SplitHttpClientKerberosImpl.create(
                     requestDecorator,
                     apiToken,
