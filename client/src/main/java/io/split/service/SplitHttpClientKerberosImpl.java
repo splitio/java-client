@@ -60,6 +60,8 @@ public class SplitHttpClientKerberosImpl implements SplitHttpClient {
         } finally {
             try {
                 getHttpURLConnection.disconnect();
+            } catch (NullPointerException e) {
+                _log.error(String.format("HTTP URL Connection is not initialized: %s", e), e);
             } catch (Exception e) {
                 _log.error(String.format("Could not close HTTP URL Connection: %s", e), e);
             }
@@ -111,6 +113,8 @@ public class SplitHttpClientKerberosImpl implements SplitHttpClient {
         } finally {
             try {
                 inputStreamReader.close();
+            } catch (NullPointerException e) {
+                _log.error(String.format("HTTP Stream is not initialized: %s", e), e);
             } catch (Exception e) {
                 _log.error(String.format("Could not close HTTP Stream: %s", e), e);
             }
@@ -127,6 +131,8 @@ public class SplitHttpClientKerberosImpl implements SplitHttpClient {
         } finally {
             try {
                 postHttpURLConnection.disconnect();
+            } catch (NullPointerException e) {
+                _log.error(String.format("URL Connection is not initialized: %s", e), e);
             } catch (Exception e) {
                 _log.error(String.format("Could not close URL Connection: %s", e), e);
             }
