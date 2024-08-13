@@ -59,6 +59,7 @@ import io.split.engine.segments.SegmentSynchronizationTaskImp;
 import io.split.integrations.IntegrationsConfig;
 import io.split.service.SplitHttpClient;
 import io.split.service.SplitHttpClientImpl;
+import io.split.service.SplitHttpClientKerberosImpl;
 import io.split.storages.SegmentCache;
 import io.split.storages.SegmentCacheConsumer;
 import io.split.storages.SegmentCacheProducer;
@@ -525,6 +526,13 @@ public class SplitFactoryImpl implements SplitFactory {
             httpClientbuilder = setupProxy(httpClientbuilder, config);
         }
 
+        if (config.authScheme() != null) {
+            return SplitHttpClientKerberosImpl.create(
+                    requestDecorator,
+                    apiToken,
+                    sdkMetadata);
+
+        }
         return SplitHttpClientImpl.create(httpClientbuilder.build(),
                 requestDecorator,
                 apiToken,

@@ -10,10 +10,7 @@ import org.apache.hc.core5.http.HttpHost;
 import pluggable.CustomStorageWrapper;
 
 import java.io.IOException;
-import java.util.HashSet;
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Properties;
+import java.util.*;
 import java.util.concurrent.ThreadFactory;
 import java.io.InputStream;
 
@@ -91,6 +88,7 @@ public class SplitClientConfig {
     private final HashSet<String> _flagSetsFilter;
     private final int _invalidSets;
     private final CustomHeaderDecorator _customHeaderDecorator;
+    private final String _authScheme;
 
 
     public static Builder builder() {
@@ -148,7 +146,8 @@ public class SplitClientConfig {
                               ThreadFactory threadFactory,
                               HashSet<String> flagSetsFilter,
                               int invalidSets,
-                              CustomHeaderDecorator customHeaderDecorator) {
+                              CustomHeaderDecorator customHeaderDecorator,
+                              String authScheme) {
         _endpoint = endpoint;
         _eventsEndpoint = eventsEndpoint;
         _featuresRefreshRate = pollForFeatureChangesEveryNSeconds;
@@ -201,6 +200,7 @@ public class SplitClientConfig {
         _flagSetsFilter = flagSetsFilter;
         _invalidSets = invalidSets;
         _customHeaderDecorator = customHeaderDecorator;
+        _authScheme = authScheme;
 
         Properties props = new Properties();
         try {
@@ -408,6 +408,9 @@ public class SplitClientConfig {
     public CustomHeaderDecorator customHeaderDecorator() {
         return _customHeaderDecorator;
     }
+    public String authScheme() {
+        return _authScheme;
+    }
 
     public static final class Builder {
 
@@ -466,6 +469,7 @@ public class SplitClientConfig {
         private HashSet<String> _flagSetsFilter = new HashSet<>();
         private int _invalidSetsCount = 0;
         private CustomHeaderDecorator _customHeaderDecorator = null;
+        private String _authScheme = null;
 
         public Builder() {
         }
@@ -961,6 +965,17 @@ public class SplitClientConfig {
         }
 
         /**
+         * Authentication Scheme
+         *
+         * @param authScheme
+         * @return this builder
+         */
+        public Builder authScheme(String authScheme) {
+            _authScheme = authScheme;
+            return this;
+        }
+
+        /**
          * Thread Factory
          *
          * @param threadFactory
@@ -1068,6 +1083,13 @@ public class SplitClientConfig {
                 _storageMode = StorageMode.PLUGGABLE;
             }
 
+            if(_authScheme != null) {
+                if (!_authScheme.toLowerCase(Locale.ROOT).equals("kerberos")) {
+                    throw new IllegalArgumentException("authScheme must be either null or `kerberos`.");
+                }
+                _authScheme = "kerberos";
+            }
+
             return new SplitClientConfig(
                     _endpoint,
                     _eventsEndpoint,
@@ -1120,7 +1142,8 @@ public class SplitClientConfig {
                     _threadFactory,
                     _flagSetsFilter,
                     _invalidSetsCount,
-                    _customHeaderDecorator);
+                    _customHeaderDecorator,
+                    _authScheme);
         }
     }
 }

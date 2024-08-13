@@ -254,4 +254,29 @@ public class SplitClientConfigTest {
         Assert.assertNull(config2.customHeaderDecorator());
 
     }
+
+    @Test
+    public void checkExpectedAuthScheme() {
+        SplitClientConfig cfg = SplitClientConfig.builder()
+                .authScheme("kerberos")
+                .build();
+        Assert.assertEquals("kerberos", cfg.authScheme());
+
+        cfg = SplitClientConfig.builder()
+                .authScheme("KERberos")
+                .build();
+        Assert.assertEquals("kerberos", cfg.authScheme());
+
+        cfg = SplitClientConfig.builder()
+                .build();
+        Assert.assertEquals(null, cfg.authScheme());
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void checkUnexpectedAuthScheme() {
+        SplitClientConfig cfg = SplitClientConfig.builder()
+                .authScheme("proxy")
+                .build();
+        Assert.assertEquals(null, cfg.authScheme());
+    }
 }
