@@ -6,6 +6,7 @@ import io.split.client.utils.FileTypeEnum;
 import io.split.integrations.IntegrationsConfig;
 import io.split.storages.enums.OperationMode;
 import io.split.storages.enums.StorageMode;
+import io.split.service.HttpAuthScheme;
 import org.apache.hc.core5.http.HttpHost;
 import pluggable.CustomStorageWrapper;
 
@@ -91,6 +92,7 @@ public class SplitClientConfig {
     private final HashSet<String> _flagSetsFilter;
     private final int _invalidSets;
     private final CustomHeaderDecorator _customHeaderDecorator;
+    private final HttpAuthScheme _authScheme;
 
 
     public static Builder builder() {
@@ -148,7 +150,8 @@ public class SplitClientConfig {
                               ThreadFactory threadFactory,
                               HashSet<String> flagSetsFilter,
                               int invalidSets,
-                              CustomHeaderDecorator customHeaderDecorator) {
+                              CustomHeaderDecorator customHeaderDecorator,
+                              HttpAuthScheme authScheme) {
         _endpoint = endpoint;
         _eventsEndpoint = eventsEndpoint;
         _featuresRefreshRate = pollForFeatureChangesEveryNSeconds;
@@ -201,6 +204,7 @@ public class SplitClientConfig {
         _flagSetsFilter = flagSetsFilter;
         _invalidSets = invalidSets;
         _customHeaderDecorator = customHeaderDecorator;
+        _authScheme = authScheme;
 
         Properties props = new Properties();
         try {
@@ -408,6 +412,9 @@ public class SplitClientConfig {
     public CustomHeaderDecorator customHeaderDecorator() {
         return _customHeaderDecorator;
     }
+    public HttpAuthScheme authScheme() {
+        return _authScheme;
+    }
 
     public static final class Builder {
 
@@ -466,6 +473,7 @@ public class SplitClientConfig {
         private HashSet<String> _flagSetsFilter = new HashSet<>();
         private int _invalidSetsCount = 0;
         private CustomHeaderDecorator _customHeaderDecorator = null;
+        private HttpAuthScheme _authScheme = null;
 
         public Builder() {
         }
@@ -961,6 +969,17 @@ public class SplitClientConfig {
         }
 
         /**
+         * Authentication Scheme
+         *
+         * @param authScheme
+         * @return this builder
+         */
+        public Builder authScheme(HttpAuthScheme authScheme) {
+            _authScheme = authScheme;
+            return this;
+        }
+
+        /**
          * Thread Factory
          *
          * @param threadFactory
@@ -1120,7 +1139,8 @@ public class SplitClientConfig {
                     _threadFactory,
                     _flagSetsFilter,
                     _invalidSetsCount,
-                    _customHeaderDecorator);
+                    _customHeaderDecorator,
+                    _authScheme);
         }
     }
 }

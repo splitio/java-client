@@ -2,7 +2,10 @@ package io.split.client;
 
 import io.split.client.impressions.ImpressionsManager;
 import io.split.client.utils.FileTypeEnum;
+import io.split.client.utils.SDKMetadata;
 import io.split.integrations.IntegrationsConfig;
+import io.split.service.HttpAuthScheme;
+import io.split.service.SplitHttpClientKerberosImpl;
 import io.split.storages.enums.OperationMode;
 import io.split.storages.pluggable.domain.UserStorageWrapper;
 import io.split.telemetry.storage.TelemetryStorage;
@@ -21,6 +24,8 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.net.URISyntaxException;
+
+import static io.split.client.SplitClientConfig.splitSdkVersion;
 
 public class SplitFactoryImplTest extends TestCase {
     public static final String API_KEY ="29013ionasdasd09u";
@@ -343,5 +348,20 @@ public class SplitFactoryImplTest extends TestCase {
         method.setAccessible(true);
         Object splitChangeFetcher = method.invoke(splitFactory, splitClientConfig);
         Assert.assertTrue(splitChangeFetcher instanceof LegacyLocalhostSplitChangeFetcher);
+    }
+
+    @Test
+    public void testFactoryKerberosInstance() throws URISyntaxException, NoSuchMethodException, InvocationTargetException, IllegalAccessException {
+        SplitClientConfig splitClientConfig = SplitClientConfig.builder()
+                .setBlockUntilReadyTimeout(10000)
+                .authScheme(HttpAuthScheme.KERBEROS)
+                .build();
+        SplitFactoryImpl splitFactory = new SplitFactoryImpl("asdf", splitClientConfig);
+
+        Method method = SplitFactoryImpl.class.getDeclaredMethod("buildSplitHttpClient", String.class,
+                SplitClientConfig.class, SDKMetadata.class, RequestDecorator.class);
+        method.setAccessible(true);
+        Object SplitHttpClient = method.invoke(splitFactory,  "asdf", splitClientConfig, new SDKMetadata(splitSdkVersion, "", ""), new RequestDecorator(null));
+        Assert.assertTrue(SplitHttpClient instanceof SplitHttpClientKerberosImpl);
     }
 }

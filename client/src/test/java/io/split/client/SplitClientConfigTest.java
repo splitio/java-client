@@ -6,6 +6,7 @@ import io.split.client.impressions.ImpressionListener;
 import io.split.client.impressions.ImpressionsManager;
 import io.split.client.dtos.RequestContext;
 import io.split.integrations.IntegrationsConfig;
+import io.split.service.HttpAuthScheme;
 import org.junit.Assert;
 import org.junit.Test;
 import org.mockito.Mockito;
@@ -253,5 +254,17 @@ public class SplitClientConfigTest {
         SplitClientConfig config2 = SplitClientConfig.builder().build();
         Assert.assertNull(config2.customHeaderDecorator());
 
+    }
+
+    @Test
+    public void checkExpectedAuthScheme() {
+        SplitClientConfig cfg = SplitClientConfig.builder()
+                .authScheme(HttpAuthScheme.KERBEROS)
+                .build();
+        Assert.assertEquals(HttpAuthScheme.KERBEROS, cfg.authScheme());
+
+        cfg = SplitClientConfig.builder()
+                .build();
+        Assert.assertEquals(null, cfg.authScheme());
     }
 }
