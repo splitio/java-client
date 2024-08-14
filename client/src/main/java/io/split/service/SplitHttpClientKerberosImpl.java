@@ -14,8 +14,12 @@ import org.apache.hc.core5.http.message.BasicHeader;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.*;
-import java.net.*;
+import java.io.InputStreamReader;
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.OutputStream;
+import java.net.URI;
+import java.net.HttpURLConnection;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
@@ -38,7 +42,7 @@ public class SplitHttpClientKerberosImpl implements SplitHttpClient {
 
     public static SplitHttpClientKerberosImpl create(RequestDecorator requestDecorator,
                                                      String apikey,
-                                                     SDKMetadata metadata) throws URISyntaxException {
+                                                     SDKMetadata metadata) {
         return new SplitHttpClientKerberosImpl(requestDecorator, apikey, metadata);
     }
 
@@ -99,10 +103,11 @@ public class SplitHttpClientKerberosImpl implements SplitHttpClient {
             inputStreamReader = new InputStreamReader(getHttpURLConnection.getInputStream());
             BufferedReader br = new BufferedReader(inputStreamReader);
             String strCurrentLine;
-            String responseBody = new String();
+            StringBuilder bld = new StringBuilder();
             while ((strCurrentLine = br.readLine()) != null) {
-                responseBody = responseBody + strCurrentLine;
+                bld.append(strCurrentLine);
             }
+            String responseBody = bld.toString();
             return new SplitHttpResponse(responseCode,
                     statusMessage,
                     responseBody,
@@ -197,7 +202,7 @@ public class SplitHttpClientKerberosImpl implements SplitHttpClient {
     }
 
     private Header[] getResponseHeaders(HttpURLConnection urlConnection) {
-        List<BasicHeader> responseHeaders = new ArrayList<BasicHeader>();
+        List<BasicHeader> responseHeaders = new ArrayList<>();
         Map<String, List<String>> map = urlConnection.getHeaderFields();
         for (Map.Entry<String, List<String>> entry : map.entrySet()) {
             if (entry.getKey() != null) {
@@ -209,6 +214,6 @@ public class SplitHttpClientKerberosImpl implements SplitHttpClient {
     }
     @Override
     public void close() throws IOException {
-
+        // Added for compatibility with HttpSplitClient, no action needed as URLConnection objects are closed.
     }
 }

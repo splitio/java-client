@@ -16,7 +16,6 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Properties;
 import java.util.concurrent.ThreadFactory;
-import java.util.Locale;
 import java.io.InputStream;
 
 import static io.split.inputValidation.FlagSetsValidator.cleanup;
