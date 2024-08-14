@@ -72,7 +72,6 @@ public class SplitHttpClientKerberosImpl implements SplitHttpClient {
         }
     }
     public SplitHttpResponse doGet(HttpURLConnection getHttpURLConnection, FetchOptions options, Map<String, List<String>> additionalHeaders) {
-        InputStreamReader inputStreamReader = null;
         try {
             getHttpURLConnection.setRequestMethod("GET");
             setBasicHeaders(getHttpURLConnection);
@@ -100,7 +99,7 @@ public class SplitHttpClientKerberosImpl implements SplitHttpClient {
                 statusMessage = getHttpURLConnection.getResponseMessage();
             }
 
-            inputStreamReader = new InputStreamReader(getHttpURLConnection.getInputStream());
+            InputStreamReader inputStreamReader = new InputStreamReader(getHttpURLConnection.getInputStream());
             BufferedReader br = new BufferedReader(inputStreamReader);
             String strCurrentLine;
             StringBuilder bld = new StringBuilder();
@@ -108,20 +107,13 @@ public class SplitHttpClientKerberosImpl implements SplitHttpClient {
                 bld.append(strCurrentLine);
             }
             String responseBody = bld.toString();
+            inputStreamReader.close();
             return new SplitHttpResponse(responseCode,
                     statusMessage,
                     responseBody,
                     getResponseHeaders(getHttpURLConnection));
         } catch (Exception e) {
             throw new IllegalStateException(String.format("Problem in http get operation: %s", e), e);
-        } finally {
-            try {
-                if (inputStreamReader != null) {
-                    inputStreamReader.close();
-                }
-            } catch (Exception e) {
-                _log.error(String.format("Could not close HTTP Stream: %s", e), e);
-            }
         }
     }
 
