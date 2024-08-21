@@ -18,6 +18,7 @@ import pluggable.CustomStorageWrapper;
 
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
@@ -233,7 +234,7 @@ public class SplitFactoryImplTest extends TestCase {
     }
 
     @Test
-    public void testLocalhostLegacy() throws URISyntaxException, NoSuchMethodException, InvocationTargetException, IllegalAccessException {
+    public void testLocalhostLegacy() throws URISyntaxException, NoSuchMethodException, InvocationTargetException, IllegalAccessException, IOException {
         SplitClientConfig splitClientConfig = SplitClientConfig.builder()
                 .setBlockUntilReadyTimeout(10000)
                 .build();
@@ -246,7 +247,7 @@ public class SplitFactoryImplTest extends TestCase {
     }
 
     @Test
-    public void testLocalhostYaml() throws URISyntaxException, NoSuchMethodException, InvocationTargetException, IllegalAccessException {
+    public void testLocalhostYaml() throws URISyntaxException, NoSuchMethodException, InvocationTargetException, IllegalAccessException, IOException {
         SplitClientConfig splitClientConfig = SplitClientConfig.builder()
                 .splitFile("src/test/resources/split.yaml")
                 .setBlockUntilReadyTimeout(10000)
@@ -260,7 +261,7 @@ public class SplitFactoryImplTest extends TestCase {
     }
 
     @Test
-    public void testLocalhosJson() throws URISyntaxException, NoSuchMethodException, InvocationTargetException, IllegalAccessException {
+    public void testLocalhosJson() throws URISyntaxException, NoSuchMethodException, InvocationTargetException, IllegalAccessException, IOException {
         SplitClientConfig splitClientConfig = SplitClientConfig.builder()
                 .splitFile("src/test/resources/split_init.json")
                 .setBlockUntilReadyTimeout(10000)
@@ -275,7 +276,7 @@ public class SplitFactoryImplTest extends TestCase {
 
     @Test
     public void testLocalhostYamlInputStream() throws URISyntaxException, NoSuchMethodException, InvocationTargetException,
-            IllegalAccessException, FileNotFoundException {
+            IllegalAccessException, IOException {
         InputStream inputStream = new FileInputStream("src/test/resources/split.yaml");
         SplitClientConfig splitClientConfig = SplitClientConfig.builder()
                 .splitFile(inputStream, FileTypeEnum.YAML)
@@ -291,7 +292,7 @@ public class SplitFactoryImplTest extends TestCase {
 
     @Test
     public void testLocalhosJsonInputStream() throws URISyntaxException, NoSuchMethodException, InvocationTargetException,
-            IllegalAccessException, FileNotFoundException {
+            IllegalAccessException, IOException {
         InputStream inputStream = new FileInputStream("src/test/resources/split_init.json");
         SplitClientConfig splitClientConfig = SplitClientConfig.builder()
                 .splitFile(inputStream, FileTypeEnum.JSON)
@@ -306,7 +307,7 @@ public class SplitFactoryImplTest extends TestCase {
     }
 
     @Test
-    public void testLocalhosJsonInputStreamNull() throws URISyntaxException, NoSuchMethodException, InvocationTargetException, IllegalAccessException {
+    public void testLocalhosJsonInputStreamNull() throws URISyntaxException, NoSuchMethodException, InvocationTargetException, IllegalAccessException, IOException {
         SplitClientConfig splitClientConfig = SplitClientConfig.builder()
                 .splitFile(null, FileTypeEnum.JSON)
                 .setBlockUntilReadyTimeout(10000)
@@ -321,7 +322,7 @@ public class SplitFactoryImplTest extends TestCase {
 
     @Test
     public void testLocalhosJsonInputStreamAndFileTypeNull() throws URISyntaxException, NoSuchMethodException, InvocationTargetException,
-            IllegalAccessException, FileNotFoundException {
+            IllegalAccessException, IOException {
         InputStream inputStream = new FileInputStream("src/test/resources/split_init.json");
         SplitClientConfig splitClientConfig = SplitClientConfig.builder()
                 .splitFile(inputStream, null)
@@ -337,7 +338,7 @@ public class SplitFactoryImplTest extends TestCase {
 
     @Test
     public void testLocalhosJsonInputStreamNullAndFileTypeNull() throws URISyntaxException, NoSuchMethodException, InvocationTargetException,
-            IllegalAccessException {
+            IllegalAccessException, IOException {
         SplitClientConfig splitClientConfig = SplitClientConfig.builder()
                 .splitFile(null, null)
                 .setBlockUntilReadyTimeout(10000)
@@ -351,10 +352,13 @@ public class SplitFactoryImplTest extends TestCase {
     }
 
     @Test
-    public void testFactoryKerberosInstance() throws URISyntaxException, NoSuchMethodException, InvocationTargetException, IllegalAccessException {
+    public void testFactoryKerberosInstance() throws URISyntaxException, NoSuchMethodException, InvocationTargetException, IllegalAccessException, IOException {
         SplitClientConfig splitClientConfig = SplitClientConfig.builder()
                 .setBlockUntilReadyTimeout(10000)
                 .authScheme(HttpAuthScheme.KERBEROS)
+                .kerberosPrincipalName("bilal@bilal")
+                .proxyPort(6060)
+                .proxyHost(ENDPOINT)
                 .build();
         SplitFactoryImpl splitFactory = new SplitFactoryImpl("asdf", splitClientConfig);
 

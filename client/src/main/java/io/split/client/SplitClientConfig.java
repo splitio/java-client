@@ -93,6 +93,7 @@ public class SplitClientConfig {
     private final int _invalidSets;
     private final CustomHeaderDecorator _customHeaderDecorator;
     private final HttpAuthScheme _authScheme;
+    private final String _kerberosPrincipalName;
 
 
     public static Builder builder() {
@@ -151,7 +152,8 @@ public class SplitClientConfig {
                               HashSet<String> flagSetsFilter,
                               int invalidSets,
                               CustomHeaderDecorator customHeaderDecorator,
-                              HttpAuthScheme authScheme) {
+                              HttpAuthScheme authScheme,
+                              String kerberosPrincipalName) {
         _endpoint = endpoint;
         _eventsEndpoint = eventsEndpoint;
         _featuresRefreshRate = pollForFeatureChangesEveryNSeconds;
@@ -205,6 +207,7 @@ public class SplitClientConfig {
         _invalidSets = invalidSets;
         _customHeaderDecorator = customHeaderDecorator;
         _authScheme = authScheme;
+        _kerberosPrincipalName = kerberosPrincipalName;
 
         Properties props = new Properties();
         try {
@@ -415,6 +418,7 @@ public class SplitClientConfig {
     public HttpAuthScheme authScheme() {
         return _authScheme;
     }
+    public String kerberosPrincipalName() { return _kerberosPrincipalName; }
 
     public static final class Builder {
 
@@ -474,6 +478,7 @@ public class SplitClientConfig {
         private int _invalidSetsCount = 0;
         private CustomHeaderDecorator _customHeaderDecorator = null;
         private HttpAuthScheme _authScheme = null;
+        private String _kerberosPrincipalName = null;
 
         public Builder() {
         }
@@ -980,6 +985,17 @@ public class SplitClientConfig {
         }
 
         /**
+         * Kerberos Principal Account Name
+         *
+         * @param kerberosPrincipalName
+         * @return this builder
+         */
+        public Builder kerberosPrincipalName(String kerberosPrincipalName) {
+            _kerberosPrincipalName = kerberosPrincipalName;
+            return this;
+        }
+
+        /**
          * Thread Factory
          *
          * @param threadFactory
@@ -1140,7 +1156,8 @@ public class SplitClientConfig {
                     _flagSetsFilter,
                     _invalidSetsCount,
                     _customHeaderDecorator,
-                    _authScheme);
+                    _authScheme,
+                    _kerberosPrincipalName);
         }
     }
 }

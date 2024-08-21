@@ -14,13 +14,15 @@ import org.apache.hc.core5.http.message.BasicHeader;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.InputStreamReader;
-import java.io.BufferedReader;
+import okhttp3.OkHttpClient;
+import okhttp3.Request;
+import okhttp3.Response;
+import okhttp3.Request.Builder;
+import okhttp3.RequestBody;
+
 import java.io.IOException;
-import java.io.OutputStream;
-import java.net.URI;
 import java.net.HttpURLConnection;
-import java.nio.charset.StandardCharsets;
+import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -39,163 +41,133 @@ public class SplitHttpClientKerberosImpl implements SplitHttpClient {
     private final RequestDecorator _requestDecorator;
     private final String _apikey;
     private final SDKMetadata _metadata;
+    private final OkHttpClient _client;
 
-    public static SplitHttpClientKerberosImpl create(RequestDecorator requestDecorator,
+    public static SplitHttpClientKerberosImpl create(OkHttpClient client, RequestDecorator requestDecorator,
                                                      String apikey,
                                                      SDKMetadata metadata) {
-        return new SplitHttpClientKerberosImpl(requestDecorator, apikey, metadata);
+        return new SplitHttpClientKerberosImpl(client, requestDecorator, apikey, metadata);
     }
 
-    SplitHttpClientKerberosImpl(RequestDecorator requestDecorator,
+    SplitHttpClientKerberosImpl(OkHttpClient client, RequestDecorator requestDecorator,
                                 String apikey,
                                 SDKMetadata metadata) {
         _requestDecorator = requestDecorator;
         _apikey = apikey;
         _metadata = metadata;
+        _client = client;
     }
 
-    public synchronized SplitHttpResponse get(URI uri, FetchOptions options, Map<String, List<String>> additionalHeaders) {
-        HttpURLConnection getHttpURLConnection = null;
+    public SplitHttpResponse get(URI uri, FetchOptions options, Map<String, List<String>> additionalHeaders) {
         try {
-            getHttpURLConnection = (HttpURLConnection) uri.toURL().openConnection();
-            return doGet(getHttpURLConnection, options, additionalHeaders);
-        } catch  (Exception e) {
-            throw new IllegalStateException(String.format("Problem in http get operation: %s", e), e);
-        } finally {
-            try {
-                if (getHttpURLConnection != null) {
-                    getHttpURLConnection.disconnect();
-                }
-            } catch (Exception e) {
-                _log.error(String.format("Could not close HTTP URL Connection: %s", e), e);
-            }
-        }
-    }
-    public SplitHttpResponse doGet(HttpURLConnection getHttpURLConnection, FetchOptions options, Map<String, List<String>> additionalHeaders) {
-        try {
-            getHttpURLConnection.setRequestMethod("GET");
-            setBasicHeaders(getHttpURLConnection);
-            setAdditionalAndDecoratedHeaders(getHttpURLConnection, additionalHeaders);
-
+            Builder requestBuilder = new Builder();
+            requestBuilder.url(uri.toString());
+            setBasicHeaders(requestBuilder);
+            setAdditionalAndDecoratedHeaders(requestBuilder, additionalHeaders);
             if (options.cacheControlHeadersEnabled()) {
-                getHttpURLConnection.setRequestProperty(HEADER_CACHE_CONTROL_NAME, HEADER_CACHE_CONTROL_VALUE);
+                requestBuilder.addHeader(HEADER_CACHE_CONTROL_NAME, HEADER_CACHE_CONTROL_VALUE);
             }
 
-            _log.debug(String.format("Request Headers: %s", getHttpURLConnection.getRequestProperties()));
+            Request request = requestBuilder.build();
+            _log.debug(String.format("Request Headers: %s", request.headers()));
 
-            int responseCode = getHttpURLConnection.getResponseCode();
+            Response response = _client.newCall(request).execute();
+
+            int responseCode = response.code();
 
             if (_log.isDebugEnabled()) {
-                _log.debug(String.format("[%s] %s. Status code: %s",
-                        getHttpURLConnection.getRequestMethod(),
-                        getHttpURLConnection.getURL().toString(),
+                _log.debug(String.format("[GET] %s. Status code: %s",
+                        request.url().toString(),
                         responseCode));
             }
 
             String statusMessage = "";
             if (responseCode < HttpURLConnection.HTTP_OK || responseCode >= HttpURLConnection.HTTP_MULT_CHOICE) {
                 _log.warn(String.format("Response status was: %s. Reason: %s", responseCode,
-                        getHttpURLConnection.getResponseMessage()));
-                statusMessage = getHttpURLConnection.getResponseMessage();
+                        response.message()));
+                statusMessage = response.message();
             }
 
-            InputStreamReader inputStreamReader = new InputStreamReader(getHttpURLConnection.getInputStream());
-            BufferedReader br = new BufferedReader(inputStreamReader);
-            String strCurrentLine;
-            StringBuilder bld = new StringBuilder();
-            while ((strCurrentLine = br.readLine()) != null) {
-                bld.append(strCurrentLine);
-            }
-            String responseBody = bld.toString();
-            inputStreamReader.close();
+            String responseBody = response.body().string();
+            response.close();
+
             return new SplitHttpResponse(responseCode,
                     statusMessage,
                     responseBody,
-                    getResponseHeaders(getHttpURLConnection));
+                    getResponseHeaders(response));
         } catch (Exception e) {
             throw new IllegalStateException(String.format("Problem in http get operation: %s", e), e);
         }
     }
 
-    public synchronized SplitHttpResponse post(URI uri, HttpEntity entity, Map<String, List<String>> additionalHeaders) throws IOException {
-        HttpURLConnection postHttpURLConnection = null;
+    public SplitHttpResponse post(URI url, HttpEntity entity,
+                                  Map<String, List<String>> additionalHeaders) {
         try {
-            postHttpURLConnection = (HttpURLConnection) uri.toURL().openConnection();
-            return doPost(postHttpURLConnection, entity, additionalHeaders);
-        } catch  (Exception e) {
-            throw new IllegalStateException(String.format("Problem in http post operation: %s", e), e);
-        } finally {
-            try {
-                if (postHttpURLConnection != null) {
-                    postHttpURLConnection.disconnect();
-                }
-            } catch (Exception e) {
-                _log.error(String.format("Could not close URL Connection: %s", e), e);
+            Builder requestBuilder = new Builder();
+            requestBuilder.url(url.toString());
+            setBasicHeaders(requestBuilder);
+            setAdditionalAndDecoratedHeaders(requestBuilder, additionalHeaders);
+            requestBuilder.addHeader("Accept-Encoding", "gzip");
+            requestBuilder.addHeader("Content-Type", "application/json");
+            String post = EntityUtils.toString(entity);
+            RequestBody postBody = RequestBody.create(post.getBytes());
+            requestBuilder.post(postBody);
+
+            Request request = requestBuilder.build();
+            _log.debug(String.format("Request Headers: %s", request.headers()));
+
+            Response response = _client.newCall(request).execute();
+
+            int responseCode = response.code();
+
+            if (_log.isDebugEnabled()) {
+                _log.debug(String.format("[GET] %s. Status code: %s",
+                        request.url().toString(),
+                        responseCode));
             }
-        }
-    }
 
-    public SplitHttpResponse doPost(HttpURLConnection postHttpURLConnection,
-                                                HttpEntity entity,
-                                                Map<String, List<String>> additionalHeaders) {
-        try {
-            postHttpURLConnection.setRequestMethod("POST");
-            setBasicHeaders(postHttpURLConnection);
-            setAdditionalAndDecoratedHeaders(postHttpURLConnection, additionalHeaders);
-
-            postHttpURLConnection.setRequestProperty("Accept-Encoding", "gzip");
-            postHttpURLConnection.setRequestProperty("Content-Type", "application/json");
-            _log.debug(String.format("Request Headers: %s", postHttpURLConnection.getRequestProperties()));
-
-            postHttpURLConnection.setDoOutput(true);
-            String postBody = EntityUtils.toString(entity);
-            OutputStream os = postHttpURLConnection.getOutputStream();
-            os.write(postBody.getBytes(StandardCharsets.UTF_8));
-            os.flush();
-            os.close();
-            _log.debug(String.format("Posting: %s", postBody));
-
-            int responseCode = postHttpURLConnection.getResponseCode();
             String statusMessage = "";
             if (responseCode < HttpURLConnection.HTTP_OK || responseCode >= HttpURLConnection.HTTP_MULT_CHOICE) {
-                statusMessage = postHttpURLConnection.getResponseMessage();
                 _log.warn(String.format("Response status was: %s. Reason: %s", responseCode,
-                        statusMessage));
+                        response.message()));
+                statusMessage = response.message();
             }
-            return new SplitHttpResponse(responseCode, statusMessage, "", getResponseHeaders(postHttpURLConnection));
+            response.close();
+
+            return new SplitHttpResponse(responseCode, statusMessage, "", getResponseHeaders(response));
         } catch (Exception e) {
             throw new IllegalStateException(String.format("Problem in http post operation: %s", e), e);
         }
     }
 
-    private void setBasicHeaders(HttpURLConnection urlConnection) {
-        urlConnection.setRequestProperty(HEADER_API_KEY, "Bearer " + _apikey);
-        urlConnection.setRequestProperty(HEADER_CLIENT_VERSION, _metadata.getSdkVersion());
-        urlConnection.setRequestProperty(HEADER_CLIENT_MACHINE_IP, _metadata.getMachineIp());
-        urlConnection.setRequestProperty(HEADER_CLIENT_MACHINE_NAME, _metadata.getMachineName());
-        urlConnection.setRequestProperty(HEADER_CLIENT_KEY, _apikey.length() > 4
+    private void setBasicHeaders(Builder requestBuilder) {
+        requestBuilder.addHeader(HEADER_API_KEY, "Bearer " + _apikey);
+        requestBuilder.addHeader(HEADER_CLIENT_VERSION, _metadata.getSdkVersion());
+        requestBuilder.addHeader(HEADER_CLIENT_MACHINE_IP, _metadata.getMachineIp());
+        requestBuilder.addHeader(HEADER_CLIENT_MACHINE_NAME, _metadata.getMachineName());
+        requestBuilder.addHeader(HEADER_CLIENT_KEY, _apikey.length() > 4
                 ? _apikey.substring(_apikey.length() - 4)
                 : _apikey);
     }
 
-    private void setAdditionalAndDecoratedHeaders(HttpURLConnection urlConnection, Map<String, List<String>> additionalHeaders) {
+    private void setAdditionalAndDecoratedHeaders(Builder requestBuilder, Map<String, List<String>> additionalHeaders) {
         if (additionalHeaders != null) {
             for (Map.Entry<String, List<String>> entry : additionalHeaders.entrySet()) {
                 for (String value : entry.getValue()) {
-                    urlConnection.setRequestProperty(entry.getKey(), value);
+                    requestBuilder.addHeader(entry.getKey(), value);
                 }
             }
         }
         HttpRequest request = new HttpGet("");
         _requestDecorator.decorateHeaders(request);
         for (Header header : request.getHeaders()) {
-            urlConnection.setRequestProperty(header.getName(), header.getValue());
+            requestBuilder.addHeader(header.getName(), header.getValue());
         }
     }
 
-    private Header[] getResponseHeaders(HttpURLConnection urlConnection) {
+    private Header[] getResponseHeaders(Response response) {
         List<BasicHeader> responseHeaders = new ArrayList<>();
-        Map<String, List<String>> map = urlConnection.getHeaderFields();
+        Map<String, List<String>> map = response.headers().toMultimap();
         for (Map.Entry<String, List<String>> entry : map.entrySet()) {
             if (entry.getKey() != null) {
                 BasicHeader responseHeader = new BasicHeader(entry.getKey(), entry.getValue());
@@ -206,6 +178,6 @@ public class SplitHttpClientKerberosImpl implements SplitHttpClient {
     }
     @Override
     public void close() throws IOException {
-        // Added for compatibility with HttpSplitClient, no action needed as URLConnection objects are closed.
+        _client.dispatcher().executorService().shutdown();
     }
 }
