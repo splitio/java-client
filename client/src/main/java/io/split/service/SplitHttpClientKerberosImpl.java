@@ -103,7 +103,7 @@ public class SplitHttpClientKerberosImpl implements SplitHttpClient {
     public SplitHttpResponse post(URI url, HttpEntity entity,
                                   Map<String, List<String>> additionalHeaders) {
         try {
-            Builder requestBuilder = new Builder();
+            Builder requestBuilder = getRequestBuilder();
             requestBuilder.url(url.toString());
             setBasicHeaders(requestBuilder);
             setAdditionalAndDecoratedHeaders(requestBuilder, additionalHeaders);
@@ -113,7 +113,7 @@ public class SplitHttpClientKerberosImpl implements SplitHttpClient {
             RequestBody postBody = RequestBody.create(post.getBytes());
             requestBuilder.post(postBody);
 
-            Request request = requestBuilder.build();
+            Request request = getRequest(requestBuilder);
             _log.debug(String.format("Request Headers: %s", request.headers()));
 
             Response response = _client.newCall(request).execute();
@@ -140,7 +140,14 @@ public class SplitHttpClientKerberosImpl implements SplitHttpClient {
         }
     }
 
-    private void setBasicHeaders(Builder requestBuilder) {
+    protected Builder getRequestBuilder() {
+        return new Builder();
+    }
+
+    protected Request getRequest(Builder requestBuilder) {
+        return requestBuilder.build();
+    }
+    protected void setBasicHeaders(Builder requestBuilder) {
         requestBuilder.addHeader(HEADER_API_KEY, "Bearer " + _apikey);
         requestBuilder.addHeader(HEADER_CLIENT_VERSION, _metadata.getSdkVersion());
         requestBuilder.addHeader(HEADER_CLIENT_MACHINE_IP, _metadata.getMachineIp());
@@ -150,7 +157,7 @@ public class SplitHttpClientKerberosImpl implements SplitHttpClient {
                 : _apikey);
     }
 
-    private void setAdditionalAndDecoratedHeaders(Builder requestBuilder, Map<String, List<String>> additionalHeaders) {
+    protected void setAdditionalAndDecoratedHeaders(Builder requestBuilder, Map<String, List<String>> additionalHeaders) {
         if (additionalHeaders != null) {
             for (Map.Entry<String, List<String>> entry : additionalHeaders.entrySet()) {
                 for (String value : entry.getValue()) {
@@ -165,7 +172,7 @@ public class SplitHttpClientKerberosImpl implements SplitHttpClient {
         }
     }
 
-    private Header[] getResponseHeaders(Response response) {
+    protected Header[] getResponseHeaders(Response response) {
         List<BasicHeader> responseHeaders = new ArrayList<>();
         Map<String, List<String>> map = response.headers().toMultimap();
         for (Map.Entry<String, List<String>> entry : map.entrySet()) {

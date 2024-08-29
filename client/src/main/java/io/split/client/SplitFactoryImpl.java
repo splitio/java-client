@@ -129,6 +129,7 @@ import java.util.stream.Collectors;
 import java.util.HashSet;
 import java.util.List;
 import java.util.ArrayList;
+import java.util.concurrent.TimeUnit;
 
 import static io.split.client.utils.SplitExecutorFactory.buildExecutorService;
 
@@ -538,7 +539,9 @@ public class SplitFactoryImpl implements SplitFactory {
             httpClientbuilder = setupProxy(httpClientbuilder, config);
         }
 
+        // setup Kerberos client
         if (config.authScheme() == HttpAuthScheme.KERBEROS) {
+            _log.info("Using Kerberos-Proxy Authentication Scheme.");
             Proxy proxy = new Proxy(Proxy.Type.HTTP, new InetSocketAddress(config.proxy().getHostName(), config.proxy().getPort()));
             HttpLoggingInterceptor logging = new HttpLoggingInterceptor();
             logging.setLevel(HttpLoggingInterceptor.Level.HEADERS);
@@ -552,7 +555,8 @@ public class SplitFactoryImpl implements SplitFactory {
             Authenticator proxyAuthenticator = new HTTPKerberosAuthInterceptor(config.kerberosPrincipalName(), kerberosOptions);
             OkHttpClient client = new Builder()
                     .proxy(proxy)
-//                    .readTimeoutMillis(config.readTimeout())
+                    .readTimeout(config.readTimeout(), TimeUnit.MILLISECONDS)
+                    .connectTimeout(config.connectionTimeout(), TimeUnit.MILLISECONDS)
                     .addInterceptor(logging)
                     .proxyAuthenticator(proxyAuthenticator)
                     .build();

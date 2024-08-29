@@ -1103,7 +1103,16 @@ public class SplitClientConfig {
                 _storageMode = StorageMode.PLUGGABLE;
             }
 
-            return new SplitClientConfig(
+            if (_authScheme == HttpAuthScheme.KERBEROS) {
+                if (proxy() == null) {
+                    throw new IllegalStateException("Kerberos mode require Proxy parameters.");
+                }
+                if (_kerberosPrincipalName == null) {
+                    throw new IllegalStateException("Kerberos mode require Kerberos Principal Name.");
+                }
+            }
+
+                return new SplitClientConfig(
                     _endpoint,
                     _eventsEndpoint,
                     _featuresRefreshRate,

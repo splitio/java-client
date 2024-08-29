@@ -3,6 +3,7 @@ package io.split.service;
 import com.google.common.base.Charsets;
 import com.google.common.io.Files;
 
+import io.split.client.CustomHeaderDecorator;
 import io.split.client.RequestDecorator;
 import io.split.client.dtos.*;
 import io.split.client.impressions.Impression;
@@ -12,66 +13,90 @@ import io.split.client.utils.Utils;
 import io.split.engine.common.FetchOptions;
 
 import okhttp3.OkHttpClient;
-import okhttp3.OkHttpClient.Builder;
+import okhttp3.OkHttpClient.*;
+import okhttp3.HttpUrl;
+import okhttp3.Headers;
 
+import okhttp3.mockwebserver.MockResponse;
+import okhttp3.mockwebserver.MockWebServer;
+import okhttp3.mockwebserver.RecordedRequest;
 import org.apache.hc.core5.http.*;
 import org.apache.hc.core5.http.io.entity.EntityUtils;
 import org.junit.Assert;
 import org.junit.Test;
-import org.mockito.ArgumentCaptor;
 import org.mockito.Mockito;
 
 import java.io.*;
 import java.lang.reflect.InvocationTargetException;
-import java.net.*;
-import java.nio.charset.StandardCharsets;
-import java.util.*;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.net.HttpURLConnection;
+import java.net.Proxy;
+import java.net.InetSocketAddress;
+import java.util.List;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.Map;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.Is.is;
 import static org.hamcrest.core.IsEqual.equalTo;
-import static org.mockito.Mockito.when;
-import static org.mockito.Mockito.verify;
 
 public class HttpSplitClientKerberosTest {
 
     @Test
-    public void testGetWithSpecialCharacters() throws URISyntaxException, IOException {
-        Map<String, List<String>> responseHeaders = new HashMap<String, List<String>>();
-        responseHeaders.put((HttpHeaders.VIA), Arrays.asList("HTTP/1.1 s_proxy_rio1"));
-        URI rootTarget = URI.create("https://api.split.io/splitChanges?since=1234567");
+    public void testGetWithSpecialCharacters() throws IOException, InterruptedException {
+        MockWebServer server = new MockWebServer();
+        BufferedReader br = new BufferedReader(new FileReader("src/test/resources/split-change-special-characters.json"));
+        String body;
+        try {
+            StringBuilder sb = new StringBuilder();
+            String line = br.readLine();
 
-        HttpURLConnection mockHttpURLConnection = Mockito.mock(HttpURLConnection.class);
-        when(mockHttpURLConnection.getHeaderFields()).thenReturn(responseHeaders);
+            while (line != null) {
+                sb.append(line);
+                sb.append(System.lineSeparator());
+                line = br.readLine();
+            }
+            body = sb.toString();
+        } finally {
+            br.close();
+        }
 
+        server.enqueue(new MockResponse().setBody(body).addHeader(HttpHeaders.VIA, "HTTP/1.1 s_proxy_rio1"));
+        server.start();
+        HttpUrl baseUrl = server.url("/v1/");
+        URI rootTarget = baseUrl.uri();
         RequestDecorator decorator = new RequestDecorator(null);
+        OkHttpClient client = new Builder().build();
 
-        Mockito.when(mockHttpURLConnection.getResponseCode()).thenReturn(HttpURLConnection.HTTP_OK);
-        ByteArrayInputStream stubInputStream = new ByteArrayInputStream(Files.asCharSource(
-                new File("src/test/resources/split-change-special-characters.json"), Charsets.UTF_8).read().getBytes(Charsets.UTF_8));
-        when(mockHttpURLConnection.getInputStream()).thenReturn(stubInputStream);
-
-        Proxy proxy = new Proxy(Proxy.Type.HTTP, new InetSocketAddress("1.0.0.127", 8080));
-        OkHttpClient client = new Builder()
-                .proxy(proxy)
-                .build();
-
-        SplitHttpClientKerberosImpl splitHtpClientKerberos = SplitHttpClientKerberosImpl.create(client, decorator, "qwerty", metadata());
+        SplitHttpClientKerberosImpl splitHttpClientKerberosImpl = new SplitHttpClientKerberosImpl(client, decorator, "qwerty", metadata());
 
         Map<String, List<String>> additionalHeaders = Collections.singletonMap("AdditionalHeader",
                 Collections.singletonList("add"));
 
-        try {
-            SplitHttpResponse splitHttpResponse = splitHtpClientKerberos.get(rootTarget,
+        SplitHttpResponse splitHttpResponse = splitHttpClientKerberosImpl.get(rootTarget,
                     new FetchOptions.Builder().cacheControlHeaders(true).build(), additionalHeaders);
-        } catch (Exception e) {
-        }
-/*
-        SplitChange change = Json.fromJson(splitHttpResponse.body(), SplitChange.class);
 
+
+        RecordedRequest request = server.takeRequest();
+        server.shutdown();
+        Headers requestHeaders = request.getHeaders();
+
+        assertThat(splitHttpResponse.statusCode(), is(equalTo(HttpURLConnection.HTTP_OK)));
+        Assert.assertEquals("/v1/", request.getPath());
+        assertThat(requestHeaders.get("Authorization"), is(equalTo("Bearer qwerty"))) ;
+        assertThat(requestHeaders.get("SplitSDKClientKey"), is(equalTo("erty")));
+        assertThat(requestHeaders.get("SplitSDKVersion"), is(equalTo("java-1.2.3")));
+        assertThat(requestHeaders.get("SplitSDKMachineIP"), is(equalTo("1.2.3.4")));
+        assertThat(requestHeaders.get("SplitSDKMachineName"), is(equalTo("someIP")));
+        assertThat(requestHeaders.get("AdditionalHeader"), is(equalTo("add")));
+
+        SplitChange change = Json.fromJson(splitHttpResponse.body(), SplitChange.class);
         Header[] headers = splitHttpResponse.responseHeaders();
-        assertThat(headers[0].getName(), is(equalTo("Via")));
-        assertThat(headers[0].getValue(), is(equalTo("[HTTP/1.1 s_proxy_rio1]")));
+        assertThat(headers[1].getName(), is(equalTo("via")));
+        assertThat(headers[1].getValue(), is(equalTo("[HTTP/1.1 s_proxy_rio1]")));
+        assertThat(splitHttpResponse.statusCode(), is(equalTo(200)));
         Assert.assertNotNull(change);
         Assert.assertEquals(1, change.splits.size());
         Assert.assertNotNull(change.splits.get(0));
@@ -82,30 +107,61 @@ public class HttpSplitClientKerberosTest {
         Assert.assertEquals("{\"test\": \"blue\",\"grüne Straße\": 13}", configs.get("on"));
         Assert.assertEquals("{\"test\": \"blue\",\"size\": 15}", configs.get("off"));
         Assert.assertEquals(2, split.sets.size());
-
- */
     }
 
     @Test
-    public void testGetParameters() throws URISyntaxException, MalformedURLException {
-        URI uri = new URI("https://api.split.io/splitChanges?since=1234567");
-        FetchOptions options = new FetchOptions.Builder().cacheControlHeaders(true).build();
-        SplitHttpClientKerberosImpl splitHtpClientKerberos = Mockito.mock(SplitHttpClientKerberosImpl.class);
-        when(splitHtpClientKerberos.get(uri, options, null)).thenCallRealMethod();
-
-        try {
-            SplitHttpResponse splitHttpResponse = splitHtpClientKerberos.get(uri, options, null);
-        } catch (Exception e) {
+    public void testGetParameters() throws URISyntaxException, IOException, InterruptedException {
+        class MyCustomHeaders implements CustomHeaderDecorator {
+            public MyCustomHeaders() {}
+            @Override
+            public Map<String, List<String>> getHeaderOverrides(RequestContext context) {
+                Map<String, List<String>> additionalHeaders = context.headers();
+                additionalHeaders.put("first", Arrays.asList("1"));
+                additionalHeaders.put("second", Arrays.asList("2.1", "2.2"));
+                additionalHeaders.put("third", Arrays.asList("3"));
+                return additionalHeaders;
+            }
         }
 
-//        ArgumentCaptor<FetchOptions> optionsCaptor = ArgumentCaptor.forClass(FetchOptions.class);
-//        ArgumentCaptor<HashMap> headersCaptor = ArgumentCaptor.forClass(HashMap.class);
-//        verify(splitHtpClientKerberos).get(connectionCaptor.capture(), optionsCaptor.capture(), headersCaptor.capture());
+        MockWebServer server = new MockWebServer();
+        BufferedReader br = new BufferedReader(new FileReader("src/test/resources/split-change-special-characters.json"));
+        String body;
+        try {
+            StringBuilder sb = new StringBuilder();
+            String line = br.readLine();
 
-  //      assertThat(connectionCaptor.getValue().getRequestMethod(), is(equalTo("GET")));
-//        assertThat(connectionCaptor.getValue().getURL().toString(), is(equalTo(new URL("https://api.split.io/splitChanges?since=1234567").toString())));
+            while (line != null) {
+                sb.append(line);
+                sb.append(System.lineSeparator());
+                line = br.readLine();
+            }
+            body = sb.toString();
+        } finally {
+            br.close();
+        }
 
- //       assertThat(optionsCaptor.getValue().cacheControlHeadersEnabled(), is(equalTo(true)));
+        server.enqueue(new MockResponse().setBody(body).addHeader(HttpHeaders.VIA, "HTTP/1.1 s_proxy_rio1"));
+        server.start();
+        HttpUrl baseUrl = server.url("/splitChanges?since=1234567");
+        URI rootTarget = baseUrl.uri();
+        RequestDecorator decorator = new RequestDecorator(new MyCustomHeaders());
+        OkHttpClient client = new Builder().build();
+
+        SplitHttpClientKerberosImpl splitHttpClientKerberosImpl = new SplitHttpClientKerberosImpl(client, decorator, "qwerty", metadata());
+
+        FetchOptions options = new FetchOptions.Builder().cacheControlHeaders(true).build();
+        SplitHttpResponse splitHttpResponse = splitHttpClientKerberosImpl.get(rootTarget, options, null);
+
+        RecordedRequest request = server.takeRequest();
+        server.shutdown();
+        Headers requestHeaders = request.getHeaders();
+
+        assertThat(requestHeaders.get("Cache-Control"), is(equalTo("no-cache")));
+        assertThat(requestHeaders.get("first"), is(equalTo("1")));
+        assertThat(requestHeaders.values("second"), is(equalTo(Arrays.asList("2.1","2.2"))));
+        assertThat(requestHeaders.get("third"), is(equalTo("3")));
+        Assert.assertEquals("/splitChanges?since=1234567", request.getPath());
+        assertThat(request.getMethod(), is(equalTo("GET")));
     }
 
     @Test
@@ -113,13 +169,8 @@ public class HttpSplitClientKerberosTest {
         URI uri = new URI("https://api.split.io/splitChanges?since=1234567");
         RequestDecorator decorator = new RequestDecorator(null);
 
-//        Mockito.when(mockHttpURLConnection.getResponseCode()).thenReturn(HttpURLConnection.HTTP_INTERNAL_ERROR);
-        ByteArrayInputStream stubInputStream = new ByteArrayInputStream(Files.asCharSource(
-                new File("src/test/resources/split-change-special-characters.json"), Charsets.UTF_8).read().getBytes(Charsets.UTF_8));
-//        when(mockHttpURLConnection.getInputStream()).thenReturn(stubInputStream);
-
         Proxy proxy = new Proxy(Proxy.Type.HTTP, new InetSocketAddress("1.0.0.127", 8080));
-        OkHttpClient client = new Builder()
+        OkHttpClient client = new OkHttpClient.Builder()
                 .proxy(proxy)
                 .build();
         try {
@@ -128,7 +179,6 @@ public class HttpSplitClientKerberosTest {
                     new FetchOptions.Builder().cacheControlHeaders(true).build(), null);
         } catch (Exception e) {
         }
-  //      Assert.assertEquals(HttpStatus.SC_INTERNAL_SERVER_ERROR, (long) splitHttpResponse.statusCode());
     }
 
     @Test(expected = IllegalStateException.class)
@@ -137,34 +187,33 @@ public class HttpSplitClientKerberosTest {
         URI uri = new URI("https://api.split.io/splitChanges?since=1234567");
         RequestDecorator decorator = null;
 
-//        Mockito.when(mockHttpURLConnection.getResponseCode()).thenReturn(HttpURLConnection.HTTP_INTERNAL_ERROR);
         ByteArrayInputStream stubInputStream = new ByteArrayInputStream(Files.asCharSource(
                 new File("src/test/resources/split-change-special-characters.json"), Charsets.UTF_8).read().getBytes(Charsets.UTF_8));
-//        when(mockHttpURLConnection.getInputStream()).thenReturn(stubInputStream);
 
         Proxy proxy = new Proxy(Proxy.Type.HTTP, new InetSocketAddress("1.0.0.127", 8080));
-        OkHttpClient client = new Builder()
+        OkHttpClient client = new OkHttpClient.Builder()
                 .proxy(proxy)
                 .build();
 
         SplitHttpClientKerberosImpl splitHtpClientKerberos = SplitHttpClientKerberosImpl.create(client, decorator, "qwerty", metadata());
         SplitHttpResponse splitHttpResponse = splitHtpClientKerberos.get(uri,
                     new FetchOptions.Builder().cacheControlHeaders(true).build(), null);
-
     }
 
     @Test
-    public void testPost() throws URISyntaxException, IOException, ParseException {
-        URI uri = new URI("https://api.split.io/splitChanges?since=1234567");
+    public void testPost() throws URISyntaxException, IOException, ParseException, InterruptedException {
+        MockWebServer server = new MockWebServer();
+
+        server.enqueue(new MockResponse().addHeader(HttpHeaders.VIA, "HTTP/1.1 s_proxy_rio1"));
+        server.start();
+        HttpUrl baseUrl = server.url("/impressions");
+        URI rootTarget = baseUrl.uri();
         RequestDecorator decorator = new RequestDecorator(null);
-//        Mockito.when(mockHttpURLConnection.getResponseCode()).thenReturn(HttpURLConnection.HTTP_OK);
+        OkHttpClient client = new Builder().build();
 
-        Proxy proxy = new Proxy(Proxy.Type.HTTP, new InetSocketAddress("1.0.0.127", 8080));
-        OkHttpClient client = new Builder()
-                .proxy(proxy)
-                .build();
-        SplitHttpClientKerberosImpl splitHtpClientKerberos = SplitHttpClientKerberosImpl.create(client, decorator, "qwerty", metadata());
+        SplitHttpClientKerberosImpl splitHttpClientKerberosImpl = new SplitHttpClientKerberosImpl(client, decorator, "qwerty", metadata());
 
+        FetchOptions options = new FetchOptions.Builder().cacheControlHeaders(true).build();
         // Send impressions
         List<TestImpressions> toSend = Arrays.asList(new TestImpressions("t1", Arrays.asList(
                 KeyImpression.fromImpression(new Impression("k1", null, "t1", "on", 123L, "r1", 456L, null)),
@@ -177,52 +226,28 @@ public class HttpSplitClientKerberosTest {
 
         Map<String, List<String>> additionalHeaders = Collections.singletonMap("SplitSDKImpressionsMode",
                 Collections.singletonList("OPTIMIZED"));
-//        when(mockHttpURLConnection.getHeaderFields()).thenReturn(additionalHeaders);
 
-        ByteArrayOutputStream mockOs = Mockito.mock( ByteArrayOutputStream.class);
- //       when(mockHttpURLConnection.getOutputStream()).thenReturn(mockOs);
+        SplitHttpResponse splitHttpResponse = splitHttpClientKerberosImpl.post(rootTarget, Utils.toJsonEntity(toSend),
+                additionalHeaders);
 
-        try {
-            SplitHttpResponse splitHttpResponse = splitHtpClientKerberos.post(uri, Utils.toJsonEntity(toSend),
-                    additionalHeaders);
+        RecordedRequest request = server.takeRequest();
+        server.shutdown();
+        Headers requestHeaders = request.getHeaders();
+        String postBody = EntityUtils.toString(Utils.toJsonEntity(toSend));
 
-            // Capture outgoing request and validate it
-            ArgumentCaptor<byte[]> captor = ArgumentCaptor.forClass(byte[].class);
-            verify(mockOs).write(captor.capture());
-            String postBody = EntityUtils.toString(Utils.toJsonEntity(toSend));
-    //        assertThat(captor.getValue(), is(equalTo(postBody.getBytes(StandardCharsets.UTF_8))));
+        Assert.assertEquals("POST /impressions HTTP/1.1", request.getRequestLine());
+        Assert.assertEquals(postBody, request.getBody().readUtf8());
+        assertThat(requestHeaders.get("Authorization"), is(equalTo("Bearer qwerty"))) ;
+        assertThat(requestHeaders.get("SplitSDKClientKey"), is(equalTo("erty")));
+        assertThat(requestHeaders.get("SplitSDKVersion"), is(equalTo("java-1.2.3")));
+        assertThat(requestHeaders.get("SplitSDKMachineIP"), is(equalTo("1.2.3.4")));
+        assertThat(requestHeaders.get("SplitSDKMachineName"), is(equalTo("someIP")));
+        assertThat(requestHeaders.get("SplitSDKImpressionsMode"), is(equalTo("OPTIMIZED")));
 
-            Header[] headers = splitHttpResponse.responseHeaders();
-     //       assertThat(headers[0].getName(), is(equalTo("SplitSDKImpressionsMode")));
-     //       assertThat(headers[0].getValue(), is(equalTo("[OPTIMIZED]")));
-
-      //      Assert.assertEquals(200, (long) splitHttpResponse.statusCode());
-        } catch (Exception e) {
-        }
-    }
-
-    @Test
-    public void testPotParameters() throws URISyntaxException, IOException {
-        URI uri = new URI("https://kubernetesturl.com/split/api/testImpressions/bulk");
-//        when(splitHtpClientKerberos.post(uri, null, null)).thenCallRealMethod();
-        Proxy proxy = new Proxy(Proxy.Type.HTTP, new InetSocketAddress("1.0.0.127", 8080));
-        OkHttpClient client = new Builder()
-                .proxy(proxy)
-                .build();
-        RequestDecorator decorator = new RequestDecorator(null);
-        SplitHttpClientKerberosImpl splitHtpClientKerberos = SplitHttpClientKerberosImpl.create(client, decorator, "qwerty", metadata());
-
-        try {
-            SplitHttpResponse splitHttpResponse = splitHtpClientKerberos.post(uri, null, null);
-        } catch (Exception e) {
-        }
-
-//        ArgumentCaptor<HttpURLConnection> connectionCaptor = ArgumentCaptor.forClass(HttpURLConnection.class);
-//        ArgumentCaptor<HttpEntity> entityCaptor = ArgumentCaptor.forClass(HttpEntity.class);
-//        ArgumentCaptor<HashMap> headersCaptor = ArgumentCaptor.forClass(HashMap.class);
-//        verify(splitHtpClientKerberos).doPost(connectionCaptor.capture(), entityCaptor.capture(), headersCaptor.capture());
-
- //       assertThat(connectionCaptor.getValue().getURL().toString(), is(equalTo(new URL("https://kubernetesturl.com/split/api/testImpressions/bulk").toString())));
+        Header[] headers = splitHttpResponse.responseHeaders();
+        assertThat(headers[1].getName(), is(equalTo("via")));
+        assertThat(headers[1].getValue(), is(equalTo("[HTTP/1.1 s_proxy_rio1]")));
+        assertThat(splitHttpResponse.statusCode(), is(equalTo(200)));
     }
 
     @Test
@@ -230,11 +255,9 @@ public class HttpSplitClientKerberosTest {
         URI uri = new URI("https://kubernetesturl.com/split/api/testImpressions/bulk");
         RequestDecorator decorator = new RequestDecorator(null);
         ByteArrayOutputStream mockOs = Mockito.mock( ByteArrayOutputStream.class);
-//        Mockito.when(mockHttpURLConnection.getResponseCode()).thenReturn(HttpURLConnection.HTTP_INTERNAL_ERROR);
-//        when(mockHttpURLConnection.getOutputStream()).thenReturn(mockOs);
 
         Proxy proxy = new Proxy(Proxy.Type.HTTP, new InetSocketAddress("1.0.0.127", 8080));
-        OkHttpClient client = new Builder()
+        OkHttpClient client = new OkHttpClient.Builder()
                 .proxy(proxy)
                 .build();
         SplitHttpClientKerberosImpl splitHtpClientKerberos = SplitHttpClientKerberosImpl.create(client, decorator, "qwerty", metadata());
@@ -251,11 +274,10 @@ public class HttpSplitClientKerberosTest {
     @Test(expected = IllegalStateException.class)
     public void testPosttException() throws URISyntaxException, IOException {
         RequestDecorator decorator = null;
-//        Mockito.when(mockHttpURLConnection.getResponseCode()).thenReturn(HttpURLConnection.HTTP_OK);
         URI uri = new URI("https://kubernetesturl.com/split/api/testImpressions/bulk");
 
         Proxy proxy = new Proxy(Proxy.Type.HTTP, new InetSocketAddress("1.0.0.127", 8080));
-        OkHttpClient client = new Builder()
+        OkHttpClient client = new OkHttpClient.Builder()
                 .proxy(proxy)
                 .build();
         SplitHttpClientKerberosImpl splitHtpClientKerberos = SplitHttpClientKerberosImpl.create(client, decorator, "qwerty", metadata());

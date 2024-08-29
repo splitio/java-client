@@ -260,11 +260,31 @@ public class SplitClientConfigTest {
     public void checkExpectedAuthScheme() {
         SplitClientConfig cfg = SplitClientConfig.builder()
                 .authScheme(HttpAuthScheme.KERBEROS)
+                .kerberosPrincipalName("bilal@bilal")
+                .proxyHost("local")
+                .proxyPort(8080)
                 .build();
         Assert.assertEquals(HttpAuthScheme.KERBEROS, cfg.authScheme());
 
         cfg = SplitClientConfig.builder()
                 .build();
         Assert.assertEquals(null, cfg.authScheme());
+    }
+
+    @Test(expected = IllegalStateException.class)
+    public void testAuthSchemeWithoutProxy() {
+        SplitClientConfig.builder()
+                .authScheme(HttpAuthScheme.KERBEROS)
+                .kerberosPrincipalName("bilal")
+                .build();
+    }
+
+    @Test(expected = IllegalStateException.class)
+    public void testAuthSchemeWithoutPrincipalName() {
+        SplitClientConfig.builder()
+                .authScheme(HttpAuthScheme.KERBEROS)
+                .proxyHost("local")
+                .proxyPort(8080)
+                .build();
     }
 }

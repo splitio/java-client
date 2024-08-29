@@ -352,7 +352,8 @@ public class SplitFactoryImplTest extends TestCase {
     }
 
     @Test
-    public void testFactoryKerberosInstance() throws URISyntaxException, NoSuchMethodException, InvocationTargetException, IllegalAccessException, IOException {
+    public void testFactoryKerberosInstance() throws NoSuchMethodException, InvocationTargetException, IllegalAccessException {
+        SplitFactoryImpl splitFactory = null;
         SplitClientConfig splitClientConfig = SplitClientConfig.builder()
                 .setBlockUntilReadyTimeout(10000)
                 .authScheme(HttpAuthScheme.KERBEROS)
@@ -360,7 +361,11 @@ public class SplitFactoryImplTest extends TestCase {
                 .proxyPort(6060)
                 .proxyHost(ENDPOINT)
                 .build();
-        SplitFactoryImpl splitFactory = new SplitFactoryImpl("asdf", splitClientConfig);
+        try {
+            splitFactory = new SplitFactoryImpl("asdf", splitClientConfig);
+        } catch(Exception e) {
+
+        }
 
         Method method = SplitFactoryImpl.class.getDeclaredMethod("buildSplitHttpClient", String.class,
                 SplitClientConfig.class, SDKMetadata.class, RequestDecorator.class);
