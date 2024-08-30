@@ -1072,6 +1072,8 @@ public class SplitClientConfig {
                 case DEBUG:
                     _impressionsRefreshRate = (_impressionsRefreshRate <= 0) ? 60 : _impressionsRefreshRate;
                     break;
+                case NONE:
+                    break;
             }
 
             if (_impressionsQueueSize <=0 ) {

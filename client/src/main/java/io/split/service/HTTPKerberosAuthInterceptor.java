@@ -1,17 +1,16 @@
 package io.split.service;
 
 import io.split.client.exceptions.KerberosAuthException;
+
 import java.io.IOException;
-import java.security.PrivilegedActionException;
-import java.security.PrivilegedExceptionAction;
 import java.util.Map;
 import java.util.Date;
 import java.util.Set;
 import java.util.Base64;
 
+import java.security.PrivilegedActionException;
+import java.security.PrivilegedExceptionAction;
 import java.security.Principal;
-import java.security.PrivilegedAction;
-
 import javax.security.auth.login.LoginContext;
 import javax.security.auth.login.LoginException;
 import javax.security.auth.Subject;
