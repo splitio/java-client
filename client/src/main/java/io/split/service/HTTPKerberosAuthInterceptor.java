@@ -1,6 +1,9 @@
 package io.split.service;
 
+import io.split.client.exceptions.KerberosAuthException;
 import java.io.IOException;
+import java.security.PrivilegedActionException;
+import java.security.PrivilegedExceptionAction;
 import java.util.Map;
 import java.util.Date;
 import java.util.Set;
@@ -125,8 +128,7 @@ public class HTTPKerberosAuthInterceptor implements Authenticator {
    *            need to authenticate
    * @return the HTTP Authorization header token
    */
-  private String buildAuthorizationHeader(String serverPrincipalName) throws LoginException
-  {
+  private String buildAuthorizationHeader(String serverPrincipalName) throws LoginException, PrivilegedActionException {
     /*
      * Get the principal from the Subject's private credentials and populate the
      * client and server principal name for the GSS API
@@ -171,7 +173,7 @@ public class HTTPKerberosAuthInterceptor implements Authenticator {
    * Subject.doAs() method. We do this in order to create a context of the user
    * who has the service ticket and reuse this context for subsequent requests
    */
-  private static class CreateAuthorizationHeaderAction implements PrivilegedAction {
+  private static class CreateAuthorizationHeaderAction implements PrivilegedExceptionAction {
     String clientPrincipalName;
     String serverPrincipalName;
 
@@ -197,7 +199,7 @@ public class HTTPKerberosAuthInterceptor implements Authenticator {
      * be set to true.
      */
     @Override
-    public Object run() {
+    public Object run() throws KerberosAuthException {
       try {
         Oid krb5Mechanism = new Oid("1.2.840.113554.1.2.2");
         Oid krb5PrincipalNameType = new Oid("1.2.840.113554.1.2.2.1");
@@ -218,7 +220,7 @@ public class HTTPKerberosAuthInterceptor implements Authenticator {
         outputToken.append(new String(Base64.getEncoder().encode(outToken)));
         context.dispose();
       } catch (GSSException | IOException exception) {
-        throw new RuntimeException(exception.getMessage(), exception);
+        throw new KerberosAuthException(exception.getMessage(), exception);
       }
       return null;
     }
