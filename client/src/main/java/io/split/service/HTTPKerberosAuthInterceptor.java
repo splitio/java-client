@@ -23,7 +23,6 @@ import org.ietf.jgss.GSSManager;
 import org.ietf.jgss.GSSName;
 import org.ietf.jgss.Oid;
 
-import okhttp3.Interceptor;
 import okhttp3.Request;
 import okhttp3.Response;
 import okhttp3.Authenticator;
@@ -54,7 +53,7 @@ public class HTTPKerberosAuthInterceptor implements Authenticator {
    * Login Module to be used for authentication.
    *
    */
-  static private class KerberosLoginConfiguration extends Configuration {
+  private static class KerberosLoginConfiguration extends Configuration {
     Map<String,String> krbOptions = null;
 
     public KerberosLoginConfiguration() {}
@@ -147,7 +146,7 @@ public class HTTPKerberosAuthInterceptor implements Authenticator {
       if (privateCred instanceof KerberosTicket) {
         String serverPrincipalTicketName = ((KerberosTicket) privateCred).getServer().getName();
         if ((serverPrincipalTicketName.startsWith("krbtgt"))
-          && ((KerberosTicket) privateCred).getEndTime().compareTo(new Date()) == -1) {
+          && ((KerberosTicket) privateCred).getEndTime().compareTo(new Date()) < 0) {
           buildSubjectCredentials();
           break;
         }
@@ -176,7 +175,8 @@ public class HTTPKerberosAuthInterceptor implements Authenticator {
     String clientPrincipalName;
     String serverPrincipalName;
 
-    private StringBuffer outputToken = new StringBuffer();
+//    private StringBuffer outputToken = new StringBuffer();
+    private StringBuilder outputToken = new StringBuilder();
 
     private CreateAuthorizationHeaderAction(final String clientPrincipalName, final String serverPrincipalName) {
       this.clientPrincipalName = clientPrincipalName;

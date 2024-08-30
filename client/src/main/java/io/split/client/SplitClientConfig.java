@@ -1006,7 +1006,7 @@ public class SplitClientConfig {
             return this;
         }
 
-        public SplitClientConfig build() {
+        private void verifyRates() {
             if (_featuresRefreshRate < 5 ) {
                 throw new IllegalArgumentException("featuresRefreshRate must be >= 5: " + _featuresRefreshRate);
             }
@@ -1015,6 +1015,47 @@ public class SplitClientConfig {
                 throw new IllegalArgumentException("segmentsRefreshRate must be >= 30: " + _segmentsRefreshRate);
             }
 
+            if (_eventSendIntervalInMillis < 1000) {
+                throw new IllegalArgumentException("_eventSendIntervalInMillis must be >= 1000: " + _eventSendIntervalInMillis);
+            }
+
+            if (_metricsRefreshRate < 30) {
+                throw new IllegalArgumentException("metricsRefreshRate must be >= 30: " + _metricsRefreshRate);
+            }
+            if(_telemetryRefreshRate < 60) {
+                throw new IllegalStateException("_telemetryRefreshRate must be >= 60");
+            }
+        }
+
+        private void verifyEndPoints() {
+            if (_endpoint == null) {
+                throw new IllegalArgumentException("endpoint must not be null");
+            }
+
+            if (_eventsEndpoint == null) {
+                throw new IllegalArgumentException("events endpoint must not be null");
+            }
+
+            if (_endpointSet && !_eventsEndpointSet) {
+                throw new IllegalArgumentException("If endpoint is set, you must also set the events endpoint");
+            }
+
+            if (_authServiceURL == null) {
+                throw new IllegalArgumentException("authServiceURL must not be null");
+            }
+
+            if (_streamingServiceURL == null) {
+                throw new IllegalArgumentException("streamingServiceURL must not be null");
+            }
+
+            if (_telemetryURl == null) {
+                throw new IllegalArgumentException("telemetryURl must not be null");
+            }
+        }
+
+        public SplitClientConfig build() {
+            verifyRates();
+
             switch (_impressionsMode) {
                 case OPTIMIZED:
                     _impressionsRefreshRate = (_impressionsRefreshRate <= 0) ? 300 : Math.max(60, _impressionsRefreshRate);
@@ -1022,14 +1063,6 @@ public class SplitClientConfig {
                 case DEBUG:
                     _impressionsRefreshRate = (_impressionsRefreshRate <= 0) ? 60 : _impressionsRefreshRate;
                     break;
-            }
-
-            if (_eventSendIntervalInMillis < 1000) {
-                throw new IllegalArgumentException("_eventSendIntervalInMillis must be >= 1000: " + _eventSendIntervalInMillis);
-            }
-
-            if (_metricsRefreshRate < 30) {
-                throw new IllegalArgumentException("metricsRefreshRate must be >= 30: " + _metricsRefreshRate);
             }
 
             if (_impressionsQueueSize <=0 ) {
@@ -1044,17 +1077,7 @@ public class SplitClientConfig {
                 throw new IllegalArgumentException("readTimeout must be > 0: " + _readTimeout);
             }
 
-            if (_endpoint == null) {
-                throw new IllegalArgumentException("endpoint must not be null");
-            }
-
-            if (_eventsEndpoint == null) {
-                throw new IllegalArgumentException("events endpoint must not be null");
-            }
-
-            if (_endpointSet && !_eventsEndpointSet) {
-                throw new IllegalArgumentException("If endpoint is set, you must also set the events endpoint");
-            }
+            verifyEndPoints();
 
             if (_numThreadsForSegmentFetch <= 0) {
                 throw new IllegalArgumentException("Number of threads for fetching segments MUST be greater than zero");
@@ -1068,18 +1091,6 @@ public class SplitClientConfig {
                 throw new IllegalArgumentException("streamingReconnectBackoffBase: must be >= 1");
             }
 
-            if (_authServiceURL == null) {
-                throw new IllegalArgumentException("authServiceURL must not be null");
-            }
-
-            if (_streamingServiceURL == null) {
-                throw new IllegalArgumentException("streamingServiceURL must not be null");
-            }
-
-            if (_telemetryURl == null) {
-                throw new IllegalArgumentException("telemetryURl must not be null");
-            }
-
             if (_onDemandFetchRetryDelayMs <= 0) {
                 throw new IllegalStateException("streamingRetryDelay must be > 0");
             }
@@ -1090,10 +1101,6 @@ public class SplitClientConfig {
 
             if(_storageMode == null) {
                 _storageMode = StorageMode.MEMORY;
-            }
-            
-            if(_telemetryRefreshRate < 60) {
-                throw new IllegalStateException("_telemetryRefreshRate must be >= 60");
             }
 
             if(OperationMode.CONSUMER.equals(_operationMode)){

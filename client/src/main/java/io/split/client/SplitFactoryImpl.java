@@ -109,11 +109,9 @@ import org.slf4j.LoggerFactory;
 import pluggable.CustomStorageWrapper;
 
 import okhttp3.Authenticator;
-import okhttp3.Interceptor;
 import okhttp3.OkHttpClient;
 import okhttp3.OkHttpClient.Builder;
 import okhttp3.logging.HttpLoggingInterceptor;
-import okhttp3.logging.HttpLoggingInterceptor.Logger;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -134,7 +132,7 @@ import java.util.concurrent.TimeUnit;
 import static io.split.client.utils.SplitExecutorFactory.buildExecutorService;
 
 public class SplitFactoryImpl implements SplitFactory {
-    private static final  org.slf4j.Logger _log = LoggerFactory.getLogger(SplitFactory.class);
+    private static final  org.slf4j.Logger _log = LoggerFactory.getLogger(SplitFactoryImpl.class);
     private static final String LEGACY_LOG_MESSAGE = "The sdk initialize in localhost mode using Legacy file. The splitFile or "
             +
             "inputStream doesn't add it to the config.";
@@ -519,7 +517,7 @@ public class SplitFactoryImpl implements SplitFactory {
                 logging.setLevel(HttpLoggingInterceptor.Level.NONE);
             }
 
-            Map<String, String> kerberosOptions = new HashMap<String, String>();
+            Map<String, String> kerberosOptions = new HashMap<>();
             kerberosOptions.put("com.sun.security.auth.module.Krb5LoginModule", "required");
             kerberosOptions.put("refreshKrb5Config", "false");
             kerberosOptions.put("doNotPrompt", "false");

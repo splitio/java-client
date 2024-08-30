@@ -19,20 +19,17 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.BDDMockito;
 import org.mockito.Mockito;
 import org.powermock.api.mockito.PowerMockito;
-import org.powermock.core.classloader.annotations.PowerMockIgnore;
 import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.junit4.PowerMockRunner;
 import pluggable.CustomStorageWrapper;
 
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
-import java.net.InetSocketAddress;
 import java.net.Proxy;
 import java.net.URISyntaxException;
 import java.util.HashMap;
@@ -42,7 +39,6 @@ import okhttp3.Authenticator;
 import okhttp3.OkHttpClient;
 import okhttp3.logging.HttpLoggingInterceptor;
 
-import static io.split.client.SplitClientConfig.splitSdkVersion;
 import static org.mockito.Mockito.when;
 
 @RunWith(PowerMockRunner.class)
@@ -411,7 +407,7 @@ public class SplitFactoryImplTest extends TestCase {
         SplitFactoryImpl.buildOkHttpClient(proxyCaptor.capture(), configCaptor.capture(),logCaptor.capture(), authCaptor.capture());
 
         Assert.assertTrue(splitHttpClient instanceof SplitHttpClientKerberosImpl);
-        Assert.assertEquals(proxyCaptor.getValue().toString(), "HTTP @ https://sdk.split-stage.io:6060");
+        Assert.assertEquals("HTTP @ https://sdk.split-stage.io:6060", proxyCaptor.getValue().toString());
         Assert.assertTrue(logCaptor.getValue() instanceof okhttp3.logging.HttpLoggingInterceptor);
     }
 }
