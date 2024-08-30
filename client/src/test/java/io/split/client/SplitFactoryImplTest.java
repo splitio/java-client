@@ -5,6 +5,7 @@ import io.split.client.utils.FileTypeEnum;
 import io.split.client.utils.SDKMetadata;
 import io.split.integrations.IntegrationsConfig;
 import io.split.service.HttpAuthScheme;
+import io.split.service.SplitHttpClient;
 import io.split.service.SplitHttpClientKerberosImpl;
 import io.split.storages.enums.OperationMode;
 import io.split.storages.pluggable.domain.UserStorageWrapper;
@@ -13,7 +14,14 @@ import io.split.telemetry.synchronizer.TelemetrySynchronizer;
 import junit.framework.TestCase;
 import org.junit.Assert;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.mockito.ArgumentCaptor;
+import org.mockito.BDDMockito;
 import org.mockito.Mockito;
+import org.powermock.api.mockito.PowerMockito;
+import org.powermock.core.classloader.annotations.PowerMockIgnore;
+import org.powermock.core.classloader.annotations.PrepareForTest;
+import org.powermock.modules.junit4.PowerMockRunner;
 import pluggable.CustomStorageWrapper;
 
 import java.io.FileInputStream;
@@ -24,10 +32,21 @@ import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
+import java.net.InetSocketAddress;
+import java.net.Proxy;
 import java.net.URISyntaxException;
+import java.util.HashMap;
+import java.util.Map;
+
+import okhttp3.Authenticator;
+import okhttp3.OkHttpClient;
+import okhttp3.logging.HttpLoggingInterceptor;
 
 import static io.split.client.SplitClientConfig.splitSdkVersion;
+import static org.mockito.Mockito.when;
 
+@RunWith(PowerMockRunner.class)
+@PrepareForTest(SplitFactoryImpl.class)
 public class SplitFactoryImplTest extends TestCase {
     public static final String API_KEY ="29013ionasdasd09u";
     public static final String ENDPOINT = "https://sdk.split-stage.io";
@@ -141,7 +160,7 @@ public class SplitFactoryImplTest extends TestCase {
         CustomStorageWrapper customStorageWrapper = Mockito.mock(CustomStorageWrapper.class);
         UserStorageWrapper userStorageWrapper = Mockito.mock(UserStorageWrapper.class);
         TelemetrySynchronizer telemetrySynchronizer = Mockito.mock(TelemetrySynchronizer.class);
-        Mockito.when(userStorageWrapper.connect()).thenReturn(true);
+        when(userStorageWrapper.connect()).thenReturn(true);
 
         SplitClientConfig splitClientConfig = SplitClientConfig.builder()
                 .enableDebug()
@@ -179,7 +198,7 @@ public class SplitFactoryImplTest extends TestCase {
     public void testFactoryConsumerInstantiationRetryReadiness() throws Exception {
         CustomStorageWrapper customStorageWrapper = Mockito.mock(CustomStorageWrapper.class);
         UserStorageWrapper userStorageWrapper = Mockito.mock(UserStorageWrapper.class);
-        Mockito.when(userStorageWrapper.connect()).thenReturn(false).thenReturn(true);
+        when(userStorageWrapper.connect()).thenReturn(false).thenReturn(true);
         SplitClientConfig splitClientConfig = SplitClientConfig.builder()
                 .enableDebug()
                 .impressionsMode(ImpressionsManager.Mode.DEBUG)
@@ -200,7 +219,7 @@ public class SplitFactoryImplTest extends TestCase {
         splitFactoryImpl.set(splitFactory, userStorageWrapper);
         assertNotNull(splitFactory.client());
         assertNotNull(splitFactory.manager());
-        Thread.sleep(2000);
+        Thread.sleep(3000);
         Mockito.verify(userStorageWrapper, Mockito.times(2)).connect();
     }
 
@@ -208,7 +227,7 @@ public class SplitFactoryImplTest extends TestCase {
     public void testFactoryConsumerDestroy() throws NoSuchFieldException, URISyntaxException, IllegalAccessException {
         CustomStorageWrapper customStorageWrapper = Mockito.mock(CustomStorageWrapper.class);
         UserStorageWrapper userStorageWrapper = Mockito.mock(UserStorageWrapper.class);
-        Mockito.when(userStorageWrapper.connect()).thenReturn(false).thenReturn(true);
+        when(userStorageWrapper.connect()).thenReturn(false).thenReturn(true);
         SplitClientConfig splitClientConfig = SplitClientConfig.builder()
                 .enableDebug()
                 .impressionsMode(ImpressionsManager.Mode.DEBUG)
@@ -352,25 +371,47 @@ public class SplitFactoryImplTest extends TestCase {
     }
 
     @Test
-    public void testFactoryKerberosInstance() throws NoSuchMethodException, InvocationTargetException, IllegalAccessException {
-        SplitFactoryImpl splitFactory = null;
+    public void testFactoryKerberosInstance() throws NoSuchMethodException, InvocationTargetException, IllegalAccessException, URISyntaxException, IOException {
+        PowerMockito.mockStatic(SplitFactoryImpl.class);
+
+        ArgumentCaptor<Proxy> proxyCaptor = ArgumentCaptor.forClass(Proxy.class);
+        ArgumentCaptor<SplitClientConfig> configCaptor = ArgumentCaptor.forClass(SplitClientConfig.class);
+        ArgumentCaptor< HttpLoggingInterceptor> logCaptor = ArgumentCaptor.forClass( HttpLoggingInterceptor.class);
+        ArgumentCaptor<Authenticator> authCaptor = ArgumentCaptor.forClass(Authenticator.class);
+
         SplitClientConfig splitClientConfig = SplitClientConfig.builder()
                 .setBlockUntilReadyTimeout(10000)
                 .authScheme(HttpAuthScheme.KERBEROS)
-                .kerberosPrincipalName("bilal@bilal")
+                .kerberosPrincipalName("bilal@localhost")
                 .proxyPort(6060)
                 .proxyHost(ENDPOINT)
                 .build();
-        try {
-            splitFactory = new SplitFactoryImpl("asdf", splitClientConfig);
-        } catch(Exception e) {
 
-        }
+        Map<String, String> kerberosOptions = new HashMap<String, String>();
+        kerberosOptions.put("com.sun.security.auth.module.Krb5LoginModule", "required");
+        kerberosOptions.put("refreshKrb5Config", "false");
+        kerberosOptions.put("doNotPrompt", "false");
+        kerberosOptions.put("useTicketCache", "true");
+        BDDMockito.given(SplitFactoryImpl.getProxyAuthenticator(splitClientConfig, kerberosOptions))
+            .willReturn(null);
 
-        Method method = SplitFactoryImpl.class.getDeclaredMethod("buildSplitHttpClient", String.class,
-                SplitClientConfig.class, SDKMetadata.class, RequestDecorator.class);
-        method.setAccessible(true);
-        Object SplitHttpClient = method.invoke(splitFactory,  "asdf", splitClientConfig, new SDKMetadata(splitSdkVersion, "", ""), new RequestDecorator(null));
-        Assert.assertTrue(SplitHttpClient instanceof SplitHttpClientKerberosImpl);
+        RequestDecorator requestDecorator = new RequestDecorator(null);
+        SDKMetadata sdkmeta = new SDKMetadata("java-1.2.3", "1.2.3.4", "someIP");
+        PowerMockito.when(SplitFactoryImpl.buildSplitHttpClient("qwer",
+                splitClientConfig,
+                sdkmeta,
+                requestDecorator)).thenCallRealMethod();
+
+        SplitHttpClient splitHttpClient = SplitFactoryImpl.buildSplitHttpClient("qwer",
+                splitClientConfig,
+                sdkmeta,
+                requestDecorator);
+
+        PowerMockito.verifyStatic();
+        SplitFactoryImpl.buildOkHttpClient(proxyCaptor.capture(), configCaptor.capture(),logCaptor.capture(), authCaptor.capture());
+
+        Assert.assertTrue(splitHttpClient instanceof SplitHttpClientKerberosImpl);
+        Assert.assertEquals(proxyCaptor.getValue().toString(), "HTTP @ https://sdk.split-stage.io:6060");
+        Assert.assertTrue(logCaptor.getValue() instanceof okhttp3.logging.HttpLoggingInterceptor);
     }
 }

@@ -235,7 +235,6 @@ public class HTTPKerberosAuthInterceptor implements Authenticator {
    */
   @Override public Request authenticate(Route route, Response response) throws IOException {
     String authValue;
-    System.out.println("Using principal: HTTP/" + host);
     try {
       authValue = "Negotiate " + buildAuthorizationHeader("HTTP/" + host);
     } catch (Exception e) {

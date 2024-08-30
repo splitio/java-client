@@ -505,9 +505,36 @@ public class SplitFactoryImpl implements SplitFactory {
         return isTerminated;
     }
 
-    private static SplitHttpClient buildSplitHttpClient(String apiToken, SplitClientConfig config,
+    protected static SplitHttpClient buildSplitHttpClient(String apiToken, SplitClientConfig config,
             SDKMetadata sdkMetadata, RequestDecorator requestDecorator)
             throws URISyntaxException, IOException {
+        // setup Kerberos client
+        if (config.authScheme() == HttpAuthScheme.KERBEROS) {
+            _log.info("Using Kerberos-Proxy Authentication Scheme.");
+            Proxy proxy = new Proxy(Proxy.Type.HTTP, new InetSocketAddress(config.proxy().getHostName(), config.proxy().getPort()));
+            HttpLoggingInterceptor logging = new HttpLoggingInterceptor();
+            if (config.debugEnabled()) {
+                logging.setLevel(HttpLoggingInterceptor.Level.HEADERS);
+            } else {
+                logging.setLevel(HttpLoggingInterceptor.Level.NONE);
+            }
+
+            Map<String, String> kerberosOptions = new HashMap<String, String>();
+            kerberosOptions.put("com.sun.security.auth.module.Krb5LoginModule", "required");
+            kerberosOptions.put("refreshKrb5Config", "false");
+            kerberosOptions.put("doNotPrompt", "false");
+            kerberosOptions.put("useTicketCache", "true");
+
+            Authenticator proxyAuthenticator = getProxyAuthenticator(config, kerberosOptions);
+            OkHttpClient client = buildOkHttpClient(proxy, config, logging, proxyAuthenticator);
+
+            return SplitHttpClientKerberosImpl.create(
+                    client,
+                    requestDecorator,
+                    apiToken,
+                    sdkMetadata);
+        }
+
         SSLConnectionSocketFactory sslSocketFactory = SSLConnectionSocketFactoryBuilder.create()
                 .setSslContext(SSLContexts.createSystemDefault())
                 .setTlsVersions(TLS.V_1_1, TLS.V_1_2)
@@ -539,41 +566,27 @@ public class SplitFactoryImpl implements SplitFactory {
             httpClientbuilder = setupProxy(httpClientbuilder, config);
         }
 
-        // setup Kerberos client
-        if (config.authScheme() == HttpAuthScheme.KERBEROS) {
-            _log.info("Using Kerberos-Proxy Authentication Scheme.");
-            Proxy proxy = new Proxy(Proxy.Type.HTTP, new InetSocketAddress(config.proxy().getHostName(), config.proxy().getPort()));
-            HttpLoggingInterceptor logging = new HttpLoggingInterceptor();
-            logging.setLevel(HttpLoggingInterceptor.Level.HEADERS);
-
-            Map<String, String> kerberosOptions = new HashMap<String, String>();
-            kerberosOptions.put("com.sun.security.auth.module.Krb5LoginModule", "required");
-            kerberosOptions.put("refreshKrb5Config", "false");
-            kerberosOptions.put("doNotPrompt", "false");
-            kerberosOptions.put("useTicketCache", "true");
-
-            Authenticator proxyAuthenticator = new HTTPKerberosAuthInterceptor(config.kerberosPrincipalName(), kerberosOptions);
-            OkHttpClient client = new Builder()
-                    .proxy(proxy)
-                    .readTimeout(config.readTimeout(), TimeUnit.MILLISECONDS)
-                    .connectTimeout(config.connectionTimeout(), TimeUnit.MILLISECONDS)
-                    .addInterceptor(logging)
-                    .proxyAuthenticator(proxyAuthenticator)
-                    .build();
-
-            return SplitHttpClientKerberosImpl.create(
-                    client,
-                    requestDecorator,
-                    apiToken,
-                    sdkMetadata);
-
-        }
         return SplitHttpClientImpl.create(httpClientbuilder.build(),
                 requestDecorator,
                 apiToken,
                 sdkMetadata);
     }
 
+    protected static OkHttpClient buildOkHttpClient(Proxy proxy, SplitClientConfig config,
+                                HttpLoggingInterceptor logging, Authenticator proxyAuthenticator) {
+        return new Builder()
+                .proxy(proxy)
+                .readTimeout(config.readTimeout(), TimeUnit.MILLISECONDS)
+                .connectTimeout(config.connectionTimeout(), TimeUnit.MILLISECONDS)
+                .addInterceptor(logging)
+                .proxyAuthenticator(proxyAuthenticator)
+                .build();
+    }
+
+    protected static HTTPKerberosAuthInterceptor getProxyAuthenticator(SplitClientConfig config,
+                                                                       Map<String, String> kerberosOptions) throws IOException {
+        return new HTTPKerberosAuthInterceptor(config.kerberosPrincipalName(), kerberosOptions);
+    }
     private static CloseableHttpClient buildSSEdHttpClient(String apiToken, SplitClientConfig config,
             SDKMetadata sdkMetadata) {
         RequestConfig requestConfig = RequestConfig.custom()
