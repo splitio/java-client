@@ -1053,9 +1053,18 @@ public class SplitClientConfig {
             }
         }
 
-        public SplitClientConfig build() {
-            verifyRates();
+        private void verifyAuthScheme() {
+            if (_authScheme == HttpAuthScheme.KERBEROS) {
+                if (proxy() == null) {
+                    throw new IllegalStateException("Kerberos mode require Proxy parameters.");
+                }
+                if (_kerberosPrincipalName == null) {
+                    throw new IllegalStateException("Kerberos mode require Kerberos Principal Name.");
+                }
+            }
+        }
 
+        private void verifyAllModes() {
             switch (_impressionsMode) {
                 case OPTIMIZED:
                     _impressionsRefreshRate = (_impressionsRefreshRate <= 0) ? 300 : Math.max(60, _impressionsRefreshRate);
@@ -1068,7 +1077,19 @@ public class SplitClientConfig {
             if (_impressionsQueueSize <=0 ) {
                 throw new IllegalArgumentException("impressionsQueueSize must be > 0: " + _impressionsQueueSize);
             }
+            if(_storageMode == null) {
+                _storageMode = StorageMode.MEMORY;
+            }
 
+            if(OperationMode.CONSUMER.equals(_operationMode)){
+                if(_customStorageWrapper == null) {
+                    throw new IllegalStateException("Custom Storage must not be null on Consumer mode.");
+                }
+                _storageMode = StorageMode.PLUGGABLE;
+            }
+        }
+
+        private void verifyNetworkParams() {
             if (_connectionTimeout <= 0) {
                 throw new IllegalArgumentException("connectionTimeOutInMs must be > 0: " + _connectionTimeout);
             }
@@ -1076,13 +1097,6 @@ public class SplitClientConfig {
             if (_readTimeout <= 0) {
                 throw new IllegalArgumentException("readTimeout must be > 0: " + _readTimeout);
             }
-
-            verifyEndPoints();
-
-            if (_numThreadsForSegmentFetch <= 0) {
-                throw new IllegalArgumentException("Number of threads for fetching segments MUST be greater than zero");
-            }
-
             if (_authRetryBackoffBase <= 0) {
                 throw new IllegalArgumentException("authRetryBackoffBase: must be >= 1");
             }
@@ -1098,26 +1112,22 @@ public class SplitClientConfig {
             if(_onDemandFetchMaxRetries <= 0) {
                 throw new IllegalStateException("_onDemandFetchMaxRetries must be > 0");
             }
+        }
+        public SplitClientConfig build() {
 
-            if(_storageMode == null) {
-                _storageMode = StorageMode.MEMORY;
+            verifyRates();
+
+            verifyAllModes();
+
+            verifyEndPoints();
+
+            verifyNetworkParams();
+
+            if (_numThreadsForSegmentFetch <= 0) {
+                throw new IllegalArgumentException("Number of threads for fetching segments MUST be greater than zero");
             }
 
-            if(OperationMode.CONSUMER.equals(_operationMode)){
-                if(_customStorageWrapper == null) {
-                    throw new IllegalStateException("Custom Storage must not be null on Consumer mode.");
-                }
-                _storageMode = StorageMode.PLUGGABLE;
-            }
-
-            if (_authScheme == HttpAuthScheme.KERBEROS) {
-                if (proxy() == null) {
-                    throw new IllegalStateException("Kerberos mode require Proxy parameters.");
-                }
-                if (_kerberosPrincipalName == null) {
-                    throw new IllegalStateException("Kerberos mode require Kerberos Principal Name.");
-                }
-            }
+            verifyAuthScheme();
 
                 return new SplitClientConfig(
                     _endpoint,

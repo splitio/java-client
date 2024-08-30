@@ -175,7 +175,6 @@ public class HTTPKerberosAuthInterceptor implements Authenticator {
     String clientPrincipalName;
     String serverPrincipalName;
 
-//    private StringBuffer outputToken = new StringBuffer();
     private StringBuilder outputToken = new StringBuilder();
 
     private CreateAuthorizationHeaderAction(final String clientPrincipalName, final String serverPrincipalName) {
