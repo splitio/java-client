@@ -80,7 +80,7 @@ public class HTTPKerberosAuthInterceptor implements Authenticator {
    *
    * @throws LoginException
    */
-  private void buildSubjectCredentials() throws LoginException {
+  protected void buildSubjectCredentials() throws LoginException {
     Subject subject = new Subject();
     /**
      * We are not getting the TGT from KDC here. The actual TGT is got from the
@@ -88,12 +88,16 @@ public class HTTPKerberosAuthInterceptor implements Authenticator {
      * the LoginContext and populate the TGT inside the Subject using
      * Krb5LoginModule
      */
-    LoginContext lc = new LoginContext("Krb5LoginContext", subject, null,
-        (krbOptions != null) ? new KerberosLoginConfiguration(krbOptions) : new KerberosLoginConfiguration());
+
+    LoginContext lc = getLoginContext(subject);
     lc.login();
     loginContext = lc;
   }
 
+  protected LoginContext getLoginContext(Subject subject) throws LoginException {
+    return new LoginContext("Krb5LoginContext", subject, null,
+            (krbOptions != null) ? new KerberosLoginConfiguration(krbOptions) : new KerberosLoginConfiguration());
+  }
   /**
    * This method is responsible for getting the client principal name from the
    * subject's principal set
@@ -102,7 +106,7 @@ public class HTTPKerberosAuthInterceptor implements Authenticator {
    * @throws IllegalStateException if there is more than 0 or more than 1
    *           principal is present
    */
-  private String getClientPrincipalName() {
+  protected String getClientPrincipalName() {
     final Set<Principal> principalSet = getContextSubject().getPrincipals();
     if (principalSet.size() != 1)
       throw new IllegalStateException(
@@ -110,7 +114,7 @@ public class HTTPKerberosAuthInterceptor implements Authenticator {
     return principalSet.iterator().next().getName();
   }
 
-  private Subject getContextSubject() {
+  protected Subject getContextSubject() {
     Subject subject = loginContext.getSubject();
     if (subject == null)
       throw new IllegalStateException("Kerberos login context without subject");
@@ -127,7 +131,7 @@ public class HTTPKerberosAuthInterceptor implements Authenticator {
    *            need to authenticate
    * @return the HTTP Authorization header token
    */
-  private String buildAuthorizationHeader(String serverPrincipalName) throws LoginException, PrivilegedActionException {
+  protected String buildAuthorizationHeader(String serverPrincipalName) throws LoginException, PrivilegedActionException {
     /*
      * Get the principal from the Subject's private credentials and populate the
      * client and server principal name for the GSS API
