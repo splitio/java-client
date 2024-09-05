@@ -223,17 +223,7 @@ public class SplitFactoryImplTest extends TestCase {
         assertNotNull(splitFactory.client());
         assertNotNull(splitFactory.manager());
         Thread.sleep(2000);
-        await().atMost(3, TimeUnit.SECONDS).until(didTheThing(userStorageWrapper));
         Mockito.verify(userStorageWrapper, Mockito.times(2)).connect();
-    }
-
-    private Callable<Boolean> didTheThing(UserStorageWrapper userStorageWrapper) {
-        return new Callable<Boolean>() {
-            public Boolean call() throws Exception {
-                Thread.sleep(1000);
-                return true;
-            }
-        };
     }
 
     @Test
