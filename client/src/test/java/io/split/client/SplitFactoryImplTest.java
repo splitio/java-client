@@ -42,10 +42,6 @@ import okhttp3.OkHttpClient;
 import okhttp3.logging.HttpLoggingInterceptor;
 import okhttp3.Interceptor;
 
-import java.util.concurrent.Callable;
-import  java.util.concurrent.TimeUnit;
-
-import static org.awaitility.Awaitility.await;
 import static org.mockito.Mockito.when;
 
 @RunWith(PowerMockRunner.class)
