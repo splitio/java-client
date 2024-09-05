@@ -24,10 +24,8 @@ import org.apache.hc.core5.http.*;
 import org.apache.hc.core5.http.io.entity.EntityUtils;
 import org.junit.Assert;
 import org.junit.Test;
-import org.mockito.Mockito;
 
 import java.io.*;
-import java.lang.reflect.InvocationTargetException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.HttpURLConnection;
@@ -137,7 +135,7 @@ public class HttpSplitClientKerberosTest {
 
 
     @Test
-    public void testGetParameters() throws URISyntaxException, IOException, InterruptedException {
+    public void testGetParameters() throws IOException, InterruptedException {
         class MyCustomHeaders implements CustomHeaderDecorator {
             public MyCustomHeaders() {}
             @Override
@@ -192,8 +190,7 @@ public class HttpSplitClientKerberosTest {
     }
 
     @Test(expected = IllegalStateException.class)
-    public void testException() throws URISyntaxException, InvocationTargetException, NoSuchMethodException,
-            IllegalAccessException, IOException {
+    public void testException() throws URISyntaxException, IOException {
         URI uri = new URI("https://api.split.io/splitChanges?since=1234567");
         RequestDecorator decorator = null;
 
@@ -211,7 +208,7 @@ public class HttpSplitClientKerberosTest {
     }
 
     @Test
-    public void testPost() throws URISyntaxException, IOException, ParseException, InterruptedException {
+    public void testPost() throws IOException, ParseException, InterruptedException {
         MockWebServer server = new MockWebServer();
 
         server.enqueue(new MockResponse().addHeader(HttpHeaders.VIA, "HTTP/1.1 s_proxy_rio1"));
@@ -286,7 +283,7 @@ public class HttpSplitClientKerberosTest {
     }
 
     @Test(expected = IllegalStateException.class)
-    public void testPosttException() throws URISyntaxException, IOException {
+    public void testPosttException() throws URISyntaxException {
         RequestDecorator decorator = null;
         URI uri = new URI("https://kubernetesturl.com/split/api/testImpressions/bulk");
 

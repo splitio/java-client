@@ -55,7 +55,7 @@ public class HTTPKerberosAuthInterceptor implements Authenticator {
    * Login Module to be used for authentication.
    *
    */
-  private static class KerberosLoginConfiguration extends Configuration {
+  protected static class KerberosLoginConfiguration extends Configuration {
     Map<String,String> krbOptions = null;
 
     public KerberosLoginConfiguration() {}
@@ -66,7 +66,9 @@ public class HTTPKerberosAuthInterceptor implements Authenticator {
     }
     @Override
     public AppConfigurationEntry[] getAppConfigurationEntry(String name) {
-
+      if (krbOptions == null) {
+        throw new IllegalStateException("Cannot create AppConfigurationEntry without Kerberos Options");
+      }
       return new AppConfigurationEntry[] { new AppConfigurationEntry("com.sun.security.auth.module.Krb5LoginModule",
           AppConfigurationEntry.LoginModuleControlFlag.REQUIRED, krbOptions) };
     }
@@ -121,6 +123,12 @@ public class HTTPKerberosAuthInterceptor implements Authenticator {
     return subject;
   }
 
+  protected CreateAuthorizationHeaderAction getAuthorizationHeaderAction(String clientPrincipal,
+                                                                         String serverPrincipalName) {
+    return new CreateAuthorizationHeaderAction(clientPrincipal,
+            serverPrincipalName);
+  }
+
   /**
    * This method builds the Authorization header for Kerberos. It
    * generates a request token based on the service ticket, client principal name and
@@ -137,7 +145,7 @@ public class HTTPKerberosAuthInterceptor implements Authenticator {
      * client and server principal name for the GSS API
      */
     final String clientPrincipal = getClientPrincipalName();
-    final CreateAuthorizationHeaderAction action = new CreateAuthorizationHeaderAction(clientPrincipal,
+    final CreateAuthorizationHeaderAction action = getAuthorizationHeaderAction(clientPrincipal,
       serverPrincipalName);
 
     /*
@@ -176,18 +184,18 @@ public class HTTPKerberosAuthInterceptor implements Authenticator {
    * Subject.doAs() method. We do this in order to create a context of the user
    * who has the service ticket and reuse this context for subsequent requests
    */
-  private static class CreateAuthorizationHeaderAction implements PrivilegedExceptionAction {
+  protected static class CreateAuthorizationHeaderAction implements PrivilegedExceptionAction {
     String clientPrincipalName;
     String serverPrincipalName;
 
     private StringBuilder outputToken = new StringBuilder();
 
-    private CreateAuthorizationHeaderAction(final String clientPrincipalName, final String serverPrincipalName) {
+    protected CreateAuthorizationHeaderAction(final String clientPrincipalName, final String serverPrincipalName) {
       this.clientPrincipalName = clientPrincipalName;
       this.serverPrincipalName = serverPrincipalName;
     }
 
-    private String getNegotiateToken() {
+    protected String getNegotiateToken() {
       return outputToken.toString();
     }
 
