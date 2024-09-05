@@ -33,6 +33,7 @@ import java.lang.reflect.Modifier;
 import java.net.InetSocketAddress;
 import java.net.Proxy;
 import java.net.URISyntaxException;
+
 import java.util.HashMap;
 import java.util.Map;
 
@@ -41,6 +42,10 @@ import okhttp3.OkHttpClient;
 import okhttp3.logging.HttpLoggingInterceptor;
 import okhttp3.Interceptor;
 
+import java.util.concurrent.Callable;
+import  java.util.concurrent.TimeUnit;
+
+import static org.awaitility.Awaitility.await;
 import static org.mockito.Mockito.when;
 
 @RunWith(PowerMockRunner.class)
@@ -217,10 +222,24 @@ public class SplitFactoryImplTest extends TestCase {
         splitFactoryImpl.set(splitFactory, userStorageWrapper);
         assertNotNull(splitFactory.client());
         assertNotNull(splitFactory.manager());
-        Thread.sleep(2500);
+//        await().atMost(3, TimeUnit.SECONDS).until(didTheThing(userStorageWrapper));
+        Thread.sleep(2000);
         Mockito.verify(userStorageWrapper, Mockito.times(2)).connect();
     }
 
+    /*
+    private Callable<Boolean> didTheThing(UserStorageWrapper userStorageWrapper) {
+        return new Callable<Boolean>() {
+            public Boolean call() throws Exception {
+                while (!Mockito.verify(userStorageWrapper, Mockito.times(2)).connect()) {
+                    Thread.sleep(3000);
+                }
+                return true;
+            }
+        };
+    }
+     */
+    
     @Test
     public void testFactoryConsumerDestroy() throws NoSuchFieldException, URISyntaxException, IllegalAccessException {
         CustomStorageWrapper customStorageWrapper = Mockito.mock(CustomStorageWrapper.class);
