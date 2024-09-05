@@ -220,26 +220,13 @@ public class SplitFactoryImplTest extends TestCase {
         modifiersField.setAccessible(true);
         modifiersField.setInt(splitFactoryImpl, splitFactoryImpl.getModifiers() & ~Modifier.FINAL);
         splitFactoryImpl.set(splitFactory, userStorageWrapper);
+        Thread.sleep(2000);
         assertNotNull(splitFactory.client());
         assertNotNull(splitFactory.manager());
-//        await().atMost(3, TimeUnit.SECONDS).until(didTheThing(userStorageWrapper));
-        Thread.sleep(2000);
+        Thread.sleep(1000);
         Mockito.verify(userStorageWrapper, Mockito.times(2)).connect();
     }
 
-    /*
-    private Callable<Boolean> didTheThing(UserStorageWrapper userStorageWrapper) {
-        return new Callable<Boolean>() {
-            public Boolean call() throws Exception {
-                while (!Mockito.verify(userStorageWrapper, Mockito.times(2)).connect()) {
-                    Thread.sleep(3000);
-                }
-                return true;
-            }
-        };
-    }
-     */
-    
     @Test
     public void testFactoryConsumerDestroy() throws NoSuchFieldException, URISyntaxException, IllegalAccessException {
         CustomStorageWrapper customStorageWrapper = Mockito.mock(CustomStorageWrapper.class);
