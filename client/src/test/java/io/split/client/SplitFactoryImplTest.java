@@ -217,7 +217,7 @@ public class SplitFactoryImplTest extends TestCase {
         splitFactoryImpl.set(splitFactory, userStorageWrapper);
         assertNotNull(splitFactory.client());
         assertNotNull(splitFactory.manager());
-        Thread.sleep(3000);
+        Thread.sleep(2000);
         Mockito.verify(userStorageWrapper, Mockito.times(2)).connect();
     }
 
