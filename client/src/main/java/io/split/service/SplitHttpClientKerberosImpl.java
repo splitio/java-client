@@ -75,11 +75,9 @@ public class SplitHttpClientKerberosImpl implements SplitHttpClient {
 
             int responseCode = response.code();
 
-            if (_log.isDebugEnabled()) {
-                _log.debug(String.format("[GET] %s. Status code: %s",
-                        request.url().toString(),
-                        responseCode));
-            }
+            _log.debug(String.format("[GET] %s. Status code: %s",
+                    request.url().toString(),
+                    responseCode));
 
             String statusMessage = "";
             if (responseCode < HttpURLConnection.HTTP_OK || responseCode >= HttpURLConnection.HTTP_MULT_CHOICE) {
@@ -120,11 +118,9 @@ public class SplitHttpClientKerberosImpl implements SplitHttpClient {
 
             int responseCode = response.code();
 
-            if (_log.isDebugEnabled()) {
-                _log.debug(String.format("[GET] %s. Status code: %s",
-                        request.url().toString(),
-                        responseCode));
-            }
+            _log.debug(String.format("[GET] %s. Status code: %s",
+                    request.url().toString(),
+                    responseCode));
 
             String statusMessage = "";
             if (responseCode < HttpURLConnection.HTTP_OK || responseCode >= HttpURLConnection.HTTP_MULT_CHOICE) {
