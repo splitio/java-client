@@ -220,11 +220,20 @@ public class SplitFactoryImplTest extends TestCase {
         modifiersField.setAccessible(true);
         modifiersField.setInt(splitFactoryImpl, splitFactoryImpl.getModifiers() & ~Modifier.FINAL);
         splitFactoryImpl.set(splitFactory, userStorageWrapper);
-        Thread.sleep(2000);
         assertNotNull(splitFactory.client());
         assertNotNull(splitFactory.manager());
-        Thread.sleep(1000);
+        Thread.sleep(2000);
+        await().atMost(3, TimeUnit.SECONDS).until(didTheThing(userStorageWrapper));
         Mockito.verify(userStorageWrapper, Mockito.times(2)).connect();
+    }
+
+    private Callable<Boolean> didTheThing(UserStorageWrapper userStorageWrapper) {
+        return new Callable<Boolean>() {
+            public Boolean call() throws Exception {
+                Thread.sleep(1000);
+                return true;
+            }
+        };
     }
 
     @Test
