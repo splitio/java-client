@@ -28,6 +28,8 @@ public class HTTPKerberosAuthIntercepterTest {
 
     @Test
     public void testBasicFlow() throws Exception {
+        System.setProperty("java.security.krb5.conf", "src/test/resources/krb5.conf");
+
         HTTPKerberosAuthInterceptor kerberosAuthInterceptor = mock(HTTPKerberosAuthInterceptor.class);
         LoginContext loginContext = PowerMockito.mock(LoginContext.class);
         when(kerberosAuthInterceptor.getLoginContext(any())).thenReturn((loginContext));
@@ -47,7 +49,7 @@ public class HTTPKerberosAuthIntercepterTest {
         subject.getPrivateCredentials().add(new KerberosPrincipal("name"));
 
         doCallRealMethod().when(kerberosAuthInterceptor).getClientPrincipalName();
-        assertThat(kerberosAuthInterceptor.getClientPrincipalName(), is(equalTo("bilal@EXAMPLE.COM"))) ;
+        assertThat(kerberosAuthInterceptor.getClientPrincipalName(), is(equalTo("bilal@ATHENA.MIT.EDU"))) ;
         verify(loginContext, times(2)).getSubject();
 
         when(kerberosAuthInterceptor.buildAuthorizationHeader(any())).thenReturn("secured-token");
