@@ -57,10 +57,10 @@ import io.split.engine.experiments.SplitSynchronizationTask;
 import io.split.engine.segments.SegmentChangeFetcher;
 import io.split.engine.segments.SegmentSynchronizationTaskImp;
 import io.split.integrations.IntegrationsConfig;
-import io.split.service.HttpAuthScheme;
-import io.split.service.SplitHttpClient;
-import io.split.service.SplitHttpClientImpl;
+import io.split.service.ProxyAuthScheme;
 import io.split.service.SplitHttpClientKerberosImpl;
+import io.split.service.SplitHttpClientImpl;
+import io.split.service.SplitHttpClient;
 import io.split.service.HTTPKerberosAuthInterceptor;
 import io.split.storages.SegmentCache;
 import io.split.storages.SegmentCacheConsumer;
@@ -507,7 +507,7 @@ public class SplitFactoryImpl implements SplitFactory {
             SDKMetadata sdkMetadata, RequestDecorator requestDecorator)
             throws URISyntaxException, IOException {
         // setup Kerberos client
-        if (config.authScheme() == HttpAuthScheme.KERBEROS) {
+        if (config.proxyAuthScheme() == ProxyAuthScheme.KERBEROS) {
             _log.info("Using Kerberos-Proxy Authentication Scheme.");
             Proxy proxy = new Proxy(Proxy.Type.HTTP, new InetSocketAddress(config.proxy().getHostName(), config.proxy().getPort()));
             HttpLoggingInterceptor logging = new HttpLoggingInterceptor();
@@ -583,7 +583,7 @@ public class SplitFactoryImpl implements SplitFactory {
 
     protected static HTTPKerberosAuthInterceptor getProxyAuthenticator(SplitClientConfig config,
                                                                        Map<String, String> kerberosOptions) throws IOException {
-        return new HTTPKerberosAuthInterceptor(config.kerberosPrincipalName(), kerberosOptions);
+        return new HTTPKerberosAuthInterceptor(config.proxyKerberosPrincipalName(), kerberosOptions);
     }
     private static CloseableHttpClient buildSSEdHttpClient(String apiToken, SplitClientConfig config,
             SDKMetadata sdkMetadata) {

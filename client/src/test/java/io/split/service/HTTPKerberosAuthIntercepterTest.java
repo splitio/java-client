@@ -25,7 +25,6 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 
-
 @RunWith(PowerMockRunner.class)
 @PrepareForTest(HTTPKerberosAuthInterceptor.class)
 public class HTTPKerberosAuthIntercepterTest {

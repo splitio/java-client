@@ -1,5 +1,5 @@
 package io.split.service;
 
-public enum HttpAuthScheme {
+public enum ProxyAuthScheme {
     KERBEROS
 }

@@ -4,7 +4,7 @@ import io.split.client.impressions.ImpressionsManager;
 import io.split.client.utils.FileTypeEnum;
 import io.split.client.utils.SDKMetadata;
 import io.split.integrations.IntegrationsConfig;
-import io.split.service.HttpAuthScheme;
+import io.split.service.ProxyAuthScheme;
 import io.split.service.SplitHttpClient;
 import io.split.service.SplitHttpClientKerberosImpl;
 import io.split.storages.enums.OperationMode;
@@ -380,8 +380,8 @@ public class SplitFactoryImplTest extends TestCase {
 
         SplitClientConfig splitClientConfig = SplitClientConfig.builder()
                 .setBlockUntilReadyTimeout(10000)
-                .authScheme(HttpAuthScheme.KERBEROS)
-                .kerberosPrincipalName("bilal@localhost")
+                .proxyAuthScheme(ProxyAuthScheme.KERBEROS)
+                .proxyKerberosPrincipalName("bilal@localhost")
                 .proxyPort(6060)
                 .proxyHost(ENDPOINT)
                 .build();
@@ -422,8 +422,8 @@ public class SplitFactoryImplTest extends TestCase {
 
         SplitClientConfig splitClientConfig = SplitClientConfig.builder()
                 .setBlockUntilReadyTimeout(10000)
-                .authScheme(HttpAuthScheme.KERBEROS)
-                .kerberosPrincipalName("bilal@localhost")
+                .proxyAuthScheme(ProxyAuthScheme.KERBEROS)
+                .proxyKerberosPrincipalName("bilal@localhost")
                 .proxyPort(6060)
                 .proxyHost(ENDPOINT)
                 .build();
@@ -447,8 +447,8 @@ public class SplitFactoryImplTest extends TestCase {
     public void testBuildOkHttpClient() {
         SplitClientConfig splitClientConfig = SplitClientConfig.builder()
                 .setBlockUntilReadyTimeout(10000)
-                .authScheme(HttpAuthScheme.KERBEROS)
-                .kerberosPrincipalName("bilal@localhost")
+                .proxyAuthScheme(ProxyAuthScheme.KERBEROS)
+                .proxyKerberosPrincipalName("bilal@localhost")
                 .proxyPort(6060)
                 .proxyHost(ENDPOINT)
                 .build();

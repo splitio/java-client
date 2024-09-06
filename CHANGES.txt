@@ -1,3 +1,6 @@
+4.13.0 (Sep 6, 2024)
+- Added support for Kerberos Proxy authentication.
+
 4.12.1 (Jun 10, 2024)
 - Fixed deadlock for virtual thread in Push Manager and SSE Client.
 
