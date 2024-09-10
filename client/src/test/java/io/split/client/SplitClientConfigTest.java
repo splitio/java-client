@@ -6,7 +6,6 @@ import io.split.client.impressions.ImpressionListener;
 import io.split.client.impressions.ImpressionsManager;
 import io.split.client.dtos.RequestContext;
 import io.split.integrations.IntegrationsConfig;
-import io.split.service.ProxyAuthScheme;
 import org.junit.Assert;
 import org.junit.Test;
 import org.mockito.Mockito;
@@ -254,37 +253,5 @@ public class SplitClientConfigTest {
         SplitClientConfig config2 = SplitClientConfig.builder().build();
         Assert.assertNull(config2.customHeaderDecorator());
 
-    }
-
-    @Test
-    public void checkExpectedAuthScheme() {
-        SplitClientConfig cfg = SplitClientConfig.builder()
-                .proxyAuthScheme(ProxyAuthScheme.KERBEROS)
-                .proxyKerberosPrincipalName("bilal@bilal")
-                .proxyHost("local")
-                .proxyPort(8080)
-                .build();
-        Assert.assertEquals(ProxyAuthScheme.KERBEROS, cfg.proxyAuthScheme());
-
-        cfg = SplitClientConfig.builder()
-                .build();
-        Assert.assertEquals(null, cfg.proxyAuthScheme());
-    }
-
-    @Test(expected = IllegalStateException.class)
-    public void testAuthSchemeWithoutProxy() {
-        SplitClientConfig.builder()
-                .proxyAuthScheme(ProxyAuthScheme.KERBEROS)
-                .proxyKerberosPrincipalName("bilal")
-                .build();
-    }
-
-    @Test(expected = IllegalStateException.class)
-    public void testAuthSchemeWithoutPrincipalName() {
-        SplitClientConfig.builder()
-                .proxyAuthScheme(ProxyAuthScheme.KERBEROS)
-                .proxyHost("local")
-                .proxyPort(8080)
-                .build();
     }
 }

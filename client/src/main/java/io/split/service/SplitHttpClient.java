@@ -38,4 +38,6 @@ public interface SplitHttpClient extends Closeable {
     public void setMetaData(SDKMetadata metadata);
 
     public void setRequestDecorator(RequestDecorator requestDecorator);
+
+    public void setApiKey(String apiKey);
 }

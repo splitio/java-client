@@ -1,4 +1,4 @@
-package io.split.kerberos;
+package io.split.httpmodules.okhttp;
 
 import java.io.IOException;
 import java.util.Map;

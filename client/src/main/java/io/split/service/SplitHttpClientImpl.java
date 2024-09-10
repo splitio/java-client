@@ -155,5 +155,9 @@ public final class SplitHttpClientImpl implements SplitHttpClient {
     public void setRequestDecorator(RequestDecorator requestDecorator) {
         // only implemented for Kerberos client
     }
+    @Override
+    public void setApiKey(String apiKey) {
+        // only implemented for Kerberos client
+    }
 
 }

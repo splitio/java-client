@@ -1,4 +1,4 @@
-package io.split.kerberos;
+package io.split.httpmodules.okhttp;
 
 public class KerberosAuthException extends Exception {
     public KerberosAuthException(String message) {

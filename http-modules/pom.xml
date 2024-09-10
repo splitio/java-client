@@ -9,10 +9,10 @@
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
-    <artifactId>kerberos</artifactId>
+    <artifactId>http-modules</artifactId>
     <packaging>jar</packaging>
-    <name>Kerberos</name>
-    <description>Kerberos Authentication</description>
+    <name>http-modules</name>
+    <description>Alternative Http Modules</description>
 
     <profiles>
         <profile>
