@@ -5,6 +5,7 @@ import io.split.client.impressions.ImpressionsManager;
 import io.split.client.utils.FileTypeEnum;
 import io.split.integrations.IntegrationsConfig;
 import io.split.service.ProxyAuthScheme;
+import io.split.service.SplitHttpClient;
 import io.split.storages.enums.OperationMode;
 import io.split.storages.enums.StorageMode;
 import org.apache.hc.core5.http.HttpHost;
@@ -94,6 +95,7 @@ public class SplitClientConfig {
     private final CustomHeaderDecorator _customHeaderDecorator;
     private final ProxyAuthScheme _proxyAuthScheme;
     private final String _proxyKerberosPrincipalName;
+    private final SplitHttpClient _proxyKerberosClient;
 
     public static Builder builder() {
         return new Builder();
@@ -152,7 +154,8 @@ public class SplitClientConfig {
                               int invalidSets,
                               CustomHeaderDecorator customHeaderDecorator,
                               ProxyAuthScheme proxyAuthScheme,
-                              String proxyKerberosPrincipalName) {
+                              String proxyKerberosPrincipalName,
+                              SplitHttpClient proxyKerberosClient) {
         _endpoint = endpoint;
         _eventsEndpoint = eventsEndpoint;
         _featuresRefreshRate = pollForFeatureChangesEveryNSeconds;
@@ -207,6 +210,7 @@ public class SplitClientConfig {
         _customHeaderDecorator = customHeaderDecorator;
         _proxyAuthScheme = proxyAuthScheme;
         _proxyKerberosPrincipalName = proxyKerberosPrincipalName;
+         _proxyKerberosClient = proxyKerberosClient;
 
         Properties props = new Properties();
         try {
@@ -419,6 +423,7 @@ public class SplitClientConfig {
     }
     public String proxyKerberosPrincipalName() { return _proxyKerberosPrincipalName; }
 
+    public SplitHttpClient proxyKerberosClient() { return _proxyKerberosClient; }
     public static final class Builder {
 
         private String _endpoint = SDK_ENDPOINT;
@@ -478,6 +483,7 @@ public class SplitClientConfig {
         private CustomHeaderDecorator _customHeaderDecorator = null;
         private ProxyAuthScheme _proxyAuthScheme = null;
         private String _proxyKerberosPrincipalName = null;
+        private SplitHttpClient _proxyKerberosClient = null;
 
         public Builder() {
         }
@@ -995,6 +1001,17 @@ public class SplitClientConfig {
         }
 
         /**
+         * Kerberos Http Client
+         *
+         * @param proxyKerberosClient
+         * @return this builder
+         */
+        public Builder proxyKerberosClient(SplitHttpClient proxyKerberosClient) {
+            _proxyKerberosClient = proxyKerberosClient;
+            return this;
+        }
+
+        /**
          * Thread Factory
          *
          * @param threadFactory
@@ -1059,6 +1076,9 @@ public class SplitClientConfig {
                 }
                 if (_proxyKerberosPrincipalName == null) {
                     throw new IllegalStateException("Kerberos mode require Kerberos Principal Name.");
+                }
+                if (_proxyKerberosClient == null) {
+                    throw new IllegalStateException("Kerberos mode require Kerberos Http Client.");
                 }
             }
         }
@@ -1184,7 +1204,8 @@ public class SplitClientConfig {
                     _invalidSetsCount,
                     _customHeaderDecorator,
                     _proxyAuthScheme,
-                    _proxyKerberosPrincipalName);
+                    _proxyKerberosPrincipalName,
+                    _proxyKerberosClient);
         }
     }
 }

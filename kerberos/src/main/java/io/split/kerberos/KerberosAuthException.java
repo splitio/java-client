@@ -1,4 +1,4 @@
-package io.split.client.exceptions;
+package io.split.kerberos;
 
 public class KerberosAuthException extends Exception {
     public KerberosAuthException(String message) {

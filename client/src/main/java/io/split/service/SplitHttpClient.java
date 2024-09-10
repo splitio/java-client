@@ -1,5 +1,7 @@
 package io.split.service;
 
+import io.split.client.RequestDecorator;
+import io.split.client.utils.SDKMetadata;
 import io.split.engine.common.FetchOptions;
 import io.split.client.dtos.SplitHttpResponse;
 
@@ -32,4 +34,8 @@ public interface SplitHttpClient extends Closeable {
     public SplitHttpResponse post(URI uri,
             HttpEntity entity,
             Map<String, List<String>> additionalHeaders) throws IOException;
+
+    public void setMetaData(SDKMetadata metadata);
+
+    public void setRequestDecorator(RequestDecorator requestDecorator);
 }

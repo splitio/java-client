@@ -145,4 +145,15 @@ public final class SplitHttpClientImpl implements SplitHttpClient {
     public void close() throws IOException {
         _client.close();
     }
+
+    @Override
+    public void setMetaData(SDKMetadata metadata) {
+        // only implemented for Kerberos client
+    }
+
+    @Override
+    public void setRequestDecorator(RequestDecorator requestDecorator) {
+        // only implemented for Kerberos client
+    }
+
 }

@@ -1,16 +1,18 @@
-package io.split.service;
+package io.split.kerberos;
 
 import io.split.client.RequestDecorator;
 import io.split.client.dtos.SplitHttpResponse;
 import io.split.client.utils.SDKMetadata;
 import io.split.engine.common.FetchOptions;
+import io.split.service.SplitHttpClient;
 
-import org.apache.hc.client5.http.classic.methods.HttpGet;
-import org.apache.hc.core5.http.Header;
-import org.apache.hc.core5.http.HttpEntity;
-import org.apache.hc.core5.http.HttpRequest;
-import org.apache.hc.core5.http.io.entity.EntityUtils;
-import org.apache.hc.core5.http.message.BasicHeader;
+import split.org.apache.hc.client5.http.classic.methods.HttpGet;
+import split.org.apache.hc.core5.http.Header;
+import split.org.apache.hc.core5.http.HttpEntity;
+import split.org.apache.hc.core5.http.HttpRequest;
+import split.org.apache.hc.core5.http.io.entity.EntityUtils;
+import split.org.apache.hc.core5.http.message.BasicHeader;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -38,26 +40,33 @@ public class SplitHttpClientKerberosImpl implements SplitHttpClient {
     private static final String HEADER_CLIENT_MACHINE_IP = "SplitSDKMachineIP";
     private static final String HEADER_CLIENT_VERSION = "SplitSDKVersion";
 
-    private final RequestDecorator _requestDecorator;
+    private RequestDecorator _requestDecorator;
     private final String _apikey;
-    private final SDKMetadata _metadata;
+    private SDKMetadata _metadata;
     private final OkHttpClient _client;
 
-    public static SplitHttpClientKerberosImpl create(OkHttpClient client, RequestDecorator requestDecorator,
-                                                     String apikey,
-                                                     SDKMetadata metadata) {
-        return new SplitHttpClientKerberosImpl(client, requestDecorator, apikey, metadata);
+    public static SplitHttpClientKerberosImpl create(OkHttpClient client,
+                                                     String apikey) {
+        return new SplitHttpClientKerberosImpl(client, apikey);
     }
 
-    SplitHttpClientKerberosImpl(OkHttpClient client, RequestDecorator requestDecorator,
-                                String apikey,
-                                SDKMetadata metadata) {
-        _requestDecorator = requestDecorator;
+    SplitHttpClientKerberosImpl(OkHttpClient client,
+                                String apikey) {
         _apikey = apikey;
-        _metadata = metadata;
         _client = client;
     }
 
+    @Override
+    public void setMetaData(SDKMetadata metadata) {
+        _metadata = metadata;
+    }
+
+    @Override
+    public void setRequestDecorator(RequestDecorator requestDecorator) {
+        _requestDecorator = requestDecorator;
+    }
+
+    @Override
     public SplitHttpResponse get(URI uri, FetchOptions options, Map<String, List<String>> additionalHeaders) {
         try {
             Builder requestBuilder = new Builder();
@@ -98,6 +107,7 @@ public class SplitHttpClientKerberosImpl implements SplitHttpClient {
         }
     }
 
+    @Override
     public SplitHttpResponse post(URI url, HttpEntity entity,
                                   Map<String, List<String>> additionalHeaders) {
         try {
@@ -107,7 +117,7 @@ public class SplitHttpClientKerberosImpl implements SplitHttpClient {
             setAdditionalAndDecoratedHeaders(requestBuilder, additionalHeaders);
             requestBuilder.addHeader("Accept-Encoding", "gzip");
             requestBuilder.addHeader("Content-Type", "application/json");
-            String post = EntityUtils.toString(entity);
+            String post = EntityUtils.toString((HttpEntity) entity);
             RequestBody postBody = RequestBody.create(post.getBytes());
             requestBuilder.post(postBody);
 
@@ -177,7 +187,7 @@ public class SplitHttpClientKerberosImpl implements SplitHttpClient {
                 responseHeaders.add(responseHeader);
             }
         }
-        return responseHeaders.toArray(new Header[0]);
+        return responseHeaders.toArray(new split.org.apache.hc.core5.http.Header[0]);
     }
     @Override
     public void close() throws IOException {

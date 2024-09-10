@@ -85,6 +85,7 @@
         <module>redis-wrapper</module>
         <module>testing</module>
         <module>client</module>
+        <module>kerberos</module>
     </modules>
     <build>
         <plugins>

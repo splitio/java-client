@@ -58,10 +58,9 @@ import io.split.engine.segments.SegmentChangeFetcher;
 import io.split.engine.segments.SegmentSynchronizationTaskImp;
 import io.split.integrations.IntegrationsConfig;
 import io.split.service.ProxyAuthScheme;
-import io.split.service.SplitHttpClientKerberosImpl;
 import io.split.service.SplitHttpClientImpl;
 import io.split.service.SplitHttpClient;
-import io.split.service.HTTPKerberosAuthInterceptor;
+
 import io.split.storages.SegmentCache;
 import io.split.storages.SegmentCacheConsumer;
 import io.split.storages.SegmentCacheProducer;
@@ -86,6 +85,7 @@ import io.split.telemetry.storage.TelemetryStorageProducer;
 import io.split.telemetry.synchronizer.TelemetryInMemorySubmitter;
 import io.split.telemetry.synchronizer.TelemetrySyncTask;
 import io.split.telemetry.synchronizer.TelemetrySynchronizer;
+
 import org.apache.hc.client5.http.auth.AuthScope;
 import org.apache.hc.client5.http.auth.Credentials;
 import org.apache.hc.client5.http.auth.UsernamePasswordCredentials;
@@ -108,26 +108,16 @@ import org.apache.hc.core5.util.Timeout;
 import org.slf4j.LoggerFactory;
 import pluggable.CustomStorageWrapper;
 
-import okhttp3.Authenticator;
-import okhttp3.OkHttpClient;
-import okhttp3.OkHttpClient.Builder;
-import okhttp3.logging.HttpLoggingInterceptor;
-
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.InetAddress;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.net.InetSocketAddress;
-import java.net.Proxy;
-import java.util.Map;
-import java.util.HashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.stream.Collectors;
 import java.util.HashSet;
 import java.util.List;
 import java.util.ArrayList;
-import java.util.concurrent.TimeUnit;
 
 import static io.split.client.utils.SplitExecutorFactory.buildExecutorService;
 
@@ -167,15 +157,16 @@ public class SplitFactoryImpl implements SplitFactory {
     private final SplitSynchronizationTask _splitSynchronizationTask;
     private final EventsTask _eventsTask;
     private final SyncManager _syncManager;
-    private final SplitHttpClient _splitHttpClient;
+    private SplitHttpClient _splitHttpClient;
     private final UserStorageWrapper _userStorageWrapper;
     private final ImpressionsSender _impressionsSender;
     private final URI _rootTarget;
     private final URI _eventsRootTarget;
     private final UniqueKeysTracker _uniqueKeysTracker;
+    private RequestDecorator _requestDecorator;
 
     // Constructor for standalone mode
-    public SplitFactoryImpl(String apiToken, SplitClientConfig config) throws URISyntaxException, IOException {
+    public SplitFactoryImpl(String apiToken, SplitClientConfig config) throws URISyntaxException {
         _userStorageWrapper = null;
         _operationMode = config.operationMode();
         _startTime = System.currentTimeMillis();
@@ -199,8 +190,14 @@ public class SplitFactoryImpl implements SplitFactory {
         _gates = new SDKReadinessGates();
 
         // HttpClient
-        RequestDecorator requestDecorator = new RequestDecorator(config.customHeaderDecorator());
-        _splitHttpClient = buildSplitHttpClient(apiToken, config, _sdkMetadata, requestDecorator);
+        _requestDecorator = new RequestDecorator(config.customHeaderDecorator());
+        if (config.proxyAuthScheme() != ProxyAuthScheme.KERBEROS) {
+            _splitHttpClient = buildSplitHttpClient(apiToken, config, _sdkMetadata, _requestDecorator);
+        } else {
+            _splitHttpClient = config.proxyKerberosClient();
+            _splitHttpClient.setMetaData(_sdkMetadata);
+            _splitHttpClient.setRequestDecorator(_requestDecorator);
+        }
 
         // Roots
         _rootTarget = URI.create(config.endpoint());
@@ -269,7 +266,7 @@ public class SplitFactoryImpl implements SplitFactory {
         // SyncManager
         SplitTasks splitTasks = SplitTasks.build(_splitSynchronizationTask, _segmentSynchronizationTaskImp,
                 _impressionsManager, _eventsTask, _telemetrySyncTask, _uniqueKeysTracker);
-        SplitAPI splitAPI = SplitAPI.build(_splitHttpClient, buildSSEdHttpClient(apiToken, config, _sdkMetadata), requestDecorator);
+        SplitAPI splitAPI = SplitAPI.build(_splitHttpClient, buildSSEdHttpClient(apiToken, config, _sdkMetadata), _requestDecorator);
 
         _syncManager = SyncManagerImp.build(splitTasks, _splitFetcher, splitCache, splitAPI,
                 segmentCache, _gates, _telemetryStorageProducer, _telemetrySynchronizer, config, splitParser,
@@ -285,6 +282,14 @@ public class SplitFactoryImpl implements SplitFactory {
             shutdown.setName("split-destroy-worker");
             Runtime.getRuntime().addShutdownHook(shutdown);
         }
+    }
+
+    public RequestDecorator getRequestDecorator() {
+        return _requestDecorator;
+    }
+
+    public SDKMetadata getSDKMetaData() {
+        return _sdkMetadata;
     }
 
     // Constructor for consumer mode
@@ -503,36 +508,12 @@ public class SplitFactoryImpl implements SplitFactory {
         return isTerminated;
     }
 
+    public void setSplitHttpClient(SplitHttpClient splitHttpClient) {
+        _splitHttpClient = splitHttpClient;
+    }
     protected static SplitHttpClient buildSplitHttpClient(String apiToken, SplitClientConfig config,
             SDKMetadata sdkMetadata, RequestDecorator requestDecorator)
-            throws URISyntaxException, IOException {
-        // setup Kerberos client
-        if (config.proxyAuthScheme() == ProxyAuthScheme.KERBEROS) {
-            _log.info("Using Kerberos-Proxy Authentication Scheme.");
-            Proxy proxy = new Proxy(Proxy.Type.HTTP, new InetSocketAddress(config.proxy().getHostName(), config.proxy().getPort()));
-            HttpLoggingInterceptor logging = new HttpLoggingInterceptor();
-            if (config.debugEnabled()) {
-                logging.setLevel(HttpLoggingInterceptor.Level.HEADERS);
-            } else {
-                logging.setLevel(HttpLoggingInterceptor.Level.NONE);
-            }
-
-            Map<String, String> kerberosOptions = new HashMap<>();
-            kerberosOptions.put("com.sun.security.auth.module.Krb5LoginModule", "required");
-            kerberosOptions.put("refreshKrb5Config", "false");
-            kerberosOptions.put("doNotPrompt", "false");
-            kerberosOptions.put("useTicketCache", "true");
-
-            Authenticator proxyAuthenticator = getProxyAuthenticator(config, kerberosOptions);
-            OkHttpClient client = buildOkHttpClient(proxy, config, logging, proxyAuthenticator);
-
-            return SplitHttpClientKerberosImpl.create(
-                    client,
-                    requestDecorator,
-                    apiToken,
-                    sdkMetadata);
-        }
-
+            throws URISyntaxException {
         SSLConnectionSocketFactory sslSocketFactory = SSLConnectionSocketFactoryBuilder.create()
                 .setSslContext(SSLContexts.createSystemDefault())
                 .setTlsVersions(TLS.V_1_1, TLS.V_1_2)
@@ -570,21 +551,6 @@ public class SplitFactoryImpl implements SplitFactory {
                 sdkMetadata);
     }
 
-    protected static OkHttpClient buildOkHttpClient(Proxy proxy, SplitClientConfig config,
-                                HttpLoggingInterceptor logging, Authenticator proxyAuthenticator) {
-        return new Builder()
-                .proxy(proxy)
-                .readTimeout(config.readTimeout(), TimeUnit.MILLISECONDS)
-                .connectTimeout(config.connectionTimeout(), TimeUnit.MILLISECONDS)
-                .addInterceptor(logging)
-                .proxyAuthenticator(proxyAuthenticator)
-                .build();
-    }
-
-    protected static HTTPKerberosAuthInterceptor getProxyAuthenticator(SplitClientConfig config,
-                                                                       Map<String, String> kerberosOptions) throws IOException {
-        return new HTTPKerberosAuthInterceptor(config.proxyKerberosPrincipalName(), kerberosOptions);
-    }
     private static CloseableHttpClient buildSSEdHttpClient(String apiToken, SplitClientConfig config,
             SDKMetadata sdkMetadata) {
         RequestConfig requestConfig = RequestConfig.custom()
