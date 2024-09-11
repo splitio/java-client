@@ -4,7 +4,7 @@ import io.split.client.impressions.ImpressionListener;
 import io.split.client.impressions.ImpressionsManager;
 import io.split.client.utils.FileTypeEnum;
 import io.split.integrations.IntegrationsConfig;
-import io.split.service.SplitHttpClient;
+import io.split.service.CustomHttpModule;
 import io.split.storages.enums.OperationMode;
 import io.split.storages.enums.StorageMode;
 import org.apache.hc.core5.http.HttpHost;
@@ -92,7 +92,7 @@ public class SplitClientConfig {
     private final HashSet<String> _flagSetsFilter;
     private final int _invalidSets;
     private final CustomHeaderDecorator _customHeaderDecorator;
-    private final SplitHttpClient _alternativeHTTPModule;
+    private final CustomHttpModule _alternativeHTTPModule;
 
     public static Builder builder() {
         return new Builder();
@@ -150,7 +150,7 @@ public class SplitClientConfig {
                               HashSet<String> flagSetsFilter,
                               int invalidSets,
                               CustomHeaderDecorator customHeaderDecorator,
-                              SplitHttpClient alternativeHTTPModule) {
+                              CustomHttpModule alternativeHTTPModule) {
         _endpoint = endpoint;
         _eventsEndpoint = eventsEndpoint;
         _featuresRefreshRate = pollForFeatureChangesEveryNSeconds;
@@ -412,7 +412,7 @@ public class SplitClientConfig {
         return _customHeaderDecorator;
     }
 
-    public SplitHttpClient alternativeHTTPModule() { return _alternativeHTTPModule; }
+    public CustomHttpModule alternativeHTTPModule() { return _alternativeHTTPModule; }
     public static final class Builder {
 
         private String _endpoint = SDK_ENDPOINT;
@@ -470,7 +470,7 @@ public class SplitClientConfig {
         private HashSet<String> _flagSetsFilter = new HashSet<>();
         private int _invalidSetsCount = 0;
         private CustomHeaderDecorator _customHeaderDecorator = null;
-        private SplitHttpClient _alternativeHTTPModule = null;
+        private CustomHttpModule _alternativeHTTPModule = null;
 
         public Builder() {
         }
@@ -971,7 +971,7 @@ public class SplitClientConfig {
          * @param alternativeHTTPModule
          * @return this builder
          */
-        public Builder alternativeHTTPModule(SplitHttpClient alternativeHTTPModule) {
+        public Builder alternativeHTTPModule(CustomHttpModule alternativeHTTPModule) {
             _alternativeHTTPModule = alternativeHTTPModule;
             return this;
         }

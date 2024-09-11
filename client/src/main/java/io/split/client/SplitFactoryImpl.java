@@ -165,7 +165,7 @@ public class SplitFactoryImpl implements SplitFactory {
     private RequestDecorator _requestDecorator;
 
     // Constructor for standalone mode
-    public SplitFactoryImpl(String apiToken, SplitClientConfig config) throws URISyntaxException {
+    public SplitFactoryImpl(String apiToken, SplitClientConfig config) throws URISyntaxException, IOException {
         _userStorageWrapper = null;
         _operationMode = config.operationMode();
         _startTime = System.currentTimeMillis();
@@ -193,10 +193,7 @@ public class SplitFactoryImpl implements SplitFactory {
         if (config.alternativeHTTPModule() == null) {
             _splitHttpClient = buildSplitHttpClient(apiToken, config, _sdkMetadata, _requestDecorator);
         } else {
-            _splitHttpClient = config.alternativeHTTPModule();
-            _splitHttpClient.setMetaData(_sdkMetadata);
-            _splitHttpClient.setRequestDecorator(_requestDecorator);
-            _splitHttpClient.setApiKey(apiToken);
+            _splitHttpClient = config.alternativeHTTPModule().createClient(apiToken, _sdkMetadata, _requestDecorator);
         }
 
         // Roots
@@ -282,14 +279,6 @@ public class SplitFactoryImpl implements SplitFactory {
             shutdown.setName("split-destroy-worker");
             Runtime.getRuntime().addShutdownHook(shutdown);
         }
-    }
-
-    public RequestDecorator getRequestDecorator() {
-        return _requestDecorator;
-    }
-
-    public SDKMetadata getSDKMetaData() {
-        return _sdkMetadata;
     }
 
     // Constructor for consumer mode
