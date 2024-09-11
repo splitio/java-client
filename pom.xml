@@ -84,8 +84,8 @@
         <module>pluggable-storage</module>
         <module>redis-wrapper</module>
         <module>testing</module>
-        <module>client</module>
         <module>okhttp-modules</module>
+        <module>client</module>
     </modules>
     <build>
         <plugins>

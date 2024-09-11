@@ -1,48 +1,31 @@
 package io.split.httpmodules.okhttp;
 
-import okhttp3.OkHttpClient;
-//import okhttp3.OkHttpClient.Builder;
+import io.split.client.SplitClientConfig;
+import org.junit.Assert;
+import org.junit.Test;
 
 public class SplitConfigTests {
-    /*
+
     @Test
     public void checkExpectedAuthScheme() {
-        OkHttpClient client = new Builder().build();
-        OkHttpModuleImpl okHttpModuleImpl = new OkHttpModuleImpl(client, "qwerty");
-
         SplitClientConfig cfg = SplitClientConfig.builder()
-                .proxyAuthScheme(ProxyAuthScheme.KERBEROS)
-                .proxyKerberosPrincipalName("bilal@bilal")
-                .proxyKerberosClient(okHttpModuleImpl)
+                .alternativeHTTPModule(OkHttpModule.builder()
+                        .proxyAuthScheme(ProxyAuthScheme.KERBEROS)
+                        .proxyAuthKerberosPrincipalName("bilal@bilal")
+                        .proxyHost("some-proxy")
+                        .proxyPort(3128)
+                        .debugEnabled()
+                        .build()
+                )
                 .build();
-        Assert.assertEquals(ProxyAuthScheme.KERBEROS, cfg.proxyAuthScheme());
-        Assert.assertEquals("bilal@bilal", cfg.proxyKerberosPrincipalName());
-        Assert.assertEquals(okHttpModuleImpl, cfg.proxyKerberosClient());
+        OkHttpModule module =  (OkHttpModule) cfg.alternativeHTTPModule();
+        Assert.assertEquals(ProxyAuthScheme.KERBEROS, module.proxyAuthScheme());
+        Assert.assertEquals("bilal@bilal", module.proxyKerberosPrincipalName());
+        Assert.assertEquals("HTTP @ some-proxy:3128", module.proxy().toString());
 
         cfg = SplitClientConfig.builder()
                 .build();
-        Assert.assertEquals(null, cfg.proxyAuthScheme());
+        Assert.assertEquals(null, cfg.alternativeHTTPModule());
     }
-
-    @Test(expected = IllegalStateException.class)
-    public void testAuthSchemeWithoutClient() {
-        SplitClientConfig.builder()
-                .proxyAuthScheme(ProxyAuthScheme.KERBEROS)
-                .proxyKerberosPrincipalName("bilal")
-                .build();
-    }
-
-    @Test(expected = IllegalStateException.class)
-    public void testAuthSchemeWithoutPrincipalName() {
-        OkHttpClient client = new Builder().build();
-        OkHttpModuleImpl okHttpModuleImpl = new OkHttpModuleImpl(client, "qwerty");
-
-        SplitClientConfig.builder()
-                .proxyAuthScheme(ProxyAuthScheme.KERBEROS)
-                .proxyKerberosClient(okHttpModuleImpl)
-                .build();
-    }
-
-     */
 
 }

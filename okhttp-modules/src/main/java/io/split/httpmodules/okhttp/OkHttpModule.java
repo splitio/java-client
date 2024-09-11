@@ -12,11 +12,11 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class OkHttpModule implements CustomHttpModule {
-    private static final int DEFAULT_CONNECTION_TIMEOUT = 10000;
-    private static final int DEFAULT_READ_TIMEOUT = 10000;
-    private final boolean _debugEnabled;
-    private final int _connectionTimeout;
-    private final int _readTimeout;
+    private static final int DEFAULT_CONNECTION_TIMEOUT = 15000;
+    private static final int DEFAULT_READ_TIMEOUT = 15000;
+    private final Boolean _debugEnabled;
+    private final Integer _connectionTimeout;
+    private final Integer _readTimeout;
     private final Proxy _proxy;
     private final ProxyAuthScheme _proxyAuthScheme;
     private final String _proxyAuthKerberosPrincipalName;
@@ -29,9 +29,9 @@ public class OkHttpModule implements CustomHttpModule {
     private OkHttpModule(ProxyAuthScheme proxyAuthScheme,
                          String proxyAuthKerberosPrincipalName,
                          Proxy proxy,
-                        int connectionTimeout,
-                        int readTimeout,
-                         boolean debugEnabled) {
+                         Integer connectionTimeout,
+                         Integer readTimeout,
+                         Boolean debugEnabled) {
         _proxyAuthScheme = proxyAuthScheme;
         _proxyAuthKerberosPrincipalName = proxyAuthKerberosPrincipalName;
         _proxy = proxy;
@@ -54,24 +54,24 @@ public class OkHttpModule implements CustomHttpModule {
         return _proxyAuthScheme;
     }
     public String proxyKerberosPrincipalName() { return _proxyAuthKerberosPrincipalName; }
-    public int connectionTimeout() {
+    public Integer connectionTimeout() {
         return _connectionTimeout;
     }
-    public boolean debugEnabled() {
+    public Boolean debugEnabled() {
         return _debugEnabled;
     }
-    public int readTimeout() {
+    public Integer readTimeout() {
         return _readTimeout;
     }
 
     public static final class Builder {
-        private int _connectionTimeout = 15000;
-        private int _readTimeout = 15000;
+        private Integer _connectionTimeout = DEFAULT_CONNECTION_TIMEOUT;
+        private Integer _readTimeout = DEFAULT_READ_TIMEOUT;
         private String _proxyHost = "localhost";
         private int _proxyPort = -1;
         private ProxyAuthScheme _proxyAuthScheme = null;
         private String _proxyAuthKerberosPrincipalName = null;
-        private boolean _debugEnabled = false;
+        private Boolean _debugEnabled = false;
 
         public Builder() {
         }
@@ -133,6 +133,28 @@ public class OkHttpModule implements CustomHttpModule {
             return this;
         }
 
+        /**
+         * HTTP Connection Timeout
+         *
+         * @param connectionTimeout
+         * @return this builder
+         */
+        public Builder connectionTimeout(int connectionTimeout) {
+            _connectionTimeout = connectionTimeout;
+            return this;
+        }
+
+        /**
+         * HTTP Read Timeout
+         *
+         * @param readTimeout
+         * @return this builder
+         */
+        public Builder readTimeout(int readTimeout) {
+            _readTimeout = readTimeout;
+            return this;
+        }
+
         private void verifyAuthScheme() {
             if (_proxyAuthScheme == ProxyAuthScheme.KERBEROS) {
                 if (proxy() == null) {
@@ -145,10 +167,10 @@ public class OkHttpModule implements CustomHttpModule {
         }
 
         private void verifyTimeouts() {
-            if (_connectionTimeout <= 0 || _connectionTimeout > DEFAULT_CONNECTION_TIMEOUT) {
+            if (_connectionTimeout <= 0) {
                 _connectionTimeout = DEFAULT_CONNECTION_TIMEOUT;
             }
-            if (_readTimeout <= 0 || _readTimeout > DEFAULT_READ_TIMEOUT) {
+            if (_readTimeout <= 0) {
                 _readTimeout = DEFAULT_READ_TIMEOUT;
             }
         }

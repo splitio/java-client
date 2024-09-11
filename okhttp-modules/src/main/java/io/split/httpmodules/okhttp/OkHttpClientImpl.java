@@ -7,7 +7,7 @@ import io.split.engine.common.FetchOptions;
 import io.split.service.SplitHttpClient;
 
 import okhttp3.*;
-import okhttp3.OkHttpClient.Builder;
+import okhttp3.OkHttpClient.*;
 import okhttp3.Request.*;
 import okhttp3.logging.HttpLoggingInterceptor;
 import org.slf4j.Logger;
@@ -31,7 +31,7 @@ import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
 public class OkHttpClientImpl implements SplitHttpClient {
-    public final OkHttpClient httpClient;
+    protected OkHttpClient httpClient;
     private static final Logger _log = LoggerFactory.getLogger(OkHttpClientImpl.class);
     private static final String HEADER_CACHE_CONTROL_NAME = "Cache-Control";
     private static final String HEADER_CACHE_CONTROL_VALUE = "no-cache";
@@ -42,7 +42,7 @@ public class OkHttpClientImpl implements SplitHttpClient {
     private static final String HEADER_CLIENT_VERSION = "SplitSDKVersion";
     private RequestDecorator _requestDecorator;
     private String _apikey;
-    private SDKMetadata _metadata;
+    protected SDKMetadata _metadata;
 
     public OkHttpClientImpl(String apiToken, SDKMetadata sdkMetadata, RequestDecorator requestDecorator,
                             Proxy proxy, String proxyAuthKerberosPrincipalName, boolean debugEnabled,
@@ -50,7 +50,18 @@ public class OkHttpClientImpl implements SplitHttpClient {
         _apikey = apiToken;
         _metadata = sdkMetadata;
         _requestDecorator = requestDecorator;
+        setHttpClient(proxy, proxyAuthKerberosPrincipalName, debugEnabled,
+                readTimeout, connectionTimeout);
+    }
 
+    protected void setHttpClient(Proxy proxy, String proxyAuthKerberosPrincipalName, boolean debugEnabled,
+                                 int readTimeout, int connectionTimeout) throws IOException {
+        httpClient = initializeClient(proxy, proxyAuthKerberosPrincipalName, debugEnabled,
+                readTimeout, connectionTimeout);
+    }
+
+    protected OkHttpClient initializeClient(Proxy proxy, String proxyAuthKerberosPrincipalName, boolean debugEnabled,
+                              int readTimeout, int connectionTimeout) throws IOException {
         HttpLoggingInterceptor logging = new HttpLoggingInterceptor();
         if (debugEnabled) {
             logging.setLevel(HttpLoggingInterceptor.Level.HEADERS);
@@ -66,7 +77,7 @@ public class OkHttpClientImpl implements SplitHttpClient {
 
         Authenticator proxyAuthenticator = getProxyAuthenticator(proxyAuthKerberosPrincipalName, kerberosOptions);
 
-        httpClient = new okhttp3.OkHttpClient.Builder()
+        return new okhttp3.OkHttpClient.Builder()
                 .proxy(proxy)
                 .readTimeout(readTimeout, TimeUnit.MILLISECONDS)
                 .connectTimeout(connectionTimeout, TimeUnit.MILLISECONDS)
@@ -83,7 +94,7 @@ public class OkHttpClientImpl implements SplitHttpClient {
     @Override
     public SplitHttpResponse get(URI uri, FetchOptions options, Map<String, List<String>> additionalHeaders) {
         try {
-            okhttp3.Request.Builder requestBuilder = new okhttp3.Request.Builder();
+            okhttp3.Request.Builder requestBuilder = getRequestBuilder();
             requestBuilder.url(uri.toString());
             setBasicHeaders(requestBuilder);
             setAdditionalAndDecoratedHeaders(requestBuilder, additionalHeaders);
@@ -135,7 +146,8 @@ public class OkHttpClientImpl implements SplitHttpClient {
             RequestBody postBody = RequestBody.create(post.getBytes());
             requestBuilder.post(postBody);
 
-            Request request = getRequest(requestBuilder);
+            Request request = requestBuilder.build();
+            System.out.println(request);
             _log.debug(String.format("Request Headers: %s", request.headers()));
 
             Response response = httpClient.newCall(request).execute();
