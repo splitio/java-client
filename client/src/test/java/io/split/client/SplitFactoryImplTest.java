@@ -2,11 +2,7 @@ package io.split.client;
 
 import io.split.client.impressions.ImpressionsManager;
 import io.split.client.utils.FileTypeEnum;
-import io.split.client.utils.SDKMetadata;
 import io.split.integrations.IntegrationsConfig;
-import io.split.service.ProxyAuthScheme;
-import io.split.service.SplitHttpClient;
-import io.split.service.SplitHttpClientKerberosImpl;
 import io.split.storages.enums.OperationMode;
 import io.split.storages.pluggable.domain.UserStorageWrapper;
 import io.split.telemetry.storage.TelemetryStorage;
@@ -14,13 +10,8 @@ import io.split.telemetry.synchronizer.TelemetrySynchronizer;
 import junit.framework.TestCase;
 import org.junit.Assert;
 import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.ArgumentCaptor;
-import org.mockito.BDDMockito;
 import org.mockito.Mockito;
-import org.powermock.api.mockito.PowerMockito;
-import org.powermock.core.classloader.annotations.PrepareForTest;
-import org.powermock.modules.junit4.PowerMockRunner;
+import static org.mockito.Mockito.when;
 import pluggable.CustomStorageWrapper;
 
 import java.io.FileInputStream;
@@ -30,22 +21,9 @@ import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
-import java.net.InetSocketAddress;
-import java.net.Proxy;
 import java.net.URISyntaxException;
 
-import java.util.HashMap;
-import java.util.Map;
 
-import okhttp3.Authenticator;
-import okhttp3.OkHttpClient;
-import okhttp3.logging.HttpLoggingInterceptor;
-import okhttp3.Interceptor;
-
-import static org.mockito.Mockito.when;
-
-@RunWith(PowerMockRunner.class)
-@PrepareForTest(SplitFactoryImpl.class)
 public class SplitFactoryImplTest extends TestCase {
     public static final String API_KEY ="29013ionasdasd09u";
     public static final String ENDPOINT = "https://sdk.split-stage.io";
@@ -367,97 +345,5 @@ public class SplitFactoryImplTest extends TestCase {
         method.setAccessible(true);
         Object splitChangeFetcher = method.invoke(splitFactory, splitClientConfig);
         Assert.assertTrue(splitChangeFetcher instanceof LegacyLocalhostSplitChangeFetcher);
-    }
-
-    @Test
-    public void testBuildKerberosClientParams() throws URISyntaxException, IOException {
-        PowerMockito.mockStatic(SplitFactoryImpl.class);
-
-        ArgumentCaptor<Proxy> proxyCaptor = ArgumentCaptor.forClass(Proxy.class);
-        ArgumentCaptor<SplitClientConfig> configCaptor = ArgumentCaptor.forClass(SplitClientConfig.class);
-        ArgumentCaptor< HttpLoggingInterceptor> logCaptor = ArgumentCaptor.forClass( HttpLoggingInterceptor.class);
-        ArgumentCaptor<Authenticator> authCaptor = ArgumentCaptor.forClass(Authenticator.class);
-
-        SplitClientConfig splitClientConfig = SplitClientConfig.builder()
-                .setBlockUntilReadyTimeout(10000)
-                .proxyAuthScheme(ProxyAuthScheme.KERBEROS)
-                .proxyKerberosPrincipalName("bilal@localhost")
-                .proxyPort(6060)
-                .proxyHost(ENDPOINT)
-                .build();
-
-        Map<String, String> kerberosOptions = new HashMap<String, String>();
-        kerberosOptions.put("com.sun.security.auth.module.Krb5LoginModule", "required");
-        kerberosOptions.put("refreshKrb5Config", "false");
-        kerberosOptions.put("doNotPrompt", "false");
-        kerberosOptions.put("useTicketCache", "true");
-        BDDMockito.given(SplitFactoryImpl.getProxyAuthenticator(splitClientConfig, kerberosOptions))
-            .willReturn(null);
-
-        RequestDecorator requestDecorator = new RequestDecorator(null);
-        SDKMetadata sdkmeta = new SDKMetadata("java-1.2.3", "1.2.3.4", "someIP");
-        PowerMockito.when(SplitFactoryImpl.buildSplitHttpClient("qwer",
-                splitClientConfig,
-                sdkmeta,
-                requestDecorator)).thenCallRealMethod();
-
-        SplitHttpClient splitHttpClient = SplitFactoryImpl.buildSplitHttpClient("qwer",
-                splitClientConfig,
-                sdkmeta,
-                requestDecorator);
-
-        PowerMockito.verifyStatic();
-        SplitFactoryImpl.buildOkHttpClient(proxyCaptor.capture(), configCaptor.capture(),logCaptor.capture(), authCaptor.capture());
-
-        Assert.assertTrue(splitHttpClient instanceof SplitHttpClientKerberosImpl);
-        Assert.assertEquals("HTTP @ https://sdk.split-stage.io:6060", proxyCaptor.getValue().toString());
-        Assert.assertTrue(logCaptor.getValue() instanceof okhttp3.logging.HttpLoggingInterceptor);
-    }
-
-    @Test
-    public void testFactoryKerberosInstance() throws URISyntaxException, IOException {
-        OkHttpClient okHttpClient = new OkHttpClient.Builder().build();
-        PowerMockito.stub(PowerMockito.method(SplitFactoryImpl.class, "buildOkHttpClient")).toReturn(okHttpClient);
-        PowerMockito.stub(PowerMockito.method(SplitFactoryImpl.class, "getProxyAuthenticator")).toReturn(null);
-
-        SplitClientConfig splitClientConfig = SplitClientConfig.builder()
-                .setBlockUntilReadyTimeout(10000)
-                .proxyAuthScheme(ProxyAuthScheme.KERBEROS)
-                .proxyKerberosPrincipalName("bilal@localhost")
-                .proxyPort(6060)
-                .proxyHost(ENDPOINT)
-                .build();
-
-        Map<String, String> kerberosOptions = new HashMap<String, String>();
-        kerberosOptions.put("com.sun.security.auth.module.Krb5LoginModule", "required");
-        kerberosOptions.put("refreshKrb5Config", "false");
-        kerberosOptions.put("doNotPrompt", "false");
-        kerberosOptions.put("useTicketCache", "true");
-
-        RequestDecorator requestDecorator = new RequestDecorator(null);
-        SDKMetadata sdkmeta = new SDKMetadata("java-1.2.3", "1.2.3.4", "someIP");
-        SplitHttpClient splitHttpClient = SplitFactoryImpl.buildSplitHttpClient("qwer",
-                splitClientConfig,
-                sdkmeta,
-                requestDecorator);
-        Assert.assertTrue(splitHttpClient instanceof SplitHttpClientKerberosImpl);
-    }
-
-    @Test
-    public void testBuildOkHttpClient() {
-        SplitClientConfig splitClientConfig = SplitClientConfig.builder()
-                .setBlockUntilReadyTimeout(10000)
-                .proxyAuthScheme(ProxyAuthScheme.KERBEROS)
-                .proxyKerberosPrincipalName("bilal@localhost")
-                .proxyPort(6060)
-                .proxyHost(ENDPOINT)
-                .build();
-        HttpLoggingInterceptor loggingInterceptor = new HttpLoggingInterceptor();
-        Proxy proxy = new Proxy(Proxy.Type.HTTP, new InetSocketAddress("host", 8080));
-        OkHttpClient okHttpClient = SplitFactoryImpl.buildOkHttpClient(proxy,
-                splitClientConfig, loggingInterceptor,  Authenticator.NONE);
-        assertEquals(Authenticator.NONE, okHttpClient.authenticator());
-        assertEquals(proxy, okHttpClient.proxy());
-        assertEquals(loggingInterceptor, okHttpClient.interceptors().get(0));
     }
 }

@@ -1,4 +1,4 @@
-package io.split.service;
+package io.split.httpmodules.okhttp;
 
 public enum ProxyAuthScheme {
     KERBEROS

@@ -1,6 +1,4 @@
-package io.split.service;
-
-import io.split.client.exceptions.KerberosAuthException;
+package io.split.httpmodules.okhttp;
 
 import java.io.IOException;
 import java.util.Map;

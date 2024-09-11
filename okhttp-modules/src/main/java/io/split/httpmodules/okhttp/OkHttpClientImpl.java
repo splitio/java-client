@@ -1,35 +1,38 @@
-package io.split.service;
+package io.split.httpmodules.okhttp;
 
 import io.split.client.RequestDecorator;
 import io.split.client.dtos.SplitHttpResponse;
 import io.split.client.utils.SDKMetadata;
 import io.split.engine.common.FetchOptions;
+import io.split.service.SplitHttpClient;
 
-import org.apache.hc.client5.http.classic.methods.HttpGet;
-import org.apache.hc.core5.http.Header;
-import org.apache.hc.core5.http.HttpEntity;
-import org.apache.hc.core5.http.HttpRequest;
-import org.apache.hc.core5.http.io.entity.EntityUtils;
-import org.apache.hc.core5.http.message.BasicHeader;
+import okhttp3.*;
+import okhttp3.OkHttpClient.Builder;
+import okhttp3.Request.*;
+import okhttp3.logging.HttpLoggingInterceptor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import okhttp3.OkHttpClient;
-import okhttp3.Request;
-import okhttp3.Response;
-import okhttp3.Request.Builder;
-import okhttp3.RequestBody;
+import split.org.apache.hc.client5.http.classic.methods.HttpGet;
+import split.org.apache.hc.core5.http.Header;
+import split.org.apache.hc.core5.http.HttpEntity;
+import split.org.apache.hc.core5.http.HttpRequest;
+import split.org.apache.hc.core5.http.io.entity.EntityUtils;
+import split.org.apache.hc.core5.http.message.BasicHeader;
 
 import java.io.IOException;
 import java.net.HttpURLConnection;
+import java.net.Proxy;
 import java.net.URI;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 
-public class SplitHttpClientKerberosImpl implements SplitHttpClient {
-
-    private static final Logger _log = LoggerFactory.getLogger(SplitHttpClientKerberosImpl.class);
+public class OkHttpClientImpl implements SplitHttpClient {
+    public final OkHttpClient httpClient;
+    private static final Logger _log = LoggerFactory.getLogger(OkHttpClientImpl.class);
     private static final String HEADER_CACHE_CONTROL_NAME = "Cache-Control";
     private static final String HEADER_CACHE_CONTROL_VALUE = "no-cache";
     private static final String HEADER_API_KEY = "Authorization";
@@ -37,30 +40,50 @@ public class SplitHttpClientKerberosImpl implements SplitHttpClient {
     private static final String HEADER_CLIENT_MACHINE_NAME = "SplitSDKMachineName";
     private static final String HEADER_CLIENT_MACHINE_IP = "SplitSDKMachineIP";
     private static final String HEADER_CLIENT_VERSION = "SplitSDKVersion";
+    private RequestDecorator _requestDecorator;
+    private String _apikey;
+    private SDKMetadata _metadata;
 
-    private final RequestDecorator _requestDecorator;
-    private final String _apikey;
-    private final SDKMetadata _metadata;
-    private final OkHttpClient _client;
-
-    public static SplitHttpClientKerberosImpl create(OkHttpClient client, RequestDecorator requestDecorator,
-                                                     String apikey,
-                                                     SDKMetadata metadata) {
-        return new SplitHttpClientKerberosImpl(client, requestDecorator, apikey, metadata);
-    }
-
-    SplitHttpClientKerberosImpl(OkHttpClient client, RequestDecorator requestDecorator,
-                                String apikey,
-                                SDKMetadata metadata) {
+    public OkHttpClientImpl(String apiToken, SDKMetadata sdkMetadata, RequestDecorator requestDecorator,
+                            Proxy proxy, String proxyAuthKerberosPrincipalName, boolean debugEnabled,
+                            int readTimeout, int connectionTimeout) throws IOException {
+        _apikey = apiToken;
+        _metadata = sdkMetadata;
         _requestDecorator = requestDecorator;
-        _apikey = apikey;
-        _metadata = metadata;
-        _client = client;
+
+        HttpLoggingInterceptor logging = new HttpLoggingInterceptor();
+        if (debugEnabled) {
+            logging.setLevel(HttpLoggingInterceptor.Level.HEADERS);
+        } else {
+            logging.setLevel(HttpLoggingInterceptor.Level.NONE);
+        }
+
+        Map<String, String> kerberosOptions = new HashMap<>();
+        kerberosOptions.put("com.sun.security.auth.module.Krb5LoginModule", "required");
+        kerberosOptions.put("refreshKrb5Config", "false");
+        kerberosOptions.put("doNotPrompt", "false");
+        kerberosOptions.put("useTicketCache", "true");
+
+        Authenticator proxyAuthenticator = getProxyAuthenticator(proxyAuthKerberosPrincipalName, kerberosOptions);
+
+        httpClient = new okhttp3.OkHttpClient.Builder()
+                .proxy(proxy)
+                .readTimeout(readTimeout, TimeUnit.MILLISECONDS)
+                .connectTimeout(connectionTimeout, TimeUnit.MILLISECONDS)
+                .addInterceptor(logging)
+                .proxyAuthenticator(proxyAuthenticator)
+                .build();
     }
 
+    public HTTPKerberosAuthInterceptor getProxyAuthenticator(String proxyKerberosPrincipalName,
+                                                             Map<String, String> kerberosOptions) throws IOException {
+        return new HTTPKerberosAuthInterceptor(proxyKerberosPrincipalName, kerberosOptions);
+    }
+
+    @Override
     public SplitHttpResponse get(URI uri, FetchOptions options, Map<String, List<String>> additionalHeaders) {
         try {
-            Builder requestBuilder = new Builder();
+            okhttp3.Request.Builder requestBuilder = new okhttp3.Request.Builder();
             requestBuilder.url(uri.toString());
             setBasicHeaders(requestBuilder);
             setAdditionalAndDecoratedHeaders(requestBuilder, additionalHeaders);
@@ -71,7 +94,7 @@ public class SplitHttpClientKerberosImpl implements SplitHttpClient {
             Request request = requestBuilder.build();
             _log.debug(String.format("Request Headers: %s", request.headers()));
 
-            Response response = _client.newCall(request).execute();
+            Response response = httpClient.newCall(request).execute();
 
             int responseCode = response.code();
 
@@ -98,23 +121,24 @@ public class SplitHttpClientKerberosImpl implements SplitHttpClient {
         }
     }
 
+    @Override
     public SplitHttpResponse post(URI url, HttpEntity entity,
                                   Map<String, List<String>> additionalHeaders) {
         try {
-            Builder requestBuilder = getRequestBuilder();
+            okhttp3.Request.Builder requestBuilder = getRequestBuilder();
             requestBuilder.url(url.toString());
             setBasicHeaders(requestBuilder);
             setAdditionalAndDecoratedHeaders(requestBuilder, additionalHeaders);
             requestBuilder.addHeader("Accept-Encoding", "gzip");
             requestBuilder.addHeader("Content-Type", "application/json");
-            String post = EntityUtils.toString(entity);
+            String post = EntityUtils.toString((HttpEntity) entity);
             RequestBody postBody = RequestBody.create(post.getBytes());
             requestBuilder.post(postBody);
 
             Request request = getRequest(requestBuilder);
             _log.debug(String.format("Request Headers: %s", request.headers()));
 
-            Response response = _client.newCall(request).execute();
+            Response response = httpClient.newCall(request).execute();
 
             int responseCode = response.code();
 
@@ -136,14 +160,14 @@ public class SplitHttpClientKerberosImpl implements SplitHttpClient {
         }
     }
 
-    protected Builder getRequestBuilder() {
-        return new Builder();
+    protected okhttp3.Request.Builder getRequestBuilder() {
+        return new okhttp3.Request.Builder();
     }
 
-    protected Request getRequest(Builder requestBuilder) {
+    protected Request getRequest(okhttp3.Request.Builder requestBuilder) {
         return requestBuilder.build();
     }
-    protected void setBasicHeaders(Builder requestBuilder) {
+    protected void setBasicHeaders(okhttp3.Request.Builder requestBuilder) {
         requestBuilder.addHeader(HEADER_API_KEY, "Bearer " + _apikey);
         requestBuilder.addHeader(HEADER_CLIENT_VERSION, _metadata.getSdkVersion());
         requestBuilder.addHeader(HEADER_CLIENT_MACHINE_IP, _metadata.getMachineIp());
@@ -153,7 +177,7 @@ public class SplitHttpClientKerberosImpl implements SplitHttpClient {
                 : _apikey);
     }
 
-    protected void setAdditionalAndDecoratedHeaders(Builder requestBuilder, Map<String, List<String>> additionalHeaders) {
+    protected void setAdditionalAndDecoratedHeaders(okhttp3.Request.Builder requestBuilder, Map<String, List<String>> additionalHeaders) {
         if (additionalHeaders != null) {
             for (Map.Entry<String, List<String>> entry : additionalHeaders.entrySet()) {
                 for (String value : entry.getValue()) {
@@ -177,10 +201,11 @@ public class SplitHttpClientKerberosImpl implements SplitHttpClient {
                 responseHeaders.add(responseHeader);
             }
         }
-        return responseHeaders.toArray(new Header[0]);
+        return responseHeaders.toArray(new split.org.apache.hc.core5.http.Header[0]);
     }
     @Override
     public void close() throws IOException {
-        _client.dispatcher().executorService().shutdown();
+        httpClient.dispatcher().executorService().shutdown();
     }
+
 }
