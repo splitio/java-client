@@ -9,7 +9,7 @@
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
-    <artifactId>http-modules</artifactId>
+    <artifactId>okhttp-modules</artifactId>
     <packaging>jar</packaging>
     <name>http-modules</name>
     <description>Alternative Http Modules</description>

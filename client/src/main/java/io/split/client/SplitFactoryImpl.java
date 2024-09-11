@@ -497,9 +497,6 @@ public class SplitFactoryImpl implements SplitFactory {
         return isTerminated;
     }
 
-    public void setSplitHttpClient(SplitHttpClient splitHttpClient) {
-        _splitHttpClient = splitHttpClient;
-    }
     protected static SplitHttpClient buildSplitHttpClient(String apiToken, SplitClientConfig config,
             SDKMetadata sdkMetadata, RequestDecorator requestDecorator)
             throws URISyntaxException {
