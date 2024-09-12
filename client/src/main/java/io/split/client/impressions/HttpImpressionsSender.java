@@ -4,6 +4,7 @@ import com.google.common.annotations.VisibleForTesting;
 import io.split.client.dtos.ImpressionCount;
 import io.split.client.dtos.SplitHttpResponse;
 import io.split.client.dtos.TestImpressions;
+import io.split.client.utils.Json;
 import io.split.client.utils.Utils;
 
 import io.split.service.SplitHttpClient;
@@ -11,7 +12,6 @@ import io.split.telemetry.domain.enums.HTTPLatenciesEnum;
 import io.split.telemetry.domain.enums.LastSynchronizationRecordsEnum;
 import io.split.telemetry.domain.enums.ResourceEnum;
 import io.split.telemetry.storage.TelemetryRuntimeProducer;
-import org.apache.hc.core5.http.HttpEntity;
 import org.apache.hc.core5.http.HttpStatus;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -67,10 +67,12 @@ public class HttpImpressionsSender implements ImpressionsSender {
     public void postImpressionsBulk(List<TestImpressions> impressions) {
         long initTime = System.currentTimeMillis();
         try {
-            HttpEntity entity = Utils.toJsonEntity(impressions);
-            Map<String, List<String>> additionalHeaders = Collections.singletonMap(IMPRESSIONS_MODE_HEADER,
-                    Collections.singletonList(_mode.toString()));
-            SplitHttpResponse response = _client.post(_impressionBulkTarget, entity, additionalHeaders);
+            Map<String, List<String>> additionalHeaders = new HashMap<>();
+            additionalHeaders.put(IMPRESSIONS_MODE_HEADER, Collections.singletonList(_mode.toString()));
+            additionalHeaders.put("Content-Type", Collections.singletonList("application/json"));
+
+            SplitHttpResponse response = _client.post(_impressionBulkTarget, Json.toJson(impressions),
+                    additionalHeaders);
 
             if (response.statusCode() < HttpStatus.SC_OK || response.statusCode() >= HttpStatus.SC_MULTIPLE_CHOICES) {
                 _telemetryRuntimeProducer.recordSyncError(ResourceEnum.IMPRESSION_SYNC, response.statusCode());
@@ -95,8 +97,12 @@ public class HttpImpressionsSender implements ImpressionsSender {
         }
 
         try {
+
+            Map<String, List<String>> additionalHeaders = new HashMap<>();
+            additionalHeaders.put("Content-Type", Collections.singletonList("application/json"));
+
             SplitHttpResponse response = _client.post(_impressionCountTarget,
-                    Utils.toJsonEntity(ImpressionCount.fromImpressionCounterData(raw)),
+                    Json.toJson(ImpressionCount.fromImpressionCounterData(raw)),
                     null);
 
             if (response.statusCode() < HttpStatus.SC_OK || response.statusCode() >= HttpStatus.SC_MULTIPLE_CHOICES) {

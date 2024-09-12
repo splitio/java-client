@@ -6,5 +6,5 @@ import io.split.client.utils.SDKMetadata;
 import java.io.IOException;
 
 public interface CustomHttpModule {
-    public SplitHttpClient createClient(String apiToken, SDKMetadata sdkMetadata, RequestDecorator requestDecorator) throws IOException;
+    public SplitHttpClient createClient(String apiToken, SDKMetadata sdkMetadata) throws IOException;
 }
