@@ -3,8 +3,6 @@ package io.split.service;
 import io.split.engine.common.FetchOptions;
 import io.split.client.dtos.SplitHttpResponse;
 
-import org.apache.hc.core5.http.HttpEntity;
-
 import java.io.Closeable;
 import java.io.IOException;
 import java.net.URI;
@@ -30,6 +28,6 @@ public interface SplitHttpClient extends Closeable {
      * @return The response structure SplitHttpResponse
      */
     public SplitHttpResponse post(URI uri,
-            HttpEntity entity,
+            String entity,
             Map<String, List<String>> additionalHeaders) throws IOException;
 }

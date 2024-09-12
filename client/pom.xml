@@ -64,6 +64,7 @@
                                     <include>io.split.schemas:*</include>
                                     <include>io.codigo.grammar:*</include>
                                     <include>org.apache.httpcomponents.*</include>
+                                    <include>org.apache.hc.*</include>
                                     <include>com.google.*</include>
                                     <include>org.yaml:snakeyaml:*</include>
 

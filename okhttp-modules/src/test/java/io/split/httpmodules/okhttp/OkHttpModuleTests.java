@@ -105,7 +105,7 @@ public class OkHttpModuleTests {
                 .readTimeout(11000)
                 .build();
 
-        module.createClient(apiToken, sdkMetadata, requestDecorator);
+        module.createClient(apiToken, sdkMetadata); //, requestDecorator);
         assertThat(true, is(equalTo(argsCaptured.get())));
     }
 }

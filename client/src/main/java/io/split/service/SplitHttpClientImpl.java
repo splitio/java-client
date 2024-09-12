@@ -9,9 +9,10 @@ import org.apache.hc.client5.http.classic.methods.HttpGet;
 import org.apache.hc.client5.http.classic.methods.HttpPost;
 import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
 import org.apache.hc.client5.http.impl.classic.CloseableHttpResponse;
-import org.apache.hc.core5.http.HttpEntity;
+import org.apache.hc.core5.http.ContentType;
 import org.apache.hc.core5.http.HttpStatus;
 import org.apache.hc.core5.http.io.entity.EntityUtils;
+import org.apache.hc.core5.http.io.entity.HttpEntities;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import java.io.IOException;
@@ -19,8 +20,11 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import org.apache.hc.core5.http.HttpRequest;
 import java.nio.charset.StandardCharsets;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 public final class SplitHttpClientImpl implements SplitHttpClient {
 
@@ -87,10 +91,14 @@ public final class SplitHttpClientImpl implements SplitHttpClient {
                         response.getReasonPhrase()));
                 statusMessage = response.getReasonPhrase();
             }
+
             return new SplitHttpResponse(response.getCode(),
                     statusMessage,
                     EntityUtils.toString(response.getEntity(), StandardCharsets.UTF_8),
-                    response.getHeaders());
+                    Arrays.stream(response.getHeaders()).map(
+                            h -> new SplitHttpResponse.Header(h.getName(), Collections.singletonList(h.getValue())))
+                            .collect(Collectors.toList()));
+            // response.getHeaders());
         } catch (Exception e) {
             throw new IllegalStateException(String.format("Problem in http get operation: %s", e), e);
         } finally {
@@ -98,7 +106,7 @@ public final class SplitHttpClientImpl implements SplitHttpClient {
         }
     }
 
-    public SplitHttpResponse post(URI uri, HttpEntity entity, Map<String, List<String>> additionalHeaders)
+    public SplitHttpResponse post(URI uri, String body, Map<String, List<String>> additionalHeaders)
             throws IOException {
 
         CloseableHttpResponse response = null;
@@ -112,7 +120,7 @@ public final class SplitHttpClientImpl implements SplitHttpClient {
                     }
                 }
             }
-            request.setEntity(entity);
+            request.setEntity(HttpEntities.create(body, ContentType.APPLICATION_JSON));
             request = (HttpPost) _requestDecorator.decorateHeaders(request);
 
             response = _client.execute(request);
@@ -123,7 +131,10 @@ public final class SplitHttpClientImpl implements SplitHttpClient {
                 _log.warn(String.format("Response status was: %s. Reason: %s", response.getCode(),
                         response.getReasonPhrase()));
             }
-            return new SplitHttpResponse(response.getCode(), statusMessage, "", response.getHeaders());
+            return new SplitHttpResponse(response.getCode(), statusMessage, "",
+                    Arrays.stream(response.getHeaders()).map(
+                            h -> new SplitHttpResponse.Header(h.getName(), Collections.singletonList(h.getValue())))
+                            .collect(Collectors.toList()));
         } catch (Exception e) {
             throw new IOException(String.format("Problem in http post operation: %s", e), e);
         } finally {

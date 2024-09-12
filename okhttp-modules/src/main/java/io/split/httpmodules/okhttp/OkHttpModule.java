@@ -4,7 +4,6 @@ import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.net.Proxy;
 
-import io.split.client.RequestDecorator;
 import io.split.client.utils.SDKMetadata;
 import io.split.service.CustomHttpModule;
 
@@ -41,8 +40,8 @@ public class OkHttpModule implements CustomHttpModule {
     }
 
     @Override
-    public OkHttpClientImpl createClient(String apiToken, SDKMetadata sdkMetadata, RequestDecorator requestDecorator) throws IOException {
-        return new OkHttpClientImpl(apiToken, sdkMetadata, requestDecorator,
+    public OkHttpClientImpl createClient(String apiToken, SDKMetadata sdkMetadata) throws IOException {
+        return new OkHttpClientImpl(apiToken, sdkMetadata, 
                 _proxy, _proxyAuthKerberosPrincipalName, _debugEnabled,
                 _readTimeout, _connectionTimeout);
     }
