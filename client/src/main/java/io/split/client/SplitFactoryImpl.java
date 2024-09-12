@@ -188,13 +188,12 @@ public class SplitFactoryImpl implements SplitFactory {
         // SDKReadinessGates
         _gates = new SDKReadinessGates();
 
+        RequestDecorator decorator = new RequestDecorator(config.customHeaderDecorator());
         // HttpClient
-        _requestDecorator = new RequestDecorator(config.customHeaderDecorator());
         if (config.alternativeHTTPModule() == null) {
-            _splitHttpClient = buildSplitHttpClient(apiToken, config, _sdkMetadata, _requestDecorator);
+            _splitHttpClient = buildSplitHttpClient(apiToken, config, _sdkMetadata, decorator);
         } else {
-            _splitHttpClient = config.alternativeHTTPModule().createClient(apiToken, _sdkMetadata); // ,
-                                                                                                    // _requestDecorator);
+            _splitHttpClient = config.alternativeHTTPModule().createClient(apiToken, _sdkMetadata, decorator);
         }
 
         // Roots

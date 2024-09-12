@@ -4,11 +4,9 @@ import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.net.Proxy;
 
+import io.split.client.RequestDecorator;
 import io.split.client.utils.SDKMetadata;
 import io.split.service.CustomHttpModule;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 public class OkHttpModule implements CustomHttpModule {
     private static final int DEFAULT_CONNECTION_TIMEOUT = 15000;
@@ -19,18 +17,17 @@ public class OkHttpModule implements CustomHttpModule {
     private final Proxy _proxy;
     private final ProxyAuthScheme _proxyAuthScheme;
     private final String _proxyAuthKerberosPrincipalName;
-    private static final Logger _log = LoggerFactory.getLogger(OkHttpModule.class);
 
     public static Builder builder() {
         return new Builder();
     }
 
     private OkHttpModule(ProxyAuthScheme proxyAuthScheme,
-                         String proxyAuthKerberosPrincipalName,
-                         Proxy proxy,
-                         Integer connectionTimeout,
-                         Integer readTimeout,
-                         Boolean debugEnabled) {
+            String proxyAuthKerberosPrincipalName,
+            Proxy proxy,
+            Integer connectionTimeout,
+            Integer readTimeout,
+            Boolean debugEnabled) {
         _proxyAuthScheme = proxyAuthScheme;
         _proxyAuthKerberosPrincipalName = proxyAuthKerberosPrincipalName;
         _proxy = proxy;
@@ -40,25 +37,33 @@ public class OkHttpModule implements CustomHttpModule {
     }
 
     @Override
-    public OkHttpClientImpl createClient(String apiToken, SDKMetadata sdkMetadata) throws IOException {
-        return new OkHttpClientImpl(apiToken, sdkMetadata, 
+    public OkHttpClientImpl createClient(String apiToken, SDKMetadata sdkMetadata, RequestDecorator decorator)
+            throws IOException {
+        return new OkHttpClientImpl(apiToken, sdkMetadata,
                 _proxy, _proxyAuthKerberosPrincipalName, _debugEnabled,
-                _readTimeout, _connectionTimeout);
+                _readTimeout, _connectionTimeout, decorator);
     }
 
     public Proxy proxy() {
         return _proxy;
     }
+
     public ProxyAuthScheme proxyAuthScheme() {
         return _proxyAuthScheme;
     }
-    public String proxyKerberosPrincipalName() { return _proxyAuthKerberosPrincipalName; }
+
+    public String proxyKerberosPrincipalName() {
+        return _proxyAuthKerberosPrincipalName;
+    }
+
     public Integer connectionTimeout() {
         return _connectionTimeout;
     }
+
     public Boolean debugEnabled() {
         return _debugEnabled;
     }
+
     public Integer readTimeout() {
         return _readTimeout;
     }
@@ -174,7 +179,7 @@ public class OkHttpModule implements CustomHttpModule {
             }
         }
 
-        public OkHttpModule build()  {
+        public OkHttpModule build() {
             verifyTimeouts();
             verifyAuthScheme();
 

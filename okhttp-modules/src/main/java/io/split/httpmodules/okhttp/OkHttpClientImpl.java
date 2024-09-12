@@ -1,5 +1,6 @@
 package io.split.httpmodules.okhttp;
 
+import io.split.client.RequestDecorator;
 import io.split.client.dtos.SplitHttpResponse;
 import io.split.client.utils.SDKMetadata;
 import io.split.engine.common.FetchOptions;
@@ -15,12 +16,14 @@ import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.net.Proxy;
 import java.net.URI;
-import java.nio.charset.Charset;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 public class OkHttpClientImpl implements SplitHttpClient {
     protected OkHttpClient httpClient;
@@ -34,20 +37,17 @@ public class OkHttpClientImpl implements SplitHttpClient {
     private static final String HEADER_CLIENT_VERSION = "SplitSDKVersion";
     private String _apikey;
     protected SDKMetadata _metadata;
+    private final RequestDecorator _decorator;
 
     public OkHttpClientImpl(String apiToken, SDKMetadata sdkMetadata,
             Proxy proxy, String proxyAuthKerberosPrincipalName, boolean debugEnabled,
-            int readTimeout, int connectionTimeout) throws IOException {
+            int readTimeout, int connectionTimeout, RequestDecorator decorator) throws IOException {
         _apikey = apiToken;
         _metadata = sdkMetadata;
-        setHttpClient(proxy, proxyAuthKerberosPrincipalName, debugEnabled,
-                readTimeout, connectionTimeout);
-    }
-
-    protected void setHttpClient(Proxy proxy, String proxyAuthKerberosPrincipalName, boolean debugEnabled,
-            int readTimeout, int connectionTimeout) throws IOException {
+        _decorator = decorator;
         httpClient = initializeClient(proxy, proxyAuthKerberosPrincipalName, debugEnabled,
                 readTimeout, connectionTimeout);
+
     }
 
     protected OkHttpClient initializeClient(Proxy proxy, String proxyAuthKerberosPrincipalName, boolean debugEnabled,
@@ -86,8 +86,8 @@ public class OkHttpClientImpl implements SplitHttpClient {
         try {
             okhttp3.Request.Builder requestBuilder = getRequestBuilder();
             requestBuilder.url(uri.toString());
-            setBasicHeaders(requestBuilder);
-            setAdditionalAndDecoratedHeaders(requestBuilder, additionalHeaders);
+            Map<String, List<String>> headers = mergeHeaders(buildBasicHeaders(), additionalHeaders);
+            requestBuilder = OkHttpRequestDecorator.decorate(headers, requestBuilder, _decorator);
             if (options.cacheControlHeadersEnabled()) {
                 requestBuilder.addHeader(HEADER_CACHE_CONTROL_NAME, HEADER_CACHE_CONTROL_VALUE);
             }
@@ -128,8 +128,8 @@ public class OkHttpClientImpl implements SplitHttpClient {
         try {
             okhttp3.Request.Builder requestBuilder = getRequestBuilder();
             requestBuilder.url(url.toString());
-            setBasicHeaders(requestBuilder);
-            setAdditionalAndDecoratedHeaders(requestBuilder, additionalHeaders);
+            Map<String, List<String>> headers = mergeHeaders(buildBasicHeaders(), additionalHeaders);
+            requestBuilder = OkHttpRequestDecorator.decorate(headers, requestBuilder, _decorator);
             requestBuilder.addHeader("Accept-Encoding", "gzip");
             requestBuilder.addHeader("Content-Type", "application/json");
             RequestBody postBody = RequestBody.create(MediaType.parse("application/json; charset=utf-16"), entity);
@@ -168,25 +168,31 @@ public class OkHttpClientImpl implements SplitHttpClient {
         return requestBuilder.build();
     }
 
-    protected void setBasicHeaders(okhttp3.Request.Builder requestBuilder) {
-        requestBuilder.addHeader(HEADER_API_KEY, "Bearer " + _apikey);
-        requestBuilder.addHeader(HEADER_CLIENT_VERSION, _metadata.getSdkVersion());
-        requestBuilder.addHeader(HEADER_CLIENT_MACHINE_IP, _metadata.getMachineIp());
-        requestBuilder.addHeader(HEADER_CLIENT_MACHINE_NAME, _metadata.getMachineName());
-        requestBuilder.addHeader(HEADER_CLIENT_KEY, _apikey.length() > 4
+    private Map<String, List<String>> buildBasicHeaders() {
+        Map<String, List<String>> h = new HashMap<>();
+        h.put(HEADER_API_KEY, Collections.singletonList("Bearer " + _apikey));
+        h.put(HEADER_CLIENT_VERSION, Collections.singletonList(_metadata.getSdkVersion()));
+        h.put(HEADER_CLIENT_MACHINE_IP, Collections.singletonList(_metadata.getMachineIp()));
+        h.put(HEADER_CLIENT_MACHINE_NAME, Collections.singletonList(_metadata.getMachineName()));
+        h.put(HEADER_CLIENT_KEY, Collections.singletonList(_apikey.length() > 4
                 ? _apikey.substring(_apikey.length() - 4)
-                : _apikey);
+                : _apikey));
+        return h;
     }
 
-    protected void setAdditionalAndDecoratedHeaders(okhttp3.Request.Builder requestBuilder,
-            Map<String, List<String>> additionalHeaders) {
-        if (additionalHeaders != null) {
-            for (Map.Entry<String, List<String>> entry : additionalHeaders.entrySet()) {
-                for (String value : entry.getValue()) {
-                    requestBuilder.addHeader(entry.getKey(), value);
-                }
-            }
+    private static Map<String, List<String>> mergeHeaders(Map<String, List<String>> headers,
+            Map<String, List<String>> toAdd) {
+        if (toAdd == null || toAdd.size() == 0) {
+            return headers;
         }
+
+        for (Map.Entry<String, List<String>> entry : toAdd.entrySet()) {
+            headers.computeIfPresent(entry.getKey(),
+                    (k, oldValue) -> Stream.concat(oldValue.stream(), entry.getValue().stream())
+                            .collect(Collectors.toList()));
+        }
+
+        return headers;
     }
 
     protected SplitHttpResponse.Header[] getResponseHeaders(Response response) {

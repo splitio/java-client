@@ -1,6 +1,7 @@
 package io.split.service;
 
 import io.split.client.RequestDecorator;
+import io.split.client.utils.ApacheRequestDecorator;
 import io.split.client.utils.SDKMetadata;
 import io.split.client.utils.Utils;
 import io.split.engine.common.FetchOptions;
@@ -76,7 +77,7 @@ public final class SplitHttpClientImpl implements SplitHttpClient {
                 request.setHeader(HEADER_CACHE_CONTROL_NAME, HEADER_CACHE_CONTROL_VALUE);
             }
 
-            _requestDecorator.decorateHeaders(request);
+            request = (HttpGet) ApacheRequestDecorator.decorate(request, _requestDecorator);
 
             response = _client.execute(request);
 
@@ -121,7 +122,7 @@ public final class SplitHttpClientImpl implements SplitHttpClient {
                 }
             }
             request.setEntity(HttpEntities.create(body, ContentType.APPLICATION_JSON));
-            request = (HttpPost) _requestDecorator.decorateHeaders(request);
+            request = (HttpPost) ApacheRequestDecorator.decorate(request, _requestDecorator);
 
             response = _client.execute(request);
 
