@@ -7,6 +7,7 @@ import io.split.service.SplitHttpClient;
 
 import okhttp3.*;
 import okhttp3.logging.HttpLoggingInterceptor;
+import okhttp3.MediaType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -14,6 +15,7 @@ import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.net.Proxy;
 import java.net.URI;
+import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -130,12 +132,10 @@ public class OkHttpClientImpl implements SplitHttpClient {
             setAdditionalAndDecoratedHeaders(requestBuilder, additionalHeaders);
             requestBuilder.addHeader("Accept-Encoding", "gzip");
             requestBuilder.addHeader("Content-Type", "application/json");
-            // String post = EntityUtils.toString((HttpEntity) entity);
-            RequestBody postBody = RequestBody.create(entity.getBytes());
+            RequestBody postBody = RequestBody.create(MediaType.parse("application/json; charset=utf-16"), entity);
             requestBuilder.post(postBody);
 
             Request request = requestBuilder.build();
-            System.out.println(request);
             _log.debug(String.format("Request Headers: %s", request.headers()));
 
             Response response = httpClient.newCall(request).execute();
