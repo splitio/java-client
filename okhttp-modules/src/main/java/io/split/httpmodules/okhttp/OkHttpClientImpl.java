@@ -45,11 +45,15 @@ public class OkHttpClientImpl implements SplitHttpClient {
         _apikey = apiToken;
         _metadata = sdkMetadata;
         _decorator = decorator;
-        httpClient = initializeClient(proxy, proxyAuthKerberosPrincipalName, debugEnabled,
+        setHttpClient(proxy, proxyAuthKerberosPrincipalName, debugEnabled,
                 readTimeout, connectionTimeout);
 
     }
-
+    protected void setHttpClient(Proxy proxy, String proxyAuthKerberosPrincipalName, boolean debugEnabled,
+                                 int readTimeout, int connectionTimeout) throws IOException {
+        httpClient = initializeClient(proxy, proxyAuthKerberosPrincipalName, debugEnabled,
+                readTimeout, connectionTimeout);
+    }
     protected OkHttpClient initializeClient(Proxy proxy, String proxyAuthKerberosPrincipalName, boolean debugEnabled,
             int readTimeout, int connectionTimeout) throws IOException {
         HttpLoggingInterceptor logging = new HttpLoggingInterceptor();
