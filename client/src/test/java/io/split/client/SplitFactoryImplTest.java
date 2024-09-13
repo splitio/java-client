@@ -2,10 +2,7 @@ package io.split.client;
 
 import io.split.client.impressions.ImpressionsManager;
 import io.split.client.utils.FileTypeEnum;
-import io.split.client.utils.SDKMetadata;
 import io.split.integrations.IntegrationsConfig;
-import io.split.service.HttpAuthScheme;
-import io.split.service.SplitHttpClientKerberosImpl;
 import io.split.storages.enums.OperationMode;
 import io.split.storages.pluggable.domain.UserStorageWrapper;
 import io.split.telemetry.storage.TelemetryStorage;
@@ -14,10 +11,11 @@ import junit.framework.TestCase;
 import org.junit.Assert;
 import org.junit.Test;
 import org.mockito.Mockito;
+import static org.mockito.Mockito.when;
 import pluggable.CustomStorageWrapper;
 
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
@@ -25,7 +23,6 @@ import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.net.URISyntaxException;
 
-import static io.split.client.SplitClientConfig.splitSdkVersion;
 
 public class SplitFactoryImplTest extends TestCase {
     public static final String API_KEY ="29013ionasdasd09u";
@@ -140,7 +137,7 @@ public class SplitFactoryImplTest extends TestCase {
         CustomStorageWrapper customStorageWrapper = Mockito.mock(CustomStorageWrapper.class);
         UserStorageWrapper userStorageWrapper = Mockito.mock(UserStorageWrapper.class);
         TelemetrySynchronizer telemetrySynchronizer = Mockito.mock(TelemetrySynchronizer.class);
-        Mockito.when(userStorageWrapper.connect()).thenReturn(true);
+        when(userStorageWrapper.connect()).thenReturn(true);
 
         SplitClientConfig splitClientConfig = SplitClientConfig.builder()
                 .enableDebug()
@@ -178,7 +175,7 @@ public class SplitFactoryImplTest extends TestCase {
     public void testFactoryConsumerInstantiationRetryReadiness() throws Exception {
         CustomStorageWrapper customStorageWrapper = Mockito.mock(CustomStorageWrapper.class);
         UserStorageWrapper userStorageWrapper = Mockito.mock(UserStorageWrapper.class);
-        Mockito.when(userStorageWrapper.connect()).thenReturn(false).thenReturn(true);
+        when(userStorageWrapper.connect()).thenReturn(false).thenReturn(true);
         SplitClientConfig splitClientConfig = SplitClientConfig.builder()
                 .enableDebug()
                 .impressionsMode(ImpressionsManager.Mode.DEBUG)
@@ -207,7 +204,7 @@ public class SplitFactoryImplTest extends TestCase {
     public void testFactoryConsumerDestroy() throws NoSuchFieldException, URISyntaxException, IllegalAccessException {
         CustomStorageWrapper customStorageWrapper = Mockito.mock(CustomStorageWrapper.class);
         UserStorageWrapper userStorageWrapper = Mockito.mock(UserStorageWrapper.class);
-        Mockito.when(userStorageWrapper.connect()).thenReturn(false).thenReturn(true);
+        when(userStorageWrapper.connect()).thenReturn(false).thenReturn(true);
         SplitClientConfig splitClientConfig = SplitClientConfig.builder()
                 .enableDebug()
                 .impressionsMode(ImpressionsManager.Mode.DEBUG)
@@ -233,7 +230,7 @@ public class SplitFactoryImplTest extends TestCase {
     }
 
     @Test
-    public void testLocalhostLegacy() throws URISyntaxException, NoSuchMethodException, InvocationTargetException, IllegalAccessException {
+    public void testLocalhostLegacy() throws URISyntaxException, NoSuchMethodException, InvocationTargetException, IllegalAccessException, IOException {
         SplitClientConfig splitClientConfig = SplitClientConfig.builder()
                 .setBlockUntilReadyTimeout(10000)
                 .build();
@@ -246,7 +243,7 @@ public class SplitFactoryImplTest extends TestCase {
     }
 
     @Test
-    public void testLocalhostYaml() throws URISyntaxException, NoSuchMethodException, InvocationTargetException, IllegalAccessException {
+    public void testLocalhostYaml() throws URISyntaxException, NoSuchMethodException, InvocationTargetException, IllegalAccessException, IOException {
         SplitClientConfig splitClientConfig = SplitClientConfig.builder()
                 .splitFile("src/test/resources/split.yaml")
                 .setBlockUntilReadyTimeout(10000)
@@ -260,7 +257,7 @@ public class SplitFactoryImplTest extends TestCase {
     }
 
     @Test
-    public void testLocalhosJson() throws URISyntaxException, NoSuchMethodException, InvocationTargetException, IllegalAccessException {
+    public void testLocalhosJson() throws URISyntaxException, NoSuchMethodException, InvocationTargetException, IllegalAccessException, IOException {
         SplitClientConfig splitClientConfig = SplitClientConfig.builder()
                 .splitFile("src/test/resources/split_init.json")
                 .setBlockUntilReadyTimeout(10000)
@@ -275,7 +272,7 @@ public class SplitFactoryImplTest extends TestCase {
 
     @Test
     public void testLocalhostYamlInputStream() throws URISyntaxException, NoSuchMethodException, InvocationTargetException,
-            IllegalAccessException, FileNotFoundException {
+            IllegalAccessException, IOException {
         InputStream inputStream = new FileInputStream("src/test/resources/split.yaml");
         SplitClientConfig splitClientConfig = SplitClientConfig.builder()
                 .splitFile(inputStream, FileTypeEnum.YAML)
@@ -291,7 +288,7 @@ public class SplitFactoryImplTest extends TestCase {
 
     @Test
     public void testLocalhosJsonInputStream() throws URISyntaxException, NoSuchMethodException, InvocationTargetException,
-            IllegalAccessException, FileNotFoundException {
+            IllegalAccessException, IOException {
         InputStream inputStream = new FileInputStream("src/test/resources/split_init.json");
         SplitClientConfig splitClientConfig = SplitClientConfig.builder()
                 .splitFile(inputStream, FileTypeEnum.JSON)
@@ -306,7 +303,7 @@ public class SplitFactoryImplTest extends TestCase {
     }
 
     @Test
-    public void testLocalhosJsonInputStreamNull() throws URISyntaxException, NoSuchMethodException, InvocationTargetException, IllegalAccessException {
+    public void testLocalhosJsonInputStreamNull() throws URISyntaxException, NoSuchMethodException, InvocationTargetException, IllegalAccessException, IOException {
         SplitClientConfig splitClientConfig = SplitClientConfig.builder()
                 .splitFile(null, FileTypeEnum.JSON)
                 .setBlockUntilReadyTimeout(10000)
@@ -321,7 +318,7 @@ public class SplitFactoryImplTest extends TestCase {
 
     @Test
     public void testLocalhosJsonInputStreamAndFileTypeNull() throws URISyntaxException, NoSuchMethodException, InvocationTargetException,
-            IllegalAccessException, FileNotFoundException {
+            IllegalAccessException, IOException {
         InputStream inputStream = new FileInputStream("src/test/resources/split_init.json");
         SplitClientConfig splitClientConfig = SplitClientConfig.builder()
                 .splitFile(inputStream, null)
@@ -337,7 +334,7 @@ public class SplitFactoryImplTest extends TestCase {
 
     @Test
     public void testLocalhosJsonInputStreamNullAndFileTypeNull() throws URISyntaxException, NoSuchMethodException, InvocationTargetException,
-            IllegalAccessException {
+            IllegalAccessException, IOException {
         SplitClientConfig splitClientConfig = SplitClientConfig.builder()
                 .splitFile(null, null)
                 .setBlockUntilReadyTimeout(10000)
@@ -348,20 +345,5 @@ public class SplitFactoryImplTest extends TestCase {
         method.setAccessible(true);
         Object splitChangeFetcher = method.invoke(splitFactory, splitClientConfig);
         Assert.assertTrue(splitChangeFetcher instanceof LegacyLocalhostSplitChangeFetcher);
-    }
-
-    @Test
-    public void testFactoryKerberosInstance() throws URISyntaxException, NoSuchMethodException, InvocationTargetException, IllegalAccessException {
-        SplitClientConfig splitClientConfig = SplitClientConfig.builder()
-                .setBlockUntilReadyTimeout(10000)
-                .authScheme(HttpAuthScheme.KERBEROS)
-                .build();
-        SplitFactoryImpl splitFactory = new SplitFactoryImpl("asdf", splitClientConfig);
-
-        Method method = SplitFactoryImpl.class.getDeclaredMethod("buildSplitHttpClient", String.class,
-                SplitClientConfig.class, SDKMetadata.class, RequestDecorator.class);
-        method.setAccessible(true);
-        Object SplitHttpClient = method.invoke(splitFactory,  "asdf", splitClientConfig, new SDKMetadata(splitSdkVersion, "", ""), new RequestDecorator(null));
-        Assert.assertTrue(SplitHttpClient instanceof SplitHttpClientKerberosImpl);
     }
 }

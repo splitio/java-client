@@ -5,7 +5,7 @@
     <parent>
         <groupId>io.split.client</groupId>
         <artifactId>java-client-parent</artifactId>
-        <version>4.13.0-rc1</version>
+        <version>4.13.0</version>
     </parent>
     <artifactId>java-client</artifactId>
     <packaging>jar</packaging>
@@ -64,6 +64,7 @@
                                     <include>io.split.schemas:*</include>
                                     <include>io.codigo.grammar:*</include>
                                     <include>org.apache.httpcomponents.*</include>
+                                    <include>org.apache.hc.*</include>
                                     <include>com.google.*</include>
                                     <include>org.yaml:snakeyaml:*</include>
 
@@ -236,6 +237,18 @@
             <groupId>org.awaitility</groupId>
             <artifactId>awaitility</artifactId>
             <version>4.0.3</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.powermock</groupId>
+            <artifactId>powermock-module-junit4</artifactId>
+            <version>1.7.4</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.powermock</groupId>
+            <artifactId>powermock-api-mockito</artifactId>
+            <version>1.7.4</version>
             <scope>test</scope>
         </dependency>
     </dependencies>

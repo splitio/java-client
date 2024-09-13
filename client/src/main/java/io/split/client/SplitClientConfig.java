@@ -4,9 +4,9 @@ import io.split.client.impressions.ImpressionListener;
 import io.split.client.impressions.ImpressionsManager;
 import io.split.client.utils.FileTypeEnum;
 import io.split.integrations.IntegrationsConfig;
+import io.split.service.CustomHttpModule;
 import io.split.storages.enums.OperationMode;
 import io.split.storages.enums.StorageMode;
-import io.split.service.HttpAuthScheme;
 import org.apache.hc.core5.http.HttpHost;
 import pluggable.CustomStorageWrapper;
 
@@ -92,8 +92,7 @@ public class SplitClientConfig {
     private final HashSet<String> _flagSetsFilter;
     private final int _invalidSets;
     private final CustomHeaderDecorator _customHeaderDecorator;
-    private final HttpAuthScheme _authScheme;
-
+    private final CustomHttpModule _alternativeHTTPModule;
 
     public static Builder builder() {
         return new Builder();
@@ -151,7 +150,7 @@ public class SplitClientConfig {
                               HashSet<String> flagSetsFilter,
                               int invalidSets,
                               CustomHeaderDecorator customHeaderDecorator,
-                              HttpAuthScheme authScheme) {
+                              CustomHttpModule alternativeHTTPModule) {
         _endpoint = endpoint;
         _eventsEndpoint = eventsEndpoint;
         _featuresRefreshRate = pollForFeatureChangesEveryNSeconds;
@@ -204,7 +203,7 @@ public class SplitClientConfig {
         _flagSetsFilter = flagSetsFilter;
         _invalidSets = invalidSets;
         _customHeaderDecorator = customHeaderDecorator;
-        _authScheme = authScheme;
+        _alternativeHTTPModule = alternativeHTTPModule;
 
         Properties props = new Properties();
         try {
@@ -412,10 +411,8 @@ public class SplitClientConfig {
     public CustomHeaderDecorator customHeaderDecorator() {
         return _customHeaderDecorator;
     }
-    public HttpAuthScheme authScheme() {
-        return _authScheme;
-    }
 
+    public CustomHttpModule alternativeHTTPModule() { return _alternativeHTTPModule; }
     public static final class Builder {
 
         private String _endpoint = SDK_ENDPOINT;
@@ -473,7 +470,7 @@ public class SplitClientConfig {
         private HashSet<String> _flagSetsFilter = new HashSet<>();
         private int _invalidSetsCount = 0;
         private CustomHeaderDecorator _customHeaderDecorator = null;
-        private HttpAuthScheme _authScheme = null;
+        private CustomHttpModule _alternativeHTTPModule = null;
 
         public Builder() {
         }
@@ -969,13 +966,13 @@ public class SplitClientConfig {
         }
 
         /**
-         * Authentication Scheme
+         * Alternative Http Client
          *
-         * @param authScheme
+         * @param alternativeHTTPModule
          * @return this builder
          */
-        public Builder authScheme(HttpAuthScheme authScheme) {
-            _authScheme = authScheme;
+        public Builder alternativeHTTPModule(CustomHttpModule alternativeHTTPModule) {
+            _alternativeHTTPModule = alternativeHTTPModule;
             return this;
         }
 
@@ -990,22 +987,13 @@ public class SplitClientConfig {
             return this;
         }
 
-        public SplitClientConfig build() {
+        private void verifyRates() {
             if (_featuresRefreshRate < 5 ) {
                 throw new IllegalArgumentException("featuresRefreshRate must be >= 5: " + _featuresRefreshRate);
             }
 
             if (_segmentsRefreshRate < 30) {
                 throw new IllegalArgumentException("segmentsRefreshRate must be >= 30: " + _segmentsRefreshRate);
-            }
-
-            switch (_impressionsMode) {
-                case OPTIMIZED:
-                    _impressionsRefreshRate = (_impressionsRefreshRate <= 0) ? 300 : Math.max(60, _impressionsRefreshRate);
-                    break;
-                case DEBUG:
-                    _impressionsRefreshRate = (_impressionsRefreshRate <= 0) ? 60 : _impressionsRefreshRate;
-                    break;
             }
 
             if (_eventSendIntervalInMillis < 1000) {
@@ -1015,19 +1003,12 @@ public class SplitClientConfig {
             if (_metricsRefreshRate < 30) {
                 throw new IllegalArgumentException("metricsRefreshRate must be >= 30: " + _metricsRefreshRate);
             }
-
-            if (_impressionsQueueSize <=0 ) {
-                throw new IllegalArgumentException("impressionsQueueSize must be > 0: " + _impressionsQueueSize);
+            if(_telemetryRefreshRate < 60) {
+                throw new IllegalStateException("_telemetryRefreshRate must be >= 60");
             }
+        }
 
-            if (_connectionTimeout <= 0) {
-                throw new IllegalArgumentException("connectionTimeOutInMs must be > 0: " + _connectionTimeout);
-            }
-
-            if (_readTimeout <= 0) {
-                throw new IllegalArgumentException("readTimeout must be > 0: " + _readTimeout);
-            }
-
+        private void verifyEndPoints() {
             if (_endpoint == null) {
                 throw new IllegalArgumentException("endpoint must not be null");
             }
@@ -1038,18 +1019,6 @@ public class SplitClientConfig {
 
             if (_endpointSet && !_eventsEndpointSet) {
                 throw new IllegalArgumentException("If endpoint is set, you must also set the events endpoint");
-            }
-
-            if (_numThreadsForSegmentFetch <= 0) {
-                throw new IllegalArgumentException("Number of threads for fetching segments MUST be greater than zero");
-            }
-
-            if (_authRetryBackoffBase <= 0) {
-                throw new IllegalArgumentException("authRetryBackoffBase: must be >= 1");
-            }
-
-            if (_streamingReconnectBackoffBase <= 0) {
-                throw new IllegalArgumentException("streamingReconnectBackoffBase: must be >= 1");
             }
 
             if (_authServiceURL == null) {
@@ -1063,21 +1032,25 @@ public class SplitClientConfig {
             if (_telemetryURl == null) {
                 throw new IllegalArgumentException("telemetryURl must not be null");
             }
+        }
 
-            if (_onDemandFetchRetryDelayMs <= 0) {
-                throw new IllegalStateException("streamingRetryDelay must be > 0");
+        private void verifyAllModes() {
+            switch (_impressionsMode) {
+                case OPTIMIZED:
+                    _impressionsRefreshRate = (_impressionsRefreshRate <= 0) ? 300 : Math.max(60, _impressionsRefreshRate);
+                    break;
+                case DEBUG:
+                    _impressionsRefreshRate = (_impressionsRefreshRate <= 0) ? 60 : _impressionsRefreshRate;
+                    break;
+                case NONE:
+                    break;
             }
 
-            if(_onDemandFetchMaxRetries <= 0) {
-                throw new IllegalStateException("_onDemandFetchMaxRetries must be > 0");
+            if (_impressionsQueueSize <=0 ) {
+                throw new IllegalArgumentException("impressionsQueueSize must be > 0: " + _impressionsQueueSize);
             }
-
             if(_storageMode == null) {
                 _storageMode = StorageMode.MEMORY;
-            }
-            
-            if(_telemetryRefreshRate < 60) {
-                throw new IllegalStateException("_telemetryRefreshRate must be >= 60");
             }
 
             if(OperationMode.CONSUMER.equals(_operationMode)){
@@ -1086,8 +1059,56 @@ public class SplitClientConfig {
                 }
                 _storageMode = StorageMode.PLUGGABLE;
             }
+        }
 
-            return new SplitClientConfig(
+        private void verifyNetworkParams() {
+            if (_connectionTimeout <= 0) {
+                throw new IllegalArgumentException("connectionTimeOutInMs must be > 0: " + _connectionTimeout);
+            }
+
+            if (_readTimeout <= 0) {
+                throw new IllegalArgumentException("readTimeout must be > 0: " + _readTimeout);
+            }
+            if (_authRetryBackoffBase <= 0) {
+                throw new IllegalArgumentException("authRetryBackoffBase: must be >= 1");
+            }
+
+            if (_streamingReconnectBackoffBase <= 0) {
+                throw new IllegalArgumentException("streamingReconnectBackoffBase: must be >= 1");
+            }
+
+            if (_onDemandFetchRetryDelayMs <= 0) {
+                throw new IllegalStateException("streamingRetryDelay must be > 0");
+            }
+
+            if(_onDemandFetchMaxRetries <= 0) {
+                throw new IllegalStateException("_onDemandFetchMaxRetries must be > 0");
+            }
+        }
+
+        private void verifyAlternativeClient() {
+            if (_alternativeHTTPModule != null && _streamingEnabled) {
+                throw new IllegalArgumentException("Streaming feature is not supported with Alternative HTTP Client");
+            }
+        }
+
+        public SplitClientConfig build() {
+
+            verifyRates();
+
+            verifyAllModes();
+
+            verifyEndPoints();
+
+            verifyNetworkParams();
+
+            verifyAlternativeClient();
+
+            if (_numThreadsForSegmentFetch <= 0) {
+                throw new IllegalArgumentException("Number of threads for fetching segments MUST be greater than zero");
+            }
+
+                return new SplitClientConfig(
                     _endpoint,
                     _eventsEndpoint,
                     _featuresRefreshRate,
@@ -1140,7 +1161,7 @@ public class SplitClientConfig {
                     _flagSetsFilter,
                     _invalidSetsCount,
                     _customHeaderDecorator,
-                    _authScheme);
+                    _alternativeHTTPModule);
         }
     }
 }

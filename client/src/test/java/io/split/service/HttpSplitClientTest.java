@@ -16,7 +16,7 @@ import org.apache.hc.client5.http.classic.methods.HttpPost;
 import org.apache.hc.client5.http.classic.methods.HttpUriRequest;
 import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
 import org.apache.hc.core5.http.HttpStatus;
-import org.apache.hc.core5.http.Header;
+//import org.apache.hc.core5.http.Header;
 import org.junit.Assert;
 import org.junit.Test;
 import org.mockito.ArgumentCaptor;
@@ -57,9 +57,9 @@ public class HttpSplitClientTest {
         HttpUriRequest request = captor.getValue();
         assertThat(request.getFirstHeader("AdditionalHeader").getValue(), is(equalTo("add")));
 
-        Header[] headers = splitHttpResponse.responseHeaders();
+        SplitHttpResponse.Header[] headers = splitHttpResponse.responseHeaders();
         assertThat(headers[0].getName(), is(equalTo("Via")));
-        assertThat(headers[0].getValue(), is(equalTo("HTTP/1.1 m_proxy_rio1")));
+        assertThat(headers[0].getValues().get(0), is(equalTo("HTTP/1.1 m_proxy_rio1")));
         Assert.assertNotNull(change);
         Assert.assertEquals(1, change.splits.size());
         Assert.assertNotNull(change.splits.get(0));
@@ -122,7 +122,7 @@ public class HttpSplitClientTest {
 
         Map<String, List<String>> additionalHeaders = Collections.singletonMap("SplitSDKImpressionsMode",
                 Collections.singletonList("OPTIMIZED"));
-        SplitHttpResponse splitHttpResponse = splitHtpClient.post(rootTarget, Utils.toJsonEntity(toSend),
+        SplitHttpResponse splitHttpResponse = splitHtpClient.post(rootTarget, Json.toJson(toSend),
                 additionalHeaders);
 
         // Capture outgoing request and validate it
@@ -152,7 +152,7 @@ public class HttpSplitClientTest {
 
         SplitHttpClient splitHtpClient = SplitHttpClientImpl.create(httpClientMock, decorator, "qwerty", metadata());
         SplitHttpResponse splitHttpResponse = splitHtpClient.post(rootTarget,
-                Utils.toJsonEntity(Arrays.asList(new String[] { "A", "B", "C", "D" })), null);
+                Json.toJson(Arrays.asList(new String[] { "A", "B", "C", "D" })), null);
         Assert.assertEquals(500, (long) splitHttpResponse.statusCode());
 
     }
@@ -165,7 +165,7 @@ public class HttpSplitClientTest {
                 HttpStatus.SC_INTERNAL_SERVER_ERROR);
 
         SplitHttpClient splitHtpClient = SplitHttpClientImpl.create(httpClientMock, null, "qwerty", metadata());
-        splitHtpClient.post(rootTarget, Utils.toJsonEntity(Arrays.asList(new String[] { "A", "B", "C", "D" })), null);
+        splitHtpClient.post(rootTarget, Json.toJson(Arrays.asList(new String[] { "A", "B", "C", "D" })), null);
     }
 
     private SDKMetadata metadata() {

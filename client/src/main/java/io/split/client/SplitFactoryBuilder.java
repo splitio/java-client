@@ -2,6 +2,7 @@ package io.split.client;
 
 import io.split.inputValidation.ApiKeyValidator;
 import io.split.grammar.Treatments;
+import io.split.service.SplitHttpClient;
 import io.split.storages.enums.StorageMode;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
