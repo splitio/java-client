@@ -4,7 +4,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>io.split.client</groupId>
     <artifactId>java-client-parent</artifactId>
-    <version>4.12.1</version>
+    <version>4.13.0</version>
     <dependencyManagement>
         <dependencies>
             <dependency>
@@ -81,10 +81,11 @@
         <maven.compiler.target>1.8</maven.compiler.target>
     </properties>
     <modules>
-        <module>testing</module>
-        <module>client</module>
         <module>pluggable-storage</module>
         <module>redis-wrapper</module>
+        <module>testing</module>
+        <module>okhttp-modules</module>
+        <module>client</module>
     </modules>
     <build>
         <plugins>

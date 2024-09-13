@@ -2,6 +2,7 @@ package io.split.engine.sse.client;
 
 import com.google.common.base.Strings;
 import io.split.client.RequestDecorator;
+import io.split.client.utils.ApacheRequestDecorator;
 import io.split.telemetry.domain.StreamingEvent;
 import io.split.telemetry.domain.enums.StreamEventsEnum;
 import io.split.telemetry.storage.TelemetryRuntimeProducer;
@@ -64,11 +65,11 @@ public class SSEClient {
     private final TelemetryRuntimeProducer _telemetryRuntimeProducer;
 
     public SSEClient(Function<RawEvent, Void> eventCallback,
-                     Function<StatusMessage, Void> statusCallback,
-                     CloseableHttpClient client,
-                     TelemetryRuntimeProducer telemetryRuntimeProducer,
-                     ThreadFactory threadFactory,
-                     RequestDecorator requestDecorator) {
+            Function<StatusMessage, Void> statusCallback,
+            CloseableHttpClient client,
+            TelemetryRuntimeProducer telemetryRuntimeProducer,
+            ThreadFactory threadFactory,
+            RequestDecorator requestDecorator) {
         _eventCallback = eventCallback;
         _statusCallback = statusCallback;
         _client = client;
@@ -96,7 +97,7 @@ public class SSEClient {
                 }
             } catch (InterruptedException e) {
                 Thread.currentThread().interrupt();
-                if(e.getMessage() == null){
+                if (e.getMessage() == null) {
                     _log.info("The thread was interrupted while opening SSEClient");
                     return false;
                 }
@@ -152,31 +153,41 @@ public class SSEClient {
                     _log.debug(exc.getMessage());
                     if (SOCKET_CLOSED_MESSAGE.equals(exc.getMessage())) { // Connection closed by us
                         _statusCallback.apply(StatusMessage.FORCED_STOP);
-                        _telemetryRuntimeProducer.recordStreamingEvents(new StreamingEvent(StreamEventsEnum.SSE_CONNECTION_ERROR.getType(),
-                                StreamEventsEnum.SseConnectionErrorValues.REQUESTED_CONNECTION_ERROR.getValue(), System.currentTimeMillis()));
+                        _telemetryRuntimeProducer.recordStreamingEvents(
+                                new StreamingEvent(StreamEventsEnum.SSE_CONNECTION_ERROR.getType(),
+                                        StreamEventsEnum.SseConnectionErrorValues.REQUESTED_CONNECTION_ERROR.getValue(),
+                                        System.currentTimeMillis()));
                         return;
                     }
                     // Connection closed by server
                     _statusCallback.apply(StatusMessage.RETRYABLE_ERROR);
-                    _telemetryRuntimeProducer.recordStreamingEvents(new StreamingEvent(StreamEventsEnum.SSE_CONNECTION_ERROR.getType(),
-                            StreamEventsEnum.SseConnectionErrorValues.NON_REQUESTED_CONNECTION_ERROR.getValue(), System.currentTimeMillis()));
+                    _telemetryRuntimeProducer
+                            .recordStreamingEvents(new StreamingEvent(StreamEventsEnum.SSE_CONNECTION_ERROR.getType(),
+                                    StreamEventsEnum.SseConnectionErrorValues.NON_REQUESTED_CONNECTION_ERROR.getValue(),
+                                    System.currentTimeMillis()));
                     return;
                 } catch (IOException exc) { // Other type of connection error
-                    if(!_forcedStop.get()) {
+                    if (!_forcedStop.get()) {
                         _log.debug(String.format("SSE connection ended abruptly: %s. Retying", exc.getMessage()));
-                        _telemetryRuntimeProducer.recordStreamingEvents(new StreamingEvent(StreamEventsEnum.SSE_CONNECTION_ERROR.getType(),
-                                StreamEventsEnum.SseConnectionErrorValues.REQUESTED_CONNECTION_ERROR.getValue(), System.currentTimeMillis()));
+                        _telemetryRuntimeProducer.recordStreamingEvents(
+                                new StreamingEvent(StreamEventsEnum.SSE_CONNECTION_ERROR.getType(),
+                                        StreamEventsEnum.SseConnectionErrorValues.REQUESTED_CONNECTION_ERROR.getValue(),
+                                        System.currentTimeMillis()));
                         _statusCallback.apply(StatusMessage.RETRYABLE_ERROR);
                         return;
                     }
 
-                    _telemetryRuntimeProducer.recordStreamingEvents(new StreamingEvent(StreamEventsEnum.SSE_CONNECTION_ERROR.getType(),
-                            StreamEventsEnum.SseConnectionErrorValues.NON_REQUESTED_CONNECTION_ERROR.getValue(), System.currentTimeMillis()));
+                    _telemetryRuntimeProducer
+                            .recordStreamingEvents(new StreamingEvent(StreamEventsEnum.SSE_CONNECTION_ERROR.getType(),
+                                    StreamEventsEnum.SseConnectionErrorValues.NON_REQUESTED_CONNECTION_ERROR.getValue(),
+                                    System.currentTimeMillis()));
                 }
             }
         } catch (Exception e) { // Any other error non related to the connection disables streaming altogether
-            _telemetryRuntimeProducer.recordStreamingEvents(new StreamingEvent(StreamEventsEnum.SSE_CONNECTION_ERROR.getType(),
-                    StreamEventsEnum.SseConnectionErrorValues.NON_REQUESTED_CONNECTION_ERROR.getValue(), System.currentTimeMillis()));
+            _telemetryRuntimeProducer
+                    .recordStreamingEvents(new StreamingEvent(StreamEventsEnum.SSE_CONNECTION_ERROR.getType(),
+                            StreamEventsEnum.SseConnectionErrorValues.NON_REQUESTED_CONNECTION_ERROR.getValue(),
+                            System.currentTimeMillis()));
             _log.warn(e.getMessage(), e);
             _statusCallback.apply(StatusMessage.NONRETRYABLE_ERROR);
         } finally {
@@ -194,12 +205,13 @@ public class SSEClient {
 
     private boolean establishConnection(URI uri, CountDownLatch signal) {
         HttpGet request = new HttpGet(uri);
-        request = (HttpGet) _requestDecorator.decorateHeaders(request);
+        request = (HttpGet) ApacheRequestDecorator.decorate(request, _requestDecorator);
         _ongoingRequest.set(request);
         try {
             _ongoingResponse.set(_client.execute(_ongoingRequest.get()));
             if (_ongoingResponse.get().getCode() != 200) {
-                _log.error(String.format("Establishing connection, code error: %s. The url is %s", _ongoingResponse.get().getCode(), uri.toURL()));
+                _log.error(String.format("Establishing connection, code error: %s. The url is %s",
+                        _ongoingResponse.get().getCode(), uri.toURL()));
                 return false;
             }
             _state.set(ConnectionState.OPEN);
