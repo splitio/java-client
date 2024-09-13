@@ -37,7 +37,7 @@ public final class RequestDecorator {
             return new RequestContext(_headerDecorator.getHeaderOverrides(request)
                     .entrySet()
                     .stream()
-                    .filter(e -> !forbiddenHeaders.contains(e.getKey()))
+                    .filter(e -> !forbiddenHeaders.contains(e.getKey().toLowerCase()))
                     .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue)));
         } catch (Exception e) {
             throw new IllegalArgumentException(

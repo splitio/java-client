@@ -1,17 +1,14 @@
-package io.split.client;
+package io.split.client.utils;
 
-import io.split.client.utils.ApacheRequestDecorator;
+import io.split.client.CustomHeaderDecorator;
+import io.split.client.RequestDecorator;
+import io.split.client.dtos.RequestContext;
 import org.apache.hc.client5.http.classic.methods.HttpGet;
 import org.apache.hc.client5.http.classic.methods.HttpPost;
 import org.apache.hc.core5.http.Header;
 import org.apache.hc.core5.http.ProtocolException;
 import org.junit.Assert;
 import org.junit.Test;
-
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.core.Is.is;
-
-import io.split.client.dtos.RequestContext;
 
 import java.util.List;
 import java.util.Arrays;
@@ -31,7 +28,7 @@ public class ApacheRequestDecoratorTest {
         request  = (HttpGet) apacheRequestDecorator.decorate(request, requestDecorator);
         Assert.assertEquals(1, request.getHeaders().length);
     }
-/*
+
     @Test
     public void testAddCustomHeaders() throws ProtocolException {
         class MyCustomHeaders implements CustomHeaderDecorator {
@@ -47,9 +44,11 @@ public class ApacheRequestDecoratorTest {
         }
         MyCustomHeaders myHeaders = new MyCustomHeaders();
         RequestDecorator decorator = new RequestDecorator(myHeaders);
+        ApacheRequestDecorator apacheRequestDecorator = new ApacheRequestDecorator();
+
         HttpGet request = new HttpGet("http://anyhost");
         request.addHeader("first", "myfirstheader");
-        request  = (HttpGet) decorator.decorateHeaders(request);
+        request  = (HttpGet) apacheRequestDecorator.decorate(request, decorator);
 
         Assert.assertEquals(4, request.getHeaders().length);
         Assert.assertEquals("1", request.getHeader("first").getValue());
@@ -61,7 +60,7 @@ public class ApacheRequestDecoratorTest {
 
         HttpPost request2 = new HttpPost("http://anyhost");
         request2.addHeader("myheader", "value");
-        request2  = (HttpPost) decorator.decorateHeaders(request2);
+        request2  = (HttpPost) apacheRequestDecorator.decorate(request2, decorator);
         Assert.assertEquals(5, request2.getHeaders().length);
     }
 
@@ -90,8 +89,9 @@ public class ApacheRequestDecoratorTest {
         }
         MyCustomHeaders myHeaders = new MyCustomHeaders();
         RequestDecorator decorator = new RequestDecorator(myHeaders);
+        ApacheRequestDecorator apacheRequestDecorator = new ApacheRequestDecorator();
         HttpGet request = new HttpGet("http://anyhost");
-        request  = (HttpGet) decorator.decorateHeaders(request);
+        request  = (HttpGet) apacheRequestDecorator.decorate(request, decorator);
         Assert.assertEquals(1, request.getHeaders().length);
         Assert.assertEquals(null, request.getHeader("SplitSDKVersion"));
     }
@@ -107,9 +107,8 @@ public class ApacheRequestDecoratorTest {
         }
         MyCustomHeaders myHeaders = new MyCustomHeaders();
         RequestDecorator decorator = new RequestDecorator(myHeaders);
+        ApacheRequestDecorator apacheRequestDecorator = new ApacheRequestDecorator();
         HttpGet request = new HttpGet("http://anyhost");
-        request  = (HttpGet) decorator.decorateHeaders(request);
+        request  = (HttpGet) apacheRequestDecorator.decorate(request, decorator);
     }
-
- */
 }

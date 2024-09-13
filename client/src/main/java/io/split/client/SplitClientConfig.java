@@ -1085,6 +1085,13 @@ public class SplitClientConfig {
                 throw new IllegalStateException("_onDemandFetchMaxRetries must be > 0");
             }
         }
+
+        private void verifyAlternativeClient() {
+            if (_alternativeHTTPModule != null && _streamingEnabled) {
+                throw new IllegalArgumentException("Streaming feature is not supported with Alternative HTTP Client");
+            }
+        }
+
         public SplitClientConfig build() {
 
             verifyRates();
@@ -1094,6 +1101,8 @@ public class SplitClientConfig {
             verifyEndPoints();
 
             verifyNetworkParams();
+
+            verifyAlternativeClient();
 
             if (_numThreadsForSegmentFetch <= 0) {
                 throw new IllegalArgumentException("Number of threads for fetching segments MUST be greater than zero");

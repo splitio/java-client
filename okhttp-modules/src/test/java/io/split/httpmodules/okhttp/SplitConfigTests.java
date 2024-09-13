@@ -28,4 +28,17 @@ public class SplitConfigTests {
         Assert.assertEquals(null, cfg.alternativeHTTPModule());
     }
 
+    @Test(expected = IllegalArgumentException.class)
+    public void checkStreamingEnabled() {
+        SplitClientConfig cfg = SplitClientConfig.builder()
+                .alternativeHTTPModule(OkHttpModule.builder()
+                        .proxyAuthScheme(ProxyAuthScheme.KERBEROS)
+                        .proxyAuthKerberosPrincipalName("bilal@bilal")
+                        .proxyHost("some-proxy")
+                        .proxyPort(3128)
+                        .debugEnabled()
+                        .build())
+                .streamingEnabled(true)
+                .build();
+    }
 }
