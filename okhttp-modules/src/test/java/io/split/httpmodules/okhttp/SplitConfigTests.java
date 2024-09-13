@@ -17,6 +17,7 @@ public class SplitConfigTests {
                         .debugEnabled()
                         .build()
                 )
+                .streamingEnabled(false)
                 .build();
         OkHttpModule module =  (OkHttpModule) cfg.alternativeHTTPModule();
         Assert.assertEquals(ProxyAuthScheme.KERBEROS, module.proxyAuthScheme());

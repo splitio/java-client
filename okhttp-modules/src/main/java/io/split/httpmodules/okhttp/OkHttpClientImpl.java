@@ -6,9 +6,14 @@ import io.split.client.utils.SDKMetadata;
 import io.split.engine.common.FetchOptions;
 import io.split.service.SplitHttpClient;
 
-import okhttp3.*;
+import okhttp3.Authenticator;
+import okhttp3.OkHttpClient;
 import okhttp3.logging.HttpLoggingInterceptor;
 import okhttp3.MediaType;
+import okhttp3.Request;
+import okhttp3.RequestBody;
+import okhttp3.Response;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

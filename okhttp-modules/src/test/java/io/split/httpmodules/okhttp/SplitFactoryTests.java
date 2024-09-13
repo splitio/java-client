@@ -57,6 +57,7 @@ public class SplitFactoryTests {
 
         SplitClientConfig cfg = SplitClientConfig.builder()
                 .alternativeHTTPModule(module)
+                .streamingEnabled(false)
                 .build();
 
         SplitFactoryImpl factory = (SplitFactoryImpl) SplitFactoryBuilder.build(apiToken, cfg);
