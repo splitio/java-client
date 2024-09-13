@@ -91,7 +91,19 @@ public class OkHttpClientImpl implements SplitHttpClient {
             okhttp3.Request.Builder requestBuilder = getRequestBuilder();
             requestBuilder.url(uri.toString());
             Map<String, List<String>> headers = mergeHeaders(buildBasicHeaders(), additionalHeaders);
-            requestBuilder = OkHttpRequestDecorator.decorate(headers, requestBuilder, _decorator);
+            Map<String, List<String>> decorateHeaders = OkHttpRequestDecorator.decorate(headers, _decorator);
+            Map<String, List<String>> finalHeaders;
+            if (decorateHeaders.isEmpty()) {
+                finalHeaders = headers;
+            } else {
+                finalHeaders = decorateHeaders;
+            }
+            for (Map.Entry<String, List<String>> e : finalHeaders.entrySet()) {
+                for (String headerValue : e.getValue()) {
+                    requestBuilder.addHeader(e.getKey(), headerValue);
+                }
+            }
+
             if (options.cacheControlHeadersEnabled()) {
                 requestBuilder.addHeader(HEADER_CACHE_CONTROL_NAME, HEADER_CACHE_CONTROL_VALUE);
             }
@@ -133,10 +145,21 @@ public class OkHttpClientImpl implements SplitHttpClient {
             okhttp3.Request.Builder requestBuilder = getRequestBuilder();
             requestBuilder.url(url.toString());
             Map<String, List<String>> headers = mergeHeaders(buildBasicHeaders(), additionalHeaders);
-            requestBuilder = OkHttpRequestDecorator.decorate(headers, requestBuilder, _decorator);
+            Map<String, List<String>> decorateHeaders = OkHttpRequestDecorator.decorate(headers, _decorator);
+            Map<String, List<String>> finalHeaders;
+            if (decorateHeaders.isEmpty()) {
+                finalHeaders = headers;
+            } else {
+                finalHeaders = decorateHeaders;
+            }
+            for (Map.Entry<String, List<String>> e : finalHeaders.entrySet()) {
+                for (String headerValue : e.getValue()) {
+                    requestBuilder.addHeader(e.getKey(), headerValue);
+                }
+            }
             requestBuilder.addHeader("Accept-Encoding", "gzip");
             requestBuilder.addHeader("Content-Type", "application/json");
-            RequestBody postBody = RequestBody.create(MediaType.parse("application/json; charset=utf-16"), entity);
+            RequestBody postBody = RequestBody.create(MediaType.parse("application/json; charset=utf-8"), entity);
             requestBuilder.post(postBody);
 
             Request request = requestBuilder.build();
@@ -172,7 +195,7 @@ public class OkHttpClientImpl implements SplitHttpClient {
         return requestBuilder.build();
     }
 
-    private Map<String, List<String>> buildBasicHeaders() {
+    protected Map<String, List<String>> buildBasicHeaders() {
         Map<String, List<String>> h = new HashMap<>();
         h.put(HEADER_API_KEY, Collections.singletonList("Bearer " + _apikey));
         h.put(HEADER_CLIENT_VERSION, Collections.singletonList(_metadata.getSdkVersion()));
@@ -184,16 +207,17 @@ public class OkHttpClientImpl implements SplitHttpClient {
         return h;
     }
 
-    private static Map<String, List<String>> mergeHeaders(Map<String, List<String>> headers,
+    protected Map<String, List<String>> mergeHeaders(Map<String, List<String>> headers,
             Map<String, List<String>> toAdd) {
         if (toAdd == null || toAdd.size() == 0) {
             return headers;
         }
 
         for (Map.Entry<String, List<String>> entry : toAdd.entrySet()) {
-            headers.computeIfPresent(entry.getKey(),
-                    (k, oldValue) -> Stream.concat(oldValue.stream(), entry.getValue().stream())
-                            .collect(Collectors.toList()));
+            headers.put(entry.getKey(), entry.getValue());
+//            headers.computeIfPresent(entry.getKey(),
+//                    (k, oldValue) -> Stream.concat(oldValue.stream(), entry.getValue().stream())
+//                            .collect(Collectors.toList()));
         }
 
         return headers;

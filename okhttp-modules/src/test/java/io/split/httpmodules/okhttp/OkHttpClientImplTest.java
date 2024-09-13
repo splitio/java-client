@@ -1,6 +1,5 @@
 package io.split.httpmodules.okhttp;
 
-import com.sun.tools.javac.util.StringUtils;
 import org.powermock.api.mockito.PowerMockito;
 import org.powermock.reflect.Whitebox;
 
@@ -10,7 +9,6 @@ import io.split.client.dtos.*;
 import io.split.client.impressions.Impression;
 import io.split.client.utils.Json;
 import io.split.client.utils.SDKMetadata;
-import io.split.client.utils.Utils;
 import io.split.client.dtos.SplitHttpResponse.Header;
 import io.split.engine.common.FetchOptions;
 
@@ -58,7 +56,7 @@ public class OkHttpClientImplTest {
         } finally {
             br.close();
         }
-/*
+
         server.enqueue(new MockResponse().setBody(body).addHeader("via", "HTTP/1.1 s_proxy_rio1"));
         server.start();
         HttpUrl baseUrl = server.url("/v1/");
@@ -76,16 +74,16 @@ public class OkHttpClientImplTest {
         Map<String, List<String>> additionalHeaders = Collections.singletonMap("AdditionalHeader",
                 Collections.singletonList("add"));
         FetchOptions fetchOptions = new FetchOptions.Builder().cacheControlHeaders(true).build();
+        RequestDecorator requestDecorator = new RequestDecorator(null);
         PowerMockito.doCallRealMethod().when(okHttpClientImpl).get(rootTarget, fetchOptions, additionalHeaders);
         okhttp3.Request.Builder requestBuilder = new okhttp3.Request.Builder();
         requestBuilder.url(rootTarget.toString());
         PowerMockito.doReturn(requestBuilder).when(okHttpClientImpl).getRequestBuilder();
-        PowerMockito.doCallRealMethod().when(okHttpClientImpl).setBasicHeaders(requestBuilder);
+        PowerMockito.doCallRealMethod().when(okHttpClientImpl).buildBasicHeaders();
         Whitebox.setInternalState(okHttpClientImpl, "_metadata", metadata());
         Whitebox.setInternalState(okHttpClientImpl, "_apikey", "qwerty");
-        PowerMockito.doCallRealMethod().when(okHttpClientImpl).setAdditionalAndDecoratedHeaders(requestBuilder, additionalHeaders);
-        RequestDecorator requestDecorator = new RequestDecorator(null);
-//        Whitebox.setInternalState(okHttpClientImpl, "_requestDecorator", requestDecorator);
+        Whitebox.setInternalState(okHttpClientImpl, "_decorator", requestDecorator);
+        PowerMockito.doCallRealMethod().when(okHttpClientImpl).mergeHeaders(buildBasicHeaders(), additionalHeaders);
         PowerMockito.doCallRealMethod().when(okHttpClientImpl).getResponseHeaders(any());
         PowerMockito.doReturn(requestBuilder.build()).when(okHttpClientImpl).getRequest(requestBuilder);
         PowerMockito.doCallRealMethod().when(okHttpClientImpl).getRequest(requestBuilder);
@@ -148,12 +146,12 @@ public class OkHttpClientImplTest {
         okhttp3.Request.Builder requestBuilder = new okhttp3.Request.Builder();
         requestBuilder.url(rootTarget.toString());
         PowerMockito.doReturn(requestBuilder).when(okHttpClientImpl).getRequestBuilder();
-        PowerMockito.doCallRealMethod().when(okHttpClientImpl).setBasicHeaders(requestBuilder);
+        PowerMockito.doCallRealMethod().when(okHttpClientImpl).buildBasicHeaders();
         Whitebox.setInternalState(okHttpClientImpl, "_metadata", metadata());
         Whitebox.setInternalState(okHttpClientImpl, "_apikey", "qwerty");
-        PowerMockito.doCallRealMethod().when(okHttpClientImpl).setAdditionalAndDecoratedHeaders(requestBuilder, additionalHeaders);
+        PowerMockito.doCallRealMethod().when(okHttpClientImpl).mergeHeaders(buildBasicHeaders(), additionalHeaders);
         RequestDecorator requestDecorator = new RequestDecorator(null);
-//        Whitebox.setInternalState(okHttpClientImpl, "_requestDecorator", requestDecorator);
+        Whitebox.setInternalState(okHttpClientImpl, "_decorator", requestDecorator);
         PowerMockito.doCallRealMethod().when(okHttpClientImpl).getResponseHeaders(any());
 
         SplitHttpResponse splitHttpResponse = okHttpClientImpl.get(rootTarget,
@@ -215,11 +213,11 @@ public class OkHttpClientImplTest {
         okhttp3.Request.Builder requestBuilder = new okhttp3.Request.Builder();
         requestBuilder.url(rootTarget.toString());
         PowerMockito.doReturn(requestBuilder).when(okHttpClientImpl).getRequestBuilder();
-        PowerMockito.doCallRealMethod().when(okHttpClientImpl).setBasicHeaders(requestBuilder);
+        PowerMockito.doCallRealMethod().when(okHttpClientImpl).buildBasicHeaders();
         Whitebox.setInternalState(okHttpClientImpl, "_metadata", metadata());
         Whitebox.setInternalState(okHttpClientImpl, "_apikey", "qwerty");
-//        Whitebox.setInternalState(okHttpClientImpl, "_requestDecorator", requestDecorator);
-        PowerMockito.doCallRealMethod().when(okHttpClientImpl).setAdditionalAndDecoratedHeaders(requestBuilder, null);
+        Whitebox.setInternalState(okHttpClientImpl, "_decorator", requestDecorator);
+        PowerMockito.doCallRealMethod().when(okHttpClientImpl).mergeHeaders(buildBasicHeaders(), null);
         PowerMockito.doCallRealMethod().when(okHttpClientImpl).getResponseHeaders(any());
         FetchOptions options = new FetchOptions.Builder().cacheControlHeaders(true).build();
 
@@ -230,9 +228,9 @@ public class OkHttpClientImplTest {
         Headers requestHeaders = request.getHeaders();
 
         assertThat(requestHeaders.get("Cache-Control"), is(equalTo("no-cache")));
-//        assertThat(requestHeaders.get("first"), is(equalTo("1")));
-//        assertThat(requestHeaders.values("second"), is(equalTo(Arrays.asList("2.1","2.2"))));
-//        assertThat(requestHeaders.get("third"), is(equalTo("3")));
+        assertThat(requestHeaders.get("first"), is(equalTo("1")));
+        assertThat(requestHeaders.values("second"), is(equalTo(Arrays.asList("2.1","2.2"))));
+        assertThat(requestHeaders.get("third"), is(equalTo("3")));
         Assert.assertEquals("/splitChanges?since=1234567", request.getPath());
         assertThat(request.getMethod(), is(equalTo("GET")));
     }
@@ -256,11 +254,11 @@ public class OkHttpClientImplTest {
         okhttp3.Request.Builder requestBuilder = new okhttp3.Request.Builder();
         requestBuilder.url(rootTarget.toString());
         PowerMockito.doReturn(requestBuilder).when(okHttpClientImpl).getRequestBuilder();
-        PowerMockito.doCallRealMethod().when(okHttpClientImpl).setBasicHeaders(requestBuilder);
+        PowerMockito.doCallRealMethod().when(okHttpClientImpl).buildBasicHeaders();
         Whitebox.setInternalState(okHttpClientImpl, "_metadata", metadata());
         Whitebox.setInternalState(okHttpClientImpl, "_apikey", "qwerty");
-        Whitebox.setInternalState(okHttpClientImpl, "_requestDecorator", requestDecorator);
-        PowerMockito.doCallRealMethod().when(okHttpClientImpl).setAdditionalAndDecoratedHeaders(requestBuilder, null);
+        Whitebox.setInternalState(okHttpClientImpl, "_decorator", requestDecorator);
+        PowerMockito.doCallRealMethod().when(okHttpClientImpl).mergeHeaders(buildBasicHeaders(), null);
         PowerMockito.doCallRealMethod().when(okHttpClientImpl).getResponseHeaders(any());
         FetchOptions options = new FetchOptions.Builder().cacheControlHeaders(true).build();
 
@@ -294,11 +292,11 @@ public class OkHttpClientImplTest {
         okhttp3.Request.Builder requestBuilder = new okhttp3.Request.Builder();
         requestBuilder.url(rootTarget.toString());
         PowerMockito.doReturn(requestBuilder).when(okHttpClientImpl).getRequestBuilder();
-        PowerMockito.doCallRealMethod().when(okHttpClientImpl).setBasicHeaders(requestBuilder);
+        PowerMockito.doCallRealMethod().when(okHttpClientImpl).buildBasicHeaders();
         Whitebox.setInternalState(okHttpClientImpl, "_metadata", metadata());
         Whitebox.setInternalState(okHttpClientImpl, "_apikey", "qwerty");
-        PowerMockito.doCallRealMethod().when(okHttpClientImpl).setAdditionalAndDecoratedHeaders(requestBuilder, additionalHeaders);
-//        Whitebox.setInternalState(okHttpClientImpl, "_requestDecorator", requestDecorator);
+        PowerMockito.doCallRealMethod().when(okHttpClientImpl).mergeHeaders(buildBasicHeaders(), additionalHeaders);
+        Whitebox.setInternalState(okHttpClientImpl, "_decorator", requestDecorator);
         PowerMockito.doCallRealMethod().when(okHttpClientImpl).getResponseHeaders(any());
         // Send impressions
         List<TestImpressions> toSend = Arrays.asList(new TestImpressions("t1", Arrays.asList(
@@ -358,11 +356,11 @@ public class OkHttpClientImplTest {
         okhttp3.Request.Builder requestBuilder = new okhttp3.Request.Builder();
         requestBuilder.url(rootTarget.toString());
         PowerMockito.doReturn(requestBuilder).when(okHttpClientImpl).getRequestBuilder();
-        PowerMockito.doCallRealMethod().when(okHttpClientImpl).setBasicHeaders(requestBuilder);
+        PowerMockito.doCallRealMethod().when(okHttpClientImpl).buildBasicHeaders();
         Whitebox.setInternalState(okHttpClientImpl, "_metadata", metadata());
         Whitebox.setInternalState(okHttpClientImpl, "_apikey", "qwerty");
-        PowerMockito.doCallRealMethod().when(okHttpClientImpl).setAdditionalAndDecoratedHeaders(requestBuilder, additionalHeaders);
-//        Whitebox.setInternalState(okHttpClientImpl, "_requestDecorator", requestDecorator);
+        PowerMockito.doCallRealMethod().when(okHttpClientImpl).mergeHeaders(buildBasicHeaders(), additionalHeaders);
+        Whitebox.setInternalState(okHttpClientImpl, "_decorator", requestDecorator);
         PowerMockito.doCallRealMethod().when(okHttpClientImpl).getResponseHeaders(any());
 
         String data = Json.toJson("<>");
@@ -394,13 +392,14 @@ public class OkHttpClientImplTest {
                 Collections.singletonList("OPTIMIZED"));
 
         okhttp3.Request.Builder requestBuilder = new okhttp3.Request.Builder();
+        RequestDecorator requestDecorator = new RequestDecorator(null);
         requestBuilder.url(rootTarget.toString());
         PowerMockito.doReturn(requestBuilder).when(okHttpClientImpl).getRequestBuilder();
-        PowerMockito.doCallRealMethod().when(okHttpClientImpl).setBasicHeaders(requestBuilder);
+        PowerMockito.doCallRealMethod().when(okHttpClientImpl).buildBasicHeaders();
         Whitebox.setInternalState(okHttpClientImpl, "_metadata", metadata());
         Whitebox.setInternalState(okHttpClientImpl, "_apikey", "qwerty");
-        PowerMockito.doCallRealMethod().when(okHttpClientImpl).setAdditionalAndDecoratedHeaders(requestBuilder, additionalHeaders);
-        Whitebox.setInternalState(okHttpClientImpl, "_requestDecorator", requestDecorator);
+        PowerMockito.doCallRealMethod().when(okHttpClientImpl).mergeHeaders(buildBasicHeaders(), additionalHeaders);
+        Whitebox.setInternalState(okHttpClientImpl, "_decorator", requestDecorator);
         PowerMockito.doCallRealMethod().when(okHttpClientImpl).getResponseHeaders(any());
 
         String data = Json.toJson("<>");
@@ -409,12 +408,22 @@ public class OkHttpClientImplTest {
 
         SplitHttpResponse splitHttpResponse = okHttpClientImpl.post(rootTarget, data,
                 additionalHeaders);
-*/
     }
 
     private SDKMetadata metadata() {
         return new SDKMetadata("java-1.2.3", "1.2.3.4", "someIP");
     }
 
+    private Map<String, List<String>> buildBasicHeaders() {
+        Map<String, List<String>> h = new HashMap<>();
+        h.put("Authorization", Collections.singletonList("Bearer qwerty"));
+        h.put("SplitSDKVersion", Collections.singletonList(metadata().getSdkVersion()));
+        h.put("SplitSDKMachineIP", Collections.singletonList(metadata().getMachineIp()));
+        h.put("SplitSDKMachineName", Collections.singletonList(metadata().getMachineName()));
+        h.put("SplitSDKClientKey", Collections.singletonList("qwerty".length() > 4
+                ? "qwerty".substring("qwerty".length() - 4)
+                : "qwerty"));
+        return h;
+    }
 
 }

@@ -8,7 +8,7 @@
         <version>4.13.0-rc3</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
-
+    <version>4.13.0-rc3</version>
     <artifactId>okhttp-modules</artifactId>
     <packaging>jar</packaging>
     <name>http-modules</name>

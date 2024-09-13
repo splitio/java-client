@@ -62,7 +62,7 @@ public class HTTPKerberosAuthIntercepterTest {
         okhttp3.Request request =  kerberosAuthInterceptor.authenticate(null, response);
         assertThat(request.headers("Proxy-authorization"), is(equalTo(Arrays.asList("Negotiate secured-token"))));
     }
-/*
+
     @Test
     public void testKerberosLoginConfiguration() {
         Map<String, String> kerberosOptions = new HashMap<String, String>();
@@ -82,7 +82,7 @@ public class HTTPKerberosAuthIntercepterTest {
         HTTPKerberosAuthInterceptor.KerberosLoginConfiguration kerberosConfig = new HTTPKerberosAuthInterceptor.KerberosLoginConfiguration();
         AppConfigurationEntry[] appConfig = kerberosConfig.getAppConfigurationEntry("");
     }
-*/
+
     @Test
     public void testBuildAuthorizationHeader() throws LoginException, PrivilegedActionException {
         System.setProperty("java.security.krb5.conf", "src/test/resources/krb5.conf");

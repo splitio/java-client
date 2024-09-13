@@ -85,12 +85,12 @@ public class OkHttpModuleTests {
                 .then((Answer<OkHttpClientImpl>) invocationOnMock -> {
                         assertThat("qwerty", is(equalTo((String) invocationOnMock.getArguments()[0])));
                         assertThat(sdkMetadata, is(equalTo((SDKMetadata) invocationOnMock.getArguments()[1])));
-//                        assertThat(requestDecorator, is(equalTo((RequestDecorator) invocationOnMock.getArguments()[2])));
                         assertThat(proxy, is(equalTo((Proxy) invocationOnMock.getArguments()[2])));
                         assertThat("bilal@bilal", is(equalTo((String) invocationOnMock.getArguments()[3])));
                         assertThat(false, is(equalTo((Boolean) invocationOnMock.getArguments()[4])));
                         assertThat(11000, is(equalTo((Integer) invocationOnMock.getArguments()[5])));
                         assertThat(12000, is(equalTo((Integer) invocationOnMock.getArguments()[6])));
+                        assertThat(requestDecorator, is(equalTo((RequestDecorator) invocationOnMock.getArguments()[7])));
                         argsCaptured.set(true);
                         return mockclient;
                     }
