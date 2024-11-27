@@ -6,7 +6,7 @@
     <parent>
         <artifactId>java-client-parent</artifactId>
         <groupId>io.split.client</groupId>
-        <version>4.13.0</version>
+        <version>4.13.1.rc1</version>
     </parent>
 
     <version>2.1.0</version>
@@ -29,7 +29,7 @@
                             <serverId>ossrh</serverId>
                             <nexusUrl>https://oss.sonatype.org/</nexusUrl>
                             <autoReleaseAfterClose>true</autoReleaseAfterClose>
-                            <skipNexusStagingDeployMojo>true</skipNexusStagingDeployMojo>
+                            <skipNexusStagingDeployMojo>false</skipNexusStagingDeployMojo>
                         </configuration>
                     </plugin>
                 </plugins>
