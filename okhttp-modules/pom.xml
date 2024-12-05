@@ -5,10 +5,10 @@
     <parent>
         <artifactId>java-client-parent</artifactId>
         <groupId>io.split.client</groupId>
-        <version>4.13.0</version>
+        <version>4.13.1</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
-    <version>4.13.0</version>
+    <version>4.13.1</version>
     <artifactId>okhttp-modules</artifactId>
     <packaging>jar</packaging>
     <name>http-modules</name>
@@ -46,13 +46,13 @@
         <dependency>
             <groupId>io.split.client</groupId>
             <artifactId>java-client</artifactId>
-            <version>4.13.0</version>
+            <version>4.13.1</version>
             <scope>compile</scope>
         </dependency>
         <dependency>
             <groupId>org.apache.httpcomponents.client5</groupId>
             <artifactId>httpclient5</artifactId>
-            <version>5.0.3</version>
+            <version>5.4.1</version>
         </dependency>
         <!-- Test deps -->
         <dependency>
