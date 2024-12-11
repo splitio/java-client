@@ -52,7 +52,7 @@ public final  class CacheUpdaterService {
             String treatment = conditions.size() > 0 ? Treatments.CONTROL : localhostSplit.treatment;
             configurations.put(localhostSplit.treatment, localhostSplit.config);
 
-            split = new ParsedSplit(splitName, 0, false, treatment,conditions, LOCALHOST, 0, 100, 0, 0, configurations, new HashSet<>());
+            split = new ParsedSplit(splitName, 0, false, treatment,conditions, LOCALHOST, 0, 100, 0, 0, configurations, new HashSet<>(), true);
             parsedSplits.removeIf(parsedSplit -> parsedSplit.feature().equals(splitName));
             parsedSplits.add(split);
         }
