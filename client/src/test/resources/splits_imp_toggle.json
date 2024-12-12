@@ -1,0 +1,155 @@
+{
+  "splits": [
+    {
+      "trafficTypeName": "user",
+      "name": "without_impression_toggle",
+      "trafficAllocation": 24,
+      "trafficAllocationSeed": -172559061,
+      "seed": -906334215,
+      "status": "ACTIVE",
+      "killed": true,
+      "defaultTreatment": "off",
+      "changeNumber": 1585948717645,
+      "algo": 2,
+      "configurations": {},
+      "conditions": [
+        {
+          "conditionType": "ROLLOUT",
+          "matcherGroup": {
+            "combiner": "AND",
+            "matchers": [
+              {
+                "keySelector": {
+                  "trafficType": "user",
+                  "attribute": null
+                },
+                "matcherType": "ALL_KEYS",
+                "negate": false,
+                "userDefinedSegmentMatcherData": null,
+                "whitelistMatcherData": null,
+                "unaryNumericMatcherData": null,
+                "betweenMatcherData": null,
+                "booleanMatcherData": null,
+                "dependencyMatcherData": null,
+                "stringMatcherData": null
+              }
+            ]
+          },
+          "partitions": [
+            {
+              "treatment": "on",
+              "size": 100
+            },
+            {
+              "treatment": "off",
+              "size": 0
+            }
+          ],
+          "label": "default rule"
+        }
+      ]
+    },
+    {
+      "trafficTypeName": "user",
+      "name": "impression_toggle_on",
+      "trafficAllocation": 24,
+      "trafficAllocationSeed": -172559061,
+      "seed": -906334215,
+      "status": "ACTIVE",
+      "killed": true,
+      "defaultTreatment": "off",
+      "changeNumber": 1585948717645,
+      "algo": 2,
+      "configurations": {},
+      "conditions": [
+        {
+          "conditionType": "ROLLOUT",
+          "matcherGroup": {
+            "combiner": "AND",
+            "matchers": [
+              {
+                "keySelector": {
+                  "trafficType": "user",
+                  "attribute": null
+                },
+                "matcherType": "ALL_KEYS",
+                "negate": false,
+                "userDefinedSegmentMatcherData": null,
+                "whitelistMatcherData": null,
+                "unaryNumericMatcherData": null,
+                "betweenMatcherData": null,
+                "booleanMatcherData": null,
+                "dependencyMatcherData": null,
+                "stringMatcherData": null
+              }
+            ]
+          },
+          "partitions": [
+            {
+              "treatment": "on",
+              "size": 100
+            },
+            {
+              "treatment": "off",
+              "size": 0
+            }
+          ],
+          "label": "default rule"
+        }
+      ],
+      "trackImpression": true
+    },
+    {
+      "trafficTypeName": "user",
+      "name": "impression_toggle_off",
+      "trafficAllocation": 24,
+      "trafficAllocationSeed": -172559061,
+      "seed": -906334215,
+      "status": "ACTIVE",
+      "killed": true,
+      "defaultTreatment": "off",
+      "changeNumber": 1585948717645,
+      "algo": 2,
+      "configurations": {},
+      "conditions": [
+        {
+          "conditionType": "ROLLOUT",
+          "matcherGroup": {
+            "combiner": "AND",
+            "matchers": [
+              {
+                "keySelector": {
+                  "trafficType": "user",
+                  "attribute": null
+                },
+                "matcherType": "ALL_KEYS",
+                "negate": false,
+                "userDefinedSegmentMatcherData": null,
+                "whitelistMatcherData": null,
+                "unaryNumericMatcherData": null,
+                "betweenMatcherData": null,
+                "booleanMatcherData": null,
+                "dependencyMatcherData": null,
+                "stringMatcherData": null
+              }
+            ]
+          },
+          "partitions": [
+            {
+              "treatment": "on",
+              "size": 100
+            },
+            {
+              "treatment": "off",
+              "size": 0
+            }
+          ],
+          "label": "default rule"
+        }
+      ],
+      "trackImpression": false
+    }
+  ],
+  "since": -1,
+  "till": 1585948850109
+}

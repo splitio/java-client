@@ -48,6 +48,7 @@ import java.util.Map;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 /**
@@ -637,6 +638,26 @@ public class SplitParserTest {
             }
         }
         assertTrue(false);
+    }
+
+    @Test
+    public void ImpressionToggleParseTest() throws IOException {
+        SplitParser parser = new SplitParser();
+        String splits = new String(Files.readAllBytes(Paths.get("src/test/resources/splits_imp_toggle.json")), StandardCharsets.UTF_8);
+        SplitChange change = Json.fromJson(splits, SplitChange.class);
+        for (Split split : change.splits) {
+            // should not cause exception
+            ParsedSplit parsedSplit = parser.parse(split);
+            if (split.name.equals("without_impression_toggle")) {
+                assertTrue(split.trackImpression);
+            }
+            if (split.name.equals("impression_toggle_on")) {
+                assertTrue(split.trackImpression);
+            }
+            if (split.name.equals("impression_toggle_off")) {
+                assertFalse(split.trackImpression);
+            }
+        }
     }
 
     public void setMatcherTest(Condition c, io.split.engine.matchers.Matcher m) {
