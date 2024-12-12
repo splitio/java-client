@@ -26,6 +26,7 @@ public class SplitView {
     public Map<String, String> configs;
     public List<String> sets;
     public String defaultTreatment;
+    public boolean trackImpression;
 
     public static SplitView fromParsedSplit(ParsedSplit parsedSplit) {
         SplitView splitView = new SplitView();
@@ -46,6 +47,7 @@ public class SplitView {
 
         splitView.treatments = new ArrayList<String>(treatments);
         splitView.configs = parsedSplit.configurations() == null? Collections.<String, String>emptyMap() : parsedSplit.configurations() ;
+        splitView.trackImpression = parsedSplit.trackImpression();
 
         return splitView;
     }
