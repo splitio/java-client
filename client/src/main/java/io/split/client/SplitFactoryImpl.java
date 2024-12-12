@@ -691,15 +691,12 @@ public class SplitFactoryImpl implements SplitFactory {
     }
 
     private UniqueKeysTracker createUniqueKeysTracker(SplitClientConfig config) {
-//        if (config.impressionsMode().equals(ImpressionsManager.Mode.NONE)) {
-            int uniqueKeysRefreshRate = config.operationMode().equals(OperationMode.STANDALONE)
-                    ? config.uniqueKeysRefreshRateInMemory()
-                    : config.uniqueKeysRefreshRateRedis();
-            return new UniqueKeysTrackerImp(_telemetrySynchronizer, uniqueKeysRefreshRate,
-                    config.filterUniqueKeysRefreshRate(),
-                    config.getThreadFactory());
-//        }
-//        return null;
+        int uniqueKeysRefreshRate = config.operationMode().equals(OperationMode.STANDALONE)
+                ? config.uniqueKeysRefreshRateInMemory()
+                : config.uniqueKeysRefreshRateRedis();
+        return new UniqueKeysTrackerImp(_telemetrySynchronizer, uniqueKeysRefreshRate,
+                config.filterUniqueKeysRefreshRate(),
+                config.getThreadFactory());
     }
 
     private SplitChangeFetcher createSplitChangeFetcher(SplitClientConfig splitClientConfig) {

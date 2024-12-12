@@ -138,7 +138,6 @@ public class ImpressionsManagerImpl implements ImpressionsManager, Closeable {
                         decoratedImpressions.get(i).impression).collect(Collectors.toList()));
             }
             if (!Objects.isNull(impressionsResult.getImpressionsToQueue())) {
-                _log.info("Adding impression to queue");
                 impressionsForLogs.addAll(impressionsResult.getImpressionsToQueue());
             }
             if (!Objects.isNull(impressionsResult.getImpressionsToListener()))
