@@ -36,6 +36,7 @@ import org.junit.Assert;
 import org.junit.Test;
 import org.mockito.Mockito;
 
+import javax.validation.constraints.AssertTrue;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
@@ -645,19 +646,25 @@ public class SplitParserTest {
         SplitParser parser = new SplitParser();
         String splits = new String(Files.readAllBytes(Paths.get("src/test/resources/splits_imp_toggle.json")), StandardCharsets.UTF_8);
         SplitChange change = Json.fromJson(splits, SplitChange.class);
+        boolean check1 = false, check2 = false, check3 = false;
         for (Split split : change.splits) {
-            // should not cause exception
             ParsedSplit parsedSplit = parser.parse(split);
             if (split.name.equals("without_impression_toggle")) {
-                assertTrue(split.trackImpression);
+                assertTrue(parsedSplit.trackImpression());
+                check1 = true;
             }
             if (split.name.equals("impression_toggle_on")) {
-                assertTrue(split.trackImpression);
+                assertTrue(parsedSplit.trackImpression());
+                check2 = true;
             }
             if (split.name.equals("impression_toggle_off")) {
-                assertFalse(split.trackImpression);
+                assertFalse(parsedSplit.trackImpression());
+                check3 = true;
             }
         }
+        assertTrue(check1);
+        assertTrue(check2);
+        assertTrue(check3);
     }
 
     public void setMatcherTest(Condition c, io.split.engine.matchers.Matcher m) {
