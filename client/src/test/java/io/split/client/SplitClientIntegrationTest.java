@@ -907,7 +907,7 @@ public class SplitClientIntegrationTest {
         Assert.assertEquals("off", client.getTreatment("user3", "impression_toggle_off", null));
         Thread.sleep(1000);
         client.destroy();
-        boolean check1 = false, check2 = false;
+        boolean check1 = false, check2 = false, check3 = false;
         for (int i=0; i < allRequests.size(); i++ ) {
             if (allRequests.get(i).getPath().equals("/api/testImpressions/bulk") ) {
                 check1 = true;
@@ -923,10 +923,18 @@ public class SplitClientIntegrationTest {
                 Assert.assertFalse(body.contains("impression_toggle_on"));
                 Assert.assertTrue(body.contains("impression_toggle_off"));
             }
+            if (allRequests.get(i).getPath().equals("/api/testImpressions/count")) {
+                check3 = true;
+                String body = allRequests.get(i).getBody().readUtf8();
+                Assert.assertFalse(body.contains("without_impression_toggle"));
+                Assert.assertFalse(body.contains("impression_toggle_on"));
+                Assert.assertTrue(body.contains("impression_toggle_off"));
+            }
         }
         server.shutdown();
         Assert.assertTrue(check1);
         Assert.assertTrue(check2);
+        Assert.assertTrue(check3);
     }
 
     @Test
