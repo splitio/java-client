@@ -724,7 +724,7 @@ public class SplitClientImplTest {
         List<DecoratedImpression> impressions = impressionCaptor.getValue();
         assertNotNull(impressions);
         assertEquals(1, impressions.size());
-        Impression impression = impressions.get(0).impression;
+        Impression impression = impressions.get(0).impression();
 
         assertEquals("foolabel", impression.appliedRule());
 
@@ -824,7 +824,7 @@ public class SplitClientImplTest {
         assertNotNull(impressionCaptor.getValue());
         assertEquals(1, impressionCaptor.getValue().size());
         DecoratedImpression impression = (DecoratedImpression) impressionCaptor.getValue().get(0);
-        assertEquals(label, impression.impression.appliedRule());
+        assertEquals(label, impression.impression().appliedRule());
     }
 
     /**
@@ -880,7 +880,7 @@ public class SplitClientImplTest {
         assertNotNull(impressionCaptor.getValue());
         assertEquals(1, impressionCaptor.getValue().size());
         DecoratedImpression impression = (DecoratedImpression) impressionCaptor.getValue().get(0);
-        assertEquals("not in split", impression.impression.appliedRule());
+        assertEquals("not in split", impression.impression().appliedRule());
     }
 
 
@@ -1044,8 +1044,8 @@ public class SplitClientImplTest {
         assertEquals(1, impressionCaptor.getValue().size());
         DecoratedImpression impression = (DecoratedImpression) impressionCaptor.getValue().get(0);
 
-        assertEquals("foolabel", impression.impression.appliedRule());
-        assertEquals(attributes, impression.impression.attributes());
+        assertEquals("foolabel", impression.impression().appliedRule());
+        assertEquals(attributes, impression.impression().attributes());
     }
 
     private Partition partition(String treatment, int size) {

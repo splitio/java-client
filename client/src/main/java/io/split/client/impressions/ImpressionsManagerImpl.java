@@ -132,12 +132,12 @@ public class ImpressionsManagerImpl implements ImpressionsManager, Closeable {
 
         for (int i = 0; i < decoratedImpressions.size(); i++) {
             ImpressionsResult impressionsResult;
-            if (decoratedImpressions.get(i).track) {
+            if (decoratedImpressions.get(i).track()) {
                 impressionsResult = _processImpressionStrategy.process(Stream.of(
-                        decoratedImpressions.get(i).impression).collect(Collectors.toList()));
+                        decoratedImpressions.get(i).impression()).collect(Collectors.toList()));
             } else {
                 impressionsResult = _processImpressionNone.process(Stream.of(
-                        decoratedImpressions.get(i).impression).collect(Collectors.toList()));
+                        decoratedImpressions.get(i).impression()).collect(Collectors.toList()));
             }
             if (!Objects.isNull(impressionsResult.getImpressionsToQueue())) {
                 impressionsForLogs.addAll(impressionsResult.getImpressionsToQueue());

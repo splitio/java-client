@@ -455,7 +455,7 @@ public final class SplitClientImpl implements SplitClient {
             }
         });
         _telemetryEvaluationProducer.recordLatency(methodEnum, System.currentTimeMillis() - initTime);
-        if (decoratedImpressions.size() > 0) {
+        if (!decoratedImpressions.isEmpty()) {
             _impressionManager.track(decoratedImpressions);
         }
         return result;

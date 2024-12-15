@@ -830,7 +830,6 @@ public class SplitClientIntegrationTest {
         Assert.assertEquals("off", client.getTreatment("user1", "without_impression_toggle", null));
         Assert.assertEquals("off", client.getTreatment("user2", "impression_toggle_on", null));
         Assert.assertEquals("off", client.getTreatment("user3", "impression_toggle_off", null));
-        Thread.sleep(1000);
         client.destroy();
         boolean check1 = false, check2 = false;
         for (int i=0; i < allRequests.size(); i++ ) {
@@ -905,7 +904,6 @@ public class SplitClientIntegrationTest {
         Assert.assertEquals("off", client.getTreatment("user1", "without_impression_toggle", null));
         Assert.assertEquals("off", client.getTreatment("user2", "impression_toggle_on", null));
         Assert.assertEquals("off", client.getTreatment("user3", "impression_toggle_off", null));
-        Thread.sleep(1000);
         client.destroy();
         boolean check1 = false, check2 = false, check3 = false;
         for (int i=0; i < allRequests.size(); i++ ) {
@@ -988,7 +986,6 @@ public class SplitClientIntegrationTest {
         Assert.assertEquals("off", client.getTreatment("user1", "without_impression_toggle", null));
         Assert.assertEquals("off", client.getTreatment("user2", "impression_toggle_on", null));
         Assert.assertEquals("off", client.getTreatment("user3", "impression_toggle_off", null));
-        Thread.sleep(1000);
         client.destroy();
         boolean check1 = false, check2 = false, check3 = false;
         for (int i=0; i < allRequests.size(); i++ ) {
