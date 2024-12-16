@@ -36,6 +36,7 @@ import org.junit.Assert;
 import org.junit.Test;
 import org.mockito.Mockito;
 
+import javax.validation.constraints.AssertTrue;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
@@ -48,6 +49,7 @@ import java.util.Map;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 /**
@@ -93,7 +95,7 @@ public class SplitParserTest {
         ParsedCondition parsedCondition = ParsedCondition.createParsedConditionForTests(combiningMatcher, partitions);
         List<ParsedCondition> listOfMatcherAndSplits = Lists.newArrayList(parsedCondition);
 
-        ParsedSplit expected = ParsedSplit.createParsedSplitForTests("first.name", 123, false, Treatments.OFF, listOfMatcherAndSplits, "user", 1, 1, new HashSet<>());
+        ParsedSplit expected = ParsedSplit.createParsedSplitForTests("first.name", 123, false, Treatments.OFF, listOfMatcherAndSplits, "user", 1, 1, new HashSet<>(), true);
 
         Assert.assertEquals(actual, expected);
     }
@@ -134,7 +136,7 @@ public class SplitParserTest {
         List<ParsedCondition> listOfMatcherAndSplits = Lists.newArrayList(parsedCondition);
 
         ParsedSplit expected = ParsedSplit.createParsedSplitForTests("first.name", 123, false, Treatments.OFF,
-                listOfMatcherAndSplits, "user", 1, 1, configurations, new HashSet<>());
+                listOfMatcherAndSplits, "user", 1, 1, configurations, new HashSet<>(), true);
 
         Assert.assertEquals(actual, expected);
         Assert.assertEquals(actual.configurations().get("on"), configurations.get("on"));
@@ -173,7 +175,7 @@ public class SplitParserTest {
         ParsedCondition parsedCondition2 = ParsedCondition.createParsedConditionForTests(CombiningMatcher.of(new UserDefinedSegmentMatcher(EMPLOYEES)), turnOff);
         List<ParsedCondition> listOfParsedConditions = Lists.newArrayList(parsedCondition1, parsedCondition2);
 
-        ParsedSplit expected = ParsedSplit.createParsedSplitForTests("first.name", 123, false, Treatments.OFF, listOfParsedConditions, "user", 1, 1, new HashSet<>());
+        ParsedSplit expected = ParsedSplit.createParsedSplitForTests("first.name", 123, false, Treatments.OFF, listOfParsedConditions, "user", 1, 1, new HashSet<>(), true);
 
         Assert.assertEquals(actual, expected);
     }
@@ -242,7 +244,7 @@ public class SplitParserTest {
         ParsedCondition parsedCondition = ParsedCondition.createParsedConditionForTests(combiningMatcher, partitions);
         List<ParsedCondition> listOfMatcherAndSplits = Lists.newArrayList(parsedCondition);
 
-        ParsedSplit expected = ParsedSplit.createParsedSplitForTests("first.name", 123, false, Treatments.OFF, listOfMatcherAndSplits, "user", 1, 1, new HashSet<>());
+        ParsedSplit expected = ParsedSplit.createParsedSplitForTests("first.name", 123, false, Treatments.OFF, listOfMatcherAndSplits, "user", 1, 1, new HashSet<>(), true);
 
         Assert.assertEquals(actual, expected);
     }
@@ -275,7 +277,7 @@ public class SplitParserTest {
         ParsedCondition parsedCondition = ParsedCondition.createParsedConditionForTests(combiningMatcher, partitions);
         List<ParsedCondition> listOfMatcherAndSplits = Lists.newArrayList(parsedCondition);
 
-        ParsedSplit expected = ParsedSplit.createParsedSplitForTests("first.name", 123, false, Treatments.OFF, listOfMatcherAndSplits, "user", 1, 1, new HashSet<>());
+        ParsedSplit expected = ParsedSplit.createParsedSplitForTests("first.name", 123, false, Treatments.OFF, listOfMatcherAndSplits, "user", 1, 1, new HashSet<>(), true);
 
         Assert.assertEquals(actual, expected);
     }
@@ -307,7 +309,7 @@ public class SplitParserTest {
         ParsedCondition parsedCondition = ParsedCondition.createParsedConditionForTests(combiningMatcher, partitions);
         List<ParsedCondition> listOfMatcherAndSplits = Lists.newArrayList(parsedCondition);
 
-        ParsedSplit expected = ParsedSplit.createParsedSplitForTests("first.name", 123, false, Treatments.OFF, listOfMatcherAndSplits, "user", 1, 1, new HashSet<>());
+        ParsedSplit expected = ParsedSplit.createParsedSplitForTests("first.name", 123, false, Treatments.OFF, listOfMatcherAndSplits, "user", 1, 1, new HashSet<>(), true);
 
         Assert.assertEquals(actual, expected);
     }
@@ -338,7 +340,7 @@ public class SplitParserTest {
         ParsedCondition parsedCondition = ParsedCondition.createParsedConditionForTests(combiningMatcher, partitions);
         List<ParsedCondition> listOfMatcherAndSplits = Lists.newArrayList(parsedCondition);
 
-        ParsedSplit expected = ParsedSplit.createParsedSplitForTests("first.name", 123, false, Treatments.OFF, listOfMatcherAndSplits, "user", 1, 1, new HashSet<>());
+        ParsedSplit expected = ParsedSplit.createParsedSplitForTests("first.name", 123, false, Treatments.OFF, listOfMatcherAndSplits, "user", 1, 1, new HashSet<>(), true);
 
         Assert.assertEquals(actual, expected);
     }
@@ -374,7 +376,7 @@ public class SplitParserTest {
         ParsedCondition parsedCondition = ParsedCondition.createParsedConditionForTests(combiningMatcher, partitions);
         List<ParsedCondition> listOfMatcherAndSplits = Lists.newArrayList(parsedCondition);
 
-        ParsedSplit expected = ParsedSplit.createParsedSplitForTests("first.name", 123, false, Treatments.OFF, listOfMatcherAndSplits, "user", 1, 1, new HashSet<>());
+        ParsedSplit expected = ParsedSplit.createParsedSplitForTests("first.name", 123, false, Treatments.OFF, listOfMatcherAndSplits, "user", 1, 1, new HashSet<>(), true);
 
         Assert.assertEquals(actual, expected);
     }
@@ -639,6 +641,32 @@ public class SplitParserTest {
         assertTrue(false);
     }
 
+    @Test
+    public void ImpressionToggleParseTest() throws IOException {
+        SplitParser parser = new SplitParser();
+        String splits = new String(Files.readAllBytes(Paths.get("src/test/resources/splits_imp_toggle.json")), StandardCharsets.UTF_8);
+        SplitChange change = Json.fromJson(splits, SplitChange.class);
+        boolean check1 = false, check2 = false, check3 = false;
+        for (Split split : change.splits) {
+            ParsedSplit parsedSplit = parser.parse(split);
+            if (split.name.equals("without_impression_toggle")) {
+                assertTrue(parsedSplit.trackImpression());
+                check1 = true;
+            }
+            if (split.name.equals("impression_toggle_on")) {
+                assertTrue(parsedSplit.trackImpression());
+                check2 = true;
+            }
+            if (split.name.equals("impression_toggle_off")) {
+                assertFalse(parsedSplit.trackImpression());
+                check3 = true;
+            }
+        }
+        assertTrue(check1);
+        assertTrue(check2);
+        assertTrue(check3);
+    }
+
     public void setMatcherTest(Condition c, io.split.engine.matchers.Matcher m) {
 
         SegmentChangeFetcher segmentChangeFetcher = Mockito.mock(SegmentChangeFetcher.class);
@@ -664,7 +692,7 @@ public class SplitParserTest {
         ParsedCondition parsedCondition = ParsedCondition.createParsedConditionForTests(combiningMatcher, partitions);
         List<ParsedCondition> listOfMatcherAndSplits = Lists.newArrayList(parsedCondition);
 
-        ParsedSplit expected = ParsedSplit.createParsedSplitForTests("splitName", 123, false, Treatments.OFF, listOfMatcherAndSplits, "user", 1, 1, new HashSet<>());
+        ParsedSplit expected = ParsedSplit.createParsedSplitForTests("splitName", 123, false, Treatments.OFF, listOfMatcherAndSplits, "user", 1, 1, new HashSet<>(), true);
 
         Assert.assertEquals(actual, expected);
     }

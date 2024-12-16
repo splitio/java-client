@@ -2,8 +2,10 @@ package io.split.client.impressions;
 
 import com.google.common.annotations.VisibleForTesting;
 import io.split.client.SplitClientConfig;
+import io.split.client.dtos.DecoratedImpression;
 import io.split.client.dtos.KeyImpression;
 import io.split.client.dtos.TestImpressions;
+import io.split.client.impressions.strategy.ProcessImpressionNone;
 import io.split.client.impressions.strategy.ProcessImpressionStrategy;
 import io.split.client.utils.SplitExecutorFactory;
 import io.split.telemetry.domain.enums.ImpressionsDataTypeEnum;
@@ -13,10 +15,13 @@ import org.slf4j.LoggerFactory;
 
 import java.io.Closeable;
 import java.net.URISyntaxException;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
@@ -40,6 +45,8 @@ public class ImpressionsManagerImpl implements ImpressionsManager, Closeable {
     private TelemetryRuntimeProducer _telemetryRuntimeProducer;
     private ImpressionCounter _counter;
     private ProcessImpressionStrategy _processImpressionStrategy;
+    private ProcessImpressionNone _processImpressionNone;
+
     private final int _impressionsRefreshRate;
 
     public static ImpressionsManagerImpl instance(SplitClientConfig config,
@@ -47,11 +54,12 @@ public class ImpressionsManagerImpl implements ImpressionsManager, Closeable {
                                                   ImpressionsStorageConsumer impressionsStorageConsumer,
                                                   ImpressionsStorageProducer impressionsStorageProducer,
                                                   ImpressionsSender impressionsSender,
+                                                  ProcessImpressionNone processImpressionNone,
                                                   ProcessImpressionStrategy processImpressionStrategy,
                                                   ImpressionCounter counter,
                                                   ImpressionListener listener) throws URISyntaxException {
         return new ImpressionsManagerImpl(config, impressionsSender, telemetryRuntimeProducer, impressionsStorageConsumer,
-                impressionsStorageProducer, processImpressionStrategy, counter, listener);
+                impressionsStorageProducer, processImpressionNone, processImpressionStrategy, counter, listener);
     }
 
     public static ImpressionsManagerImpl instanceForTest(SplitClientConfig config,
@@ -59,11 +67,12 @@ public class ImpressionsManagerImpl implements ImpressionsManager, Closeable {
                                                          TelemetryRuntimeProducer telemetryRuntimeProducer,
                                                          ImpressionsStorageConsumer impressionsStorageConsumer,
                                                          ImpressionsStorageProducer impressionsStorageProducer,
+                                                         ProcessImpressionNone processImpressionNone,
                                                          ProcessImpressionStrategy processImpressionStrategy,
                                                          ImpressionCounter counter,
                                                          ImpressionListener listener) {
         return new ImpressionsManagerImpl(config, impressionsSender, telemetryRuntimeProducer, impressionsStorageConsumer,
-                impressionsStorageProducer, processImpressionStrategy, counter, listener);
+                impressionsStorageProducer, processImpressionNone, processImpressionStrategy, counter, listener);
     }
 
     private ImpressionsManagerImpl(SplitClientConfig config,
@@ -71,6 +80,7 @@ public class ImpressionsManagerImpl implements ImpressionsManager, Closeable {
                                    TelemetryRuntimeProducer telemetryRuntimeProducer,
                                    ImpressionsStorageConsumer impressionsStorageConsumer,
                                    ImpressionsStorageProducer impressionsStorageProducer,
+                                   ProcessImpressionNone processImpressionNone,
                                    ProcessImpressionStrategy processImpressionStrategy,
                                    ImpressionCounter impressionCounter,
                                    ImpressionListener impressionListener) {
@@ -81,6 +91,7 @@ public class ImpressionsManagerImpl implements ImpressionsManager, Closeable {
         _impressionsStorageConsumer = checkNotNull(impressionsStorageConsumer);
         _impressionsStorageProducer = checkNotNull(impressionsStorageProducer);
         _telemetryRuntimeProducer = checkNotNull(telemetryRuntimeProducer);
+        _processImpressionNone = checkNotNull(processImpressionNone);
         _processImpressionStrategy = checkNotNull(processImpressionStrategy);
         _impressionsSender = impressionsSender;
         _counter = impressionCounter;
@@ -101,6 +112,8 @@ public class ImpressionsManagerImpl implements ImpressionsManager, Closeable {
                 break;
             case DEBUG:
                 _scheduler.scheduleAtFixedRate(this::sendImpressions, BULK_INITIAL_DELAY_SECONDS, _impressionsRefreshRate, TimeUnit.SECONDS);
+                _scheduler.scheduleAtFixedRate(this::sendImpressionCounters, COUNT_INITIAL_DELAY_SECONDS, COUNT_REFRESH_RATE_SECONDS,
+                        TimeUnit.SECONDS);
                 break;
             case NONE:
                 _scheduler.scheduleAtFixedRate(this::sendImpressionCounters, COUNT_INITIAL_DELAY_SECONDS, COUNT_REFRESH_RATE_SECONDS,
@@ -110,15 +123,28 @@ public class ImpressionsManagerImpl implements ImpressionsManager, Closeable {
     }
 
     @Override
-    public void track(List<Impression> impressions) {
-        if (null == impressions) {
+    public void track(List<DecoratedImpression> decoratedImpressions) {
+        if (null == decoratedImpressions) {
             return;
         }
+        List<Impression> impressionsForLogs = new ArrayList<>();
+        List<Impression> impressionsToListener = new ArrayList<>();
 
-        ImpressionsResult impressionsResult = _processImpressionStrategy.process(impressions);
-        List<Impression> impressionsForLogs = impressionsResult.getImpressionsToQueue();
-        List<Impression> impressionsToListener = impressionsResult.getImpressionsToListener();
-
+        for (int i = 0; i < decoratedImpressions.size(); i++) {
+            ImpressionsResult impressionsResult;
+            if (decoratedImpressions.get(i).track()) {
+                impressionsResult = _processImpressionStrategy.process(Stream.of(
+                        decoratedImpressions.get(i).impression()).collect(Collectors.toList()));
+            } else {
+                impressionsResult = _processImpressionNone.process(Stream.of(
+                        decoratedImpressions.get(i).impression()).collect(Collectors.toList()));
+            }
+            if (!Objects.isNull(impressionsResult.getImpressionsToQueue())) {
+                impressionsForLogs.addAll(impressionsResult.getImpressionsToQueue());
+            }
+            if (!Objects.isNull(impressionsResult.getImpressionsToListener()))
+                impressionsToListener.addAll(impressionsResult.getImpressionsToListener());
+        }
         int totalImpressions = impressionsForLogs.size();
         long queued = _impressionsStorageProducer.put(impressionsForLogs.stream().map(KeyImpression::fromImpression).collect(Collectors.toList()));
         if (queued < totalImpressions) {

@@ -10,7 +10,11 @@ import io.split.storages.enums.StorageMode;
 import io.split.storages.pluggable.CustomStorageWrapperImp;
 import io.split.storages.pluggable.domain.EventConsumer;
 import io.split.storages.pluggable.domain.ImpressionConsumer;
+
+import okhttp3.mockwebserver.Dispatcher;
 import okhttp3.mockwebserver.MockResponse;
+import okhttp3.mockwebserver.MockWebServer;
+import okhttp3.mockwebserver.RecordedRequest;
 import org.awaitility.Awaitility;
 import org.glassfish.grizzly.utils.Pair;
 import org.glassfish.jersey.media.sse.OutboundEvent;
@@ -21,6 +25,10 @@ import javax.ws.rs.sse.OutboundSseEvent;
 import java.io.IOException;
 import java.net.URISyntaxException;
 
+import java.nio.Buffer;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -769,6 +777,240 @@ public class SplitClientIntegrationTest {
 
         client.destroy();
         splitServer.stop();
+    }
+
+    @Test
+    public void ImpressionToggleOptimizedModeTest() throws Exception {
+        String splits = new String(Files.readAllBytes(Paths.get("src/test/resources/splits_imp_toggle.json")), StandardCharsets.UTF_8);
+        List<RecordedRequest> allRequests = new ArrayList<>();
+
+        Dispatcher dispatcher = new Dispatcher() {
+            @Override
+            public MockResponse dispatch(RecordedRequest request) {
+                allRequests.add(request);
+                switch (request.getPath()) {
+                    case "/api/splitChanges?s=1.1&since=-1":
+                        return new MockResponse().setResponseCode(200).setBody(splits);
+                    case "/api/splitChanges?s=1.1&since=1602796638344":
+                        return new MockResponse().setResponseCode(200).setBody("{\"splits\": [], \"since\":1602796638344, \"till\":1602796638344}");
+                    case "/api/testImpressions/bulk":
+                        return new MockResponse().setResponseCode(200);
+                    case "/api/testImpressions/count":
+                        return new MockResponse().setResponseCode(200);
+                    case "/v1/keys/ss":
+                        return new MockResponse().setResponseCode(200);
+                    case "/v1/metrics/usage":
+                        return new MockResponse().setResponseCode(200);
+                    case "/v1/metrics/config":
+                        return new MockResponse().setResponseCode(200);
+                }
+                return new MockResponse().setResponseCode(404);
+            }
+        };
+
+        MockWebServer server = new MockWebServer();
+        server.setDispatcher(dispatcher);
+
+        server.start();
+        String serverURL = String.format("http://%s:%s", server.getHostName(), server.getPort());
+        SplitClientConfig config = SplitClientConfig.builder()
+                .setBlockUntilReadyTimeout(10000)
+                .endpoint(serverURL, serverURL)
+                .authServiceURL(String.format("%s/api/auth/enabled", serverURL))
+                .telemetryURL(serverURL + "/v1")
+                .streamingEnabled(false)
+                .featuresRefreshRate(5)
+                .impressionsMode(ImpressionsManager.Mode.OPTIMIZED)
+                .build();
+
+        SplitFactory factory = SplitFactoryBuilder.build("fake-api-token", config);
+        SplitClient client = factory.client();
+        client.blockUntilReady();
+
+        Assert.assertEquals("off", client.getTreatment("user1", "without_impression_toggle", null));
+        Assert.assertEquals("off", client.getTreatment("user2", "impression_toggle_on", null));
+        Assert.assertEquals("off", client.getTreatment("user3", "impression_toggle_off", null));
+        client.destroy();
+        boolean check1 = false, check2 = false;
+        for (int i=0; i < allRequests.size(); i++ ) {
+            if (allRequests.get(i).getPath().equals("/api/testImpressions/bulk") ) {
+                check1 = true;
+                String body = allRequests.get(i).getBody().readUtf8();
+                Assert.assertTrue(body.contains("without_impression_toggle"));
+                Assert.assertTrue(body.contains("impression_toggle_on"));
+                Assert.assertFalse(body.contains("impression_toggle_off"));
+            }
+            if (allRequests.get(i).getPath().equals("/v1/keys/ss")) {
+                check2 = true;
+                String body = allRequests.get(i).getBody().readUtf8();
+                Assert.assertFalse(body.contains("without_impression_toggle"));
+                Assert.assertFalse(body.contains("impression_toggle_on"));
+                Assert.assertTrue(body.contains("impression_toggle_off"));
+            }
+        }
+        server.shutdown();
+        Assert.assertTrue(check1);
+        Assert.assertTrue(check2);
+    }
+
+    @Test
+    public void ImpressionToggleDebugModeTest() throws Exception {
+        String splits = new String(Files.readAllBytes(Paths.get("src/test/resources/splits_imp_toggle.json")), StandardCharsets.UTF_8);
+        List<RecordedRequest> allRequests = new ArrayList<>();
+
+        Dispatcher dispatcher = new Dispatcher() {
+            @Override
+            public MockResponse dispatch(RecordedRequest request) {
+                allRequests.add(request);
+                switch (request.getPath()) {
+                    case "/api/splitChanges?s=1.1&since=-1":
+                        return new MockResponse().setResponseCode(200).setBody(splits);
+                    case "/api/splitChanges?s=1.1&since=1602796638344":
+                        return new MockResponse().setResponseCode(200).setBody("{\"splits\": [], \"since\":1602796638344, \"till\":1602796638344}");
+                    case "/api/testImpressions/bulk":
+                        return new MockResponse().setResponseCode(200);
+                    case "/api/testImpressions/count":
+                        return new MockResponse().setResponseCode(200);
+                    case "/v1/keys/ss":
+                        return new MockResponse().setResponseCode(200);
+                    case "/v1/metrics/usage":
+                        return new MockResponse().setResponseCode(200);
+                    case "/v1/metrics/config":
+                        return new MockResponse().setResponseCode(200);
+                }
+                return new MockResponse().setResponseCode(404);
+            }
+        };
+
+        MockWebServer server = new MockWebServer();
+        server.setDispatcher(dispatcher);
+
+        server.start();
+        String serverURL = String.format("http://%s:%s", server.getHostName(), server.getPort());
+        SplitClientConfig config = SplitClientConfig.builder()
+                .setBlockUntilReadyTimeout(10000)
+                .endpoint(serverURL, serverURL)
+                .telemetryURL(serverURL + "/v1")
+                .authServiceURL(String.format("%s/api/auth/enabled", serverURL))
+                .streamingEnabled(false)
+                .featuresRefreshRate(5)
+                .impressionsMode(ImpressionsManager.Mode.DEBUG)
+                .build();
+
+        SplitFactory factory = SplitFactoryBuilder.build("fake-api-token", config);
+        SplitClient client = factory.client();
+        client.blockUntilReady();
+
+        Assert.assertEquals("off", client.getTreatment("user1", "without_impression_toggle", null));
+        Assert.assertEquals("off", client.getTreatment("user2", "impression_toggle_on", null));
+        Assert.assertEquals("off", client.getTreatment("user3", "impression_toggle_off", null));
+        client.destroy();
+        boolean check1 = false, check2 = false, check3 = false;
+        for (int i=0; i < allRequests.size(); i++ ) {
+            if (allRequests.get(i).getPath().equals("/api/testImpressions/bulk") ) {
+                check1 = true;
+                String body = allRequests.get(i).getBody().readUtf8();
+                Assert.assertTrue(body.contains("without_impression_toggle"));
+                Assert.assertTrue(body.contains("impression_toggle_on"));
+                Assert.assertFalse(body.contains("impression_toggle_off"));
+            }
+            if (allRequests.get(i).getPath().equals("/v1/keys/ss")) {
+                check2 = true;
+                String body = allRequests.get(i).getBody().readUtf8();
+                Assert.assertFalse(body.contains("without_impression_toggle"));
+                Assert.assertFalse(body.contains("impression_toggle_on"));
+                Assert.assertTrue(body.contains("impression_toggle_off"));
+            }
+            if (allRequests.get(i).getPath().equals("/api/testImpressions/count")) {
+                check3 = true;
+                String body = allRequests.get(i).getBody().readUtf8();
+                Assert.assertFalse(body.contains("without_impression_toggle"));
+                Assert.assertFalse(body.contains("impression_toggle_on"));
+                Assert.assertTrue(body.contains("impression_toggle_off"));
+            }
+        }
+        server.shutdown();
+        Assert.assertTrue(check1);
+        Assert.assertTrue(check2);
+        Assert.assertTrue(check3);
+    }
+
+    @Test
+    public void ImpressionToggleNoneModeTest() throws Exception {
+        String splits = new String(Files.readAllBytes(Paths.get("src/test/resources/splits_imp_toggle.json")), StandardCharsets.UTF_8);
+        List<RecordedRequest> allRequests = new ArrayList<>();
+
+        Dispatcher dispatcher = new Dispatcher() {
+            @Override
+            public MockResponse dispatch(RecordedRequest request) {
+                allRequests.add(request);
+                switch (request.getPath()) {
+                    case "/api/splitChanges?s=1.1&since=-1":
+                        return new MockResponse().setResponseCode(200).setBody(splits);
+                    case "/api/splitChanges?s=1.1&since=1602796638344":
+                        return new MockResponse().setResponseCode(200).setBody("{\"splits\": [], \"since\":1602796638344, \"till\":1602796638344}");
+                    case "/api/testImpressions/bulk":
+                        return new MockResponse().setResponseCode(200);
+                    case "/api/testImpressions/count":
+                        return new MockResponse().setResponseCode(200);
+                    case "/v1/keys/ss":
+                        return new MockResponse().setResponseCode(200);
+                    case "/v1/metrics/usage":
+                        return new MockResponse().setResponseCode(200);
+                    case "/v1/metrics/config":
+                        return new MockResponse().setResponseCode(200);
+                }
+                return new MockResponse().setResponseCode(404);
+            }
+        };
+
+        MockWebServer server = new MockWebServer();
+        server.setDispatcher(dispatcher);
+
+        server.start();
+        String serverURL = String.format("http://%s:%s", server.getHostName(), server.getPort());
+        SplitClientConfig config = SplitClientConfig.builder()
+                .setBlockUntilReadyTimeout(10000)
+                .endpoint(serverURL, serverURL)
+                .telemetryURL(serverURL + "/v1")
+                .authServiceURL(String.format("%s/api/auth/enabled", serverURL))
+                .streamingEnabled(false)
+                .featuresRefreshRate(5)
+                .impressionsMode(ImpressionsManager.Mode.NONE)
+                .build();
+
+        SplitFactory factory = SplitFactoryBuilder.build("fake-api-token", config);
+        SplitClient client = factory.client();
+        client.blockUntilReady();
+
+        Assert.assertEquals("off", client.getTreatment("user1", "without_impression_toggle", null));
+        Assert.assertEquals("off", client.getTreatment("user2", "impression_toggle_on", null));
+        Assert.assertEquals("off", client.getTreatment("user3", "impression_toggle_off", null));
+        client.destroy();
+        boolean check1 = false, check2 = false, check3 = false;
+        for (int i=0; i < allRequests.size(); i++ ) {
+            if (allRequests.get(i).getPath().equals("/api/testImpressions/bulk") ) {
+                check1 = true;
+            }
+            if (allRequests.get(i).getPath().equals("/v1/keys/ss")) {
+                check2 = true;
+                String body = allRequests.get(i).getBody().readUtf8();
+                Assert.assertTrue(body.contains("without_impression_toggle"));
+                Assert.assertTrue(body.contains("impression_toggle_on"));
+                Assert.assertTrue(body.contains("impression_toggle_off"));
+            }
+            if (allRequests.get(i).getPath().equals("/api/testImpressions/count")) {
+                check3 = true;
+                String body = allRequests.get(i).getBody().readUtf8();
+                Assert.assertTrue(body.contains("without_impression_toggle"));
+                Assert.assertTrue(body.contains("impression_toggle_on"));
+                Assert.assertTrue(body.contains("impression_toggle_off"));
+            }
+        }
+        server.shutdown();
+        Assert.assertFalse(check1);
+        Assert.assertTrue(check2);
+        Assert.assertTrue(check3);
     }
 
     private SSEMockServer buildSSEMockServer(SSEMockServer.SseEventQueue eventQueue) {
