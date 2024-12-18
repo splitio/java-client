@@ -66,9 +66,9 @@ public final class SplitParser {
 
     private ParsedSplit parseWithoutExceptionHandling(Split split) {
         List<ParsedCondition> parsedConditionList = Lists.newArrayList();
-        if (Objects.isNull(split.trackImpression)) {
-            _log.debug("trackImpression field not detected for Feature flag `" + split.name + "`, setting it to `true`.");
-            split.trackImpression = true;
+        if (Objects.isNull(split.trackImpressions)) {
+            _log.debug("trackImpressions field not detected for Feature flag `" + split.name + "`, setting it to `true`.");
+            split.trackImpressions = true;
         }
         for (Condition condition : split.conditions) {
             List<Partition> partitions = condition.partitions;
@@ -95,7 +95,7 @@ public final class SplitParser {
                 split.algo,
                 split.configurations,
                 split.sets,
-                split.trackImpression);
+                split.trackImpressions);
     }
 
     private boolean checkUnsupportedMatcherExist(List<io.split.client.dtos.Matcher> matchers) {

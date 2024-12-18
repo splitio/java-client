@@ -32,7 +32,7 @@ public class ParsedSplit {
     private final int _algo;
     private final Map<String, String> _configurations;
     private final HashSet<String> _flagSets;
-    private final boolean _trackImpression;
+    private final boolean _trackImpressions;
 
     public static ParsedSplit createParsedSplitForTests(
             String feature,
@@ -44,7 +44,7 @@ public class ParsedSplit {
             long changeNumber,
             int algo,
             HashSet<String> flagSets,
-            boolean trackImpression
+            boolean trackImpressions
     ) {
         return new ParsedSplit(
                 feature,
@@ -59,7 +59,7 @@ public class ParsedSplit {
                 algo,
                 null,
                 flagSets,
-                trackImpression
+                trackImpressions
         );
     }
 
@@ -74,7 +74,7 @@ public class ParsedSplit {
             int algo,
             Map<String, String> configurations,
             HashSet<String> flagSets,
-            boolean trackImpression
+            boolean trackImpressions
     ) {
         return new ParsedSplit(
                 feature,
@@ -89,7 +89,7 @@ public class ParsedSplit {
                 algo,
                 configurations,
                 flagSets,
-                trackImpression
+                trackImpressions
         );
     }
 
@@ -106,7 +106,7 @@ public class ParsedSplit {
             int algo,
             Map<String, String> configurations,
             HashSet<String> flagSets,
-            boolean trackImpression
+            boolean trackImpressions
     ) {
         _split = feature;
         _seed = seed;
@@ -123,7 +123,7 @@ public class ParsedSplit {
         _trafficAllocationSeed = trafficAllocationSeed;
         _configurations = configurations;
         _flagSets = flagSets;
-        _trackImpression = trackImpression;
+        _trackImpressions = trackImpressions;
     }
 
     public String feature() {
@@ -167,8 +167,8 @@ public class ParsedSplit {
         return _configurations;
     }
 
-    public boolean trackImpression() {
-        return _trackImpression;
+    public boolean trackImpressions() {
+        return _trackImpressions;
     }
 
     @Override
@@ -183,7 +183,7 @@ public class ParsedSplit {
         result = 31 * result + (int)(_changeNumber ^ (_changeNumber >>> 32));
         result = 31 * result + (_algo ^ (_algo >>> 32));
         result = 31 * result + (_configurations == null? 0 : _configurations.hashCode());
-        result = 31 * result + (_trackImpression ? 1 : 0);
+        result = 31 * result + (_trackImpressions ? 1 : 0);
         return result;
     }
 
@@ -204,7 +204,7 @@ public class ParsedSplit {
                 && _changeNumber == other._changeNumber
                 && _algo == other._algo
                 && _configurations == null ? other._configurations == null : _configurations.equals(other._configurations)
-                && _trackImpression == other._trackImpression;
+                && _trackImpressions == other._trackImpressions;
     }
 
     @Override
@@ -228,8 +228,8 @@ public class ParsedSplit {
         bldr.append(_algo);
         bldr.append(", config:");
         bldr.append(_configurations);
-        bldr.append(", trackImpression:");
-        bldr.append(_trackImpression);
+        bldr.append(", trackImpressions:");
+        bldr.append(_trackImpressions);
         return bldr.toString();
 
     }

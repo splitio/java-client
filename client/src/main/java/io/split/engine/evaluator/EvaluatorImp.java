@@ -91,7 +91,7 @@ public class EvaluatorImp implements Evaluator {
                         Labels.KILLED,
                         parsedSplit.changeNumber(),
                         config,
-                        parsedSplit.trackImpression());
+                        parsedSplit.trackImpressions());
             }
 
             /*
@@ -117,7 +117,7 @@ public class EvaluatorImp implements Evaluator {
                             String config = parsedSplit.configurations() != null ?
                                     parsedSplit.configurations().get(parsedSplit.defaultTreatment()) : null;
                             return new TreatmentLabelAndChangeNumber(parsedSplit.defaultTreatment(), Labels.NOT_IN_SPLIT,
-                                    parsedSplit.changeNumber(), config, parsedSplit.trackImpression());
+                                    parsedSplit.changeNumber(), config, parsedSplit.trackImpressions());
                         }
 
                     }
@@ -132,7 +132,7 @@ public class EvaluatorImp implements Evaluator {
                             parsedCondition.label(),
                             parsedSplit.changeNumber(),
                             config,
-                            parsedSplit.trackImpression());
+                            parsedSplit.trackImpressions());
                 }
             }
 
@@ -142,7 +142,7 @@ public class EvaluatorImp implements Evaluator {
                     Labels.DEFAULT_RULE,
                     parsedSplit.changeNumber(),
                     config,
-                    parsedSplit.trackImpression());
+                    parsedSplit.trackImpressions());
         } catch (Exception e) {
             throw new ChangeNumberExceptionWrapper(e, parsedSplit.changeNumber());
         }
