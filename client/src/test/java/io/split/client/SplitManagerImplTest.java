@@ -246,10 +246,10 @@ public class SplitManagerImplTest {
                 mock(SDKReadinessGates.class), TELEMETRY_STORAGE);
 
         SplitView splitView = splitManager.split("without_impression_toggle");
-        assertTrue(splitView.trackImpression);
+        assertTrue(splitView.trackImpressions);
         splitView = splitManager.split("impression_toggle_on");
-        assertTrue(splitView.trackImpression);
+        assertTrue(splitView.trackImpressions);
         splitView = splitManager.split("impression_toggle_off");
-        assertFalse(splitView.trackImpression);
+        assertFalse(splitView.trackImpressions);
     }
 }

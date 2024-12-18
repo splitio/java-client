@@ -98,6 +98,8 @@ public class SplitParserTest {
         ParsedSplit expected = ParsedSplit.createParsedSplitForTests("first.name", 123, false, Treatments.OFF, listOfMatcherAndSplits, "user", 1, 1, new HashSet<>(), true);
 
         Assert.assertEquals(actual, expected);
+        assertTrue(expected.hashCode() != 0);
+        assertTrue(expected.equals(expected));
     }
 
     @Test
@@ -650,15 +652,15 @@ public class SplitParserTest {
         for (Split split : change.splits) {
             ParsedSplit parsedSplit = parser.parse(split);
             if (split.name.equals("without_impression_toggle")) {
-                assertTrue(parsedSplit.trackImpression());
+                assertTrue(parsedSplit.trackImpressions());
                 check1 = true;
             }
             if (split.name.equals("impression_toggle_on")) {
-                assertTrue(parsedSplit.trackImpression());
+                assertTrue(parsedSplit.trackImpressions());
                 check2 = true;
             }
             if (split.name.equals("impression_toggle_off")) {
-                assertFalse(parsedSplit.trackImpression());
+                assertFalse(parsedSplit.trackImpressions());
                 check3 = true;
             }
         }
