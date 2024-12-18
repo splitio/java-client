@@ -98,6 +98,8 @@ public class SplitParserTest {
         ParsedSplit expected = ParsedSplit.createParsedSplitForTests("first.name", 123, false, Treatments.OFF, listOfMatcherAndSplits, "user", 1, 1, new HashSet<>(), true);
 
         Assert.assertEquals(actual, expected);
+        assertTrue(expected.hashCode() != 0);
+        assertTrue(expected.equals(expected));
     }
 
     @Test
