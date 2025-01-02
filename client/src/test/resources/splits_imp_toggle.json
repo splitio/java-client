@@ -97,7 +97,7 @@
           "label": "default rule"
         }
       ],
-      "trackImpressions": true
+      "impressionsDisabled": false
     },
     {
       "trafficTypeName": "user",
@@ -147,7 +147,7 @@
           "label": "default rule"
         }
       ],
-      "trackImpressions": false
+      "impressionsDisabled": true
     }
   ],
   "since": -1,

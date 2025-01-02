@@ -65,7 +65,7 @@ public class SplitManagerImplTest {
         String existent = "existent";
 
         SplitCacheConsumer splitCacheConsumer = mock(SplitCacheConsumer.class);
-        ParsedSplit response = ParsedSplit.createParsedSplitForTests("FeatureName", 123, true, "off", Lists.newArrayList(getTestCondition("off")), "traffic", 456L, 1, new HashSet<>(), true);
+        ParsedSplit response = ParsedSplit.createParsedSplitForTests("FeatureName", 123, true, "off", Lists.newArrayList(getTestCondition("off")), "traffic", 456L, 1, new HashSet<>(), false);
         when(splitCacheConsumer.get(existent)).thenReturn(response);
 
         SplitManagerImpl splitManager = new SplitManagerImpl(splitCacheConsumer,
@@ -91,7 +91,7 @@ public class SplitManagerImplTest {
         Map<String, String> configurations = new HashMap<>();
         configurations.put(Treatments.OFF, "{\"size\" : 30}");
 
-        ParsedSplit response = ParsedSplit.createParsedSplitForTests("FeatureName", 123, true, "off", Lists.newArrayList(getTestCondition("off")), "traffic", 456L, 1, configurations, new HashSet<>(), true);
+        ParsedSplit response = ParsedSplit.createParsedSplitForTests("FeatureName", 123, true, "off", Lists.newArrayList(getTestCondition("off")), "traffic", 456L, 1, configurations, new HashSet<>(), false);
         when(splitCacheConsumer.get(existent)).thenReturn(response);
 
         SplitManagerImpl splitManager = new SplitManagerImpl(splitCacheConsumer,
@@ -127,7 +127,7 @@ public class SplitManagerImplTest {
         List<ParsedSplit> parsedSplits = Lists.newArrayList();
         SDKReadinessGates gates = mock(SDKReadinessGates.class);
         when(gates.isSDKReady()).thenReturn(false);
-        ParsedSplit response = ParsedSplit.createParsedSplitForTests("FeatureName", 123, true, "off", Lists.newArrayList(getTestCondition("off")), "traffic", 456L, 1, new HashSet<>(), true);
+        ParsedSplit response = ParsedSplit.createParsedSplitForTests("FeatureName", 123, true, "off", Lists.newArrayList(getTestCondition("off")), "traffic", 456L, 1, new HashSet<>(), false);
         parsedSplits.add(response);
 
         when(splitCacheConsumer.getAll()).thenReturn(parsedSplits);
@@ -202,7 +202,7 @@ public class SplitManagerImplTest {
         String existent = "existent";
         SplitCacheConsumer splitCacheConsumer = mock(SplitCacheConsumer.class);
         ParsedSplit response = ParsedSplit.createParsedSplitForTests("FeatureName", 123, true, "off",
-                Lists.newArrayList(getTestCondition("off")), "traffic", 456L, 1, new HashSet<>(Arrays.asList("set1", "set2", "set3")), true);
+                Lists.newArrayList(getTestCondition("off")), "traffic", 456L, 1, new HashSet<>(Arrays.asList("set1", "set2", "set3")), false);
         when(splitCacheConsumer.get(existent)).thenReturn(response);
 
         SplitManagerImpl splitManager = new SplitManagerImpl(splitCacheConsumer,
@@ -217,7 +217,7 @@ public class SplitManagerImplTest {
         String existent = "existent";
         SplitCacheConsumer splitCacheConsumer = mock(SplitCacheConsumer.class);
         ParsedSplit response = ParsedSplit.createParsedSplitForTests("FeatureName", 123, true, "off",
-                Lists.newArrayList(getTestCondition("off")), "traffic", 456L, 1, null, true);
+                Lists.newArrayList(getTestCondition("off")), "traffic", 456L, 1, null, false);
         when(splitCacheConsumer.get(existent)).thenReturn(response);
 
         SplitManagerImpl splitManager = new SplitManagerImpl(splitCacheConsumer,
@@ -246,10 +246,10 @@ public class SplitManagerImplTest {
                 mock(SDKReadinessGates.class), TELEMETRY_STORAGE);
 
         SplitView splitView = splitManager.split("without_impression_toggle");
-        assertTrue(splitView.trackImpressions);
+        assertFalse(splitView.impressionsDisabled);
         splitView = splitManager.split("impression_toggle_on");
-        assertTrue(splitView.trackImpressions);
+        assertFalse(splitView.impressionsDisabled);
         splitView = splitManager.split("impression_toggle_off");
-        assertFalse(splitView.trackImpressions);
+        assertTrue(splitView.impressionsDisabled);
     }
 }
