@@ -4,15 +4,15 @@ import io.split.client.impressions.Impression;
 
 public class DecoratedImpression {
     private Impression impression;
-    private boolean track;
+    private boolean disabled;
 
-    public DecoratedImpression(Impression impression, boolean track) {
+    public DecoratedImpression(Impression impression, boolean disabled) {
         this.impression = impression;
-        this.track = track;
+        this.disabled = disabled;
     }
 
     public Impression impression() { return this.impression;}
 
-    public boolean track() { return this.track;}
+    public boolean disabled() { return this.disabled;}
 }
 

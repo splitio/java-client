@@ -95,7 +95,7 @@ public class SplitParserTest {
         ParsedCondition parsedCondition = ParsedCondition.createParsedConditionForTests(combiningMatcher, partitions);
         List<ParsedCondition> listOfMatcherAndSplits = Lists.newArrayList(parsedCondition);
 
-        ParsedSplit expected = ParsedSplit.createParsedSplitForTests("first.name", 123, false, Treatments.OFF, listOfMatcherAndSplits, "user", 1, 1, new HashSet<>(), true);
+        ParsedSplit expected = ParsedSplit.createParsedSplitForTests("first.name", 123, false, Treatments.OFF, listOfMatcherAndSplits, "user", 1, 1, new HashSet<>(), false);
 
         Assert.assertEquals(actual, expected);
         assertTrue(expected.hashCode() != 0);
@@ -138,7 +138,7 @@ public class SplitParserTest {
         List<ParsedCondition> listOfMatcherAndSplits = Lists.newArrayList(parsedCondition);
 
         ParsedSplit expected = ParsedSplit.createParsedSplitForTests("first.name", 123, false, Treatments.OFF,
-                listOfMatcherAndSplits, "user", 1, 1, configurations, new HashSet<>(), true);
+                listOfMatcherAndSplits, "user", 1, 1, configurations, new HashSet<>(), false);
 
         Assert.assertEquals(actual, expected);
         Assert.assertEquals(actual.configurations().get("on"), configurations.get("on"));
@@ -177,7 +177,7 @@ public class SplitParserTest {
         ParsedCondition parsedCondition2 = ParsedCondition.createParsedConditionForTests(CombiningMatcher.of(new UserDefinedSegmentMatcher(EMPLOYEES)), turnOff);
         List<ParsedCondition> listOfParsedConditions = Lists.newArrayList(parsedCondition1, parsedCondition2);
 
-        ParsedSplit expected = ParsedSplit.createParsedSplitForTests("first.name", 123, false, Treatments.OFF, listOfParsedConditions, "user", 1, 1, new HashSet<>(), true);
+        ParsedSplit expected = ParsedSplit.createParsedSplitForTests("first.name", 123, false, Treatments.OFF, listOfParsedConditions, "user", 1, 1, new HashSet<>(), false);
 
         Assert.assertEquals(actual, expected);
     }
@@ -246,7 +246,7 @@ public class SplitParserTest {
         ParsedCondition parsedCondition = ParsedCondition.createParsedConditionForTests(combiningMatcher, partitions);
         List<ParsedCondition> listOfMatcherAndSplits = Lists.newArrayList(parsedCondition);
 
-        ParsedSplit expected = ParsedSplit.createParsedSplitForTests("first.name", 123, false, Treatments.OFF, listOfMatcherAndSplits, "user", 1, 1, new HashSet<>(), true);
+        ParsedSplit expected = ParsedSplit.createParsedSplitForTests("first.name", 123, false, Treatments.OFF, listOfMatcherAndSplits, "user", 1, 1, new HashSet<>(), false);
 
         Assert.assertEquals(actual, expected);
     }
@@ -279,7 +279,7 @@ public class SplitParserTest {
         ParsedCondition parsedCondition = ParsedCondition.createParsedConditionForTests(combiningMatcher, partitions);
         List<ParsedCondition> listOfMatcherAndSplits = Lists.newArrayList(parsedCondition);
 
-        ParsedSplit expected = ParsedSplit.createParsedSplitForTests("first.name", 123, false, Treatments.OFF, listOfMatcherAndSplits, "user", 1, 1, new HashSet<>(), true);
+        ParsedSplit expected = ParsedSplit.createParsedSplitForTests("first.name", 123, false, Treatments.OFF, listOfMatcherAndSplits, "user", 1, 1, new HashSet<>(), false);
 
         Assert.assertEquals(actual, expected);
     }
@@ -311,7 +311,7 @@ public class SplitParserTest {
         ParsedCondition parsedCondition = ParsedCondition.createParsedConditionForTests(combiningMatcher, partitions);
         List<ParsedCondition> listOfMatcherAndSplits = Lists.newArrayList(parsedCondition);
 
-        ParsedSplit expected = ParsedSplit.createParsedSplitForTests("first.name", 123, false, Treatments.OFF, listOfMatcherAndSplits, "user", 1, 1, new HashSet<>(), true);
+        ParsedSplit expected = ParsedSplit.createParsedSplitForTests("first.name", 123, false, Treatments.OFF, listOfMatcherAndSplits, "user", 1, 1, new HashSet<>(), false);
 
         Assert.assertEquals(actual, expected);
     }
@@ -342,7 +342,7 @@ public class SplitParserTest {
         ParsedCondition parsedCondition = ParsedCondition.createParsedConditionForTests(combiningMatcher, partitions);
         List<ParsedCondition> listOfMatcherAndSplits = Lists.newArrayList(parsedCondition);
 
-        ParsedSplit expected = ParsedSplit.createParsedSplitForTests("first.name", 123, false, Treatments.OFF, listOfMatcherAndSplits, "user", 1, 1, new HashSet<>(), true);
+        ParsedSplit expected = ParsedSplit.createParsedSplitForTests("first.name", 123, false, Treatments.OFF, listOfMatcherAndSplits, "user", 1, 1, new HashSet<>(), false);
 
         Assert.assertEquals(actual, expected);
     }
@@ -378,7 +378,7 @@ public class SplitParserTest {
         ParsedCondition parsedCondition = ParsedCondition.createParsedConditionForTests(combiningMatcher, partitions);
         List<ParsedCondition> listOfMatcherAndSplits = Lists.newArrayList(parsedCondition);
 
-        ParsedSplit expected = ParsedSplit.createParsedSplitForTests("first.name", 123, false, Treatments.OFF, listOfMatcherAndSplits, "user", 1, 1, new HashSet<>(), true);
+        ParsedSplit expected = ParsedSplit.createParsedSplitForTests("first.name", 123, false, Treatments.OFF, listOfMatcherAndSplits, "user", 1, 1, new HashSet<>(), false);
 
         Assert.assertEquals(actual, expected);
     }
@@ -652,15 +652,15 @@ public class SplitParserTest {
         for (Split split : change.splits) {
             ParsedSplit parsedSplit = parser.parse(split);
             if (split.name.equals("without_impression_toggle")) {
-                assertTrue(parsedSplit.trackImpressions());
+                assertFalse(parsedSplit.impressionsDisabled());
                 check1 = true;
             }
             if (split.name.equals("impression_toggle_on")) {
-                assertTrue(parsedSplit.trackImpressions());
+                assertFalse(parsedSplit.impressionsDisabled());
                 check2 = true;
             }
             if (split.name.equals("impression_toggle_off")) {
-                assertFalse(parsedSplit.trackImpressions());
+                assertTrue(parsedSplit.impressionsDisabled());
                 check3 = true;
             }
         }
@@ -694,7 +694,7 @@ public class SplitParserTest {
         ParsedCondition parsedCondition = ParsedCondition.createParsedConditionForTests(combiningMatcher, partitions);
         List<ParsedCondition> listOfMatcherAndSplits = Lists.newArrayList(parsedCondition);
 
-        ParsedSplit expected = ParsedSplit.createParsedSplitForTests("splitName", 123, false, Treatments.OFF, listOfMatcherAndSplits, "user", 1, 1, new HashSet<>(), true);
+        ParsedSplit expected = ParsedSplit.createParsedSplitForTests("splitName", 123, false, Treatments.OFF, listOfMatcherAndSplits, "user", 1, 1, new HashSet<>(), false);
 
         Assert.assertEquals(actual, expected);
     }

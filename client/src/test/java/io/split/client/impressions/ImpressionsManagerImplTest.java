@@ -86,10 +86,10 @@ public class ImpressionsManagerImplTest {
         KeyImpression ki3 = keyImpression("test1", "pato", "on", 3L, 2L);
         KeyImpression ki4 = keyImpression("test2", "pato", "on", 4L, 3L);
 
-        treatmentLog.track(Stream.of(new DecoratedImpression(new Impression(ki1.keyName, null, ki1.feature, ki1.treatment, ki1.time, null, ki1.changeNumber, null), true)).collect(Collectors.toList()));
-        treatmentLog.track(Stream.of(new DecoratedImpression(new Impression(ki2.keyName, null, ki2.feature, ki2.treatment, ki2.time, null, ki2.changeNumber, null), true)).collect(Collectors.toList()));
-        treatmentLog.track(Stream.of(new DecoratedImpression(new Impression(ki3.keyName, null, ki3.feature, ki3.treatment, ki3.time, null, ki3.changeNumber, null), true)).collect(Collectors.toList()));
-        treatmentLog.track(Stream.of(new DecoratedImpression(new Impression(ki4.keyName, null, ki4.feature, ki4.treatment, ki4.time, null, ki4.changeNumber, null), true)).collect(Collectors.toList()));
+        treatmentLog.track(Stream.of(new DecoratedImpression(new Impression(ki1.keyName, null, ki1.feature, ki1.treatment, ki1.time, null, ki1.changeNumber, null), false)).collect(Collectors.toList()));
+        treatmentLog.track(Stream.of(new DecoratedImpression(new Impression(ki2.keyName, null, ki2.feature, ki2.treatment, ki2.time, null, ki2.changeNumber, null), false)).collect(Collectors.toList()));
+        treatmentLog.track(Stream.of(new DecoratedImpression(new Impression(ki3.keyName, null, ki3.feature, ki3.treatment, ki3.time, null, ki3.changeNumber, null), false)).collect(Collectors.toList()));
+        treatmentLog.track(Stream.of(new DecoratedImpression(new Impression(ki4.keyName, null, ki4.feature, ki4.treatment, ki4.time, null, ki4.changeNumber, null), false)).collect(Collectors.toList()));
 
         // Do what the scheduler would do.
         treatmentLog.sendImpressions();
@@ -129,10 +129,10 @@ public class ImpressionsManagerImplTest {
         KeyImpression ki4 = keyImpression("test2", "pato", "on", 4L, 3L);
 
         List<DecoratedImpression> impressionList = new ArrayList<>();
-        impressionList.add(new DecoratedImpression(new Impression(ki1.keyName, null, ki1.feature, ki1.treatment, ki1.time, null, ki1.changeNumber, null), true));
-        impressionList.add(new DecoratedImpression(new Impression(ki2.keyName, null, ki2.feature, ki2.treatment, ki2.time, null, ki2.changeNumber, null), true));
-        impressionList.add(new DecoratedImpression(new Impression(ki3.keyName, null, ki3.feature, ki3.treatment, ki3.time, null, ki3.changeNumber, null), true));
-        impressionList.add(new DecoratedImpression(new Impression(ki4.keyName, null, ki4.feature, ki4.treatment, ki4.time, null, ki4.changeNumber, null), true));
+        impressionList.add(new DecoratedImpression(new Impression(ki1.keyName, null, ki1.feature, ki1.treatment, ki1.time, null, ki1.changeNumber, null), false));
+        impressionList.add(new DecoratedImpression(new Impression(ki2.keyName, null, ki2.feature, ki2.treatment, ki2.time, null, ki2.changeNumber, null), false));
+        impressionList.add(new DecoratedImpression(new Impression(ki3.keyName, null, ki3.feature, ki3.treatment, ki3.time, null, ki3.changeNumber, null), false));
+        impressionList.add(new DecoratedImpression(new Impression(ki4.keyName, null, ki4.feature, ki4.treatment, ki4.time, null, ki4.changeNumber, null), false));
 
         treatmentLog.track(impressionList);
         verify(impressionListener, times(4)).log(Mockito.anyObject());
@@ -171,10 +171,10 @@ public class ImpressionsManagerImplTest {
         KeyImpression ki4 = keyImpression("test2", "pato", "on", 4L, 3L);
 
         List<DecoratedImpression> impressionList = new ArrayList<>();
-        impressionList.add(new DecoratedImpression(new Impression(ki1.keyName, null, ki1.feature, ki1.treatment, ki1.time, null, ki1.changeNumber, null), true));
-        impressionList.add(new DecoratedImpression(new Impression(ki2.keyName, null, ki2.feature, ki2.treatment, ki2.time, null, ki2.changeNumber, null), true));
-        impressionList.add(new DecoratedImpression(new Impression(ki3.keyName, null, ki3.feature, ki3.treatment, ki3.time, null, ki3.changeNumber, null), true));
-        impressionList.add(new DecoratedImpression(new Impression(ki4.keyName, null, ki4.feature, ki4.treatment, ki4.time, null, ki4.changeNumber, null), true));
+        impressionList.add(new DecoratedImpression(new Impression(ki1.keyName, null, ki1.feature, ki1.treatment, ki1.time, null, ki1.changeNumber, null), false));
+        impressionList.add(new DecoratedImpression(new Impression(ki2.keyName, null, ki2.feature, ki2.treatment, ki2.time, null, ki2.changeNumber, null), false));
+        impressionList.add(new DecoratedImpression(new Impression(ki3.keyName, null, ki3.feature, ki3.treatment, ki3.time, null, ki3.changeNumber, null), false));
+        impressionList.add(new DecoratedImpression(new Impression(ki4.keyName, null, ki4.feature, ki4.treatment, ki4.time, null, ki4.changeNumber, null), false));
 
         treatmentLog.track(impressionList);
         verify(impressionListener, times(4)).log(Mockito.anyObject());
@@ -215,10 +215,10 @@ public class ImpressionsManagerImplTest {
         KeyImpression ki4 = keyImpression("test2", "pato", "on", 4L, 3L);
 
         List<DecoratedImpression> impressionList = new ArrayList<>();
-        impressionList.add(new DecoratedImpression(new Impression(ki1.keyName, null, ki1.feature, ki1.treatment, ki1.time, null, ki1.changeNumber, null), true));
-        impressionList.add(new DecoratedImpression(new Impression(ki2.keyName, null, ki2.feature, ki2.treatment, ki2.time, null, ki2.changeNumber, null), true));
-        impressionList.add(new DecoratedImpression(new Impression(ki3.keyName, null, ki3.feature, ki3.treatment, ki3.time, null, ki3.changeNumber, null), true));
-        impressionList.add(new DecoratedImpression(new Impression(ki4.keyName, null, ki4.feature, ki4.treatment, ki4.time, null, ki4.changeNumber, null), true));
+        impressionList.add(new DecoratedImpression(new Impression(ki1.keyName, null, ki1.feature, ki1.treatment, ki1.time, null, ki1.changeNumber, null), false));
+        impressionList.add(new DecoratedImpression(new Impression(ki2.keyName, null, ki2.feature, ki2.treatment, ki2.time, null, ki2.changeNumber, null), false));
+        impressionList.add(new DecoratedImpression(new Impression(ki3.keyName, null, ki3.feature, ki3.treatment, ki3.time, null, ki3.changeNumber, null), false));
+        impressionList.add(new DecoratedImpression(new Impression(ki4.keyName, null, ki4.feature, ki4.treatment, ki4.time, null, ki4.changeNumber, null), false));
 
         treatmentLog.track(impressionList);
         verify(impressionListener, times(4)).log(Mockito.anyObject());
@@ -256,10 +256,10 @@ public class ImpressionsManagerImplTest {
         KeyImpression ki3 = keyImpression("test3", "pato", "on", 3L, null);
         KeyImpression ki4 = keyImpression("test4", "pato", "on", 4L, null);
 
-        treatmentLog.track(Stream.of(new DecoratedImpression(new Impression(ki1.keyName, null, ki1.feature, ki1.treatment, ki1.time, null, null, null), true)).collect(Collectors.toList()));
-        treatmentLog.track(Stream.of(new DecoratedImpression(new Impression(ki2.keyName, null, ki2.feature, ki2.treatment, ki2.time, null, null, null), true)).collect(Collectors.toList()));
-        treatmentLog.track(Stream.of(new DecoratedImpression(new Impression(ki3.keyName, null, ki3.feature, ki3.treatment, ki3.time, null, null, null), true)).collect(Collectors.toList()));
-        treatmentLog.track(Stream.of(new DecoratedImpression(new Impression(ki4.keyName, null, ki4.feature, ki4.treatment, ki4.time, null, null, null), true)).collect(Collectors.toList()));
+        treatmentLog.track(Stream.of(new DecoratedImpression(new Impression(ki1.keyName, null, ki1.feature, ki1.treatment, ki1.time, null, null, null), false)).collect(Collectors.toList()));
+        treatmentLog.track(Stream.of(new DecoratedImpression(new Impression(ki2.keyName, null, ki2.feature, ki2.treatment, ki2.time, null, null, null), false)).collect(Collectors.toList()));
+        treatmentLog.track(Stream.of(new DecoratedImpression(new Impression(ki3.keyName, null, ki3.feature, ki3.treatment, ki3.time, null, null, null), false)).collect(Collectors.toList()));
+        treatmentLog.track(Stream.of(new DecoratedImpression(new Impression(ki4.keyName, null, ki4.feature, ki4.treatment, ki4.time, null, null, null), false)).collect(Collectors.toList()));
 
         // Do what the scheduler would do.
         treatmentLog.sendImpressions();
@@ -298,10 +298,10 @@ public class ImpressionsManagerImplTest {
         KeyImpression ki3 = keyImpression("test1", "pato", "on", 3L, 1L);
         KeyImpression ki4 = keyImpression("test1", "pato", "on", 4L, 1L);
 
-        treatmentLog.track(Stream.of(new DecoratedImpression(new Impression(ki1.keyName, null, ki1.feature, ki1.treatment, ki1.time, null, 1L, null), true)).collect(Collectors.toList()));
-        treatmentLog.track(Stream.of(new DecoratedImpression(new Impression(ki2.keyName, null, ki2.feature, ki2.treatment, ki2.time, null, 1L, null), true)).collect(Collectors.toList()));
-        treatmentLog.track(Stream.of(new DecoratedImpression(new Impression(ki3.keyName, null, ki3.feature, ki3.treatment, ki3.time, null, 1L, null), true)).collect(Collectors.toList()));
-        treatmentLog.track(Stream.of(new DecoratedImpression(new Impression(ki4.keyName, null, ki4.feature, ki4.treatment, ki4.time, null, 1L, null), true)).collect(Collectors.toList()));
+        treatmentLog.track(Stream.of(new DecoratedImpression(new Impression(ki1.keyName, null, ki1.feature, ki1.treatment, ki1.time, null, 1L, null), false)).collect(Collectors.toList()));
+        treatmentLog.track(Stream.of(new DecoratedImpression(new Impression(ki2.keyName, null, ki2.feature, ki2.treatment, ki2.time, null, 1L, null), false)).collect(Collectors.toList()));
+        treatmentLog.track(Stream.of(new DecoratedImpression(new Impression(ki3.keyName, null, ki3.feature, ki3.treatment, ki3.time, null, 1L, null), false)).collect(Collectors.toList()));
+        treatmentLog.track(Stream.of(new DecoratedImpression(new Impression(ki4.keyName, null, ki4.feature, ki4.treatment, ki4.time, null, 1L, null), false)).collect(Collectors.toList()));
 
         // Do what the scheduler would do.
         treatmentLog.sendImpressions();
@@ -367,10 +367,10 @@ public class ImpressionsManagerImplTest {
         KeyImpression ki3 = keyImpression("test1", "pato", "on", 3L, 1L);
         KeyImpression ki4 = keyImpression("test1", "pato2", "on", 4L, 1L);
 
-        treatmentLog.track(Stream.of(new DecoratedImpression(new Impression(ki1.keyName, null, ki1.feature, ki1.treatment, ki1.time, null, 1L, null), true)).collect(Collectors.toList()));
-        treatmentLog.track(Stream.of(new DecoratedImpression(new Impression(ki2.keyName, null, ki2.feature, ki2.treatment, ki2.time, null, 1L, null), true)).collect(Collectors.toList()));
-        treatmentLog.track(Stream.of(new DecoratedImpression(new Impression(ki3.keyName, null, ki3.feature, ki3.treatment, ki3.time, null, 1L, null), true)).collect(Collectors.toList()));
-        treatmentLog.track(Stream.of(new DecoratedImpression(new Impression(ki4.keyName, null, ki4.feature, ki4.treatment, ki4.time, null, 1L, null), true)).collect(Collectors.toList()));
+        treatmentLog.track(Stream.of(new DecoratedImpression(new Impression(ki1.keyName, null, ki1.feature, ki1.treatment, ki1.time, null, 1L, null), false)).collect(Collectors.toList()));
+        treatmentLog.track(Stream.of(new DecoratedImpression(new Impression(ki2.keyName, null, ki2.feature, ki2.treatment, ki2.time, null, 1L, null), false)).collect(Collectors.toList()));
+        treatmentLog.track(Stream.of(new DecoratedImpression(new Impression(ki3.keyName, null, ki3.feature, ki3.treatment, ki3.time, null, 1L, null), false)).collect(Collectors.toList()));
+        treatmentLog.track(Stream.of(new DecoratedImpression(new Impression(ki4.keyName, null, ki4.feature, ki4.treatment, ki4.time, null, 1L, null), false)).collect(Collectors.toList()));
         treatmentLog.sendImpressions();
 
         verify(senderMock).postImpressionsBulk(impressionsCaptor.capture());
@@ -384,10 +384,10 @@ public class ImpressionsManagerImplTest {
 
         // Do it again. Now they should all have a `seenAt` value
         Mockito.reset(senderMock);
-        treatmentLog.track(Stream.of(new DecoratedImpression(new Impression(ki1.keyName, null, ki1.feature, ki1.treatment, ki1.time, null, 1L, null), true)).collect(Collectors.toList()));
-        treatmentLog.track(Stream.of(new DecoratedImpression(new Impression(ki2.keyName, null, ki2.feature, ki2.treatment, ki2.time, null, 1L, null), true)).collect(Collectors.toList()));
-        treatmentLog.track(Stream.of(new DecoratedImpression(new Impression(ki3.keyName, null, ki3.feature, ki3.treatment, ki3.time, null, 1L, null), true)).collect(Collectors.toList()));
-        treatmentLog.track(Stream.of(new DecoratedImpression(new Impression(ki4.keyName, null, ki4.feature, ki4.treatment, ki4.time, null, 1L, null), true)).collect(Collectors.toList()));
+        treatmentLog.track(Stream.of(new DecoratedImpression(new Impression(ki1.keyName, null, ki1.feature, ki1.treatment, ki1.time, null, 1L, null), false)).collect(Collectors.toList()));
+        treatmentLog.track(Stream.of(new DecoratedImpression(new Impression(ki2.keyName, null, ki2.feature, ki2.treatment, ki2.time, null, 1L, null), false)).collect(Collectors.toList()));
+        treatmentLog.track(Stream.of(new DecoratedImpression(new Impression(ki3.keyName, null, ki3.feature, ki3.treatment, ki3.time, null, 1L, null), false)).collect(Collectors.toList()));
+        treatmentLog.track(Stream.of(new DecoratedImpression(new Impression(ki4.keyName, null, ki4.feature, ki4.treatment, ki4.time, null, 1L, null), false)).collect(Collectors.toList()));
         treatmentLog.sendImpressions();
 
         verify(senderMock).postImpressionsBulk(impressionsCaptor.capture());
@@ -426,10 +426,10 @@ public class ImpressionsManagerImplTest {
         KeyImpression ki3 = keyImpression("test1", "pato", "on", 3L, 1L);
         KeyImpression ki4 = keyImpression("test1", "pato", "on", 4L, 1L);
 
-        treatmentLog.track(Stream.of(new DecoratedImpression(new Impression(ki1.keyName, null, ki1.feature, ki1.treatment, ki1.time, null, 1L, null), true)).collect(Collectors.toList()));
-        treatmentLog.track(Stream.of(new DecoratedImpression(new Impression(ki2.keyName, null, ki2.feature, ki2.treatment, ki2.time, null, 1L, null), true)).collect(Collectors.toList()));
-        treatmentLog.track(Stream.of(new DecoratedImpression(new Impression(ki3.keyName, null, ki3.feature, ki3.treatment, ki3.time, null, 1L, null), true)).collect(Collectors.toList()));
-        treatmentLog.track(Stream.of(new DecoratedImpression(new Impression(ki4.keyName, null, ki4.feature, ki4.treatment, ki4.time, null, 1L, null), true)).collect(Collectors.toList()));
+        treatmentLog.track(Stream.of(new DecoratedImpression(new Impression(ki1.keyName, null, ki1.feature, ki1.treatment, ki1.time, null, 1L, null), false)).collect(Collectors.toList()));
+        treatmentLog.track(Stream.of(new DecoratedImpression(new Impression(ki2.keyName, null, ki2.feature, ki2.treatment, ki2.time, null, 1L, null), false)).collect(Collectors.toList()));
+        treatmentLog.track(Stream.of(new DecoratedImpression(new Impression(ki3.keyName, null, ki3.feature, ki3.treatment, ki3.time, null, 1L, null), false)).collect(Collectors.toList()));
+        treatmentLog.track(Stream.of(new DecoratedImpression(new Impression(ki4.keyName, null, ki4.feature, ki4.treatment, ki4.time, null, 1L, null), false)).collect(Collectors.toList()));
         treatmentLog.sendImpressions();
 
         verify(senderMock).postImpressionsBulk(impressionsCaptor.capture());
@@ -481,10 +481,10 @@ public class ImpressionsManagerImplTest {
         KeyImpression ki3 = keyImpression("test1", "pato", "on", 3L, 1L);
         KeyImpression ki4 = keyImpression("test1", "pato", "on", 4L, 1L);
 
-        treatmentLog.track(Stream.of(new DecoratedImpression(new Impression(ki1.keyName, null, ki1.feature, ki1.treatment, ki1.time, null, 1L, null), true)).collect(Collectors.toList()));
-        treatmentLog.track(Stream.of(new DecoratedImpression(new Impression(ki2.keyName, null, ki2.feature, ki2.treatment, ki2.time, null, 1L, null), true)).collect(Collectors.toList()));
-        treatmentLog.track(Stream.of(new DecoratedImpression(new Impression(ki3.keyName, null, ki3.feature, ki3.treatment, ki3.time, null, 1L, null), true)).collect(Collectors.toList()));
-        treatmentLog.track(Stream.of(new DecoratedImpression(new Impression(ki4.keyName, null, ki4.feature, ki4.treatment, ki4.time, null, 1L, null), true)).collect(Collectors.toList()));
+        treatmentLog.track(Stream.of(new DecoratedImpression(new Impression(ki1.keyName, null, ki1.feature, ki1.treatment, ki1.time, null, 1L, null), false)).collect(Collectors.toList()));
+        treatmentLog.track(Stream.of(new DecoratedImpression(new Impression(ki2.keyName, null, ki2.feature, ki2.treatment, ki2.time, null, 1L, null), false)).collect(Collectors.toList()));
+        treatmentLog.track(Stream.of(new DecoratedImpression(new Impression(ki3.keyName, null, ki3.feature, ki3.treatment, ki3.time, null, 1L, null), false)).collect(Collectors.toList()));
+        treatmentLog.track(Stream.of(new DecoratedImpression(new Impression(ki4.keyName, null, ki4.feature, ki4.treatment, ki4.time, null, 1L, null), false)).collect(Collectors.toList()));
         treatmentLog.sendImpressions();
 
         verify(senderMock).postImpressionsBulk(impressionsCaptor.capture());
@@ -533,10 +533,10 @@ public class ImpressionsManagerImplTest {
         KeyImpression ki3 = keyImpression("test1", "pato", "on", 3L, 1L);
         KeyImpression ki4 = keyImpression("test1", "pato", "on", 4L, 1L);
 
-        treatmentLog.track(Stream.of(new DecoratedImpression(new Impression(ki1.keyName, null, ki1.feature, ki1.treatment, ki1.time, null, 1L, null), true)).collect(Collectors.toList()));
-        treatmentLog.track(Stream.of(new DecoratedImpression(new Impression(ki2.keyName, null, ki2.feature, ki2.treatment, ki2.time, null, 1L, null), true)).collect(Collectors.toList()));
-        treatmentLog.track(Stream.of(new DecoratedImpression(new Impression(ki3.keyName, null, ki3.feature, ki3.treatment, ki3.time, null, 1L, null), true)).collect(Collectors.toList()));
-        treatmentLog.track(Stream.of(new DecoratedImpression(new Impression(ki4.keyName, null, ki4.feature, ki4.treatment, ki4.time, null, 1L, null), true)).collect(Collectors.toList()));
+        treatmentLog.track(Stream.of(new DecoratedImpression(new Impression(ki1.keyName, null, ki1.feature, ki1.treatment, ki1.time, null, 1L, null), false)).collect(Collectors.toList()));
+        treatmentLog.track(Stream.of(new DecoratedImpression(new Impression(ki2.keyName, null, ki2.feature, ki2.treatment, ki2.time, null, 1L, null), false)).collect(Collectors.toList()));
+        treatmentLog.track(Stream.of(new DecoratedImpression(new Impression(ki3.keyName, null, ki3.feature, ki3.treatment, ki3.time, null, 1L, null), false)).collect(Collectors.toList()));
+        treatmentLog.track(Stream.of(new DecoratedImpression(new Impression(ki4.keyName, null, ki4.feature, ki4.treatment, ki4.time, null, 1L, null), false)).collect(Collectors.toList()));
         treatmentLog.close();
         uniqueKeysTracker.stop();
 
@@ -590,10 +590,10 @@ public class ImpressionsManagerImplTest {
         KeyImpression ki3 = keyImpression("test1", "pato", "on", 3L, 1L);
         KeyImpression ki4 = keyImpression("test1", "pato", "on", 4L, 1L);
 
-        treatmentLog.track(Stream.of(new DecoratedImpression(new Impression(ki1.keyName, null, ki1.feature, ki1.treatment, ki1.time, null, 1L, null), true)).collect(Collectors.toList()));
-        treatmentLog.track(Stream.of(new DecoratedImpression(new Impression(ki2.keyName, null, ki2.feature, ki2.treatment, ki2.time, null, 1L, null), true)).collect(Collectors.toList()));
-        treatmentLog.track(Stream.of(new DecoratedImpression(new Impression(ki3.keyName, null, ki3.feature, ki3.treatment, ki3.time, null, 1L, null), true)).collect(Collectors.toList()));
-        treatmentLog.track(Stream.of(new DecoratedImpression(new Impression(ki4.keyName, null, ki4.feature, ki4.treatment, ki4.time, null, 1L, null), true)).collect(Collectors.toList()));
+        treatmentLog.track(Stream.of(new DecoratedImpression(new Impression(ki1.keyName, null, ki1.feature, ki1.treatment, ki1.time, null, 1L, null), false)).collect(Collectors.toList()));
+        treatmentLog.track(Stream.of(new DecoratedImpression(new Impression(ki2.keyName, null, ki2.feature, ki2.treatment, ki2.time, null, 1L, null), false)).collect(Collectors.toList()));
+        treatmentLog.track(Stream.of(new DecoratedImpression(new Impression(ki3.keyName, null, ki3.feature, ki3.treatment, ki3.time, null, 1L, null), false)).collect(Collectors.toList()));
+        treatmentLog.track(Stream.of(new DecoratedImpression(new Impression(ki4.keyName, null, ki4.feature, ki4.treatment, ki4.time, null, 1L, null), false)).collect(Collectors.toList()));
         treatmentLog.sendImpressions();
 
         verify(senderMock).postImpressionsBulk(impressionsCaptor.capture());
@@ -649,10 +649,10 @@ public class ImpressionsManagerImplTest {
         KeyImpression ki3 = keyImpression("test1", "pato", "on", 3L, 1L);
         KeyImpression ki4 = keyImpression("test1", "pato", "on", 4L, 1L);
 
-        treatmentLog.track(Stream.of(new DecoratedImpression(new Impression(ki1.keyName, null, ki1.feature, ki1.treatment, ki1.time, null, 1L, null), true)).collect(Collectors.toList()));
-        treatmentLog.track(Stream.of(new DecoratedImpression(new Impression(ki2.keyName, null, ki2.feature, ki2.treatment, ki2.time, null, 1L, null), true)).collect(Collectors.toList()));
-        treatmentLog.track(Stream.of(new DecoratedImpression(new Impression(ki3.keyName, null, ki3.feature, ki3.treatment, ki3.time, null, 1L, null), true)).collect(Collectors.toList()));
-        treatmentLog.track(Stream.of(new DecoratedImpression(new Impression(ki4.keyName, null, ki4.feature, ki4.treatment, ki4.time, null, 1L, null), true)).collect(Collectors.toList()));
+        treatmentLog.track(Stream.of(new DecoratedImpression(new Impression(ki1.keyName, null, ki1.feature, ki1.treatment, ki1.time, null, 1L, null), false)).collect(Collectors.toList()));
+        treatmentLog.track(Stream.of(new DecoratedImpression(new Impression(ki2.keyName, null, ki2.feature, ki2.treatment, ki2.time, null, 1L, null), false)).collect(Collectors.toList()));
+        treatmentLog.track(Stream.of(new DecoratedImpression(new Impression(ki3.keyName, null, ki3.feature, ki3.treatment, ki3.time, null, 1L, null), false)).collect(Collectors.toList()));
+        treatmentLog.track(Stream.of(new DecoratedImpression(new Impression(ki4.keyName, null, ki4.feature, ki4.treatment, ki4.time, null, 1L, null), false)).collect(Collectors.toList()));
         uniqueKeysTracker.stop();
         treatmentLog.close();
 
@@ -705,10 +705,10 @@ public class ImpressionsManagerImplTest {
         KeyImpression ki3 = keyImpression("test1", "pato", "on", 3L, 1L);
         KeyImpression ki4 = keyImpression("test1", "pato", "on", 4L, 1L);
 
-        treatmentLog.track(Stream.of(new DecoratedImpression(new Impression(ki1.keyName, null, ki1.feature, ki1.treatment, ki1.time, null, 1L, null), true)).collect(Collectors.toList()));
-        treatmentLog.track(Stream.of(new DecoratedImpression(new Impression(ki2.keyName, null, ki2.feature, ki2.treatment, ki2.time, null, 1L, null), true)).collect(Collectors.toList()));
-        treatmentLog.track(Stream.of(new DecoratedImpression(new Impression(ki3.keyName, null, ki3.feature, ki3.treatment, ki3.time, null, 1L, null), true)).collect(Collectors.toList()));
-        treatmentLog.track(Stream.of(new DecoratedImpression(new Impression(ki4.keyName, null, ki4.feature, ki4.treatment, ki4.time, null, 1L, null), true)).collect(Collectors.toList()));
+        treatmentLog.track(Stream.of(new DecoratedImpression(new Impression(ki1.keyName, null, ki1.feature, ki1.treatment, ki1.time, null, 1L, null), false)).collect(Collectors.toList()));
+        treatmentLog.track(Stream.of(new DecoratedImpression(new Impression(ki2.keyName, null, ki2.feature, ki2.treatment, ki2.time, null, 1L, null), false)).collect(Collectors.toList()));
+        treatmentLog.track(Stream.of(new DecoratedImpression(new Impression(ki3.keyName, null, ki3.feature, ki3.treatment, ki3.time, null, 1L, null), false)).collect(Collectors.toList()));
+        treatmentLog.track(Stream.of(new DecoratedImpression(new Impression(ki4.keyName, null, ki4.feature, ki4.treatment, ki4.time, null, 1L, null), false)).collect(Collectors.toList()));
         treatmentLog.sendImpressions();
 
         verify(senderMock).postImpressionsBulk(impressionsCaptor.capture());
@@ -876,10 +876,10 @@ public class ImpressionsManagerImplTest {
         KeyImpression ki3 = keyImpression("test1", "pato", "on", 3L, 1L);
         KeyImpression ki4 = keyImpression("test1", "bilal", "on", 4L, 1L);
 
-        treatmentLog.track(Stream.of(new DecoratedImpression(new Impression(ki1.keyName, null, ki1.feature, ki1.treatment, ki1.time, null, 1L, null), true)).collect(Collectors.toList()));
-        treatmentLog.track(Stream.of(new DecoratedImpression(new Impression(ki2.keyName, null, ki2.feature, ki2.treatment, ki2.time, null, 1L, null), false)).collect(Collectors.toList()));
-        treatmentLog.track(Stream.of(new DecoratedImpression(new Impression(ki3.keyName, null, ki3.feature, ki3.treatment, ki3.time, null, 1L, null), true)).collect(Collectors.toList()));
-        treatmentLog.track(Stream.of(new DecoratedImpression(new Impression(ki4.keyName, null, ki4.feature, ki4.treatment, ki4.time, null, 1L, null), false)).collect(Collectors.toList()));
+        treatmentLog.track(Stream.of(new DecoratedImpression(new Impression(ki1.keyName, null, ki1.feature, ki1.treatment, ki1.time, null, 1L, null), false)).collect(Collectors.toList()));
+        treatmentLog.track(Stream.of(new DecoratedImpression(new Impression(ki2.keyName, null, ki2.feature, ki2.treatment, ki2.time, null, 1L, null), true)).collect(Collectors.toList()));
+        treatmentLog.track(Stream.of(new DecoratedImpression(new Impression(ki3.keyName, null, ki3.feature, ki3.treatment, ki3.time, null, 1L, null), false)).collect(Collectors.toList()));
+        treatmentLog.track(Stream.of(new DecoratedImpression(new Impression(ki4.keyName, null, ki4.feature, ki4.treatment, ki4.time, null, 1L, null), true)).collect(Collectors.toList()));
         treatmentLog.sendImpressions();
 
         verify(senderMock).postImpressionsBulk(impressionsCaptor.capture());
@@ -941,10 +941,10 @@ public class ImpressionsManagerImplTest {
         KeyImpression ki3 = keyImpression("test1", "pato", "on", 3L, 1L);
         KeyImpression ki4 = keyImpression("test1", "bilal", "on", 4L, 1L);
 
-        treatmentLog.track(Stream.of(new DecoratedImpression(new Impression(ki1.keyName, null, ki1.feature, ki1.treatment, ki1.time, null, 1L, null), true)).collect(Collectors.toList()));
-        treatmentLog.track(Stream.of(new DecoratedImpression(new Impression(ki2.keyName, null, ki2.feature, ki2.treatment, ki2.time, null, 1L, null), false)).collect(Collectors.toList()));
-        treatmentLog.track(Stream.of(new DecoratedImpression(new Impression(ki3.keyName, null, ki3.feature, ki3.treatment, ki3.time, null, 1L, null), true)).collect(Collectors.toList()));
-        treatmentLog.track(Stream.of(new DecoratedImpression(new Impression(ki4.keyName, null, ki4.feature, ki4.treatment, ki4.time, null, 1L, null), false)).collect(Collectors.toList()));
+        treatmentLog.track(Stream.of(new DecoratedImpression(new Impression(ki1.keyName, null, ki1.feature, ki1.treatment, ki1.time, null, 1L, null), false)).collect(Collectors.toList()));
+        treatmentLog.track(Stream.of(new DecoratedImpression(new Impression(ki2.keyName, null, ki2.feature, ki2.treatment, ki2.time, null, 1L, null), true)).collect(Collectors.toList()));
+        treatmentLog.track(Stream.of(new DecoratedImpression(new Impression(ki3.keyName, null, ki3.feature, ki3.treatment, ki3.time, null, 1L, null), false)).collect(Collectors.toList()));
+        treatmentLog.track(Stream.of(new DecoratedImpression(new Impression(ki4.keyName, null, ki4.feature, ki4.treatment, ki4.time, null, 1L, null), true)).collect(Collectors.toList()));
         treatmentLog.sendImpressions();
 
         HashMap<String, HashSet<String>> trackedKeys = ((UniqueKeysTrackerImp) uniqueKeysTracker).popAll();
@@ -996,10 +996,10 @@ public class ImpressionsManagerImplTest {
         KeyImpression ki3 = keyImpression("test1", "pato", "on", 3L, 1L);
         KeyImpression ki4 = keyImpression("test1", "bilal", "on", 4L, 1L);
 
-        treatmentLog.track(Stream.of(new DecoratedImpression(new Impression(ki1.keyName, null, ki1.feature, ki1.treatment, ki1.time, null, 1L, null), true)).collect(Collectors.toList()));
-        treatmentLog.track(Stream.of(new DecoratedImpression(new Impression(ki2.keyName, null, ki2.feature, ki2.treatment, ki2.time, null, 1L, null), false)).collect(Collectors.toList()));
-        treatmentLog.track(Stream.of(new DecoratedImpression(new Impression(ki3.keyName, null, ki3.feature, ki3.treatment, ki3.time, null, 1L, null), true)).collect(Collectors.toList()));
-        treatmentLog.track(Stream.of(new DecoratedImpression(new Impression(ki4.keyName, null, ki4.feature, ki4.treatment, ki4.time, null, 1L, null), false)).collect(Collectors.toList()));
+        treatmentLog.track(Stream.of(new DecoratedImpression(new Impression(ki1.keyName, null, ki1.feature, ki1.treatment, ki1.time, null, 1L, null), false)).collect(Collectors.toList()));
+        treatmentLog.track(Stream.of(new DecoratedImpression(new Impression(ki2.keyName, null, ki2.feature, ki2.treatment, ki2.time, null, 1L, null), true)).collect(Collectors.toList()));
+        treatmentLog.track(Stream.of(new DecoratedImpression(new Impression(ki3.keyName, null, ki3.feature, ki3.treatment, ki3.time, null, 1L, null), false)).collect(Collectors.toList()));
+        treatmentLog.track(Stream.of(new DecoratedImpression(new Impression(ki4.keyName, null, ki4.feature, ki4.treatment, ki4.time, null, 1L, null), true)).collect(Collectors.toList()));
         treatmentLog.close();
         HashMap<String, HashSet<String>> trackedKeys = ((UniqueKeysTrackerImp) uniqueKeysTracker).popAll();
         uniqueKeysTracker.stop();
