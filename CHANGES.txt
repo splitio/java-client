@@ -1,5 +1,5 @@
-4.14.0 (Dec X, 2024)
-- Added support for Impression Toggle in feature flags 
+4.14.0 (Jan xx, 2025)
+- Added support for the new impressions tracking toggle available on feature flags, both respecting the setting and including the new field being returned on SplitView type objects. Read more in our docs.
 
 4.13.1 (Dec 5, 2024)
 - Updated `org.apache.httpcomponents.client5` dependency to 5.4.1 to fix vulnerabilities.
