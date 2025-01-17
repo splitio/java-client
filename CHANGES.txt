@@ -1,5 +1,6 @@
-4.14.0 (Dec X, 2024)
-- Added support for Impression Toggle in feature flags 
+4.14.0 (Jan X, 2024)
+- Added support for Impression Toggle in feature flags.
+- Cleaned unused imports to fix a collision issue.
 
 4.13.1 (Dec 5, 2024)
 - Updated `org.apache.httpcomponents.client5` dependency to 5.4.1 to fix vulnerabilities.
