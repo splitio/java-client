@@ -91,11 +91,6 @@ public class HttpImpressionsSender implements ImpressionsSender {
     @Override
     public void postCounters(HashMap<ImpressionCounter.Key, Integer> raw) {
         long initTime = System.currentTimeMillis();
-        if (_mode.equals(ImpressionsManager.Mode.DEBUG)) {
-            _logger.warn("Attempted to submit counters in impressions debugging mode. Ignoring");
-            return;
-        }
-
         try {
 
             Map<String, List<String>> additionalHeaders = new HashMap<>();

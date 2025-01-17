@@ -38,6 +38,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.List;
+import java.util.Objects;
 
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
@@ -65,7 +66,10 @@ public final class SplitParser {
 
     private ParsedSplit parseWithoutExceptionHandling(Split split) {
         List<ParsedCondition> parsedConditionList = Lists.newArrayList();
-
+        if (Objects.isNull(split.impressionsDisabled)) {
+            _log.debug("impressionsDisabled field not detected for Feature flag `" + split.name + "`, setting it to `false`.");
+            split.impressionsDisabled = false;
+        }
         for (Condition condition : split.conditions) {
             List<Partition> partitions = condition.partitions;
             if (checkUnsupportedMatcherExist(condition.matcherGroup.matchers)) {
@@ -78,8 +82,20 @@ public final class SplitParser {
             parsedConditionList.add(new ParsedCondition(condition.conditionType, matcher, partitions, condition.label));
         }
 
-        return new ParsedSplit(split.name, split.seed, split.killed, split.defaultTreatment, parsedConditionList, split.trafficTypeName,
-                split.changeNumber, split.trafficAllocation, split.trafficAllocationSeed, split.algo, split.configurations, split.sets);
+        return new ParsedSplit(
+                split.name,
+                split.seed,
+                split.killed,
+                split.defaultTreatment,
+                parsedConditionList,
+                split.trafficTypeName,
+                split.changeNumber,
+                split.trafficAllocation,
+                split.trafficAllocationSeed,
+                split.algo,
+                split.configurations,
+                split.sets,
+                split.impressionsDisabled);
     }
 
     private boolean checkUnsupportedMatcherExist(List<io.split.client.dtos.Matcher> matchers) {

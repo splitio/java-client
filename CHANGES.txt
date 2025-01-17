@@ -1,3 +1,7 @@
+4.14.0 (Jan 17, 2025)
+- Added support for the new impressions tracking toggle available on feature flags, both respecting the setting and including the new field being returned on SplitView type objects. Read more in our docs.
+- Cleaned unused imports to fix a collision issue.
+
 4.13.1 (Dec 5, 2024)
 - Updated `org.apache.httpcomponents.client5` dependency to 5.4.1 to fix vulnerabilities.
 - Updated `redis.clients` dependency to 4.4.8 to fix vulnerabilities.

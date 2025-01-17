@@ -2,6 +2,7 @@ package io.split.client;
 
 import io.split.client.api.Key;
 import io.split.client.api.SplitResult;
+import io.split.client.dtos.DecoratedImpression;
 import io.split.client.dtos.Event;
 import io.split.client.events.EventsStorageProducer;
 import io.split.client.impressions.Impression;
@@ -356,7 +357,8 @@ public final class SplitClientImpl implements SplitClient {
                     String.format("sdk.%s", methodEnum.getMethod()),
                     _config.labelsEnabled() ? result.label : null,
                     result.changeNumber,
-                    attributes
+                    attributes,
+                    result.track
             );
             _telemetryEvaluationProducer.recordLatency(methodEnum, System.currentTimeMillis() - initTime);
             return new SplitResult(result.treatment, result.configurations);
@@ -435,7 +437,7 @@ public final class SplitClientImpl implements SplitClient {
     private Map<String, SplitResult> processEvaluatorResult(Map<String, EvaluatorImp.TreatmentLabelAndChangeNumber> evaluatorResult,
                                                             MethodEnum methodEnum, String matchingKey, String bucketingKey, Map<String,
                                                             Object> attributes, long initTime){
-        List<Impression> impressions = new ArrayList<>();
+        List<DecoratedImpression> decoratedImpressions = new ArrayList<>();
         Map<String, SplitResult> result = new HashMap<>();
         evaluatorResult.keySet().forEach(t -> {
             if (evaluatorResult.get(t).treatment.equals(Treatments.CONTROL) && evaluatorResult.get(t).label.
@@ -445,13 +447,16 @@ public final class SplitClientImpl implements SplitClient {
                 result.put(t, SPLIT_RESULT_CONTROL);
             } else {
                 result.put(t, new SplitResult(evaluatorResult.get(t).treatment, evaluatorResult.get(t).configurations));
-                impressions.add(new Impression(matchingKey, bucketingKey, t, evaluatorResult.get(t).treatment, System.currentTimeMillis(),
-                        evaluatorResult.get(t).label, evaluatorResult.get(t).changeNumber, attributes));
+                decoratedImpressions.add(
+                        new DecoratedImpression(
+                                new Impression(matchingKey, bucketingKey, t, evaluatorResult.get(t).treatment, System.currentTimeMillis(),
+                        evaluatorResult.get(t).label, evaluatorResult.get(t).changeNumber, attributes),
+                                evaluatorResult.get(t).track));
             }
         });
         _telemetryEvaluationProducer.recordLatency(methodEnum, System.currentTimeMillis() - initTime);
-        if (impressions.size() > 0) {
-            _impressionManager.track(impressions);
+        if (!decoratedImpressions.isEmpty()) {
+            _impressionManager.track(decoratedImpressions);
         }
         return result;
     }
@@ -501,10 +506,13 @@ public final class SplitClientImpl implements SplitClient {
         return setsToReturn;
     }
     private void recordStats(String matchingKey, String bucketingKey, String featureFlagName, long start, String result,
-                             String operation, String label, Long changeNumber, Map<String, Object> attributes) {
+                             String operation, String label, Long changeNumber, Map<String, Object> attributes, boolean track) {
         try {
-            _impressionManager.track(Stream.of(new Impression(matchingKey, bucketingKey, featureFlagName, result, System.currentTimeMillis(),
-                    label, changeNumber, attributes)).collect(Collectors.toList()));
+            _impressionManager.track(Stream.of(
+                    new DecoratedImpression(
+                            new Impression(matchingKey, bucketingKey, featureFlagName, result, System.currentTimeMillis(),
+                    label, changeNumber, attributes),
+                            track)).collect(Collectors.toList()));
         } catch (Throwable t) {
             _log.error("Exception", t);
         }

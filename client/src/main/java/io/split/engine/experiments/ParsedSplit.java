@@ -32,6 +32,7 @@ public class ParsedSplit {
     private final int _algo;
     private final Map<String, String> _configurations;
     private final HashSet<String> _flagSets;
+    private final boolean _impressionsDisabled;
 
     public static ParsedSplit createParsedSplitForTests(
             String feature,
@@ -42,7 +43,8 @@ public class ParsedSplit {
             String trafficTypeName,
             long changeNumber,
             int algo,
-            HashSet<String> flagSets
+            HashSet<String> flagSets,
+            boolean impressionsDisabled
     ) {
         return new ParsedSplit(
                 feature,
@@ -56,7 +58,8 @@ public class ParsedSplit {
                 seed,
                 algo,
                 null,
-                flagSets
+                flagSets,
+                impressionsDisabled
         );
     }
 
@@ -70,7 +73,8 @@ public class ParsedSplit {
             long changeNumber,
             int algo,
             Map<String, String> configurations,
-            HashSet<String> flagSets
+            HashSet<String> flagSets,
+            boolean impressionsDisabled
     ) {
         return new ParsedSplit(
                 feature,
@@ -84,7 +88,8 @@ public class ParsedSplit {
                 seed,
                 algo,
                 configurations,
-                flagSets
+                flagSets,
+                impressionsDisabled
         );
     }
 
@@ -100,7 +105,8 @@ public class ParsedSplit {
             int trafficAllocationSeed,
             int algo,
             Map<String, String> configurations,
-            HashSet<String> flagSets
+            HashSet<String> flagSets,
+            boolean impressionsDisabled
     ) {
         _split = feature;
         _seed = seed;
@@ -117,6 +123,7 @@ public class ParsedSplit {
         _trafficAllocationSeed = trafficAllocationSeed;
         _configurations = configurations;
         _flagSets = flagSets;
+        _impressionsDisabled = impressionsDisabled;
     }
 
     public String feature() {
@@ -160,6 +167,10 @@ public class ParsedSplit {
         return _configurations;
     }
 
+    public boolean impressionsDisabled() {
+        return _impressionsDisabled;
+    }
+
     @Override
     public int hashCode() {
         int result = 17;
@@ -172,6 +183,7 @@ public class ParsedSplit {
         result = 31 * result + (int)(_changeNumber ^ (_changeNumber >>> 32));
         result = 31 * result + (_algo ^ (_algo >>> 32));
         result = 31 * result + (_configurations == null? 0 : _configurations.hashCode());
+        result = 31 * result + (_impressionsDisabled ? 1 : 0);
         return result;
     }
 
@@ -191,7 +203,8 @@ public class ParsedSplit {
                 && _trafficTypeName == null ? other._trafficTypeName == null : _trafficTypeName.equals(other._trafficTypeName)
                 && _changeNumber == other._changeNumber
                 && _algo == other._algo
-                && _configurations == null ? other._configurations == null : _configurations.equals(other._configurations);
+                && _configurations == null ? other._configurations == null : _configurations.equals(other._configurations)
+                && _impressionsDisabled == other._impressionsDisabled;
     }
 
     @Override
@@ -215,6 +228,8 @@ public class ParsedSplit {
         bldr.append(_algo);
         bldr.append(", config:");
         bldr.append(_configurations);
+        bldr.append(", impressionsDisabled:");
+        bldr.append(_impressionsDisabled);
         return bldr.toString();
 
     }

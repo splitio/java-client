@@ -18,6 +18,7 @@ public class Split {
     public int algo;
     public Map<String, String> configurations;
     public HashSet<String> sets;
+    public Boolean impressionsDisabled = null;
 
     @Override
     public String toString() {

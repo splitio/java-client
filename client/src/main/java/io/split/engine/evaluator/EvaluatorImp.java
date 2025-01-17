@@ -86,7 +86,12 @@ public class EvaluatorImp implements Evaluator {
         try {
             if (parsedSplit.killed()) {
                 String config = parsedSplit.configurations() != null ? parsedSplit.configurations().get(parsedSplit.defaultTreatment()) : null;
-                return new TreatmentLabelAndChangeNumber(parsedSplit.defaultTreatment(), Labels.KILLED, parsedSplit.changeNumber(), config);
+                return new TreatmentLabelAndChangeNumber(
+                        parsedSplit.defaultTreatment(),
+                        Labels.KILLED,
+                        parsedSplit.changeNumber(),
+                        config,
+                        parsedSplit.impressionsDisabled());
             }
 
             /*
@@ -112,7 +117,7 @@ public class EvaluatorImp implements Evaluator {
                             String config = parsedSplit.configurations() != null ?
                                     parsedSplit.configurations().get(parsedSplit.defaultTreatment()) : null;
                             return new TreatmentLabelAndChangeNumber(parsedSplit.defaultTreatment(), Labels.NOT_IN_SPLIT,
-                                    parsedSplit.changeNumber(), config);
+                                    parsedSplit.changeNumber(), config, parsedSplit.impressionsDisabled());
                         }
 
                     }
@@ -122,12 +127,22 @@ public class EvaluatorImp implements Evaluator {
                 if (parsedCondition.matcher().match(matchingKey, bucketingKey, attributes, _evaluationContext)) {
                     String treatment = Splitter.getTreatment(bk, parsedSplit.seed(), parsedCondition.partitions(), parsedSplit.algo());
                     String config = parsedSplit.configurations() != null ? parsedSplit.configurations().get(treatment) : null;
-                    return new TreatmentLabelAndChangeNumber(treatment, parsedCondition.label(), parsedSplit.changeNumber(), config);
+                    return new TreatmentLabelAndChangeNumber(
+                            treatment,
+                            parsedCondition.label(),
+                            parsedSplit.changeNumber(),
+                            config,
+                            parsedSplit.impressionsDisabled());
                 }
             }
 
             String config = parsedSplit.configurations() != null ? parsedSplit.configurations().get(parsedSplit.defaultTreatment()) : null;
-            return new TreatmentLabelAndChangeNumber(parsedSplit.defaultTreatment(), Labels.DEFAULT_RULE, parsedSplit.changeNumber(), config);
+            return new TreatmentLabelAndChangeNumber(
+                    parsedSplit.defaultTreatment(),
+                    Labels.DEFAULT_RULE,
+                    parsedSplit.changeNumber(),
+                    config,
+                    parsedSplit.impressionsDisabled());
         } catch (Exception e) {
             throw new ChangeNumberExceptionWrapper(e, parsedSplit.changeNumber());
         }
@@ -155,20 +170,22 @@ public class EvaluatorImp implements Evaluator {
         public final String label;
         public final Long changeNumber;
         public final String configurations;
+        public final boolean track;
 
         public TreatmentLabelAndChangeNumber(String treatment, String label) {
-            this(treatment, label, null, null);
+            this(treatment, label, null, null, true);
         }
 
         public TreatmentLabelAndChangeNumber(String treatment, String label, Long changeNumber) {
-            this(treatment, label, changeNumber, null);
+            this(treatment, label, changeNumber, null, true);
         }
 
-        public TreatmentLabelAndChangeNumber(String treatment, String label, Long changeNumber, String configurations) {
+        public TreatmentLabelAndChangeNumber(String treatment, String label, Long changeNumber, String configurations, boolean track) {
             this.treatment = treatment;
             this.label = label;
             this.changeNumber = changeNumber;
             this.configurations = configurations;
+            this.track = track;
         }
     }
 }

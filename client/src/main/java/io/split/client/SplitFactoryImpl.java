@@ -630,13 +630,14 @@ public class SplitFactoryImpl implements SplitFactory {
                     .collect(Collectors.toCollection(() -> impressionListeners));
         }
         ProcessImpressionStrategy processImpressionStrategy = null;
-        ImpressionCounter counter = null;
+        ImpressionCounter counter = new ImpressionCounter();
         ImpressionListener listener = !impressionListeners.isEmpty()
                 ? new ImpressionListener.FederatedImpressionListener(impressionListeners)
                 : null;
+        ProcessImpressionNone processImpressionNone = new ProcessImpressionNone(listener != null, _uniqueKeysTracker, counter);
+
         switch (config.impressionsMode()) {
             case OPTIMIZED:
-                counter = new ImpressionCounter();
                 ImpressionObserver impressionObserver = new ImpressionObserver(config.getLastSeenCacheSize());
                 processImpressionStrategy = new ProcessImpressionOptimized(listener != null, impressionObserver,
                         counter, _telemetryStorageProducer);
@@ -646,13 +647,12 @@ public class SplitFactoryImpl implements SplitFactory {
                 processImpressionStrategy = new ProcessImpressionDebug(listener != null, impressionObserver);
                 break;
             case NONE:
-                counter = new ImpressionCounter();
-                processImpressionStrategy = new ProcessImpressionNone(listener != null, _uniqueKeysTracker, counter);
+                processImpressionStrategy = processImpressionNone;
                 break;
         }
         return ImpressionsManagerImpl.instance(config, _telemetryStorageProducer, impressionsStorageConsumer,
                 impressionsStorageProducer,
-                _impressionsSender, processImpressionStrategy, counter, listener);
+                _impressionsSender, processImpressionNone, processImpressionStrategy, counter, listener);
     }
 
     private SDKMetadata createSdkMetadata(boolean ipAddressEnabled, String splitSdkVersion) {
@@ -690,15 +690,12 @@ public class SplitFactoryImpl implements SplitFactory {
     }
 
     private UniqueKeysTracker createUniqueKeysTracker(SplitClientConfig config) {
-        if (config.impressionsMode().equals(ImpressionsManager.Mode.NONE)) {
-            int uniqueKeysRefreshRate = config.operationMode().equals(OperationMode.STANDALONE)
-                    ? config.uniqueKeysRefreshRateInMemory()
-                    : config.uniqueKeysRefreshRateRedis();
-            return new UniqueKeysTrackerImp(_telemetrySynchronizer, uniqueKeysRefreshRate,
-                    config.filterUniqueKeysRefreshRate(),
-                    config.getThreadFactory());
-        }
-        return null;
+        int uniqueKeysRefreshRate = config.operationMode().equals(OperationMode.STANDALONE)
+                ? config.uniqueKeysRefreshRateInMemory()
+                : config.uniqueKeysRefreshRateRedis();
+        return new UniqueKeysTrackerImp(_telemetrySynchronizer, uniqueKeysRefreshRate,
+                config.filterUniqueKeysRefreshRate(),
+                config.getThreadFactory());
     }
 
     private SplitChangeFetcher createSplitChangeFetcher(SplitClientConfig splitClientConfig) {

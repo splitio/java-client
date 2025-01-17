@@ -126,28 +126,6 @@ public class HttpImpressionsSenderTest {
     }
 
     @Test
-    public void testImpressionCountsEndpointDebug() throws URISyntaxException, IOException, IllegalAccessException,
-            NoSuchMethodException, InvocationTargetException {
-        URI rootTarget = URI.create("https://kubernetesturl.com/split");
-
-        // Setup response mock
-        CloseableHttpClient httpClient = TestHelper.mockHttpClient("", HttpStatus.SC_OK);
-        SplitHttpClient splitHtpClient = SplitHttpClientImpl.create(httpClient, new RequestDecorator(null), "qwerty",
-                metadata());
-
-        // Send counters
-        HttpImpressionsSender sender = HttpImpressionsSender.create(splitHtpClient, rootTarget,
-                ImpressionsManager.Mode.DEBUG, TELEMETRY_STORAGE);
-        HashMap<ImpressionCounter.Key, Integer> toSend = new HashMap<>();
-        toSend.put(new ImpressionCounter.Key("test1", 0), 4);
-        toSend.put(new ImpressionCounter.Key("test2", 0), 5);
-        sender.postCounters(toSend);
-
-        // Assert that the HTTP client was not called
-        verify(httpClient, Mockito.never()).execute(Mockito.any());
-    }
-
-    @Test
     public void testImpressionBulksEndpoint() throws URISyntaxException, IOException, IllegalAccessException,
             NoSuchMethodException, InvocationTargetException {
         URI rootTarget = URI.create("https://kubernetesturl.com/split");
