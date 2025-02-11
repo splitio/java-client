@@ -194,7 +194,7 @@ public class SyncManagerImp implements SyncManager {
 
     @VisibleForTesting
     /* package private */ void incomingPushStatusHandler() {
-        while (!Thread.interrupted()) {
+        while (!Thread.currentThread().isInterrupted()) {
             try {
                 PushManager.Status status = _incomingPushStatus.take();
                 _log.debug(String.format("Streaming status received: %s", status.toString()));
@@ -212,6 +212,9 @@ public class SyncManagerImp implements SyncManager {
                     case STREAMING_DOWN:
                         _log.info("Streaming service temporarily unavailable, working in polling mode.");
                         _pushManager.stopWorkers();
+                        if(_shuttedDown.get()) {
+                            break;
+                        }
                         _synchronizer.startPeriodicFetching();
                         break;
                     case STREAMING_BACKOFF:
