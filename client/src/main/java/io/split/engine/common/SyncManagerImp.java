@@ -194,7 +194,7 @@ public class SyncManagerImp implements SyncManager {
 
     @VisibleForTesting
     /* package private */ void incomingPushStatusHandler() {
-        while (!Thread.currentThread().isInterrupted()) {
+        while (!Thread.interrupted()) {
             try {
                 PushManager.Status status = _incomingPushStatus.take();
                 _log.debug(String.format("Streaming status received: %s", status.toString()));
