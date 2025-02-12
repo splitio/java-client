@@ -212,6 +212,7 @@ public class SyncManagerImp implements SyncManager {
                     case STREAMING_DOWN:
                         _log.info("Streaming service temporarily unavailable, working in polling mode.");
                         _pushManager.stopWorkers();
+                        //  if the whole SDK is being shutdown, don't start polling, in case the polling threads are not terminated and a graceful shutdown will fail.
                         if(_shuttedDown.get()) {
                             break;
                         }
