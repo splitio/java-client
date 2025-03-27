@@ -1,5 +1,7 @@
 package io.split.client;
 
+import com.google.gson.Gson;
+import com.google.gson.JsonParser;
 import io.split.client.api.Key;
 import io.split.client.api.SplitResult;
 import io.split.client.dtos.DecoratedImpression;
@@ -22,7 +24,7 @@ import io.split.storages.SplitCacheConsumer;
 import io.split.telemetry.domain.enums.MethodEnum;
 import io.split.telemetry.storage.TelemetryConfigProducer;
 import io.split.telemetry.storage.TelemetryEvaluationProducer;
-import org.json.JSONObject;
+import io.split.client.utils.Json;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -536,7 +538,7 @@ public final class SplitClientImpl implements SplitClient {
         String validatedProperties = null;
         if (properties != null) {
             ImpressionPropertiesValidator.ImpressionPropertiesValidatorResult iPValidatorResult = ImpressionPropertiesValidator.propertiesAreValid(
-                    new JSONObject(properties));
+                    new JsonParser().parse(properties).getAsJsonObject());
             validatedProperties = iPValidatorResult.getValue().toString();
         }
         return validatedProperties;
