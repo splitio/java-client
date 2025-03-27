@@ -238,7 +238,8 @@ public class SplitClientForTest implements SplitClient {
     }
 
     @Override
-    public Map<String, SplitResult> getTreatmentsWithConfig(String key, List<String> featureFlagNames, Map<String, Object> attributes, String properties) {
+    public Map<String, SplitResult> getTreatmentsWithConfig(String key, List<String> featureFlagNames, Map<String, Object> attributes,
+                                                            String properties) {
         return new HashMap<>();
     }
 
@@ -278,7 +279,8 @@ public class SplitClientForTest implements SplitClient {
     }
 
     @Override
-    public Map<String, SplitResult> getTreatmentsWithConfigByFlagSets(String key, List<String> flagSets, Map<String, Object> attributes, String properties) {
+    public Map<String, SplitResult> getTreatmentsWithConfigByFlagSets(String key, List<String> flagSets, Map<String, Object> attributes,
+                                                                      String properties) {
         return new HashMap<>();
     }
 
@@ -288,7 +290,8 @@ public class SplitClientForTest implements SplitClient {
     }
 
     @Override
-    public Map<String, SplitResult> getTreatmentsWithConfig(Key key, List<String> featureFlagNames, Map<String, Object> attributes, String properties) {
+    public Map<String, SplitResult> getTreatmentsWithConfig(Key key, List<String> featureFlagNames, Map<String, Object> attributes,
+                                                            String properties) {
         return new HashMap<>();
     }
 
@@ -308,7 +311,8 @@ public class SplitClientForTest implements SplitClient {
     }
 
     @Override
-    public Map<String, SplitResult> getTreatmentsWithConfigByFlagSets(Key key, List<String> flagSets, Map<String, Object> attributes, String properties) {
+    public Map<String, SplitResult> getTreatmentsWithConfigByFlagSets(Key key, List<String> flagSets, Map<String, Object> attributes,
+                                                                      String properties) {
         return new HashMap<>();
     }
 
