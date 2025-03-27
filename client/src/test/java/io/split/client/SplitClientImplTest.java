@@ -565,7 +565,7 @@ public class SplitClientImplTest {
         );
 
         assertEquals("on", client.getTreatment("adil@codigo.com", test));
-        assertEquals("on", client.getTreatment("adil@codigo.com", test, null));
+        assertEquals("on", client.getTreatment("adil@codigo.com", test, new HashMap<>()));
         assertEquals("on", client.getTreatment("adil@codigo.com", test, ImmutableMap.<String, Object>of()));
         assertEquals("on", client.getTreatment("pato@codigo.com", test, ImmutableMap.<String, Object>of("age", 10)));
         assertEquals("off", client.getTreatment("pato@codigo.com", test, ImmutableMap.<String, Object>of("age", 9)));
@@ -599,7 +599,7 @@ public class SplitClientImplTest {
         );
 
         assertEquals("off", client.getTreatment("adil@codigo.com", test));
-        assertEquals("off", client.getTreatment("adil@codigo.com", test, null));
+        assertEquals("off", client.getTreatment("adil@codigo.com", test, new HashMap<>()));
         assertEquals("off", client.getTreatment("adil@codigo.com", test, ImmutableMap.<String, Object>of()));
 
         assertEquals("off", client.getTreatment("pato@codigo.com", test, ImmutableMap.<String, Object>of("age", 10)));
@@ -634,7 +634,7 @@ public class SplitClientImplTest {
         );
 
         assertEquals("off", client.getTreatment("adil@codigo.com", test));
-        assertEquals("off", client.getTreatment("adil@codigo.com", test, null));
+        assertEquals("off", client.getTreatment("adil@codigo.com", test, new HashMap<>()));
         assertEquals("off", client.getTreatment("adil@codigo.com", test, ImmutableMap.<String, Object>of()));
         assertEquals("off", client.getTreatment("pato@codigo.com", test, ImmutableMap.<String, Object>of("age", 10)));
         assertEquals("on", client.getTreatment("pato@codigo.com", test, ImmutableMap.<String, Object>of("age", -20)));
@@ -671,7 +671,7 @@ public class SplitClientImplTest {
         );
 
         assertEquals("off", client.getTreatment("adil@codigo.com", test));
-        assertEquals("off", client.getTreatment("adil@codigo.com", test, null));
+        assertEquals("off", client.getTreatment("adil@codigo.com", test, new HashMap<>()));
 
         assertEquals("off", client.getTreatment("adil@codigo.com", test, ImmutableMap.<String, Object>of()));
         assertEquals("off", client.getTreatment("pato@codigo.com", test, ImmutableMap.<String, Object>of("products", Lists.newArrayList())));
@@ -1894,7 +1894,7 @@ public class SplitClientImplTest {
         Map<String, String> getTreatmentResult;
         for (int i = 0; i < numKeys; i++) {
             String randomKey = RandomStringUtils.random(10);
-            getTreatmentResult = client.getTreatmentsByFlagSet(randomKey, "set1", null);
+            getTreatmentResult = client.getTreatmentsByFlagSet(randomKey, "set1", new HashMap<>());
             assertEquals("on", getTreatmentResult.get(test));
         }
         verify(splitCacheConsumer, times(numKeys)).fetchMany(new ArrayList<>(Arrays.asList(test)));
@@ -1927,7 +1927,7 @@ public class SplitClientImplTest {
                 new EvaluatorImp(splitCacheConsumer, segmentCacheConsumer), TELEMETRY_STORAGE, TELEMETRY_STORAGE,
                 flagSetsFilter
         );
-        assertTrue(client.getTreatmentsByFlagSet(RandomStringUtils.random(10), "", null).isEmpty());
+        assertTrue(client.getTreatmentsByFlagSet(RandomStringUtils.random(10), "", new HashMap<>()).isEmpty());
     }
 
     @Test
@@ -1974,7 +1974,7 @@ public class SplitClientImplTest {
         Map<String, String> getTreatmentResult;
         for (int i = 0; i < numKeys; i++) {
             String randomKey = RandomStringUtils.random(10);
-            getTreatmentResult = client.getTreatmentsByFlagSets(randomKey, Arrays.asList("set1", "set3"), null);
+            getTreatmentResult = client.getTreatmentsByFlagSets(randomKey, Arrays.asList("set1", "set3"), new HashMap<>());
             assertEquals("on", getTreatmentResult.get(test));
             assertEquals("on", getTreatmentResult.get(test2));
         }

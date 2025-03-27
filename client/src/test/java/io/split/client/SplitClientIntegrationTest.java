@@ -773,7 +773,7 @@ public class SplitClientIntegrationTest {
 
         String result = client.getTreatment("admin", "workm");
         Assert.assertEquals("on", result);
-        Assert.assertEquals("on", client.getTreatmentsByFlagSet("admin", "set1", null).get("workm"));
+        Assert.assertEquals("on", client.getTreatmentsByFlagSet("admin", "set1", new HashMap<>()).get("workm"));
 
         client.destroy();
         splitServer.stop();
@@ -827,9 +827,9 @@ public class SplitClientIntegrationTest {
         SplitClient client = factory.client();
         client.blockUntilReady();
 
-        Assert.assertEquals("off", client.getTreatment("user1", "without_impression_toggle", null));
-        Assert.assertEquals("off", client.getTreatment("user2", "impression_toggle_on", null));
-        Assert.assertEquals("off", client.getTreatment("user3", "impression_toggle_off", null));
+        Assert.assertEquals("off", client.getTreatment("user1", "without_impression_toggle", new HashMap<>()));
+        Assert.assertEquals("off", client.getTreatment("user2", "impression_toggle_on", new HashMap<>()));
+        Assert.assertEquals("off", client.getTreatment("user3", "impression_toggle_off", new HashMap<>()));
         client.destroy();
         boolean check1 = false, check2 = false;
         for (int i=0; i < allRequests.size(); i++ ) {
@@ -901,9 +901,9 @@ public class SplitClientIntegrationTest {
         SplitClient client = factory.client();
         client.blockUntilReady();
 
-        Assert.assertEquals("off", client.getTreatment("user1", "without_impression_toggle", null));
-        Assert.assertEquals("off", client.getTreatment("user2", "impression_toggle_on", null));
-        Assert.assertEquals("off", client.getTreatment("user3", "impression_toggle_off", null));
+        Assert.assertEquals("off", client.getTreatment("user1", "without_impression_toggle", new HashMap<>()));
+        Assert.assertEquals("off", client.getTreatment("user2", "impression_toggle_on", new HashMap<>()));
+        Assert.assertEquals("off", client.getTreatment("user3", "impression_toggle_off", new HashMap<>()));
         client.destroy();
         boolean check1 = false, check2 = false, check3 = false;
         for (int i=0; i < allRequests.size(); i++ ) {
@@ -983,9 +983,9 @@ public class SplitClientIntegrationTest {
         SplitClient client = factory.client();
         client.blockUntilReady();
 
-        Assert.assertEquals("off", client.getTreatment("user1", "without_impression_toggle", null));
-        Assert.assertEquals("off", client.getTreatment("user2", "impression_toggle_on", null));
-        Assert.assertEquals("off", client.getTreatment("user3", "impression_toggle_off", null));
+        Assert.assertEquals("off", client.getTreatment("user1", "without_impression_toggle", new HashMap<>()));
+        Assert.assertEquals("off", client.getTreatment("user2", "impression_toggle_on", new HashMap<>()));
+        Assert.assertEquals("off", client.getTreatment("user3", "impression_toggle_off", new HashMap<>()));
         client.destroy();
         boolean check1 = false, check2 = false, check3 = false;
         for (int i=0; i < allRequests.size(); i++ ) {

@@ -112,13 +112,13 @@ public class HttpSplitClientTest {
 
         // Send impressions
         List<TestImpressions> toSend = Arrays.asList(new TestImpressions("t1", Arrays.asList(
-                KeyImpression.fromImpression(new Impression("k1", null, "t1", "on", 123L, "r1", 456L, null)),
-                KeyImpression.fromImpression(new Impression("k2", null, "t1", "on", 123L, "r1", 456L, null)),
-                KeyImpression.fromImpression(new Impression("k3", null, "t1", "on", 123L, "r1", 456L, null)))),
+                KeyImpression.fromImpression(new Impression("k1", null, "t1", "on", 123L, "r1", 456L, null, null)),
+                KeyImpression.fromImpression(new Impression("k2", null, "t1", "on", 123L, "r1", 456L, null, null)),
+                KeyImpression.fromImpression(new Impression("k3", null, "t1", "on", 123L, "r1", 456L, null, null)))),
                 new TestImpressions("t2", Arrays.asList(
-                        KeyImpression.fromImpression(new Impression("k1", null, "t2", "on", 123L, "r1", 456L, null)),
-                        KeyImpression.fromImpression(new Impression("k2", null, "t2", "on", 123L, "r1", 456L, null)),
-                        KeyImpression.fromImpression(new Impression("k3", null, "t2", "on", 123L, "r1", 456L, null)))));
+                        KeyImpression.fromImpression(new Impression("k1", null, "t2", "on", 123L, "r1", 456L, null, null)),
+                        KeyImpression.fromImpression(new Impression("k2", null, "t2", "on", 123L, "r1", 456L, null, null)),
+                        KeyImpression.fromImpression(new Impression("k3", null, "t2", "on", 123L, "r1", 456L, null, null)))));
 
         Map<String, List<String>> additionalHeaders = Collections.singletonMap("SplitSDKImpressionsMode",
                 Collections.singletonList("OPTIMIZED"));

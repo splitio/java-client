@@ -18,7 +18,7 @@ public class ImpressionHasherTest {
                 System.currentTimeMillis(),
                 "someLabel",
                 123L,
-                null);
+                null, null);
 
         // Different feature
         Impression imp2 = new Impression("someKey",
@@ -28,7 +28,7 @@ public class ImpressionHasherTest {
                 System.currentTimeMillis(),
                 "someLabel",
                 123L,
-                null);
+                null, null);
 
         assertThat(ImpressionHasher.process(imp1), not(equalTo(ImpressionHasher.process(imp2))));
 
@@ -40,7 +40,7 @@ public class ImpressionHasherTest {
                 System.currentTimeMillis(),
                 "someLabel",
                 123L,
-                null);
+                null, null);
         assertThat(ImpressionHasher.process(imp1), not(equalTo(ImpressionHasher.process(imp2))));
 
         // different changeNumber
@@ -51,7 +51,7 @@ public class ImpressionHasherTest {
                 System.currentTimeMillis(),
                 "someLabel",
                 456L,
-                null);
+                null, null);
         assertThat(ImpressionHasher.process(imp1), not(equalTo(ImpressionHasher.process(imp2))));
 
         // different label
@@ -62,7 +62,7 @@ public class ImpressionHasherTest {
                 System.currentTimeMillis(),
                 "someOtherLabel",
                 123L,
-                null);
+                null, null);
         assertThat(ImpressionHasher.process(imp1), not(equalTo(ImpressionHasher.process(imp2))));
 
         // different treatment
@@ -73,7 +73,7 @@ public class ImpressionHasherTest {
                 System.currentTimeMillis(),
                 "someLabel",
                 123L,
-                null);
+                null, null);
 
         assertThat(ImpressionHasher.process(imp1), not(equalTo(ImpressionHasher.process(imp2))));
     }
@@ -87,7 +87,7 @@ public class ImpressionHasherTest {
                 System.currentTimeMillis(),
                 "someLabel",
                 123L,
-                null);
+                null, null);
         assertNotNull(ImpressionHasher.process(imp1));
 
         imp1 = new Impression(null,
@@ -97,7 +97,7 @@ public class ImpressionHasherTest {
                 System.currentTimeMillis(),
                 "someLabel",
                 123L,
-                null);
+                null, null);
         assertNotNull(ImpressionHasher.process(imp1));
 
         imp1 = new Impression(null,
@@ -107,7 +107,7 @@ public class ImpressionHasherTest {
                 System.currentTimeMillis(),
                 "someLabel",
                 null,
-                null);
+                null, null);
         assertNotNull(ImpressionHasher.process(imp1));
 
         imp1 = new Impression(null,
@@ -117,7 +117,7 @@ public class ImpressionHasherTest {
                 System.currentTimeMillis(),
                 null,
                 null,
-                null);
+                null, null);
         assertNotNull(ImpressionHasher.process(imp1));
 
         imp1 = new Impression(null,
@@ -127,7 +127,7 @@ public class ImpressionHasherTest {
                 System.currentTimeMillis(),
                 "someLabel",
                 null,
-                null);
+                null, null);
         assertNotNull(ImpressionHasher.process(imp1));
         assertNull(ImpressionHasher.process(null));
     }
