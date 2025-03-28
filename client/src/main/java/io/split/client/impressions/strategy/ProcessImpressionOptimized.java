@@ -33,6 +33,7 @@ public class ProcessImpressionOptimized implements ProcessImpressionStrategy{
         List<Impression> impressionsToQueue = new ArrayList<>();
         for(Impression impression : impressions) {
             if (impression.properties() != null) {
+                impressionsToQueue.add(impression);
                 continue;
             }
             impression = impression.withPreviousTime(_impressionObserver.testAndSet(impression));

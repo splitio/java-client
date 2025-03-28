@@ -1023,4 +1023,115 @@ public class ImpressionsManagerImplTest {
         treatmentLog.sendImpressionCounters();
         verify(senderMock, times(0)).postCounters(Mockito.any());
     }
+
+    @Test
+    public void testImpressionsPropertiesOptimizedMode() {
+        SplitClientConfig config = SplitClientConfig.builder()
+                .impressionsQueueSize(10)
+                .endpoint("nowhere.com", "nowhere.com")
+                .impressionsMode(ImpressionsManager.Mode.OPTIMIZED)
+                .operationMode(OperationMode.CONSUMER)
+                .customStorageWrapper(Mockito.mock(CustomStorageWrapper.class))
+                .build();
+        ImpressionsStorage storage = new InMemoryImpressionsStorage(config.impressionsQueueSize());
+
+        ImpressionsSender senderMock = Mockito.mock(ImpressionsSender.class);
+        ImpressionCounter impressionCounter = new ImpressionCounter();
+        ImpressionObserver impressionObserver = new ImpressionObserver(200);
+        TelemetryStorageProducer telemetryStorageProducer = new InMemoryTelemetryStorage();
+
+        ProcessImpressionStrategy processImpressionStrategy = new ProcessImpressionOptimized(false, impressionObserver, impressionCounter, telemetryStorageProducer);
+        ProcessImpressionNone processImpressionNone = new ProcessImpressionNone(false, null, null);
+        ImpressionsManagerImpl treatmentLog = ImpressionsManagerImpl.instanceForTest(config, senderMock, TELEMETRY_STORAGE, storage, storage, processImpressionNone, processImpressionStrategy, impressionCounter, null);
+        treatmentLog.start();
+
+        // These 4 unique test name will cause 4 entries but we are caping at the first 3.
+        KeyImpression ki1 = keyImpression("test1", "adil", "on", 1L, 1L, "{\"prop\":\"val\"}");
+        KeyImpression ki2 = keyImpression("test1", "adil", "on", 2L, 1L, null);
+        KeyImpression ki3 = keyImpression("test1", "pato", "on", 3L, 1L, null);
+        KeyImpression ki4 = keyImpression("test1", "pato", "on", 4L, 1L, null);
+
+        treatmentLog.track(Stream.of(new DecoratedImpression(new Impression(ki1.keyName, null, ki1.feature, ki1.treatment, ki1.time, null, 1L, null, ki1.properties), false)).collect(Collectors.toList()));
+        treatmentLog.track(Stream.of(new DecoratedImpression(new Impression(ki2.keyName, null, ki2.feature, ki2.treatment, ki2.time, null, 1L, null, null), false)).collect(Collectors.toList()));
+        treatmentLog.track(Stream.of(new DecoratedImpression(new Impression(ki3.keyName, null, ki3.feature, ki3.treatment, ki3.time, null, 1L, null, null), false)).collect(Collectors.toList()));
+        treatmentLog.track(Stream.of(new DecoratedImpression(new Impression(ki4.keyName, null, ki4.feature, ki4.treatment, ki4.time, null, 1L, null, null), false)).collect(Collectors.toList()));
+        treatmentLog.sendImpressions();
+
+        verify(senderMock).postImpressionsBulk(impressionsCaptor.capture());
+
+        List<TestImpressions> captured = impressionsCaptor.getValue();
+        Assert.assertEquals(3, captured.get(0).keyImpressions.size());
+        for (TestImpressions testImpressions : captured) {
+            for (KeyImpression keyImpression : testImpressions.keyImpressions) {
+                Assert.assertEquals(null, keyImpression.previousTime);
+            }
+        }
+        // impression with properties is not deduped
+        Assert.assertTrue(captured.get(0).keyImpressions.contains(keyImpression("test1", "adil", "on", 1L, 1L, "{\"prop\":\"val\"}")));
+        Assert.assertTrue(captured.get(0).keyImpressions.contains(keyImpression("test1", "adil", "on", 2L, 1L, null)));
+        Assert.assertTrue(captured.get(0).keyImpressions.contains(keyImpression("test1", "pato", "on", 3L, 1L, null)));
+
+        treatmentLog.sendImpressionCounters();
+        verify(senderMock).postCounters(impressionCountCaptor.capture());
+        HashMap<ImpressionCounter.Key, Integer> capturedCounts = impressionCountCaptor.getValue();
+        Assert.assertEquals(1, capturedCounts.size());
+        Assert.assertTrue(capturedCounts.entrySet().contains(new AbstractMap.SimpleEntry<>(new ImpressionCounter.Key("test1", 0), 1)));
+
+        // Assert that the sender is never called if the counters are empty.
+        Mockito.reset(senderMock);
+        treatmentLog.sendImpressionCounters();
+        verify(senderMock, times(0)).postCounters(Mockito.any());
+    }
+
+    @Test
+    public void testImpressionsPropertiesDebugMode() {
+        SplitClientConfig config = SplitClientConfig.builder()
+                .impressionsQueueSize(10)
+                .endpoint("nowhere.com", "nowhere.com")
+                .impressionsMode(ImpressionsManager.Mode.DEBUG)
+                .operationMode(OperationMode.CONSUMER)
+                .customStorageWrapper(Mockito.mock(CustomStorageWrapper.class))
+                .build();
+        ImpressionsStorage storage = new InMemoryImpressionsStorage(config.impressionsQueueSize());
+
+        ImpressionsSender senderMock = Mockito.mock(ImpressionsSender.class);
+        ImpressionCounter impressionCounter = Mockito.mock(ImpressionCounter.class);
+        ImpressionObserver impressionObserver = new ImpressionObserver(200);
+        ProcessImpressionStrategy processImpressionStrategy = new ProcessImpressionDebug(false, impressionObserver);
+        ProcessImpressionNone processImpressionNone = new ProcessImpressionNone(false, null, null);
+
+        ImpressionsManagerImpl treatmentLog = ImpressionsManagerImpl.instanceForTest(config, senderMock, TELEMETRY_STORAGE, storage, storage, processImpressionNone, processImpressionStrategy, impressionCounter, null);
+        treatmentLog.start();
+
+        // These 4 unique test name will cause 4 entries but we are caping at the first 3.
+        KeyImpression ki1 = keyImpression("test1", "adil", "on", 1L, 1L, "{\"prop\":\"val\"}");
+        KeyImpression ki2 = keyImpression("test1", "adil", "on", 2L, 1L, null);
+        KeyImpression ki3 = keyImpression("test1", "pato", "on", 3L, 1L, null);
+        KeyImpression ki4 = keyImpression("test1", "pato", "on", 4L, 1L, null);
+
+        treatmentLog.track(Stream.of(new DecoratedImpression(new Impression(ki1.keyName, null, ki1.feature, ki1.treatment, ki1.time, null, 1L, null, "{\"prop\":\"val\"}"), false)).collect(Collectors.toList()));
+        treatmentLog.track(Stream.of(new DecoratedImpression(new Impression(ki2.keyName, null, ki2.feature, ki2.treatment, ki2.time, null, 1L, null, null), false)).collect(Collectors.toList()));
+        treatmentLog.track(Stream.of(new DecoratedImpression(new Impression(ki3.keyName, null, ki3.feature, ki3.treatment, ki3.time, null, 1L, null, null), false)).collect(Collectors.toList()));
+        treatmentLog.track(Stream.of(new DecoratedImpression(new Impression(ki4.keyName, null, ki4.feature, ki4.treatment, ki4.time, null, 1L, null, null), false)).collect(Collectors.toList()));
+        treatmentLog.sendImpressions();
+
+        verify(senderMock).postImpressionsBulk(impressionsCaptor.capture());
+
+        List<TestImpressions> captured = impressionsCaptor.getValue();
+        Assert.assertEquals(4, captured.get(0).keyImpressions.size());
+        for (TestImpressions testImpressions : captured) {
+            KeyImpression keyImpression1 = testImpressions.keyImpressions.get(0);
+            KeyImpression keyImpression2 = testImpressions.keyImpressions.get(1);
+            KeyImpression keyImpression3 = testImpressions.keyImpressions.get(2);
+            KeyImpression keyImpression4 = testImpressions.keyImpressions.get(3);
+            Assert.assertEquals(null, keyImpression1.previousTime);
+            Assert.assertEquals(null, keyImpression2.previousTime);
+            Assert.assertEquals(null, keyImpression3.previousTime);
+            Assert.assertEquals(Optional.of(3L), Optional.of(keyImpression4.previousTime));
+        }
+        // impression with properties is not deduped
+        Assert.assertTrue(captured.get(0).keyImpressions.contains(keyImpression("test1", "adil", "on", 1L, 1L, "{\"prop\":\"val\"}")));
+        Assert.assertTrue(captured.get(0).keyImpressions.contains(keyImpression("test1", "adil", "on", 1L, 1L, null)));
+        Assert.assertTrue(captured.get(0).keyImpressions.contains(keyImpression("test1", "pato", "on", 3L, 1L, null)));
+    }
 }

@@ -1,6 +1,7 @@
 package io.split.client;
 
 import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 import com.google.gson.JsonParser;
 import io.split.client.api.Key;
 import io.split.client.api.SplitResult;
@@ -539,7 +540,7 @@ public final class SplitClientImpl implements SplitClient {
         if (properties != null) {
             ImpressionPropertiesValidator.ImpressionPropertiesValidatorResult iPValidatorResult = ImpressionPropertiesValidator.propertiesAreValid(
                     new JsonParser().parse(properties).getAsJsonObject());
-            validatedProperties = iPValidatorResult.getValue().toString();
+            validatedProperties = new GsonBuilder().create().toJson(iPValidatorResult.getValue());
         }
         return validatedProperties;
     }

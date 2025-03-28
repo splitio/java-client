@@ -2081,4 +2081,51 @@ public class SplitClientImplTest {
 
         verify(splitCacheConsumer, times(1)).fetchMany(anyList());
     }
+
+    @Test
+    public void impressionPropertiesTest() {
+        String test = "test1";
+
+        ParsedCondition age_equal_to_0_should_be_on = new ParsedCondition(ConditionType.ROLLOUT,
+                CombiningMatcher.of("age", new EqualToMatcher(-20, DataType.NUMBER)),
+                Lists.newArrayList(partition("on", 100)),
+                "foolabel"
+        );
+
+        List<ParsedCondition> conditions = Lists.newArrayList(age_equal_to_0_should_be_on);
+        ParsedSplit parsedSplit = ParsedSplit.createParsedSplitForTests(test, 123, false, Treatments.OFF, conditions, null, 1, 1, new HashSet<>(), true);
+
+        SplitCacheConsumer splitCacheConsumer = mock(SplitCacheConsumer.class);
+        SegmentCacheConsumer segmentCacheConsumer = mock(SegmentCacheConsumer.class);
+        when(splitCacheConsumer.get(test)).thenReturn(parsedSplit);
+
+        SDKReadinessGates gates = mock(SDKReadinessGates.class);
+        ImpressionsManager impressionsManager = mock(ImpressionsManager.class);
+        SplitClientImpl client = new SplitClientImpl(
+                mock(SplitFactory.class),
+                splitCacheConsumer,
+                impressionsManager,
+                NoopEventsStorageImp.create(),
+                config,
+                gates,
+                new EvaluatorImp(splitCacheConsumer, segmentCacheConsumer), TELEMETRY_STORAGE, TELEMETRY_STORAGE,
+                flagSetsFilter
+        );
+
+        Map<String, Object> attributes = ImmutableMap.<String, Object>of("age", -20, "acv", "1000000");
+        String properties = "{\"prop2\":\"val2\",\"prop1\":\"val1\"}";
+
+        assertEquals("on", client.getTreatment("pato@codigo.com", test, attributes, properties));
+
+        ArgumentCaptor<List> impressionCaptor = ArgumentCaptor.forClass(List.class);
+        verify(impressionsManager).track(impressionCaptor.capture());
+
+        assertNotNull(impressionCaptor.getValue());
+        assertEquals(1, impressionCaptor.getValue().size());
+        DecoratedImpression impression = (DecoratedImpression) impressionCaptor.getValue().get(0);
+
+        assertEquals("foolabel", impression.impression().appliedRule());
+        assertEquals(attributes, impression.impression().attributes());
+        assertEquals(properties, impression.impression().properties());
+    }
 }
