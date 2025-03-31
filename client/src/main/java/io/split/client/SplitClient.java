@@ -2,6 +2,7 @@ package io.split.client;
 
 import io.split.client.api.Key;
 import io.split.client.api.SplitResult;
+import io.split.client.dtos.EvaluationOptions;
 
 import java.util.List;
 import java.util.Map;
@@ -493,7 +494,7 @@ public interface SplitClient {
      * @param properties a json structure to attach to the impression.
      * @return the evaluated treatment, the default treatment of this feature flag, or 'control'.
      */
-    String getTreatment(String key, String featureFlagName, String properties);
+    String getTreatment(String key, String featureFlagName, EvaluationOptions evaluationOptions);
 
     /**
      * This method is useful when you want to determine the treatment to show
@@ -511,7 +512,7 @@ public interface SplitClient {
      * @param properties a json structure to attach to the impression.
      * @return the evaluated treatment, the default treatment of this feature flag, or 'control'.
      */
-    String getTreatment(String key, String featureFlagName, Map<String, Object> attributes, String properties);
+    String getTreatment(String key, String featureFlagName, Map<String, Object> attributes, EvaluationOptions evaluationOptions);
 
     /**
      * To understand why this method is useful, consider the following simple Feature Flag as an example:
@@ -545,7 +546,7 @@ public interface SplitClient {
      *
      * @return the evaluated treatment, the default treatment of this feature flag, or 'control'.
      */
-    String getTreatment(Key key, String featureFlagName, Map<String, Object> attributes, String properties);
+    String getTreatment(Key key, String featureFlagName, Map<String, Object> attributes, EvaluationOptions evaluationOptions);
 
     /**
      * Returns a map of feature flag name and treatments to show this key for these feature flags. The set of treatments
@@ -578,7 +579,7 @@ public interface SplitClient {
      * @param properties a json structure to attach to the impression.
      * @return for each feature flag the evaluated treatment, the default treatment for each feature flag, or 'control'.
      */
-    Map<String, String> getTreatments(String key, List<String> featureFlagNames, String properties);
+    Map<String, String> getTreatments(String key, List<String> featureFlagNames, EvaluationOptions evaluationOptions);
 
     /**
      * This method is useful when you want to determine the treatments to show
@@ -596,7 +597,7 @@ public interface SplitClient {
      * @param properties a json structure to attach to the impression.
      * @return the evaluated treatment, the default treatment of this feature flag, or 'control'.
      */
-    Map<String, String> getTreatments(String key, List<String> featureFlagNames, Map<String, Object> attributes, String properties);
+    Map<String, String> getTreatments(String key, List<String> featureFlagNames, Map<String, Object> attributes, EvaluationOptions evaluationOptions);
 
     /**
      * To understand why this method is useful, consider the following simple Feature Flag as an example:
@@ -630,7 +631,7 @@ public interface SplitClient {
      *
      * @return for each feature flag the evaluated treatment, the default treatment of the feature flag, or 'control'.
      */
-    Map<String, String> getTreatments(Key key, List<String> featureFlagNames, Map<String, Object> attributes, String properties);
+    Map<String, String> getTreatments(Key key, List<String> featureFlagNames, Map<String, Object> attributes, EvaluationOptions evaluationOptions);
 
     /**
      * Same as {@link #getTreatment(String, String)} but it returns the configuration associated to the
@@ -647,7 +648,7 @@ public interface SplitClient {
      * @return SplitResult containing the evaluated treatment (the default treatment of this feature flag, or 'control') and
      *         a configuration associated to this treatment if set.
      */
-    SplitResult getTreatmentWithConfig(String key, String featureFlagName, String properties);
+    SplitResult getTreatmentWithConfig(String key, String featureFlagName, EvaluationOptions evaluationOptions);
 
     /**
      * Same as {@link #getTreatment(Key, String, Map)} but it returns the configuration associated to the
@@ -661,7 +662,7 @@ public interface SplitClient {
      * @return SplitResult containing the evaluated treatment (the default treatment of this feature flag, or 'control') and
      *         a configuration associated to this treatment if set.
      */
-    SplitResult getTreatmentWithConfig(Key key, String featureFlagName, Map<String, Object> attributes, String properties);
+    SplitResult getTreatmentWithConfig(Key key, String featureFlagName, Map<String, Object> attributes, EvaluationOptions evaluationOptions);
 
     /**
      * Same as {@link #getTreatment(String, String, Map)} but it returns the configuration associated to the
@@ -679,7 +680,7 @@ public interface SplitClient {
      * @return SplitResult containing the evaluated treatment (the default treatment of this feature flag, or 'control') and
      *         a configuration associated to this treatment if set.
      */
-    SplitResult getTreatmentWithConfig(String key, String featureFlagName, Map<String, Object> attributes, String properties);
+    SplitResult getTreatmentWithConfig(String key, String featureFlagName, Map<String, Object> attributes, EvaluationOptions evaluationOptions);
 
     /**
      * Same as {@link #getTreatments(String, List<String>, Map)} but it returns for each feature flag the configuration associated to the
@@ -697,7 +698,8 @@ public interface SplitClient {
      * @return for each feature flag a SplitResult containing the evaluated treatment (the default treatment of this feature flag, or 'control') and
      *         a configuration associated to this treatment if set.
      */
-    Map<String, SplitResult> getTreatmentsWithConfig(String key, List<String> featureFlagNames, Map<String, Object> attributes, String properties);
+    Map<String, SplitResult> getTreatmentsWithConfig(String key, List<String> featureFlagNames, Map<String, Object> attributes,
+                                                     EvaluationOptions evaluationOptions);
 
     /**
      * Same as {@link #getTreatments(String, List<String>)} but it returns the configuration associated to the
@@ -714,7 +716,7 @@ public interface SplitClient {
      * @return Map<String, SplitResult> containing for each feature flag the evaluated treatment (the default treatment of
      * this feature flag, or 'control') and a configuration associated to this treatment if set.
      */
-    Map<String, SplitResult> getTreatmentsWithConfig(String key, List<String> featureFlagNames, String properties);
+    Map<String, SplitResult> getTreatmentsWithConfig(String key, List<String> featureFlagNames, EvaluationOptions evaluationOptions);
 
     /**
      * Same as {@link #getTreatments(String, List<String>, Map)} but it returns for each feature flag the configuration associated to the
@@ -731,7 +733,7 @@ public interface SplitClient {
      * @param properties a json structure to attach to the impression.
      * @return for each feature flag the evaluated treatment, the default treatment of this feature flag, or 'control'.
      */
-    Map<String, String> getTreatmentsByFlagSet(String key, String flagSet, Map<String, Object> attributes, String properties);
+    Map<String, String> getTreatmentsByFlagSet(String key, String flagSet, Map<String, Object> attributes, EvaluationOptions evaluationOptions);
 
     /**
      * Same as {@link #getTreatments(String, List<String>, Map)} but it returns for each feature flag the configuration associated to the
@@ -747,7 +749,7 @@ public interface SplitClient {
      * @param properties a json structure to attach to the impression.
      * @return for each feature flag the evaluated treatment, the default treatment of this feature flag, or 'control'.
      */
-    Map<String, String> getTreatmentsByFlagSets(String key, List<String> flagSets, String properties);
+    Map<String, String> getTreatmentsByFlagSets(String key, List<String> flagSets, EvaluationOptions evaluationOptions);
 
     /**
      * Same as {@link #getTreatments(String, List<String>, Map)} but it returns for each feature flag the configuration associated to the
@@ -764,7 +766,8 @@ public interface SplitClient {
      * @param properties a json structure to attach to the impression.
      * @return for each feature flag the evaluated treatment, the default treatment of this feature flag, or 'control'.
      */
-    Map<String, String> getTreatmentsByFlagSets(String key, List<String> flagSets, Map<String, Object> attributes, String properties);
+    Map<String, String> getTreatmentsByFlagSets(String key, List<String> flagSets, Map<String, Object> attributes,
+                                                EvaluationOptions evaluationOptions);
 
     /**
      * Same as {@link #getTreatments(String, List<String>, Map)} but it returns for each feature flag the configuration associated to the
@@ -781,7 +784,7 @@ public interface SplitClient {
      * @return for each feature flag the evaluated treatment (the default treatment of this feature flag, or 'control') and a configuration
      * associated to this treatment if set.
      */
-    Map<String, SplitResult> getTreatmentsWithConfigByFlagSet(String key, String flagSet, String properties);
+    Map<String, SplitResult> getTreatmentsWithConfigByFlagSet(String key, String flagSet, EvaluationOptions evaluationOptions);
 
     /**
      * Same as {@link #getTreatments(String, List<String>, Map)} but it returns for each feature flag the configuration associated to the
@@ -798,7 +801,7 @@ public interface SplitClient {
      * @return for each feature flag the evaluated treatment (the default treatment of this feature flag, or 'control') and a configuration
      * associated to this treatment if set.
      */
-    Map<String, SplitResult> getTreatmentsWithConfigByFlagSets(String key, List<String> flagSets, String properties);
+    Map<String, SplitResult> getTreatmentsWithConfigByFlagSets(String key, List<String> flagSets, EvaluationOptions evaluationOptions);
 
     /**
      * Same as {@link #getTreatments(String, List<String>, Map)} but it returns for each feature flag the configuration associated to the
@@ -816,7 +819,8 @@ public interface SplitClient {
      * @return for each feature flag the evaluated treatment (the default treatment of this feature flag, or 'control') and a configuration
      * associated to this treatment if set.
      */
-    Map<String, SplitResult> getTreatmentsWithConfigByFlagSets(String key, List<String> flagSets, Map<String, Object> attributes, String properties);
+    Map<String, SplitResult> getTreatmentsWithConfigByFlagSets(String key, List<String> flagSets, Map<String, Object> attributes,
+                                                               EvaluationOptions evaluationOptions);
 
     /**
      * Same as {@link #getTreatments(String, List<String>, Map)} but it returns for each feature flag the configuration associated to the
@@ -832,7 +836,7 @@ public interface SplitClient {
      * @param properties a json structure to attach to the impression.
      * @return for each feature flag the evaluated treatment, the default treatment of this feature flag, or 'control'.
      */
-    Map<String, String> getTreatmentsByFlagSet(String key, String flagSet, String properties);
+    Map<String, String> getTreatmentsByFlagSet(String key, String flagSet, EvaluationOptions evaluationOptions);
 
     /**
      * Same as {@link #getTreatments(Key, List, Map)} but it returns for each feature flag the configuration associated to the
@@ -846,7 +850,8 @@ public interface SplitClient {
      * @return for each feature flag a SplitResult containing the evaluated treatment (the default treatment of this feature flag, or 'control') and
      *         a configuration associated to this treatment if set.
      */
-    Map<String, SplitResult> getTreatmentsWithConfig(Key key, List<String> featureFlagNames, Map<String, Object> attributes, String properties);
+    Map<String, SplitResult> getTreatmentsWithConfig(Key key, List<String> featureFlagNames, Map<String, Object> attributes,
+                                                     EvaluationOptions evaluationOptions);
 
     /**
      * Same as {@link #getTreatments(String, List<String>, Map)} but it returns for each feature flag the configuration associated to the
@@ -864,7 +869,8 @@ public interface SplitClient {
      * @return for each feature flag the evaluated treatment (the default treatment of this feature flag, or 'control') and a configuration
      * associated to this treatment if set.
      */
-    Map<String, SplitResult> getTreatmentsWithConfigByFlagSet(String key, String flagSet, Map<String, Object> attributes, String properties);
+    Map<String, SplitResult> getTreatmentsWithConfigByFlagSet(String key, String flagSet, Map<String, Object> attributes,
+                                                              EvaluationOptions evaluationOptions);
 
     /**
      * Same as {@link #getTreatments(String, List<String>, Map)} but it returns for each feature flag the configuration associated to the
@@ -881,7 +887,7 @@ public interface SplitClient {
      * @param properties a json structure to attach to the impression.
      * @return for each feature flag the evaluated treatment, the default treatment of this feature flag, or 'control'.
      */
-    Map<String, String> getTreatmentsByFlagSet(Key key, String flagSet, Map<String, Object> attributes, String properties);
+    Map<String, String> getTreatmentsByFlagSet(Key key, String flagSet, Map<String, Object> attributes, EvaluationOptions evaluationOptions);
 
     /**
      * Same as {@link #getTreatments(String, List<String>, Map)} but it returns for each feature flag the configuration associated to the
@@ -898,7 +904,8 @@ public interface SplitClient {
      * @param properties a json structure to attach to the impression.
      * @return for each feature flag the evaluated treatment, the default treatment of this feature flag, or 'control'.
      */
-    Map<String, String> getTreatmentsByFlagSets(Key key, List<String> flagSets, Map<String, Object> attributes, String properties);
+    Map<String, String> getTreatmentsByFlagSets(Key key, List<String> flagSets, Map<String, Object> attributes,
+                                                EvaluationOptions evaluationOptions);
 
     /**
      * Same as {@link #getTreatments(String, List<String>, Map)} but it returns for each feature flag the configuration associated to the
@@ -916,7 +923,8 @@ public interface SplitClient {
      * @return for each feature flag the evaluated treatment (the default treatment of this feature flag, or 'control') and a configuration
      * associated to this treatment if set.
      */
-    Map<String, SplitResult> getTreatmentsWithConfigByFlagSet(Key key, String flagSet, Map<String, Object> attributes, String properties);
+    Map<String, SplitResult> getTreatmentsWithConfigByFlagSet(Key key, String flagSet, Map<String, Object> attributes,
+                                                              EvaluationOptions evaluationOptions);
 
     /**
      * Same as {@link #getTreatments(String, List<String>, Map)} but it returns for each feature flag the configuration associated to the
@@ -934,7 +942,8 @@ public interface SplitClient {
      * @return for each feature flag the evaluated treatment (the default treatment of this feature flag, or 'control') and a configuration
      * associated to this treatment if set.
      */
-    Map<String, SplitResult> getTreatmentsWithConfigByFlagSets(Key key, List<String> flagSets, Map<String, Object> attributes, String properties);
+    Map<String, SplitResult> getTreatmentsWithConfigByFlagSets(Key key, List<String> flagSets, Map<String, Object> attributes,
+                                                               EvaluationOptions evaluationOptions);
 
     /**
      * Destroys the background processes and clears the cache, releasing the resources used by

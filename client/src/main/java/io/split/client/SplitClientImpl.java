@@ -6,6 +6,7 @@ import com.google.gson.JsonParser;
 import io.split.client.api.Key;
 import io.split.client.api.SplitResult;
 import io.split.client.dtos.DecoratedImpression;
+import io.split.client.dtos.EvaluationOptions;
 import io.split.client.dtos.Event;
 import io.split.client.events.EventsStorageProducer;
 import io.split.client.impressions.Impression;
@@ -98,29 +99,29 @@ public final class SplitClientImpl implements SplitClient {
 
     @Override
     public String getTreatment(String key, String featureFlagName, Map<String, Object> attributes) {
-        return getTreatmentWithConfigInternal(key, null, featureFlagName, attributes, null, MethodEnum.TREATMENT).treatment();
+        return getTreatmentWithConfigInternal(key, null, featureFlagName, attributes, new EvaluationOptions(null), MethodEnum.TREATMENT).treatment();
     }
 
     @Override
     public String getTreatment(Key key, String featureFlagName, Map<String, Object> attributes) {
-        return getTreatmentWithConfigInternal(key.matchingKey(), key.bucketingKey(), featureFlagName, attributes, null,
+        return getTreatmentWithConfigInternal(key.matchingKey(), key.bucketingKey(), featureFlagName, attributes, new EvaluationOptions(null),
                 MethodEnum.TREATMENT).treatment();
     }
 
     @Override
     public SplitResult getTreatmentWithConfig(String key, String featureFlagName) {
-        return getTreatmentWithConfigInternal(key, null, featureFlagName, Collections.<String, Object>emptyMap(), null,
+        return getTreatmentWithConfigInternal(key, null, featureFlagName, Collections.<String, Object>emptyMap(), new EvaluationOptions(null),
                 MethodEnum.TREATMENT_WITH_CONFIG);
     }
 
     @Override
     public SplitResult getTreatmentWithConfig(String key, String featureFlagName, Map<String, Object> attributes) {
-        return getTreatmentWithConfigInternal(key, null, featureFlagName, attributes, null, MethodEnum.TREATMENT_WITH_CONFIG);
+        return getTreatmentWithConfigInternal(key, null, featureFlagName, attributes, new EvaluationOptions(null), MethodEnum.TREATMENT_WITH_CONFIG);
     }
 
     @Override
     public SplitResult getTreatmentWithConfig(Key key, String featureFlagName, Map<String, Object> attributes) {
-        return getTreatmentWithConfigInternal(key.matchingKey(), key.bucketingKey(), featureFlagName, attributes, null,
+        return getTreatmentWithConfigInternal(key.matchingKey(), key.bucketingKey(), featureFlagName, attributes, new EvaluationOptions(null),
                 MethodEnum.TREATMENT_WITH_CONFIG);
     }
 
@@ -131,265 +132,277 @@ public final class SplitClientImpl implements SplitClient {
 
     @Override
     public Map<String, String> getTreatments(String key, List<String> featureFlagNames, Map<String, Object> attributes) {
-        return getTreatmentsWithConfigInternal(key, null, featureFlagNames, attributes, null, MethodEnum.TREATMENTS)
+        return getTreatmentsWithConfigInternal(key, null, featureFlagNames, attributes, new EvaluationOptions(null), MethodEnum.TREATMENTS)
                 .entrySet().stream()
                 .collect(Collectors.toMap(Map.Entry::getKey, e -> e.getValue().treatment()));
     }
 
     @Override
     public Map<String, String> getTreatments(Key key, List<String> featureFlagNames, Map<String, Object> attributes) {
-        return getTreatmentsWithConfigInternal(key.matchingKey(), key.bucketingKey(), featureFlagNames, attributes, null,  MethodEnum.TREATMENTS)
+        return getTreatmentsWithConfigInternal(key.matchingKey(), key.bucketingKey(), featureFlagNames, attributes,
+                new EvaluationOptions(null),  MethodEnum.TREATMENTS)
                 .entrySet().stream()
                 .collect(Collectors.toMap(Map.Entry::getKey, e -> e.getValue().treatment()));
     }
 
     @Override
     public Map<String, SplitResult> getTreatmentsWithConfig(String key, List<String> featureFlagNames) {
-        return getTreatmentsWithConfigInternal(key, null, featureFlagNames, Collections.<String, Object>emptyMap(), null,
+        return getTreatmentsWithConfigInternal(key, null, featureFlagNames, Collections.<String, Object>emptyMap(), new EvaluationOptions(null),
                 MethodEnum.TREATMENTS_WITH_CONFIG);
     }
 
     @Override
     public Map<String, SplitResult> getTreatmentsWithConfig(String key, List<String> featureFlagNames, Map<String, Object> attributes) {
-        return getTreatmentsWithConfigInternal(key, null, featureFlagNames, attributes, null, MethodEnum.TREATMENTS_WITH_CONFIG);
+        return getTreatmentsWithConfigInternal(key, null, featureFlagNames, attributes,
+                new EvaluationOptions(null), MethodEnum.TREATMENTS_WITH_CONFIG);
     }
 
     @Override
     public Map<String, SplitResult> getTreatmentsWithConfig(Key key, List<String> featureFlagNames, Map<String, Object> attributes) {
-        return getTreatmentsWithConfigInternal(key.matchingKey(), key.bucketingKey(), featureFlagNames, attributes, null,
+        return getTreatmentsWithConfigInternal(key.matchingKey(), key.bucketingKey(), featureFlagNames, attributes, new EvaluationOptions(null),
                 MethodEnum.TREATMENTS_WITH_CONFIG);
     }
 
     @Override
     public Map<String, String> getTreatmentsByFlagSet(String key, String flagSet) {
         return getTreatmentsBySetsWithConfigInternal(key, null, new ArrayList<>(Arrays.asList(flagSet)),
-                null, null, MethodEnum.TREATMENTS_BY_FLAG_SET).entrySet().stream()
+                null, new EvaluationOptions(null), MethodEnum.TREATMENTS_BY_FLAG_SET).entrySet().stream()
                 .collect(Collectors.toMap(Map.Entry::getKey, e -> e.getValue().treatment()));
     }
 
     @Override
     public Map<String, String> getTreatmentsByFlagSet(String key, String flagSet, Map<String, Object> attributes) {
         return getTreatmentsBySetsWithConfigInternal(key, null, new ArrayList<>(Arrays.asList(flagSet)),
-                attributes, null, MethodEnum.TREATMENTS_BY_FLAG_SET).entrySet().stream()
+                attributes, new EvaluationOptions(null), MethodEnum.TREATMENTS_BY_FLAG_SET).entrySet().stream()
                 .collect(Collectors.toMap(Map.Entry::getKey, e -> e.getValue().treatment()));
     }
 
     @Override
     public Map<String, String> getTreatmentsByFlagSet(Key key, String flagSet, Map<String, Object> attributes) {
         return getTreatmentsBySetsWithConfigInternal(key.matchingKey(), key.bucketingKey(), new ArrayList<>(Arrays.asList(flagSet)),
-                attributes, null, MethodEnum.TREATMENTS_BY_FLAG_SET).entrySet().stream()
+                attributes, new EvaluationOptions(null), MethodEnum.TREATMENTS_BY_FLAG_SET).entrySet().stream()
                 .collect(Collectors.toMap(Map.Entry::getKey, e -> e.getValue().treatment()));
     }
 
     @Override
     public Map<String, String> getTreatmentsByFlagSets(String key, List<String> flagSets) {
         return getTreatmentsBySetsWithConfigInternal(key, null, flagSets,
-                null, null, MethodEnum.TREATMENTS_BY_FLAG_SETS).entrySet().stream()
+                null, new EvaluationOptions(null), MethodEnum.TREATMENTS_BY_FLAG_SETS).entrySet().stream()
                 .collect(Collectors.toMap(Map.Entry::getKey, e -> e.getValue().treatment()));
     }
 
     @Override
     public Map<String, String> getTreatmentsByFlagSets(String key, List<String> flagSets, Map<String, Object> attributes) {
         return getTreatmentsBySetsWithConfigInternal(key, null, flagSets,
-                attributes, null, MethodEnum.TREATMENTS_BY_FLAG_SETS).entrySet().stream()
+                attributes, new EvaluationOptions(null), MethodEnum.TREATMENTS_BY_FLAG_SETS).entrySet().stream()
                 .collect(Collectors.toMap(Map.Entry::getKey, e -> e.getValue().treatment()));
     }
 
     @Override
     public Map<String, String> getTreatmentsByFlagSets(Key key, List<String> flagSets, Map<String, Object> attributes) {
         return getTreatmentsBySetsWithConfigInternal(key.matchingKey(), key.bucketingKey(), flagSets,
-                attributes, null, MethodEnum.TREATMENTS_BY_FLAG_SETS).entrySet().stream()
+                attributes, new EvaluationOptions(null), MethodEnum.TREATMENTS_BY_FLAG_SETS).entrySet().stream()
                 .collect(Collectors.toMap(Map.Entry::getKey, e -> e.getValue().treatment()));
     }
 
     @Override
     public Map<String, SplitResult> getTreatmentsWithConfigByFlagSet(String key, String flagSet) {
         return getTreatmentsBySetsWithConfigInternal(key, null, new ArrayList<>(Arrays.asList(flagSet)),
-                null, null, MethodEnum.TREATMENTS_WITH_CONFIG_BY_FLAG_SET);
+                null, new EvaluationOptions(null), MethodEnum.TREATMENTS_WITH_CONFIG_BY_FLAG_SET);
     }
 
     @Override
     public Map<String, SplitResult> getTreatmentsWithConfigByFlagSet(String key, String flagSet, Map<String, Object> attributes) {
         return getTreatmentsBySetsWithConfigInternal(key, null, new ArrayList<>(Arrays.asList(flagSet)),
-                attributes, null, MethodEnum.TREATMENTS_WITH_CONFIG_BY_FLAG_SET);
+                attributes, new EvaluationOptions(null), MethodEnum.TREATMENTS_WITH_CONFIG_BY_FLAG_SET);
     }
 
     @Override
     public Map<String, SplitResult> getTreatmentsWithConfigByFlagSet(Key key, String flagSet, Map<String, Object> attributes) {
         return getTreatmentsBySetsWithConfigInternal(key.matchingKey(), key.bucketingKey(), new ArrayList<>(Arrays.asList(flagSet)),
-                attributes, null, MethodEnum.TREATMENTS_WITH_CONFIG_BY_FLAG_SET);
+                attributes, new EvaluationOptions(null), MethodEnum.TREATMENTS_WITH_CONFIG_BY_FLAG_SET);
     }
 
     @Override
     public Map<String, SplitResult> getTreatmentsWithConfigByFlagSets(String key, List<String> flagSets) {
         return getTreatmentsBySetsWithConfigInternal(key, null, flagSets,
-                null, null, MethodEnum.TREATMENTS_WITH_CONFIG_BY_FLAG_SETS);
+                null, new EvaluationOptions(null), MethodEnum.TREATMENTS_WITH_CONFIG_BY_FLAG_SETS);
     }
 
     @Override
     public Map<String, SplitResult> getTreatmentsWithConfigByFlagSets(String key, List<String> flagSets, Map<String, Object> attributes) {
         return getTreatmentsBySetsWithConfigInternal(key, null, flagSets,
-                attributes, null, MethodEnum.TREATMENTS_WITH_CONFIG_BY_FLAG_SETS);
+                attributes, new EvaluationOptions(null), MethodEnum.TREATMENTS_WITH_CONFIG_BY_FLAG_SETS);
     }
 
     @Override
     public Map<String, SplitResult> getTreatmentsWithConfigByFlagSets(Key key, List<String> flagSets, Map<String, Object> attributes) {
         return getTreatmentsBySetsWithConfigInternal(key.matchingKey(), key.bucketingKey(), flagSets,
-                attributes, null, MethodEnum.TREATMENTS_WITH_CONFIG_BY_FLAG_SETS);
+                attributes, new EvaluationOptions(null), MethodEnum.TREATMENTS_WITH_CONFIG_BY_FLAG_SETS);
     }
 
     @Override
-    public String getTreatment(String key, String featureFlagName, String properties) {
-        return getTreatment(key, featureFlagName, Collections.<String, Object>emptyMap(), properties);
+    public String getTreatment(String key, String featureFlagName, EvaluationOptions evaluationOptions) {
+        return getTreatment(key, featureFlagName, Collections.<String, Object>emptyMap(), evaluationOptions);
     }
 
     @Override
-    public String getTreatment(String key, String featureFlagName, Map<String, Object> attributes, String properties) {
-        return getTreatmentWithConfigInternal(key, null, featureFlagName, attributes, properties, MethodEnum.TREATMENT).treatment();
+    public String getTreatment(String key, String featureFlagName, Map<String, Object> attributes, EvaluationOptions evaluationOptions) {
+        return getTreatmentWithConfigInternal(key, null, featureFlagName, attributes, evaluationOptions, MethodEnum.TREATMENT).treatment();
     }
 
     @Override
-    public String getTreatment(Key key, String featureFlagName, Map<String, Object> attributes, String properties) {
-        return getTreatmentWithConfigInternal(key.matchingKey(), key.bucketingKey(), featureFlagName, attributes, properties,
+    public String getTreatment(Key key, String featureFlagName, Map<String, Object> attributes, EvaluationOptions evaluationOptions) {
+        return getTreatmentWithConfigInternal(key.matchingKey(), key.bucketingKey(), featureFlagName, attributes, evaluationOptions,
                 MethodEnum.TREATMENT).treatment();
     }
 
     @Override
-    public Map<String, String> getTreatments(String key, List<String> featureFlagNames, String properties) {
-        return getTreatments(key, featureFlagNames, Collections.emptyMap(), properties);
+    public Map<String, String> getTreatments(String key, List<String> featureFlagNames,
+                                             EvaluationOptions evaluationOptions) {
+        return getTreatments(key, featureFlagNames, Collections.emptyMap(), evaluationOptions);
     }
 
     @Override
-    public Map<String, String> getTreatments(String key, List<String> featureFlagNames, Map<String, Object> attributes, String properties) {
-        return getTreatmentsWithConfigInternal(key, null, featureFlagNames, attributes, properties, MethodEnum.TREATMENTS)
+    public Map<String, String> getTreatments(String key, List<String> featureFlagNames, Map<String, Object> attributes,
+                                             EvaluationOptions evaluationOptions) {
+        return getTreatmentsWithConfigInternal(key, null, featureFlagNames, attributes, evaluationOptions, MethodEnum.TREATMENTS)
                 .entrySet().stream()
                 .collect(Collectors.toMap(Map.Entry::getKey, e -> e.getValue().treatment()));
     }
 
     @Override
-    public Map<String, String> getTreatments(Key key, List<String> featureFlagNames, Map<String, Object> attributes, String properties) {
-        return getTreatmentsWithConfigInternal(key.matchingKey(), key.bucketingKey(), featureFlagNames, attributes, properties,
+    public Map<String, String> getTreatments(Key key, List<String> featureFlagNames, Map<String, Object> attributes,
+                                             EvaluationOptions evaluationOptions) {
+        return getTreatmentsWithConfigInternal(key.matchingKey(), key.bucketingKey(), featureFlagNames, attributes, evaluationOptions,
                 MethodEnum.TREATMENTS)
                 .entrySet().stream()
                 .collect(Collectors.toMap(Map.Entry::getKey, e -> e.getValue().treatment()));
     }
 
     @Override
-    public SplitResult getTreatmentWithConfig(String key, String featureFlagName, String properties) {
-        return getTreatmentWithConfigInternal(key, null, featureFlagName, Collections.<String, Object>emptyMap(), properties,
+    public SplitResult getTreatmentWithConfig(String key, String featureFlagName, EvaluationOptions evaluationOptions) {
+        return getTreatmentWithConfigInternal(key, null, featureFlagName, Collections.<String, Object>emptyMap(), evaluationOptions,
                 MethodEnum.TREATMENT_WITH_CONFIG);
     }
 
     @Override
-    public SplitResult getTreatmentWithConfig(Key key, String featureFlagName, Map<String, Object> attributes, String properties) {
-        return getTreatmentWithConfigInternal(key.matchingKey(), key.bucketingKey(), featureFlagName, attributes, properties,
+    public SplitResult getTreatmentWithConfig(Key key, String featureFlagName, Map<String, Object> attributes,
+                                              EvaluationOptions evaluationOptions) {
+        return getTreatmentWithConfigInternal(key.matchingKey(), key.bucketingKey(), featureFlagName, attributes, evaluationOptions,
                 MethodEnum.TREATMENT_WITH_CONFIG);
     }
 
     @Override
-    public SplitResult getTreatmentWithConfig(String key, String featureFlagName, Map<String, Object> attributes, String properties) {
-        return getTreatmentWithConfigInternal(key, null, featureFlagName, attributes, properties,
+    public SplitResult getTreatmentWithConfig(String key, String featureFlagName, Map<String, Object> attributes,
+                                              EvaluationOptions evaluationOptions) {
+        return getTreatmentWithConfigInternal(key, null, featureFlagName, attributes, evaluationOptions,
                 MethodEnum.TREATMENT_WITH_CONFIG);
     }
 
     @Override
     public Map<String, SplitResult> getTreatmentsWithConfig(String key, List<String> featureFlagNames, Map<String, Object> attributes,
-                                                            String properties) {
-        return getTreatmentsWithConfigInternal(key, null, featureFlagNames, attributes, properties,
+                                                            EvaluationOptions evaluationOptions) {
+        return getTreatmentsWithConfigInternal(key, null, featureFlagNames, attributes, evaluationOptions,
                 MethodEnum.TREATMENTS_WITH_CONFIG);
     }
 
     @Override
-    public Map<String, SplitResult> getTreatmentsWithConfig(String key, List<String> featureFlagNames, String properties) {
-        return getTreatmentsWithConfigInternal(key, null, featureFlagNames, null, properties,
+    public Map<String, SplitResult> getTreatmentsWithConfig(String key, List<String> featureFlagNames, EvaluationOptions evaluationOptions) {
+        return getTreatmentsWithConfigInternal(key, null, featureFlagNames, null, evaluationOptions,
                 MethodEnum.TREATMENTS_WITH_CONFIG);
     }
 
     @Override
-    public Map<String, String> getTreatmentsByFlagSet(String key, String flagSet, Map<String, Object> attributes, String properties) {
+    public Map<String, String> getTreatmentsByFlagSet(String key, String flagSet, Map<String, Object> attributes,
+                                                      EvaluationOptions evaluationOptions) {
         return getTreatmentsBySetsWithConfigInternal(key, null, new ArrayList<>(Arrays.asList(flagSet)),
-                attributes, properties, MethodEnum.TREATMENTS_BY_FLAG_SET).entrySet().stream()
+                attributes, evaluationOptions, MethodEnum.TREATMENTS_BY_FLAG_SET).entrySet().stream()
                 .collect(Collectors.toMap(Map.Entry::getKey, e -> e.getValue().treatment()));
     }
 
     @Override
-    public Map<String, String> getTreatmentsByFlagSets(String key, List<String> flagSets, String properties) {
+    public Map<String, String> getTreatmentsByFlagSets(String key, List<String> flagSets, EvaluationOptions evaluationOptions) {
         return getTreatmentsBySetsWithConfigInternal(key, null, flagSets,
-                null, properties, MethodEnum.TREATMENTS_BY_FLAG_SETS).entrySet().stream()
+                null, evaluationOptions, MethodEnum.TREATMENTS_BY_FLAG_SETS).entrySet().stream()
                 .collect(Collectors.toMap(Map.Entry::getKey, e -> e.getValue().treatment()));
     }
 
     @Override
-    public Map<String, String> getTreatmentsByFlagSets(String key, List<String> flagSets, Map<String, Object> attributes, String properties) {
+    public Map<String, String> getTreatmentsByFlagSets(String key, List<String> flagSets, Map<String, Object> attributes,
+                                                       EvaluationOptions evaluationOptions) {
         return getTreatmentsBySetsWithConfigInternal(key, null, flagSets,
-                attributes, properties, MethodEnum.TREATMENTS_BY_FLAG_SETS).entrySet().stream()
+                attributes, evaluationOptions, MethodEnum.TREATMENTS_BY_FLAG_SETS).entrySet().stream()
                 .collect(Collectors.toMap(Map.Entry::getKey, e -> e.getValue().treatment()));
     }
 
     @Override
-    public Map<String, SplitResult> getTreatmentsWithConfigByFlagSet(String key, String flagSet, String properties) {
+    public Map<String, SplitResult> getTreatmentsWithConfigByFlagSet(String key, String flagSet, EvaluationOptions evaluationOptions) {
         return getTreatmentsBySetsWithConfigInternal(key, null, new ArrayList<>(Arrays.asList(flagSet)),
-                null, properties, MethodEnum.TREATMENTS_WITH_CONFIG_BY_FLAG_SET);
+                null, evaluationOptions, MethodEnum.TREATMENTS_WITH_CONFIG_BY_FLAG_SET);
     }
 
     @Override
-    public Map<String, SplitResult> getTreatmentsWithConfigByFlagSet(String key, String flagSet, Map<String, Object> attributes, String properties) {
+    public Map<String, SplitResult> getTreatmentsWithConfigByFlagSet(String key, String flagSet, Map<String, Object> attributes,
+                                                                     EvaluationOptions evaluationOptions) {
         return getTreatmentsBySetsWithConfigInternal(key, null, new ArrayList<>(Arrays.asList(flagSet)),
-                attributes, properties, MethodEnum.TREATMENTS_WITH_CONFIG_BY_FLAG_SET);
+                attributes, evaluationOptions, MethodEnum.TREATMENTS_WITH_CONFIG_BY_FLAG_SET);
     }
 
     @Override
-    public Map<String, SplitResult> getTreatmentsWithConfigByFlagSets(String key, List<String> flagSets, String properties) {
+    public Map<String, SplitResult> getTreatmentsWithConfigByFlagSets(String key, List<String> flagSets, EvaluationOptions evaluationOptions) {
         return getTreatmentsBySetsWithConfigInternal(key, null, flagSets,
-                null, null, MethodEnum.TREATMENTS_WITH_CONFIG_BY_FLAG_SETS);
+                null, evaluationOptions, MethodEnum.TREATMENTS_WITH_CONFIG_BY_FLAG_SETS);
     }
 
     @Override
     public Map<String, SplitResult> getTreatmentsWithConfigByFlagSets(String key, List<String> flagSets, Map<String, Object> attributes,
-                                                                      String properties) {
+                                                                      EvaluationOptions evaluationOptions) {
         return getTreatmentsBySetsWithConfigInternal(key, null, flagSets,
-                attributes, null, MethodEnum.TREATMENTS_WITH_CONFIG_BY_FLAG_SETS);
+                attributes, evaluationOptions, MethodEnum.TREATMENTS_WITH_CONFIG_BY_FLAG_SETS);
     }
 
     @Override
-    public Map<String, String> getTreatmentsByFlagSet(String key, String flagSet, String properties) {
+    public Map<String, String> getTreatmentsByFlagSet(String key, String flagSet, EvaluationOptions evaluationOptions) {
         return getTreatmentsBySetsWithConfigInternal(key, null, new ArrayList<>(Arrays.asList(flagSet)),
-                null, properties, MethodEnum.TREATMENTS_BY_FLAG_SET).entrySet().stream()
+                null, evaluationOptions, MethodEnum.TREATMENTS_BY_FLAG_SET).entrySet().stream()
                 .collect(Collectors.toMap(Map.Entry::getKey, e -> e.getValue().treatment()));
     }
 
     @Override
     public Map<String, SplitResult> getTreatmentsWithConfig(Key key, List<String> featureFlagNames, Map<String, Object> attributes,
-                                                            String properties) {
-        return getTreatmentsWithConfigInternal(key.matchingKey(), key.bucketingKey(), featureFlagNames, attributes, properties,
+                                                            EvaluationOptions evaluationOptions) {
+        return getTreatmentsWithConfigInternal(key.matchingKey(), key.bucketingKey(), featureFlagNames, attributes, evaluationOptions,
                 MethodEnum.TREATMENTS_WITH_CONFIG);
     }
 
     @Override
-    public Map<String, String> getTreatmentsByFlagSet(Key key, String flagSet, Map<String, Object> attributes, String properties) {
+    public Map<String, String> getTreatmentsByFlagSet(Key key, String flagSet, Map<String, Object> attributes, EvaluationOptions evaluationOptions) {
         return getTreatmentsBySetsWithConfigInternal(key.matchingKey(), key.bucketingKey(), new ArrayList<>(Arrays.asList(flagSet)),
-                attributes, properties, MethodEnum.TREATMENTS_BY_FLAG_SET).entrySet().stream()
+                attributes, evaluationOptions, MethodEnum.TREATMENTS_BY_FLAG_SET).entrySet().stream()
                 .collect(Collectors.toMap(Map.Entry::getKey, e -> e.getValue().treatment()));
     }
 
     @Override
-    public Map<String, String> getTreatmentsByFlagSets(Key key, List<String> flagSets, Map<String, Object> attributes, String properties) {
+    public Map<String, String> getTreatmentsByFlagSets(Key key, List<String> flagSets, Map<String, Object> attributes,
+                                                       EvaluationOptions evaluationOptions) {
         return getTreatmentsBySetsWithConfigInternal(key.matchingKey(), key.bucketingKey(), flagSets,
-                attributes, properties, MethodEnum.TREATMENTS_BY_FLAG_SETS).entrySet().stream()
+                attributes, evaluationOptions, MethodEnum.TREATMENTS_BY_FLAG_SETS).entrySet().stream()
                 .collect(Collectors.toMap(Map.Entry::getKey, e -> e.getValue().treatment()));
     }
 
     @Override
-    public Map<String, SplitResult> getTreatmentsWithConfigByFlagSet(Key key, String flagSet, Map<String, Object> attributes, String properties) {
+    public Map<String, SplitResult> getTreatmentsWithConfigByFlagSet(Key key, String flagSet, Map<String, Object> attributes,
+                                                                     EvaluationOptions evaluationOptions) {
         return getTreatmentsBySetsWithConfigInternal(key.matchingKey(), key.bucketingKey(), new ArrayList<>(Arrays.asList(flagSet)),
-                attributes, properties, MethodEnum.TREATMENTS_WITH_CONFIG_BY_FLAG_SET);
+                attributes, evaluationOptions, MethodEnum.TREATMENTS_WITH_CONFIG_BY_FLAG_SET);
     }
 
     @Override
     public Map<String, SplitResult> getTreatmentsWithConfigByFlagSets(Key key, List<String> flagSets, Map<String, Object> attributes,
-                                                                      String properties) {
+                                                                      EvaluationOptions evaluationOptions) {
         return getTreatmentsBySetsWithConfigInternal(key.matchingKey(), key.bucketingKey(), flagSets,
-                attributes, null, MethodEnum.TREATMENTS_WITH_CONFIG_BY_FLAG_SETS);
+                attributes, evaluationOptions, MethodEnum.TREATMENTS_WITH_CONFIG_BY_FLAG_SETS);
     }
 
     @Override
@@ -475,7 +488,7 @@ public final class SplitClientImpl implements SplitClient {
     }
 
     private SplitResult getTreatmentWithConfigInternal(String matchingKey, String bucketingKey, String featureFlag, Map<String,
-                                                       Object> attributes, String properties, MethodEnum methodEnum) {
+                                                       Object> attributes, EvaluationOptions evaluationOptions, MethodEnum methodEnum) {
         long initTime = System.currentTimeMillis();
         try {
             checkSDKReady(methodEnum, Arrays.asList(featureFlag));
@@ -520,7 +533,7 @@ public final class SplitClientImpl implements SplitClient {
                     result.changeNumber,
                     attributes,
                     result.track,
-                    validateProperties(properties)
+                    validateProperties(evaluationOptions.getProperties())
             );
             _telemetryEvaluationProducer.recordLatency(methodEnum, System.currentTimeMillis() - initTime);
             return new SplitResult(result.treatment, result.configurations);
@@ -535,18 +548,19 @@ public final class SplitClientImpl implements SplitClient {
         }
     }
 
-    private String validateProperties(String properties) {
+    private String validateProperties(Map<String, Object> properties) {
         String validatedProperties = null;
         if (properties != null) {
             ImpressionPropertiesValidator.ImpressionPropertiesValidatorResult iPValidatorResult = ImpressionPropertiesValidator.propertiesAreValid(
-                    new JsonParser().parse(properties).getAsJsonObject());
-            validatedProperties = new GsonBuilder().create().toJson(iPValidatorResult.getValue());
+                    properties);
+            validatedProperties =  new GsonBuilder().create().toJson(iPValidatorResult.getValue()).toString();
         }
         return validatedProperties;
     }
 
     private Map<String, SplitResult> getTreatmentsWithConfigInternal(String matchingKey, String bucketingKey, List<String> featureFlagNames,
-                                                                     Map<String, Object> attributes, String properties, MethodEnum methodEnum) {
+                                                                     Map<String, Object> attributes,
+                                                                     EvaluationOptions evaluationOptions, MethodEnum methodEnum) {
         long initTime = System.currentTimeMillis();
         if (featureFlagNames == null) {
             _log.error(String.format("%s: featureFlagNames must be a non-empty array", methodEnum.getMethod()));
@@ -563,7 +577,7 @@ public final class SplitClientImpl implements SplitClient {
                     bucketingKey, featureFlagNames, attributes);
 
             return processEvaluatorResult(evaluatorResult, methodEnum, matchingKey, bucketingKey, attributes, initTime,
-                    validateProperties(properties));
+                    validateProperties(evaluationOptions.getProperties()));
         } catch (Exception e) {
             try {
                 _telemetryEvaluationProducer.recordException(methodEnum);
@@ -576,7 +590,8 @@ public final class SplitClientImpl implements SplitClient {
     }
 
     private Map<String, SplitResult> getTreatmentsBySetsWithConfigInternal(String matchingKey, String bucketingKey,
-                                                                           List<String> sets, Map<String, Object> attributes, String properties,
+                                                                           List<String> sets, Map<String, Object> attributes,
+                                                                           EvaluationOptions evaluationOptions,
                                                                            MethodEnum methodEnum) {
 
         long initTime = System.currentTimeMillis();
@@ -600,7 +615,7 @@ public final class SplitClientImpl implements SplitClient {
                     bucketingKey, new ArrayList<>(cleanFlagSets), attributes);
 
             return processEvaluatorResult(evaluatorResult, methodEnum, matchingKey, bucketingKey, attributes, initTime,
-                    validateProperties(properties));
+                    validateProperties(evaluationOptions.getProperties()));
         } catch (Exception e) {
             try {
                 _telemetryEvaluationProducer.recordException(methodEnum);

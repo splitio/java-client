@@ -3,6 +3,7 @@ package io.split.client;
 import io.split.SSEMockServer;
 import io.split.SplitMockServer;
 import io.split.client.api.SplitView;
+import io.split.client.dtos.EvaluationOptions;
 import io.split.client.impressions.ImpressionsManager;
 import io.split.client.utils.CustomDispatcher;
 import io.split.storages.enums.OperationMode;
@@ -1061,9 +1062,13 @@ public class SplitClientIntegrationTest {
         SplitClient client = factory.client();
         client.blockUntilReady();
 
-        Assert.assertEquals("off", client.getTreatment("user1", "without_impression_toggle", new HashMap<>(), "{\"prop1\": \"val1\"}"));
-        Assert.assertEquals("off", client.getTreatment("user2", "impression_toggle_on", new HashMap<>(), "{\"prop1\": \"val1\", \"prop2\": \"val2\"}"));
-        Assert.assertEquals("off", client.getTreatment("user3", "impression_toggle_on", new HashMap<>()));
+        Assert.assertEquals("off", client.getTreatment("user1", "without_impression_toggle", new HashMap<>(), new EvaluationOptions(new HashMap<String, Object>() {{ put("prop1", "val1"); }})));
+        Assert.assertEquals("off", client.getTreatment("user2", "impression_toggle_on", new HashMap<>(),  new EvaluationOptions(new HashMap<String, Object>()
+        {{
+            put("prop1", "val1");
+            put("prop2", "val2");
+        }})));
+        Assert.assertEquals("off", client.getTreatment("user3", "impression_toggle_on", new EvaluationOptions(null)));
         client.destroy();
         boolean check1 = false, check2 = false, check3 = false;
         for (int i=0; i < allRequests.size(); i++ ) {

@@ -1,35 +1,27 @@
 package io.split.inputValidation;
 
-import com.google.gson.Gson;
-import com.google.gson.JsonObject;
 import io.split.client.dtos.KeyImpression;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.Map;
-import java.util.Set;
-
-import static com.google.common.collect.Maps.toMap;
-import static java.util.stream.Collectors.toList;
 
 public class ImpressionPropertiesValidator {
     private static final Logger _log = LoggerFactory.getLogger(ImpressionPropertiesValidator.class);
 
-    public static ImpressionPropertiesValidatorResult propertiesAreValid(JsonObject properties) {
+    public static ImpressionPropertiesValidatorResult propertiesAreValid(Map<String, Object> properties) {
         int size = 1024; // We assume 1kb events without properties (750 bytes avg measured)
 
         if (properties == null) {
             return new ImpressionPropertiesValidatorResult(true);
         }
-        Map<String, Object> propertiesMap = new Gson().fromJson(properties, Map.class);
-        if (propertiesMap.size() > 300) {
+        if (properties.size() > 300) {
             _log.warn("Impression properties has more than 300 properties. Some of them will be trimmed when processed");
         }
 
         Map<String, Object> result = new HashMap<>();
-        for (Map.Entry<String, Object> entry : propertiesMap.entrySet()) {
+        for (Map.Entry<String, Object> entry : properties.entrySet()) {
             if (entry.getKey() == null || entry.getKey().isEmpty()) {
               continue;
             }
