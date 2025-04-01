@@ -23,7 +23,7 @@ public class ImpressionPropertiesValidatorTest {
         }};
         ImpressionPropertiesValidator.ImpressionPropertiesValidatorResult result = ImpressionPropertiesValidator.propertiesAreValid(properties);
         Assert.assertTrue(result.getSuccess());
-        Assert.assertEquals(1063, result.getSize());
+        Assert.assertEquals(1063, result.getEventSize());
         Assert.assertEquals(6, result.getValue().size());
 
         // when properties size is > Event.MAX_PROPERTIES_LENGTH_BYTES
