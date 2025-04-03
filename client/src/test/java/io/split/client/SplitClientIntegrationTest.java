@@ -1,6 +1,7 @@
 package io.split.client;
 
 import io.split.SSEMockServer;
+import io.split.Spec;
 import io.split.SplitMockServer;
 import io.split.client.api.SplitView;
 import io.split.client.dtos.EvaluationOptions;
@@ -46,6 +47,7 @@ public class SplitClientIntegrationTest {
 
     @Test
     public void getTreatmentWithStreamingEnabled() throws Exception {
+        Spec.SPEC_VERSION = Spec.SPEC_1_1; // check old spec
         MockResponse response = new MockResponse().setBody("{\"splits\": [], \"since\":1585948850109, \"till\":1585948850109}");
         MockResponse response2 = new MockResponse().setBody("{\"splits\": [], \"since\":1585948850110, \"till\":1585948850110}");
         MockResponse response3 = new MockResponse().setBody("{\"splits\": [], \"since\":1585948850111, \"till\":1585948850111}");
@@ -146,6 +148,7 @@ public class SplitClientIntegrationTest {
 
     @Test
     public void getTreatmentWithStreamingEnabledAndAuthDisabled() throws Exception {
+        Spec.SPEC_VERSION = Spec.SPEC_1_1; // check old spec
         MockResponse response = new MockResponse().setBody("{\"splits\": [], \"since\":1585948850109, \"till\":1585948850109}");
         Queue responses = new LinkedList<>();
         responses.add(response);
@@ -174,6 +177,7 @@ public class SplitClientIntegrationTest {
 
     @Test
     public void getTreatmentWithStreamingDisabled() throws Exception {
+        Spec.SPEC_VERSION = Spec.SPEC_1_1; // check old spec
         MockResponse response = new MockResponse().setBody("{\"splits\": [], \"since\":1585948850109, \"till\":1585948850109}");
         Queue responses = new LinkedList<>();
         responses.add(response);
@@ -207,6 +211,7 @@ public class SplitClientIntegrationTest {
 
     @Test
     public void managerSplitsWithStreamingEnabled() throws Exception {
+        Spec.SPEC_VERSION = Spec.SPEC_1_1; // check old spec
         MockResponse response = new MockResponse().setBody("{\"splits\": [], \"since\":1585948850109, \"till\":1585948850109}");
         Queue responses = new LinkedList<>();
         responses.add(response);
@@ -247,6 +252,7 @@ public class SplitClientIntegrationTest {
 
     @Test
     public void splitClientOccupancyNotifications() throws Exception {
+        Spec.SPEC_VERSION = Spec.SPEC_1_1; // check old spec
         MockResponse response = new MockResponse().setBody("{\"splits\": [], \"since\":1585948850109, \"till\":1585948850109}");
         MockResponse response2 = new MockResponse().setBody("{\"splits\": [], \"since\":1585948850110, \"till\":1585948850110}");
         MockResponse response3 = new MockResponse().setBody("{\"splits\": [], \"since\":1585948850111, \"till\":1585948850111}");
@@ -322,6 +328,7 @@ public class SplitClientIntegrationTest {
 
     @Test
     public void splitClientControlNotifications() throws Exception {
+        Spec.SPEC_VERSION = Spec.SPEC_1_1; // check old spec
         MockResponse response = new MockResponse().setBody("{\"splits\": [], \"since\":1585948850109, \"till\":1585948850109}");
         MockResponse response2 = new MockResponse().setBody("{\"splits\": [], \"since\":1585948850110, \"till\":1585948850110}");
         MockResponse response3 = new MockResponse().setBody("{\"splits\": [], \"since\":1585948850111, \"till\":1585948850111}");
@@ -417,6 +424,7 @@ public class SplitClientIntegrationTest {
 
     @Test
     public void splitClientMultiFactory() throws Exception {
+        Spec.SPEC_VERSION = Spec.SPEC_1_1; // check old spec
         MockResponse response = new MockResponse().setBody("{\"splits\": [], \"since\":1585948850109, \"till\":1585948850109}");
         Queue responses = new LinkedList<>();
         responses.add(response);
@@ -566,6 +574,7 @@ public class SplitClientIntegrationTest {
 
     @Test
     public void keepAlive() throws Exception {
+        Spec.SPEC_VERSION = Spec.SPEC_1_1; // check old spec
         MockResponse response = new MockResponse().setBody("{\"splits\": [], \"since\":1585948850109, \"till\":1585948850109}");
         Queue responses = new LinkedList<>();
         responses.add(response);
@@ -604,6 +613,7 @@ public class SplitClientIntegrationTest {
 
     @Test
     public void testConnectionClosedByRemoteHostIsProperlyHandled() throws Exception {
+        Spec.SPEC_VERSION = Spec.SPEC_1_1; // check old spec
         MockResponse response = new MockResponse().setBody("{\"splits\": [], \"since\":1585948850109, \"till\":1585948850109}");
         Queue responses = new LinkedList<>();
         responses.add(response);
@@ -642,6 +652,7 @@ public class SplitClientIntegrationTest {
 
     @Test
     public void testConnectionClosedIsProperlyHandled() throws Exception {
+        Spec.SPEC_VERSION = Spec.SPEC_1_1; // check old spec
         MockResponse response = new MockResponse().setBody("{\"splits\": [], \"since\":1585948850109, \"till\":1585948850109}");
         Queue responses = new LinkedList<>();
         responses.add(response);
@@ -678,6 +689,7 @@ public class SplitClientIntegrationTest {
 
     @Test
     public void testPluggableMode() throws IOException, URISyntaxException {
+        Spec.SPEC_VERSION = Spec.SPEC_1_1; // check old spec
         CustomStorageWrapperImp customStorageWrapper = new CustomStorageWrapperImp();
         SplitClientConfig config = SplitClientConfig.builder()
             .enableDebug()
@@ -743,6 +755,7 @@ public class SplitClientIntegrationTest {
 
     @Test
     public void getTreatmentFlagSetWithPolling() throws Exception {
+        Spec.SPEC_VERSION = Spec.SPEC_1_1; // check old spec
         MockResponse response = new MockResponse().setBody("{\"splits\":[{\"trafficTypeName\":\"client\",\"name\":\"workm\",\"trafficAllocation\":100,\"trafficAllocationSeed\":147392224,\"seed\":524417105,\"status\":\"ACTIVE\",\"killed\":false,\"defaultTreatment\":\"on\",\"changeNumber\":1602796638344,\"algo\":2,\"configurations\":{},\"sets\":[\"set1\",\"set2\"],\"conditions\":[{\"conditionType\":\"ROLLOUT\",\"matcherGroup\":{\"combiner\":\"AND\",\"matchers\":[{\"keySelector\":{\"trafficType\":\"client\",\"attribute\":null},\"matcherType\":\"IN_SEGMENT\",\"negate\":false,\"userDefinedSegmentMatcherData\":{\"segmentName\":\"new_segment\"},\"whitelistMatcherData\":null,\"unaryNumericMatcherData\":null,\"betweenMatcherData\":null,\"booleanMatcherData\":null,\"dependencyMatcherData\":null,\"stringMatcherData\":null}]},\"partitions\":[{\"treatment\":\"on\",\"size\":0},{\"treatment\":\"off\",\"size\":0},{\"treatment\":\"free\",\"size\":100},{\"treatment\":\"conta\",\"size\":0}],\"label\":\"in segment new_segment\"},{\"conditionType\":\"ROLLOUT\",\"matcherGroup\":{\"combiner\":\"AND\",\"matchers\":[{\"keySelector\":{\"trafficType\":\"client\",\"attribute\":null},\"matcherType\":\"ALL_KEYS\",\"negate\":false,\"userDefinedSegmentMatcherData\":null,\"whitelistMatcherData\":null,\"unaryNumericMatcherData\":null,\"betweenMatcherData\":null,\"booleanMatcherData\":null,\"dependencyMatcherData\":null,\"stringMatcherData\":null}]},\"partitions\":[{\"treatment\":\"on\",\"size\":100},{\"treatment\":\"off\",\"size\":0},{\"treatment\":\"free\",\"size\":0},{\"treatment\":\"conta\",\"size\":0}],\"label\":\"default rule\"}]},{\"trafficTypeName\":\"client\",\"name\":\"workm_set_3\",\"trafficAllocation\":100,\"trafficAllocationSeed\":147392224,\"seed\":524417105,\"status\":\"ACTIVE\",\"killed\":false,\"defaultTreatment\":\"on\",\"changeNumber\":1602796638344,\"algo\":2,\"configurations\":{},\"sets\":[\"set3\"],\"conditions\":[{\"conditionType\":\"ROLLOUT\",\"matcherGroup\":{\"combiner\":\"AND\",\"matchers\":[{\"keySelector\":{\"trafficType\":\"client\",\"attribute\":null},\"matcherType\":\"IN_SEGMENT\",\"negate\":false,\"userDefinedSegmentMatcherData\":{\"segmentName\":\"new_segment\"},\"whitelistMatcherData\":null,\"unaryNumericMatcherData\":null,\"betweenMatcherData\":null,\"booleanMatcherData\":null,\"dependencyMatcherData\":null,\"stringMatcherData\":null}]},\"partitions\":[{\"treatment\":\"on\",\"size\":0},{\"treatment\":\"off\",\"size\":0},{\"treatment\":\"free\",\"size\":100},{\"treatment\":\"conta\",\"size\":0}],\"label\":\"in segment new_segment\"},{\"conditionType\":\"ROLLOUT\",\"matcherGroup\":{\"combiner\":\"AND\",\"matchers\":[{\"keySelector\":{\"trafficType\":\"client\",\"attribute\":null},\"matcherType\":\"ALL_KEYS\",\"negate\":false,\"userDefinedSegmentMatcherData\":null,\"whitelistMatcherData\":null,\"unaryNumericMatcherData\":null,\"betweenMatcherData\":null,\"booleanMatcherData\":null,\"dependencyMatcherData\":null,\"stringMatcherData\":null}]},\"partitions\":[{\"treatment\":\"on\",\"size\":100},{\"treatment\":\"off\",\"size\":0},{\"treatment\":\"free\",\"size\":0},{\"treatment\":\"conta\",\"size\":0}],\"label\":\"default rule\"}]}],\"since\":-1,\"till\":1602796638344}");
         MockResponse responseFlag = new MockResponse().setBody("{\"splits\": [], \"since\":1602796638344, \"till\":1602796638344}");
         MockResponse segmentResponse = new MockResponse().setBody("{\"name\":\"new_segment\",\"added\":[\"user-1\"],\"removed\":[\"user-2\",\"user-3\"],\"since\":-1,\"till\":-1}");
@@ -782,6 +795,7 @@ public class SplitClientIntegrationTest {
 
     @Test
     public void ImpressionToggleOptimizedModeTest() throws Exception {
+        Spec.SPEC_VERSION = Spec.SPEC_1_1; // check old spec
         String splits = new String(Files.readAllBytes(Paths.get("src/test/resources/splits_imp_toggle.json")), StandardCharsets.UTF_8);
         List<RecordedRequest> allRequests = new ArrayList<>();
 
@@ -856,6 +870,7 @@ public class SplitClientIntegrationTest {
 
     @Test
     public void ImpressionToggleDebugModeTest() throws Exception {
+        Spec.SPEC_VERSION = Spec.SPEC_1_1; // check old spec
         String splits = new String(Files.readAllBytes(Paths.get("src/test/resources/splits_imp_toggle.json")), StandardCharsets.UTF_8);
         List<RecordedRequest> allRequests = new ArrayList<>();
 
@@ -938,6 +953,7 @@ public class SplitClientIntegrationTest {
 
     @Test
     public void ImpressionToggleNoneModeTest() throws Exception {
+        Spec.SPEC_VERSION = Spec.SPEC_1_1; // check old spec
         String splits = new String(Files.readAllBytes(Paths.get("src/test/resources/splits_imp_toggle.json")), StandardCharsets.UTF_8);
         List<RecordedRequest> allRequests = new ArrayList<>();
 
@@ -1016,6 +1032,7 @@ public class SplitClientIntegrationTest {
 
     @Test
     public void ImpressionPropertiesTest() throws Exception {
+        Spec.SPEC_VERSION = Spec.SPEC_1_1; // check old spec
         String splits = new String(Files.readAllBytes(Paths.get("src/test/resources/splits_imp_toggle.json")), StandardCharsets.UTF_8);
         List<RecordedRequest> allRequests = new ArrayList<>();
 

@@ -1,13 +1,16 @@
 package io.split.engine.experiments;
 
+import io.split.Spec;
 import io.split.client.JsonLocalhostSplitChangeFetcher;
 import io.split.client.interceptors.FlagSetsFilter;
 import io.split.client.interceptors.FlagSetsFilterImpl;
 import io.split.client.utils.FileInputStreamProvider;
 import io.split.client.utils.InputStreamProvider;
 import io.split.engine.common.FetchOptions;
+import io.split.storages.RuleBasedSegmentCacheProducer;
 import io.split.storages.SplitCacheProducer;
 import io.split.storages.memory.InMemoryCacheImp;
+import io.split.storages.memory.RuleBasedSegmentCacheInMemoryImp;
 import io.split.telemetry.storage.NoopTelemetryStorage;
 import io.split.telemetry.storage.TelemetryStorage;
 import org.junit.Assert;
@@ -33,12 +36,15 @@ public class SplitFetcherImpTest {
     public void testLocalHost() {
         FlagSetsFilter flagSetsFilter = new FlagSetsFilterImpl(new HashSet<>());
         SplitCacheProducer splitCacheProducer = new InMemoryCacheImp(flagSetsFilter);
+        RuleBasedSegmentCacheProducer ruleBasedSegmentCacheProducer = new RuleBasedSegmentCacheInMemoryImp();
+        RuleBasedSegmentParser ruleBasedSegmentParser = new RuleBasedSegmentParser();
 
         InputStreamProvider inputStreamProvider = new FileInputStreamProvider("src/test/resources/split_init.json");
         SplitChangeFetcher splitChangeFetcher = new JsonLocalhostSplitChangeFetcher(inputStreamProvider);
         SplitParser splitParser = new SplitParser();
         FetchOptions fetchOptions = new FetchOptions.Builder().build();
-        SplitFetcher splitFetcher = new SplitFetcherImp(splitChangeFetcher, splitParser, splitCacheProducer, TELEMETRY_STORAGE_NOOP, flagSetsFilter);
+        SplitFetcher splitFetcher = new SplitFetcherImp(splitChangeFetcher, splitParser, splitCacheProducer, TELEMETRY_STORAGE_NOOP, flagSetsFilter,
+                ruleBasedSegmentParser, ruleBasedSegmentCacheProducer);
 
         FetchResult fetchResult = splitFetcher.forceRefresh(fetchOptions);
 
@@ -55,11 +61,15 @@ public class SplitFetcherImpTest {
         InputStreamProvider inputStreamProvider = new FileInputStreamProvider(file.getAbsolutePath());
         FlagSetsFilter flagSetsFilter = new FlagSetsFilterImpl(new HashSet<>(Arrays.asList("set_1")));
         SplitCacheProducer splitCacheProducer = new InMemoryCacheImp(flagSetsFilter);
+        RuleBasedSegmentCacheProducer ruleBasedSegmentCacheProducer = new RuleBasedSegmentCacheInMemoryImp();
+        RuleBasedSegmentParser ruleBasedSegmentParser = new RuleBasedSegmentParser();
+        Spec.SPEC_VERSION = Spec.SPEC_1_1; // check old spec
 
         SplitChangeFetcher splitChangeFetcher = new JsonLocalhostSplitChangeFetcher(inputStreamProvider);
         SplitParser splitParser = new SplitParser();
         FetchOptions fetchOptions = new FetchOptions.Builder().build();
-        SplitFetcher splitFetcher = new SplitFetcherImp(splitChangeFetcher, splitParser, splitCacheProducer, TELEMETRY_STORAGE_NOOP, flagSetsFilter);
+        SplitFetcher splitFetcher = new SplitFetcherImp(splitChangeFetcher, splitParser, splitCacheProducer, TELEMETRY_STORAGE_NOOP, flagSetsFilter,
+                ruleBasedSegmentParser, ruleBasedSegmentCacheProducer);
 
         FetchResult fetchResult = splitFetcher.forceRefresh(fetchOptions);
 
@@ -76,11 +86,15 @@ public class SplitFetcherImpTest {
         InputStreamProvider inputStreamProvider = new FileInputStreamProvider(file.getAbsolutePath());
         FlagSetsFilter flagSetsFilter = new FlagSetsFilterImpl(new HashSet<>(Arrays.asList("set_4")));
         SplitCacheProducer splitCacheProducer = new InMemoryCacheImp(flagSetsFilter);
+        RuleBasedSegmentCacheProducer ruleBasedSegmentCacheProducer = new RuleBasedSegmentCacheInMemoryImp();
+        RuleBasedSegmentParser ruleBasedSegmentParser = new RuleBasedSegmentParser();
+        Spec.SPEC_VERSION = Spec.SPEC_1_1; // check old spec
 
         SplitChangeFetcher splitChangeFetcher = new JsonLocalhostSplitChangeFetcher(inputStreamProvider);
         SplitParser splitParser = new SplitParser();
         FetchOptions fetchOptions = new FetchOptions.Builder().build();
-        SplitFetcher splitFetcher = new SplitFetcherImp(splitChangeFetcher, splitParser, splitCacheProducer, TELEMETRY_STORAGE_NOOP, flagSetsFilter);
+        SplitFetcher splitFetcher = new SplitFetcherImp(splitChangeFetcher, splitParser, splitCacheProducer, TELEMETRY_STORAGE_NOOP, flagSetsFilter,
+            ruleBasedSegmentParser, ruleBasedSegmentCacheProducer);
 
         FetchResult fetchResult = splitFetcher.forceRefresh(fetchOptions);
 

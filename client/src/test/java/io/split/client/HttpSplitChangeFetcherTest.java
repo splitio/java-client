@@ -94,7 +94,7 @@ public class HttpSplitChangeFetcherTest {
 
         HttpSplitChangeFetcher fetcher = HttpSplitChangeFetcher.create(splitHtpClient, rootTarget, TELEMETRY_STORAGE);
 
-        SplitChange change = fetcher.fetch(1234567, new FetchOptions.Builder().cacheControlHeaders(true).build());
+        SplitChange change = fetcher.fetch(1234567, -1, new FetchOptions.Builder().cacheControlHeaders(true).build());
 
         Assert.assertNotNull(change);
         Assert.assertEquals(1, change.splits.size());
@@ -131,8 +131,8 @@ public class HttpSplitChangeFetcherTest {
         HttpSplitChangeFetcher fetcher = HttpSplitChangeFetcher.create(splitHtpClient, rootTarget,
                 Mockito.mock(TelemetryRuntimeProducer.class));
 
-        fetcher.fetch(-1, new FetchOptions.Builder().targetChangeNumber(123).build());
-        fetcher.fetch(-1, new FetchOptions.Builder().build());
+        fetcher.fetch(-1, -1, new FetchOptions.Builder().targetChangeNumber(123).build());
+        fetcher.fetch(-1, -1, new FetchOptions.Builder().build());
         List<ClassicHttpRequest> captured = requestCaptor.getAllValues();
         Assert.assertEquals(captured.size(), 2);
         Assert.assertTrue(captured.get(0).getUri().toString().contains("till=123"));
@@ -188,7 +188,7 @@ public class HttpSplitChangeFetcherTest {
         String result = sets.stream()
                 .map(n -> String.valueOf(n))
                 .collect(Collectors.joining(",", "", ""));
-        fetcher.fetch(-1, new FetchOptions.Builder().flagSetsFilter(result).cacheControlHeaders(false).build());
+        fetcher.fetch(-1, -1, new FetchOptions.Builder().flagSetsFilter(result).cacheControlHeaders(false).build());
     }
 
     private SDKMetadata metadata() {

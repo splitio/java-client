@@ -7,7 +7,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 
-public interface SplitCacheConsumer extends SplitCacheCommons{
+public interface    SplitCacheConsumer extends SplitCacheCommons{
     ParsedSplit get(String name);
     Collection<ParsedSplit> getAll();
     Map<String, ParsedSplit> fetchMany(List<String> names);

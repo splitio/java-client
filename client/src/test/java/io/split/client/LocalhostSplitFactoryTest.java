@@ -1,6 +1,7 @@
 package io.split.client;
 
 import com.google.common.collect.Maps;
+import io.split.Spec;
 import io.split.client.utils.LocalhostUtils;
 import io.split.grammar.Treatments;
 import org.junit.Rule;
@@ -36,6 +37,7 @@ public class LocalhostSplitFactoryTest {
         LocalhostUtils.writeFile(file, map);
 
         SplitClientConfig config = SplitClientConfig.builder().splitFile(folder.getRoot().getAbsolutePath()).build();
+        Spec.SPEC_VERSION = Spec.SPEC_1_1; // check old spec
         SplitFactory splitFactory = SplitFactoryBuilder.build("localhost", config);
         SplitClient client = splitFactory.client();
 

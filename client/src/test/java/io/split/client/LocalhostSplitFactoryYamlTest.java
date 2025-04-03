@@ -1,5 +1,6 @@
 package io.split.client;
 
+import io.split.Spec;
 import io.split.client.utils.LocalhostUtils;
 import io.split.grammar.Treatments;
 import io.split.service.SplitHttpClient;
@@ -84,6 +85,7 @@ public class LocalhostSplitFactoryYamlTest {
         LocalhostUtils.writeFile(file, writer);
 
         SplitClientConfig config = SplitClientConfig.builder().splitFile(file.getAbsolutePath()).build();
+        Spec.SPEC_VERSION = Spec.SPEC_1_1; // check old spec
         SplitFactory splitFactory = SplitFactoryBuilder.build("localhost", config);
         SplitClient client = splitFactory.client();
 

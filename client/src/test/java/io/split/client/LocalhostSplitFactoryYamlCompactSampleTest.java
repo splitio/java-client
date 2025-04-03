@@ -1,5 +1,6 @@
 package io.split.client;
 
+import io.split.Spec;
 import io.split.grammar.Treatments;
 import org.junit.Test;
 
@@ -24,6 +25,7 @@ public class LocalhostSplitFactoryYamlCompactSampleTest {
         String file = getClass().getClassLoader().getResource("split_compact.yaml").getFile();
 
         SplitClientConfig config = SplitClientConfig.builder().splitFile(file).build();
+        Spec.SPEC_VERSION = Spec.SPEC_1_1; // check old spec
         SplitFactory splitFactory = SplitFactoryBuilder.build("localhost", config);
         SplitClient client = splitFactory.client();
 
@@ -49,6 +51,7 @@ public class LocalhostSplitFactoryYamlCompactSampleTest {
         String file = getClass().getClassLoader().getResource("split_compact.yml").getFile();
 
         SplitClientConfig config = SplitClientConfig.builder().splitFile(file).build();
+        Spec.SPEC_VERSION = Spec.SPEC_1_1; // check old spec
         SplitFactory splitFactory = SplitFactoryBuilder.build("localhost", config);
         SplitClient client = splitFactory.client();
 

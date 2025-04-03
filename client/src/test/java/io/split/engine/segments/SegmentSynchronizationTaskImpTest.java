@@ -1,6 +1,7 @@
 package io.split.engine.segments;
 
 import com.google.common.collect.Maps;
+import io.split.Spec;
 import io.split.client.LocalhostSegmentChangeFetcher;
 import io.split.client.JsonLocalhostSplitChangeFetcher;
 import io.split.client.interceptors.FlagSetsFilter;
@@ -8,15 +9,13 @@ import io.split.client.interceptors.FlagSetsFilterImpl;
 import io.split.client.utils.InputStreamProvider;
 import io.split.client.utils.StaticContentInputStreamProvider;
 import io.split.engine.common.FetchOptions;
-import io.split.engine.experiments.SplitChangeFetcher;
-import io.split.engine.experiments.SplitFetcher;
-import io.split.engine.experiments.SplitFetcherImp;
-import io.split.engine.experiments.SplitParser;
-import io.split.engine.experiments.SplitSynchronizationTask;
+import io.split.engine.experiments.*;
+import io.split.storages.RuleBasedSegmentCacheProducer;
 import io.split.storages.SegmentCacheProducer;
 import io.split.storages.SplitCache;
 import io.split.storages.SplitCacheConsumer;
 import io.split.storages.memory.InMemoryCacheImp;
+import io.split.storages.memory.RuleBasedSegmentCacheInMemoryImp;
 import io.split.storages.memory.SegmentCacheInMemoryImpl;
 import io.split.telemetry.storage.InMemoryTelemetryStorage;
 import io.split.telemetry.storage.NoopTelemetryStorage;
@@ -162,9 +161,14 @@ public class SegmentSynchronizationTaskImpTest {
         SplitChangeFetcher splitChangeFetcher = new JsonLocalhostSplitChangeFetcher(inputStreamProvider);
         SplitParser splitParser = new SplitParser();
         FetchOptions fetchOptions = new FetchOptions.Builder().build();
-        SplitFetcher splitFetcher = new SplitFetcherImp(splitChangeFetcher, splitParser, splitCacheProducer, TELEMETRY_STORAGE_NOOP, flagSetsFilter);
+        RuleBasedSegmentCacheProducer ruleBasedSegmentCacheProducer = new RuleBasedSegmentCacheInMemoryImp();
+        RuleBasedSegmentParser ruleBasedSegmentParser = new RuleBasedSegmentParser();
+
+        SplitFetcher splitFetcher = new SplitFetcherImp(splitChangeFetcher, splitParser, splitCacheProducer, TELEMETRY_STORAGE_NOOP, flagSetsFilter,
+            ruleBasedSegmentParser, ruleBasedSegmentCacheProducer);
 
         SplitSynchronizationTask splitSynchronizationTask = new SplitSynchronizationTask(splitFetcher, splitCacheProducer, 1000, null);
+        Spec.SPEC_VERSION = Spec.SPEC_1_1; // check old spec
 
         splitSynchronizationTask.start();
 
