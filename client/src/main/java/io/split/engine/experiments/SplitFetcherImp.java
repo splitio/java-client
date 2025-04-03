@@ -130,7 +130,8 @@ public class SplitFetcherImp implements SplitFetcher {
         if ((Spec.SPEC_VERSION.equals(Spec.SPEC_1_3) && (change.splits.isEmpty() || change.ruleBasedSegments.isEmpty())) ||
                 (change.splits.isEmpty() && Spec.SPEC_VERSION.equals(Spec.SPEC_1_1))) {
             if (change.splits.isEmpty()) _splitCacheProducer.setChangeNumber(change.till);
-            if (Spec.SPEC_VERSION.equals(Spec.SPEC_1_3) && change.ruleBasedSegments.isEmpty()) _ruleBasedSegmentCacheProducer.setChangeNumber(change.till);
+            if (Spec.SPEC_VERSION.equals(Spec.SPEC_1_3) && change.ruleBasedSegments.isEmpty())
+                _ruleBasedSegmentCacheProducer.setChangeNumber(change.till);
             if (Spec.SPEC_VERSION.equals(Spec.SPEC_1_3) && (change.splits.isEmpty() && change.ruleBasedSegments.isEmpty()) ||
                     (change.splits.isEmpty() && Spec.SPEC_VERSION.equals(Spec.SPEC_1_1))) return segments;
         }
