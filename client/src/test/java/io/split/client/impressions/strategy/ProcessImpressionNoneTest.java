@@ -29,14 +29,14 @@ public class ProcessImpressionNoneTest {
         UniqueKeysTrackerImp uniqueKeysTracker = new UniqueKeysTrackerImp(telemetrySynchronizer, 10000, 10000, null);
         ProcessImpressionNone processImpressionNone = new ProcessImpressionNone(listenerEnable, uniqueKeysTracker, counter);
 
-        KeyImpression ki1 = keyImpression("test1", "adil", "on", 1L, null);
-        KeyImpression ki2 = keyImpression("test2", "adil", "on", 1L, null);
-        KeyImpression ki3 = keyImpression("test1", "adil", "on", 1L, null);
+        KeyImpression ki1 = keyImpression("test1", "adil", "on", 1L, null, null);
+        KeyImpression ki2 = keyImpression("test2", "adil", "on", 1L, null, null);
+        KeyImpression ki3 = keyImpression("test1", "adil", "on", 1L, null, null);
 
         List<Impression> impressions = new ArrayList<>();
-        impressions.add(new Impression(ki1.keyName, null, ki1.feature, ki1.treatment, ki1.time, null, 1L, null));
-        impressions.add(new Impression(ki2.keyName, null, ki2.feature, ki2.treatment, ki2.time, null, 1L, null));
-        impressions.add(new Impression(ki3.keyName, null, ki3.feature, ki3.treatment, ki3.time, null, 1L, null));
+        impressions.add(new Impression(ki1.keyName, null, ki1.feature, ki1.treatment, ki1.time, null, 1L, null, null));
+        impressions.add(new Impression(ki2.keyName, null, ki2.feature, ki2.treatment, ki2.time, null, 1L, null, null));
+        impressions.add(new Impression(ki3.keyName, null, ki3.feature, ki3.treatment, ki3.time, null, 1L, null, null));
 
         ImpressionsResult impressionsResult1 = processImpressionNone.process(impressions);
         Assert.assertEquals(0,impressionsResult1.getImpressionsToQueue().size());
@@ -55,14 +55,14 @@ public class ProcessImpressionNoneTest {
         UniqueKeysTrackerImp uniqueKeysTracker = new UniqueKeysTrackerImp(telemetrySynchronizer, 10000, 10000, null);
         ProcessImpressionNone processImpressionNone = new ProcessImpressionNone(listenerEnable, uniqueKeysTracker, counter);
 
-        KeyImpression ki1 = keyImpression("test1", "adil", "on", 1L, null);
-        KeyImpression ki2 = keyImpression("test2", "adil", "on", 1L, null);
-        KeyImpression ki3 = keyImpression("test1", "adil", "on", 1L, null);
+        KeyImpression ki1 = keyImpression("test1", "adil", "on", 1L, null, null);
+        KeyImpression ki2 = keyImpression("test2", "adil", "on", 1L, null, null);
+        KeyImpression ki3 = keyImpression("test1", "adil", "on", 1L, null, null);
 
         List<Impression> impressions = new ArrayList<>();
-        impressions.add(new Impression(ki1.keyName, null, ki1.feature, ki1.treatment, ki1.time, null, 1L, null));
-        impressions.add(new Impression(ki2.keyName, null, ki2.feature, ki2.treatment, ki2.time, null, 1L, null));
-        impressions.add(new Impression(ki3.keyName, null, ki3.feature, ki3.treatment, ki3.time, null, 1L, null));
+        impressions.add(new Impression(ki1.keyName, null, ki1.feature, ki1.treatment, ki1.time, null, 1L, null, null));
+        impressions.add(new Impression(ki2.keyName, null, ki2.feature, ki2.treatment, ki2.time, null, 1L, null, null));
+        impressions.add(new Impression(ki3.keyName, null, ki3.feature, ki3.treatment, ki3.time, null, 1L, null, null));
 
         ImpressionsResult impressionsResult1 = processImpressionNone.process(impressions);
         Assert.assertEquals(0,impressionsResult1.getImpressionsToQueue().size());

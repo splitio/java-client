@@ -29,14 +29,14 @@ public class ProcessImpressionOptimizedTest {
         ImpressionCounter counter = new ImpressionCounter();
         ProcessImpressionOptimized processImpressionOptimized = new ProcessImpressionOptimized(listenerEnable, impressionObserver, counter, TELEMETRY_STORAGE);
 
-        KeyImpression ki1 = keyImpression("test1", "adil", "on", 1L, null);
-        KeyImpression ki2 = keyImpression("test2", "adil", "on", 1L, null);
-        KeyImpression ki3 = keyImpression("test1", "adil", "on", 1L, null);
+        KeyImpression ki1 = keyImpression("test1", "adil", "on", 1L, null, null);
+        KeyImpression ki2 = keyImpression("test2", "adil", "on", 1L, null, null);
+        KeyImpression ki3 = keyImpression("test1", "adil", "on", 1L, null, null);
 
         List<Impression> impressions = new ArrayList<>();
-        impressions.add(new Impression(ki1.keyName, null, ki1.feature, ki1.treatment, ki1.time, null, 1L, null));
-        impressions.add(new Impression(ki2.keyName, null, ki2.feature, ki2.treatment, ki2.time, null, 1L, null));
-        impressions.add(new Impression(ki3.keyName, null, ki3.feature, ki3.treatment, ki3.time, null, 1L, null));
+        impressions.add(new Impression(ki1.keyName, null, ki1.feature, ki1.treatment, ki1.time, null, 1L, null, null));
+        impressions.add(new Impression(ki2.keyName, null, ki2.feature, ki2.treatment, ki2.time, null, 1L, null, null));
+        impressions.add(new Impression(ki3.keyName, null, ki3.feature, ki3.treatment, ki3.time, null, 1L, null, null));
 
         ImpressionsResult impressionsResult1 = processImpressionOptimized.process(impressions);
 
@@ -52,14 +52,14 @@ public class ProcessImpressionOptimizedTest {
         ImpressionCounter counter = new ImpressionCounter();
         ProcessImpressionOptimized processImpressionOptimized = new ProcessImpressionOptimized(listenerEnable, impressionObserver, counter, TELEMETRY_STORAGE);
 
-        KeyImpression ki1 = keyImpression("test1", "adil", "on", 1L, null);
-        KeyImpression ki2 = keyImpression("test2", "adil", "on", 1L, null);
-        KeyImpression ki3 = keyImpression("test1", "adil", "on", 1L, null);
+        KeyImpression ki1 = keyImpression("test1", "adil", "on", 1L, null, null);
+        KeyImpression ki2 = keyImpression("test2", "adil", "on", 1L, null, null);
+        KeyImpression ki3 = keyImpression("test1", "adil", "on", 1L, null, null);
 
         List<Impression> impressions = new ArrayList<>();
-        impressions.add(new Impression(ki1.keyName, null, ki1.feature, ki1.treatment, ki1.time, null, 1L, null));
-        impressions.add(new Impression(ki2.keyName, null, ki2.feature, ki2.treatment, ki2.time, null, 1L, null));
-        impressions.add(new Impression(ki3.keyName, null, ki3.feature, ki3.treatment, ki3.time, null, 1L, null));
+        impressions.add(new Impression(ki1.keyName, null, ki1.feature, ki1.treatment, ki1.time, null, 1L, null, null));
+        impressions.add(new Impression(ki2.keyName, null, ki2.feature, ki2.treatment, ki2.time, null, 1L, null, null));
+        impressions.add(new Impression(ki3.keyName, null, ki3.feature, ki3.treatment, ki3.time, null, 1L, null, null));
 
         ImpressionsResult impressionsResult1 = processImpressionOptimized.process(impressions);
         Assert.assertEquals(2,impressionsResult1.getImpressionsToQueue().size());

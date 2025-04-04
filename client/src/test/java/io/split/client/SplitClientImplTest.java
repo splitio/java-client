@@ -565,7 +565,7 @@ public class SplitClientImplTest {
         );
 
         assertEquals("on", client.getTreatment("adil@codigo.com", test));
-        assertEquals("on", client.getTreatment("adil@codigo.com", test, null));
+        assertEquals("on", client.getTreatment("adil@codigo.com", test, new HashMap<>()));
         assertEquals("on", client.getTreatment("adil@codigo.com", test, ImmutableMap.<String, Object>of()));
         assertEquals("on", client.getTreatment("pato@codigo.com", test, ImmutableMap.<String, Object>of("age", 10)));
         assertEquals("off", client.getTreatment("pato@codigo.com", test, ImmutableMap.<String, Object>of("age", 9)));
@@ -599,7 +599,7 @@ public class SplitClientImplTest {
         );
 
         assertEquals("off", client.getTreatment("adil@codigo.com", test));
-        assertEquals("off", client.getTreatment("adil@codigo.com", test, null));
+        assertEquals("off", client.getTreatment("adil@codigo.com", test, new HashMap<>()));
         assertEquals("off", client.getTreatment("adil@codigo.com", test, ImmutableMap.<String, Object>of()));
 
         assertEquals("off", client.getTreatment("pato@codigo.com", test, ImmutableMap.<String, Object>of("age", 10)));
@@ -634,7 +634,7 @@ public class SplitClientImplTest {
         );
 
         assertEquals("off", client.getTreatment("adil@codigo.com", test));
-        assertEquals("off", client.getTreatment("adil@codigo.com", test, null));
+        assertEquals("off", client.getTreatment("adil@codigo.com", test, new HashMap<>()));
         assertEquals("off", client.getTreatment("adil@codigo.com", test, ImmutableMap.<String, Object>of()));
         assertEquals("off", client.getTreatment("pato@codigo.com", test, ImmutableMap.<String, Object>of("age", 10)));
         assertEquals("on", client.getTreatment("pato@codigo.com", test, ImmutableMap.<String, Object>of("age", -20)));
@@ -671,7 +671,7 @@ public class SplitClientImplTest {
         );
 
         assertEquals("off", client.getTreatment("adil@codigo.com", test));
-        assertEquals("off", client.getTreatment("adil@codigo.com", test, null));
+        assertEquals("off", client.getTreatment("adil@codigo.com", test, new HashMap<>()));
 
         assertEquals("off", client.getTreatment("adil@codigo.com", test, ImmutableMap.<String, Object>of()));
         assertEquals("off", client.getTreatment("pato@codigo.com", test, ImmutableMap.<String, Object>of("products", Lists.newArrayList())));
@@ -1894,7 +1894,7 @@ public class SplitClientImplTest {
         Map<String, String> getTreatmentResult;
         for (int i = 0; i < numKeys; i++) {
             String randomKey = RandomStringUtils.random(10);
-            getTreatmentResult = client.getTreatmentsByFlagSet(randomKey, "set1", null);
+            getTreatmentResult = client.getTreatmentsByFlagSet(randomKey, "set1", new HashMap<>());
             assertEquals("on", getTreatmentResult.get(test));
         }
         verify(splitCacheConsumer, times(numKeys)).fetchMany(new ArrayList<>(Arrays.asList(test)));
@@ -1927,7 +1927,7 @@ public class SplitClientImplTest {
                 new EvaluatorImp(splitCacheConsumer, segmentCacheConsumer), TELEMETRY_STORAGE, TELEMETRY_STORAGE,
                 flagSetsFilter
         );
-        assertTrue(client.getTreatmentsByFlagSet(RandomStringUtils.random(10), "", null).isEmpty());
+        assertTrue(client.getTreatmentsByFlagSet(RandomStringUtils.random(10), "", new HashMap<>()).isEmpty());
     }
 
     @Test
@@ -1974,7 +1974,7 @@ public class SplitClientImplTest {
         Map<String, String> getTreatmentResult;
         for (int i = 0; i < numKeys; i++) {
             String randomKey = RandomStringUtils.random(10);
-            getTreatmentResult = client.getTreatmentsByFlagSets(randomKey, Arrays.asList("set1", "set3"), null);
+            getTreatmentResult = client.getTreatmentsByFlagSets(randomKey, Arrays.asList("set1", "set3"), new HashMap<>());
             assertEquals("on", getTreatmentResult.get(test));
             assertEquals("on", getTreatmentResult.get(test2));
         }
@@ -2080,5 +2080,82 @@ public class SplitClientImplTest {
         assertEquals("control", result.get(test2).treatment());
 
         verify(splitCacheConsumer, times(1)).fetchMany(anyList());
+    }
+
+    @Test
+    public void impressionPropertiesTest() {
+        String test = "test1";
+
+        ParsedCondition age_equal_to_0_should_be_on = new ParsedCondition(ConditionType.ROLLOUT,
+                CombiningMatcher.of("age", new EqualToMatcher(-20, DataType.NUMBER)),
+                Lists.newArrayList(partition("on", 100)),
+                "foolabel"
+        );
+
+        List<ParsedCondition> conditions = Lists.newArrayList(age_equal_to_0_should_be_on);
+        ParsedSplit parsedSplit = ParsedSplit.createParsedSplitForTests(test, 123, false, Treatments.OFF, conditions, null, 1, 1, new HashSet<>(Arrays.asList("set")), true);
+        Map<String, ParsedSplit> parsedSplits = new HashMap<>();
+        parsedSplits.put(test, parsedSplit);
+
+        SplitCacheConsumer splitCacheConsumer = mock(SplitCacheConsumer.class);
+        SegmentCacheConsumer segmentCacheConsumer = mock(SegmentCacheConsumer.class);
+        when(splitCacheConsumer.get(test)).thenReturn(parsedSplit);
+        when(splitCacheConsumer.fetchMany(Arrays.asList(test))).thenReturn(parsedSplits);
+        Map<String, HashSet<String>> splits = new HashMap<>();
+        splits.put("set", new HashSet<>(Arrays.asList(test)));
+        when(splitCacheConsumer.getNamesByFlagSets(Arrays.asList("set"))).thenReturn(splits);
+
+        SDKReadinessGates gates = mock(SDKReadinessGates.class);
+        ImpressionsManager impressionsManager = mock(ImpressionsManager.class);
+        SplitClientImpl client = new SplitClientImpl(
+                mock(SplitFactory.class),
+                splitCacheConsumer,
+                impressionsManager,
+                NoopEventsStorageImp.create(),
+                config,
+                gates,
+                new EvaluatorImp(splitCacheConsumer, segmentCacheConsumer), TELEMETRY_STORAGE, TELEMETRY_STORAGE,
+                new FlagSetsFilterImpl(new HashSet<>())
+        );
+        Map<String, Object> attributes = ImmutableMap.<String, Object>of("age", -20, "acv", "1000000");
+        EvaluationOptions properties = new EvaluationOptions(new HashMap<String, Object>()
+        {{
+            put("prop2", "val2");
+            put("prop1", "val1");
+        }});
+        Map<String, String> result = new HashMap<>();
+        result.put(test, Treatments.ON);
+        List<String> split_names =  Arrays.asList(test);
+
+        assertEquals("on", client.getTreatment("pato@codigo.com", test, attributes, properties));
+        assertEquals("on", client.getTreatmentWithConfig("bilal1@codigo.com", test, attributes, properties).treatment());
+        assertEquals("on", client.getTreatments("bilal2@codigo.com", Arrays.asList(test), attributes, properties).get(test));
+        assertEquals("on", client.getTreatmentsWithConfig("bilal3@codigo.com", Arrays.asList(test), attributes, properties).get(test).treatment());
+        assertEquals("on", client.getTreatmentsByFlagSet("bilal4@codigo.com", "set", attributes, properties).get(test));
+        assertEquals("on", client.getTreatmentsByFlagSets("bilal5@codigo.com", Arrays.asList("set"), attributes, properties).get(test));
+        assertEquals("on", client.getTreatmentsWithConfigByFlagSet("bilal6@codigo.com", "set", attributes, properties).get(test).treatment());
+        assertEquals("on", client.getTreatmentsWithConfigByFlagSets("bilal7@codigo.com", Arrays.asList("set"), attributes, properties).get(test).treatment());
+        assertEquals("on", client.getTreatment(new Key("bilal8@codigo.com", "bilal8@codigo.com"), test, attributes, properties));
+        assertEquals("on", client.getTreatmentWithConfig(new Key("bilal9@codigo.com", "bilal9@codigo.com"), test, attributes, properties).treatment());
+        assertEquals("on", client.getTreatments(new Key("bilal10@codigo.com", "bilal10@codigo.com"), Arrays.asList(test), attributes, properties).get(test));
+        assertEquals("on", client.getTreatmentsWithConfig(new Key("bilal11@codigo.com", "bilal11@codigo.com"), Arrays.asList(test), attributes, properties).get(test).treatment());
+        assertEquals("on", client.getTreatmentsByFlagSet(new Key("bilal12@codigo.com", "bilal12@codigo.com"), "set", attributes, properties).get(test));
+        assertEquals("on", client.getTreatmentsByFlagSets(new Key("bilal13@codigo.com", "bilal13@codigo.com"), Arrays.asList("set"), attributes, properties).get(test));
+        assertEquals("on", client.getTreatmentsWithConfigByFlagSet(new Key("bilal14@codigo.com", "bilal14@codigo.com"), "set", attributes, properties).get(test).treatment());
+        assertEquals("on", client.getTreatmentsWithConfigByFlagSets(new Key("bilal15@codigo.com", "bilal15@codigo.com"), Arrays.asList("set"), attributes, properties).get(test).treatment());
+
+        ArgumentCaptor<List> impressionCaptor = ArgumentCaptor.forClass(List.class);
+        verify(impressionsManager, times(16)).track(impressionCaptor.capture());
+        assertNotNull(impressionCaptor.getValue());
+
+        DecoratedImpression impression = (DecoratedImpression) impressionCaptor.getAllValues().get(0).get(0);
+        assertEquals("pato@codigo.com", impression.impression().key());
+        assertEquals("{\"prop2\":\"val2\",\"prop1\":\"val1\"}", impression.impression().properties());
+
+        for (int i=1; i<=15; i++) {
+            impression = (DecoratedImpression) impressionCaptor.getAllValues().get(i).get(0);
+            assertEquals("bilal" + i + "@codigo.com", impression.impression().key());
+            assertEquals("{\"prop2\":\"val2\",\"prop1\":\"val1\"}", impression.impression().properties());
+        }
     }
 }
