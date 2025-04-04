@@ -491,7 +491,7 @@ public interface SplitClient {
      *
      * @param key a unique key of your customer (e.g. user_id, user_email, account_id, etc.) MUST not be null.
      * @param featureFlagName the name of the feature flag we want to evaluate. MUST NOT be null.
-     * @param evaluationOptions additional data to attach to the impression.
+     * @param evaluationOptions additional data for evaluation.
      * @return the evaluated treatment, the default treatment of this feature flag, or 'control'.
      */
     String getTreatment(String key, String featureFlagName, EvaluationOptions evaluationOptions);
@@ -509,7 +509,7 @@ public interface SplitClient {
      * @param key a unique key of your customer (e.g. user_id, user_email, account_id, etc.) MUST not be null.
      * @param featureFlagName the name of the feature flag we want to evaluate. MUST NOT be null.
      * @param attributes of the customer (user, account etc.) to use in evaluation. Can be null or empty.
-     * @param evaluationOptions additional data to attach to the impression.
+     * @param evaluationOptions additional data for evaluation
      * @return the evaluated treatment, the default treatment of this feature flag, or 'control'.
      */
     String getTreatment(String key, String featureFlagName, Map<String, Object> attributes, EvaluationOptions evaluationOptions);
@@ -542,7 +542,7 @@ public interface SplitClient {
      * @param key the matching and bucketing keys. MUST NOT be null.
      * @param featureFlagName the name of the feature flag we want to evaluate. MUST NOT be null.
      * @param attributes of the entity (user, account etc.) to use in evaluation. Can be null or empty.
-     * @param evaluationOptions additional data to attach to the impression.
+     * @param evaluationOptions additional data for evaluation
      *
      * @return the evaluated treatment, the default treatment of this feature flag, or 'control'.
      */
@@ -576,7 +576,7 @@ public interface SplitClient {
      *
      * @param key a unique key of your customer (e.g. user_id, user_email, account_id, etc.) MUST not be null.
      * @param featureFlagNames the names of the feature flags we want to evaluate. MUST NOT be null.
-     * @param evaluationOptions additional data to attach to the impression.
+     * @param evaluationOptions additional data for evaluation
      * @return for each feature flag the evaluated treatment, the default treatment for each feature flag, or 'control'.
      */
     Map<String, String> getTreatments(String key, List<String> featureFlagNames, EvaluationOptions evaluationOptions);
@@ -594,7 +594,7 @@ public interface SplitClient {
      * @param key a unique key of your customer (e.g. user_id, user_email, account_id, etc.) MUST not be null.
      * @param featureFlagNames the names of the feature flags we want to evaluate. MUST NOT be null.
      * @param attributes of the customer (user, account etc.) to use in evaluation. Can be null or empty.
-     * @param evaluationOptions additional data to attach to the impression.
+     * @param evaluationOptions additional data for evaluation
      * @return the evaluated treatment, the default treatment of this feature flag, or 'control'.
      */
     Map<String, String> getTreatments(String key, List<String> featureFlagNames, Map<String, Object> attributes, EvaluationOptions evaluationOptions);
@@ -627,7 +627,7 @@ public interface SplitClient {
      * @param key the matching and bucketing keys. MUST NOT be null.
      * @param featureFlagNames the names of the feature flags we want to evaluate. MUST NOT be null.
      * @param attributes of the entity (user, account etc.) to use in evaluation. Can be null or empty.
-     * @param evaluationOptions additional data to attach to the impression.
+     * @param evaluationOptions additional data for evaluation
      *
      * @return for each feature flag the evaluated treatment, the default treatment of the feature flag, or 'control'.
      */
@@ -644,7 +644,7 @@ public interface SplitClient {
      *
      * @param key a unique key of your customer (e.g. user_id, user_email, account_id, etc.) MUST not be null.
      * @param featureFlagName the name of the feature flag we want to evaluate. MUST NOT be null.
-     * @param evaluationOptions additional data to attach to the impression.
+     * @param evaluationOptions additional data for evaluation
      * @return SplitResult containing the evaluated treatment (the default treatment of this feature flag, or 'control') and
      *         a configuration associated to this treatment if set.
      */
@@ -657,7 +657,7 @@ public interface SplitClient {
      * @param key the matching and bucketing keys. MUST NOT be null.
      * @param featureFlagName the name of the feature flag we want to evaluate. MUST NOT be null.
      * @param attributes of the entity (user, account etc.) to use in evaluation. Can be null or empty.
-     * @param evaluationOptions additional data to attach to the impression.
+     * @param evaluationOptions additional data for evaluation
      *
      * @return SplitResult containing the evaluated treatment (the default treatment of this feature flag, or 'control') and
      *         a configuration associated to this treatment if set.
@@ -676,7 +676,7 @@ public interface SplitClient {
      * @param key a unique key of your customer (e.g. user_id, user_email, account_id, etc.) MUST not be null.
      * @param featureFlagName the name of the feature flag we want to evaluate. MUST NOT be null.
      * @param attributes of the customer (user, account etc.) to use in evaluation. Can be null or empty.
-     * @param evaluationOptions additional data to attach to the impression.
+     * @param evaluationOptions additional data for evaluation
      * @return SplitResult containing the evaluated treatment (the default treatment of this feature flag, or 'control') and
      *         a configuration associated to this treatment if set.
      */
@@ -694,7 +694,7 @@ public interface SplitClient {
      * @param key a unique key of your customer (e.g. user_id, user_email, account_id, etc.) MUST not be null.
      * @param featureFlagNames the names of the feature flags we want to evaluate. MUST NOT be null.
      * @param attributes of the customer (user, account etc.) to use in evaluation. Can be null or empty.
-     * @param evaluationOptions additional data to attach to the impression.
+     * @param evaluationOptions additional data for evaluation
      * @return for each feature flag a SplitResult containing the evaluated treatment (the default treatment of this feature flag, or 'control') and
      *         a configuration associated to this treatment if set.
      */
@@ -712,7 +712,7 @@ public interface SplitClient {
      *
      * @param key a unique key of your customer (e.g. user_id, user_email, account_id, etc.) MUST not be null.
      * @param featureFlagNames the names of the feature flags we want to evaluate. MUST NOT be null.
-     * @param evaluationOptions additional data to attach to the impression.
+     * @param evaluationOptions additional data for evaluation
      * @return Map<String, SplitResult> containing for each feature flag the evaluated treatment (the default treatment of
      * this feature flag, or 'control') and a configuration associated to this treatment if set.
      */
@@ -730,7 +730,7 @@ public interface SplitClient {
      * @param key a unique key of your customer (e.g. user_id, user_email, account_id, etc.) MUST not be null or empty.
      * @param flagSet the Flag Set name that you want to evaluate. MUST not be null or empty.
      * @param attributes of the customer (user, account etc.) to use in evaluation. Can be null or empty.
-     * @param evaluationOptions additional data to attach to the impression.
+     * @param evaluationOptions additional data for evaluation
      * @return for each feature flag the evaluated treatment, the default treatment of this feature flag, or 'control'.
      */
     Map<String, String> getTreatmentsByFlagSet(String key, String flagSet, Map<String, Object> attributes, EvaluationOptions evaluationOptions);
@@ -746,7 +746,7 @@ public interface SplitClient {
      *
      * @param key a unique key of your customer (e.g. user_id, user_email, account_id, etc.) MUST not be null or empty.
      * @param flagSets  the names of Flag Sets that you want to evaluate. MUST not be null or empty.
-     * @param evaluationOptions additional data to attach to the impression.
+     * @param evaluationOptions additional data for evaluation
      * @return for each feature flag the evaluated treatment, the default treatment of this feature flag, or 'control'.
      */
     Map<String, String> getTreatmentsByFlagSets(String key, List<String> flagSets, EvaluationOptions evaluationOptions);
@@ -763,7 +763,7 @@ public interface SplitClient {
      * @param key a unique key of your customer (e.g. user_id, user_email, account_id, etc.) MUST not be null or empty.
      * @param flagSets  the names of Flag Sets that you want to evaluate. MUST not be null or empty.
      * @param attributes of the customer (user, account etc.) to use in evaluation. Can be null or empty.
-     * @param evaluationOptions additional data to attach to the impression.
+     * @param evaluationOptions additional data for evaluation
      * @return for each feature flag the evaluated treatment, the default treatment of this feature flag, or 'control'.
      */
     Map<String, String> getTreatmentsByFlagSets(String key, List<String> flagSets, Map<String, Object> attributes,
@@ -780,7 +780,7 @@ public interface SplitClient {
      *
      * @param key a unique key of your customer (e.g. user_id, user_email, account_id, etc.) MUST not be null or empty.
      * @param flagSet  the Flag Set name that you want to evaluate. MUST not be null or empty.
-     * @param evaluationOptions additional data to attach to the impression.
+     * @param evaluationOptions additional data for evaluation
      * @return for each feature flag the evaluated treatment (the default treatment of this feature flag, or 'control') and a configuration
      * associated to this treatment if set.
      */
@@ -797,7 +797,7 @@ public interface SplitClient {
      *
      * @param key a unique key of your customer (e.g. user_id, user_email, account_id, etc.) MUST not be null or empty.
      * @param flagSets  the names of Flag Sets that you want to evaluate. MUST not be null or empty.
-     * @param evaluationOptions additional data to attach to the impression.
+     * @param evaluationOptions additional data for evaluation
      * @return for each feature flag the evaluated treatment (the default treatment of this feature flag, or 'control') and a configuration
      * associated to this treatment if set.
      */
@@ -815,7 +815,7 @@ public interface SplitClient {
      * @param key a unique key of your customer (e.g. user_id, user_email, account_id, etc.) MUST not be null or empty.
      * @param flagSets  the names of Flag Sets that you want to evaluate. MUST not be null or empty.
      * @param attributes of the customer (user, account etc.) to use in evaluation. Can be null or empty.
-     * @param evaluationOptions additional data to attach to the impression.
+     * @param evaluationOptions additional data for evaluation
      * @return for each feature flag the evaluated treatment (the default treatment of this feature flag, or 'control') and a configuration
      * associated to this treatment if set.
      */
@@ -833,7 +833,7 @@ public interface SplitClient {
      *
      * @param key a unique key of your customer (e.g. user_id, user_email, account_id, etc.) MUST not be null or empty.
      * @param flagSet the Flag Set name that you want to evaluate. MUST not be null or empty.
-     * @param evaluationOptions additional data to attach to the impression.
+     * @param evaluationOptions additional data for evaluation
      * @return for each feature flag the evaluated treatment, the default treatment of this feature flag, or 'control'.
      */
     Map<String, String> getTreatmentsByFlagSet(String key, String flagSet, EvaluationOptions evaluationOptions);
@@ -845,7 +845,7 @@ public interface SplitClient {
      * @param key the matching and bucketing keys. MUST NOT be null.
      * @param featureFlagNames the names of the feature flags we want to evaluate. MUST NOT be null.
      * @param attributes of the entity (user, account etc.) to use in evaluation. Can be null or empty.
-     * @param evaluationOptions additional data to attach to the impression.
+     * @param evaluationOptions additional data for evaluation
      *
      * @return for each feature flag a SplitResult containing the evaluated treatment (the default treatment of this feature flag, or 'control') and
      *         a configuration associated to this treatment if set.
@@ -865,7 +865,7 @@ public interface SplitClient {
      * @param key a unique key of your customer (e.g. user_id, user_email, account_id, etc.) MUST not be null or empty.
      * @param flagSet  the Flag Set name that you want to evaluate. MUST not be null or empty.
      * @param attributes of the customer (user, account etc.) to use in evaluation. Can be null or empty.
-     * @param evaluationOptions additional data to attach to the impression.
+     * @param evaluationOptions additional data for evaluation
      * @return for each feature flag the evaluated treatment (the default treatment of this feature flag, or 'control') and a configuration
      * associated to this treatment if set.
      */
@@ -884,7 +884,7 @@ public interface SplitClient {
      * @param key the matching and bucketing keys. MUST not be null or empty.
      * @param flagSet the Flag Set name that you want to evaluate. MUST not be null or empty.
      * @param attributes of the customer (user, account etc.) to use in evaluation. Can be null or empty.
-     * @param evaluationOptions additional data to attach to the impression.
+     * @param evaluationOptions additional data for evaluation
      * @return for each feature flag the evaluated treatment, the default treatment of this feature flag, or 'control'.
      */
     Map<String, String> getTreatmentsByFlagSet(Key key, String flagSet, Map<String, Object> attributes, EvaluationOptions evaluationOptions);
@@ -901,7 +901,7 @@ public interface SplitClient {
      * @param key the matching and bucketing keys. MUST not be null or empty.
      * @param flagSets  the names of Flag Sets that you want to evaluate. MUST not be null or empty.
      * @param attributes of the customer (user, account etc.) to use in evaluation. Can be null or empty.
-     * @param evaluationOptions additional data to attach to the impression.
+     * @param evaluationOptions additional data for evaluation
      * @return for each feature flag the evaluated treatment, the default treatment of this feature flag, or 'control'.
      */
     Map<String, String> getTreatmentsByFlagSets(Key key, List<String> flagSets, Map<String, Object> attributes,
@@ -919,7 +919,7 @@ public interface SplitClient {
      * @param key the matching and bucketing keys. MUST not be null or empty.
      * @param flagSet  the Flag Set name that you want to evaluate. MUST not be null or empty.
      * @param attributes of the customer (user, account etc.) to use in evaluation. Can be null or empty.
-     * @param evaluationOptions additional data to attach to the impression.
+     * @param evaluationOptions additional data for evaluation
      * @return for each feature flag the evaluated treatment (the default treatment of this feature flag, or 'control') and a configuration
      * associated to this treatment if set.
      */
@@ -938,7 +938,7 @@ public interface SplitClient {
      * @param key the matching and bucketing keys. MUST not be null or empty.
      * @param flagSets  the names of Flag Sets that you want to evaluate. MUST not be null or empty.
      * @param attributes of the customer (user, account etc.) to use in evaluation. Can be null or empty.
-     * @param evaluationOptions additional data to attach to the impression.
+     * @param evaluationOptions additional data for evaluation
      * @return for each feature flag the evaluated treatment (the default treatment of this feature flag, or 'control') and a configuration
      * associated to this treatment if set.
      */
