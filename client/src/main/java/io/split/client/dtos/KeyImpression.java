@@ -17,8 +17,6 @@ public class KeyImpression {
     /* package private */ static final String FIELD_PREVIOUS_TIME = "pt";
     /* package private */ static final String FIELD_PROPERTIES = "properties";
 
-    public static int MAX_PROPERTIES_LENGTH_BYTES = 32 * 1024;
-
     public transient String feature; // Non-serializable
 
     @SerializedName(FIELD_KEY_NAME)
