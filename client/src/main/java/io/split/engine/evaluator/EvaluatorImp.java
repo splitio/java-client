@@ -6,6 +6,7 @@ import io.split.engine.experiments.ParsedCondition;
 import io.split.engine.experiments.ParsedSplit;
 import io.split.engine.splitter.Splitter;
 import io.split.grammar.Treatments;
+import io.split.storages.RuleBasedSegmentCacheConsumer;
 import io.split.storages.SegmentCacheConsumer;
 import io.split.storages.SplitCacheConsumer;
 import org.slf4j.Logger;
@@ -23,13 +24,16 @@ public class EvaluatorImp implements Evaluator {
     private static final Logger _log = LoggerFactory.getLogger(EvaluatorImp.class);
 
     private final SegmentCacheConsumer _segmentCacheConsumer;
+    private final RuleBasedSegmentCacheConsumer _ruleBasedSegmentCacheConsumer;
     private final EvaluationContext _evaluationContext;
     private final SplitCacheConsumer _splitCacheConsumer;
 
-    public EvaluatorImp(SplitCacheConsumer splitCacheConsumer, SegmentCacheConsumer segmentCache) {
+    public EvaluatorImp(SplitCacheConsumer splitCacheConsumer, SegmentCacheConsumer segmentCache,
+                        RuleBasedSegmentCacheConsumer ruleBasedSegmentCacheConsumer) {
         _splitCacheConsumer = checkNotNull(splitCacheConsumer);
         _segmentCacheConsumer = checkNotNull(segmentCache);
-        _evaluationContext = new EvaluationContext(this, _segmentCacheConsumer);
+        _ruleBasedSegmentCacheConsumer = checkNotNull(ruleBasedSegmentCacheConsumer);
+        _evaluationContext = new EvaluationContext(this, _segmentCacheConsumer, ruleBasedSegmentCacheConsumer);
     }
 
     @Override
