@@ -1,8 +1,6 @@
 package io.split.client;
 
-import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
-import com.google.gson.JsonParser;
 import io.split.client.api.Key;
 import io.split.client.api.SplitResult;
 import io.split.client.dtos.DecoratedImpression;
@@ -26,7 +24,6 @@ import io.split.storages.SplitCacheConsumer;
 import io.split.telemetry.domain.enums.MethodEnum;
 import io.split.telemetry.storage.TelemetryConfigProducer;
 import io.split.telemetry.storage.TelemetryEvaluationProducer;
-import io.split.client.utils.Json;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
