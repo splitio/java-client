@@ -124,7 +124,7 @@ public class SplitFactoryImpl implements SplitFactory {
     private static final org.slf4j.Logger _log = LoggerFactory.getLogger(SplitFactoryImpl.class);
     private static final String LEGACY_LOG_MESSAGE = "The sdk initialize in localhost mode using Legacy file. The splitFile or "
             +
-            "inputStream doesn't add it to the config.";
+            "inputStream are not added to the config.";
     private final static long SSE_CONNECT_TIMEOUT = 30000;
     private final static long SSE_SOCKET_TIMEOUT = 70000;
 
