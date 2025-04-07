@@ -1486,6 +1486,7 @@ public class SplitClientImplTest {
             assertEquals("on", client.getTreatmentsByFlagSet(randomKey, "set1", new HashMap<>()).get(test));
             assertEquals("{\"size\" : 30}", client.getTreatmentsWithConfigByFlagSet(key, "set1", attributes).get(test).config());
         }
+        assertEquals("on", client.getTreatmentsByFlagSet("randomKey", "set1").get(test));
     }
 
     @Test
@@ -1899,6 +1900,8 @@ public class SplitClientImplTest {
         }
         verify(splitCacheConsumer, times(numKeys)).fetchMany(new ArrayList<>(Arrays.asList(test)));
         verify(TELEMETRY_STORAGE, times(5)).recordLatency(Mockito.anyObject(), Mockito.anyLong());
+        getTreatmentResult = client.getTreatmentsByFlagSet("randomKey", "set1");
+        assertEquals("on", getTreatmentResult.get(test));
     }
 
     @Test
@@ -1980,6 +1983,9 @@ public class SplitClientImplTest {
         }
         verify(splitCacheConsumer, times(numKeys)).fetchMany(new ArrayList<>(Arrays.asList(test2, test)));
         verify(TELEMETRY_STORAGE, times(5)).recordLatency(Mockito.anyObject(), Mockito.anyLong());
+        getTreatmentResult = client.getTreatmentsByFlagSets("key", Arrays.asList("set1", "set3"));
+        assertEquals("on", getTreatmentResult.get(test));
+        assertEquals("on", getTreatmentResult.get(test2));
     }
 
     @Test
@@ -2030,6 +2036,12 @@ public class SplitClientImplTest {
         assertEquals("control", result.get(test2).treatment());
 
         verify(splitCacheConsumer, times(1)).fetchMany(anyList());
+
+        result = client.getTreatmentsWithConfigByFlagSet("randomKey", "set1");
+        assertEquals(2, result.size());
+        assertEquals(configurations.get("on"), result.get(test).config());
+        assertNull(result.get(test2).config());
+        assertEquals("control", result.get(test2).treatment());
     }
 
     @Test
