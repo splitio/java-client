@@ -3,9 +3,10 @@ package io.split.inputValidation;
 import java.util.Map;
 
 public class ImpressionPropertiesValidator {
-    private ImpressionPropertiesValidator() {
+    ImpressionPropertiesValidator() {
         throw new IllegalStateException("Utility class");
     }
+
     public static ImpressionPropertiesValidatorResult propertiesAreValid(Map<String, Object> properties) {
         EventsValidator.EventValidatorResult result = EventsValidator.propertiesAreValid(properties);
         return new ImpressionPropertiesValidatorResult(result.getSuccess(), result.getEventSize(), result.getValue());

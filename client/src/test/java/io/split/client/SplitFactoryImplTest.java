@@ -172,8 +172,6 @@ public class SplitFactoryImplTest extends TestCase {
         Mockito.verify(telemetrySynchronizer, Mockito.times(1)).synchronizeConfig(Mockito.anyObject(), Mockito.anyLong(), Mockito.anyObject(), Mockito.anyObject());
     }
 
-    // TODO Enable test after pluggable classes update
-    @Ignore
     @Test
     public void testFactoryConsumerInstantiationRetryReadiness() throws Exception {
         CustomStorageWrapper customStorageWrapper = Mockito.mock(CustomStorageWrapper.class);
