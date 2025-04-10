@@ -53,11 +53,12 @@ public final class ParsedCondition {
         result = 31 * result + _matcher.hashCode();
 
         int partitionsHashCode = 17;
-        for (Partition p : _partitions) {
-            partitionsHashCode = 31 * partitionsHashCode + p.treatment.hashCode();
-            partitionsHashCode = 31 * partitionsHashCode + p.size;
+        if (_partitions != null) {
+            for (Partition p : _partitions) {
+                partitionsHashCode = 31 * partitionsHashCode + p.treatment.hashCode();
+                partitionsHashCode = 31 * partitionsHashCode + p.size;
+            }
         }
-
         result = 31 * result + partitionsHashCode;
         return result;
     }
@@ -75,7 +76,9 @@ public final class ParsedCondition {
         if (!result) {
             return result;
         }
-
+        if (_partitions == null) {
+            return result & (_partitions == other._partitions);
+        }
         if (_partitions.size() != other._partitions.size()) {
             return result;
         }
@@ -97,6 +100,9 @@ public final class ParsedCondition {
         bldr.append(_matcher);
         bldr.append(" then split ");
         boolean first = true;
+        if (_partitions == null) {
+            return bldr.toString();
+        }
         for (Partition partition : _partitions) {
             if (!first) {
                 bldr.append(',');
