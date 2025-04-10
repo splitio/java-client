@@ -39,7 +39,7 @@ public class JsonLocalhostSplitChangeFetcherTest {
         JsonLocalhostSplitChangeFetcher localhostSplitChangeFetcher = new JsonLocalhostSplitChangeFetcher(inputStreamProvider);
         FetchOptions fetchOptions = Mockito.mock(FetchOptions.class);
 
-        SplitChange splitChange = localhostSplitChangeFetcher.fetch(-1L, fetchOptions);
+        SplitChange splitChange = localhostSplitChangeFetcher.fetch(-1L, -1, fetchOptions);
 
         List<Split> split = splitChange.splits;
         Assert.assertEquals(7, split.size());
@@ -54,7 +54,7 @@ public class JsonLocalhostSplitChangeFetcherTest {
         JsonLocalhostSplitChangeFetcher localhostSplitChangeFetcher = new JsonLocalhostSplitChangeFetcher(inputStreamProvider);
         FetchOptions fetchOptions = Mockito.mock(FetchOptions.class);
 
-        SplitChange splitChange = localhostSplitChangeFetcher.fetch(-1L, fetchOptions);
+        SplitChange splitChange = localhostSplitChangeFetcher.fetch(-1L, -1, fetchOptions);
 
         Assert.assertEquals(-1L, splitChange.till);
         Assert.assertEquals(-1L, splitChange.since);
@@ -67,7 +67,7 @@ public class JsonLocalhostSplitChangeFetcherTest {
         JsonLocalhostSplitChangeFetcher localhostSplitChangeFetcher = new JsonLocalhostSplitChangeFetcher(inputStreamProvider);
         FetchOptions fetchOptions = Mockito.mock(FetchOptions.class);
 
-        SplitChange splitChange = localhostSplitChangeFetcher.fetch(-1L, fetchOptions);
+        SplitChange splitChange = localhostSplitChangeFetcher.fetch(-1L, -1, fetchOptions);
 
         Assert.assertEquals(0, splitChange.splits.size());
     }
@@ -79,7 +79,7 @@ public class JsonLocalhostSplitChangeFetcherTest {
         JsonLocalhostSplitChangeFetcher localhostSplitChangeFetcher = new JsonLocalhostSplitChangeFetcher(inputStreamProvider);
         FetchOptions fetchOptions = Mockito.mock(FetchOptions.class);
 
-        SplitChange splitChange = localhostSplitChangeFetcher.fetch(-1L, fetchOptions);
+        SplitChange splitChange = localhostSplitChangeFetcher.fetch(-1L, -1, fetchOptions);
 
         Assert.assertEquals(1, splitChange.splits.size());
         Split split = splitChange.splits.get(0);
@@ -96,7 +96,7 @@ public class JsonLocalhostSplitChangeFetcherTest {
         JsonLocalhostSplitChangeFetcher localhostSplitChangeFetcher = new JsonLocalhostSplitChangeFetcher(inputStreamProvider);
         FetchOptions fetchOptions = Mockito.mock(FetchOptions.class);
 
-        SplitChange splitChange = localhostSplitChangeFetcher.fetch(-1L, fetchOptions);
+        SplitChange splitChange = localhostSplitChangeFetcher.fetch(-1L, -1, fetchOptions);
 
         Assert.assertEquals(1, splitChange.splits.size());
         Split split = splitChange.splits.get(0);
@@ -119,7 +119,7 @@ public class JsonLocalhostSplitChangeFetcherTest {
         FetchOptions fetchOptions = Mockito.mock(FetchOptions.class);
 
         // 0) The CN from storage is -1, till and since are -1, and sha doesn't exist in the hash. It's going to return a split change with updates.
-        SplitChange splitChange = localhostSplitChangeFetcher.fetch(-1L, fetchOptions);
+        SplitChange splitChange = localhostSplitChangeFetcher.fetch(-1L, -1, fetchOptions);
         Assert.assertEquals(1, splitChange.splits.size());
         Assert.assertEquals(-1, splitChange.till);
         Assert.assertEquals(-1, splitChange.since);
@@ -128,7 +128,7 @@ public class JsonLocalhostSplitChangeFetcherTest {
         com.google.common.io.Files.write(test, file);
 
         // 1) The CN from storage is -1, till and since are -1, and sha is different than before. It's going to return a split change with updates.
-        splitChange = localhostSplitChangeFetcher.fetch(-1L, fetchOptions);
+        splitChange = localhostSplitChangeFetcher.fetch(-1L, -1, fetchOptions);
         Assert.assertEquals(2, splitChange.splits.size());
         Assert.assertEquals(-1, splitChange.till);
         Assert.assertEquals(-1, splitChange.since);
@@ -137,7 +137,7 @@ public class JsonLocalhostSplitChangeFetcherTest {
         com.google.common.io.Files.write(test, file);
 
         // 2) The CN from storage is -1, till is 2323, and since is -1, and sha is the same as before. It's going to return a split change with the same data.
-        splitChange = localhostSplitChangeFetcher.fetch(-1L, fetchOptions);
+        splitChange = localhostSplitChangeFetcher.fetch(-1L, -1, fetchOptions);
         Assert.assertEquals(2, splitChange.splits.size());
         Assert.assertEquals(-1, splitChange.till);
         Assert.assertEquals(-1, splitChange.since);
@@ -146,7 +146,7 @@ public class JsonLocalhostSplitChangeFetcherTest {
         com.google.common.io.Files.write(test, file);
 
         // 3) The CN from storage is -1, till is 2323, and since is -1, sha is different than before. It's going to return a split change with updates.
-        splitChange = localhostSplitChangeFetcher.fetch(-1L, fetchOptions);
+        splitChange = localhostSplitChangeFetcher.fetch(-1L, -1, fetchOptions);
         Assert.assertEquals(1, splitChange.splits.size());
         Assert.assertEquals(2323, splitChange.till);
         Assert.assertEquals(-1, splitChange.since);
@@ -155,7 +155,7 @@ public class JsonLocalhostSplitChangeFetcherTest {
         com.google.common.io.Files.write(test, file);
 
         // 4) The CN from storage is 2323, till is 445345, and since is -1, and sha is the same as before. It's going to return a split change with same data.
-        splitChange = localhostSplitChangeFetcher.fetch(2323, fetchOptions);
+        splitChange = localhostSplitChangeFetcher.fetch(2323, -1, fetchOptions);
         Assert.assertEquals(1, splitChange.splits.size());
         Assert.assertEquals(2323, splitChange.till);
         Assert.assertEquals(2323, splitChange.since);
@@ -164,7 +164,7 @@ public class JsonLocalhostSplitChangeFetcherTest {
         com.google.common.io.Files.write(test, file);
 
         // 5) The CN from storage is 2323, till and since are -1, and sha is different than before. It's going to return a split change with updates.
-        splitChange = localhostSplitChangeFetcher.fetch(2323, fetchOptions);
+        splitChange = localhostSplitChangeFetcher.fetch(2323, -1, fetchOptions);
         Assert.assertEquals(2, splitChange.splits.size());
         Assert.assertEquals(2323, splitChange.till);
         Assert.assertEquals(2323, splitChange.since);
@@ -176,6 +176,6 @@ public class JsonLocalhostSplitChangeFetcherTest {
         JsonLocalhostSplitChangeFetcher localhostSplitChangeFetcher = new JsonLocalhostSplitChangeFetcher(inputStreamProvider);
         FetchOptions fetchOptions = Mockito.mock(FetchOptions.class);
 
-        SplitChange splitChange = localhostSplitChangeFetcher.fetch(-1L, fetchOptions);
+        SplitChange splitChange = localhostSplitChangeFetcher.fetch(-1L, -1, fetchOptions);
     }
 }

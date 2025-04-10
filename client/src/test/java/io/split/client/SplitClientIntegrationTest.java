@@ -1,6 +1,7 @@
 package io.split.client;
 
 import io.split.SSEMockServer;
+import io.split.Spec;
 import io.split.SplitMockServer;
 import io.split.client.api.SplitView;
 import io.split.client.dtos.EvaluationOptions;
@@ -784,16 +785,16 @@ public class SplitClientIntegrationTest {
     public void ImpressionToggleOptimizedModeTest() throws Exception {
         String splits = new String(Files.readAllBytes(Paths.get("src/test/resources/splits_imp_toggle.json")), StandardCharsets.UTF_8);
         List<RecordedRequest> allRequests = new ArrayList<>();
-
+        Spec.SPEC_VERSION = Spec.SPEC_1_3;
         Dispatcher dispatcher = new Dispatcher() {
             @Override
             public MockResponse dispatch(RecordedRequest request) {
                 allRequests.add(request);
                 switch (request.getPath()) {
-                    case "/api/splitChanges?s=1.1&since=-1":
+                    case "/api/splitChanges?s=1.3&since=-1&rbSince=-1":
                         return new MockResponse().setResponseCode(200).setBody(splits);
-                    case "/api/splitChanges?s=1.1&since=1602796638344":
-                        return new MockResponse().setResponseCode(200).setBody("{\"splits\": [], \"since\":1602796638344, \"till\":1602796638344}");
+                    case "/api/splitChanges?s=1.3&since=1602796638344&rbSince=-1":
+                        return new MockResponse().setResponseCode(200).setBody("{\"ff\":{\"d\":[], \"s\":1602796638344, \"t\":1602796638344}, \"rbs\":{\"d\":[],\"s\":-1,\"t\":-1}}");
                     case "/api/testImpressions/bulk":
                         return new MockResponse().setResponseCode(200);
                     case "/api/testImpressions/count":
@@ -852,22 +853,23 @@ public class SplitClientIntegrationTest {
         server.shutdown();
         Assert.assertTrue(check1);
         Assert.assertTrue(check2);
+        Spec.SPEC_VERSION = Spec.SPEC_1_1;
     }
 
     @Test
     public void ImpressionToggleDebugModeTest() throws Exception {
         String splits = new String(Files.readAllBytes(Paths.get("src/test/resources/splits_imp_toggle.json")), StandardCharsets.UTF_8);
         List<RecordedRequest> allRequests = new ArrayList<>();
-
+        Spec.SPEC_VERSION = Spec.SPEC_1_3;
         Dispatcher dispatcher = new Dispatcher() {
             @Override
             public MockResponse dispatch(RecordedRequest request) {
                 allRequests.add(request);
                 switch (request.getPath()) {
-                    case "/api/splitChanges?s=1.1&since=-1":
+                    case "/api/splitChanges?s=1.3&since=-1&rbSince=-1":
                         return new MockResponse().setResponseCode(200).setBody(splits);
-                    case "/api/splitChanges?s=1.1&since=1602796638344":
-                        return new MockResponse().setResponseCode(200).setBody("{\"splits\": [], \"since\":1602796638344, \"till\":1602796638344}");
+                    case "/api/splitChanges?s=1.3&since=1602796638344&rbSince=-1":
+                        return new MockResponse().setResponseCode(200).setBody("{\"ff\":{\"d\":[], \"s\":1602796638344, \"t\":1602796638344}, \"rbs\":{\"d\":[],\"s\":-1,\"t\":-1}}");
                     case "/api/testImpressions/bulk":
                         return new MockResponse().setResponseCode(200);
                     case "/api/testImpressions/count":
@@ -934,22 +936,23 @@ public class SplitClientIntegrationTest {
         Assert.assertTrue(check1);
         Assert.assertTrue(check2);
         Assert.assertTrue(check3);
+        Spec.SPEC_VERSION = Spec.SPEC_1_1;
     }
 
     @Test
     public void ImpressionToggleNoneModeTest() throws Exception {
         String splits = new String(Files.readAllBytes(Paths.get("src/test/resources/splits_imp_toggle.json")), StandardCharsets.UTF_8);
         List<RecordedRequest> allRequests = new ArrayList<>();
-
+        Spec.SPEC_VERSION = Spec.SPEC_1_3;
         Dispatcher dispatcher = new Dispatcher() {
             @Override
             public MockResponse dispatch(RecordedRequest request) {
                 allRequests.add(request);
                 switch (request.getPath()) {
-                    case "/api/splitChanges?s=1.1&since=-1":
+                    case "/api/splitChanges?s=1.3&since=-1&rbSince=-1":
                         return new MockResponse().setResponseCode(200).setBody(splits);
-                    case "/api/splitChanges?s=1.1&since=1602796638344":
-                        return new MockResponse().setResponseCode(200).setBody("{\"splits\": [], \"since\":1602796638344, \"till\":1602796638344}");
+                    case "/api/splitChanges?s=1.3&since=1602796638344&rbSince=-1":
+                        return new MockResponse().setResponseCode(200).setBody("{\"ff\":{\"d\":[], \"s\":1602796638344, \"t\":1602796638344}, \"rbs\":{\"d\":[],\"s\":-1,\"t\":-1}}");
                     case "/api/testImpressions/bulk":
                         return new MockResponse().setResponseCode(200);
                     case "/api/testImpressions/count":
@@ -1012,22 +1015,23 @@ public class SplitClientIntegrationTest {
         Assert.assertFalse(check1);
         Assert.assertTrue(check2);
         Assert.assertTrue(check3);
+        Spec.SPEC_VERSION = Spec.SPEC_1_1;
     }
 
     @Test
     public void ImpressionPropertiesTest() throws Exception {
         String splits = new String(Files.readAllBytes(Paths.get("src/test/resources/splits_imp_toggle.json")), StandardCharsets.UTF_8);
         List<RecordedRequest> allRequests = new ArrayList<>();
-
+        Spec.SPEC_VERSION = Spec.SPEC_1_3;
         Dispatcher dispatcher = new Dispatcher() {
             @Override
             public MockResponse dispatch(RecordedRequest request) {
                 allRequests.add(request);
                 switch (request.getPath()) {
-                    case "/api/splitChanges?s=1.1&since=-1":
+                    case "/api/splitChanges?s=1.3&since=-1&rbSince=-1":
                         return new MockResponse().setResponseCode(200).setBody(splits);
-                    case "/api/splitChanges?s=1.1&since=1602796638344":
-                        return new MockResponse().setResponseCode(200).setBody("{\"splits\": [], \"since\":1602796638344, \"till\":1602796638344}");
+                    case "/api/splitChanges?s=1.3&since=1602796638344&rbSince=-1":
+                        return new MockResponse().setResponseCode(200).setBody("{\"ff\":{\"d\":[], \"s\":1602796638344, \"t\":1602796638344}, \"rbs\":{\"d\":[],\"s\":-1,\"t\":-1}}");
                     case "/api/testImpressions/bulk":
                         return new MockResponse().setResponseCode(200);
                     case "/api/testImpressions/count":
@@ -1094,6 +1098,7 @@ public class SplitClientIntegrationTest {
         server.shutdown();
         Assert.assertTrue(check1);
         Assert.assertTrue(check2);
+        Spec.SPEC_VERSION = Spec.SPEC_1_1;
     }
 
     private SSEMockServer buildSSEMockServer(SSEMockServer.SseEventQueue eventQueue) {

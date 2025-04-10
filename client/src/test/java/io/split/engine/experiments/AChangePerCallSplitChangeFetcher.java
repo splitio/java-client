@@ -32,7 +32,7 @@ public class AChangePerCallSplitChangeFetcher implements SplitChangeFetcher {
 
 
     @Override
-    public SplitChange fetch(long since, FetchOptions options) {
+    public SplitChange fetch(long since, long rbSince, FetchOptions options) {
         long latestChangeNumber = since + 1;
         Condition condition = null;
 

@@ -1,29 +1,13 @@
 package io.split.engine.experiments;
 
 import com.google.common.collect.Lists;
-import io.split.client.dtos.Condition;
-import io.split.client.dtos.DataType;
+import io.split.client.dtos.*;
 import io.split.client.dtos.Matcher;
-import io.split.client.dtos.MatcherCombiner;
-import io.split.client.dtos.MatcherType;
-import io.split.client.dtos.Partition;
-import io.split.client.dtos.SegmentChange;
-import io.split.client.dtos.Split;
-import io.split.client.dtos.SplitChange;
-import io.split.client.dtos.Status;
 import io.split.client.utils.GenericClientUtil;
-import io.split.storages.SegmentCache;
-import io.split.storages.memory.SegmentCacheInMemoryImpl;
-import io.split.client.utils.Json;
-import io.split.engine.evaluator.Labels;
+import io.split.client.utils.RuleBasedSegmentsToUpdate;
 import io.split.engine.ConditionsTestUtil;
-import io.split.engine.matchers.AttributeMatcher;
-import io.split.engine.matchers.BetweenMatcher;
-import io.split.engine.matchers.CombiningMatcher;
-import io.split.engine.matchers.EqualToMatcher;
-import io.split.engine.matchers.GreaterThanOrEqualToMatcher;
-import io.split.engine.matchers.LessThanOrEqualToMatcher;
-import io.split.engine.matchers.UserDefinedSegmentMatcher;
+import io.split.engine.evaluator.Labels;
+import io.split.engine.matchers.*;
 import io.split.engine.matchers.collections.ContainsAllOfSetMatcher;
 import io.split.engine.matchers.collections.ContainsAnyOfSetMatcher;
 import io.split.engine.matchers.collections.EqualToSetMatcher;
@@ -33,24 +17,21 @@ import io.split.engine.matchers.strings.EndsWithAnyOfMatcher;
 import io.split.engine.matchers.strings.StartsWithAnyOfMatcher;
 import io.split.engine.segments.SegmentChangeFetcher;
 import io.split.grammar.Treatments;
+import io.split.storages.SegmentCache;
+import io.split.storages.memory.SegmentCacheInMemoryImpl;
 import org.junit.Assert;
 import org.junit.Test;
 import org.mockito.Mockito;
 
-import javax.validation.constraints.AssertTrue;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import static org.junit.Assert.assertFalse;
+import static io.split.client.utils.FeatureFlagProcessor.processRuleBasedSegmentChanges;
 import static org.junit.Assert.assertTrue;
 
 /**
@@ -58,7 +39,7 @@ import static org.junit.Assert.assertTrue;
  *
  * @author adil
  */
-public class SplitParserTest {
+public class RuleBasedSegmentParserTest {
 
     public static final String EMPLOYEES = "employees";
     public static final String SALES_PEOPLE = "salespeople";
@@ -74,75 +55,27 @@ public class SplitParserTest {
         SegmentChange segmentChangeSalesPeople = getSegmentChange(-1L, -1L, SALES_PEOPLE);
         Mockito.when(segmentChangeFetcher.fetch(Mockito.anyString(), Mockito.anyLong(), Mockito.any())).thenReturn(segmentChangeEmployee).thenReturn(segmentChangeSalesPeople);
 
-        SplitParser parser = new SplitParser();
-
-
         Matcher employeesMatcher = ConditionsTestUtil.userDefinedSegmentMatcher(EMPLOYEES, false);
         Matcher notSalespeople = ConditionsTestUtil.userDefinedSegmentMatcher(SALES_PEOPLE, true);
-
-        List<Partition> partitions = Lists.newArrayList(ConditionsTestUtil.partition("on", 100));
-
-        Condition c = ConditionsTestUtil.and(employeesMatcher, notSalespeople, partitions);
-
+        Condition c = ConditionsTestUtil.and(employeesMatcher, notSalespeople, null);
         List<Condition> conditions = Lists.newArrayList(c);
 
-        Split split = makeSplit("first.name", 123, conditions, 1);
-
-        ParsedSplit actual = parser.parse(split);
+        RuleBasedSegmentParser parser = new RuleBasedSegmentParser();
+        RuleBasedSegment ruleBasedSegment = makeRuleBasedSegment("first.name", conditions, 1);
+        ParsedRuleBasedSegment actual = parser.parse(ruleBasedSegment);
 
         AttributeMatcher employeesMatcherLogic = AttributeMatcher.vanilla(new UserDefinedSegmentMatcher(EMPLOYEES));
         AttributeMatcher notSalesPeopleMatcherLogic = new AttributeMatcher(null, new UserDefinedSegmentMatcher(SALES_PEOPLE), true);
         CombiningMatcher combiningMatcher = new CombiningMatcher(MatcherCombiner.AND, Lists.newArrayList(employeesMatcherLogic, notSalesPeopleMatcherLogic));
-        ParsedCondition parsedCondition = ParsedCondition.createParsedConditionForTests(combiningMatcher, partitions);
+        ParsedCondition parsedCondition = ParsedCondition.createParsedConditionForTests(combiningMatcher, null);
         List<ParsedCondition> listOfMatcherAndSplits = Lists.newArrayList(parsedCondition);
 
-        ParsedSplit expected = ParsedSplit.createParsedSplitForTests("first.name", 123, false, Treatments.OFF, listOfMatcherAndSplits, "user", 1, 1, new HashSet<>(), false);
+        ParsedRuleBasedSegment expected = ParsedRuleBasedSegment.createParsedRuleBasedSegmentForTests ("first.name",   listOfMatcherAndSplits, "user", 1,
+                new ArrayList<>(), new ArrayList<>());
 
         Assert.assertEquals(actual, expected);
         assertTrue(expected.hashCode() != 0);
         assertTrue(expected.equals(expected));
-    }
-
-    @Test
-    public void worksWithConfig() {
-        SegmentCache segmentCache = new SegmentCacheInMemoryImpl();
-        segmentCache.updateSegment(EMPLOYEES, Stream.of("adil", "pato", "trevor").collect(Collectors.toList()), new ArrayList<>(), 1L);
-        segmentCache.updateSegment(SALES_PEOPLE, Stream.of("kunal").collect(Collectors.toList()), new ArrayList<>(), 1L);
-        SegmentChangeFetcher segmentChangeFetcher = Mockito.mock(SegmentChangeFetcher.class);
-        SegmentChange segmentChangeEmployee = getSegmentChange(-1L, -1L, EMPLOYEES);
-        SegmentChange segmentChangeSalesPeople = getSegmentChange(-1L, -1L, SALES_PEOPLE);
-        Mockito.when(segmentChangeFetcher.fetch(Mockito.anyString(), Mockito.anyLong(), Mockito.any())).thenReturn(segmentChangeEmployee).thenReturn(segmentChangeSalesPeople);
-
-        SplitParser parser = new SplitParser();
-
-
-        Matcher employeesMatcher = ConditionsTestUtil.userDefinedSegmentMatcher(EMPLOYEES, false);
-        Matcher notSalespeople = ConditionsTestUtil.userDefinedSegmentMatcher(SALES_PEOPLE, true);
-
-        List<Partition> partitions = Lists.newArrayList(ConditionsTestUtil.partition("on", 100));
-
-        Condition c = ConditionsTestUtil.and(employeesMatcher, notSalespeople, partitions);
-
-        List<Condition> conditions = Lists.newArrayList(c);
-
-        Map<String, String> configurations = new HashMap<>();
-        configurations.put("on", "{\"size\":15,\"test\":20}");
-        configurations.put("off", "{\"size\":10}");
-        Split split = makeSplit("first.name", 123, conditions, 1, configurations);
-
-        ParsedSplit actual = parser.parse(split);
-
-        AttributeMatcher employeesMatcherLogic = AttributeMatcher.vanilla(new UserDefinedSegmentMatcher(EMPLOYEES));
-        AttributeMatcher notSalesPeopleMatcherLogic = new AttributeMatcher(null, new UserDefinedSegmentMatcher(SALES_PEOPLE), true);
-        CombiningMatcher combiningMatcher = new CombiningMatcher(MatcherCombiner.AND, Lists.newArrayList(employeesMatcherLogic, notSalesPeopleMatcherLogic));
-        ParsedCondition parsedCondition = ParsedCondition.createParsedConditionForTests(combiningMatcher, partitions);
-        List<ParsedCondition> listOfMatcherAndSplits = Lists.newArrayList(parsedCondition);
-
-        ParsedSplit expected = ParsedSplit.createParsedSplitForTests("first.name", 123, false, Treatments.OFF,
-                listOfMatcherAndSplits, "user", 1, 1, configurations, new HashSet<>(), false);
-
-        Assert.assertEquals(actual, expected);
-        Assert.assertEquals(actual.configurations().get("on"), configurations.get("on"));
     }
 
     @Test
@@ -154,9 +87,6 @@ public class SplitParserTest {
         SegmentChange segmentChangeEmployee = getSegmentChange(-1L, -1L, EMPLOYEES);
         SegmentChange segmentChangeSalesPeople = getSegmentChange(-1L, -1L, SALES_PEOPLE);
         Mockito.when(segmentChangeFetcher.fetch(Mockito.anyString(), Mockito.anyLong(), Mockito.any())).thenReturn(segmentChangeEmployee).thenReturn(segmentChangeSalesPeople);
-
-
-        SplitParser parser = new SplitParser();
 
         Matcher employeesMatcher = ConditionsTestUtil.userDefinedSegmentMatcher(EMPLOYEES, false);
 
@@ -170,15 +100,16 @@ public class SplitParserTest {
 
         List<Condition> conditions = Lists.newArrayList(c1, c2);
 
-        Split split = makeSplit("first.name", 123, conditions, 1);
-
-        ParsedSplit actual = parser.parse(split);
+        RuleBasedSegmentParser parser = new RuleBasedSegmentParser();
+        RuleBasedSegment ruleBasedSegment = makeRuleBasedSegment("first.name", conditions, 1);
+        ParsedRuleBasedSegment actual = parser.parse(ruleBasedSegment);
 
         ParsedCondition parsedCondition1 = ParsedCondition.createParsedConditionForTests(CombiningMatcher.of(new UserDefinedSegmentMatcher(EMPLOYEES)), fullyRollout);
         ParsedCondition parsedCondition2 = ParsedCondition.createParsedConditionForTests(CombiningMatcher.of(new UserDefinedSegmentMatcher(EMPLOYEES)), turnOff);
         List<ParsedCondition> listOfParsedConditions = Lists.newArrayList(parsedCondition1, parsedCondition2);
 
-        ParsedSplit expected = ParsedSplit.createParsedSplitForTests("first.name", 123, false, Treatments.OFF, listOfParsedConditions, "user", 1, 1, new HashSet<>(), false);
+        ParsedRuleBasedSegment expected = ParsedRuleBasedSegment.createParsedRuleBasedSegmentForTests ("first.name",   listOfParsedConditions, "user", 1,
+                new ArrayList<>(), new ArrayList<>());
 
         Assert.assertEquals(actual, expected);
     }
@@ -192,9 +123,6 @@ public class SplitParserTest {
         SegmentChange segmentChangeEmployee = getSegmentChange(-1L, -1L, EMPLOYEES);
         Mockito.when(segmentChangeFetcher.fetch(Mockito.anyString(), Mockito.anyLong(), Mockito.any())).thenReturn(segmentChangeEmployee);
 
-
-        SplitParser parser = new SplitParser();
-
         Matcher employeesMatcher = ConditionsTestUtil.userDefinedSegmentMatcher(EMPLOYEES, false);
 
         List<Condition> conditions = Lists.newArrayList();
@@ -204,11 +132,11 @@ public class SplitParserTest {
             conditions.add(c);
         }
 
-        Split split = makeSplit("first.name", 123, conditions, 1);
+        RuleBasedSegmentParser parser = new RuleBasedSegmentParser();
+        RuleBasedSegment ruleBasedSegment = makeRuleBasedSegment("first.name", conditions, 1);
 
-        Assert.assertNotNull(parser.parse(split));
+        Assert.assertNotNull(parser.parse(ruleBasedSegment));
     }
-
 
     @Test
     public void worksWithAttributes() {
@@ -220,9 +148,6 @@ public class SplitParserTest {
         SegmentChange segmentChangeSalesPeople = getSegmentChange(-1L, -1L, SALES_PEOPLE);
         Mockito.when(segmentChangeFetcher.fetch(Mockito.anyString(), Mockito.anyLong(), Mockito.any())).thenReturn(segmentChangeEmployee).thenReturn(segmentChangeSalesPeople);
 
-
-        SplitParser parser = new SplitParser();
-
         Matcher employeesMatcher = ConditionsTestUtil.userDefinedSegmentMatcher("user", "name", EMPLOYEES, false);
 
         Matcher creationDateNotOlderThanAPoint = ConditionsTestUtil.numericMatcher("user", "creation_date",
@@ -231,23 +156,22 @@ public class SplitParserTest {
                 1457386741L,
                 true);
 
-        List<Partition> partitions = Lists.newArrayList(ConditionsTestUtil.partition("on", 100));
-
-        Condition c = ConditionsTestUtil.and(employeesMatcher, creationDateNotOlderThanAPoint, partitions);
+        Condition c = ConditionsTestUtil.and(employeesMatcher, creationDateNotOlderThanAPoint, null);
 
         List<Condition> conditions = Lists.newArrayList(c);
 
-        Split split = makeSplit("first.name", 123, conditions, 1);
-
-        ParsedSplit actual = parser.parse(split);
+        RuleBasedSegmentParser parser = new RuleBasedSegmentParser();
+        RuleBasedSegment ruleBasedSegment = makeRuleBasedSegment("first.name", conditions, 1);
+        ParsedRuleBasedSegment actual = parser.parse(ruleBasedSegment);
 
         AttributeMatcher employeesMatcherLogic = new AttributeMatcher("name", new UserDefinedSegmentMatcher(EMPLOYEES), false);
         AttributeMatcher creationDateNotOlderThanAPointLogic = new AttributeMatcher("creation_date", new GreaterThanOrEqualToMatcher(1457386741L, DataType.DATETIME), true);
         CombiningMatcher combiningMatcher = new CombiningMatcher(MatcherCombiner.AND, Lists.newArrayList(employeesMatcherLogic, creationDateNotOlderThanAPointLogic));
-        ParsedCondition parsedCondition = ParsedCondition.createParsedConditionForTests(combiningMatcher, partitions);
+        ParsedCondition parsedCondition = ParsedCondition.createParsedConditionForTests(combiningMatcher, null);
         List<ParsedCondition> listOfMatcherAndSplits = Lists.newArrayList(parsedCondition);
 
-        ParsedSplit expected = ParsedSplit.createParsedSplitForTests("first.name", 123, false, Treatments.OFF, listOfMatcherAndSplits, "user", 1, 1, new HashSet<>(), false);
+        ParsedRuleBasedSegment expected = ParsedRuleBasedSegment.createParsedRuleBasedSegmentForTests ("first.name",   listOfMatcherAndSplits, "user", 1,
+                new ArrayList<>(), new ArrayList<>());
 
         Assert.assertEquals(actual, expected);
     }
@@ -259,28 +183,22 @@ public class SplitParserTest {
         SegmentChange segmentChangeSalesPeople = getSegmentChange(-1L, -1L, SALES_PEOPLE);
         Mockito.when(segmentChangeFetcher.fetch(Mockito.anyString(), Mockito.anyLong(), Mockito.any())).thenReturn(segmentChangeEmployee).thenReturn(segmentChangeSalesPeople);
 
-
-        SplitParser parser = new SplitParser();
-
         Matcher ageLessThan10 = ConditionsTestUtil.numericMatcher("user", "age", MatcherType.LESS_THAN_OR_EQUAL_TO, DataType.NUMBER, 10L, false);
-
-        List<Partition> partitions = Lists.newArrayList(ConditionsTestUtil.partition("on", 100));
-
-        Condition c = ConditionsTestUtil.and(ageLessThan10, partitions);
-
+        Condition c = ConditionsTestUtil.and(ageLessThan10, null);
 
         List<Condition> conditions = Lists.newArrayList(c);
 
-        Split split = makeSplit("first.name", 123, conditions, 1);
-
-        ParsedSplit actual = parser.parse(split);
+        RuleBasedSegmentParser parser = new RuleBasedSegmentParser();
+        RuleBasedSegment ruleBasedSegment = makeRuleBasedSegment("first.name", conditions, 1);
+        ParsedRuleBasedSegment actual = parser.parse(ruleBasedSegment);
 
         AttributeMatcher ageLessThan10Logic = new AttributeMatcher("age", new LessThanOrEqualToMatcher(10, DataType.NUMBER), false);
         CombiningMatcher combiningMatcher = new CombiningMatcher(MatcherCombiner.AND, Lists.newArrayList(ageLessThan10Logic));
-        ParsedCondition parsedCondition = ParsedCondition.createParsedConditionForTests(combiningMatcher, partitions);
+        ParsedCondition parsedCondition = ParsedCondition.createParsedConditionForTests(combiningMatcher, null);
         List<ParsedCondition> listOfMatcherAndSplits = Lists.newArrayList(parsedCondition);
 
-        ParsedSplit expected = ParsedSplit.createParsedSplitForTests("first.name", 123, false, Treatments.OFF, listOfMatcherAndSplits, "user", 1, 1, new HashSet<>(), false);
+        ParsedRuleBasedSegment expected = ParsedRuleBasedSegment.createParsedRuleBasedSegmentForTests ("first.name",   listOfMatcherAndSplits, "user", 1,
+                new ArrayList<>(), new ArrayList<>());
 
         Assert.assertEquals(actual, expected);
     }
@@ -292,27 +210,21 @@ public class SplitParserTest {
         SegmentChange segmentChangeSalesPeople = getSegmentChange(-1L, -1L, SALES_PEOPLE);
         Mockito.when(segmentChangeFetcher.fetch(Mockito.anyString(), Mockito.anyLong(), Mockito.any())).thenReturn(segmentChangeEmployee).thenReturn(segmentChangeSalesPeople);
 
-
-        SplitParser parser = new SplitParser();
-
         Matcher ageLessThan10 = ConditionsTestUtil.numericMatcher("user", "age", MatcherType.EQUAL_TO, DataType.NUMBER, 10L, true);
-
-        List<Partition> partitions = Lists.newArrayList(ConditionsTestUtil.partition("on", 100));
-
-        Condition c = ConditionsTestUtil.and(ageLessThan10, partitions);
-
+        Condition c = ConditionsTestUtil.and(ageLessThan10, null);
         List<Condition> conditions = Lists.newArrayList(c);
 
-        Split split = makeSplit("first.name", 123, conditions, 1);
-
-        ParsedSplit actual = parser.parse(split);
+        RuleBasedSegmentParser parser = new RuleBasedSegmentParser();
+        RuleBasedSegment ruleBasedSegment = makeRuleBasedSegment("first.name", conditions, 1);
+        ParsedRuleBasedSegment actual = parser.parse(ruleBasedSegment);
 
         AttributeMatcher equalToMatcher = new AttributeMatcher("age", new EqualToMatcher(10, DataType.NUMBER), true);
         CombiningMatcher combiningMatcher = new CombiningMatcher(MatcherCombiner.AND, Lists.newArrayList(equalToMatcher));
-        ParsedCondition parsedCondition = ParsedCondition.createParsedConditionForTests(combiningMatcher, partitions);
+        ParsedCondition parsedCondition = ParsedCondition.createParsedConditionForTests(combiningMatcher, null);
         List<ParsedCondition> listOfMatcherAndSplits = Lists.newArrayList(parsedCondition);
 
-        ParsedSplit expected = ParsedSplit.createParsedSplitForTests("first.name", 123, false, Treatments.OFF, listOfMatcherAndSplits, "user", 1, 1, new HashSet<>(), false);
+        ParsedRuleBasedSegment expected = ParsedRuleBasedSegment.createParsedRuleBasedSegmentForTests ("first.name",   listOfMatcherAndSplits, "user", 1,
+                new ArrayList<>(), new ArrayList<>());
 
         Assert.assertEquals(actual, expected);
     }
@@ -324,26 +236,21 @@ public class SplitParserTest {
         SegmentChange segmentChangeSalesPeople = getSegmentChange(-1L, -1L, SALES_PEOPLE);
         Mockito.when(segmentChangeFetcher.fetch(Mockito.anyString(), Mockito.anyLong(), Mockito.any())).thenReturn(segmentChangeEmployee).thenReturn(segmentChangeSalesPeople);
 
-        SplitParser parser = new SplitParser();
-
         Matcher equalToNegative10 = ConditionsTestUtil.numericMatcher("user", "age", MatcherType.EQUAL_TO, DataType.NUMBER, -10L, false);
-
-        List<Partition> partitions = Lists.newArrayList(ConditionsTestUtil.partition("on", 100));
-
-        Condition c = ConditionsTestUtil.and(equalToNegative10, partitions);
-
+        Condition c = ConditionsTestUtil.and(equalToNegative10, null);
         List<Condition> conditions = Lists.newArrayList(c);
 
-        Split split = makeSplit("first.name", 123, conditions, 1);
-
-        ParsedSplit actual = parser.parse(split);
+        RuleBasedSegmentParser parser = new RuleBasedSegmentParser();
+        RuleBasedSegment ruleBasedSegment = makeRuleBasedSegment("first.name", conditions, 1);
+        ParsedRuleBasedSegment actual = parser.parse(ruleBasedSegment);
 
         AttributeMatcher ageEqualTo10Logic = new AttributeMatcher("age", new EqualToMatcher(-10, DataType.NUMBER), false);
         CombiningMatcher combiningMatcher = new CombiningMatcher(MatcherCombiner.AND, Lists.newArrayList(ageEqualTo10Logic));
-        ParsedCondition parsedCondition = ParsedCondition.createParsedConditionForTests(combiningMatcher, partitions);
+        ParsedCondition parsedCondition = ParsedCondition.createParsedConditionForTests(combiningMatcher, null);
         List<ParsedCondition> listOfMatcherAndSplits = Lists.newArrayList(parsedCondition);
 
-        ParsedSplit expected = ParsedSplit.createParsedSplitForTests("first.name", 123, false, Treatments.OFF, listOfMatcherAndSplits, "user", 1, 1, new HashSet<>(), false);
+        ParsedRuleBasedSegment expected = ParsedRuleBasedSegment.createParsedRuleBasedSegmentForTests ("first.name",   listOfMatcherAndSplits, "user", 1,
+                new ArrayList<>(), new ArrayList<>());
 
         Assert.assertEquals(actual, expected);
     }
@@ -355,8 +262,6 @@ public class SplitParserTest {
         SegmentChange segmentChangeSalesPeople = getSegmentChange(-1L, -1L, SALES_PEOPLE);
         Mockito.when(segmentChangeFetcher.fetch(Mockito.anyString(), Mockito.anyLong(), Mockito.any())).thenReturn(segmentChangeEmployee).thenReturn(segmentChangeSalesPeople);
 
-        SplitParser parser = new SplitParser();
-
         Matcher ageBetween10And11 = ConditionsTestUtil.betweenMatcher("user",
                 "age",
                 DataType.NUMBER,
@@ -364,22 +269,20 @@ public class SplitParserTest {
                 12,
                 false);
 
-        List<Partition> partitions = Lists.newArrayList(ConditionsTestUtil.partition("on", 100));
-
-        Condition c = ConditionsTestUtil.and(ageBetween10And11, partitions);
-
+        Condition c = ConditionsTestUtil.and(ageBetween10And11, null);
         List<Condition> conditions = Lists.newArrayList(c);
 
-        Split split = makeSplit("first.name", 123, conditions, 1);
-
-        ParsedSplit actual = parser.parse(split);
+        RuleBasedSegmentParser parser = new RuleBasedSegmentParser();
+        RuleBasedSegment ruleBasedSegment = makeRuleBasedSegment("first.name", conditions, 1);
+        ParsedRuleBasedSegment actual = parser.parse(ruleBasedSegment);
 
         AttributeMatcher ageBetween10And11Logic = new AttributeMatcher("age", new BetweenMatcher(10, 12, DataType.NUMBER), false);
         CombiningMatcher combiningMatcher = new CombiningMatcher(MatcherCombiner.AND, Lists.newArrayList(ageBetween10And11Logic));
-        ParsedCondition parsedCondition = ParsedCondition.createParsedConditionForTests(combiningMatcher, partitions);
+        ParsedCondition parsedCondition = ParsedCondition.createParsedConditionForTests(combiningMatcher, null);
         List<ParsedCondition> listOfMatcherAndSplits = Lists.newArrayList(parsedCondition);
 
-        ParsedSplit expected = ParsedSplit.createParsedSplitForTests("first.name", 123, false, Treatments.OFF, listOfMatcherAndSplits, "user", 1, 1, new HashSet<>(), false);
+        ParsedRuleBasedSegment expected = ParsedRuleBasedSegment.createParsedRuleBasedSegmentForTests ("first.name",   listOfMatcherAndSplits, "user", 1,
+                new ArrayList<>(), new ArrayList<>());
 
         Assert.assertEquals(actual, expected);
     }
@@ -388,107 +291,84 @@ public class SplitParserTest {
     public void containsAnyOfSet() {
         ArrayList<String> set = Lists.<String>newArrayList("sms", "voice");
 
-        List<Partition> partitions = Lists.newArrayList(ConditionsTestUtil.partition("on", 100));
-
         Condition c = ConditionsTestUtil.containsAnyOfSet("user",
                 "products",
                 set,
                 false,
-                partitions
+                null
                 );
 
         ContainsAnyOfSetMatcher m = new ContainsAnyOfSetMatcher(set);
-
         setMatcherTest(c, m);
     }
 
     @Test
     public void containsAllOfSet() {
         ArrayList<String> set = Lists.<String>newArrayList("sms", "voice");
-
-        List<Partition> partitions = Lists.newArrayList(ConditionsTestUtil.partition("on", 100));
-
         Condition c = ConditionsTestUtil.containsAllOfSet("user",
                 "products",
                 set,
                 false,
-                partitions
+                null
         );
 
         ContainsAllOfSetMatcher m = new ContainsAllOfSetMatcher(set);
-
         setMatcherTest(c, m);
     }
 
     @Test
     public void equalToSet() {
         ArrayList<String> set = Lists.<String>newArrayList("sms", "voice");
-
-        List<Partition> partitions = Lists.newArrayList(ConditionsTestUtil.partition("on", 100));
-
         Condition c = ConditionsTestUtil.equalToSet("user",
                 "products",
                 set,
                 false,
-                partitions
+                null
         );
 
         EqualToSetMatcher m = new EqualToSetMatcher(set);
-
         setMatcherTest(c, m);
     }
 
     @Test
     public void isPartOfSet() {
         ArrayList<String> set = Lists.<String>newArrayList("sms", "voice");
-
-        List<Partition> partitions = Lists.newArrayList(ConditionsTestUtil.partition("on", 100));
-
         Condition c = ConditionsTestUtil.isPartOfSet("user",
                 "products",
                 set,
                 false,
-                partitions
+                null
         );
 
         PartOfSetMatcher m = new PartOfSetMatcher(set);
-
         setMatcherTest(c, m);
     }
 
     @Test
     public void startsWithString() {
         ArrayList<String> set = Lists.<String>newArrayList("sms", "voice");
-
-        List<Partition> partitions = Lists.newArrayList(ConditionsTestUtil.partition("on", 100));
-
         Condition c = ConditionsTestUtil.startsWithString("user",
                 "products",
                 set,
                 false,
-                partitions
+                null
         );
 
         StartsWithAnyOfMatcher m = new StartsWithAnyOfMatcher(set);
-
         setMatcherTest(c, m);
     }
 
     @Test
     public void endsWithString() {
         ArrayList<String> set = Lists.<String>newArrayList("sms", "voice");
-
-        List<Partition> partitions = Lists.newArrayList(ConditionsTestUtil.partition("on", 100));
-
         Condition c = ConditionsTestUtil.endsWithString("user",
                 "products",
                 set,
                 false,
-                partitions
+                null
         );
 
         EndsWithAnyOfMatcher m = new EndsWithAnyOfMatcher(set);
-
         setMatcherTest(c, m);
     }
 
@@ -496,35 +376,29 @@ public class SplitParserTest {
     @Test
     public void containsString() {
         ArrayList<String> set = Lists.<String>newArrayList("sms", "voice");
-
-        List<Partition> partitions = Lists.newArrayList(ConditionsTestUtil.partition("on", 100));
-
         Condition c = ConditionsTestUtil.containsString("user",
                 "products",
                 set,
                 false,
-                partitions
+                null
         );
 
         ContainsAnyOfMatcher m = new ContainsAnyOfMatcher(set);
-
         setMatcherTest(c, m);
     }
 
     @Test
     public void UnsupportedMatcher() {
-        SplitParser parser = new SplitParser();
-        String splitWithUndefinedMatcher = "{\"since\":-1,\"till\": 1457726098069,\"splits\": [{ \"changeNumber\": 123, \"trafficTypeName\": \"user\", \"name\": \"some_name\","
-                + "\"trafficAllocation\": 100, \"trafficAllocationSeed\": 123456, \"seed\": 321654, \"status\": \"ACTIVE\","
-                + "\"killed\": false, \"defaultTreatment\": \"off\", \"algo\": 2,\"conditions\": [{ \"partitions\": ["
-                + "{\"treatment\": \"on\", \"size\": 50}, {\"treatment\": \"off\", \"size\": 50}], \"contitionType\": \"ROLLOUT\","
+        RuleBasedSegmentParser parser = new RuleBasedSegmentParser();
+        String splitWithUndefinedMatcher = "{\"ff\":{\"s\":-1,\"t\":-1,\"d\":[]},\"rbs\":{\"s\":-1,\"t\":1457726098069,\"d\":[{ \"changeNumber\": 123, \"trafficTypeName\": \"user\", \"name\": \"some_name\","
+                + "\"status\": \"ACTIVE\",\"conditions\": [{\"contitionType\": \"ROLLOUT\","
                 + "\"label\": \"some_label\", \"matcherGroup\": { \"matchers\": [{ \"matcherType\": \"UNKNOWN\", \"negate\": false}],"
-                + "\"combiner\": \"AND\"}}], \"sets\": [\"set1\"]}]}";
-        SplitChange change = Json.fromJson(splitWithUndefinedMatcher, SplitChange.class);
-        for (Split split : change.splits) {
+                + "\"combiner\": \"AND\"}}],\"excluded\":{\"keys\":[],\"segments\":[]}}]}}";
+        SplitChange change = GenericClientUtil.ExtractFeatureFlagsAndRuleBasedSegments(splitWithUndefinedMatcher);
+        for (RuleBasedSegment ruleBasedSegment : change.ruleBasedSegments) {
             // should not cause exception
-            ParsedSplit parsedSplit = parser.parse(split);
-            for (ParsedCondition parsedCondition : parsedSplit.parsedConditions()) {
+            ParsedRuleBasedSegment parsedRuleBasedSegment = parser.parse(ruleBasedSegment);
+            for (ParsedCondition parsedCondition : parsedRuleBasedSegment.parsedConditions()) {
                 assertTrue(parsedCondition.label() == Labels.UNSUPPORTED_MATCHER);
                 for (AttributeMatcher matcher : parsedCondition.matcher().attributeMatchers()) {
                     // Check the matcher is ALL_KEYS
@@ -536,14 +410,14 @@ public class SplitParserTest {
 
     @Test
     public void EqualToSemverMatcher() throws IOException {
-        SplitParser parser = new SplitParser();
+        RuleBasedSegmentParser parser = new RuleBasedSegmentParser();
         String load = new String(Files.readAllBytes(Paths.get("src/test/resources/semver/semver-splits.json")), StandardCharsets.UTF_8);
         SplitChange change = GenericClientUtil.ExtractFeatureFlagsAndRuleBasedSegments(load);
-        for (Split split : change.splits) {
+        for (RuleBasedSegment ruleBasedSegment : change.ruleBasedSegments) {
             // should not cause exception
-            ParsedSplit parsedSplit = parser.parse(split);
-            if (split.name.equals("semver_equalto")) {
-                for (ParsedCondition parsedCondition : parsedSplit.parsedConditions()) {
+            ParsedRuleBasedSegment parsedRuleBasedSegment = parser.parse(ruleBasedSegment);
+            if (ruleBasedSegment.name.equals("rbs_semver_equalto")) {
+                for (ParsedCondition parsedCondition : parsedRuleBasedSegment.parsedConditions()) {
                     assertTrue(parsedCondition.label().equals("equal to semver"));
                     for (AttributeMatcher matcher : parsedCondition.matcher().attributeMatchers()) {
                         // Check the matcher is ALL_KEYS
@@ -558,14 +432,14 @@ public class SplitParserTest {
 
     @Test
     public void GreaterThanOrEqualSemverMatcher() throws IOException {
-        SplitParser parser = new SplitParser();
+        RuleBasedSegmentParser parser = new RuleBasedSegmentParser();
         String load = new String(Files.readAllBytes(Paths.get("src/test/resources/semver/semver-splits.json")), StandardCharsets.UTF_8);
         SplitChange change = GenericClientUtil.ExtractFeatureFlagsAndRuleBasedSegments(load);
-        for (Split split : change.splits) {
+        for (RuleBasedSegment ruleBasedSegment : change.ruleBasedSegments) {
             // should not cause exception
-            ParsedSplit parsedSplit = parser.parse(split);
-            if (split.name.equals("semver_greater_or_equalto")) {
-                for (ParsedCondition parsedCondition : parsedSplit.parsedConditions()) {
+            ParsedRuleBasedSegment parsedRuleBasedSegment = parser.parse(ruleBasedSegment);
+            if (ruleBasedSegment.name.equals("rbs_semver_greater_or_equalto")) {
+                for (ParsedCondition parsedCondition : parsedRuleBasedSegment.parsedConditions()) {
                     assertTrue(parsedCondition.label().equals("greater than or equal to semver"));
                     for (AttributeMatcher matcher : parsedCondition.matcher().attributeMatchers()) {
                         // Check the matcher is ALL_KEYS
@@ -580,14 +454,14 @@ public class SplitParserTest {
 
     @Test
     public void LessThanOrEqualSemverMatcher() throws IOException {
-        SplitParser parser = new SplitParser();
+        RuleBasedSegmentParser parser = new RuleBasedSegmentParser();
         String load = new String(Files.readAllBytes(Paths.get("src/test/resources/semver/semver-splits.json")), StandardCharsets.UTF_8);
         SplitChange change = GenericClientUtil.ExtractFeatureFlagsAndRuleBasedSegments(load);
-        for (Split split : change.splits) {
+        for (RuleBasedSegment ruleBasedSegment : change.ruleBasedSegments) {
             // should not cause exception
-            ParsedSplit parsedSplit = parser.parse(split);
-            if (split.name.equals("semver_less_or_equalto")) {
-                for (ParsedCondition parsedCondition : parsedSplit.parsedConditions()) {
+            ParsedRuleBasedSegment parsedRuleBasedSegment = parser.parse(ruleBasedSegment);
+            if (ruleBasedSegment.name.equals("rbs_semver_less_or_equalto")) {
+                for (ParsedCondition parsedCondition : parsedRuleBasedSegment.parsedConditions()) {
                     assertTrue(parsedCondition.label().equals("less than or equal to semver"));
                     for (AttributeMatcher matcher : parsedCondition.matcher().attributeMatchers()) {
                         // Check the matcher is ALL_KEYS
@@ -602,14 +476,14 @@ public class SplitParserTest {
 
     @Test
     public void BetweenSemverMatcher() throws IOException {
-        SplitParser parser = new SplitParser();
+        RuleBasedSegmentParser parser = new RuleBasedSegmentParser();
         String load = new String(Files.readAllBytes(Paths.get("src/test/resources/semver/semver-splits.json")), StandardCharsets.UTF_8);
         SplitChange change = GenericClientUtil.ExtractFeatureFlagsAndRuleBasedSegments(load);
-        for (Split split : change.splits) {
+        RuleBasedSegmentsToUpdate ruleBasedSegmentsToUpdate = processRuleBasedSegmentChanges(parser, change.ruleBasedSegments);
+        for (ParsedRuleBasedSegment parsedRuleBasedSegment : ruleBasedSegmentsToUpdate.getToAdd()) {
             // should not cause exception
-            ParsedSplit parsedSplit = parser.parse(split);
-            if (split.name.equals("semver_between")) {
-                for (ParsedCondition parsedCondition : parsedSplit.parsedConditions()) {
+            if (parsedRuleBasedSegment.ruleBasedSegment().equals("rbs_semver_between")) {
+                for (ParsedCondition parsedCondition : parsedRuleBasedSegment.parsedConditions()) {
                     assertTrue(parsedCondition.label().equals("between semver"));
                     for (AttributeMatcher matcher : parsedCondition.matcher().attributeMatchers()) {
                         // Check the matcher is ALL_KEYS
@@ -624,14 +498,14 @@ public class SplitParserTest {
 
     @Test
     public void InListSemverMatcher() throws IOException {
-        SplitParser parser = new SplitParser();
+        RuleBasedSegmentParser parser = new RuleBasedSegmentParser();
         String load = new String(Files.readAllBytes(Paths.get("src/test/resources/semver/semver-splits.json")), StandardCharsets.UTF_8);
         SplitChange change = GenericClientUtil.ExtractFeatureFlagsAndRuleBasedSegments(load);
-        for (Split split : change.splits) {
+        for (RuleBasedSegment ruleBasedSegment : change.ruleBasedSegments) {
             // should not cause exception
-            ParsedSplit parsedSplit = parser.parse(split);
-            if (split.name.equals("semver_inlist")) {
-                for (ParsedCondition parsedCondition : parsedSplit.parsedConditions()) {
+            ParsedRuleBasedSegment parsedRuleBasedSegment = parser.parse(ruleBasedSegment);
+            if (ruleBasedSegment.name.equals("rbs_semver_inlist")) {
+                for (ParsedCondition parsedCondition : parsedRuleBasedSegment.parsedConditions()) {
                     assertTrue(parsedCondition.label().equals("in list semver"));
                     for (AttributeMatcher matcher : parsedCondition.matcher().attributeMatchers()) {
                         // Check the matcher is ALL_KEYS
@@ -644,80 +518,43 @@ public class SplitParserTest {
         assertTrue(false);
     }
 
-    @Test
-    public void ImpressionToggleParseTest() throws IOException {
-        SplitParser parser = new SplitParser();
-        String load = new String(Files.readAllBytes(Paths.get("src/test/resources/splits_imp_toggle.json")), StandardCharsets.UTF_8);
-        SplitChange change = GenericClientUtil.ExtractFeatureFlagsAndRuleBasedSegments(load);
-        boolean check1 = false, check2 = false, check3 = false;
-        for (Split split : change.splits) {
-            ParsedSplit parsedSplit = parser.parse(split);
-            if (split.name.equals("without_impression_toggle")) {
-                assertFalse(parsedSplit.impressionsDisabled());
-                check1 = true;
-            }
-            if (split.name.equals("impression_toggle_on")) {
-                assertFalse(parsedSplit.impressionsDisabled());
-                check2 = true;
-            }
-            if (split.name.equals("impression_toggle_off")) {
-                assertTrue(parsedSplit.impressionsDisabled());
-                check3 = true;
-            }
-        }
-        assertTrue(check1);
-        assertTrue(check2);
-        assertTrue(check3);
-    }
-
     public void setMatcherTest(Condition c, io.split.engine.matchers.Matcher m) {
-
         SegmentChangeFetcher segmentChangeFetcher = Mockito.mock(SegmentChangeFetcher.class);
         SegmentChange segmentChangeEmployee = getSegmentChange(-1L, -1L, EMPLOYEES);
         SegmentChange segmentChangeSalesPeople = getSegmentChange(-1L, -1L, SALES_PEOPLE);
         Mockito.when(segmentChangeFetcher.fetch(Mockito.anyString(), Mockito.anyLong(), Mockito.any())).thenReturn(segmentChangeEmployee).thenReturn(segmentChangeSalesPeople);
 
-        SplitParser parser = new SplitParser();
-
         ArrayList<String> set = Lists.<String>newArrayList("sms", "voice");
-
-        List<Partition> partitions = Lists.newArrayList(ConditionsTestUtil.partition("on", 100));
-
-
         List<Condition> conditions = Lists.newArrayList(c);
 
-        Split split = makeSplit("splitName", 123, conditions, 1);
-
-        ParsedSplit actual = parser.parse(split);
+        RuleBasedSegmentParser parser = new RuleBasedSegmentParser();
+        RuleBasedSegment ruleBasedSegment = makeRuleBasedSegment("first.name", conditions, 1);
+        ParsedRuleBasedSegment actual = parser.parse(ruleBasedSegment);
 
         AttributeMatcher attrMatcher = new AttributeMatcher("products", m, false);
         CombiningMatcher combiningMatcher = new CombiningMatcher(MatcherCombiner.AND, Lists.newArrayList(attrMatcher));
-        ParsedCondition parsedCondition = ParsedCondition.createParsedConditionForTests(combiningMatcher, partitions);
+        ParsedCondition parsedCondition = ParsedCondition.createParsedConditionForTests(combiningMatcher, null);
         List<ParsedCondition> listOfMatcherAndSplits = Lists.newArrayList(parsedCondition);
 
-        ParsedSplit expected = ParsedSplit.createParsedSplitForTests("splitName", 123, false, Treatments.OFF, listOfMatcherAndSplits, "user", 1, 1, new HashSet<>(), false);
+        ParsedRuleBasedSegment expected = ParsedRuleBasedSegment.createParsedRuleBasedSegmentForTests ("first.name",   listOfMatcherAndSplits, "user", 1,
+                new ArrayList<>(), new ArrayList<>());
 
         Assert.assertEquals(actual, expected);
     }
 
-    private Split makeSplit(String name, int seed, List<Condition> conditions, long changeNumber) {
-        return makeSplit(name, seed, conditions, changeNumber, null);
-    }
+    private RuleBasedSegment makeRuleBasedSegment(String name, List<Condition> conditions, long changeNumber) {
+        Excluded excluded = new Excluded();
+        excluded.segments = new ArrayList<>();
+        excluded.keys = new ArrayList<>();
 
-    private Split makeSplit(String name, int seed, List<Condition> conditions, long changeNumber, Map<String, String> configurations) {
-        Split split = new Split();
-        split.name = name;
-        split.seed = seed;
-        split.trafficAllocation = 100;
-        split.trafficAllocationSeed = seed;
-        split.status = Status.ACTIVE;
-        split.conditions = conditions;
-        split.defaultTreatment = Treatments.OFF;
-        split.trafficTypeName = "user";
-        split.changeNumber = changeNumber;
-        split.algo = 1;
-        split.configurations = configurations;
-        return split;
+        RuleBasedSegment ruleBasedSegment = new RuleBasedSegment();
+        ruleBasedSegment.name = name;
+        ruleBasedSegment.status = Status.ACTIVE;
+        ruleBasedSegment.conditions = conditions;
+        ruleBasedSegment.trafficTypeName = "user";
+        ruleBasedSegment.changeNumber = changeNumber;
+        ruleBasedSegment.excluded = excluded;
+        return ruleBasedSegment;
     }
 
     private SegmentChange getSegmentChange(long since, long till, String segmentName){

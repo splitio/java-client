@@ -34,7 +34,7 @@ public class LegacyLocalhostSplitChangeFetcher implements SplitChangeFetcher {
     }
 
     @Override
-    public SplitChange fetch(long since, FetchOptions options) {
+    public SplitChange fetch(long since, long sinceRBS, FetchOptions options) {
 
         try (BufferedReader reader = new BufferedReader(new FileReader(_splitFile))) {
             SplitChange splitChange = new SplitChange();

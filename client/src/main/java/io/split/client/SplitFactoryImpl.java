@@ -54,6 +54,7 @@ import io.split.engine.experiments.SplitFetcher;
 import io.split.engine.experiments.SplitFetcherImp;
 import io.split.engine.experiments.SplitParser;
 import io.split.engine.experiments.SplitSynchronizationTask;
+import io.split.engine.experiments.RuleBasedSegmentParser;
 import io.split.engine.segments.SegmentChangeFetcher;
 import io.split.engine.segments.SegmentSynchronizationTaskImp;
 import io.split.integrations.IntegrationsConfig;
@@ -68,6 +69,7 @@ import io.split.storages.SplitCacheConsumer;
 import io.split.storages.SplitCacheProducer;
 import io.split.storages.RuleBasedSegmentCacheConsumer;
 import io.split.storages.RuleBasedSegmentCache;
+import io.split.storages.RuleBasedSegmentCacheProducer;
 import io.split.storages.enums.OperationMode;
 import io.split.storages.memory.InMemoryCacheImp;
 import io.split.storages.memory.SegmentCacheInMemoryImpl;
@@ -220,8 +222,10 @@ public class SplitFactoryImpl implements SplitFactory {
 
 
         SplitParser splitParser = new SplitParser();
+        RuleBasedSegmentParser ruleBasedSegmentParser = new RuleBasedSegmentParser();
         // SplitFetcher
-        _splitFetcher = buildSplitFetcher(splitCache, splitParser, flagSetsFilter);
+        _splitFetcher = buildSplitFetcher(splitCache, splitParser, flagSetsFilter,
+                ruleBasedSegmentParser, ruleBasedSegmentCache);
 
         // SplitSynchronizationTask
         _splitSynchronizationTask = new SplitSynchronizationTask(_splitFetcher,
@@ -422,9 +426,10 @@ public class SplitFactoryImpl implements SplitFactory {
         // SplitFetcher
         SplitChangeFetcher splitChangeFetcher = createSplitChangeFetcher(config);
         SplitParser splitParser = new SplitParser();
+        RuleBasedSegmentParser ruleBasedSegmentParser = new RuleBasedSegmentParser();
 
         _splitFetcher = new SplitFetcherImp(splitChangeFetcher, splitParser, splitCache, _telemetryStorageProducer,
-                flagSetsFilter);
+                flagSetsFilter, ruleBasedSegmentParser, _ruleBasedSegmentCache);
 
         // SplitSynchronizationTask
         _splitSynchronizationTask = new SplitSynchronizationTask(_splitFetcher, splitCache,
@@ -617,11 +622,12 @@ public class SplitFactoryImpl implements SplitFactory {
     }
 
     private SplitFetcher buildSplitFetcher(SplitCacheProducer splitCacheProducer, SplitParser splitParser,
-            FlagSetsFilter flagSetsFilter) throws URISyntaxException {
+            FlagSetsFilter flagSetsFilter, RuleBasedSegmentParser ruleBasedSegmentParser,
+           RuleBasedSegmentCacheProducer ruleBasedSegmentCache) throws URISyntaxException {
         SplitChangeFetcher splitChangeFetcher = HttpSplitChangeFetcher.create(_splitHttpClient, _rootTarget,
                 _telemetryStorageProducer);
         return new SplitFetcherImp(splitChangeFetcher, splitParser, splitCacheProducer, _telemetryStorageProducer,
-                flagSetsFilter);
+                flagSetsFilter, ruleBasedSegmentParser, ruleBasedSegmentCache);
     }
 
     private ImpressionsManagerImpl buildImpressionsManager(SplitClientConfig config,

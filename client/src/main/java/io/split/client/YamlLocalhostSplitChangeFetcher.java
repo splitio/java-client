@@ -32,7 +32,7 @@ public class YamlLocalhostSplitChangeFetcher implements SplitChangeFetcher {
     }
 
     @Override
-    public SplitChange fetch(long since, FetchOptions options) {
+    public SplitChange fetch(long since, long sinceRBS, FetchOptions options) {
         try {
             Yaml yaml = new Yaml();
             List<Map<String, Map<String, Object>>> yamlSplits = yaml.load(_inputStreamProvider.get());
