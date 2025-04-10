@@ -75,7 +75,7 @@ public class RuleBasedSegmentCacheInMemoryImp implements RuleBasedSegmentCache {
         _concurrentMap.clear();
     }
 
-    public void putMany(List<ParsedRuleBasedSegment> ruleBasedSegments) {
+    private void putMany(List<ParsedRuleBasedSegment> ruleBasedSegments) {
         for (ParsedRuleBasedSegment ruleBasedSegment : ruleBasedSegments) {
             _concurrentMap.put(ruleBasedSegment.ruleBasedSegment(), ruleBasedSegment);
         }
