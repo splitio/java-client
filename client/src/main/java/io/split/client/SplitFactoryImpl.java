@@ -67,7 +67,6 @@ import io.split.storages.SegmentCacheProducer;
 import io.split.storages.SplitCache;
 import io.split.storages.SplitCacheConsumer;
 import io.split.storages.SplitCacheProducer;
-import io.split.storages.RuleBasedSegmentCacheConsumer;
 import io.split.storages.RuleBasedSegmentCache;
 import io.split.storages.RuleBasedSegmentCacheProducer;
 import io.split.storages.enums.OperationMode;
