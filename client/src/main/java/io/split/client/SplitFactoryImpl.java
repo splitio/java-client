@@ -80,6 +80,7 @@ import io.split.storages.pluggable.adapters.UserCustomImpressionAdapterProducer;
 import io.split.storages.pluggable.adapters.UserCustomSegmentAdapterConsumer;
 import io.split.storages.pluggable.adapters.UserCustomSplitAdapterConsumer;
 import io.split.storages.pluggable.adapters.UserCustomTelemetryAdapterProducer;
+import io.split.storages.pluggable.adapters.UserCustomRuleBasedSegmentAdapterConsumer;
 import io.split.storages.pluggable.domain.UserStorageWrapper;
 import io.split.storages.pluggable.synchronizer.TelemetryConsumerSubmitter;
 import io.split.telemetry.storage.InMemoryTelemetryStorage;
@@ -342,8 +343,8 @@ public class SplitFactoryImpl implements SplitFactory {
         _gates = new SDKReadinessGates();
 
         _telemetrySynchronizer = new TelemetryConsumerSubmitter(customStorageWrapper, _sdkMetadata);
-        // TODO Update the instance to UserCustomRuleBasedSegmentAdapterConsumer
-        RuleBasedSegmentCacheConsumer userCustomRuleBasedSegmentAdapterConsumer = new RuleBasedSegmentCacheInMemoryImp();
+        UserCustomRuleBasedSegmentAdapterConsumer userCustomRuleBasedSegmentAdapterConsumer =
+                new UserCustomRuleBasedSegmentAdapterConsumer(customStorageWrapper);
         _evaluator = new EvaluatorImp(userCustomSplitAdapterConsumer, userCustomSegmentAdapterConsumer, userCustomRuleBasedSegmentAdapterConsumer);
         _impressionsSender = PluggableImpressionSender.create(customStorageWrapper);
         _uniqueKeysTracker = createUniqueKeysTracker(config);
