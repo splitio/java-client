@@ -73,6 +73,9 @@ public class YamlLocalhostSplitChangeFetcher implements SplitChangeFetcher {
             }
             splitChange.till = since;
             splitChange.since = since;
+            splitChange.sinceRBS = -1;
+            splitChange.tillRBS = -1;
+            splitChange.ruleBasedSegments = new ArrayList<>();
             return splitChange;
         } catch (Exception e) {
             throw new IllegalStateException("Problem fetching splitChanges using a yaml file: " + e.getMessage(), e);

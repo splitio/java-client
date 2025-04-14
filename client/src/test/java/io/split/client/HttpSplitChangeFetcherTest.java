@@ -19,8 +19,8 @@ import org.apache.hc.core5.http.ClassicHttpResponse;
 import org.apache.hc.core5.http.Header;
 import org.apache.hc.core5.http.HttpEntity;
 import org.apache.hc.core5.http.HttpStatus;
-import org.apache.hc.core5.net.URIAuthority;
 import org.junit.Assert;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mockito;
@@ -31,7 +31,6 @@ import java.lang.reflect.InvocationTargetException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.nio.charset.StandardCharsets;
-import java.sql.Array;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -117,7 +116,8 @@ public class HttpSplitChangeFetcherTest {
 
         HttpEntity entityMock = Mockito.mock(HttpEntity.class);
         when(entityMock.getContent())
-                .thenReturn(new ByteArrayInputStream("{\"till\": 1}".getBytes(StandardCharsets.UTF_8)));
+                .thenReturn(new ByteArrayInputStream("{\"ff\":{\"t\": 1,\"s\": -1,\"d\": []},\"rbs\":{\"t\": -1,\"s\": -1,\"d\": []}}".
+                        getBytes(StandardCharsets.UTF_8)));
         ClassicHttpResponse response = Mockito.mock(ClassicHttpResponse.class);
         when(response.getCode()).thenReturn(200);
         when(response.getEntity()).thenReturn(entityMock);
@@ -137,8 +137,8 @@ public class HttpSplitChangeFetcherTest {
         fetcher.fetch(-1, -1, new FetchOptions.Builder().build());
         List<ClassicHttpRequest> captured = requestCaptor.getAllValues();
         Assert.assertEquals(captured.size(), 2);
-        Assert.assertTrue(captured.get(0).getUri().toString().contains("till=123"));
-        Assert.assertFalse(captured.get(1).getUri().toString().contains("till="));
+        Assert.assertTrue(captured.get(0).getUri().toString().contains("t=123"));
+        Assert.assertFalse(captured.get(1).getUri().toString().contains("t="));
     }
 
     @Test
@@ -193,6 +193,8 @@ public class HttpSplitChangeFetcherTest {
         fetcher.fetch(-1, -1, new FetchOptions.Builder().flagSetsFilter(result).cacheControlHeaders(false).build());
     }
 
+    // TODO: enable when switching to old spec is added
+    @Ignore
     @Test
     public void testSwitchingToOldSpec() throws URISyntaxException, InvocationTargetException,
             NoSuchMethodException, IllegalAccessException, IOException {

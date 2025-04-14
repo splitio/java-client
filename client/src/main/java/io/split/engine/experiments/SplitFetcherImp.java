@@ -19,7 +19,7 @@ import java.util.Set;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 import static io.split.client.utils.FeatureFlagProcessor.processFeatureFlagChanges;
-import static io.split.client.utils.FeatureFlagProcessor.processRuleBasedSegmentChanges;
+import static io.split.client.utils.RuleBasedSegmentProcessor.processRuleBasedSegmentChanges;
 
 /**
  * An ExperimentFetcher that refreshes experiment definitions periodically.
@@ -80,16 +80,14 @@ public class SplitFetcherImp implements SplitFetcher {
                 // If the previous execution was the first one, clear the `cdnBypass` flag
                 // for the next fetches. (This will clear a local copy of the fetch options,
                 // not the original object that was passed to this method).
-                if (((INITIAL_CN == start || RBS_INITIAL_CN == startRBS) && Spec.SPEC_VERSION.equals(Spec.SPEC_1_3)) ||
-                        (INITIAL_CN == start && Spec.SPEC_VERSION.equals(Spec.SPEC_1_1))) {
+                if (INITIAL_CN == start || RBS_INITIAL_CN == startRBS) {
                     if (INITIAL_CN == start) targetChaneNumber = FetchOptions.DEFAULT_TARGET_CHANGENUMBER;
                     if (RBS_INITIAL_CN == startRBS) targetChaneNumberRBS = FetchOptions.DEFAULT_TARGET_CHANGENUMBER;
                     options = new FetchOptions.Builder(options).targetChangeNumber(targetChaneNumber).
                             targetChangeNumberRBS(targetChaneNumberRBS).build();
                 }
 
-                if ((start >= end && startRBS >= endRBS && Spec.SPEC_VERSION.equals(Spec.SPEC_1_3)) ||
-                        (start >= end && Spec.SPEC_VERSION.equals(Spec.SPEC_1_1))) {
+                if (start >= end && startRBS >= endRBS) {
                     return new FetchResult(true, false, segments);
                 }
             }
@@ -101,7 +99,6 @@ public class SplitFetcherImp implements SplitFetcher {
             return new FetchResult(false, true, new HashSet<>());
         } catch (Exception e) {
             _log.error("RefreshableSplitFetcher failed: " + e.getMessage());
-            _log.error("Reason:", e);
             if (_log.isDebugEnabled()) {
                 _log.debug("Reason:", e);
             }
@@ -127,13 +124,11 @@ public class SplitFetcherImp implements SplitFetcher {
             return segments;
         }
 
-        if ((Spec.SPEC_VERSION.equals(Spec.SPEC_1_3) && (change.splits.isEmpty() || change.ruleBasedSegments.isEmpty())) ||
-                (change.splits.isEmpty() && Spec.SPEC_VERSION.equals(Spec.SPEC_1_1))) {
+        if (change.splits.isEmpty() || change.ruleBasedSegments.isEmpty()) {
             if (change.splits.isEmpty()) _splitCacheProducer.setChangeNumber(change.till);
-            if (Spec.SPEC_VERSION.equals(Spec.SPEC_1_3) && change.ruleBasedSegments.isEmpty())
+            if (change.ruleBasedSegments.isEmpty())
                 _ruleBasedSegmentCacheProducer.setChangeNumber(change.tillRBS);
-            if (Spec.SPEC_VERSION.equals(Spec.SPEC_1_3) && (change.splits.isEmpty() && change.ruleBasedSegments.isEmpty()) ||
-                    (change.splits.isEmpty() && Spec.SPEC_VERSION.equals(Spec.SPEC_1_1))) return segments;
+            if (change.splits.isEmpty() && change.ruleBasedSegments.isEmpty()) return segments;
         }
 
         synchronized (_lock) {
@@ -146,33 +141,23 @@ public class SplitFetcherImp implements SplitFetcher {
             segments = featureFlagsToUpdate.getSegments();
             _splitCacheProducer.update(featureFlagsToUpdate.getToAdd(), featureFlagsToUpdate.getToRemove(), change.till);
 
-            if (Spec.SPEC_VERSION.equals(Spec.SPEC_1_3)) {
-                RuleBasedSegmentsToUpdate ruleBasedSegmentsToUpdate = processRuleBasedSegmentChanges(_parserRBS, change.ruleBasedSegments);
-                segments = ruleBasedSegmentsToUpdate.getSegments();
-                _ruleBasedSegmentCacheProducer.update(ruleBasedSegmentsToUpdate.getToAdd(), ruleBasedSegmentsToUpdate.getToRemove(), change.tillRBS);
-            }
+            RuleBasedSegmentsToUpdate ruleBasedSegmentsToUpdate = processRuleBasedSegmentChanges(_parserRBS, change.ruleBasedSegments);
+            segments.addAll(ruleBasedSegmentsToUpdate.getSegments());
+            _ruleBasedSegmentCacheProducer.update(ruleBasedSegmentsToUpdate.getToAdd(), ruleBasedSegmentsToUpdate.getToRemove(), change.tillRBS);
             _telemetryRuntimeProducer.recordSuccessfulSync(LastSynchronizationRecordsEnum.SPLITS, System.currentTimeMillis());
         }
         return segments;
     }
 
     private boolean checkExitConditions(SplitChange change) {
-        if (Spec.SPEC_VERSION.equals(Spec.SPEC_1_3)) {
-            return ((change.since != _splitCacheProducer.getChangeNumber() || change.till < _splitCacheProducer.getChangeNumber())
+        return ((change.since != _splitCacheProducer.getChangeNumber() || change.till < _splitCacheProducer.getChangeNumber())
                 || (change.sinceRBS != _ruleBasedSegmentCacheProducer.getChangeNumber() ||
                     change.tillRBS < _ruleBasedSegmentCacheProducer.getChangeNumber()));
-        } else {
-            return (change.since != _splitCacheProducer.getChangeNumber() || change.till < _splitCacheProducer.getChangeNumber());
-        }
     }
 
     private boolean checkReturnConditions(SplitChange change) {
-        if (Spec.SPEC_VERSION.equals(Spec.SPEC_1_3)) {
-            return ((change.since != _splitCacheProducer.getChangeNumber() || change.till < _splitCacheProducer.getChangeNumber()) &&
+        return ((change.since != _splitCacheProducer.getChangeNumber() || change.till < _splitCacheProducer.getChangeNumber()) &&
                     (change.sinceRBS != _ruleBasedSegmentCacheProducer.getChangeNumber() ||
                             change.tillRBS < _ruleBasedSegmentCacheProducer.getChangeNumber()));
-        } else {
-            return (change.since != _splitCacheProducer.getChangeNumber() || change.till < _splitCacheProducer.getChangeNumber());
-        }
     }
 }

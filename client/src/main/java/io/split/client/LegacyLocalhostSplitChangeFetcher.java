@@ -82,6 +82,9 @@ public class LegacyLocalhostSplitChangeFetcher implements SplitChangeFetcher {
             }
             splitChange.till = since;
             splitChange.since = since;
+            splitChange.sinceRBS = -1;
+            splitChange.tillRBS = -1;
+            splitChange.ruleBasedSegments = new ArrayList<>();
             return splitChange;
         } catch (FileNotFoundException f) {
             _log.warn("There was no file named " + _splitFile.getPath() + " found. " +

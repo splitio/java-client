@@ -1,7 +1,6 @@
 package io.split.engine.experiments;
 
 import com.google.common.collect.Lists;
-import io.split.Spec;
 import io.split.client.interceptors.FlagSetsFilter;
 import io.split.client.interceptors.FlagSetsFilterImpl;
 import io.split.storages.RuleBasedSegmentCacheProducer;
@@ -74,7 +73,6 @@ public class SplitFetcherTest {
         SplitCache cache = new InMemoryCacheImp(startingChangeNumber, FLAG_SETS_FILTER);
         RuleBasedSegmentCacheProducer ruleBasedSegmentCacheProducer = new RuleBasedSegmentCacheInMemoryImp();
         RuleBasedSegmentParser ruleBasedSegmentParser = new RuleBasedSegmentParser();
-        Spec.SPEC_VERSION = Spec.SPEC_1_1; // check old spec
 
         SplitFetcherImp fetcher = new SplitFetcherImp(splitChangeFetcher, new SplitParser(), cache, TELEMETRY_STORAGE, FLAG_SETS_FILTER,
             ruleBasedSegmentParser, ruleBasedSegmentCacheProducer);
@@ -112,6 +110,9 @@ public class SplitFetcherTest {
         validReturn.splits = Lists.newArrayList(validSplit);
         validReturn.since = -1L;
         validReturn.till = 0L;
+        validReturn.tillRBS = -1;
+        validReturn.sinceRBS = -1;
+        validReturn.ruleBasedSegments = new ArrayList<>();
 
         MatcherGroup invalidMatcherGroup = new MatcherGroup();
         invalidMatcherGroup.matchers = Lists.<Matcher>newArrayList();
@@ -131,11 +132,17 @@ public class SplitFetcherTest {
         invalidReturn.splits = Lists.newArrayList(invalidSplit);
         invalidReturn.since = 0L;
         invalidReturn.till = 1L;
+        invalidReturn.tillRBS = -1;
+        invalidReturn.sinceRBS = -1;
+        invalidReturn.ruleBasedSegments = new ArrayList<>();
 
         SplitChange noReturn = new SplitChange();
         noReturn.splits = Lists.<Split>newArrayList();
         noReturn.since = 1L;
         noReturn.till = 1L;
+        noReturn.tillRBS = -1;
+        noReturn.sinceRBS = -1;
+        noReturn.ruleBasedSegments = new ArrayList<>();
 
         SplitChangeFetcher splitChangeFetcher = mock(SplitChangeFetcher.class);
         when(splitChangeFetcher.fetch(Mockito.eq(-1L), Mockito.eq(-1L), Mockito.any())).thenReturn(validReturn);
@@ -146,7 +153,6 @@ public class SplitFetcherTest {
         SplitCache cache = new InMemoryCacheImp(-1, FLAG_SETS_FILTER);
         RuleBasedSegmentCacheProducer ruleBasedSegmentCacheProducer = new RuleBasedSegmentCacheInMemoryImp();
         RuleBasedSegmentParser ruleBasedSegmentParser = new RuleBasedSegmentParser();
-        Spec.SPEC_VERSION = Spec.SPEC_1_1; // check old spec
 
         SegmentChangeFetcher segmentChangeFetcher = mock(SegmentChangeFetcher.class);
         SegmentSynchronizationTask segmentSynchronizationTask = new SegmentSynchronizationTaskImp(segmentChangeFetcher, 1,10, segmentCache, TELEMETRY_STORAGE, cache, null);
@@ -203,6 +209,9 @@ public class SplitFetcherTest {
         validReturn.splits = Lists.newArrayList(featureFlag1);
         validReturn.since = -1L;
         validReturn.till = 0L;
+        validReturn.tillRBS = -1;
+        validReturn.sinceRBS = -1;
+        validReturn.ruleBasedSegments = new ArrayList<>();
 
         SplitChangeFetcher splitChangeFetcher = mock(SplitChangeFetcher.class);
         when(splitChangeFetcher.fetch(Mockito.eq(-1L), Mockito.eq(-1L), Mockito.any())).thenReturn(validReturn);
@@ -224,6 +233,9 @@ public class SplitFetcherTest {
         validReturn.splits = Lists.newArrayList(featureFlag1);
         validReturn.since = 0L;
         validReturn.till = 1L;
+        validReturn.tillRBS = -1;
+        validReturn.sinceRBS = -1;
+        validReturn.ruleBasedSegments = new ArrayList<>();
 
         when(splitChangeFetcher.fetch(Mockito.eq(0L), Mockito.eq(-1L), Mockito.any())).thenReturn(validReturn);
 
@@ -291,7 +303,6 @@ public class SplitFetcherTest {
         SplitCache mockCache = new InMemoryCacheImp(FLAG_SETS_FILTER);
         RuleBasedSegmentCacheProducer ruleBasedSegmentCacheProducer = new RuleBasedSegmentCacheInMemoryImp();
         RuleBasedSegmentParser ruleBasedSegmentParser = new RuleBasedSegmentParser();
-        Spec.SPEC_VERSION = Spec.SPEC_1_1; // check old spec
         SplitFetcherImp fetcher = new SplitFetcherImp(mockFetcher, mockParser, mockCache, Mockito.mock(TelemetryRuntimeProducer.class), FLAG_SETS_FILTER,
                 ruleBasedSegmentParser, ruleBasedSegmentCacheProducer);
 
@@ -299,12 +310,17 @@ public class SplitFetcherTest {
         response1.splits = new ArrayList<>();
         response1.since = -1;
         response1.till = 1;
+        response1.tillRBS = -1;
+        response1.sinceRBS = -1;
+        response1.ruleBasedSegments = new ArrayList<>();
 
         SplitChange response2 = new SplitChange();
         response2.splits = new ArrayList<>();
         response2.since = 1;
         response2.till = 1;
-
+        response2.tillRBS = -1;
+        response2.sinceRBS = -1;
+        response2.ruleBasedSegments = new ArrayList<>();
 
         ArgumentCaptor<FetchOptions> optionsCaptor = ArgumentCaptor.forClass(FetchOptions.class);
         ArgumentCaptor<Long> cnCaptor = ArgumentCaptor.forClass(Long.class);

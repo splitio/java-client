@@ -31,7 +31,7 @@ import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import static io.split.client.utils.FeatureFlagProcessor.processRuleBasedSegmentChanges;
+import static io.split.client.utils.RuleBasedSegmentProcessor.processRuleBasedSegmentChanges;
 import static org.junit.Assert.assertTrue;
 
 /**

@@ -7,6 +7,7 @@ import io.split.client.utils.Json;
 import io.split.client.utils.LocalhostSanitizer;
 import io.split.engine.common.FetchOptions;
 import io.split.engine.experiments.SplitChangeFetcher;
+import org.checkerframework.checker.units.qual.A;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -15,6 +16,7 @@ import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.util.ArrayList;
 import java.util.Arrays;
 
 public class JsonLocalhostSplitChangeFetcher implements SplitChangeFetcher {
@@ -33,6 +35,9 @@ public class JsonLocalhostSplitChangeFetcher implements SplitChangeFetcher {
         try {
             JsonReader jsonReader = new JsonReader(new BufferedReader(new InputStreamReader(_inputStreamProvider.get(), StandardCharsets.UTF_8)));
             SplitChange splitChange = Json.fromJson(jsonReader, SplitChange.class);
+            splitChange.ruleBasedSegments = new ArrayList<>();
+            splitChange.tillRBS = -1;
+            splitChange.sinceRBS = -1;
             return processSplitChange(splitChange, since);
         } catch (Exception e) {
             throw new IllegalStateException("Problem fetching splitChanges: " + e.getMessage(), e);

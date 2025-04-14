@@ -6,6 +6,7 @@ import io.split.TestHelper;
 import io.split.client.RequestDecorator;
 import io.split.client.dtos.*;
 import io.split.client.impressions.Impression;
+import io.split.client.utils.GenericClientUtil;
 import io.split.client.utils.Json;
 import io.split.client.utils.SDKMetadata;
 import io.split.client.utils.Utils;
@@ -39,7 +40,7 @@ public class HttpSplitClientTest {
     @Test
     public void testGetWithSpecialCharacters() throws URISyntaxException, InvocationTargetException,
             NoSuchMethodException, IllegalAccessException, IOException {
-        URI rootTarget = URI.create("https://api.split.io/splitChanges?since=1234567");
+        URI rootTarget = URI.create("https://api.split.io/splitChanges?since=1234567&rbSince=-1");
         CloseableHttpClient httpClientMock = TestHelper.mockHttpClient("split-change-special-characters.json",
                 HttpStatus.SC_OK);
         RequestDecorator decorator = new RequestDecorator(null);
@@ -50,7 +51,7 @@ public class HttpSplitClientTest {
 
         SplitHttpResponse splitHttpResponse = splitHtpClient.get(rootTarget,
                 new FetchOptions.Builder().cacheControlHeaders(true).build(), additionalHeaders);
-        SplitChange change = Json.fromJson(splitHttpResponse.body(), SplitChange.class);
+        SplitChange change = GenericClientUtil.ExtractFeatureFlagsAndRuleBasedSegments( splitHttpResponse.body());
 
         ArgumentCaptor<HttpUriRequest> captor = ArgumentCaptor.forClass(HttpUriRequest.class);
         verify(httpClientMock).execute(captor.capture());
