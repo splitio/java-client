@@ -98,10 +98,10 @@ public class HttpSplitChangeFetcherTest {
         SplitChange change = fetcher.fetch(1234567, -1, new FetchOptions.Builder().cacheControlHeaders(true).build());
 
         Assert.assertNotNull(change);
-        Assert.assertEquals(1, change.splits.size());
-        Assert.assertNotNull(change.splits.get(0));
+        Assert.assertEquals(1, change.featureFlags.d.size());
+        Assert.assertNotNull(change.featureFlags.d.get(0));
 
-        Split split = change.splits.get(0);
+        Split split = change.featureFlags.d.get(0);
         Map<String, String> configs = split.configurations;
         Assert.assertEquals(2, configs.size());
         Assert.assertEquals("{\"test\": \"blue\",\"grüne Straße\": 13}", configs.get("on"));

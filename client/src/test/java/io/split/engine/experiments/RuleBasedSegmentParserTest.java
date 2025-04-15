@@ -4,6 +4,7 @@ import com.google.common.collect.Lists;
 import io.split.client.dtos.*;
 import io.split.client.dtos.Matcher;
 import io.split.client.utils.GenericClientUtil;
+import io.split.client.utils.Json;
 import io.split.client.utils.RuleBasedSegmentsToUpdate;
 import io.split.engine.ConditionsTestUtil;
 import io.split.engine.evaluator.Labels;
@@ -394,8 +395,8 @@ public class RuleBasedSegmentParserTest {
                 + "\"status\": \"ACTIVE\",\"conditions\": [{\"contitionType\": \"ROLLOUT\","
                 + "\"label\": \"some_label\", \"matcherGroup\": { \"matchers\": [{ \"matcherType\": \"UNKNOWN\", \"negate\": false}],"
                 + "\"combiner\": \"AND\"}}],\"excluded\":{\"keys\":[],\"segments\":[]}}]}}";
-        SplitChange change = GenericClientUtil.ExtractFeatureFlagsAndRuleBasedSegments(splitWithUndefinedMatcher);
-        for (RuleBasedSegment ruleBasedSegment : change.ruleBasedSegments) {
+        SplitChange change = Json.fromJson(splitWithUndefinedMatcher, SplitChange.class);
+        for (RuleBasedSegment ruleBasedSegment : change.ruleBasedSegments.d) {
             // should not cause exception
             ParsedRuleBasedSegment parsedRuleBasedSegment = parser.parse(ruleBasedSegment);
             for (ParsedCondition parsedCondition : parsedRuleBasedSegment.parsedConditions()) {
@@ -412,8 +413,8 @@ public class RuleBasedSegmentParserTest {
     public void EqualToSemverMatcher() throws IOException {
         RuleBasedSegmentParser parser = new RuleBasedSegmentParser();
         String load = new String(Files.readAllBytes(Paths.get("src/test/resources/semver/semver-splits.json")), StandardCharsets.UTF_8);
-        SplitChange change = GenericClientUtil.ExtractFeatureFlagsAndRuleBasedSegments(load);
-        for (RuleBasedSegment ruleBasedSegment : change.ruleBasedSegments) {
+        SplitChange change = Json.fromJson(load, SplitChange.class);
+        for (RuleBasedSegment ruleBasedSegment : change.ruleBasedSegments.d) {
             // should not cause exception
             ParsedRuleBasedSegment parsedRuleBasedSegment = parser.parse(ruleBasedSegment);
             if (ruleBasedSegment.name.equals("rbs_semver_equalto")) {
@@ -434,8 +435,8 @@ public class RuleBasedSegmentParserTest {
     public void GreaterThanOrEqualSemverMatcher() throws IOException {
         RuleBasedSegmentParser parser = new RuleBasedSegmentParser();
         String load = new String(Files.readAllBytes(Paths.get("src/test/resources/semver/semver-splits.json")), StandardCharsets.UTF_8);
-        SplitChange change = GenericClientUtil.ExtractFeatureFlagsAndRuleBasedSegments(load);
-        for (RuleBasedSegment ruleBasedSegment : change.ruleBasedSegments) {
+        SplitChange change = Json.fromJson(load, SplitChange.class);
+        for (RuleBasedSegment ruleBasedSegment : change.ruleBasedSegments.d) {
             // should not cause exception
             ParsedRuleBasedSegment parsedRuleBasedSegment = parser.parse(ruleBasedSegment);
             if (ruleBasedSegment.name.equals("rbs_semver_greater_or_equalto")) {
@@ -456,8 +457,8 @@ public class RuleBasedSegmentParserTest {
     public void LessThanOrEqualSemverMatcher() throws IOException {
         RuleBasedSegmentParser parser = new RuleBasedSegmentParser();
         String load = new String(Files.readAllBytes(Paths.get("src/test/resources/semver/semver-splits.json")), StandardCharsets.UTF_8);
-        SplitChange change = GenericClientUtil.ExtractFeatureFlagsAndRuleBasedSegments(load);
-        for (RuleBasedSegment ruleBasedSegment : change.ruleBasedSegments) {
+        SplitChange change = Json.fromJson(load, SplitChange.class);
+        for (RuleBasedSegment ruleBasedSegment : change.ruleBasedSegments.d) {
             // should not cause exception
             ParsedRuleBasedSegment parsedRuleBasedSegment = parser.parse(ruleBasedSegment);
             if (ruleBasedSegment.name.equals("rbs_semver_less_or_equalto")) {
@@ -478,8 +479,8 @@ public class RuleBasedSegmentParserTest {
     public void BetweenSemverMatcher() throws IOException {
         RuleBasedSegmentParser parser = new RuleBasedSegmentParser();
         String load = new String(Files.readAllBytes(Paths.get("src/test/resources/semver/semver-splits.json")), StandardCharsets.UTF_8);
-        SplitChange change = GenericClientUtil.ExtractFeatureFlagsAndRuleBasedSegments(load);
-        RuleBasedSegmentsToUpdate ruleBasedSegmentsToUpdate = processRuleBasedSegmentChanges(parser, change.ruleBasedSegments);
+        SplitChange change = Json.fromJson(load, SplitChange.class);
+        RuleBasedSegmentsToUpdate ruleBasedSegmentsToUpdate = processRuleBasedSegmentChanges(parser, change.ruleBasedSegments.d);
         for (ParsedRuleBasedSegment parsedRuleBasedSegment : ruleBasedSegmentsToUpdate.getToAdd()) {
             // should not cause exception
             if (parsedRuleBasedSegment.ruleBasedSegment().equals("rbs_semver_between")) {
@@ -500,8 +501,8 @@ public class RuleBasedSegmentParserTest {
     public void InListSemverMatcher() throws IOException {
         RuleBasedSegmentParser parser = new RuleBasedSegmentParser();
         String load = new String(Files.readAllBytes(Paths.get("src/test/resources/semver/semver-splits.json")), StandardCharsets.UTF_8);
-        SplitChange change = GenericClientUtil.ExtractFeatureFlagsAndRuleBasedSegments(load);
-        for (RuleBasedSegment ruleBasedSegment : change.ruleBasedSegments) {
+        SplitChange change = Json.fromJson(load, SplitChange.class);
+        for (RuleBasedSegment ruleBasedSegment : change.ruleBasedSegments.d) {
             // should not cause exception
             ParsedRuleBasedSegment parsedRuleBasedSegment = parser.parse(ruleBasedSegment);
             if (ruleBasedSegment.name.equals("rbs_semver_inlist")) {

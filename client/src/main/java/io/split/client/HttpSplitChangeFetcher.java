@@ -81,7 +81,7 @@ public final class HttpSplitChangeFetcher implements SplitChangeFetcher {
                         String.format("Could not retrieve splitChanges since %s; http return code %s", since, response.statusCode())
                 );
             }
-            return GenericClientUtil.ExtractFeatureFlagsAndRuleBasedSegments(response.body());
+            return Json.fromJson(response.body(), SplitChange.class);
         } catch (Exception e) {
             throw new IllegalStateException(String.format("Problem fetching splitChanges since %s: %s", since, e), e);
         } finally {

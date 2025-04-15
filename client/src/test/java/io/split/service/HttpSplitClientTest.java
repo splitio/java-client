@@ -51,7 +51,7 @@ public class HttpSplitClientTest {
 
         SplitHttpResponse splitHttpResponse = splitHtpClient.get(rootTarget,
                 new FetchOptions.Builder().cacheControlHeaders(true).build(), additionalHeaders);
-        SplitChange change = GenericClientUtil.ExtractFeatureFlagsAndRuleBasedSegments( splitHttpResponse.body());
+        SplitChange change = Json.fromJson(splitHttpResponse.body(), SplitChange.class);
 
         ArgumentCaptor<HttpUriRequest> captor = ArgumentCaptor.forClass(HttpUriRequest.class);
         verify(httpClientMock).execute(captor.capture());
@@ -62,10 +62,10 @@ public class HttpSplitClientTest {
         assertThat(headers[0].getName(), is(equalTo("Via")));
         assertThat(headers[0].getValues().get(0), is(equalTo("HTTP/1.1 m_proxy_rio1")));
         Assert.assertNotNull(change);
-        Assert.assertEquals(1, change.splits.size());
-        Assert.assertNotNull(change.splits.get(0));
+        Assert.assertEquals(1, change.featureFlags.d.size());
+        Assert.assertNotNull(change.featureFlags.d.get(0));
 
-        Split split = change.splits.get(0);
+        Split split = change.featureFlags.d.get(0);
         Map<String, String> configs = split.configurations;
         Assert.assertEquals(2, configs.size());
         Assert.assertEquals("{\"test\": \"blue\",\"grüne Straße\": 13}", configs.get("on"));

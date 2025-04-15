@@ -1,10 +1,6 @@
 package io.split.client;
 
-import io.split.client.dtos.Condition;
-import io.split.client.dtos.ConditionType;
-import io.split.client.dtos.Split;
-import io.split.client.dtos.SplitChange;
-import io.split.client.dtos.Status;
+import io.split.client.dtos.*;
 import io.split.client.utils.LocalhostConstants;
 import io.split.client.utils.LocalhostSanitizer;
 import io.split.engine.common.FetchOptions;
@@ -38,7 +34,8 @@ public class LegacyLocalhostSplitChangeFetcher implements SplitChangeFetcher {
 
         try (BufferedReader reader = new BufferedReader(new FileReader(_splitFile))) {
             SplitChange splitChange = new SplitChange();
-            splitChange.splits = new ArrayList<>();
+            splitChange.featureFlags = new ChangeDto<>();
+            splitChange.featureFlags.d = new ArrayList<>();
             for (String line = reader.readLine(); line != null; line = reader.readLine()) {
                 String lineTrim = line.trim();
                 if (lineTrim.isEmpty() || lineTrim.startsWith("#")) {
@@ -51,7 +48,8 @@ public class LegacyLocalhostSplitChangeFetcher implements SplitChangeFetcher {
                     _log.info("Ignoring line since it does not have 2 or 3 columns: " + lineTrim);
                     continue;
                 }
-                Optional<Split> splitOptional = splitChange.splits.stream().filter(split -> split.name.equals(featureTreatment[0])).findFirst();
+                Optional<Split> splitOptional = splitChange.featureFlags.d.stream().
+                        filter(split -> split.name.equals(featureTreatment[0])).findFirst();
                 Split split = splitOptional.orElse(null);
                 if(split == null) {
                     split = new Split();
@@ -59,7 +57,7 @@ public class LegacyLocalhostSplitChangeFetcher implements SplitChangeFetcher {
                     split.configurations = new HashMap<>();
                     split.conditions = new ArrayList<>();
                 } else {
-                    splitChange.splits.remove(split);
+                    splitChange.featureFlags.d.remove(split);
                 }
                 split.status = Status.ACTIVE;
                 split.defaultTreatment = featureTreatment[1];
@@ -78,13 +76,14 @@ public class LegacyLocalhostSplitChangeFetcher implements SplitChangeFetcher {
                 } else {
                     split.conditions.add(condition);
                 }
-                splitChange.splits.add(split);
+                splitChange.featureFlags.d.add(split);
             }
-            splitChange.till = since;
-            splitChange.since = since;
-            splitChange.sinceRBS = -1;
-            splitChange.tillRBS = -1;
-            splitChange.ruleBasedSegments = new ArrayList<>();
+            splitChange.featureFlags.t = since;
+            splitChange.featureFlags.s = since;
+            splitChange.ruleBasedSegments = new ChangeDto<>();
+            splitChange.ruleBasedSegments.s = -1;
+            splitChange.ruleBasedSegments.t = -1;
+            splitChange.ruleBasedSegments.d = new ArrayList<>();
             return splitChange;
         } catch (FileNotFoundException f) {
             _log.warn("There was no file named " + _splitFile.getPath() + " found. " +

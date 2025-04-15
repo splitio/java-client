@@ -1,7 +1,6 @@
 package io.split.client;
 
 import com.google.common.collect.Maps;
-import io.split.Spec;
 import io.split.client.utils.LocalhostUtils;
 import io.split.grammar.Treatments;
 import org.junit.Rule;

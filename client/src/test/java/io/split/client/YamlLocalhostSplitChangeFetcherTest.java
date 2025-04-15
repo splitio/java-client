@@ -65,12 +65,12 @@ public class YamlLocalhostSplitChangeFetcherTest {
         FetchOptions fetchOptions = Mockito.mock(FetchOptions.class);
         SplitChange splitChange = localhostSplitChangeFetcher.fetch(-1L, -1, fetchOptions);
 
-        Assert.assertEquals(2, splitChange.splits.size());
-        Assert.assertEquals(-1, splitChange.since);
-        Assert.assertEquals(-1, splitChange.till);
+        Assert.assertEquals(2, splitChange.featureFlags.d.size());
+        Assert.assertEquals(-1, splitChange.featureFlags.s);
+        Assert.assertEquals(-1, splitChange.featureFlags.t);
 
 
-        for (Split split: splitChange.splits) {
+        for (Split split: splitChange.featureFlags.d) {
             Assert.assertEquals("control", split.defaultTreatment);
         }
     }

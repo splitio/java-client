@@ -1,10 +1,6 @@
 package io.split.client;
 
-import io.split.client.dtos.Condition;
-import io.split.client.dtos.ConditionType;
-import io.split.client.dtos.Split;
-import io.split.client.dtos.SplitChange;
-import io.split.client.dtos.Status;
+import io.split.client.dtos.*;
 import io.split.client.utils.InputStreamProvider;
 import io.split.client.utils.LocalhostConstants;
 import io.split.engine.common.FetchOptions;
@@ -37,12 +33,14 @@ public class YamlLocalhostSplitChangeFetcher implements SplitChangeFetcher {
             Yaml yaml = new Yaml();
             List<Map<String, Map<String, Object>>> yamlSplits = yaml.load(_inputStreamProvider.get());
             SplitChange splitChange = new SplitChange();
-            splitChange.splits = new ArrayList<>();
+            splitChange.featureFlags = new ChangeDto<>();
+            splitChange.featureFlags.d = new ArrayList<>();
             for(Map<String, Map<String, Object>> aSplit : yamlSplits) {
                 // The outter map is a map with one key, the split name
                 Map.Entry<String, Map<String, Object>> splitAndValues = aSplit.entrySet().iterator().next();
 
-                Optional<Split> splitOptional = splitChange.splits.stream().filter(split -> split.name.equals(splitAndValues.getKey())).findFirst();
+                Optional<Split> splitOptional = splitChange.featureFlags.d.stream().
+                        filter(split -> split.name.equals(splitAndValues.getKey())).findFirst();
                 Split split = splitOptional.orElse(null);
                 if(split == null) {
                     split = new Split();
@@ -50,7 +48,7 @@ public class YamlLocalhostSplitChangeFetcher implements SplitChangeFetcher {
                     split.configurations = new HashMap<>();
                     split.conditions = new ArrayList<>();
                 } else {
-                    splitChange.splits.remove(split);
+                    splitChange.featureFlags.d.remove(split);
                 }
                 String treatment = (String) splitAndValues.getValue().get("treatment");
                 String configurations = splitAndValues.getValue().get("config") != null ? (String) splitAndValues.getValue().get("config") : null;
@@ -68,14 +66,14 @@ public class YamlLocalhostSplitChangeFetcher implements SplitChangeFetcher {
                 split.trafficTypeName = LocalhostConstants.USER;
                 split.trafficAllocation = LocalhostConstants.SIZE_100;
                 split.trafficAllocationSeed = LocalhostConstants.SIZE_1;
-
-                splitChange.splits.add(split);
+                splitChange.featureFlags.d.add(split);
             }
-            splitChange.till = since;
-            splitChange.since = since;
-            splitChange.sinceRBS = -1;
-            splitChange.tillRBS = -1;
-            splitChange.ruleBasedSegments = new ArrayList<>();
+            splitChange.featureFlags.t = since;
+            splitChange.featureFlags.s = since;
+            splitChange.ruleBasedSegments = new ChangeDto<>();
+            splitChange.ruleBasedSegments.s = -1;
+            splitChange.ruleBasedSegments.t = -1;
+            splitChange.ruleBasedSegments.d = new ArrayList<>();
             return splitChange;
         } catch (Exception e) {
             throw new IllegalStateException("Problem fetching splitChanges using a yaml file: " + e.getMessage(), e);

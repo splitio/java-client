@@ -124,11 +124,11 @@ public class SplitFetcherImp implements SplitFetcher {
             return segments;
         }
 
-        if (change.splits.isEmpty() || change.ruleBasedSegments.isEmpty()) {
-            if (change.splits.isEmpty()) _splitCacheProducer.setChangeNumber(change.till);
-            if (change.ruleBasedSegments.isEmpty())
-                _ruleBasedSegmentCacheProducer.setChangeNumber(change.tillRBS);
-            if (change.splits.isEmpty() && change.ruleBasedSegments.isEmpty()) return segments;
+        if (change.featureFlags.d.isEmpty() || change.ruleBasedSegments.d.isEmpty()) {
+            if (change.featureFlags.d.isEmpty()) _splitCacheProducer.setChangeNumber(change.featureFlags.t);
+            if (change.ruleBasedSegments.d.isEmpty())
+                _ruleBasedSegmentCacheProducer.setChangeNumber(change.ruleBasedSegments.t);
+            if (change.featureFlags.d.isEmpty() && change.ruleBasedSegments.d.isEmpty()) return segments;
         }
 
         synchronized (_lock) {
@@ -137,27 +137,29 @@ public class SplitFetcherImp implements SplitFetcher {
                 // some other thread may have updated the shared state. exit
                 return segments;
             }
-            FeatureFlagsToUpdate featureFlagsToUpdate = processFeatureFlagChanges(_parser, change.splits, _flagSetsFilter);
+            FeatureFlagsToUpdate featureFlagsToUpdate = processFeatureFlagChanges(_parser, change.featureFlags.d, _flagSetsFilter);
             segments = featureFlagsToUpdate.getSegments();
-            _splitCacheProducer.update(featureFlagsToUpdate.getToAdd(), featureFlagsToUpdate.getToRemove(), change.till);
+            _splitCacheProducer.update(featureFlagsToUpdate.getToAdd(), featureFlagsToUpdate.getToRemove(), change.featureFlags.t);
 
-            RuleBasedSegmentsToUpdate ruleBasedSegmentsToUpdate = processRuleBasedSegmentChanges(_parserRBS, change.ruleBasedSegments);
+            RuleBasedSegmentsToUpdate ruleBasedSegmentsToUpdate = processRuleBasedSegmentChanges(_parserRBS,
+                    change.ruleBasedSegments.d);
             segments.addAll(ruleBasedSegmentsToUpdate.getSegments());
-            _ruleBasedSegmentCacheProducer.update(ruleBasedSegmentsToUpdate.getToAdd(), ruleBasedSegmentsToUpdate.getToRemove(), change.tillRBS);
+            _ruleBasedSegmentCacheProducer.update(ruleBasedSegmentsToUpdate.getToAdd(),
+                    ruleBasedSegmentsToUpdate.getToRemove(), change.ruleBasedSegments.t);
             _telemetryRuntimeProducer.recordSuccessfulSync(LastSynchronizationRecordsEnum.SPLITS, System.currentTimeMillis());
         }
         return segments;
     }
 
     private boolean checkExitConditions(SplitChange change) {
-        return ((change.since != _splitCacheProducer.getChangeNumber() || change.till < _splitCacheProducer.getChangeNumber())
-                || (change.sinceRBS != _ruleBasedSegmentCacheProducer.getChangeNumber() ||
-                    change.tillRBS < _ruleBasedSegmentCacheProducer.getChangeNumber()));
+        return ((change.featureFlags.s != _splitCacheProducer.getChangeNumber() || change.featureFlags.t < _splitCacheProducer.getChangeNumber())
+                || (change.ruleBasedSegments.s != _ruleBasedSegmentCacheProducer.getChangeNumber() ||
+                    change.ruleBasedSegments.t < _ruleBasedSegmentCacheProducer.getChangeNumber()));
     }
 
     private boolean checkReturnConditions(SplitChange change) {
-        return ((change.since != _splitCacheProducer.getChangeNumber() || change.till < _splitCacheProducer.getChangeNumber()) &&
-                    (change.sinceRBS != _ruleBasedSegmentCacheProducer.getChangeNumber() ||
-                            change.tillRBS < _ruleBasedSegmentCacheProducer.getChangeNumber()));
+        return ((change.featureFlags.s != _splitCacheProducer.getChangeNumber() || change.featureFlags.t < _splitCacheProducer.getChangeNumber()) &&
+                    (change.ruleBasedSegments.s != _ruleBasedSegmentCacheProducer.getChangeNumber() ||
+                            change.ruleBasedSegments.t < _ruleBasedSegmentCacheProducer.getChangeNumber()));
     }
 }

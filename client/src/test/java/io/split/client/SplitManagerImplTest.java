@@ -6,6 +6,7 @@ import io.split.client.api.SplitView;
 import io.split.client.dtos.Split;
 import io.split.client.dtos.SplitChange;
 import io.split.client.utils.GenericClientUtil;
+import io.split.client.utils.Json;
 import io.split.engine.ConditionsTestUtil;
 import io.split.engine.SDKReadinessGates;
 import io.split.engine.experiments.ParsedCondition;
@@ -236,9 +237,9 @@ public class SplitManagerImplTest {
     public void ImpressionToggleParseTest() throws IOException {
         SplitParser parser = new SplitParser();
         String splits = new String(Files.readAllBytes(Paths.get("src/test/resources/splits_imp_toggle.json")), StandardCharsets.UTF_8);
-        SplitChange change = GenericClientUtil.ExtractFeatureFlagsAndRuleBasedSegments(splits);
+        SplitChange change = Json.fromJson(splits, SplitChange.class);
         SplitCacheConsumer splitCacheConsumer = mock(SplitCacheConsumer.class);
-        for (Split split : change.splits) {
+        for (Split split : change.featureFlags.d) {
             ParsedSplit parsedSplit = parser.parse(split);
             when(splitCacheConsumer.get(split.name)).thenReturn(parsedSplit);
         }
