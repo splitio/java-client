@@ -74,8 +74,6 @@ public class SplitFetcherImp implements SplitFetcher {
                 long end = _splitCacheProducer.getChangeNumber();
                 long endRBS = _ruleBasedSegmentCacheProducer.getChangeNumber();
 
-                long targetChaneNumber = -1;
-                long targetChaneNumberRBS = -1;
                 // If the previous execution was the first one, clear the `cdnBypass` flag
                 // for the next fetches. (This will clear a local copy of the fetch options,
                 // not the original object that was passed to this method).
