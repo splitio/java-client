@@ -158,10 +158,8 @@ public class SplitFetcherImp implements SplitFetcher {
         return segments;
     }
 
-    private boolean checkExitConditions(SplitChange change) {
-        return ((change.featureFlags.s != _splitCacheProducer.getChangeNumber() || change.featureFlags.t < _splitCacheProducer.getChangeNumber())
-                || (change.ruleBasedSegments.s != _ruleBasedSegmentCacheProducer.getChangeNumber() ||
-                    change.ruleBasedSegments.t < _ruleBasedSegmentCacheProducer.getChangeNumber()));
+    private <T> boolean checkExitConditions(ChangeDto<T> change, long cn) {
+        return change.s != cn || change.t < cn;
     }
 
     private boolean checkReturnConditions(SplitChange change) {
