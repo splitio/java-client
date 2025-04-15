@@ -77,12 +77,16 @@ public class SplitFetcherImp implements SplitFetcher {
                 // If the previous execution was the first one, clear the `cdnBypass` flag
                 // for the next fetches. (This will clear a local copy of the fetch options,
                 // not the original object that was passed to this method).
-                if (INITIAL_CN == start || RBS_INITIAL_CN == startRBS) {
-                    if (INITIAL_CN == start) targetChaneNumber = FetchOptions.DEFAULT_TARGET_CHANGENUMBER;
-                    if (RBS_INITIAL_CN == startRBS) targetChaneNumberRBS = FetchOptions.DEFAULT_TARGET_CHANGENUMBER;
-                    options = new FetchOptions.Builder(options).targetChangeNumber(targetChaneNumber).
-                            targetChangeNumberRBS(targetChaneNumberRBS).build();
+                FetchOptions.Builder optionsBuilder = new FetchOptions.Builder(options);
+                if (INITIAL_CN == start) {
+                    optionsBuilder.targetChangeNumber(FetchOptions.DEFAULT_TARGET_CHANGENUMBER);
                 }
+
+                if (RBS_INITIAL_CN == startRBS) {
+                    optionsBuilder.targetChangeNumberRBS(FetchOptions.DEFAULT_TARGET_CHANGENUMBER);
+                }
+
+                options = optionsBuilder.build();
 
                 if (start >= end && startRBS >= endRBS) {
                     return new FetchResult(true, false, segments);
