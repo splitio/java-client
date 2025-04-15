@@ -125,11 +125,17 @@ public class SplitFetcherImp implements SplitFetcher {
             return segments;
         }
 
-        if (change.featureFlags.d.isEmpty() || change.ruleBasedSegments.d.isEmpty()) {
-            if (change.featureFlags.d.isEmpty()) _splitCacheProducer.setChangeNumber(change.featureFlags.t);
-            if (change.ruleBasedSegments.d.isEmpty())
-                _ruleBasedSegmentCacheProducer.setChangeNumber(change.ruleBasedSegments.t);
-            if (change.featureFlags.d.isEmpty() && change.ruleBasedSegments.d.isEmpty()) return segments;
+        if (change.featureFlags.d.isEmpty()) {
+            _splitCacheProducer.setChangeNumber(change.featureFlags.t);
+        }
+
+        if (change.ruleBasedSegments.d.isEmpty()) {
+            _ruleBasedSegmentCacheProducer.setChangeNumber(change.ruleBasedSegments.t);
+        }
+        
+        if (change.featureFlags.d.isEmpty() && change.ruleBasedSegments.d.isEmpty()) {
+            return segments;
+        }
         }
 
         synchronized (_lock) {
