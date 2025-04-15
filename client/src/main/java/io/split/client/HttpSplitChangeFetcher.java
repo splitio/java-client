@@ -2,15 +2,9 @@ package io.split.client;
 
 import com.google.common.annotations.VisibleForTesting;
 
-import com.google.gson.JsonElement;
-import com.google.gson.JsonObject;
-import io.split.Spec;
-import io.split.client.dtos.RuleBasedSegment;
-import io.split.client.dtos.Split;
 import io.split.client.dtos.SplitChange;
 import io.split.client.dtos.SplitHttpResponse;
 import io.split.client.exceptions.UriTooLongException;
-import io.split.client.utils.GenericClientUtil;
 import io.split.client.utils.Json;
 import io.split.client.utils.Utils;
 import io.split.engine.common.FetchOptions;
@@ -26,7 +20,6 @@ import org.slf4j.LoggerFactory;
 
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.util.ArrayList;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 import static io.split.Spec.SPEC_VERSION;
@@ -66,48 +59,40 @@ public final class HttpSplitChangeFetcher implements SplitChangeFetcher {
     @Override
     public SplitChange fetch(long since, long sinceRBS, FetchOptions options) {
         long start = System.currentTimeMillis();
-        for (int i=0; i<2; i++) {
-            try {
-                URIBuilder uriBuilder = new URIBuilder(_target).addParameter(SPEC, "" + SPEC_VERSION);
-                uriBuilder.addParameter(SINCE, "" + since);
-                if (SPEC_VERSION.equals(Spec.SPEC_1_3)) {
-                    uriBuilder.addParameter(RB_SINCE, "" + sinceRBS);
-                }
-                if (!options.flagSetsFilter().isEmpty()) {
-                    uriBuilder.addParameter(SETS, "" + options.flagSetsFilter());
-                }
-                if (options.hasCustomCN()) {
-                    uriBuilder.addParameter(TILL, "" + options.targetCN());
-                }
-                URI uri = uriBuilder.build();
-                SplitHttpResponse response = _client.get(uri, options, null);
+        try {
+            URI uri = buildURL(options, since, sinceRBS);
+            SplitHttpResponse response = _client.get(uri, options, null);
 
-                if (response.statusCode() < HttpStatus.SC_OK || response.statusCode() >= HttpStatus.SC_MULTIPLE_CHOICES) {
-                    if (response.statusCode() == HttpStatus.SC_REQUEST_URI_TOO_LONG) {
-                        _log.error("The amount of flag sets provided are big causing uri length error.");
-                        throw new UriTooLongException(String.format("Status code: %s. Message: %s", response.statusCode(), response.statusMessage()));
-                    }
-                    if (response.statusCode() == HttpStatus.SC_BAD_REQUEST && response.statusMessage().equals("unknown spec")) {
-                        _log.warn(String.format("Detected old spec response, falling back to spec 1.1"));
-                        SPEC_VERSION = Spec.SPEC_1_1;
-                        continue;
-                    }
-                    _telemetryRuntimeProducer.recordSyncError(ResourceEnum.SPLIT_SYNC, response.statusCode());
-                    throw new IllegalStateException(
-                            String.format("Could not retrieve splitChanges since %s; http return code %s", since, response.statusCode())
-                    );
+            if (response.statusCode() < HttpStatus.SC_OK || response.statusCode() >= HttpStatus.SC_MULTIPLE_CHOICES) {
+                if (response.statusCode() == HttpStatus.SC_REQUEST_URI_TOO_LONG) {
+                    _log.error("The amount of flag sets provided are big causing uri length error.");
+                    throw new UriTooLongException(String.format("Status code: %s. Message: %s", response.statusCode(), response.statusMessage()));
                 }
-                if (SPEC_VERSION.equals(Spec.SPEC_1_1)) {
-                    return Json.fromJson(response.body(), SplitChange.class);
-                }
-                return GenericClientUtil.ExtractFeatureFlagsAndRuleBasedSegments(response.body());
-            } catch (Exception e) {
-                throw new IllegalStateException(String.format("Problem fetching splitChanges since %s: %s", since, e), e);
-            } finally {
-                _telemetryRuntimeProducer.recordSyncLatency(HTTPLatenciesEnum.SPLITS, System.currentTimeMillis() - start);
+
+                _telemetryRuntimeProducer.recordSyncError(ResourceEnum.SPLIT_SYNC, response.statusCode());
+                throw new IllegalStateException(
+                        String.format("Could not retrieve splitChanges since %s; http return code %s", since, response.statusCode())
+                );
             }
+            return Json.fromJson(response.body(), SplitChange.class);
+        } catch (Exception e) {
+            throw new IllegalStateException(String.format("Problem fetching splitChanges since %s: %s", since, e), e);
+        } finally {
+            _telemetryRuntimeProducer.recordSyncLatency(HTTPLatenciesEnum.SPLITS, System.currentTimeMillis() - start);
         }
-        return null;
+    }
+
+    private URI buildURL(FetchOptions options, long since, long sinceRBS) throws URISyntaxException {
+        URIBuilder uriBuilder = new URIBuilder(_target).addParameter(SPEC, "" + SPEC_VERSION);
+        uriBuilder.addParameter(SINCE, "" + since);
+        uriBuilder.addParameter(RB_SINCE, "" + sinceRBS);
+        if (!options.flagSetsFilter().isEmpty()) {
+            uriBuilder.addParameter(SETS, "" + options.flagSetsFilter());
+        }
+        if (options.hasCustomCN()) {
+            uriBuilder.addParameter(TILL, "" + options.targetCN());
+        }
+        return uriBuilder.build();
     }
 
     @VisibleForTesting

@@ -1,11 +1,10 @@
 package io.split.client;
 
 import com.google.common.collect.Lists;
-import io.split.Spec;
+
 import io.split.client.api.SplitView;
 import io.split.client.dtos.Split;
 import io.split.client.dtos.SplitChange;
-import io.split.client.utils.GenericClientUtil;
 import io.split.client.utils.Json;
 import io.split.engine.ConditionsTestUtil;
 import io.split.engine.SDKReadinessGates;
@@ -235,12 +234,11 @@ public class SplitManagerImplTest {
 
     @Test
     public void ImpressionToggleParseTest() throws IOException {
-        Spec.SPEC_VERSION = Spec.SPEC_1_3;
         SplitParser parser = new SplitParser();
         String splits = new String(Files.readAllBytes(Paths.get("src/test/resources/splits_imp_toggle.json")), StandardCharsets.UTF_8);
-        SplitChange change = GenericClientUtil.ExtractFeatureFlagsAndRuleBasedSegments(splits);
+        SplitChange change = Json.fromJson(splits, SplitChange.class);
         SplitCacheConsumer splitCacheConsumer = mock(SplitCacheConsumer.class);
-        for (Split split : change.splits) {
+        for (Split split : change.featureFlags.d) {
             ParsedSplit parsedSplit = parser.parse(split);
             when(splitCacheConsumer.get(split.name)).thenReturn(parsedSplit);
         }
@@ -254,6 +252,5 @@ public class SplitManagerImplTest {
         assertFalse(splitView.impressionsDisabled);
         splitView = splitManager.split("impression_toggle_off");
         assertTrue(splitView.impressionsDisabled);
-        Spec.SPEC_VERSION = Spec.SPEC_1_1;
     }
 }

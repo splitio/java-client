@@ -1,7 +1,6 @@
 package io.split.engine.experiments;
 
 import com.google.common.collect.Lists;
-import io.split.Spec;
 import io.split.client.interceptors.FlagSetsFilter;
 import io.split.client.interceptors.FlagSetsFilterImpl;
 import io.split.storages.RuleBasedSegmentCacheProducer;
@@ -74,7 +73,6 @@ public class SplitFetcherTest {
         SplitCache cache = new InMemoryCacheImp(startingChangeNumber, FLAG_SETS_FILTER);
         RuleBasedSegmentCacheProducer ruleBasedSegmentCacheProducer = new RuleBasedSegmentCacheInMemoryImp();
         RuleBasedSegmentParser ruleBasedSegmentParser = new RuleBasedSegmentParser();
-        Spec.SPEC_VERSION = Spec.SPEC_1_1; // check old spec
 
         SplitFetcherImp fetcher = new SplitFetcherImp(splitChangeFetcher, new SplitParser(), cache, TELEMETRY_STORAGE, FLAG_SETS_FILTER,
             ruleBasedSegmentParser, ruleBasedSegmentCacheProducer);
@@ -109,9 +107,14 @@ public class SplitFetcherTest {
         validSplit.name = "-1";
 
         SplitChange validReturn = new SplitChange();
-        validReturn.splits = Lists.newArrayList(validSplit);
-        validReturn.since = -1L;
-        validReturn.till = 0L;
+        validReturn.featureFlags = new ChangeDto<>();
+        validReturn.featureFlags.d = Lists.newArrayList(validSplit);
+        validReturn.featureFlags.s = -1L;
+        validReturn.featureFlags.t = 0L;
+        validReturn.ruleBasedSegments = new ChangeDto<>();
+        validReturn.ruleBasedSegments.t = -1;
+        validReturn.ruleBasedSegments.s = -1;
+        validReturn.ruleBasedSegments.d = new ArrayList<>();
 
         MatcherGroup invalidMatcherGroup = new MatcherGroup();
         invalidMatcherGroup.matchers = Lists.<Matcher>newArrayList();
@@ -128,14 +131,24 @@ public class SplitFetcherTest {
         invalidSplit.name = "-1";
 
         SplitChange invalidReturn = new SplitChange();
-        invalidReturn.splits = Lists.newArrayList(invalidSplit);
-        invalidReturn.since = 0L;
-        invalidReturn.till = 1L;
+        invalidReturn.featureFlags = new ChangeDto<>();
+        invalidReturn.featureFlags.d = Lists.newArrayList(invalidSplit);
+        invalidReturn.featureFlags.s = 0L;
+        invalidReturn.featureFlags.t = 1L;
+        invalidReturn.ruleBasedSegments = new ChangeDto<>();
+        invalidReturn.ruleBasedSegments.t = -1;
+        invalidReturn.ruleBasedSegments.s = -1;
+        invalidReturn.ruleBasedSegments.d = new ArrayList<>();
 
         SplitChange noReturn = new SplitChange();
-        noReturn.splits = Lists.<Split>newArrayList();
-        noReturn.since = 1L;
-        noReturn.till = 1L;
+        noReturn.featureFlags = new ChangeDto<>();
+        noReturn.featureFlags.d = Lists.<Split>newArrayList();
+        noReturn.featureFlags.s = 1L;
+        noReturn.featureFlags.t = 1L;
+        noReturn.ruleBasedSegments = new ChangeDto<>();
+        noReturn.ruleBasedSegments.t = -1;
+        noReturn.ruleBasedSegments.s = -1;
+        noReturn.ruleBasedSegments.d = new ArrayList<>();
 
         SplitChangeFetcher splitChangeFetcher = mock(SplitChangeFetcher.class);
         when(splitChangeFetcher.fetch(Mockito.eq(-1L), Mockito.eq(-1L), Mockito.any())).thenReturn(validReturn);
@@ -146,7 +159,6 @@ public class SplitFetcherTest {
         SplitCache cache = new InMemoryCacheImp(-1, FLAG_SETS_FILTER);
         RuleBasedSegmentCacheProducer ruleBasedSegmentCacheProducer = new RuleBasedSegmentCacheInMemoryImp();
         RuleBasedSegmentParser ruleBasedSegmentParser = new RuleBasedSegmentParser();
-        Spec.SPEC_VERSION = Spec.SPEC_1_1; // check old spec
 
         SegmentChangeFetcher segmentChangeFetcher = mock(SegmentChangeFetcher.class);
         SegmentSynchronizationTask segmentSynchronizationTask = new SegmentSynchronizationTaskImp(segmentChangeFetcher, 1,10, segmentCache, TELEMETRY_STORAGE, cache, null);
@@ -200,9 +212,14 @@ public class SplitFetcherTest {
         featureFlag1.trafficAllocationSeed = 147392224;
 
         SplitChange validReturn = new SplitChange();
-        validReturn.splits = Lists.newArrayList(featureFlag1);
-        validReturn.since = -1L;
-        validReturn.till = 0L;
+        validReturn.featureFlags = new ChangeDto<>();
+        validReturn.featureFlags.d = Lists.newArrayList(featureFlag1);
+        validReturn.featureFlags.s = -1L;
+        validReturn.featureFlags.t = 0L;
+        validReturn.ruleBasedSegments = new ChangeDto<>();
+        validReturn.ruleBasedSegments.t = -1;
+        validReturn.ruleBasedSegments.s = -1;
+        validReturn.ruleBasedSegments.d = new ArrayList<>();
 
         SplitChangeFetcher splitChangeFetcher = mock(SplitChangeFetcher.class);
         when(splitChangeFetcher.fetch(Mockito.eq(-1L), Mockito.eq(-1L), Mockito.any())).thenReturn(validReturn);
@@ -221,9 +238,14 @@ public class SplitFetcherTest {
         featureFlag1.sets.remove("set_2");
 
         validReturn = new SplitChange();
-        validReturn.splits = Lists.newArrayList(featureFlag1);
-        validReturn.since = 0L;
-        validReturn.till = 1L;
+        validReturn.featureFlags = new ChangeDto<>();
+        validReturn.featureFlags.d = Lists.newArrayList(featureFlag1);
+        validReturn.featureFlags.s = 0L;
+        validReturn.featureFlags.t = 1L;
+        validReturn.ruleBasedSegments = new ChangeDto<>();
+        validReturn.ruleBasedSegments.t = -1;
+        validReturn.ruleBasedSegments.s = -1;
+        validReturn.ruleBasedSegments.d = new ArrayList<>();
 
         when(splitChangeFetcher.fetch(Mockito.eq(0L), Mockito.eq(-1L), Mockito.any())).thenReturn(validReturn);
 
@@ -291,20 +313,28 @@ public class SplitFetcherTest {
         SplitCache mockCache = new InMemoryCacheImp(FLAG_SETS_FILTER);
         RuleBasedSegmentCacheProducer ruleBasedSegmentCacheProducer = new RuleBasedSegmentCacheInMemoryImp();
         RuleBasedSegmentParser ruleBasedSegmentParser = new RuleBasedSegmentParser();
-        Spec.SPEC_VERSION = Spec.SPEC_1_1; // check old spec
         SplitFetcherImp fetcher = new SplitFetcherImp(mockFetcher, mockParser, mockCache, Mockito.mock(TelemetryRuntimeProducer.class), FLAG_SETS_FILTER,
                 ruleBasedSegmentParser, ruleBasedSegmentCacheProducer);
 
         SplitChange response1 = new SplitChange();
-        response1.splits = new ArrayList<>();
-        response1.since = -1;
-        response1.till = 1;
+        response1.featureFlags = new ChangeDto<>();
+        response1.featureFlags.d = new ArrayList<>();
+        response1.featureFlags.s = -1;
+        response1.featureFlags.t = 1;
+        response1.ruleBasedSegments = new ChangeDto<>();
+        response1.ruleBasedSegments.t = -1;
+        response1.ruleBasedSegments.s = -1;
+        response1.ruleBasedSegments.d = new ArrayList<>();
 
         SplitChange response2 = new SplitChange();
-        response2.splits = new ArrayList<>();
-        response2.since = 1;
-        response2.till = 1;
-
+        response2.featureFlags = new ChangeDto<>();
+        response2.featureFlags.d = new ArrayList<>();
+        response2.featureFlags.s = 1;
+        response2.featureFlags.t = 1;
+        response2.ruleBasedSegments = new ChangeDto<>();
+        response2.ruleBasedSegments.t = -1;
+        response2.ruleBasedSegments.s = -1;
+        response2.ruleBasedSegments.d = new ArrayList<>();
 
         ArgumentCaptor<FetchOptions> optionsCaptor = ArgumentCaptor.forClass(FetchOptions.class);
         ArgumentCaptor<Long> cnCaptor = ArgumentCaptor.forClass(Long.class);
