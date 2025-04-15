@@ -5,7 +5,6 @@ import com.google.common.collect.Lists;
 import io.split.client.api.SplitView;
 import io.split.client.dtos.Split;
 import io.split.client.dtos.SplitChange;
-import io.split.client.utils.GenericClientUtil;
 import io.split.client.utils.Json;
 import io.split.engine.ConditionsTestUtil;
 import io.split.engine.SDKReadinessGates;

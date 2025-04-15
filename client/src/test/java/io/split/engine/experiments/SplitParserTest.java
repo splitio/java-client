@@ -11,7 +11,6 @@ import io.split.client.dtos.SegmentChange;
 import io.split.client.dtos.Split;
 import io.split.client.dtos.SplitChange;
 import io.split.client.dtos.Status;
-import io.split.client.utils.GenericClientUtil;
 import io.split.storages.SegmentCache;
 import io.split.storages.memory.SegmentCacheInMemoryImpl;
 import io.split.client.utils.Json;
@@ -37,7 +36,6 @@ import org.junit.Assert;
 import org.junit.Test;
 import org.mockito.Mockito;
 
-import javax.validation.constraints.AssertTrue;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;

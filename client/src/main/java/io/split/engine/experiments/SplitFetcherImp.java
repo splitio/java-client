@@ -1,6 +1,5 @@
 package io.split.engine.experiments;
 
-import io.split.Spec;
 import io.split.client.dtos.SplitChange;
 import io.split.client.exceptions.UriTooLongException;
 import io.split.client.interceptors.FlagSetsFilter;

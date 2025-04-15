@@ -2,15 +2,9 @@ package io.split.client;
 
 import com.google.common.annotations.VisibleForTesting;
 
-import com.google.gson.JsonElement;
-import com.google.gson.JsonObject;
-import io.split.Spec;
-import io.split.client.dtos.RuleBasedSegment;
-import io.split.client.dtos.Split;
 import io.split.client.dtos.SplitChange;
 import io.split.client.dtos.SplitHttpResponse;
 import io.split.client.exceptions.UriTooLongException;
-import io.split.client.utils.GenericClientUtil;
 import io.split.client.utils.Json;
 import io.split.client.utils.Utils;
 import io.split.engine.common.FetchOptions;
@@ -26,7 +20,6 @@ import org.slf4j.LoggerFactory;
 
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.util.ArrayList;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 import static io.split.Spec.SPEC_VERSION;

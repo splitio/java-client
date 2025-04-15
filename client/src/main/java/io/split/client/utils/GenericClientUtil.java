@@ -1,10 +1,5 @@
 package io.split.client.utils;
 
-import com.google.gson.JsonElement;
-import com.google.gson.JsonObject;
-import io.split.client.dtos.RuleBasedSegment;
-import io.split.client.dtos.Split;
-import io.split.client.dtos.SplitChange;
 import org.apache.hc.client5.http.classic.methods.HttpPost;
 import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
 import org.apache.hc.client5.http.impl.classic.CloseableHttpResponse;
@@ -13,7 +8,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.net.URI;
-import java.util.ArrayList;
 import java.util.List;
 
 public class GenericClientUtil {

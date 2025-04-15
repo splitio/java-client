@@ -1,6 +1,11 @@
 package io.split.client;
 
-import io.split.client.dtos.*;
+import io.split.client.dtos.Condition;
+import io.split.client.dtos.ConditionType;
+import io.split.client.dtos.Split;
+import io.split.client.dtos.SplitChange;
+import io.split.client.dtos.Status;
+import io.split.client.dtos.ChangeDto;
 import io.split.client.utils.LocalhostConstants;
 import io.split.client.utils.LocalhostSanitizer;
 import io.split.engine.common.FetchOptions;

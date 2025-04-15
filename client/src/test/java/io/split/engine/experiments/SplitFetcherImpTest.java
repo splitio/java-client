@@ -1,6 +1,5 @@
 package io.split.engine.experiments;
 
-import io.split.Spec;
 import io.split.client.JsonLocalhostSplitChangeFetcher;
 import io.split.client.interceptors.FlagSetsFilter;
 import io.split.client.interceptors.FlagSetsFilterImpl;

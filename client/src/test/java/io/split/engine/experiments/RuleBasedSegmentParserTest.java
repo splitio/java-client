@@ -3,7 +3,6 @@ package io.split.engine.experiments;
 import com.google.common.collect.Lists;
 import io.split.client.dtos.*;
 import io.split.client.dtos.Matcher;
-import io.split.client.utils.GenericClientUtil;
 import io.split.client.utils.Json;
 import io.split.client.utils.RuleBasedSegmentsToUpdate;
 import io.split.engine.ConditionsTestUtil;
