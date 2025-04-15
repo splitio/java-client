@@ -1,5 +1,8 @@
 package io.split.engine.experiments;
 
+import io.split.client.dtos.ChangeDto;
+import io.split.client.dtos.RuleBasedSegment;
+import io.split.client.dtos.Split;
 import io.split.client.dtos.SplitChange;
 import io.split.client.exceptions.UriTooLongException;
 import io.split.client.interceptors.FlagSetsFilter;
@@ -121,7 +124,7 @@ public class SplitFetcherImp implements SplitFetcher {
             throw new IllegalStateException("SplitChange was null");
         }
 
-        if (checkExitConditions(change.featureFlags, _splitCacheProducer.getChangeNumber()) &&
+        if (checkExitConditions(change.featureFlags, _splitCacheProducer.getChangeNumber()) ||
             checkExitConditions(change.ruleBasedSegments, _ruleBasedSegmentCacheProducer.getChangeNumber())) {
             return segments;
         }
@@ -137,11 +140,12 @@ public class SplitFetcherImp implements SplitFetcher {
         if (change.featureFlags.d.isEmpty() && change.ruleBasedSegments.d.isEmpty()) {
             return segments;
         }
-        }
+
 
         synchronized (_lock) {
             // check state one more time.
-            if (checkReturnConditions(change)) {
+            if (checkExitConditions(change.featureFlags, _splitCacheProducer.getChangeNumber()) &&
+                    checkExitConditions(change.ruleBasedSegments, _ruleBasedSegmentCacheProducer.getChangeNumber())) {
                 // some other thread may have updated the shared state. exit
                 return segments;
             }
@@ -156,16 +160,11 @@ public class SplitFetcherImp implements SplitFetcher {
                     ruleBasedSegmentsToUpdate.getToRemove(), change.ruleBasedSegments.t);
             _telemetryRuntimeProducer.recordSuccessfulSync(LastSynchronizationRecordsEnum.SPLITS, System.currentTimeMillis());
         }
+
         return segments;
     }
 
     private <T> boolean checkExitConditions(ChangeDto<T> change, long cn) {
         return change.s != cn || change.t < cn;
-    }
-
-    private boolean checkReturnConditions(SplitChange change) {
-        return ((change.featureFlags.s != _splitCacheProducer.getChangeNumber() || change.featureFlags.t < _splitCacheProducer.getChangeNumber()) &&
-                    (change.ruleBasedSegments.s != _ruleBasedSegmentCacheProducer.getChangeNumber() ||
-                            change.ruleBasedSegments.t < _ruleBasedSegmentCacheProducer.getChangeNumber()));
     }
 }

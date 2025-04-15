@@ -41,7 +41,7 @@ public final class RuleBasedSegmentParser {
                 break;
             }
             CombiningMatcher matcher = toMatcher(condition.matcherGroup);
-            parsedConditionList.add(new ParsedCondition(condition.conditionType, matcher, partitions, condition.label));
+            parsedConditionList.add(new ParsedCondition(condition.conditionType, matcher, null, condition.label));
         }
 
         return new ParsedRuleBasedSegment(
