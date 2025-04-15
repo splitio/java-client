@@ -33,7 +33,6 @@ public final class RuleBasedSegmentParser {
     private ParsedRuleBasedSegment parseWithoutExceptionHandling(RuleBasedSegment ruleBasedSegment) {
         List<ParsedCondition> parsedConditionList = Lists.newArrayList();
         for (Condition condition : ruleBasedSegment.conditions) {
-            List<Partition> partitions = condition.partitions;
             if (checkUnsupportedMatcherExist(condition.matcherGroup.matchers)) {
                 _log.error("Unsupported matcher type found for rule based segment: " + ruleBasedSegment.name +
                         " , will revert to default template matcher.");
