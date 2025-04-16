@@ -2,7 +2,6 @@ package io.split.client;
 
 import io.split.client.utils.LocalhostUtils;
 import io.split.grammar.Treatments;
-import io.split.service.SplitHttpClient;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;

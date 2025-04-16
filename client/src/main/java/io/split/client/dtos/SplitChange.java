@@ -1,12 +1,10 @@
 package io.split.client.dtos;
 
-import java.util.List;
+import com.google.gson.annotations.SerializedName;
 
 public class SplitChange {
-    public List<Split> splits;
-    public long since;
-    public long till;
-    public List<RuleBasedSegment> ruleBasedSegments;
-    public long sinceRBS;
-    public long tillRBS;
+    @SerializedName("ff")
+    public ChangeDto<Split> featureFlags;
+    @SerializedName("rbs")
+    public ChangeDto<RuleBasedSegment> ruleBasedSegments;
 }

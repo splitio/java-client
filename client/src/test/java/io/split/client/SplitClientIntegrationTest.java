@@ -1,7 +1,6 @@
 package io.split.client;
 
 import io.split.SSEMockServer;
-import io.split.Spec;
 import io.split.SplitMockServer;
 import io.split.client.api.SplitView;
 import io.split.client.dtos.EvaluationOptions;
@@ -26,8 +25,6 @@ import org.junit.Test;
 import javax.ws.rs.sse.OutboundSseEvent;
 import java.io.IOException;
 import java.net.URISyntaxException;
-
-import java.nio.Buffer;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Paths;
@@ -47,9 +44,9 @@ public class SplitClientIntegrationTest {
 
     @Test
     public void getTreatmentWithStreamingEnabled() throws Exception {
-        MockResponse response = new MockResponse().setBody("{\"splits\": [], \"since\":1585948850109, \"till\":1585948850109}");
-        MockResponse response2 = new MockResponse().setBody("{\"splits\": [], \"since\":1585948850110, \"till\":1585948850110}");
-        MockResponse response3 = new MockResponse().setBody("{\"splits\": [], \"since\":1585948850111, \"till\":1585948850111}");
+        MockResponse response = new MockResponse().setBody("{\"ff\":{\"d\": [], \"s\":1585948850109, \"t\":1585948850109}, \"rbs\":{\"d\":[],\"s\":-1,\"t\":-1}}");
+        MockResponse response2 = new MockResponse().setBody("{\"ff\":{\"d\": [], \"s\":1585948850110, \"t\":1585948850110}, \"rbs\":{\"d\":[],\"s\":-1,\"t\":-1}}");
+        MockResponse response3 = new MockResponse().setBody("{\"ff\":{\"d\": [], \"s\":1585948850111, \"t\":1585948850111}, \"rbs\":{\"d\":[],\"s\":-1,\"t\":-1}}");
         Queue responses = new LinkedList<>();
         responses.add(response);
         Queue responses2 = new LinkedList<>();
@@ -147,7 +144,7 @@ public class SplitClientIntegrationTest {
 
     @Test
     public void getTreatmentWithStreamingEnabledAndAuthDisabled() throws Exception {
-        MockResponse response = new MockResponse().setBody("{\"splits\": [], \"since\":1585948850109, \"till\":1585948850109}");
+        MockResponse response = new MockResponse().setBody("{\"ff\":{\"d\": [], \"s\":1585948850109, \"t\":1585948850109}, \"rbs\":{\"s\":-1,\"t\":-1,\"d\":[]}}");
         Queue responses = new LinkedList<>();
         responses.add(response);
         SplitMockServer splitServer = new SplitMockServer(CustomDispatcher.builder()
@@ -175,7 +172,7 @@ public class SplitClientIntegrationTest {
 
     @Test
     public void getTreatmentWithStreamingDisabled() throws Exception {
-        MockResponse response = new MockResponse().setBody("{\"splits\": [], \"since\":1585948850109, \"till\":1585948850109}");
+        MockResponse response = new MockResponse().setBody("{\"ff\":{\"d\": [], \"s\":1585948850109, \"t\":1585948850109}, \"rbs\":{\"d\":[],\"s\":-1,\"t\":-1}}");
         Queue responses = new LinkedList<>();
         responses.add(response);
         SplitMockServer splitServer = new SplitMockServer(CustomDispatcher.builder()
@@ -208,7 +205,7 @@ public class SplitClientIntegrationTest {
 
     @Test
     public void managerSplitsWithStreamingEnabled() throws Exception {
-        MockResponse response = new MockResponse().setBody("{\"splits\": [], \"since\":1585948850109, \"till\":1585948850109}");
+        MockResponse response = new MockResponse().setBody("{\"ff\":{\"d\": [], \"s\":1585948850109, \"t\":1585948850109}, \"rbs\":{\"d\":[],\"s\":-1,\"t\":-1}}");
         Queue responses = new LinkedList<>();
         responses.add(response);
         SplitMockServer splitServer = new SplitMockServer(CustomDispatcher.builder()
@@ -248,9 +245,9 @@ public class SplitClientIntegrationTest {
 
     @Test
     public void splitClientOccupancyNotifications() throws Exception {
-        MockResponse response = new MockResponse().setBody("{\"splits\": [], \"since\":1585948850109, \"till\":1585948850109}");
-        MockResponse response2 = new MockResponse().setBody("{\"splits\": [], \"since\":1585948850110, \"till\":1585948850110}");
-        MockResponse response3 = new MockResponse().setBody("{\"splits\": [], \"since\":1585948850111, \"till\":1585948850111}");
+        MockResponse response = new MockResponse().setBody("{\"ff\":{\"d\": [], \"s\":1585948850109, \"t\":1585948850109}, \"rbs\":{\"d\":[],\"s\":-1,\"t\":-1}}");
+        MockResponse response2 = new MockResponse().setBody("{\"ff\":{\"d\": [], \"s\":1585948850110, \"t\":1585948850110}, \"rbs\":{\"d\":[],\"s\":-1,\"t\":-1}}");
+        MockResponse response3 = new MockResponse().setBody("{\"ff\":{\"d\": [], \"s\":1585948850111, \"t\":1585948850111}, \"rbs\":{\"d\":[],\"s\":-1,\"t\":-1}}");
         Queue responses = new LinkedList<>();
         responses.add(response);
         Queue responses2 = new LinkedList<>();
@@ -323,9 +320,9 @@ public class SplitClientIntegrationTest {
 
     @Test
     public void splitClientControlNotifications() throws Exception {
-        MockResponse response = new MockResponse().setBody("{\"splits\": [], \"since\":1585948850109, \"till\":1585948850109}");
-        MockResponse response2 = new MockResponse().setBody("{\"splits\": [], \"since\":1585948850110, \"till\":1585948850110}");
-        MockResponse response3 = new MockResponse().setBody("{\"splits\": [], \"since\":1585948850111, \"till\":1585948850111}");
+        MockResponse response = new MockResponse().setBody("{\"ff\":{\"d\": [], \"s\":1585948850109, \"t\":1585948850109}, \"rbs\":{\"d\":[],\"s\":-1,\"t\":-1}}");
+        MockResponse response2 = new MockResponse().setBody("{\"ff\":{\"d\": [], \"s\":1585948850110, \"t\":1585948850110}, \"rbs\":{\"d\":[],\"s\":-1,\"t\":-1}}");
+        MockResponse response3 = new MockResponse().setBody("{\"ff\":{\"d\": [], \"s\":1585948850111, \"t\":1585948850111}, \"rbs\":{\"d\":[],\"s\":-1,\"t\":-1}}");
         Queue responses = new LinkedList<>();
         responses.add(response);
         Queue responses2 = new LinkedList<>();
@@ -418,7 +415,7 @@ public class SplitClientIntegrationTest {
 
     @Test
     public void splitClientMultiFactory() throws Exception {
-        MockResponse response = new MockResponse().setBody("{\"splits\": [], \"since\":1585948850109, \"till\":1585948850109}");
+        MockResponse response = new MockResponse().setBody("{\"ff\":{\"d\": [], \"s\":1585948850109, \"t\":1585948850109}, \"rbs\":{\"d\":[],\"s\":-1,\"t\":-1}}");
         Queue responses = new LinkedList<>();
         responses.add(response);
         responses.add(response);
@@ -567,7 +564,7 @@ public class SplitClientIntegrationTest {
 
     @Test
     public void keepAlive() throws Exception {
-        MockResponse response = new MockResponse().setBody("{\"splits\": [], \"since\":1585948850109, \"till\":1585948850109}");
+        MockResponse response = new MockResponse().setBody("{\"ff\":{\"d\": [], \"s\":1585948850109, \"t\":1585948850109}, \"rbs\":{\"d\":[],\"s\":-1,\"t\":-1}}");
         Queue responses = new LinkedList<>();
         responses.add(response);
 
@@ -605,7 +602,7 @@ public class SplitClientIntegrationTest {
 
     @Test
     public void testConnectionClosedByRemoteHostIsProperlyHandled() throws Exception {
-        MockResponse response = new MockResponse().setBody("{\"splits\": [], \"since\":1585948850109, \"till\":1585948850109}");
+        MockResponse response = new MockResponse().setBody("{\"ff\":{\"d\": [], \"s\":1585948850109, \"t\":1585948850109}, \"rbs\":{\"d\":[],\"s\":-1,\"t\":-1}}");
         Queue responses = new LinkedList<>();
         responses.add(response);
         SplitMockServer splitServer = new SplitMockServer(CustomDispatcher.builder()
@@ -643,7 +640,7 @@ public class SplitClientIntegrationTest {
 
     @Test
     public void testConnectionClosedIsProperlyHandled() throws Exception {
-        MockResponse response = new MockResponse().setBody("{\"splits\": [], \"since\":1585948850109, \"till\":1585948850109}");
+        MockResponse response = new MockResponse().setBody("{\"ff\":{\"d\": [], \"s\":1585948850109, \"t\":1585948850109}, \"rbs\":{\"d\":[],\"s\":-1,\"t\":-1}}");
         Queue responses = new LinkedList<>();
         responses.add(response);
         SplitMockServer splitServer = new SplitMockServer(CustomDispatcher.builder()
@@ -785,7 +782,6 @@ public class SplitClientIntegrationTest {
     public void ImpressionToggleOptimizedModeTest() throws Exception {
         String splits = new String(Files.readAllBytes(Paths.get("src/test/resources/splits_imp_toggle.json")), StandardCharsets.UTF_8);
         List<RecordedRequest> allRequests = new ArrayList<>();
-        Spec.SPEC_VERSION = Spec.SPEC_1_3;
         Dispatcher dispatcher = new Dispatcher() {
             @Override
             public MockResponse dispatch(RecordedRequest request) {
@@ -853,14 +849,12 @@ public class SplitClientIntegrationTest {
         server.shutdown();
         Assert.assertTrue(check1);
         Assert.assertTrue(check2);
-        Spec.SPEC_VERSION = Spec.SPEC_1_1;
     }
 
     @Test
     public void ImpressionToggleDebugModeTest() throws Exception {
         String splits = new String(Files.readAllBytes(Paths.get("src/test/resources/splits_imp_toggle.json")), StandardCharsets.UTF_8);
         List<RecordedRequest> allRequests = new ArrayList<>();
-        Spec.SPEC_VERSION = Spec.SPEC_1_3;
         Dispatcher dispatcher = new Dispatcher() {
             @Override
             public MockResponse dispatch(RecordedRequest request) {
@@ -936,14 +930,12 @@ public class SplitClientIntegrationTest {
         Assert.assertTrue(check1);
         Assert.assertTrue(check2);
         Assert.assertTrue(check3);
-        Spec.SPEC_VERSION = Spec.SPEC_1_1;
     }
 
     @Test
     public void ImpressionToggleNoneModeTest() throws Exception {
         String splits = new String(Files.readAllBytes(Paths.get("src/test/resources/splits_imp_toggle.json")), StandardCharsets.UTF_8);
         List<RecordedRequest> allRequests = new ArrayList<>();
-        Spec.SPEC_VERSION = Spec.SPEC_1_3;
         Dispatcher dispatcher = new Dispatcher() {
             @Override
             public MockResponse dispatch(RecordedRequest request) {
@@ -1015,14 +1007,12 @@ public class SplitClientIntegrationTest {
         Assert.assertFalse(check1);
         Assert.assertTrue(check2);
         Assert.assertTrue(check3);
-        Spec.SPEC_VERSION = Spec.SPEC_1_1;
     }
 
     @Test
     public void ImpressionPropertiesTest() throws Exception {
         String splits = new String(Files.readAllBytes(Paths.get("src/test/resources/splits_imp_toggle.json")), StandardCharsets.UTF_8);
         List<RecordedRequest> allRequests = new ArrayList<>();
-        Spec.SPEC_VERSION = Spec.SPEC_1_3;
         Dispatcher dispatcher = new Dispatcher() {
             @Override
             public MockResponse dispatch(RecordedRequest request) {
@@ -1098,7 +1088,6 @@ public class SplitClientIntegrationTest {
         server.shutdown();
         Assert.assertTrue(check1);
         Assert.assertTrue(check2);
-        Spec.SPEC_VERSION = Spec.SPEC_1_1;
     }
 
     private SSEMockServer buildSSEMockServer(SSEMockServer.SseEventQueue eventQueue) {

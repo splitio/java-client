@@ -67,9 +67,9 @@ public class AChangePerCallSplitChangeFetcher implements SplitChangeFetcher {
 
 
         SplitChange splitChange = new SplitChange();
-        splitChange.splits = Lists.newArrayList(add, remove);
-        splitChange.since = since;
-        splitChange.till = latestChangeNumber;
+        splitChange.featureFlags.d = Lists.newArrayList(add, remove);
+        splitChange.featureFlags.s = since;
+        splitChange.featureFlags.t = latestChangeNumber;
 
         _lastAdded.set(latestChangeNumber);
 
