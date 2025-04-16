@@ -8,15 +8,11 @@ import io.split.client.dtos.*;
 import io.split.client.impressions.Impression;
 import io.split.client.utils.Json;
 import io.split.client.utils.SDKMetadata;
-import io.split.client.utils.Utils;
 import io.split.engine.common.FetchOptions;
-import io.split.service.SplitHttpClient;
-import io.split.service.SplitHttpClientImpl;
 import org.apache.hc.client5.http.classic.methods.HttpPost;
 import org.apache.hc.client5.http.classic.methods.HttpUriRequest;
 import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
 import org.apache.hc.core5.http.HttpStatus;
-//import org.apache.hc.core5.http.Header;
 import org.junit.Assert;
 import org.junit.Test;
 import org.mockito.ArgumentCaptor;
@@ -39,7 +35,7 @@ public class HttpSplitClientTest {
     @Test
     public void testGetWithSpecialCharacters() throws URISyntaxException, InvocationTargetException,
             NoSuchMethodException, IllegalAccessException, IOException {
-        URI rootTarget = URI.create("https://api.split.io/splitChanges?since=1234567");
+        URI rootTarget = URI.create("https://api.split.io/splitChanges?since=1234567&rbSince=-1");
         CloseableHttpClient httpClientMock = TestHelper.mockHttpClient("split-change-special-characters.json",
                 HttpStatus.SC_OK);
         RequestDecorator decorator = new RequestDecorator(null);
@@ -61,10 +57,10 @@ public class HttpSplitClientTest {
         assertThat(headers[0].getName(), is(equalTo("Via")));
         assertThat(headers[0].getValues().get(0), is(equalTo("HTTP/1.1 m_proxy_rio1")));
         Assert.assertNotNull(change);
-        Assert.assertEquals(1, change.splits.size());
-        Assert.assertNotNull(change.splits.get(0));
+        Assert.assertEquals(1, change.featureFlags.d.size());
+        Assert.assertNotNull(change.featureFlags.d.get(0));
 
-        Split split = change.splits.get(0);
+        Split split = change.featureFlags.d.get(0);
         Map<String, String> configs = split.configurations;
         Assert.assertEquals(2, configs.size());
         Assert.assertEquals("{\"test\": \"blue\",\"grüne Straße\": 13}", configs.get("on"));

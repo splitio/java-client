@@ -31,6 +31,7 @@ public final class HttpSplitChangeFetcher implements SplitChangeFetcher {
     private static final Logger _log = LoggerFactory.getLogger(HttpSplitChangeFetcher.class);
 
     private static final String SINCE = "since";
+    private static final String RB_SINCE = "rbSince";
     private static final String TILL = "till";
     private static final String SETS = "sets";
     private static final String SPEC = "s";
@@ -56,20 +57,10 @@ public final class HttpSplitChangeFetcher implements SplitChangeFetcher {
     }
 
     @Override
-    public SplitChange fetch(long since, FetchOptions options) {
-
+    public SplitChange fetch(long since, long sinceRBS, FetchOptions options) {
         long start = System.currentTimeMillis();
-
         try {
-            URIBuilder uriBuilder = new URIBuilder(_target).addParameter(SPEC, "" + SPEC_VERSION);
-            uriBuilder.addParameter(SINCE, "" + since);
-            if (!options.flagSetsFilter().isEmpty()) {
-                uriBuilder.addParameter(SETS, "" + options.flagSetsFilter());
-            }
-            if (options.hasCustomCN()) {
-                uriBuilder.addParameter(TILL, "" + options.targetCN());
-            }
-            URI uri = uriBuilder.build();
+            URI uri = buildURL(options, since, sinceRBS);
             SplitHttpResponse response = _client.get(uri, options, null);
 
             if (response.statusCode() < HttpStatus.SC_OK || response.statusCode() >= HttpStatus.SC_MULTIPLE_CHOICES) {
@@ -77,6 +68,7 @@ public final class HttpSplitChangeFetcher implements SplitChangeFetcher {
                     _log.error("The amount of flag sets provided are big causing uri length error.");
                     throw new UriTooLongException(String.format("Status code: %s. Message: %s", response.statusCode(), response.statusMessage()));
                 }
+
                 _telemetryRuntimeProducer.recordSyncError(ResourceEnum.SPLIT_SYNC, response.statusCode());
                 throw new IllegalStateException(
                         String.format("Could not retrieve splitChanges since %s; http return code %s", since, response.statusCode())
@@ -86,8 +78,21 @@ public final class HttpSplitChangeFetcher implements SplitChangeFetcher {
         } catch (Exception e) {
             throw new IllegalStateException(String.format("Problem fetching splitChanges since %s: %s", since, e), e);
         } finally {
-            _telemetryRuntimeProducer.recordSyncLatency(HTTPLatenciesEnum.SPLITS, System.currentTimeMillis()-start);
+            _telemetryRuntimeProducer.recordSyncLatency(HTTPLatenciesEnum.SPLITS, System.currentTimeMillis() - start);
         }
+    }
+
+    private URI buildURL(FetchOptions options, long since, long sinceRBS) throws URISyntaxException {
+        URIBuilder uriBuilder = new URIBuilder(_target).addParameter(SPEC, "" + SPEC_VERSION);
+        uriBuilder.addParameter(SINCE, "" + since);
+        uriBuilder.addParameter(RB_SINCE, "" + sinceRBS);
+        if (!options.flagSetsFilter().isEmpty()) {
+            uriBuilder.addParameter(SETS, "" + options.flagSetsFilter());
+        }
+        if (options.hasCustomCN()) {
+            uriBuilder.addParameter(TILL, "" + options.targetCN());
+        }
+        return uriBuilder.build();
     }
 
     @VisibleForTesting

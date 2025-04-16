@@ -1,12 +1,14 @@
 package io.split.client;
 
 import com.google.gson.stream.JsonReader;
+import io.split.client.dtos.ChangeDto;
 import io.split.client.dtos.SplitChange;
 import io.split.client.utils.InputStreamProvider;
 import io.split.client.utils.Json;
 import io.split.client.utils.LocalhostSanitizer;
 import io.split.engine.common.FetchOptions;
 import io.split.engine.experiments.SplitChangeFetcher;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -15,6 +17,7 @@ import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.util.ArrayList;
 import java.util.Arrays;
 
 public class JsonLocalhostSplitChangeFetcher implements SplitChangeFetcher {
@@ -29,10 +32,16 @@ public class JsonLocalhostSplitChangeFetcher implements SplitChangeFetcher {
     }
 
     @Override
-    public SplitChange fetch(long since, FetchOptions options) {
+    public SplitChange fetch(long since, long sinceRBS, FetchOptions options) {
         try {
             JsonReader jsonReader = new JsonReader(new BufferedReader(new InputStreamReader(_inputStreamProvider.get(), StandardCharsets.UTF_8)));
             SplitChange splitChange = Json.fromJson(jsonReader, SplitChange.class);
+            splitChange.ruleBasedSegments = new ChangeDto<>();
+            
+            // TODO: Remove when updating the class to support RBS
+            splitChange.ruleBasedSegments.d = new ArrayList<>();
+            splitChange.ruleBasedSegments.t = -1;
+            splitChange.ruleBasedSegments.s = -1;
             return processSplitChange(splitChange, since);
         } catch (Exception e) {
             throw new IllegalStateException("Problem fetching splitChanges: " + e.getMessage(), e);
@@ -42,22 +51,22 @@ public class JsonLocalhostSplitChangeFetcher implements SplitChangeFetcher {
     private SplitChange processSplitChange(SplitChange splitChange, long changeNumber) throws NoSuchAlgorithmException {
         SplitChange splitChangeToProcess = LocalhostSanitizer.sanitization(splitChange);
         // if the till is less than storage CN and different from the default till ignore the change
-        if (splitChangeToProcess.till < changeNumber && splitChangeToProcess.till != -1) {
+        if (splitChangeToProcess.featureFlags.t < changeNumber && splitChangeToProcess.featureFlags.t != -1) {
             _log.warn("The till is lower than the change number or different to -1");
             return null;
         }
-        String splitJson = splitChange.splits.toString();
+        String splitJson = splitChange.featureFlags.d.toString();
         MessageDigest digest = MessageDigest.getInstance("SHA-1");
         digest.reset();
         digest.update(splitJson.getBytes());
         // calculate the json sha
         byte [] currHash = digest.digest();
         //if sha exist and is equal to before sha, or if till is equal to default till returns the same segmentChange with till equals to storage CN
-        if (Arrays.equals(lastHash, currHash) || splitChangeToProcess.till == -1) {
-            splitChangeToProcess.till = changeNumber;
+        if (Arrays.equals(lastHash, currHash) || splitChangeToProcess.featureFlags.t == -1) {
+            splitChangeToProcess.featureFlags.t = changeNumber;
         }
         lastHash = currHash;
-        splitChangeToProcess.since = changeNumber;
+        splitChangeToProcess.featureFlags.s = changeNumber;
         return splitChangeToProcess;
     }
 }

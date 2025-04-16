@@ -1,9 +1,14 @@
 package io.split.engine.experiments;
 
+import io.split.client.dtos.ChangeDto;
+import io.split.client.dtos.RuleBasedSegment;
+import io.split.client.dtos.Split;
 import io.split.client.dtos.SplitChange;
 import io.split.client.exceptions.UriTooLongException;
 import io.split.client.interceptors.FlagSetsFilter;
 import io.split.client.utils.FeatureFlagsToUpdate;
+import io.split.client.utils.RuleBasedSegmentsToUpdate;
+import io.split.storages.RuleBasedSegmentCacheProducer;
 import io.split.storages.SplitCacheProducer;
 import io.split.telemetry.domain.enums.LastSynchronizationRecordsEnum;
 import io.split.telemetry.storage.TelemetryRuntimeProducer;
@@ -16,6 +21,7 @@ import java.util.Set;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 import static io.split.client.utils.FeatureFlagProcessor.processFeatureFlagChanges;
+import static io.split.client.utils.RuleBasedSegmentProcessor.processRuleBasedSegmentChanges;
 
 /**
  * An ExperimentFetcher that refreshes experiment definitions periodically.
@@ -32,6 +38,8 @@ public class SplitFetcherImp implements SplitFetcher {
     private final Object _lock = new Object();
     private final TelemetryRuntimeProducer _telemetryRuntimeProducer;
     private final FlagSetsFilter _flagSetsFilter;
+    private final RuleBasedSegmentCacheProducer _ruleBasedSegmentCacheProducer;
+    private final RuleBasedSegmentParser _parserRBS;
 
     /**
      * Contains all the traffic types that are currently being used by the splits and also the count
@@ -44,10 +52,13 @@ public class SplitFetcherImp implements SplitFetcher {
      */
 
     public SplitFetcherImp(SplitChangeFetcher splitChangeFetcher, SplitParser parser, SplitCacheProducer splitCacheProducer,
-                           TelemetryRuntimeProducer telemetryRuntimeProducer, FlagSetsFilter flagSetsFilter) {
+                           TelemetryRuntimeProducer telemetryRuntimeProducer, FlagSetsFilter flagSetsFilter,
+                           RuleBasedSegmentParser parserRBS, RuleBasedSegmentCacheProducer ruleBasedSegmentCacheProducer) {
         _splitChangeFetcher = checkNotNull(splitChangeFetcher);
         _parser = checkNotNull(parser);
+        _parserRBS = checkNotNull(parserRBS);
         _splitCacheProducer = checkNotNull(splitCacheProducer);
+        _ruleBasedSegmentCacheProducer = checkNotNull(ruleBasedSegmentCacheProducer);
         _telemetryRuntimeProducer = checkNotNull(telemetryRuntimeProducer);
         _flagSetsFilter = flagSetsFilter;
     }
@@ -56,21 +67,31 @@ public class SplitFetcherImp implements SplitFetcher {
     public FetchResult forceRefresh(FetchOptions options) {
         _log.debug("Force Refresh feature flags starting ...");
         final long INITIAL_CN = _splitCacheProducer.getChangeNumber();
+        final long RBS_INITIAL_CN = _ruleBasedSegmentCacheProducer.getChangeNumber();
         Set<String> segments = new HashSet<>();
         try {
             while (true) {
                 long start = _splitCacheProducer.getChangeNumber();
+                long startRBS = _ruleBasedSegmentCacheProducer.getChangeNumber();
                 segments.addAll(runWithoutExceptionHandling(options));
                 long end = _splitCacheProducer.getChangeNumber();
+                long endRBS = _ruleBasedSegmentCacheProducer.getChangeNumber();
 
                 // If the previous execution was the first one, clear the `cdnBypass` flag
                 // for the next fetches. (This will clear a local copy of the fetch options,
                 // not the original object that was passed to this method).
+                FetchOptions.Builder optionsBuilder = new FetchOptions.Builder(options);
                 if (INITIAL_CN == start) {
-                    options = new FetchOptions.Builder(options).targetChangeNumber(FetchOptions.DEFAULT_TARGET_CHANGENUMBER).build();
+                    optionsBuilder.targetChangeNumber(FetchOptions.DEFAULT_TARGET_CHANGENUMBER);
                 }
 
-                if (start >= end) {
+                if (RBS_INITIAL_CN == startRBS) {
+                    optionsBuilder.targetChangeNumberRBS(FetchOptions.DEFAULT_TARGET_CHANGENUMBER);
+                }
+
+                options = optionsBuilder.build();
+
+                if (start >= end && startRBS >= endRBS) {
                     return new FetchResult(true, false, segments);
                 }
             }
@@ -95,36 +116,55 @@ public class SplitFetcherImp implements SplitFetcher {
     }
 
     private Set<String> runWithoutExceptionHandling(FetchOptions options) throws InterruptedException, UriTooLongException {
-        SplitChange change = _splitChangeFetcher.fetch(_splitCacheProducer.getChangeNumber(), options);
+        SplitChange change = _splitChangeFetcher.fetch(_splitCacheProducer.getChangeNumber(),
+                _ruleBasedSegmentCacheProducer.getChangeNumber(), options);
         Set<String> segments = new HashSet<>();
 
         if (change == null) {
             throw new IllegalStateException("SplitChange was null");
         }
 
-        if (change.since != _splitCacheProducer.getChangeNumber() || change.till < _splitCacheProducer.getChangeNumber()) {
-            // some other thread may have updated the shared state. exit
+        if (checkExitConditions(change.featureFlags, _splitCacheProducer.getChangeNumber()) ||
+            checkExitConditions(change.ruleBasedSegments, _ruleBasedSegmentCacheProducer.getChangeNumber())) {
             return segments;
         }
 
-        if (change.splits.isEmpty()) {
-            // there are no changes. weird!
-            _splitCacheProducer.setChangeNumber(change.till);
+        if (change.featureFlags.d.isEmpty()) {
+            _splitCacheProducer.setChangeNumber(change.featureFlags.t);
+        }
+
+        if (change.ruleBasedSegments.d.isEmpty()) {
+            _ruleBasedSegmentCacheProducer.setChangeNumber(change.ruleBasedSegments.t);
+        }
+        
+        if (change.featureFlags.d.isEmpty() && change.ruleBasedSegments.d.isEmpty()) {
             return segments;
         }
+
 
         synchronized (_lock) {
             // check state one more time.
-            if (change.since != _splitCacheProducer.getChangeNumber()
-                    || change.till < _splitCacheProducer.getChangeNumber()) {
+            if (checkExitConditions(change.featureFlags, _splitCacheProducer.getChangeNumber()) ||
+                    checkExitConditions(change.ruleBasedSegments, _ruleBasedSegmentCacheProducer.getChangeNumber())) {
                 // some other thread may have updated the shared state. exit
                 return segments;
             }
-            FeatureFlagsToUpdate featureFlagsToUpdate = processFeatureFlagChanges(_parser, change.splits, _flagSetsFilter);
+            FeatureFlagsToUpdate featureFlagsToUpdate = processFeatureFlagChanges(_parser, change.featureFlags.d, _flagSetsFilter);
             segments = featureFlagsToUpdate.getSegments();
-            _splitCacheProducer.update(featureFlagsToUpdate.getToAdd(), featureFlagsToUpdate.getToRemove(), change.till);
+            _splitCacheProducer.update(featureFlagsToUpdate.getToAdd(), featureFlagsToUpdate.getToRemove(), change.featureFlags.t);
+
+            RuleBasedSegmentsToUpdate ruleBasedSegmentsToUpdate = processRuleBasedSegmentChanges(_parserRBS,
+                    change.ruleBasedSegments.d);
+            segments.addAll(ruleBasedSegmentsToUpdate.getSegments());
+            _ruleBasedSegmentCacheProducer.update(ruleBasedSegmentsToUpdate.getToAdd(),
+                    ruleBasedSegmentsToUpdate.getToRemove(), change.ruleBasedSegments.t);
             _telemetryRuntimeProducer.recordSuccessfulSync(LastSynchronizationRecordsEnum.SPLITS, System.currentTimeMillis());
         }
+
         return segments;
+    }
+
+    private <T> boolean checkExitConditions(ChangeDto<T> change, long cn) {
+        return change.s != cn || change.t < cn;
     }
 }

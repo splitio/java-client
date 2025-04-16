@@ -30,14 +30,14 @@ public final class LocalhostSanitizer {
     public static SplitChange sanitization(SplitChange splitChange) {
         SecureRandom random = new SecureRandom();
         List<Split> splitsToRemove = new ArrayList<>();
-        if (splitChange.till < LocalhostConstants.DEFAULT_TS || splitChange.till == 0) {
-            splitChange.till = LocalhostConstants.DEFAULT_TS;
+        if (splitChange.featureFlags.t < LocalhostConstants.DEFAULT_TS || splitChange.featureFlags.t == 0) {
+            splitChange.featureFlags.t = LocalhostConstants.DEFAULT_TS;
         }
-        if (splitChange.since < LocalhostConstants.DEFAULT_TS || splitChange.since > splitChange.till) {
-            splitChange.since = splitChange.till;
+        if (splitChange.featureFlags.s < LocalhostConstants.DEFAULT_TS || splitChange.featureFlags.s > splitChange.featureFlags.t) {
+            splitChange.featureFlags.s = splitChange.featureFlags.t;
         }
-        if (splitChange.splits != null) {
-            for (Split split: splitChange.splits) {
+        if (splitChange.featureFlags.d != null) {
+            for (Split split: splitChange.featureFlags.d) {
                 if (split.name == null){
                     splitsToRemove.add(split);
                     continue;
@@ -83,10 +83,10 @@ public final class LocalhostSanitizer {
                     split.conditions.add(createRolloutCondition(rolloutCondition, split.trafficTypeName, null));
                 }
             }
-            splitChange.splits.removeAll(splitsToRemove);
+            splitChange.featureFlags.d.removeAll(splitsToRemove);
             return splitChange;
         }
-        splitChange.splits = new ArrayList<>();
+        splitChange.featureFlags.d = new ArrayList<>();
         return splitChange;
     }
      public static SegmentChange sanitization(SegmentChange segmentChange) {
