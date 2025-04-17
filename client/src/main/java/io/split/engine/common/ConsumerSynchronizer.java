@@ -35,7 +35,7 @@ public class ConsumerSynchronizer implements Synchronizer{
     }
 
     @Override
-    public void refreshSplits(Long targetChangeNumber) {
+    public void refreshSplits(Long targetChangeNumber, Long ruleBasedSegmentChangeNumber) {
         //No-Op
     }
 

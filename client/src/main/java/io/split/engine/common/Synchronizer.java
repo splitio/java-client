@@ -6,7 +6,7 @@ public interface Synchronizer {
     boolean syncAll();
     void startPeriodicFetching();
     void stopPeriodicFetching();
-    void refreshSplits(Long targetChangeNumber);
+    void refreshSplits(Long targetChangeNumber, Long ruleBasedSegmentChangeNumber);
     void localKillSplit(SplitKillNotification splitKillNotification);
     void refreshSegment(String segmentName, Long targetChangeNumber);
     void startPeriodicDataRecording();

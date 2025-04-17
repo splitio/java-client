@@ -98,4 +98,9 @@ public class RuleBasedSegmentCacheInMemoryImp implements RuleBasedSegmentCache {
         return _concurrentMap.values().stream()
                 .flatMap(parsedRuleBasedSegment -> parsedRuleBasedSegment.getSegmentsNames().stream()).collect(Collectors.toSet());
     }
+
+    @Override
+    public boolean contains(Set<String> ruleBasedSegmentNames) {
+        return getSegments().contains(ruleBasedSegmentNames);
+    }
 }

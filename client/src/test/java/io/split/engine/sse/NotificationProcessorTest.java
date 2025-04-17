@@ -7,6 +7,7 @@ import io.split.engine.sse.dtos.OccupancyNotification;
 import io.split.engine.sse.dtos.SegmentChangeNotification;
 import io.split.engine.sse.dtos.SegmentQueueDto;
 import io.split.engine.sse.dtos.SplitKillNotification;
+import io.split.engine.sse.dtos.RuleBasedSegmentChangeNotification;
 import io.split.engine.sse.workers.SegmentsWorkerImp;
 import io.split.engine.sse.workers.FeatureFlagsWorker;
 import io.split.engine.sse.workers.Worker;
@@ -40,6 +41,21 @@ public class NotificationProcessorTest {
         FeatureFlagChangeNotification splitChangeNotification = new FeatureFlagChangeNotification(genericNotificationData);
 
         _notificationProcessor.process(splitChangeNotification);
+
+        Mockito.verify(_featureFlagsWorker, Mockito.times(1)).addToQueue(Mockito.anyObject());
+    }
+
+    @Test
+    public void processRuleBasedSegmentUpdateAddToQueueInWorker() {
+        long changeNumber = 1585867723838L;
+        String channel = "splits";
+        GenericNotificationData genericNotificationData = GenericNotificationData.builder()
+                .changeNumber(changeNumber)
+                .channel(channel)
+                .build();
+        RuleBasedSegmentChangeNotification ruleBasedSegmentChangeNotification = new RuleBasedSegmentChangeNotification(genericNotificationData);
+
+        _notificationProcessor.process(ruleBasedSegmentChangeNotification);
 
         Mockito.verify(_featureFlagsWorker, Mockito.times(1)).addToQueue(Mockito.anyObject());
     }

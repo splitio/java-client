@@ -2,6 +2,7 @@ package io.split.engine.experiments;
 
 import com.google.common.collect.ImmutableList;
 import io.split.engine.matchers.AttributeMatcher;
+import io.split.engine.matchers.RuleBasedSegmentMatcher;
 import io.split.engine.matchers.UserDefinedSegmentMatcher;
 
 import java.util.HashSet;
@@ -243,6 +244,15 @@ public class ParsedSplit {
                 .collect(Collectors.toSet());
     }
 
+    public Set<String> getRuleBasedSegmentsNames() {
+        return parsedConditions().stream()
+                .flatMap(parsedCondition -> parsedCondition.matcher().attributeMatchers().stream())
+                .filter(ParsedSplit::isRuleBasedSegmentMatcher)
+                .map(ParsedSplit::asRuleBasedSegmentMatcherForEach)
+                .map(RuleBasedSegmentMatcher::getSegmentName)
+                .collect(Collectors.toSet());
+    }
+
     private static boolean isSegmentMatcher(AttributeMatcher attributeMatcher) {
         return ((AttributeMatcher.NegatableMatcher) attributeMatcher.matcher()).delegate() instanceof UserDefinedSegmentMatcher;
     }
@@ -251,4 +261,11 @@ public class ParsedSplit {
         return (UserDefinedSegmentMatcher) ((AttributeMatcher.NegatableMatcher) attributeMatcher.matcher()).delegate();
     }
 
+    private static boolean isRuleBasedSegmentMatcher(AttributeMatcher attributeMatcher) {
+        return ((AttributeMatcher.NegatableMatcher) attributeMatcher.matcher()).delegate() instanceof RuleBasedSegmentMatcher;
+    }
+
+    private static RuleBasedSegmentMatcher asRuleBasedSegmentMatcherForEach(AttributeMatcher attributeMatcher) {
+        return (RuleBasedSegmentMatcher) ((AttributeMatcher.NegatableMatcher) attributeMatcher.matcher()).delegate();
+    }
 }

@@ -5,6 +5,7 @@ import io.split.engine.sse.NotificationProcessor;
 public abstract class IncomingNotification {
     public enum Type {
         SPLIT_UPDATE,
+        RB_SEGMENT_UPDATE,
         SPLIT_KILL,
         SEGMENT_UPDATE,
         CONTROL,

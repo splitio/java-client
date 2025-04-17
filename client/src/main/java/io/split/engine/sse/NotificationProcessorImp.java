@@ -7,6 +7,7 @@ import io.split.engine.sse.dtos.IncomingNotification;
 import io.split.engine.sse.dtos.SplitKillNotification;
 import io.split.engine.sse.dtos.StatusNotification;
 import io.split.engine.sse.dtos.SegmentQueueDto;
+import io.split.engine.sse.dtos.RuleBasedSegmentChangeNotification;
 import io.split.engine.sse.workers.FeatureFlagsWorker;
 import io.split.engine.sse.workers.Worker;
 
@@ -39,6 +40,11 @@ public class NotificationProcessorImp implements NotificationProcessor {
     @Override
     public void processSplitUpdate(FeatureFlagChangeNotification featureFlagChangeNotification) {
         _featureFlagsWorker.addToQueue(featureFlagChangeNotification);
+    }
+
+    @Override
+    public void processRuleBasedSegmentUpdate(RuleBasedSegmentChangeNotification ruleBasedSegmentChangeNotification) {
+        _featureFlagsWorker.addToQueue(ruleBasedSegmentChangeNotification);
     }
 
     @Override

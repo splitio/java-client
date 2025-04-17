@@ -2,6 +2,7 @@ package io.split.engine.common;
 
 import com.google.common.annotations.VisibleForTesting;
 import io.split.client.interceptors.FlagSetsFilter;
+import io.split.engine.experiments.RuleBasedSegmentParser;
 import io.split.engine.experiments.SplitParser;
 import io.split.engine.sse.AuthApiClient;
 import io.split.engine.sse.AuthApiClientImp;
@@ -17,6 +18,7 @@ import io.split.engine.sse.workers.FeatureFlagsWorker;
 import io.split.engine.sse.workers.FeatureFlagWorkerImp;
 import io.split.engine.sse.workers.Worker;
 
+import io.split.storages.RuleBasedSegmentCache;
 import io.split.storages.SplitCacheProducer;
 import io.split.telemetry.domain.StreamingEvent;
 import io.split.telemetry.domain.enums.StreamEventsEnum;
@@ -79,9 +81,11 @@ public class PushManagerImp implements PushManager {
                                        ThreadFactory threadFactory,
                                        SplitParser splitParser,
                                        SplitCacheProducer splitCacheProducer,
-                                       FlagSetsFilter flagSetsFilter) {
-        FeatureFlagsWorker featureFlagsWorker = new FeatureFlagWorkerImp(synchronizer, splitParser, splitCacheProducer,
-                telemetryRuntimeProducer, flagSetsFilter);
+                                       FlagSetsFilter flagSetsFilter,
+                                       RuleBasedSegmentCache ruleBasedSegmentCache,
+                                       RuleBasedSegmentParser ruleBasedSegmentParser) {
+        FeatureFlagsWorker featureFlagsWorker = new FeatureFlagWorkerImp(synchronizer, splitParser, ruleBasedSegmentParser, splitCacheProducer,
+                ruleBasedSegmentCache, telemetryRuntimeProducer, flagSetsFilter);
         Worker<SegmentQueueDto> segmentWorker = new SegmentsWorkerImp(synchronizer);
         PushStatusTracker pushStatusTracker = new PushStatusTrackerImp(statusMessages, telemetryRuntimeProducer);
 

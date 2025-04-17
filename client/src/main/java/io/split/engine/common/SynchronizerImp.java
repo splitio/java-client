@@ -9,6 +9,7 @@ import io.split.engine.experiments.SplitSynchronizationTask;
 import io.split.engine.segments.SegmentFetcher;
 import io.split.engine.segments.SegmentSynchronizationTask;
 import io.split.engine.sse.dtos.SplitKillNotification;
+import io.split.storages.RuleBasedSegmentCacheProducer;
 import io.split.storages.SegmentCacheProducer;
 import io.split.storages.SplitCacheProducer;
 import io.split.telemetry.synchronizer.TelemetrySyncTask;
@@ -34,6 +35,7 @@ public class SynchronizerImp implements Synchronizer {
     private final SplitFetcher _splitFetcher;
     private final SegmentSynchronizationTask _segmentSynchronizationTaskImp;
     private final SplitCacheProducer _splitCacheProducer;
+    private final RuleBasedSegmentCacheProducer _ruleBasedSegmentCacheProducer;
     private final SegmentCacheProducer segmentCacheProducer;
     private final ImpressionsManager _impressionManager;
     private final EventsTask _eventsTask;
@@ -48,6 +50,7 @@ public class SynchronizerImp implements Synchronizer {
                            SplitFetcher splitFetcher,
                            SplitCacheProducer splitCacheProducer,
                            SegmentCacheProducer segmentCacheProducer,
+                           RuleBasedSegmentCacheProducer ruleBasedSegmentCacheProducer,
                            int onDemandFetchRetryDelayMs,
                            int onDemandFetchMaxRetries,
                            int failedAttemptsBeforeLogging,
@@ -56,6 +59,7 @@ public class SynchronizerImp implements Synchronizer {
         _splitFetcher = checkNotNull(splitFetcher);
         _segmentSynchronizationTaskImp = checkNotNull(splitTasks.getSegmentSynchronizationTask());
         _splitCacheProducer = checkNotNull(splitCacheProducer);
+        _ruleBasedSegmentCacheProducer = checkNotNull(ruleBasedSegmentCacheProducer);
         this.segmentCacheProducer = checkNotNull(segmentCacheProducer);
         _onDemandFetchRetryDelayMs = checkNotNull(onDemandFetchRetryDelayMs);
         _onDemandFetchMaxRetries = onDemandFetchMaxRetries;
@@ -103,7 +107,7 @@ public class SynchronizerImp implements Synchronizer {
         private final FetchResult _fetchResult;
     }
 
-    private SyncResult attemptSplitsSync(long targetChangeNumber,
+    private SyncResult attemptSplitsSync(long targetChangeNumber, long ruleBasedSegmentChangeNumber,
                                          FetchOptions opts,
                                          Function<Void, Long> nextWaitMs,
                                          int maxRetries) {
@@ -114,7 +118,8 @@ public class SynchronizerImp implements Synchronizer {
             if (fetchResult != null && !fetchResult.retry() && !fetchResult.isSuccess()) {
                 return new SyncResult(false, remainingAttempts, fetchResult);
             }
-            if (targetChangeNumber <= _splitCacheProducer.getChangeNumber()) {
+            if ((targetChangeNumber != 0 && targetChangeNumber <= _splitCacheProducer.getChangeNumber()) ||
+                    (ruleBasedSegmentChangeNumber != 0 && ruleBasedSegmentChangeNumber <= _ruleBasedSegmentCacheProducer.getChangeNumber())) {
                 return new SyncResult(true, remainingAttempts, fetchResult);
             } else if (remainingAttempts <= 0) {
                 return new SyncResult(false, remainingAttempts, fetchResult);
@@ -130,9 +135,11 @@ public class SynchronizerImp implements Synchronizer {
     }
 
     @Override
-    public void refreshSplits(Long targetChangeNumber) {
+    public void refreshSplits(Long targetChangeNumber, Long ruleBasedSegmentChangeNumber) {
 
-        if (targetChangeNumber <= _splitCacheProducer.getChangeNumber()) {
+        if ((targetChangeNumber != 0 && targetChangeNumber <= _splitCacheProducer.getChangeNumber()) ||
+                (ruleBasedSegmentChangeNumber != 0 && ruleBasedSegmentChangeNumber <= _ruleBasedSegmentCacheProducer.getChangeNumber()) ||
+                (ruleBasedSegmentChangeNumber == 0 && targetChangeNumber == 0)) {
             return;
         }
 
@@ -142,7 +149,7 @@ public class SynchronizerImp implements Synchronizer {
                 .flagSetsFilter(_sets)
                 .build();
 
-        SyncResult regularResult = attemptSplitsSync(targetChangeNumber, opts,
+        SyncResult regularResult = attemptSplitsSync(targetChangeNumber, ruleBasedSegmentChangeNumber, opts,
                 (discard) -> (long) _onDemandFetchRetryDelayMs, _onDemandFetchMaxRetries);
 
         int attempts =  _onDemandFetchMaxRetries - regularResult.remainingAttempts();
@@ -157,7 +164,7 @@ public class SynchronizerImp implements Synchronizer {
         _log.info(String.format("No changes fetched after %s attempts. Will retry bypassing CDN.", attempts));
         FetchOptions withCdnBypass = new FetchOptions.Builder(opts).targetChangeNumber(targetChangeNumber).build();
         Backoff backoff = new Backoff(ON_DEMAND_FETCH_BACKOFF_BASE_MS, ON_DEMAND_FETCH_BACKOFF_MAX_WAIT_MS);
-        SyncResult withCDNBypassed = attemptSplitsSync(targetChangeNumber, withCdnBypass,
+        SyncResult withCDNBypassed = attemptSplitsSync(targetChangeNumber, ruleBasedSegmentChangeNumber, withCdnBypass,
                 (discard) -> backoff.interval(), ON_DEMAND_FETCH_BACKOFF_MAX_RETRIES);
 
         int withoutCDNAttempts = ON_DEMAND_FETCH_BACKOFF_MAX_RETRIES - withCDNBypassed._remainingAttempts;
@@ -175,7 +182,7 @@ public class SynchronizerImp implements Synchronizer {
         if (splitKillNotification.getChangeNumber() > _splitCacheProducer.getChangeNumber()) {
             _splitCacheProducer.kill(splitKillNotification.getSplitName(), splitKillNotification.getDefaultTreatment(),
                     splitKillNotification.getChangeNumber());
-            refreshSplits(splitKillNotification.getChangeNumber());
+            refreshSplits(splitKillNotification.getChangeNumber(), 0L);
         }
     }
 

@@ -22,6 +22,7 @@ import io.split.engine.matchers.GreaterThanOrEqualToSemverMatcher;
 import io.split.engine.matchers.LessThanOrEqualToSemverMatcher;
 import io.split.engine.matchers.InListSemverMatcher;
 import io.split.engine.matchers.BetweenSemverMatcher;
+import io.split.engine.matchers.RuleBasedSegmentMatcher;
 import io.split.engine.matchers.collections.ContainsAllOfSetMatcher;
 import io.split.engine.matchers.collections.ContainsAnyOfSetMatcher;
 import io.split.engine.matchers.collections.EqualToSetMatcher;
@@ -182,6 +183,11 @@ public final class ParserUtils {
             case BETWEEN_SEMVER:
                 checkNotNull(matcher.betweenStringMatcherData, "betweenStringMatcherData is required for BETWEEN_SEMVER matcher type");
                 delegate = new BetweenSemverMatcher(matcher.betweenStringMatcherData.start, matcher.betweenStringMatcherData.end);
+                break;
+            case IN_RULE_BASED_SEGMENT:
+                checkNotNull(matcher.userDefinedSegmentMatcherData);
+                String ruleBasedSegmentName = matcher.userDefinedSegmentMatcherData.segmentName;
+                delegate = new RuleBasedSegmentMatcher(ruleBasedSegmentName);
                 break;
             default:
                 throw new IllegalArgumentException("Unknown matcher type: " + matcher.matcherType);
