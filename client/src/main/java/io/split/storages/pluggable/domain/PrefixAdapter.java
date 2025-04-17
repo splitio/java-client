@@ -20,6 +20,8 @@ public class PrefixAdapter {
     private static final String EXCEPTIONS = "exceptions";
     private static final String INIT = "init";
     private static final String FLAG_SET = "flagSet";
+    private static final String RULE_BASED_SEGMENT_PREFIX = "rbsegment";
+    private static final String RULE_BASED_SEGMENTS_PREFIX = "rbsegments";
 
     public static String buildSplitKey(String name) {
         return String.format(DEFAULT_PREFIX+ SPLIT_PREFIX +"%s", name);
@@ -35,6 +37,22 @@ public class PrefixAdapter {
 
     public static String buildSplitsPrefix(){
         return DEFAULT_PREFIX+SPLIT_PREFIX;
+    }
+
+    public static String buildRuleBasedSegmentKey(String name) {
+        return String.format(DEFAULT_PREFIX+ RULE_BASED_SEGMENT_PREFIX +"%s", name);
+    }
+
+    public static String buildRuleBasedSegmentsPrefix(){
+        return DEFAULT_PREFIX+RULE_BASED_SEGMENT_PREFIX;
+    }
+
+    public static String buildRuleBasedSegmentChangeNumber() {
+        return DEFAULT_PREFIX+RULE_BASED_SEGMENTS_PREFIX+"till";
+    }
+
+    public static String buildGetAllRuleBasedSegment() {
+        return DEFAULT_PREFIX+RULE_BASED_SEGMENT_PREFIX+"*";
     }
 
     public static String buildTrafficTypeExists(String trafficType) {
