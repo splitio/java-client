@@ -16,10 +16,11 @@ public class Impression {
     private final Long _changeNumber;
     private Long _pt;
     private final Map<String, Object> _attributes;
+    private final String _properties;
 
 
     public Impression(String key, String bucketingKey, String featureFlag, String treatment, long time, String appliedRule,
-                      Long changeNumber, Map<String, Object> atributes) {
+                      Long changeNumber, Map<String, Object> atributes, String properties) {
         _key = key;
         _bucketingKey = bucketingKey;
         _split = featureFlag;
@@ -28,6 +29,7 @@ public class Impression {
         _appliedRule = appliedRule;
         _changeNumber = changeNumber;
         _attributes = atributes;
+        _properties = properties;
     }
 
     public String key() {
@@ -67,4 +69,8 @@ public class Impression {
     }
 
     public Impression withPreviousTime(Long pt) { _pt = pt; return this; }
+
+    public String properties() {
+        return _properties;
+    }
 }

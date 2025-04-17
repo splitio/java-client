@@ -25,6 +25,7 @@ public class KeyImpressionTest {
         imp.changeNumber = 123L;
         imp.time = 456L;
         imp.previousTime = 789L;
+        imp.properties = "{\"name\": \"value\"}";
 
         String serialized = gson.toJson(imp);
         Map<String, Object> deSerialized = gson.fromJson(serialized, new TypeToken<Map<String, Object>>() { }.getType());
@@ -65,5 +66,11 @@ public class KeyImpressionTest {
         assertThat(previousTime, is(notNullValue()));
         assertThat(previousTime, instanceOf(Double.class));
         assertThat(previousTime, is(789.0));
+
+        Object properties = deSerialized.get(KeyImpression.FIELD_PROPERTIES);
+        assertThat(properties, is(notNullValue()));
+        assertThat(properties, instanceOf(String.class));
+        assertThat(properties, is("{\"name\": \"value\"}"));
+
     }
 }

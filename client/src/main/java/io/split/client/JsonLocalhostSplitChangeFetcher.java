@@ -47,13 +47,13 @@ public class JsonLocalhostSplitChangeFetcher implements SplitChangeFetcher {
             return null;
         }
         String splitJson = splitChange.splits.toString();
-        MessageDigest digest = MessageDigest.getInstance("SHA-1");
+        MessageDigest digest = MessageDigest.getInstance("SHA-256");
         digest.reset();
         digest.update(splitJson.getBytes());
         // calculate the json sha
         byte [] currHash = digest.digest();
         //if sha exist and is equal to before sha, or if till is equal to default till returns the same segmentChange with till equals to storage CN
-        if (Arrays.equals(lastHash, currHash) || splitChangeToProcess.till == -1) {
+        if (java.security.MessageDigest.isEqual(lastHash, currHash) || splitChangeToProcess.till == -1) {
             splitChangeToProcess.till = changeNumber;
         }
         lastHash = currHash;

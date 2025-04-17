@@ -19,6 +19,9 @@ public class ProcessImpressionDebug implements ProcessImpressionStrategy{
     @Override
     public ImpressionsResult process(List<Impression> impressions) {
         for(Impression impression : impressions) {
+            if (impression.properties() != null) {
+                continue;
+            }
             impression.withPreviousTime(_impressionObserver.testAndSet(impression));
         }
         List<Impression> impressionForListener =  this._listenerEnabled ? impressions : null;

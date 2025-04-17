@@ -3,6 +3,7 @@ package io.split.client;
 import io.split.SSEMockServer;
 import io.split.SplitMockServer;
 import io.split.client.api.SplitView;
+import io.split.client.dtos.EvaluationOptions;
 import io.split.client.impressions.ImpressionsManager;
 import io.split.client.utils.CustomDispatcher;
 import io.split.storages.enums.OperationMode;
@@ -773,7 +774,7 @@ public class SplitClientIntegrationTest {
 
         String result = client.getTreatment("admin", "workm");
         Assert.assertEquals("on", result);
-        Assert.assertEquals("on", client.getTreatmentsByFlagSet("admin", "set1", null).get("workm"));
+        Assert.assertEquals("on", client.getTreatmentsByFlagSet("admin", "set1", new HashMap<>()).get("workm"));
 
         client.destroy();
         splitServer.stop();
@@ -827,9 +828,9 @@ public class SplitClientIntegrationTest {
         SplitClient client = factory.client();
         client.blockUntilReady();
 
-        Assert.assertEquals("off", client.getTreatment("user1", "without_impression_toggle", null));
-        Assert.assertEquals("off", client.getTreatment("user2", "impression_toggle_on", null));
-        Assert.assertEquals("off", client.getTreatment("user3", "impression_toggle_off", null));
+        Assert.assertEquals("off", client.getTreatment("user1", "without_impression_toggle", new HashMap<>()));
+        Assert.assertEquals("off", client.getTreatment("user2", "impression_toggle_on", new HashMap<>()));
+        Assert.assertEquals("off", client.getTreatment("user3", "impression_toggle_off", new HashMap<>()));
         client.destroy();
         boolean check1 = false, check2 = false;
         for (int i=0; i < allRequests.size(); i++ ) {
@@ -901,9 +902,9 @@ public class SplitClientIntegrationTest {
         SplitClient client = factory.client();
         client.blockUntilReady();
 
-        Assert.assertEquals("off", client.getTreatment("user1", "without_impression_toggle", null));
-        Assert.assertEquals("off", client.getTreatment("user2", "impression_toggle_on", null));
-        Assert.assertEquals("off", client.getTreatment("user3", "impression_toggle_off", null));
+        Assert.assertEquals("off", client.getTreatment("user1", "without_impression_toggle", new HashMap<>()));
+        Assert.assertEquals("off", client.getTreatment("user2", "impression_toggle_on", new HashMap<>()));
+        Assert.assertEquals("off", client.getTreatment("user3", "impression_toggle_off", new HashMap<>()));
         client.destroy();
         boolean check1 = false, check2 = false, check3 = false;
         for (int i=0; i < allRequests.size(); i++ ) {
@@ -983,9 +984,9 @@ public class SplitClientIntegrationTest {
         SplitClient client = factory.client();
         client.blockUntilReady();
 
-        Assert.assertEquals("off", client.getTreatment("user1", "without_impression_toggle", null));
-        Assert.assertEquals("off", client.getTreatment("user2", "impression_toggle_on", null));
-        Assert.assertEquals("off", client.getTreatment("user3", "impression_toggle_off", null));
+        Assert.assertEquals("off", client.getTreatment("user1", "without_impression_toggle", new HashMap<>()));
+        Assert.assertEquals("off", client.getTreatment("user2", "impression_toggle_on", new HashMap<>()));
+        Assert.assertEquals("off", client.getTreatment("user3", "impression_toggle_off", new HashMap<>()));
         client.destroy();
         boolean check1 = false, check2 = false, check3 = false;
         for (int i=0; i < allRequests.size(); i++ ) {
@@ -1011,6 +1012,88 @@ public class SplitClientIntegrationTest {
         Assert.assertFalse(check1);
         Assert.assertTrue(check2);
         Assert.assertTrue(check3);
+    }
+
+    @Test
+    public void ImpressionPropertiesTest() throws Exception {
+        String splits = new String(Files.readAllBytes(Paths.get("src/test/resources/splits_imp_toggle.json")), StandardCharsets.UTF_8);
+        List<RecordedRequest> allRequests = new ArrayList<>();
+
+        Dispatcher dispatcher = new Dispatcher() {
+            @Override
+            public MockResponse dispatch(RecordedRequest request) {
+                allRequests.add(request);
+                switch (request.getPath()) {
+                    case "/api/splitChanges?s=1.1&since=-1":
+                        return new MockResponse().setResponseCode(200).setBody(splits);
+                    case "/api/splitChanges?s=1.1&since=1602796638344":
+                        return new MockResponse().setResponseCode(200).setBody("{\"splits\": [], \"since\":1602796638344, \"till\":1602796638344}");
+                    case "/api/testImpressions/bulk":
+                        return new MockResponse().setResponseCode(200);
+                    case "/api/testImpressions/count":
+                        return new MockResponse().setResponseCode(200);
+                    case "/v1/keys/ss":
+                        return new MockResponse().setResponseCode(200);
+                    case "/v1/metrics/usage":
+                        return new MockResponse().setResponseCode(200);
+                    case "/v1/metrics/config":
+                        return new MockResponse().setResponseCode(200);
+                }
+                return new MockResponse().setResponseCode(404);
+            }
+        };
+
+        MockWebServer server = new MockWebServer();
+        server.setDispatcher(dispatcher);
+
+        server.start();
+        String serverURL = String.format("http://%s:%s", server.getHostName(), server.getPort());
+        SplitClientConfig config = SplitClientConfig.builder()
+                .setBlockUntilReadyTimeout(10000)
+                .endpoint(serverURL, serverURL)
+                .telemetryURL(serverURL + "/v1")
+                .authServiceURL(String.format("%s/api/auth/enabled", serverURL))
+                .streamingEnabled(false)
+                .featuresRefreshRate(5)
+                .impressionsMode(ImpressionsManager.Mode.DEBUG)
+                .build();
+
+        SplitFactory factory = SplitFactoryBuilder.build("fake-api-token", config);
+        SplitClient client = factory.client();
+        client.blockUntilReady();
+
+        Assert.assertEquals("off", client.getTreatment("user1", "without_impression_toggle", new HashMap<>(), new EvaluationOptions(new HashMap<String, Object>() {{ put("prop1", "val1"); }})));
+        Assert.assertEquals("off", client.getTreatment("user2", "impression_toggle_on", new HashMap<>(),  new EvaluationOptions(new HashMap<String, Object>()
+        {{
+            put("prop1", "val1");
+            put("prop2", "val2");
+        }})));
+        Assert.assertEquals("off", client.getTreatment("user3", "impression_toggle_on", new EvaluationOptions(null)));
+        client.destroy();
+        boolean check1 = false, check2 = false, check3 = false;
+        for (int i=0; i < allRequests.size(); i++ ) {
+            if (allRequests.get(i).getPath().equals("/api/testImpressions/bulk") ) {
+                String body = allRequests.get(i).getBody().readUtf8();
+                if (body.contains("user1")) {
+                    check1 = true;
+                    Assert.assertTrue(body.contains("without_impression_toggle"));
+                    Assert.assertTrue(body.contains("\"properties\":\"{\\\"prop1\\\":\\\"val1\\\"}\""));
+                }
+                if (body.contains("user2")) {
+                    check2 = true;
+                    Assert.assertTrue(body.contains("impression_toggle_on"));
+                    Assert.assertTrue(body.contains("\"properties\":\"{\\\"prop2\\\":\\\"val2\\\",\\\"prop1\\\":\\\"val1\\\"}\""));
+                }
+                if (body.contains("user3")) {
+                    check3 = true;
+                    Assert.assertTrue(body.contains("impression_toggle_on"));
+                    Assert.assertTrue(body.contains("\"properties\":null"));
+                }
+            }
+        }
+        server.shutdown();
+        Assert.assertTrue(check1);
+        Assert.assertTrue(check2);
     }
 
     private SSEMockServer buildSSEMockServer(SSEMockServer.SseEventQueue eventQueue) {

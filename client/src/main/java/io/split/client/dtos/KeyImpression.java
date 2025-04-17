@@ -15,6 +15,7 @@ public class KeyImpression {
     /* package private */ static final String FIELD_TIME = "m";
     /* package private */ static final String FIELD_CHANGE_NUMBER = "c";
     /* package private */ static final String FIELD_PREVIOUS_TIME = "pt";
+    /* package private */ static final String FIELD_PROPERTIES = "properties";
 
     public transient String feature; // Non-serializable
 
@@ -39,6 +40,9 @@ public class KeyImpression {
     @SerializedName(FIELD_PREVIOUS_TIME)
     public Long previousTime;
 
+    @SerializedName(FIELD_PROPERTIES)
+    public String properties;
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
@@ -50,6 +54,7 @@ public class KeyImpression {
         if (!Objects.equals(feature, that.feature)) return false;
         if (!keyName.equals(that.keyName)) return false;
         if (!treatment.equals(that.treatment)) return false;
+        if (properties != null && !properties.equals(that.properties)) return false;
 
         if (bucketingKey == null) {
             return that.bucketingKey == null;
@@ -78,6 +83,7 @@ public class KeyImpression {
         ki.treatment = i.treatment();
         ki.label = i.appliedRule();
         ki.previousTime = i.pt();
+        ki.properties = i.properties();
         return ki;
     }
 }

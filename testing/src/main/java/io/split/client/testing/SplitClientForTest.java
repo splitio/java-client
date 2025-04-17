@@ -3,11 +3,10 @@ package io.split.client.testing;
 import io.split.client.SplitClient;
 import io.split.client.api.Key;
 import io.split.client.api.SplitResult;
+import io.split.client.dtos.EvaluationOptions;
 import io.split.grammar.Treatments;
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.List;
+import java.util.*;
 import java.util.concurrent.TimeoutException;
 
 public class SplitClientForTest implements SplitClient {
@@ -189,6 +188,140 @@ public class SplitClientForTest implements SplitClient {
 
     @Override
     public Map<String, SplitResult> getTreatmentsWithConfigByFlagSets(Key key, List<String> flagSets, Map<String, Object> attributes) {
+        return new HashMap<>();
+    }
+
+    @Override
+    public String getTreatment(String key, String featureFlagName, EvaluationOptions evaluationOptions) {
+        return null;
+    }
+
+    @Override
+    public String getTreatment(String key, String featureFlagName, Map<String, Object> attributes, EvaluationOptions evaluationOptions) {
+        return null;
+    }
+
+    @Override
+    public String getTreatment(Key key, String featureFlagName, Map<String, Object> attributes, EvaluationOptions evaluationOptions) {
+        return null;
+    }
+
+    @Override
+    public Map<String, String> getTreatments(String key, List<String> featureFlagNames, EvaluationOptions evaluationOptions) {
+        return new HashMap<>();
+    }
+
+    @Override
+    public Map<String, String> getTreatments(String key, List<String> featureFlagNames, Map<String, Object> attributes,
+                                             EvaluationOptions evaluationOptions) {
+        return new HashMap<>();
+    }
+
+    @Override
+    public Map<String, String> getTreatments(Key key, List<String> featureFlagNames, Map<String, Object> attributes,
+                                             EvaluationOptions evaluationOptions) {
+        return new HashMap<>();
+    }
+
+    @Override
+    public SplitResult getTreatmentWithConfig(String key, String featureFlagName, EvaluationOptions evaluationOptions) {
+        return null;
+    }
+
+    @Override
+    public SplitResult getTreatmentWithConfig(Key key, String featureFlagName, Map<String, Object> attributes,
+                                              EvaluationOptions evaluationOptions) {
+        return null;
+    }
+
+    @Override
+    public SplitResult getTreatmentWithConfig(String key, String featureFlagName, Map<String, Object> attributes,
+                                              EvaluationOptions evaluationOptions) {
+        return null;
+    }
+
+    @Override
+    public Map<String, SplitResult> getTreatmentsWithConfig(String key, List<String> featureFlagNames, Map<String, Object> attributes,
+                                                            EvaluationOptions evaluationOptions) {
+        return new HashMap<>();
+    }
+
+    @Override
+    public Map<String, SplitResult> getTreatmentsWithConfig(String key, List<String> featureFlagNames, EvaluationOptions evaluationOptions) {
+        return new HashMap<>();
+    }
+
+    @Override
+    public Map<String, String> getTreatmentsByFlagSet(String key, String flagSet, Map<String, Object> attributes,
+                                                      EvaluationOptions evaluationOptions) {
+        return new HashMap<>();
+    }
+
+    @Override
+    public Map<String, String> getTreatmentsByFlagSets(String key, List<String> flagSets, EvaluationOptions evaluationOptions) {
+        return new HashMap<>();
+    }
+
+    @Override
+    public Map<String, String> getTreatmentsByFlagSets(String key, List<String> flagSets, Map<String, Object> attributes,
+                                                       EvaluationOptions evaluationOptions) {
+        return new HashMap<>();
+    }
+
+    @Override
+    public Map<String, SplitResult> getTreatmentsWithConfigByFlagSet(String key, String flagSet, EvaluationOptions evaluationOptions) {
+        return new HashMap<>();
+    }
+
+    @Override
+    public Map<String, SplitResult> getTreatmentsWithConfigByFlagSet(String key, String flagSet, Map<String, Object> attributes,
+                                                                     EvaluationOptions evaluationOptions) {
+        return new HashMap<>();
+    }
+
+    @Override
+    public Map<String, SplitResult> getTreatmentsWithConfigByFlagSets(String key, List<String> flagSets, EvaluationOptions evaluationOptions) {
+        return new HashMap<>();
+    }
+
+    @Override
+    public Map<String, SplitResult> getTreatmentsWithConfigByFlagSets(String key, List<String> flagSets, Map<String, Object> attributes,
+                                                                      EvaluationOptions evaluationOptions) {
+        return new HashMap<>();
+    }
+
+    @Override
+    public Map<String, String> getTreatmentsByFlagSet(String key, String flagSet, EvaluationOptions evaluationOptions) {
+        return new HashMap<>();
+    }
+
+    @Override
+    public Map<String, SplitResult> getTreatmentsWithConfig(Key key, List<String> featureFlagNames, Map<String, Object> attributes,
+                                                            EvaluationOptions evaluationOptions) {
+        return new HashMap<>();
+    }
+
+    @Override
+    public Map<String, String> getTreatmentsByFlagSet(Key key, String flagSet, Map<String, Object> attributes,
+                                                      EvaluationOptions evaluationOptions) {
+        return new HashMap<>();
+    }
+
+    @Override
+    public Map<String, String> getTreatmentsByFlagSets(Key key, List<String> flagSets, Map<String, Object> attributes,
+                                                       EvaluationOptions evaluationOptions) {
+        return new HashMap<>();
+    }
+
+    @Override
+    public Map<String, SplitResult> getTreatmentsWithConfigByFlagSet(Key key, String flagSet, Map<String, Object> attributes,
+                                                                     EvaluationOptions evaluationOptions) {
+        return new HashMap<>();
+    }
+
+    @Override
+    public Map<String, SplitResult> getTreatmentsWithConfigByFlagSets(Key key, List<String> flagSets, Map<String, Object> attributes,
+                                                                      EvaluationOptions evaluationOptions) {
         return new HashMap<>();
     }
 
