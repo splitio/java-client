@@ -1,5 +1,5 @@
 {"ff": {
-  "dd": [
+  "d": [
     {
       "name": "test1",
       "trafficAllocation": 101,
@@ -98,4 +98,35 @@
   ],
   "s": -1,
   "t": 1660326991072
-}, "rbs":{"d": [], "s": -1, "t": -1}}
+  },
+"rbs":{
+  "d": [
+    {"changeNumber":5,
+      "name":"sample_rule_based_segment",
+      "status":"ACTIVE",
+      "trafficTypeName":"user",
+      "excluded":{"keys":["mauro@split.io"]}
+    },
+    {"changeNumber":5,
+      "status":"ACTIVE",
+      "trafficTypeName":"user",
+      "excluded":{"keys":["mauro@split.io"],"segments":[]},
+      "conditions":[
+        {"conditionType":"ROLLOUT",
+          "matcherGroup":{"combiner":"AND",
+            "matchers":[
+              {"keySelector":{"trafficType":"user","attribute":"email"},
+                "matcherType":"ENDS_WITH",
+                "negate":false,
+                "whitelistMatcherData":{"whitelist":["@split.io"]}
+              }
+            ]
+          }
+        }
+      ]
+    }
+
+    ],
+  "s": -1,
+  "t": -1}
+}
