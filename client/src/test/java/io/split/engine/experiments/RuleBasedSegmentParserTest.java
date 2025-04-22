@@ -31,7 +31,9 @@ import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import static io.split.TestHelper.makeRuleBasedSegment;
 import static io.split.client.utils.RuleBasedSegmentProcessor.processRuleBasedSegmentChanges;
+
 import static org.junit.Assert.assertTrue;
 
 /**
@@ -540,21 +542,6 @@ public class RuleBasedSegmentParserTest {
                 new ArrayList<>(), new ArrayList<>());
 
         Assert.assertEquals(actual, expected);
-    }
-
-    private RuleBasedSegment makeRuleBasedSegment(String name, List<Condition> conditions, long changeNumber) {
-        Excluded excluded = new Excluded();
-        excluded.segments = new ArrayList<>();
-        excluded.keys = new ArrayList<>();
-
-        RuleBasedSegment ruleBasedSegment = new RuleBasedSegment();
-        ruleBasedSegment.name = name;
-        ruleBasedSegment.status = Status.ACTIVE;
-        ruleBasedSegment.conditions = conditions;
-        ruleBasedSegment.trafficTypeName = "user";
-        ruleBasedSegment.changeNumber = changeNumber;
-        ruleBasedSegment.excluded = excluded;
-        return ruleBasedSegment;
     }
 
     private SegmentChange getSegmentChange(long since, long till, String segmentName){
