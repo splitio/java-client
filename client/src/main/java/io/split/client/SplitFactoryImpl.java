@@ -225,7 +225,7 @@ public class SplitFactoryImpl implements SplitFactory {
         RuleBasedSegmentParser ruleBasedSegmentParser = new RuleBasedSegmentParser();
         // SplitFetcher
         _splitFetcher = buildSplitFetcher(splitCache, splitParser, flagSetsFilter,
-                ruleBasedSegmentParser, ruleBasedSegmentCache);
+                ruleBasedSegmentParser, ruleBasedSegmentCache, config.isRootURIOverriden());
 
         // SplitSynchronizationTask
         _splitSynchronizationTask = new SplitSynchronizationTask(_splitFetcher,
@@ -623,9 +623,9 @@ public class SplitFactoryImpl implements SplitFactory {
 
     private SplitFetcher buildSplitFetcher(SplitCacheProducer splitCacheProducer, SplitParser splitParser,
             FlagSetsFilter flagSetsFilter, RuleBasedSegmentParser ruleBasedSegmentParser,
-           RuleBasedSegmentCacheProducer ruleBasedSegmentCache) throws URISyntaxException {
+           RuleBasedSegmentCacheProducer ruleBasedSegmentCache, boolean isRootURIOverriden) throws URISyntaxException {
         SplitChangeFetcher splitChangeFetcher = HttpSplitChangeFetcher.create(_splitHttpClient, _rootTarget,
-                _telemetryStorageProducer);
+                _telemetryStorageProducer, isRootURIOverriden);
         return new SplitFetcherImp(splitChangeFetcher, splitParser, splitCacheProducer, _telemetryStorageProducer,
                 flagSetsFilter, ruleBasedSegmentParser, ruleBasedSegmentCache);
     }

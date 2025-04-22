@@ -1,7 +1,9 @@
 package io.split.client;
 
 import com.google.common.annotations.VisibleForTesting;
+import com.google.gson.JsonObject;
 
+import io.split.Spec;
 import io.split.client.dtos.SplitChange;
 import io.split.client.dtos.SplitHttpResponse;
 import io.split.client.exceptions.UriTooLongException;
@@ -23,6 +25,8 @@ import java.net.URISyntaxException;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 import static io.split.Spec.SPEC_VERSION;
+import static io.split.Spec.SPEC_1_3;
+import static io.split.Spec.SPEC_1_2;
 
 /**
  * Created by adilaijaz on 5/30/15.
@@ -30,25 +34,31 @@ import static io.split.Spec.SPEC_VERSION;
 public final class HttpSplitChangeFetcher implements SplitChangeFetcher {
     private static final Logger _log = LoggerFactory.getLogger(HttpSplitChangeFetcher.class);
 
+    private final Object _lock = new Object();
     private static final String SINCE = "since";
     private static final String RB_SINCE = "rbSince";
     private static final String TILL = "till";
     private static final String SETS = "sets";
     private static final String SPEC = "s";
+    private int PROXY_CHECK_INTERVAL_MINUTES_SS =  24 * 60;
+    private Long _lastProxyCheckTimestamp = 0L;
     private final SplitHttpClient _client;
     private final URI _target;
     private final TelemetryRuntimeProducer _telemetryRuntimeProducer;
+    private final boolean _rootURIOverriden;
 
-    public static HttpSplitChangeFetcher create(SplitHttpClient client, URI root, TelemetryRuntimeProducer telemetryRuntimeProducer)
+    public static HttpSplitChangeFetcher create(SplitHttpClient client, URI root, TelemetryRuntimeProducer telemetryRuntimeProducer,
+                                                boolean rootURIOverriden)
             throws URISyntaxException {
-        return new HttpSplitChangeFetcher(client, Utils.appendPath(root, "api/splitChanges"), telemetryRuntimeProducer);
+        return new HttpSplitChangeFetcher(client, Utils.appendPath(root, "api/splitChanges"), telemetryRuntimeProducer, rootURIOverriden);
     }
 
-    private HttpSplitChangeFetcher(SplitHttpClient client, URI uri, TelemetryRuntimeProducer telemetryRuntimeProducer) {
+    private HttpSplitChangeFetcher(SplitHttpClient client, URI uri, TelemetryRuntimeProducer telemetryRuntimeProducer, boolean rootURIOverriden) {
         _client = client;
         _target = uri;
         checkNotNull(_target);
         _telemetryRuntimeProducer = checkNotNull(telemetryRuntimeProducer);
+        _rootURIOverriden = rootURIOverriden;
     }
 
     long makeRandomTill() {
@@ -59,27 +69,68 @@ public final class HttpSplitChangeFetcher implements SplitChangeFetcher {
     @Override
     public SplitChange fetch(long since, long sinceRBS, FetchOptions options) {
         long start = System.currentTimeMillis();
-        try {
-            URI uri = buildURL(options, since, sinceRBS);
-            SplitHttpResponse response = _client.get(uri, options, null);
-
-            if (response.statusCode() < HttpStatus.SC_OK || response.statusCode() >= HttpStatus.SC_MULTIPLE_CHOICES) {
-                if (response.statusCode() == HttpStatus.SC_REQUEST_URI_TOO_LONG) {
-                    _log.error("The amount of flag sets provided are big causing uri length error.");
-                    throw new UriTooLongException(String.format("Status code: %s. Message: %s", response.statusCode(), response.statusMessage()));
+        SplitHttpResponse response;
+        while (true) {
+            try {
+                if (SPEC_VERSION.equals(SPEC_1_2) && (System.currentTimeMillis() - _lastProxyCheckTimestamp >= PROXY_CHECK_INTERVAL_MINUTES_SS)) {
+                    _log.info("Switching to new Feature flag spec ({}) and fetching.", SPEC_1_3);
+                    SPEC_VERSION = SPEC_1_3;
                 }
+                URI uri = buildURL(options, since, sinceRBS);
+                response = _client.get(uri, options, null);
+                if (response.statusCode() < HttpStatus.SC_OK || response.statusCode() >= HttpStatus.SC_MULTIPLE_CHOICES) {
+                    if (response.statusCode() == HttpStatus.SC_REQUEST_URI_TOO_LONG) {
+                        _log.error("The amount of flag sets provided are big causing uri length error.");
+                        throw new UriTooLongException(String.format("Status code: %s. Message: %s", response.statusCode(), response.statusMessage()));
+                    }
 
-                _telemetryRuntimeProducer.recordSyncError(ResourceEnum.SPLIT_SYNC, response.statusCode());
-                throw new IllegalStateException(
-                        String.format("Could not retrieve splitChanges since %s; http return code %s", since, response.statusCode())
-                );
+                    if (response.statusCode() == HttpStatus.SC_BAD_REQUEST && SPEC_VERSION.equals(Spec.SPEC_1_3) && _rootURIOverriden) {
+                        SPEC_VERSION = Spec.SPEC_1_2;
+                        _log.warn("Detected proxy without support for Feature flags spec {} version, will switch to spec version {}",
+                                SPEC_1_3, SPEC_1_2);
+                        _lastProxyCheckTimestamp = System.currentTimeMillis();
+                        continue;
+                    }
+
+                    _telemetryRuntimeProducer.recordSyncError(ResourceEnum.SPLIT_SYNC, response.statusCode());
+                    throw new IllegalStateException(
+                            String.format("Could not retrieve splitChanges since %s; http return code %s", since, response.statusCode())
+                    );
+                }
+                break;
+            } catch (Exception e) {
+                throw new IllegalStateException(String.format("Problem fetching splitChanges since %s: %s", since, e), e);
+            } finally {
+                _telemetryRuntimeProducer.recordSyncLatency(HTTPLatenciesEnum.SPLITS, System.currentTimeMillis() - start);
             }
-            return Json.fromJson(response.body(), SplitChange.class);
-        } catch (Exception e) {
-            throw new IllegalStateException(String.format("Problem fetching splitChanges since %s: %s", since, e), e);
-        } finally {
-            _telemetryRuntimeProducer.recordSyncLatency(HTTPLatenciesEnum.SPLITS, System.currentTimeMillis() - start);
         }
+
+        String body = response.body();
+        if (SPEC_VERSION.equals(Spec.SPEC_1_2)) {
+            body = convertBodyToOldSpec(body);
+            _lastProxyCheckTimestamp = System.currentTimeMillis();
+        }
+        return Json.fromJson(body, SplitChange.class);
+    }
+
+    public Long getLastProxyCheckTimestamp() {
+        return _lastProxyCheckTimestamp;
+    }
+
+    public void setLastProxyCheckTimestamp(long lastProxyCheckTimestamp) {
+        synchronized (_lock) {
+            _lastProxyCheckTimestamp = lastProxyCheckTimestamp;
+        }
+    }
+
+    private String convertBodyToOldSpec(String body) {
+        JsonObject targetBody = Json.fromJson("{\"ff\": {\"t\":-1, \"s\": -1}," +
+                "\"rbs\": {\"d\":[], \"t\":-1, \"s\": -1}}", JsonObject.class);
+        JsonObject jsonBody = Json.fromJson(body, JsonObject.class);
+        targetBody.getAsJsonObject("ff").add("d", jsonBody.getAsJsonArray("splits"));
+        targetBody.getAsJsonObject("ff").add("s", jsonBody.get("since"));
+        targetBody.getAsJsonObject("ff").add("t", jsonBody.get("till"));
+        return Json.toJson(targetBody);
     }
 
     private URI buildURL(FetchOptions options, long since, long sinceRBS) throws URISyntaxException {

@@ -4,6 +4,7 @@ import io.split.Spec;
 import io.split.TestHelper;
 import io.split.client.dtos.Split;
 import io.split.client.dtos.SplitChange;
+import io.split.client.utils.Json;
 import io.split.client.utils.SDKMetadata;
 import io.split.engine.common.FetchOptions;
 import io.split.engine.metrics.Metrics;
@@ -20,13 +21,13 @@ import org.apache.hc.core5.http.Header;
 import org.apache.hc.core5.http.HttpEntity;
 import org.apache.hc.core5.http.HttpStatus;
 import org.junit.Assert;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mockito;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -47,7 +48,7 @@ public class HttpSplitChangeFetcherTest {
         SplitHttpClient splitHtpClient = SplitHttpClientImpl.create(httpClient, new RequestDecorator(null), "qwerty",
                 metadata());
 
-        HttpSplitChangeFetcher fetcher = HttpSplitChangeFetcher.create(splitHtpClient, rootTarget, TELEMETRY_STORAGE);
+        HttpSplitChangeFetcher fetcher = HttpSplitChangeFetcher.create(splitHtpClient, rootTarget, TELEMETRY_STORAGE, false);
         Assert.assertEquals("https://api.split.io/api/splitChanges", fetcher.getTarget().toString());
     }
 
@@ -58,7 +59,7 @@ public class HttpSplitChangeFetcherTest {
         SplitHttpClient splitHtpClient = SplitHttpClientImpl.create(httpClient, new RequestDecorator(null), "qwerty",
                 metadata());
 
-        HttpSplitChangeFetcher fetcher = HttpSplitChangeFetcher.create(splitHtpClient, rootTarget, TELEMETRY_STORAGE);
+        HttpSplitChangeFetcher fetcher = HttpSplitChangeFetcher.create(splitHtpClient, rootTarget, TELEMETRY_STORAGE, false);
         Assert.assertEquals("https://kubernetesturl.com/split/api/splitChanges", fetcher.getTarget().toString());
     }
 
@@ -68,7 +69,7 @@ public class HttpSplitChangeFetcherTest {
         CloseableHttpClient httpClient = HttpClients.custom().build();
         SplitHttpClient splitHtpClient = SplitHttpClientImpl.create(httpClient, new RequestDecorator(null), "qwerty",
                 metadata());
-        HttpSplitChangeFetcher fetcher = HttpSplitChangeFetcher.create(splitHtpClient, rootTarget, TELEMETRY_STORAGE);
+        HttpSplitChangeFetcher fetcher = HttpSplitChangeFetcher.create(splitHtpClient, rootTarget, TELEMETRY_STORAGE, false);
         Assert.assertEquals("https://kubernetesturl.com/split/api/splitChanges", fetcher.getTarget().toString());
     }
 
@@ -78,7 +79,7 @@ public class HttpSplitChangeFetcherTest {
         CloseableHttpClient httpClient = HttpClients.custom().build();
         SplitHttpClient splitHtpClient = SplitHttpClientImpl.create(httpClient, new RequestDecorator(null), "qwerty",
                 metadata());
-        HttpSplitChangeFetcher fetcher = HttpSplitChangeFetcher.create(splitHtpClient, rootTarget, TELEMETRY_STORAGE);
+        HttpSplitChangeFetcher fetcher = HttpSplitChangeFetcher.create(splitHtpClient, rootTarget, TELEMETRY_STORAGE, false);
         Assert.assertEquals("https://kubernetesturl.com/split/api/splitChanges", fetcher.getTarget().toString());
     }
 
@@ -93,7 +94,7 @@ public class HttpSplitChangeFetcherTest {
                 "qwerty",
                 metadata());
 
-        HttpSplitChangeFetcher fetcher = HttpSplitChangeFetcher.create(splitHtpClient, rootTarget, TELEMETRY_STORAGE);
+        HttpSplitChangeFetcher fetcher = HttpSplitChangeFetcher.create(splitHtpClient, rootTarget, TELEMETRY_STORAGE, false);
 
         SplitChange change = fetcher.fetch(1234567, -1, new FetchOptions.Builder().cacheControlHeaders(true).build());
 
@@ -131,7 +132,7 @@ public class HttpSplitChangeFetcherTest {
                 "qwerty", metadata());
 
         HttpSplitChangeFetcher fetcher = HttpSplitChangeFetcher.create(splitHtpClient, rootTarget,
-                Mockito.mock(TelemetryRuntimeProducer.class));
+                Mockito.mock(TelemetryRuntimeProducer.class), false);
 
         fetcher.fetch(-1, -1, new FetchOptions.Builder().targetChangeNumber(123).build());
         // TODO: Fix the test with integration tests update
@@ -149,7 +150,7 @@ public class HttpSplitChangeFetcherTest {
         SplitHttpClient splitHtpClient = SplitHttpClientImpl.create(httpClientMock, new RequestDecorator(null),
                 "qwerty", metadata());
         HttpSplitChangeFetcher fetcher = HttpSplitChangeFetcher.create(splitHtpClient, rootTarget,
-                Mockito.mock(TelemetryRuntimeProducer.class));
+                Mockito.mock(TelemetryRuntimeProducer.class), false);
 
         Set<Long> seen = new HashSet<>();
         long min = (long) Math.pow(2, 63) * (-1);
@@ -183,7 +184,7 @@ public class HttpSplitChangeFetcherTest {
         SplitHttpClient splitHtpClient = SplitHttpClientImpl.create(httpClientMock, new RequestDecorator(null),
                 "qwerty", metadata());
         HttpSplitChangeFetcher fetcher = HttpSplitChangeFetcher.create(splitHtpClient, rootTarget,
-                Mockito.mock(TelemetryRuntimeProducer.class));
+                Mockito.mock(TelemetryRuntimeProducer.class), false);
         List<String> sets = new ArrayList<String>();
         for (Integer i = 0; i < 100; i++) {
             sets.add("set" + i.toString());
@@ -194,42 +195,101 @@ public class HttpSplitChangeFetcherTest {
         fetcher.fetch(-1, -1, new FetchOptions.Builder().flagSetsFilter(result).cacheControlHeaders(false).build());
     }
 
-    // TODO: enable when switching to old spec is added
-    @Ignore
     @Test
     public void testSwitchingToOldSpec() throws URISyntaxException, InvocationTargetException,
-            NoSuchMethodException, IllegalAccessException, IOException {
+            NoSuchMethodException, IllegalAccessException, IOException, NoSuchFieldException, InterruptedException {
         Spec.SPEC_VERSION = Spec.SPEC_1_3;
         URI rootTarget = URI.create("https://api.split.io");
         CloseableHttpClient httpClientMock = Mockito.mock(CloseableHttpClient.class);
         HttpEntity entityMock = Mockito.mock(HttpEntity.class);
         when(entityMock.getContent())
                 .thenReturn(new ByteArrayInputStream("{\"till\": -1, \"since\": -1, \"splits\": []}".getBytes(StandardCharsets.UTF_8)));
-
+        HttpEntity entityMock2 = Mockito.mock(HttpEntity.class);
+        when(entityMock2.getContent())
+                .thenReturn(new ByteArrayInputStream("{\"till\": 123, \"since\": 122, \"splits\": [{\"name\":\"some\"}, {\"name\":\"some2\"}]}".getBytes(StandardCharsets.UTF_8)));
+        HttpEntity entityMock3 = Mockito.mock(HttpEntity.class);
+        when(entityMock3.getContent())
+                .thenReturn(new ByteArrayInputStream("{\"till\": 123, \"since\": 122, \"splits\": [{\"name\":\"some\"}, {\"name\":\"some2\"}]}".getBytes(StandardCharsets.UTF_8)));
+        HttpEntity entityMock4 = Mockito.mock(HttpEntity.class);
+        when(entityMock4.getContent())
+                .thenReturn(new ByteArrayInputStream("{\"ff\":{\"t\": 123, \"s\": 122, \"d\": [{\"name\":\"some\"}, {\"name\":\"some2\"}]}, \"rbs\":{\"t\": -1, \"s\": -1, \"d\": []}}".getBytes(StandardCharsets.UTF_8)));
         ClassicHttpResponse response1 = Mockito.mock(ClassicHttpResponse.class);
         when(response1.getCode()).thenReturn(HttpStatus.SC_BAD_REQUEST);
-        when(response1.getReasonPhrase()).thenReturn("unknown spec");
         when(response1.getEntity()).thenReturn(entityMock);
         when(response1.getHeaders()).thenReturn(new Header[0]);
+
+        ClassicHttpResponse response2 = Mockito.mock(ClassicHttpResponse.class);
+        when(response2.getCode()).thenReturn(HttpStatus.SC_OK);
+        when(response2.getEntity()).thenReturn(entityMock2);
+        when(response2.getHeaders()).thenReturn(new Header[0]);
+
+        ClassicHttpResponse response3 = Mockito.mock(ClassicHttpResponse.class);
+        when(response3.getCode()).thenReturn(HttpStatus.SC_OK);
+        when(response3.getEntity()).thenReturn(entityMock3);
+        when(response3.getHeaders()).thenReturn(new Header[0]);
+
+        ClassicHttpResponse response4 = Mockito.mock(ClassicHttpResponse.class);
+        when(response4.getCode()).thenReturn(HttpStatus.SC_OK);
+        when(response4.getEntity()).thenReturn(entityMock4);
+        when(response4.getHeaders()).thenReturn(new Header[0]);
 
         ArgumentCaptor<ClassicHttpRequest> requestCaptor = ArgumentCaptor.forClass(ClassicHttpRequest.class);
 
         when(httpClientMock.execute(requestCaptor.capture()))
-                .thenReturn(TestHelper.classicResponseToCloseableMock(response1));
+                .thenReturn(TestHelper.classicResponseToCloseableMock(response1))
+                .thenReturn(TestHelper.classicResponseToCloseableMock(response2))
+                .thenReturn(TestHelper.classicResponseToCloseableMock(response1))
+                .thenReturn(TestHelper.classicResponseToCloseableMock(response3))
+                .thenReturn(TestHelper.classicResponseToCloseableMock(response4));
 
         SplitHttpClient splitHtpClient = SplitHttpClientImpl.create(httpClientMock, new RequestDecorator(null),
                 "qwerty", metadata());
-
         HttpSplitChangeFetcher fetcher = HttpSplitChangeFetcher.create(splitHtpClient, rootTarget,
-                Mockito.mock(TelemetryRuntimeProducer.class));
+                Mockito.mock(TelemetryRuntimeProducer.class), true);
 
         SplitChange change = fetcher.fetch(-1, -1, new FetchOptions.Builder().cacheControlHeaders(true).build());
 
-        Assert.assertEquals(Spec.SPEC_1_1, Spec.SPEC_VERSION);
+        Assert.assertEquals(Spec.SPEC_1_2, Spec.SPEC_VERSION);
         List<ClassicHttpRequest> captured = requestCaptor.getAllValues();
         Assert.assertEquals(captured.size(), 2);
         Assert.assertTrue(captured.get(0).getUri().toString().contains("s=1.3"));
-        Assert.assertTrue(captured.get(1).getUri().toString().contains("s=1.1"));
+        Assert.assertTrue(captured.get(1).getUri().toString().contains("s=1.2"));
+        Assert.assertEquals(122, change.featureFlags.s);
+        Assert.assertEquals(123, change.featureFlags.t);
+        Assert.assertEquals(2, change.featureFlags.d.size());
+        Assert.assertEquals(Json.fromJson("{\"name\":\"some\"}", Split.class).name, change.featureFlags.d.get(0).name);
+        Assert.assertEquals(Json.fromJson("{\"name\":\"some2\"}", Split.class).name, change.featureFlags.d.get(1).name);
+        Assert.assertEquals(0, change.ruleBasedSegments.d.size());
+        Assert.assertEquals(-1, change.ruleBasedSegments.s);
+        Assert.assertEquals(-1, change.ruleBasedSegments.t);
+        Assert.assertTrue(fetcher.getLastProxyCheckTimestamp() > 0);
+
+        // Set proxy interval to low number to force check for spec 1.3
+        Field proxyInterval = fetcher.getClass().getDeclaredField("PROXY_CHECK_INTERVAL_MINUTES_SS");
+        proxyInterval.setAccessible(true);
+        proxyInterval.set(fetcher, 5);
+        Thread.sleep(1000);
+        change = fetcher.fetch(-1, -1, new FetchOptions.Builder().cacheControlHeaders(true).build());
+
+        Assert.assertEquals(Spec.SPEC_1_2, Spec.SPEC_VERSION);
+        Assert.assertTrue(captured.get(2).getUri().toString().contains("s=1.3"));
+        Assert.assertTrue(captured.get(3).getUri().toString().contains("s=1.2"));
+        Assert.assertEquals(122, change.featureFlags.s);
+        Assert.assertEquals(123, change.featureFlags.t);
+        Assert.assertEquals(2, change.featureFlags.d.size());
+        Assert.assertEquals(Json.fromJson("{\"name\":\"some\"}", Split.class).name, change.featureFlags.d.get(0).name);
+        Assert.assertEquals(Json.fromJson("{\"name\":\"some2\"}", Split.class).name, change.featureFlags.d.get(1).name);
+
+        // test if proxy is upgraded and spec 1.3 now works.
+        Thread.sleep(1000);
+        change = fetcher.fetch(-1, -1, new FetchOptions.Builder().cacheControlHeaders(true).build());
+        Assert.assertEquals(Spec.SPEC_1_3, Spec.SPEC_VERSION);
+        Assert.assertTrue(captured.get(4).getUri().toString().contains("s=1.3"));
+        Assert.assertEquals(122, change.featureFlags.s);
+        Assert.assertEquals(123, change.featureFlags.t);
+        Assert.assertEquals(2, change.featureFlags.d.size());
+        Assert.assertEquals(Json.fromJson("{\"name\":\"some\"}", Split.class).name, change.featureFlags.d.get(0).name);
+        Assert.assertEquals(Json.fromJson("{\"name\":\"some2\"}", Split.class).name, change.featureFlags.d.get(1).name);
     }
 
     private SDKMetadata metadata() {
