@@ -144,7 +144,7 @@ public class SplitFetcherImp implements SplitFetcher {
 
         synchronized (_lock) {
             // check state one more time.
-            if (checkExitConditions(change.featureFlags, _splitCacheProducer.getChangeNumber()) &&
+            if (checkExitConditions(change.featureFlags, _splitCacheProducer.getChangeNumber()) ||
                     checkExitConditions(change.ruleBasedSegments, _ruleBasedSegmentCacheProducer.getChangeNumber())) {
                 // some other thread may have updated the shared state. exit
                 return segments;

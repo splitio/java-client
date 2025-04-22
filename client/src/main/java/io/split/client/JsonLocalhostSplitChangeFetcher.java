@@ -37,6 +37,8 @@ public class JsonLocalhostSplitChangeFetcher implements SplitChangeFetcher {
             JsonReader jsonReader = new JsonReader(new BufferedReader(new InputStreamReader(_inputStreamProvider.get(), StandardCharsets.UTF_8)));
             SplitChange splitChange = Json.fromJson(jsonReader, SplitChange.class);
             splitChange.ruleBasedSegments = new ChangeDto<>();
+            
+            // TODO: Remove when updating the class to support RBS
             splitChange.ruleBasedSegments.d = new ArrayList<>();
             splitChange.ruleBasedSegments.t = -1;
             splitChange.ruleBasedSegments.s = -1;
