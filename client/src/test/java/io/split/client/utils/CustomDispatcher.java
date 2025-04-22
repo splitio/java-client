@@ -14,11 +14,11 @@ public class CustomDispatcher extends Dispatcher {
     public static final String SINCE_1602796638344 = "/api/splitChanges?s=1.3&since=1602796638344&rbSince=-1&sets=set1%2Cset2";
     public static final String AUTH_ENABLED = "/api/auth/enabled?s=1.3";
     public static final String AUTH_DISABLED = "/api/auth/disabled?s=1.3";
-    public static final String SINCE_1585948850109 = "/api/splitChanges?s=1.3&since=1585948850109&rbSince=-1";
+    public static final String SINCE_1585948850109 = "/api/splitChanges?s=1.3&since=1585948850109&rbSince=1585948850109";
     public static final String SINCE_1585948850109_FLAG_SET = "/api/splitChanges?s=1.3&since=-1&rbSince=-1&sets=set_1%2Cset_2";
-    public static final String SINCE_1585948850110 = "/api/splitChanges?s=1.3&since=1585948850110&rbSince=-1";
-    public static final String SINCE_1585948850111 = "/api/splitChanges?s=1.3&since=1585948850111&rbSince=-1";
-    public static final String SINCE_1585948850112 = "/api/splitChanges?s=1.3&since=1585948850112&rbSince=-1";
+    public static final String SINCE_1585948850110 = "/api/splitChanges?s=1.3&since=1585948850110&rbSince=1585948850110";
+    public static final String SINCE_1585948850111 = "/api/splitChanges?s=1.3&since=1585948850111&rbSince=1585948850111";
+    public static final String SINCE_1585948850112 = "/api/splitChanges?s=1.3&since=1585948850112&rbSince=1585948850112";
     public static final String SEGMENT_TEST_INITIAL = "/api/segmentChanges/segment-test?since=-1";
     public static final String SEGMENT3_INITIAL = "/api/segmentChanges/segment3?since=-1";
     public static final String SEGMENT3_SINCE_1585948850110 = "/api/segmentChanges/segment3?since=1585948850110";
@@ -50,17 +50,17 @@ public class CustomDispatcher extends Dispatcher {
             case CustomDispatcher.AUTH_DISABLED:
                 return getResponse(CustomDispatcher.AUTH_DISABLED,new MockResponse().setBody(inputStreamToString("streaming-auth-push-disabled.json")));
             case CustomDispatcher.SINCE_1585948850109:
-                return getResponse(CustomDispatcher.SINCE_1585948850109, new MockResponse().setBody("{\"ff\":{\"d\": [], \"s\":1585948850109, \"t\":1585948850110}, \"rbs\":{\"s\":-1,\"t\":-1,\"d\":[]}}"));
+                return getResponse(CustomDispatcher.SINCE_1585948850109, new MockResponse().setBody("{\"ff\":{\"d\": [], \"s\":1585948850109, \"t\":1585948850110}, \"rbs\":{\"s\":1585948850109,\"t\":1585948850110,\"d\":[]}}"));
             case SINCE_1585948850109_FLAG_SET:
-                return getResponse(SINCE_1585948850109_FLAG_SET, new MockResponse().setBody("{\"ff\":{\"d\": [], \"s\":1585948850109, \"t\":1585948850110}"));
+                return getResponse(SINCE_1585948850109_FLAG_SET, new MockResponse().setBody("{\"ff\":{\"d\": [], \"s\":1585948850109, \"t\":1585948850110}, \"rbs\":{\"s\":1585948850109,\"t\":1585948850110,\"d\":[]}}"));
             case CustomDispatcher.SINCE_1585948850110:
                 return getResponse(CustomDispatcher.SINCE_1585948850110, new MockResponse().setBody(inputStreamToString("splits2.json")));
             case CustomDispatcher.SINCE_1585948850111:
                 return getResponse(CustomDispatcher.SINCE_1585948850111, new MockResponse().setBody(inputStreamToString("splits_killed.json")));
             case CustomDispatcher.SINCE_1585948850112:
-                return getResponse(CustomDispatcher.SINCE_1585948850112, new MockResponse().setBody("{\"ff\":{\"d\": [], \"s\":1585948850112, \"t\":1585948850112}, \"rbs\":{\"s\":-1,\"t\":-1,\"d\":[]}}"));
+                return getResponse(CustomDispatcher.SINCE_1585948850112, new MockResponse().setBody("{\"ff\":{\"d\": [], \"s\":1585948850112, \"t\":1585948850112}, \"rbs\":{\"s\":1585948850112,\"t\":1585948850112,\"d\":[]}}"));
             case CustomDispatcher.SINCE_1602796638344:
-                return getResponse(CustomDispatcher.SINCE_1602796638344, new MockResponse().setBody("{\"ff\":{\"d\": [], \"s\":1602796638344, \"t\":1602796638344}, \"rbs\":{\"s\":-1,\"t\":-1,\"d\":[]}}"));
+                return getResponse(CustomDispatcher.SINCE_1602796638344, new MockResponse().setBody("{\"ff\":{\"d\": [], \"s\":1602796638344, \"t\":1602796638344}, \"rbs\":{\"s\":1602796638344,\"t\":1602796638344,\"d\":[]}}"));
             case CustomDispatcher.SEGMENT_TEST_INITIAL:
                 return getResponse(CustomDispatcher.SEGMENT_TEST_INITIAL, new MockResponse().setBody("{\"name\": \"segment3\",\"added\": [],\"removed\": [],\"since\": -1,\"till\": -1}"));
             case CustomDispatcher.SEGMENT3_INITIAL:

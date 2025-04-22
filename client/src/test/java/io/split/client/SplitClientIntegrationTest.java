@@ -44,9 +44,9 @@ public class SplitClientIntegrationTest {
 
     @Test
     public void getTreatmentWithStreamingEnabled() throws Exception {
-        MockResponse response = new MockResponse().setBody("{\"ff\":{\"d\": [], \"s\":1585948850109, \"t\":1585948850109}, \"rbs\":{\"d\":[],\"s\":-1,\"t\":-1}}");
-        MockResponse response2 = new MockResponse().setBody("{\"ff\":{\"d\": [], \"s\":1585948850110, \"t\":1585948850110}, \"rbs\":{\"d\":[],\"s\":-1,\"t\":-1}}");
-        MockResponse response3 = new MockResponse().setBody("{\"ff\":{\"d\": [], \"s\":1585948850111, \"t\":1585948850111}, \"rbs\":{\"d\":[],\"s\":-1,\"t\":-1}}");
+        MockResponse response = new MockResponse().setBody("{\"ff\":{\"d\": [], \"s\":1585948850109, \"t\":1585948850109}, \"rbs\":{\"d\":[],\"s\":1585948850109,\"t\":1585948850109}}");
+        MockResponse response2 = new MockResponse().setBody("{\"ff\":{\"d\": [], \"s\":1585948850110, \"t\":1585948850110}, \"rbs\":{\"d\":[],\"s\":1585948850110,\"t\":1585948850110}}");
+        MockResponse response3 = new MockResponse().setBody("{\"ff\":{\"d\": [], \"s\":1585948850111, \"t\":1585948850111}, \"rbs\":{\"d\":[],\"s\":1585948850111,\"t\":1585948850111}}");
         Queue responses = new LinkedList<>();
         responses.add(response);
         Queue responses2 = new LinkedList<>();
@@ -144,7 +144,7 @@ public class SplitClientIntegrationTest {
 
     @Test
     public void getTreatmentWithStreamingEnabledAndAuthDisabled() throws Exception {
-        MockResponse response = new MockResponse().setBody("{\"ff\":{\"d\": [], \"s\":1585948850109, \"t\":1585948850109}, \"rbs\":{\"s\":-1,\"t\":-1,\"d\":[]}}");
+        MockResponse response = new MockResponse().setBody("{\"ff\":{\"d\": [], \"s\":1585948850109, \"t\":1585948850109}, \"rbs\":{\"s\":1585948850109,\"t\":1585948850109,\"d\":[]}}");
         Queue responses = new LinkedList<>();
         responses.add(response);
         SplitMockServer splitServer = new SplitMockServer(CustomDispatcher.builder()
@@ -165,14 +165,19 @@ public class SplitClientIntegrationTest {
 
         String result = client.getTreatment("admin", "push_test");
         Assert.assertEquals("on_whitelist", result);
-
+        Assert.assertEquals("on", client.getTreatment("bilal@@split.io", "rbs_flag", new HashMap<String, Object>() {{
+            put("email", "bilal@@split.io");
+        }}));
+        Assert.assertEquals("off", client.getTreatment("mauro@split.io", "rbs_flag", new HashMap<String, Object>() {{
+            put("email", "mauro@split.io");
+        }}));
         client.destroy();
         splitServer.stop();
     }
 
     @Test
     public void getTreatmentWithStreamingDisabled() throws Exception {
-        MockResponse response = new MockResponse().setBody("{\"ff\":{\"d\": [], \"s\":1585948850109, \"t\":1585948850109}, \"rbs\":{\"d\":[],\"s\":-1,\"t\":-1}}");
+        MockResponse response = new MockResponse().setBody("{\"ff\":{\"d\": [], \"s\":1585948850109, \"t\":1585948850109}, \"rbs\":{\"d\":[],\"s\":1585948850109,\"t\":1585948850109}}");
         Queue responses = new LinkedList<>();
         responses.add(response);
         SplitMockServer splitServer = new SplitMockServer(CustomDispatcher.builder()
@@ -224,8 +229,8 @@ public class SplitClientIntegrationTest {
         manager.blockUntilReady();
 
         List<SplitView> results = manager.splits();
-        Assert.assertEquals(4, results.size());
-        Assert.assertEquals(3, results.stream().filter(r -> !r.killed).toArray().length);
+        Assert.assertEquals(5, results.size());
+        Assert.assertEquals(4, results.stream().filter(r -> !r.killed).toArray().length);
 
         // SPLIT_KILL should fetch.
         OutboundSseEvent sseEventSplitKill = new OutboundEvent
@@ -237,7 +242,7 @@ public class SplitClientIntegrationTest {
 
         Awaitility.await()
                 .atMost(2L, TimeUnit.MINUTES)
-                .until(() -> 2 == manager.splits().stream().filter(r -> !r.killed).toArray().length);
+                .until(() -> 3 == manager.splits().stream().filter(r -> !r.killed).toArray().length);
 
         splitServer.stop();
         sseServer.stop();
@@ -320,9 +325,9 @@ public class SplitClientIntegrationTest {
 
     @Test
     public void splitClientControlNotifications() throws Exception {
-        MockResponse response = new MockResponse().setBody("{\"ff\":{\"d\": [], \"s\":1585948850109, \"t\":1585948850109}, \"rbs\":{\"d\":[],\"s\":-1,\"t\":-1}}");
-        MockResponse response2 = new MockResponse().setBody("{\"ff\":{\"d\": [], \"s\":1585948850110, \"t\":1585948850110}, \"rbs\":{\"d\":[],\"s\":-1,\"t\":-1}}");
-        MockResponse response3 = new MockResponse().setBody("{\"ff\":{\"d\": [], \"s\":1585948850111, \"t\":1585948850111}, \"rbs\":{\"d\":[],\"s\":-1,\"t\":-1}}");
+        MockResponse response = new MockResponse().setBody("{\"ff\":{\"d\": [], \"s\":1585948850109, \"t\":1585948850109}, \"rbs\":{\"d\":[],\"s\":1585948850109,\"t\":1585948850109}}");
+        MockResponse response2 = new MockResponse().setBody("{\"ff\":{\"d\": [], \"s\":1585948850110, \"t\":1585948850110}, \"rbs\":{\"d\":[],\"s\":1585948850110,\"t\":1585948850110}}");
+        MockResponse response3 = new MockResponse().setBody("{\"ff\":{\"d\": [], \"s\":1585948850111, \"t\":1585948850111}, \"rbs\":{\"d\":[],\"s\":1585948850111,\"t\":1585948850111}}");
         Queue responses = new LinkedList<>();
         responses.add(response);
         Queue responses2 = new LinkedList<>();
@@ -564,7 +569,7 @@ public class SplitClientIntegrationTest {
 
     @Test
     public void keepAlive() throws Exception {
-        MockResponse response = new MockResponse().setBody("{\"ff\":{\"d\": [], \"s\":1585948850109, \"t\":1585948850109}, \"rbs\":{\"d\":[],\"s\":-1,\"t\":-1}}");
+        MockResponse response = new MockResponse().setBody("{\"ff\":{\"d\": [], \"s\":1585948850109, \"t\":1585948850109}, \"rbs\":{\"d\":[],\"s\":1585948850109,\"t\":1585948850109}}");
         Queue responses = new LinkedList<>();
         responses.add(response);
 
@@ -602,7 +607,7 @@ public class SplitClientIntegrationTest {
 
     @Test
     public void testConnectionClosedByRemoteHostIsProperlyHandled() throws Exception {
-        MockResponse response = new MockResponse().setBody("{\"ff\":{\"d\": [], \"s\":1585948850109, \"t\":1585948850109}, \"rbs\":{\"d\":[],\"s\":-1,\"t\":-1}}");
+        MockResponse response = new MockResponse().setBody("{\"ff\":{\"d\": [], \"s\":1585948850109, \"t\":1585948850109}, \"rbs\":{\"d\":[],\"s\":1585948850109,\"t\":1585948850109}}");
         Queue responses = new LinkedList<>();
         responses.add(response);
         SplitMockServer splitServer = new SplitMockServer(CustomDispatcher.builder()
@@ -640,7 +645,7 @@ public class SplitClientIntegrationTest {
 
     @Test
     public void testConnectionClosedIsProperlyHandled() throws Exception {
-        MockResponse response = new MockResponse().setBody("{\"ff\":{\"d\": [], \"s\":1585948850109, \"t\":1585948850109}, \"rbs\":{\"d\":[],\"s\":-1,\"t\":-1}}");
+        MockResponse response = new MockResponse().setBody("{\"ff\":{\"d\": [], \"s\":1585948850109, \"t\":1585948850109}, \"rbs\":{\"d\":[],\"s\":1585948850109,\"t\":1585948850109}}");
         Queue responses = new LinkedList<>();
         responses.add(response);
         SplitMockServer splitServer = new SplitMockServer(CustomDispatcher.builder()
@@ -706,15 +711,21 @@ public class SplitClientIntegrationTest {
             Assert.assertTrue(events.stream().anyMatch(e -> "keyValue".equals(e.getEventDto().key) && e.getEventDto().value == 12L));
             Assert.assertTrue(events.stream().anyMatch(e -> "keyProperties".equals(e.getEventDto().key) && e.getEventDto().properties != null));
 
-            Assert.assertEquals(2, splits.size());
+            Assert.assertEquals(3, splits.size());
             Assert.assertTrue(splits.stream().anyMatch(sw -> "first.name".equals(sw.name)));
             Assert.assertTrue(splits.stream().anyMatch(sw -> "second.name".equals(sw.name)));
             Assert.assertEquals("on", client.getTreatment("key", "first.name"));
             Assert.assertEquals("off", client.getTreatmentWithConfig("FakeKey", "second.name").treatment());
             Assert.assertEquals("control", client.getTreatment("FakeKey", "noSplit"));
+            Assert.assertEquals("on", client.getTreatment("bilal@@split.io", "rbs_flag", new HashMap<String, Object>() {{
+                put("email", "bilal@@split.io");
+            }}));
+            Assert.assertEquals("off", client.getTreatment("mauro@split.io", "rbs_flag", new HashMap<String, Object>() {{
+                put("email", "mauro@split.io");
+            }}));
 
             List<ImpressionConsumer> impressions = customStorageWrapper.getImps();
-            Assert.assertEquals(2, impressions.size());
+            Assert.assertEquals(4, impressions.size());
             Assert.assertTrue(impressions.stream().anyMatch(imp -> "first.name".equals(imp.getKeyImpression().feature) && "on".equals(imp.getKeyImpression().treatment)));
             Assert.assertTrue(impressions.stream().anyMatch(imp -> "second.name".equals(imp.getKeyImpression().feature) && "off".equals(imp.getKeyImpression().treatment)));
 
@@ -727,7 +738,7 @@ public class SplitClientIntegrationTest {
             String key3 = keys.stream().filter(key -> key.contains("getTreatmentWithConfig/")).collect(Collectors.toList()).get(0);
 
             Assert.assertEquals(Optional.of(3L), Optional.ofNullable(latencies.get(key1)));
-            Assert.assertEquals(Optional.of(1L), Optional.of(latencies.get(key2)));
+            Assert.assertEquals(Optional.of(3L), Optional.of(latencies.get(key2)));
             Assert.assertEquals(Optional.of(1L), Optional.of(latencies.get(key3)));
 
             Thread.sleep(500);
