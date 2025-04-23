@@ -118,8 +118,7 @@ public class SynchronizerImp implements Synchronizer {
             if (fetchResult != null && !fetchResult.retry() && !fetchResult.isSuccess()) {
                 return new SyncResult(false, remainingAttempts, fetchResult);
             }
-            if ((targetChangeNumber != 0 && targetChangeNumber <= _splitCacheProducer.getChangeNumber()) ||
-                    (ruleBasedSegmentChangeNumber != 0 && ruleBasedSegmentChangeNumber <= _ruleBasedSegmentCacheProducer.getChangeNumber())) {
+            if (targetChangeNumber <= _splitCacheProducer.getChangeNumber() && ruleBasedSegmentChangeNumber <= _ruleBasedSegmentCacheProducer.getChangeNumber()) {
                 return new SyncResult(true, remainingAttempts, fetchResult);
             } else if (remainingAttempts <= 0) {
                 return new SyncResult(false, remainingAttempts, fetchResult);
