@@ -249,11 +249,11 @@ public class HttpSplitChangeFetcherTest {
 
         SplitChange change = fetcher.fetch(-1, -1, new FetchOptions.Builder().cacheControlHeaders(true).build());
 
-        Assert.assertEquals(Spec.SPEC_1_2, Spec.SPEC_VERSION);
+        Assert.assertEquals(Spec.SPEC_1_1, Spec.SPEC_VERSION);
         List<ClassicHttpRequest> captured = requestCaptor.getAllValues();
         Assert.assertEquals(captured.size(), 2);
         Assert.assertTrue(captured.get(0).getUri().toString().contains("s=1.3"));
-        Assert.assertTrue(captured.get(1).getUri().toString().contains("s=1.2"));
+        Assert.assertTrue(captured.get(1).getUri().toString().contains("s=1.1"));
         Assert.assertEquals(122, change.featureFlags.s);
         Assert.assertEquals(123, change.featureFlags.t);
         Assert.assertEquals(2, change.featureFlags.d.size());
@@ -271,9 +271,9 @@ public class HttpSplitChangeFetcherTest {
         Thread.sleep(1000);
         change = fetcher.fetch(-1, -1, new FetchOptions.Builder().cacheControlHeaders(true).build());
 
-        Assert.assertEquals(Spec.SPEC_1_2, Spec.SPEC_VERSION);
+        Assert.assertEquals(Spec.SPEC_1_1, Spec.SPEC_VERSION);
         Assert.assertTrue(captured.get(2).getUri().toString().contains("s=1.3"));
-        Assert.assertTrue(captured.get(3).getUri().toString().contains("s=1.2"));
+        Assert.assertTrue(captured.get(3).getUri().toString().contains("s=1.1"));
         Assert.assertEquals(122, change.featureFlags.s);
         Assert.assertEquals(123, change.featureFlags.t);
         Assert.assertEquals(2, change.featureFlags.d.size());
