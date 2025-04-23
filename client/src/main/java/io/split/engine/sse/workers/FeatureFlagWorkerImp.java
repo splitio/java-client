@@ -123,7 +123,7 @@ public class FeatureFlagWorkerImp extends Worker<IncomingNotification> implement
                 if (featureFlagsToUpdate.getToAdd().stream().count() > 0) {
                     Set<String> ruleBasedSegments = featureFlagsToUpdate.getToAdd().get(0).getRuleBasedSegmentsNames();
                     if (!ruleBasedSegments.isEmpty() && !_ruleBasedSegmentCache.contains(ruleBasedSegments)) {
-                        _synchronizer.refreshSplits(featureFlagChangeNotification.getChangeNumber(), 0L);
+                        return false;
                     }
                 }
                 _telemetryRuntimeProducer.recordUpdatesFromSSE(UpdatesFromSSEEnum.SPLITS);
