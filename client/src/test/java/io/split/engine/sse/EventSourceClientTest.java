@@ -3,8 +3,8 @@ package io.split.engine.sse;
 import io.split.SSEMockServer;
 import io.split.client.RequestDecorator;
 import io.split.engine.sse.client.SSEClient;
+import io.split.engine.sse.dtos.CommonChangeNotification;
 import io.split.engine.sse.dtos.ErrorNotification;
-import io.split.engine.sse.dtos.FeatureFlagChangeNotification;
 import io.split.telemetry.storage.InMemoryTelemetryStorage;
 import io.split.telemetry.storage.TelemetryRuntimeProducer;
 import org.apache.hc.client5.http.config.RequestConfig;
@@ -96,7 +96,7 @@ public class EventSourceClientTest {
 
         Awaitility.await()
                 .atMost(50L, TimeUnit.SECONDS)
-                .untilAsserted(() -> Mockito.verify(_notificationProcessor, Mockito.times(1)).process(Mockito.any(FeatureFlagChangeNotification.class)));
+                .untilAsserted(() -> Mockito.verify(_notificationProcessor, Mockito.times(1)).process(Mockito.any(CommonChangeNotification.class)));
 
         OutboundSseEvent sseEventError = new OutboundEvent
                 .Builder()

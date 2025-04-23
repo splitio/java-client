@@ -1,5 +1,6 @@
 package io.split.engine.sse.dtos;
 
+import io.split.client.utils.Json;
 import io.split.engine.segments.SegmentSynchronizationTaskImp;
 import io.split.engine.sse.NotificationProcessor;
 import io.split.engine.sse.enums.CompressType;
@@ -14,24 +15,29 @@ import java.util.zip.DataFormatException;
 import static io.split.engine.sse.utils.DecompressionUtil.gZipDecompress;
 import static io.split.engine.sse.utils.DecompressionUtil.zLibDecompress;
 
-public class CommonChangeNotification extends IncomingNotification {
+public class CommonChangeNotification<Y> extends IncomingNotification {
     private static final Logger _log = LoggerFactory.getLogger(SegmentSynchronizationTaskImp.class);
     private final long changeNumber;
     private long previousChangeNumber;
     private CompressType compressType;
+    private Y definition;
+    private Class _definitionClass;
 
-    public CommonChangeNotification(GenericNotificationData genericNotificationData,  IncomingNotification.Type notificationType) {
-        super(notificationType, genericNotificationData.getChannel());
+    public CommonChangeNotification(GenericNotificationData genericNotificationData,
+                                    IncomingNotification.Type notificationType, Class definitionClass) {
+        super(genericNotificationData.getType(), genericNotificationData.getChannel());
         changeNumber = genericNotificationData.getChangeNumber();
+        _definitionClass = definitionClass;
+
         if(genericNotificationData.getPreviousChangeNumber() != null) {
             previousChangeNumber = genericNotificationData.getPreviousChangeNumber();
         }
         compressType =  CompressType.from(genericNotificationData.getCompressType());
-        if (compressType == null || genericNotificationData.getFeatureFlagDefinition() == null) {
+        if (compressType == null || genericNotificationData.getDefinition() == null) {
             return;
         }
         try {
-            byte[] decodedBytes = Base64.getDecoder().decode(genericNotificationData.getFeatureFlagDefinition());
+            byte[] decodedBytes = Base64.getDecoder().decode(genericNotificationData.getDefinition());
             switch (compressType) {
                 case GZIP:
                     decodedBytes = gZipDecompress(decodedBytes);
@@ -57,18 +63,25 @@ public class CommonChangeNotification extends IncomingNotification {
     public long getPreviousChangeNumber() {
         return previousChangeNumber;
     }
-
     public CompressType getCompressType() {
         return compressType;
     }
 
+    public void updateDefinition(byte[] decodedBytes) throws UnsupportedEncodingException {
+        definition = (Y) Json.fromJson(new String(decodedBytes, "UTF-8"), _definitionClass);
+    }
+
+    public Y getDefinition() {
+        return definition;
+    }
+
     @Override
-    public void handler(NotificationProcessor notificationProcessor) {}
+    public void handler(NotificationProcessor notificationProcessor) {
+        notificationProcessor.processUpdates(this);
+    }
 
     @Override
     public String toString() {
         return String.format("Type: %s; Channel: %s; ChangeNumber: %s", getType(), getChannel(), getChangeNumber());
     }
-
-    public void updateDefinition(byte[] decodedBytes) throws UnsupportedEncodingException {};
 }

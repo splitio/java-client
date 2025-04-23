@@ -1,13 +1,8 @@
 package io.split.engine.sse;
 
-import io.split.engine.sse.dtos.ControlNotification;
-import io.split.engine.sse.dtos.FeatureFlagChangeNotification;
-import io.split.engine.sse.dtos.GenericNotificationData;
-import io.split.engine.sse.dtos.OccupancyNotification;
-import io.split.engine.sse.dtos.SegmentChangeNotification;
-import io.split.engine.sse.dtos.SegmentQueueDto;
-import io.split.engine.sse.dtos.SplitKillNotification;
-import io.split.engine.sse.dtos.RuleBasedSegmentChangeNotification;
+import io.split.client.dtos.RuleBasedSegment;
+import io.split.client.dtos.Split;
+import io.split.engine.sse.dtos.*;
 import io.split.engine.sse.workers.SegmentsWorkerImp;
 import io.split.engine.sse.workers.FeatureFlagsWorker;
 import io.split.engine.sse.workers.Worker;
@@ -38,7 +33,7 @@ public class NotificationProcessorTest {
                 .changeNumber(changeNumber)
                 .channel(channel)
                 .build();
-        FeatureFlagChangeNotification splitChangeNotification = new FeatureFlagChangeNotification(genericNotificationData);
+        CommonChangeNotification splitChangeNotification = new CommonChangeNotification(genericNotificationData, IncomingNotification.Type.SPLIT_UPDATE, Split.class);
 
         _notificationProcessor.process(splitChangeNotification);
 
@@ -53,7 +48,7 @@ public class NotificationProcessorTest {
                 .changeNumber(changeNumber)
                 .channel(channel)
                 .build();
-        RuleBasedSegmentChangeNotification ruleBasedSegmentChangeNotification = new RuleBasedSegmentChangeNotification(genericNotificationData);
+        CommonChangeNotification ruleBasedSegmentChangeNotification = new CommonChangeNotification(genericNotificationData, IncomingNotification.Type.RB_SEGMENT_UPDATE, RuleBasedSegment.class);
 
         _notificationProcessor.process(ruleBasedSegmentChangeNotification);
 
