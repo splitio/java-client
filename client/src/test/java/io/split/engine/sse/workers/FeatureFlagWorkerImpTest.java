@@ -16,7 +16,6 @@ import io.split.engine.experiments.SplitParser;
 import io.split.engine.matchers.AttributeMatcher;
 import io.split.engine.matchers.CombiningMatcher;
 import io.split.engine.sse.dtos.CommonChangeNotification;
-import io.split.engine.sse.dtos.IncomingNotification;
 import io.split.engine.sse.dtos.RawMessageNotification;
 import io.split.engine.sse.dtos.GenericNotificationData;
 import io.split.storages.RuleBasedSegmentCache;
@@ -52,7 +51,7 @@ public class FeatureFlagWorkerImpTest {
         RawMessageNotification rawMessageNotification = Json.fromJson(notification, RawMessageNotification.class);
         GenericNotificationData genericNotificationData = Json.fromJson(rawMessageNotification.getData(), GenericNotificationData.class);
 
-        CommonChangeNotification<Split> featureFlagChangeNotification = new CommonChangeNotification(genericNotificationData, IncomingNotification.Type.SPLIT_UPDATE, Split.class);
+        CommonChangeNotification<Split> featureFlagChangeNotification = new CommonChangeNotification(genericNotificationData, Split.class);
         featureFlagsWorker.executeRefresh(featureFlagChangeNotification);
         UpdatesFromSSE updatesFromSSE = telemetryRuntimeProducer.popUpdatesFromSSE();
         Assert.assertEquals(1, updatesFromSSE.getSplits());
@@ -73,7 +72,7 @@ public class FeatureFlagWorkerImpTest {
         RawMessageNotification rawMessageNotification = Json.fromJson(notification, RawMessageNotification.class);
         GenericNotificationData genericNotificationData = Json.fromJson(rawMessageNotification.getData(), GenericNotificationData.class);
 
-        CommonChangeNotification<Split> featureFlagChangeNotification = new CommonChangeNotification(genericNotificationData, IncomingNotification.Type.SPLIT_UPDATE, Split.class);
+        CommonChangeNotification<Split> featureFlagChangeNotification = new CommonChangeNotification(genericNotificationData, Split.class);
         featureFlagsWorker.executeRefresh(featureFlagChangeNotification);
         UpdatesFromSSE updatesFromSSE = telemetryRuntimeProducer.popUpdatesFromSSE();
         Assert.assertEquals(0, updatesFromSSE.getSplits());
@@ -94,7 +93,7 @@ public class FeatureFlagWorkerImpTest {
         RawMessageNotification rawMessageNotification = Json.fromJson(notification, RawMessageNotification.class);
         GenericNotificationData genericNotificationData = Json.fromJson(rawMessageNotification.getData(), GenericNotificationData.class);
 
-        CommonChangeNotification<Split> featureFlagChangeNotification = new CommonChangeNotification(genericNotificationData, IncomingNotification.Type.SPLIT_UPDATE, Split.class);
+        CommonChangeNotification<Split> featureFlagChangeNotification = new CommonChangeNotification(genericNotificationData, Split.class);
         featureFlagsWorker.executeRefresh(featureFlagChangeNotification);
         UpdatesFromSSE updatesFromSSE = telemetryRuntimeProducer.popUpdatesFromSSE();
         Assert.assertEquals(1, updatesFromSSE.getSplits());
@@ -127,7 +126,7 @@ public class FeatureFlagWorkerImpTest {
         RawMessageNotification rawMessageNotification = Json.fromJson(notification, RawMessageNotification.class);
         GenericNotificationData genericNotificationData = Json.fromJson(rawMessageNotification.getData(), GenericNotificationData.class);
 
-        CommonChangeNotification<RuleBasedSegment> ruleBasedSegmentChangeNotification = new CommonChangeNotification(genericNotificationData, IncomingNotification.Type.RB_SEGMENT_UPDATE, RuleBasedSegment.class);
+        CommonChangeNotification<RuleBasedSegment> ruleBasedSegmentChangeNotification = new CommonChangeNotification(genericNotificationData, RuleBasedSegment.class);
         featureFlagsWorker.executeRefresh(ruleBasedSegmentChangeNotification);
         Mockito.verify(ruleBasedSegmentCache, Mockito.times(1)).update(Arrays.asList(parsedRBS), new ArrayList<>(), 1684265694505L);
     }
@@ -147,7 +146,7 @@ public class FeatureFlagWorkerImpTest {
         String notification = "{\"id\":\"vQQ61wzBRO:0:0\",\"clientId\":\"pri:MTUxNzg3MDg1OQ==\",\"timestamp\":1684265694676,\"encoding\":\"json\",\"channel\":\"NzM2MDI5Mzc0_MjkyNTIzNjczMw==_splits\",\"data\":\"{\\\"type\\\":\\\"SPLIT_UPDATE\\\",\\\"changeNumber\\\":1684265694505,\\\"pcn\\\":0,\\\"c\\\":0,\\\"d\\\":\\\"eyJjaGFuZ2VOdW1iZXIiOiAxMCwgInRyYWZmaWNUeXBlTmFtZSI6ICJ1c2VyIiwgIm5hbWUiOiAicmJzX2ZsYWciLCAidHJhZmZpY0FsbG9jYXRpb24iOiAxMDAsICJ0cmFmZmljQWxsb2NhdGlvblNlZWQiOiAxODI4Mzc3MzgwLCAic2VlZCI6IC0yODY2MTc5MjEsICJzdGF0dXMiOiAiQUNUSVZFIiwgImtpbGxlZCI6IGZhbHNlLCAiZGVmYXVsdFRyZWF0bWVudCI6ICJvZmYiLCAiYWxnbyI6IDIsICJjb25kaXRpb25zIjogW3siY29uZGl0aW9uVHlwZSI6ICJST0xMT1VUIiwgIm1hdGNoZXJHcm91cCI6IHsiY29tYmluZXIiOiAiQU5EIiwgIm1hdGNoZXJzIjogW3sia2V5U2VsZWN0b3IiOiB7InRyYWZmaWNUeXBlIjogInVzZXIifSwgIm1hdGNoZXJUeXBlIjogIklOX1JVTEVfQkFTRURfU0VHTUVOVCIsICJuZWdhdGUiOiBmYWxzZSwgInVzZXJEZWZpbmVkU2VnbWVudE1hdGNoZXJEYXRhIjogeyJzZWdtZW50TmFtZSI6ICJzYW1wbGVfcnVsZV9iYXNlZF9zZWdtZW50In19XX0sICJwYXJ0aXRpb25zIjogW3sidHJlYXRtZW50IjogIm9uIiwgInNpemUiOiAxMDB9LCB7InRyZWF0bWVudCI6ICJvZmYiLCAic2l6ZSI6IDB9XSwgImxhYmVsIjogImluIHJ1bGUgYmFzZWQgc2VnbWVudCBzYW1wbGVfcnVsZV9iYXNlZF9zZWdtZW50In0sIHsiY29uZGl0aW9uVHlwZSI6ICJST0xMT1VUIiwgIm1hdGNoZXJHcm91cCI6IHsiY29tYmluZXIiOiAiQU5EIiwgIm1hdGNoZXJzIjogW3sia2V5U2VsZWN0b3IiOiB7InRyYWZmaWNUeXBlIjogInVzZXIifSwgIm1hdGNoZXJUeXBlIjogIkFMTF9LRVlTIiwgIm5lZ2F0ZSI6IGZhbHNlfV19LCAicGFydGl0aW9ucyI6IFt7InRyZWF0bWVudCI6ICJvbiIsICJzaXplIjogMH0sIHsidHJlYXRtZW50IjogIm9mZiIsICJzaXplIjogMTAwfV0sICJsYWJlbCI6ICJkZWZhdWx0IHJ1bGUifV0sICJjb25maWd1cmF0aW9ucyI6IHt9LCAic2V0cyI6IFtdLCAiaW1wcmVzc2lvbnNEaXNhYmxlZCI6IGZhbHNlfQ==\\\"}\"}";
         RawMessageNotification rawMessageNotification = Json.fromJson(notification, RawMessageNotification.class);
         GenericNotificationData genericNotificationData = Json.fromJson(rawMessageNotification.getData(), GenericNotificationData.class);
-        CommonChangeNotification<Split> featureFlagChangeNotification = new CommonChangeNotification(genericNotificationData, IncomingNotification.Type.SPLIT_UPDATE, Split.class);
+        CommonChangeNotification<Split> featureFlagChangeNotification = new CommonChangeNotification(genericNotificationData, Split.class);
 
         featureFlagsWorker.executeRefresh(featureFlagChangeNotification);
         Mockito.verify(synchronizer, Mockito.times(0)).refreshSplits(0L, 1684265694505L);

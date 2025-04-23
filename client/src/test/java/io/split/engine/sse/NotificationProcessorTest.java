@@ -33,7 +33,7 @@ public class NotificationProcessorTest {
                 .changeNumber(changeNumber)
                 .channel(channel)
                 .build();
-        CommonChangeNotification splitChangeNotification = new CommonChangeNotification(genericNotificationData, IncomingNotification.Type.SPLIT_UPDATE, Split.class);
+        CommonChangeNotification splitChangeNotification = new CommonChangeNotification(genericNotificationData, Split.class);
 
         _notificationProcessor.process(splitChangeNotification);
 
@@ -47,8 +47,9 @@ public class NotificationProcessorTest {
         GenericNotificationData genericNotificationData = GenericNotificationData.builder()
                 .changeNumber(changeNumber)
                 .channel(channel)
+                .type(IncomingNotification.Type.RB_SEGMENT_UPDATE)
                 .build();
-        CommonChangeNotification ruleBasedSegmentChangeNotification = new CommonChangeNotification(genericNotificationData, IncomingNotification.Type.RB_SEGMENT_UPDATE, RuleBasedSegment.class);
+        CommonChangeNotification ruleBasedSegmentChangeNotification = new CommonChangeNotification(genericNotificationData, RuleBasedSegment.class);
 
         _notificationProcessor.process(ruleBasedSegmentChangeNotification);
 

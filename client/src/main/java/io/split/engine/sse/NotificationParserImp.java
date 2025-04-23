@@ -49,9 +49,9 @@ public class NotificationParserImp implements NotificationParser {
     private IncomingNotification parseNotification(GenericNotificationData genericNotificationData) throws Exception {
         switch (genericNotificationData.getType()) {
             case SPLIT_UPDATE:
-                return new CommonChangeNotification(genericNotificationData, IncomingNotification.Type.SPLIT_UPDATE, Split.class);
+                return new CommonChangeNotification(genericNotificationData, Split.class);
             case RB_SEGMENT_UPDATE:
-                return new CommonChangeNotification(genericNotificationData, IncomingNotification.Type.RB_SEGMENT_UPDATE, RuleBasedSegment.class);
+                return new CommonChangeNotification(genericNotificationData, RuleBasedSegment.class);
             case SPLIT_KILL:
                 return new SplitKillNotification(genericNotificationData);
             case SEGMENT_UPDATE:

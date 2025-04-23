@@ -24,7 +24,7 @@ public class CommonChangeNotification<Y> extends IncomingNotification {
     private Class _definitionClass;
 
     public CommonChangeNotification(GenericNotificationData genericNotificationData,
-                                    IncomingNotification.Type notificationType, Class definitionClass) {
+                                    Class definitionClass) {
         super(genericNotificationData.getType(), genericNotificationData.getChannel());
         changeNumber = genericNotificationData.getChangeNumber();
         _definitionClass = definitionClass;
