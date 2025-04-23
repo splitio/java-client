@@ -118,7 +118,8 @@ public class SynchronizerImp implements Synchronizer {
             if (fetchResult != null && !fetchResult.retry() && !fetchResult.isSuccess()) {
                 return new SyncResult(false, remainingAttempts, fetchResult);
             }
-            if (targetChangeNumber <= _splitCacheProducer.getChangeNumber() && ruleBasedSegmentChangeNumber <= _ruleBasedSegmentCacheProducer.getChangeNumber()) {
+            if (targetChangeNumber <= _splitCacheProducer.getChangeNumber()
+                    && ruleBasedSegmentChangeNumber <= _ruleBasedSegmentCacheProducer.getChangeNumber()) {
                 return new SyncResult(true, remainingAttempts, fetchResult);
             } else if (remainingAttempts <= 0) {
                 return new SyncResult(false, remainingAttempts, fetchResult);
@@ -143,9 +144,8 @@ public class SynchronizerImp implements Synchronizer {
             ruleBasedSegmentChangeNumber = _ruleBasedSegmentCacheProducer.getChangeNumber();
         }
         
-        if (targetChangeNumber <= _splitCacheProducer.getChangeNumber() && ruleBasedSegmentChangeNumber <= _ruleBasedSegmentCacheProducer.getChangeNumber()) {
-            return;
-        }
+        if (targetChangeNumber <= _splitCacheProducer.getChangeNumber()
+                && ruleBasedSegmentChangeNumber <= _ruleBasedSegmentCacheProducer.getChangeNumber()) {
             return;
         }
 
