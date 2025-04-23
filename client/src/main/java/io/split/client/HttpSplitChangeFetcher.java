@@ -110,7 +110,6 @@ public final class HttpSplitChangeFetcher implements SplitChangeFetcher {
         if (SPEC_VERSION.equals(Spec.SPEC_1_1)) {
             splitChange.featureFlags = convertBodyToOldSpec(response.body());
             splitChange.ruleBasedSegments = createEmptyDTO();
-            _lastProxyCheckTimestamp = System.currentTimeMillis();
         } else {
             splitChange = Json.fromJson(response.body(), SplitChange.class);
         }
