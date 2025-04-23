@@ -265,7 +265,7 @@ public class HttpSplitChangeFetcherTest {
         Assert.assertTrue(fetcher.getLastProxyCheckTimestamp() > 0);
 
         // Set proxy interval to low number to force check for spec 1.3
-        Field proxyInterval = fetcher.getClass().getDeclaredField("PROXY_CHECK_INTERVAL_MINUTES_SS");
+        Field proxyInterval = fetcher.getClass().getDeclaredField("PROXY_CHECK_INTERVAL_MILLISECONDS_SS");
         proxyInterval.setAccessible(true);
         proxyInterval.set(fetcher, 5);
         Thread.sleep(1000);
