@@ -45,6 +45,11 @@ public class UserCustomRuleBasedSegmentAdapterProducer implements RuleBasedSegme
     }
 
     @Override
+    public void clear() {
+        //NoOp
+    }
+
+    @Override
     public void update(List<ParsedRuleBasedSegment> toAdd, List<String> toRemove, long changeNumber) {
         //NoOp
     }

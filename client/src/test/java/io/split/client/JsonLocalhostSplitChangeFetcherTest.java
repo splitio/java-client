@@ -201,4 +201,23 @@ public class JsonLocalhostSplitChangeFetcherTest {
 
         SplitChange splitChange = localhostSplitChangeFetcher.fetch(-1L, -1, fetchOptions);
     }
+
+    @Test
+    public void testParseOldSpec() throws FileNotFoundException {
+        InputStream inputStream = new FileInputStream("src/test/resources/split_old_spec.json");
+        InputStreamProvider inputStreamProvider = new StaticContentInputStreamProvider(inputStream);
+        JsonLocalhostSplitChangeFetcher localhostSplitChangeFetcher = new JsonLocalhostSplitChangeFetcher(inputStreamProvider);
+        FetchOptions fetchOptions = Mockito.mock(FetchOptions.class);
+
+        SplitChange splitChange = localhostSplitChangeFetcher.fetch(-1L, -1, fetchOptions);
+
+        List<Split> split = splitChange.featureFlags.d;
+        Assert.assertEquals(7, split.size());
+        Assert.assertEquals(1660326991072L, splitChange.featureFlags.t);
+        Assert.assertEquals(-1L, splitChange.featureFlags.s);
+
+        Assert.assertEquals(new ArrayList<>(), splitChange.ruleBasedSegments.d);
+        Assert.assertEquals(-1L, splitChange.ruleBasedSegments.t);
+        Assert.assertEquals(-1L, splitChange.ruleBasedSegments.s);
+    }
 }

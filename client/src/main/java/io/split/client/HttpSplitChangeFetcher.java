@@ -78,6 +78,8 @@ public final class HttpSplitChangeFetcher implements SplitChangeFetcher {
             if (SPEC_VERSION.equals(SPEC_1_1) && (System.currentTimeMillis() - _lastProxyCheckTimestamp >= PROXY_CHECK_INTERVAL_MILLISECONDS_SS)) {
                 _log.info("Switching to new Feature flag spec ({}) and fetching.", SPEC_1_3);
                 SPEC_VERSION = SPEC_1_3;
+                since = -1;
+                sinceRBS = -1;
             }
             URI uri = buildURL(options, since, sinceRBS);
             response = _client.get(uri, options, null);
@@ -109,30 +111,17 @@ public final class HttpSplitChangeFetcher implements SplitChangeFetcher {
         SplitChange splitChange = new SplitChange();
         if (SPEC_VERSION.equals(Spec.SPEC_1_1)) {
             splitChange.featureFlags = convertBodyToOldSpec(response.body());
-            splitChange.ruleBasedSegments = createEmptyDTO();
+            splitChange.ruleBasedSegments = ChangeDto.createEmptyDto();
         } else {
             splitChange = Json.fromJson(response.body(), SplitChange.class);
+            if (SPEC_VERSION.equals(Spec.SPEC_1_3) && _lastProxyCheckTimestamp != 0) {
+                splitChange.clearCache = true;
+                _lastProxyCheckTimestamp = 0L;
+            }
         }
         return splitChange;
     }
 
-    public Long getLastProxyCheckTimestamp() {
-        return _lastProxyCheckTimestamp;
-    }
-
-    public void setLastProxyCheckTimestamp(long lastProxyCheckTimestamp) {
-        synchronized (_lock) {
-            _lastProxyCheckTimestamp = lastProxyCheckTimestamp;
-        }
-    }
-
-    private ChangeDto<RuleBasedSegment> createEmptyDTO() {
-        ChangeDto<RuleBasedSegment> dto = new ChangeDto<>();
-        dto.d = new ArrayList<>();
-        dto.t = -1;
-        dto.s = -1;
-        return dto;
-    }
     private ChangeDto<Split> convertBodyToOldSpec(String body) {
         return Json.fromJson(body, SplitChangesOldPayloadDto.class).toChangeDTO();
     }
@@ -140,7 +129,9 @@ public final class HttpSplitChangeFetcher implements SplitChangeFetcher {
     private URI buildURL(FetchOptions options, long since, long sinceRBS) throws URISyntaxException {
         URIBuilder uriBuilder = new URIBuilder(_target).addParameter(SPEC, "" + SPEC_VERSION);
         uriBuilder.addParameter(SINCE, "" + since);
-        uriBuilder.addParameter(RB_SINCE, "" + sinceRBS);
+        if (SPEC_VERSION.equals(SPEC_1_3)) {
+            uriBuilder.addParameter(RB_SINCE, "" + sinceRBS);
+        }
         if (!options.flagSetsFilter().isEmpty()) {
             uriBuilder.addParameter(SETS, "" + options.flagSetsFilter());
         }

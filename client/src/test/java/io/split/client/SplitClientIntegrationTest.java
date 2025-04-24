@@ -1,11 +1,13 @@
 package io.split.client;
 
 import io.split.SSEMockServer;
+import io.split.Spec;
 import io.split.SplitMockServer;
 import io.split.client.api.SplitView;
 import io.split.client.dtos.EvaluationOptions;
 import io.split.client.impressions.ImpressionsManager;
 import io.split.client.utils.CustomDispatcher;
+import io.split.engine.experiments.SplitFetcherImp;
 import io.split.storages.enums.OperationMode;
 import io.split.storages.enums.StorageMode;
 import io.split.storages.pluggable.CustomStorageWrapperImp;
@@ -24,6 +26,7 @@ import org.junit.Test;
 
 import javax.ws.rs.sse.OutboundSseEvent;
 import java.io.IOException;
+import java.lang.reflect.Field;
 import java.net.URISyntaxException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
@@ -246,6 +249,7 @@ public class SplitClientIntegrationTest {
 
         splitServer.stop();
         sseServer.stop();
+        factory.destroy();
     }
 
     @Test
@@ -641,6 +645,7 @@ public class SplitClientIntegrationTest {
         Thread.sleep(1000);
         result = client.getTreatment("admin", "push_test");
         Assert.assertNotEquals("on_whitelist", result);
+        client.destroy();
     }
 
     @Test
@@ -677,6 +682,7 @@ public class SplitClientIntegrationTest {
         Thread.sleep(1000);
         result = client.getTreatment("admin", "push_test");
         Assert.assertNotEquals("on_whitelist", result);
+        client.destroy();
     }
 
     @Test
@@ -745,7 +751,7 @@ public class SplitClientIntegrationTest {
             Assert.assertNotNull(customStorageWrapper.getConfig());
             String key = customStorageWrapper.getConfig().keySet().stream().collect(Collectors.toList()).get(0);
             Assert.assertTrue(customStorageWrapper.getConfig().get(key).contains(StorageMode.PLUGGABLE.name()));
-
+            client.destroy();
         } catch (TimeoutException | InterruptedException e) {
         }
     }
@@ -1099,6 +1105,90 @@ public class SplitClientIntegrationTest {
         server.shutdown();
         Assert.assertTrue(check1);
         Assert.assertTrue(check2);
+    }
+
+    @Test
+    public void oldSpecTest() throws Exception {
+        String splits = new String(Files.readAllBytes(Paths.get("src/test/resources/split_old_spec.json")), StandardCharsets.UTF_8);
+        String splits13 = new String(Files.readAllBytes(Paths.get("src/test/resources/split_init.json")), StandardCharsets.UTF_8);
+        String segment_1 = new String(Files.readAllBytes(Paths.get("src/test/resources/segment_1.json")), StandardCharsets.UTF_8);
+        List<RecordedRequest> allRequests = new ArrayList<>();
+
+        class OldSpecDispatch extends Dispatcher {
+            public int initCode = 400;
+            @Override
+            public MockResponse dispatch (RecordedRequest request){
+                allRequests.add(request);
+                switch (request.getPath()) {
+                    case "/api/splitChanges?s=1.3&since=-1&rbSince=-1":
+                        return new MockResponse().setResponseCode(initCode).setBody(splits13);
+                    case "/api/splitChanges?s=1.1&since=-1":
+                        return new MockResponse().setResponseCode(200).setBody(splits);
+                    case "/api/splitChanges?s=1.1&since=1660326991072":
+                        return new MockResponse().setResponseCode(200).setBody("{\"splits\": [], \"since\":1660326991072, \"till\":1660326991072}");
+                    case "/api/splitChanges?s=1.3&since=1660326991072&rbSince=-1":
+                        return new MockResponse().setResponseCode(200).setBody("{\"ff\":{\"d\": [], \"s\":1660326991072, \"t\":1660326991072},\"rbs\":{\"t\":-1,\"s\":-1,\"d\":[]}}");
+                    case "/api/segmentChanges/segment_1?since=-1":
+                        return new MockResponse().setResponseCode(200).setBody(segment_1);
+                    case "/api/segmentChanges/segment_1?since=1585948850110":
+                        return new MockResponse().setResponseCode(200).setBody("{\"name\": \"segment_1\",\"added\": [],\"removed\": [],\"since\": 1585948850110,\"till\": 1585948850110}");
+                    case "/api/testImpressions/bulk":
+                        return new MockResponse().setResponseCode(200);
+                    case "/api/testImpressions/count":
+                        return new MockResponse().setResponseCode(200);
+                    case "/v1/keys/ss":
+                        return new MockResponse().setResponseCode(200);
+                    case "/v1/metrics/usage":
+                        return new MockResponse().setResponseCode(200);
+                    case "/v1/metrics/config":
+                        return new MockResponse().setResponseCode(200);
+                }
+                return new MockResponse().setResponseCode(404);
+            }
+        };
+
+        OldSpecDispatch dispatcher = new OldSpecDispatch();
+        MockWebServer server = new MockWebServer();
+        server.setDispatcher(dispatcher);
+
+        server.start();
+        String serverURL = String.format("http://%s:%s", server.getHostName(), server.getPort());
+        SplitClientConfig config = SplitClientConfig.builder()
+                .setBlockUntilReadyTimeout(10000)
+                .endpoint(serverURL, serverURL)
+                .telemetryURL(serverURL + "/v1")
+                .authServiceURL(String.format("%s/api/auth/enabled", serverURL))
+                .streamingEnabled(false)
+                .featuresRefreshRate(5)
+                .build();
+
+        SplitFactory factory = SplitFactoryBuilder.build("fake-api-token", config);
+        SplitClient client = factory.client();
+        client.blockUntilReady();
+        Assert.assertEquals(Spec.SPEC_1_1, Spec.SPEC_VERSION);
+        Assert.assertEquals("on", client.getTreatment("bilal", "split_1"));
+        Assert.assertEquals("off", client.getTreatment("bilal", "split_2"));
+        Assert.assertEquals("v5", client.getTreatment("admin", "split_2"));
+
+        Field fetcher = factory.getClass().getDeclaredField("_splitFetcher");
+        fetcher.setAccessible(true);
+        SplitFetcherImp splitFetcher = (SplitFetcherImp) fetcher.get(factory);
+        Field changeFetcher = splitFetcher.getClass().getDeclaredField("_splitChangeFetcher");
+        changeFetcher.setAccessible(true);
+        HttpSplitChangeFetcher splitChangeFetcher = (HttpSplitChangeFetcher) changeFetcher.get(splitFetcher);
+        Field proxyInterval = splitChangeFetcher.getClass().getDeclaredField("PROXY_CHECK_INTERVAL_MILLISECONDS_SS");
+        proxyInterval.setAccessible(true);
+        proxyInterval.set(splitChangeFetcher, 1);
+        dispatcher.initCode = 200;
+        Thread.sleep(6000);
+
+        Assert.assertEquals(Spec.SPEC_1_3, Spec.SPEC_VERSION);
+        Assert.assertEquals("on", client.getTreatment("bilal", "split_1"));
+        Assert.assertEquals("off", client.getTreatment("bilal", "split_2"));
+        Assert.assertEquals("v5", client.getTreatment("admin", "split_2"));
+
+        client.destroy();
+        server.shutdown();
     }
 
     private SSEMockServer buildSSEMockServer(SSEMockServer.SseEventQueue eventQueue) {

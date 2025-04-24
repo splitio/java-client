@@ -8,4 +8,5 @@ public interface RuleBasedSegmentCacheProducer extends  RuleBasedSegmentCacheCom
     boolean remove(String name);
     void setChangeNumber(long changeNumber);
     void update(List<ParsedRuleBasedSegment> toAdd, List<String> toRemove, long changeNumber);
+    void clear();
 }

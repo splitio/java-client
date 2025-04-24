@@ -413,7 +413,7 @@ public class SplitClientConfig {
     }
 
     public boolean isRootURIOverriden() {
-        return _endpoint == SDK_ENDPOINT;
+        return _endpoint != SDK_ENDPOINT;
     }
 
     public CustomHttpModule alternativeHTTPModule() { return _alternativeHTTPModule; }

@@ -32,4 +32,21 @@ public class JsonLocalhostSplitFactoryTest {
         Assert.assertEquals("on_whitelist", client.getTreatment("admin", "push_test"));
         client.destroy();
     }
+
+    @Test
+    public void testOldSpec() throws IOException, URISyntaxException, InterruptedException, TimeoutException {
+        SplitClientConfig config = SplitClientConfig.builder()
+                .splitFile("src/test/resources/split_old_spec.json")
+                .segmentDirectory("src/test/resources")
+                .setBlockUntilReadyTimeout(10000)
+                .build();
+        SplitFactory splitFactory = SplitFactoryBuilder.build("localhost", config);
+        SplitClient client = splitFactory.client();
+        client.blockUntilReady();
+
+        Assert.assertEquals("on", client.getTreatment("bilal", "split_1"));
+        Assert.assertEquals("off", client.getTreatment("bilal", "split_2"));
+        Assert.assertEquals("v5", client.getTreatment("admin", "split_2"));
+        client.destroy();
+    }
 }
