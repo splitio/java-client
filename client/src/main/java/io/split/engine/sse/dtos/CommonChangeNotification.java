@@ -67,10 +67,6 @@ public class CommonChangeNotification<Y> extends IncomingNotification {
         return compressType;
     }
 
-    public void updateDefinition(byte[] decodedBytes) throws UnsupportedEncodingException {
-        definition = (Y) Json.fromJson(new String(decodedBytes, "UTF-8"), _definitionClass);
-    }
-
     public Y getDefinition() {
         return definition;
     }
@@ -83,5 +79,9 @@ public class CommonChangeNotification<Y> extends IncomingNotification {
     @Override
     public String toString() {
         return String.format("Type: %s; Channel: %s; ChangeNumber: %s", getType(), getChannel(), getChangeNumber());
+    }
+
+    private void updateDefinition(byte[] decodedBytes) throws UnsupportedEncodingException {
+        definition = (Y) Json.fromJson(new String(decodedBytes, "UTF-8"), _definitionClass);
     }
 }
