@@ -21,7 +21,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 import static com.google.common.base.Preconditions.checkNotNull;
-import static io.split.Spec.SPEC_VERSION;
+
 import static io.split.client.utils.FeatureFlagProcessor.processFeatureFlagChanges;
 import static io.split.client.utils.RuleBasedSegmentProcessor.processRuleBasedSegmentChanges;
 

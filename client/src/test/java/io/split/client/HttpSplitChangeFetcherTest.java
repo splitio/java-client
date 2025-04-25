@@ -198,7 +198,7 @@ public class HttpSplitChangeFetcherTest {
     @Test
     public void testSwitchingToOldSpec() throws URISyntaxException, InvocationTargetException,
             NoSuchMethodException, IllegalAccessException, IOException, NoSuchFieldException, InterruptedException {
-        Spec.SPEC_VERSION = Spec.SPEC_1_3;
+//        Spec.SPEC_VERSION = Spec.SPEC_1_3;
         URI rootTarget = URI.create("https://api.split.io");
         CloseableHttpClient httpClientMock = Mockito.mock(CloseableHttpClient.class);
         HttpEntity entityMock = Mockito.mock(HttpEntity.class);
@@ -247,9 +247,12 @@ public class HttpSplitChangeFetcherTest {
         HttpSplitChangeFetcher fetcher = HttpSplitChangeFetcher.create(splitHtpClient, rootTarget,
                 Mockito.mock(TelemetryRuntimeProducer.class), true);
 
+        Field specVersion = fetcher.getClass().getDeclaredField("specVersion");
+        specVersion.setAccessible(true);
+        specVersion.set(fetcher, Spec.SPEC_1_1);
+
         SplitChange change = fetcher.fetch(-1, -1, new FetchOptions.Builder().cacheControlHeaders(true).build());
 
-        Assert.assertEquals(Spec.SPEC_1_1, Spec.SPEC_VERSION);
         List<ClassicHttpRequest> captured = requestCaptor.getAllValues();
         Assert.assertEquals(captured.size(), 2);
         Assert.assertTrue(captured.get(0).getUri().toString().contains("s=1.3"));
@@ -270,7 +273,6 @@ public class HttpSplitChangeFetcherTest {
         Thread.sleep(1000);
         change = fetcher.fetch(-1, -1, new FetchOptions.Builder().cacheControlHeaders(true).build());
 
-        Assert.assertEquals(Spec.SPEC_1_1, Spec.SPEC_VERSION);
         Assert.assertTrue(captured.get(2).getUri().toString().contains("s=1.3"));
         Assert.assertTrue(captured.get(3).getUri().toString().contains("s=1.1"));
         Assert.assertEquals(122, change.featureFlags.s);
@@ -282,7 +284,6 @@ public class HttpSplitChangeFetcherTest {
         // test if proxy is upgraded and spec 1.3 now works.
         Thread.sleep(1000);
         change = fetcher.fetch(-1, -1, new FetchOptions.Builder().cacheControlHeaders(true).build());
-        Assert.assertEquals(Spec.SPEC_1_3, Spec.SPEC_VERSION);
         Assert.assertTrue(captured.get(4).getUri().toString().contains("s=1.3"));
         Assert.assertEquals(122, change.featureFlags.s);
         Assert.assertEquals(123, change.featureFlags.t);

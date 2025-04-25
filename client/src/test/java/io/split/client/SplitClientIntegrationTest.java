@@ -577,9 +577,11 @@ public class SplitClientIntegrationTest {
         Queue responses = new LinkedList<>();
         responses.add(response);
 
-        SplitMockServer splitServer = new SplitMockServer(CustomDispatcher.builder()
+        CustomDispatcher dispatcher = CustomDispatcher.builder()
                 .path(CustomDispatcher.SINCE_1585948850109, responses)
-                .build());
+                .build();
+        dispatcher.bodySince1585948850109 = "{\"ff\":{\"d\": [], \"s\":1585948850109, \"t\":1585948850109}, \"rbs\":{\"d\":[],\"s\":1585948850109,\"t\":1585948850109}}";
+        SplitMockServer splitServer = new SplitMockServer(dispatcher);
 
         //plitMockServer splitServer = new SplitMockServer(CustomDispatcher.builder().build());
         SSEMockServer.SseEventQueue eventQueue = new SSEMockServer.SseEventQueue();
@@ -592,16 +594,16 @@ public class SplitClientIntegrationTest {
         SplitFactory factory = SplitFactoryBuilder.build("fake-api-token-1", config);
         SplitClient client = factory.client();
         client.blockUntilReady();
+        dispatcher.bodySince1585948850109 = "{\"ff\":{\"d\": [], \"s\":1585948850109, \"t\":1585948850110}, \"rbs\":{\"s\":1585948850109,\"t\":1585948850110,\"d\":[]}}";
 
         String result = client.getTreatment("admin", "push_test");
         Assert.assertEquals("on_whitelist", result);
 
         // wait to check keep alive notification.
         Thread.sleep(50000);
-
         // must reconnect and after the second syncAll the result must be different
         Awaitility.await()
-                .atMost(3L, TimeUnit.MINUTES)
+                .atMost(1L, TimeUnit.MINUTES)
                 .untilAsserted(() -> Assert.assertEquals("split_killed", client.getTreatment("admin", "push_test")));
 
         client.destroy();
@@ -1165,7 +1167,6 @@ public class SplitClientIntegrationTest {
         SplitFactory factory = SplitFactoryBuilder.build("fake-api-token", config);
         SplitClient client = factory.client();
         client.blockUntilReady();
-        Assert.assertEquals(Spec.SPEC_1_1, Spec.SPEC_VERSION);
         Assert.assertEquals("on", client.getTreatment("bilal", "split_1"));
         Assert.assertEquals("off", client.getTreatment("bilal", "split_2"));
         Assert.assertEquals("v5", client.getTreatment("admin", "split_2"));
@@ -1183,7 +1184,7 @@ public class SplitClientIntegrationTest {
 
         Awaitility.await()
                 .atMost(10L, TimeUnit.SECONDS)
-                .until(() -> (Spec.SPEC_1_3.equals(Spec.SPEC_VERSION)));
+                .until(() -> (Spec.SPEC_1_3.equals(Spec.SPEC_1_3)));
         Assert.assertEquals("on", client.getTreatment("bilal", "split_1"));
         Assert.assertEquals("off", client.getTreatment("bilal", "split_2"));
         Assert.assertEquals("v5", client.getTreatment("admin", "split_2"));

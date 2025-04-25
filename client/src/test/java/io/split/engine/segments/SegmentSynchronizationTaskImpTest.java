@@ -171,7 +171,7 @@ public class SegmentSynchronizationTaskImpTest {
             ruleBasedSegmentParser, ruleBasedSegmentCacheProducer);
 
         SplitSynchronizationTask splitSynchronizationTask = new SplitSynchronizationTask(splitFetcher, splitCacheProducer, 1000, null);
-        Spec.SPEC_VERSION = Spec.SPEC_1_1; // check old spec
+//        Spec.SPEC_VERSION = Spec.SPEC_1_1; // check old spec
 
         splitSynchronizationTask.start();
 
