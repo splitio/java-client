@@ -100,18 +100,19 @@ public final class HttpSplitChangeFetcher implements SplitChangeFetcher {
                         String.format("Could not retrieve splitChanges since %s; http return code %s", since, response.statusCode())
                 );
             }
+
+            String body = response.body();
+            if (specVersion.equals(Spec.SPEC_1_1)) {
+                return Json.fromJson(body, SplitChangesOldPayloadDto.class).toSplitChange();
+            }
+
+            return Json.fromJson(body, SplitChange.class);
+
         } catch (Exception e) {
             throw new IllegalStateException(String.format("Problem fetching splitChanges since %s: %s", since, e), e);
         } finally {
             _telemetryRuntimeProducer.recordSyncLatency(HTTPLatenciesEnum.SPLITS, System.currentTimeMillis() - start);
         }
-
-        String body = response.body();
-        if (specVersion.equals(Spec.SPEC_1_1)) {
-            return Json.fromJson(body, SplitChangesOldPayloadDto.class).toSplitChange();
-        }
-
-        return Json.fromJson(body, SplitChange.class);
     }
 
     public Long getLastProxyCheckTimestamp() {
