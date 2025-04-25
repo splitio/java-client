@@ -1180,9 +1180,10 @@ public class SplitClientIntegrationTest {
         proxyInterval.setAccessible(true);
         proxyInterval.set(splitChangeFetcher, 1);
         dispatcher.initCode = 200;
-        Thread.sleep(6000);
 
-        Assert.assertEquals(Spec.SPEC_1_3, Spec.SPEC_VERSION);
+        Awaitility.await()
+                .atMost(10L, TimeUnit.SECONDS)
+                .until(() -> (Spec.SPEC_1_3.equals(Spec.SPEC_VERSION)));
         Assert.assertEquals("on", client.getTreatment("bilal", "split_1"));
         Assert.assertEquals("off", client.getTreatment("bilal", "split_2"));
         Assert.assertEquals("v5", client.getTreatment("admin", "split_2"));
