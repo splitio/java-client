@@ -135,7 +135,9 @@ public final class HttpSplitChangeFetcher implements SplitChangeFetcher {
     private URI buildURL(FetchOptions options, long since, long sinceRBS) throws URISyntaxException {
         URIBuilder uriBuilder = new URIBuilder(_target).addParameter(SPEC, "" + specVersion);
         uriBuilder.addParameter(SINCE, "" + since);
-        uriBuilder.addParameter(RB_SINCE, "" + sinceRBS);
+        if (specVersion.equals(SPEC_1_3)) {
+            uriBuilder.addParameter(RB_SINCE, "" + sinceRBS);
+        }
         if (!options.flagSetsFilter().isEmpty()) {
             uriBuilder.addParameter(SETS, "" + options.flagSetsFilter());
         }
