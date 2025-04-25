@@ -106,14 +106,11 @@ public final class HttpSplitChangeFetcher implements SplitChangeFetcher {
             _telemetryRuntimeProducer.recordSyncLatency(HTTPLatenciesEnum.SPLITS, System.currentTimeMillis() - start);
         }
 
-        SplitChange splitChange = new SplitChange();
         if (SPEC_VERSION.equals(Spec.SPEC_1_1)) {
-            splitChange.featureFlags = convertBodyToOldSpec(response.body());
-            splitChange.ruleBasedSegments = createEmptyDTO();
-        } else {
-            splitChange = Json.fromJson(response.body(), SplitChange.class);
+            return Json.fromJson(body, SplitChangesOldPayloadDto.class).toSplitChange();
         }
-        return splitChange;
+
+        return Json.fromJson(response.body(), SplitChange.class);
     }
 
     public Long getLastProxyCheckTimestamp() {
