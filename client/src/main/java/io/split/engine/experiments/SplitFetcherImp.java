@@ -1,8 +1,5 @@
 package io.split.engine.experiments;
 
-import io.split.client.dtos.ChangeDto;
-import io.split.client.dtos.RuleBasedSegment;
-import io.split.client.dtos.Split;
 import io.split.client.dtos.SplitChange;
 import io.split.client.exceptions.UriTooLongException;
 import io.split.client.interceptors.FlagSetsFilter;
@@ -22,6 +19,7 @@ import java.util.Set;
 import static com.google.common.base.Preconditions.checkNotNull;
 import static io.split.client.utils.FeatureFlagProcessor.processFeatureFlagChanges;
 import static io.split.client.utils.RuleBasedSegmentProcessor.processRuleBasedSegmentChanges;
+import static io.split.client.utils.Utils.checkExitConditions;
 
 /**
  * An ExperimentFetcher that refreshes experiment definitions periodically.
@@ -144,7 +142,7 @@ public class SplitFetcherImp implements SplitFetcher {
 
         synchronized (_lock) {
             // check state one more time.
-            if (checkExitConditions(change.featureFlags, _splitCacheProducer.getChangeNumber()) &&
+            if (checkExitConditions(change.featureFlags, _splitCacheProducer.getChangeNumber()) ||
                     checkExitConditions(change.ruleBasedSegments, _ruleBasedSegmentCacheProducer.getChangeNumber())) {
                 // some other thread may have updated the shared state. exit
                 return segments;
@@ -162,9 +160,5 @@ public class SplitFetcherImp implements SplitFetcher {
         }
 
         return segments;
-    }
-
-    private <T> boolean checkExitConditions(ChangeDto<T> change, long cn) {
-        return change.s != cn || change.t < cn;
     }
 }

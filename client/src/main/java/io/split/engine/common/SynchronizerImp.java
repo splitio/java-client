@@ -118,8 +118,8 @@ public class SynchronizerImp implements Synchronizer {
             if (fetchResult != null && !fetchResult.retry() && !fetchResult.isSuccess()) {
                 return new SyncResult(false, remainingAttempts, fetchResult);
             }
-            if ((targetChangeNumber != 0 && targetChangeNumber <= _splitCacheProducer.getChangeNumber()) ||
-                    (ruleBasedSegmentChangeNumber != 0 && ruleBasedSegmentChangeNumber <= _ruleBasedSegmentCacheProducer.getChangeNumber())) {
+            if (targetChangeNumber <= _splitCacheProducer.getChangeNumber()
+                    && ruleBasedSegmentChangeNumber <= _ruleBasedSegmentCacheProducer.getChangeNumber()) {
                 return new SyncResult(true, remainingAttempts, fetchResult);
             } else if (remainingAttempts <= 0) {
                 return new SyncResult(false, remainingAttempts, fetchResult);
@@ -137,9 +137,15 @@ public class SynchronizerImp implements Synchronizer {
     @Override
     public void refreshSplits(Long targetChangeNumber, Long ruleBasedSegmentChangeNumber) {
 
-        if ((targetChangeNumber != 0 && targetChangeNumber <= _splitCacheProducer.getChangeNumber()) ||
-                (ruleBasedSegmentChangeNumber != 0 && ruleBasedSegmentChangeNumber <= _ruleBasedSegmentCacheProducer.getChangeNumber()) ||
-                (ruleBasedSegmentChangeNumber == 0 && targetChangeNumber == 0)) {
+        if (targetChangeNumber == null || targetChangeNumber == 0) {
+            targetChangeNumber = _splitCacheProducer.getChangeNumber();
+        }
+        if (ruleBasedSegmentChangeNumber == null || ruleBasedSegmentChangeNumber == 0) {
+            ruleBasedSegmentChangeNumber = _ruleBasedSegmentCacheProducer.getChangeNumber();
+        }
+        
+        if (targetChangeNumber <= _splitCacheProducer.getChangeNumber()
+                && ruleBasedSegmentChangeNumber <= _ruleBasedSegmentCacheProducer.getChangeNumber()) {
             return;
         }
 

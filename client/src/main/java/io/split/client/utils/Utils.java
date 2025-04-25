@@ -1,5 +1,6 @@
 package io.split.client.utils;
 
+import io.split.client.dtos.ChangeDto;
 import org.apache.hc.client5.http.impl.classic.CloseableHttpResponse;
 import org.apache.hc.core5.http.ContentType;
 import org.apache.hc.core5.http.HttpEntity;
@@ -39,5 +40,9 @@ public class Utils {
         //Add or not the backslash depending on whether the roots ends with / or not
         String path = String.format("%s%s%s", root.getPath(), root.getPath().endsWith("/") ? "" : "/", pathToAppend);
         return new URIBuilder(root).setPath(path).build();
+    }
+
+    public static <T> boolean checkExitConditions(ChangeDto<T> change, long cn) {
+        return change.t < cn && change.t != -1;
     }
 }
