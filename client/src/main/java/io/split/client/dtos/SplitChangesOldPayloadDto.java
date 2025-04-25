@@ -2,6 +2,7 @@ package io.split.client.dtos;
 
 import com.google.gson.annotations.SerializedName;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class SplitChangesOldPayloadDto {
@@ -25,8 +26,8 @@ public class SplitChangesOldPayloadDto {
         rbs.t = -1;
         rbs.s = -1;
         
-        splitChange.ff = ff;
-        splitChange.rbs = rbs;
+        splitChange.featureFlags = ff;
+        splitChange.ruleBasedSegments = rbs;
         
         return splitChange;
     }
