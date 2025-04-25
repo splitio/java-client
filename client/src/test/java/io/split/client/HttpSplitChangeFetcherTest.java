@@ -199,7 +199,6 @@ public class HttpSplitChangeFetcherTest {
     @Test
     public void testSwitchingToOldSpec() throws URISyntaxException, InvocationTargetException,
             NoSuchMethodException, IllegalAccessException, IOException {
-        Spec.SPEC_VERSION = Spec.SPEC_1_3;
         URI rootTarget = URI.create("https://api.split.io");
         CloseableHttpClient httpClientMock = Mockito.mock(CloseableHttpClient.class);
         HttpEntity entityMock = Mockito.mock(HttpEntity.class);
@@ -225,7 +224,6 @@ public class HttpSplitChangeFetcherTest {
 
         SplitChange change = fetcher.fetch(-1, -1, new FetchOptions.Builder().cacheControlHeaders(true).build());
 
-        Assert.assertEquals(Spec.SPEC_1_1, Spec.SPEC_VERSION);
         List<ClassicHttpRequest> captured = requestCaptor.getAllValues();
         Assert.assertEquals(captured.size(), 2);
         Assert.assertTrue(captured.get(0).getUri().toString().contains("s=1.3"));
