@@ -133,9 +133,6 @@ public final class HttpSplitChangeFetcher implements SplitChangeFetcher {
         dto.s = -1;
         return dto;
     }
-    private ChangeDto<Split> convertBodyToOldSpec(String body) {
-        return Json.fromJson(body, SplitChangesOldPayloadDto.class).toChangeDTO();
-    }
 
     private URI buildURL(FetchOptions options, long since, long sinceRBS) throws URISyntaxException {
         URIBuilder uriBuilder = new URIBuilder(_target).addParameter(SPEC, "" + SPEC_VERSION);
