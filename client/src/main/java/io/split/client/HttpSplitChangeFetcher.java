@@ -80,7 +80,6 @@ public final class HttpSplitChangeFetcher implements SplitChangeFetcher {
                 sinceRBS = -1;
             }
             URI uri = buildURL(options, since, sinceRBS);
-            _log.error(uri.toString());
             response = _client.get(uri, options, null);
             if (response.statusCode() < HttpStatus.SC_OK || response.statusCode() >= HttpStatus.SC_MULTIPLE_CHOICES) {
                 if (response.statusCode() == HttpStatus.SC_REQUEST_URI_TOO_LONG) {
