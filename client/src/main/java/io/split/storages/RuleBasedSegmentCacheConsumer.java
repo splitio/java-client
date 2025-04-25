@@ -11,6 +11,7 @@ public interface RuleBasedSegmentCacheConsumer {
     ParsedRuleBasedSegment get(String name);
     Collection<ParsedRuleBasedSegment> getAll();
     List<String> ruleBasedSegmentNames();
+    boolean contains(Set<String> ruleBasedSegmentNames);
     long getChangeNumber();
     Set<String> getSegments();
 }

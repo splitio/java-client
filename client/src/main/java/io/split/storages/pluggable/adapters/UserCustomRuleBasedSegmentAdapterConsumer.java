@@ -81,6 +81,7 @@ public class UserCustomRuleBasedSegmentAdapterConsumer implements RuleBasedSegme
                         getSegmentsNames().stream()).collect(Collectors.toSet());
     }
 
+
     private List<ParsedRuleBasedSegment> stringsToParsedRuleBasedSegments(List<String> elements) {
         List<ParsedRuleBasedSegment> result = new ArrayList<>();
         for(String s : elements) {
@@ -92,4 +93,10 @@ public class UserCustomRuleBasedSegmentAdapterConsumer implements RuleBasedSegme
         }
         return result;
     }
+
+    @Override
+    public boolean contains(Set<String> ruleBasedSegmentNames) {
+        return getSegments().contains(ruleBasedSegmentNames);
+    }
+
 }

@@ -101,7 +101,7 @@ public class LocalhostSynchronizerTest {
         SplitTasks splitTasks = SplitTasks.build(splitSynchronizationTask, null, null, null, null, null);
         LocalhostSynchronizer localhostSynchronizer = new LocalhostSynchronizer(splitTasks, splitFetcher, false);
 
-        localhostSynchronizer.refreshSplits(null);
+        localhostSynchronizer.refreshSplits(null, null);
 
         Mockito.verify(splitChangeFetcher, Mockito.times(1)).fetch(Mockito.anyLong(), Mockito.anyLong(), Mockito.anyObject());
     }

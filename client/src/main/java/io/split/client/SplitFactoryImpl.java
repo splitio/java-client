@@ -277,7 +277,7 @@ public class SplitFactoryImpl implements SplitFactory {
 
         _syncManager = SyncManagerImp.build(splitTasks, _splitFetcher, splitCache, splitAPI,
                 segmentCache, _gates, _telemetryStorageProducer, _telemetrySynchronizer, config, splitParser,
-                flagSetsFilter);
+                ruleBasedSegmentParser, flagSetsFilter, ruleBasedSegmentCache);
         _syncManager.start();
 
         // DestroyOnShutDown

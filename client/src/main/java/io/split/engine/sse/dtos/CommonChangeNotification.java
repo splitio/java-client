@@ -1,6 +1,5 @@
 package io.split.engine.sse.dtos;
 
-import io.split.client.dtos.Split;
 import io.split.client.utils.Json;
 import io.split.engine.segments.SegmentSynchronizationTaskImp;
 import io.split.engine.sse.NotificationProcessor;
@@ -16,25 +15,29 @@ import java.util.zip.DataFormatException;
 import static io.split.engine.sse.utils.DecompressionUtil.gZipDecompress;
 import static io.split.engine.sse.utils.DecompressionUtil.zLibDecompress;
 
-public class FeatureFlagChangeNotification extends IncomingNotification {
+public class CommonChangeNotification<Y> extends IncomingNotification {
     private static final Logger _log = LoggerFactory.getLogger(SegmentSynchronizationTaskImp.class);
     private final long changeNumber;
     private long previousChangeNumber;
-    private Split featureFlagDefinition;
     private CompressType compressType;
+    private Y definition;
+    private Class _definitionClass;
 
-    public FeatureFlagChangeNotification(GenericNotificationData genericNotificationData) {
-        super(Type.SPLIT_UPDATE, genericNotificationData.getChannel());
+    public CommonChangeNotification(GenericNotificationData genericNotificationData,
+                                    Class definitionClass) {
+        super(genericNotificationData.getType(), genericNotificationData.getChannel());
         changeNumber = genericNotificationData.getChangeNumber();
+        _definitionClass = definitionClass;
+
         if(genericNotificationData.getPreviousChangeNumber() != null) {
             previousChangeNumber = genericNotificationData.getPreviousChangeNumber();
         }
         compressType =  CompressType.from(genericNotificationData.getCompressType());
-        if (compressType == null || genericNotificationData.getFeatureFlagDefinition() == null) {
+        if (compressType == null || genericNotificationData.getDefinition() == null) {
             return;
         }
         try {
-            byte[] decodedBytes = Base64.getDecoder().decode(genericNotificationData.getFeatureFlagDefinition());
+            byte[] decodedBytes = Base64.getDecoder().decode(genericNotificationData.getDefinition());
             switch (compressType) {
                 case GZIP:
                     decodedBytes = gZipDecompress(decodedBytes);
@@ -43,13 +46,14 @@ public class FeatureFlagChangeNotification extends IncomingNotification {
                     decodedBytes = zLibDecompress(decodedBytes);
                     break;
             }
-            featureFlagDefinition = Json.fromJson(new String(decodedBytes, 0, decodedBytes.length, "UTF-8"), Split.class);
+
+            updateDefinition(decodedBytes);
         } catch (UnsupportedEncodingException | IllegalArgumentException e) {
-            _log.warn("Could not decode base64 data in flag definition", e);
+            _log.warn("Could not decode base64 data in definition", e);
         } catch (DataFormatException d) {
-            _log.warn("Could not decompress feature flag definition with zlib algorithm", d);
+            _log.warn("Could not decompress definition with zlib algorithm", d);
         } catch (IOException i) {
-            _log.warn("Could not decompress feature flag definition with gzip algorithm", i);
+            _log.warn("Could not decompress definition with gzip algorithm", i);
         }
     }
 
@@ -59,22 +63,25 @@ public class FeatureFlagChangeNotification extends IncomingNotification {
     public long getPreviousChangeNumber() {
         return previousChangeNumber;
     }
-
-    public Split getFeatureFlagDefinition() {
-        return featureFlagDefinition;
-    }
-
     public CompressType getCompressType() {
         return compressType;
     }
 
+    public Y getDefinition() {
+        return definition;
+    }
+
     @Override
     public void handler(NotificationProcessor notificationProcessor) {
-        notificationProcessor.processSplitUpdate(this);
+        notificationProcessor.processUpdates(this);
     }
 
     @Override
     public String toString() {
         return String.format("Type: %s; Channel: %s; ChangeNumber: %s", getType(), getChannel(), getChangeNumber());
+    }
+
+    private void updateDefinition(byte[] decodedBytes) throws UnsupportedEncodingException {
+        definition = (Y) Json.fromJson(new String(decodedBytes, "UTF-8"), _definitionClass);
     }
 }
