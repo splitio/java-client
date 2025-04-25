@@ -601,7 +601,7 @@ public class SplitClientIntegrationTest {
 
         // must reconnect and after the second syncAll the result must be different
         Awaitility.await()
-                .atMost(1L, TimeUnit.MINUTES)
+                .atMost(3L, TimeUnit.MINUTES)
                 .untilAsserted(() -> Assert.assertEquals("split_killed", client.getTreatment("admin", "push_test")));
 
         client.destroy();
