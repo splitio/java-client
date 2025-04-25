@@ -220,7 +220,6 @@ public class SplitFactoryImpl implements SplitFactory {
         // Segments
         _segmentSynchronizationTaskImp = buildSegments(config, segmentCache, splitCache);
 
-
         SplitParser splitParser = new SplitParser();
         RuleBasedSegmentParser ruleBasedSegmentParser = new RuleBasedSegmentParser();
         // SplitFetcher

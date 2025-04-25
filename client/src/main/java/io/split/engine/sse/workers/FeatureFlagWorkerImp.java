@@ -8,9 +8,8 @@ import io.split.client.utils.RuleBasedSegmentsToUpdate;
 import io.split.engine.common.Synchronizer;
 import io.split.engine.experiments.RuleBasedSegmentParser;
 import io.split.engine.experiments.SplitParser;
-import io.split.engine.sse.dtos.FeatureFlagChangeNotification;
+import io.split.engine.sse.dtos.CommonChangeNotification;
 import io.split.engine.sse.dtos.IncomingNotification;
-import io.split.engine.sse.dtos.RuleBasedSegmentChangeNotification;
 import io.split.engine.sse.dtos.SplitKillNotification;
 import io.split.storages.RuleBasedSegmentCache;
 import io.split.storages.SplitCacheProducer;
@@ -67,26 +66,26 @@ public class FeatureFlagWorkerImp extends Worker<IncomingNotification> implement
         long changeNumber = 0L;
         long changeNumberRBS = 0L;
         if (incomingNotification.getType() == IncomingNotification.Type.SPLIT_UPDATE) {
-            FeatureFlagChangeNotification featureFlagChangeNotification = (FeatureFlagChangeNotification) incomingNotification;
+            CommonChangeNotification<Split> featureFlagChangeNotification = (CommonChangeNotification) incomingNotification;
             success = addOrUpdateFeatureFlag(featureFlagChangeNotification);
             changeNumber = featureFlagChangeNotification.getChangeNumber();
         } else {
-            RuleBasedSegmentChangeNotification ruleBasedSegmentChangeNotification = (RuleBasedSegmentChangeNotification) incomingNotification;
-            success = AddOrUpdateRuleBasedSegment((RuleBasedSegmentChangeNotification) incomingNotification);
+            CommonChangeNotification<RuleBasedSegment> ruleBasedSegmentChangeNotification = (CommonChangeNotification) incomingNotification;
+            success = AddOrUpdateRuleBasedSegment(ruleBasedSegmentChangeNotification);
             changeNumberRBS = ruleBasedSegmentChangeNotification.getChangeNumber();
         }
         if (!success)
             _synchronizer.refreshSplits(changeNumber, changeNumberRBS);
     }
 
-    private boolean AddOrUpdateRuleBasedSegment(RuleBasedSegmentChangeNotification ruleBasedSegmentChangeNotification) {
+    private boolean AddOrUpdateRuleBasedSegment(CommonChangeNotification ruleBasedSegmentChangeNotification) {
         if (ruleBasedSegmentChangeNotification.getChangeNumber() <= _ruleBasedSegmentCache.getChangeNumber()) {
             return true;
         }
         try {
-            if (ruleBasedSegmentChangeNotification.getRuleBasedSegmentDefinition() != null &&
+            if (ruleBasedSegmentChangeNotification.getDefinition() != null &&
                     ruleBasedSegmentChangeNotification.getPreviousChangeNumber() == _ruleBasedSegmentCache.getChangeNumber()) {
-                RuleBasedSegment ruleBasedSegment = ruleBasedSegmentChangeNotification.getRuleBasedSegmentDefinition();
+                RuleBasedSegment ruleBasedSegment = (RuleBasedSegment) ruleBasedSegmentChangeNotification.getDefinition();
                 RuleBasedSegmentsToUpdate ruleBasedSegmentsToUpdate = processRuleBasedSegmentChanges(_ruleBasedSegmentParser,
                         Collections.singletonList(ruleBasedSegment));
                 _ruleBasedSegmentCache.update(ruleBasedSegmentsToUpdate.getToAdd(), ruleBasedSegmentsToUpdate.getToRemove(),
@@ -104,14 +103,14 @@ public class FeatureFlagWorkerImp extends Worker<IncomingNotification> implement
         }
         return false;
     }
-    private boolean addOrUpdateFeatureFlag(FeatureFlagChangeNotification featureFlagChangeNotification) {
+    private boolean addOrUpdateFeatureFlag(CommonChangeNotification featureFlagChangeNotification) {
         if (featureFlagChangeNotification.getChangeNumber() <= _splitCacheProducer.getChangeNumber()) {
             return true;
         }
         try {
-            if (featureFlagChangeNotification.getFeatureFlagDefinition() != null &&
+            if (featureFlagChangeNotification.getDefinition() != null &&
                     featureFlagChangeNotification.getPreviousChangeNumber() == _splitCacheProducer.getChangeNumber()) {
-                Split featureFlag = featureFlagChangeNotification.getFeatureFlagDefinition();
+                Split featureFlag = (Split) featureFlagChangeNotification.getDefinition();
                 FeatureFlagsToUpdate featureFlagsToUpdate = processFeatureFlagChanges(_splitParser, Collections.singletonList(featureFlag),
                         _flagSetsFilter);
                 _splitCacheProducer.update(featureFlagsToUpdate.getToAdd(), featureFlagsToUpdate.getToRemove(),
@@ -123,7 +122,7 @@ public class FeatureFlagWorkerImp extends Worker<IncomingNotification> implement
                 if (featureFlagsToUpdate.getToAdd().stream().count() > 0) {
                     Set<String> ruleBasedSegments = featureFlagsToUpdate.getToAdd().get(0).getRuleBasedSegmentsNames();
                     if (!ruleBasedSegments.isEmpty() && !_ruleBasedSegmentCache.contains(ruleBasedSegments)) {
-                        _synchronizer.refreshSplits(featureFlagChangeNotification.getChangeNumber(), 0L);
+                        return false;
                     }
                 }
                 _telemetryRuntimeProducer.recordUpdatesFromSSE(UpdatesFromSSEEnum.SPLITS);
