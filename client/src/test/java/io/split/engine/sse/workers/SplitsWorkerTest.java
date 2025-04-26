@@ -1,18 +1,19 @@
 package io.split.engine.sse.workers;
 
+import io.split.client.dtos.Split;
 import io.split.client.interceptors.FlagSetsFilter;
 import io.split.client.interceptors.FlagSetsFilterImpl;
 import io.split.engine.common.Synchronizer;
 import io.split.engine.experiments.RuleBasedSegmentParser;
 import io.split.engine.experiments.SplitParser;
-import io.split.engine.sse.dtos.FeatureFlagChangeNotification;
+import io.split.engine.sse.dtos.CommonChangeNotification;
 import io.split.engine.sse.dtos.GenericNotificationData;
+import io.split.engine.sse.dtos.IncomingNotification;
 import io.split.engine.sse.dtos.SplitKillNotification;
 import io.split.storages.RuleBasedSegmentCache;
 import io.split.storages.SplitCacheProducer;
 import io.split.telemetry.storage.InMemoryTelemetryStorage;
 import io.split.telemetry.storage.TelemetryRuntimeProducer;
-import org.junit.Rule;
 import org.junit.Test;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mockito;
@@ -59,18 +60,22 @@ public class SplitsWorkerTest {
         ArgumentCaptor<Long> cnCaptor = ArgumentCaptor.forClass(Long.class);
         ArgumentCaptor<Long> cnCaptor2 = ArgumentCaptor.forClass(Long.class);
 
-        featureFlagsWorker.addToQueue(new FeatureFlagChangeNotification(GenericNotificationData.builder()
+        featureFlagsWorker.addToQueue(new CommonChangeNotification(GenericNotificationData.builder()
                 .changeNumber(1585956698457L)
-                .build()));
-        featureFlagsWorker.addToQueue(new FeatureFlagChangeNotification(GenericNotificationData.builder()
+                .type(IncomingNotification.Type.SPLIT_UPDATE)
+                .build(), Split.class));
+        featureFlagsWorker.addToQueue(new CommonChangeNotification(GenericNotificationData.builder()
                 .changeNumber(1585956698467L)
-                .build()));
-        featureFlagsWorker.addToQueue(new FeatureFlagChangeNotification(GenericNotificationData.builder()
+                .type(IncomingNotification.Type.SPLIT_UPDATE)
+                .build(), Split.class));
+        featureFlagsWorker.addToQueue(new CommonChangeNotification(GenericNotificationData.builder()
                 .changeNumber(1585956698477L)
-                .build()));
-        featureFlagsWorker.addToQueue(new FeatureFlagChangeNotification(GenericNotificationData.builder()
+                .type(IncomingNotification.Type.SPLIT_UPDATE)
+                .build(), Split.class));
+        featureFlagsWorker.addToQueue(new CommonChangeNotification(GenericNotificationData.builder()
                 .changeNumber(1585956698476L)
-                .build()));
+                .type(IncomingNotification.Type.SPLIT_UPDATE)
+                .build(), Split.class));
         Thread.sleep(1000);
 
         Mockito.verify(syncMock, Mockito.times(4)).refreshSplits(cnCaptor.capture(), cnCaptor2.capture());
@@ -115,25 +120,28 @@ public class SplitsWorkerTest {
         TelemetryRuntimeProducer telemetryRuntimeProducer = Mockito.mock(InMemoryTelemetryStorage.class);
         FeatureFlagsWorker featureFlagsWorker = new FeatureFlagWorkerImp(syncMock, splitParser, ruleBasedSegmentParser, splitCacheProducer, ruleBasedSegmentCache, telemetryRuntimeProducer, FLAG_SETS_FILTER);
         featureFlagsWorker.start();
-        featureFlagsWorker.addToQueue(new FeatureFlagChangeNotification(GenericNotificationData.builder()
+        featureFlagsWorker.addToQueue(new CommonChangeNotification(GenericNotificationData.builder()
                 .changeNumber(1585956698457L)
-                .build()));
+                .type(IncomingNotification.Type.SPLIT_UPDATE)
+                .build(), Split.class));
         Thread.sleep(500);
 
 
         featureFlagsWorker.stop();
         Thread.sleep(500);
 
-        featureFlagsWorker.addToQueue(new FeatureFlagChangeNotification(GenericNotificationData.builder()
+        featureFlagsWorker.addToQueue(new CommonChangeNotification(GenericNotificationData.builder()
                 .changeNumber(1585956698467L)
-                .build()));
+                .type(IncomingNotification.Type.SPLIT_UPDATE)
+                .build(), Split.class));
         Mockito.verify(syncMock, Mockito.times(1)).refreshSplits(Mockito.anyObject(), Mockito.anyObject()); // Previous one!
 
         Mockito.reset(syncMock);
         featureFlagsWorker.start();
-        featureFlagsWorker.addToQueue(new FeatureFlagChangeNotification(GenericNotificationData.builder()
+        featureFlagsWorker.addToQueue(new CommonChangeNotification(GenericNotificationData.builder()
                 .changeNumber(1585956698477L)
-                .build()));
+                .type(IncomingNotification.Type.SPLIT_UPDATE)
+                .build(), Split.class));
         Thread.sleep(500);
         Mockito.verify(syncMock, Mockito.times(1)).refreshSplits(Mockito.anyObject(), Mockito.anyObject());
         featureFlagsWorker.stop();

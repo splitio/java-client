@@ -75,7 +75,7 @@ public class GenericNotificationData {
         return previousChangeNumber;
     }
 
-    public String getFeatureFlagDefinition() {
+    public String getDefinition() {
         return featureFlagDefinition;
     }
 

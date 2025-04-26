@@ -5,6 +5,7 @@ import com.google.common.annotations.VisibleForTesting;
 import io.split.Spec;
 import io.split.client.dtos.SplitChange;
 import io.split.client.dtos.SplitHttpResponse;
+import io.split.client.dtos.RuleBasedSegment;
 import io.split.client.dtos.SplitChangesOldPayloadDto;
 import io.split.client.dtos.ChangeDto;
 import io.split.client.dtos.Split;
@@ -24,8 +25,10 @@ import org.slf4j.LoggerFactory;
 
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.ArrayList;
 
 import static com.google.common.base.Preconditions.checkNotNull;
+import static io.split.Spec.SPEC_VERSION;
 import static io.split.Spec.SPEC_1_3;
 import static io.split.Spec.SPEC_1_1;
 
@@ -41,7 +44,6 @@ public final class HttpSplitChangeFetcher implements SplitChangeFetcher {
     private static final String TILL = "till";
     private static final String SETS = "sets";
     private static final String SPEC = "s";
-    private String specVersion = SPEC_1_3;
     private int PROXY_CHECK_INTERVAL_MILLISECONDS_SS =  24 * 60 * 60 * 1000;
     private Long _lastProxyCheckTimestamp = 0L;
     private final SplitHttpClient _client;
@@ -73,11 +75,9 @@ public final class HttpSplitChangeFetcher implements SplitChangeFetcher {
         long start = System.currentTimeMillis();
         SplitHttpResponse response;
         try {
-            if (specVersion.equals(SPEC_1_1) && (System.currentTimeMillis() - _lastProxyCheckTimestamp >= PROXY_CHECK_INTERVAL_MILLISECONDS_SS)) {
+            if (SPEC_VERSION.equals(SPEC_1_1) && (System.currentTimeMillis() - _lastProxyCheckTimestamp >= PROXY_CHECK_INTERVAL_MILLISECONDS_SS)) {
                 _log.info("Switching to new Feature flag spec ({}) and fetching.", SPEC_1_3);
-                specVersion = SPEC_1_3;
-                since = -1;
-                sinceRBS = -1;
+                SPEC_VERSION = SPEC_1_3;
             }
             URI uri = buildURL(options, since, sinceRBS);
             response = _client.get(uri, options, null);
@@ -87,8 +87,8 @@ public final class HttpSplitChangeFetcher implements SplitChangeFetcher {
                     throw new UriTooLongException(String.format("Status code: %s. Message: %s", response.statusCode(), response.statusMessage()));
                 }
 
-                if (response.statusCode() == HttpStatus.SC_BAD_REQUEST && specVersion.equals(Spec.SPEC_1_3) && _rootURIOverriden) {
-                    specVersion = Spec.SPEC_1_1;
+                if (response.statusCode() == HttpStatus.SC_BAD_REQUEST && SPEC_VERSION.equals(Spec.SPEC_1_3) && _rootURIOverriden) {
+                    SPEC_VERSION = Spec.SPEC_1_1;
                     _log.warn("Detected proxy without support for Feature flags spec {} version, will switch to spec version {}",
                             SPEC_1_3, SPEC_1_1);
                     _lastProxyCheckTimestamp = System.currentTimeMillis();
@@ -107,29 +107,40 @@ public final class HttpSplitChangeFetcher implements SplitChangeFetcher {
         }
 
         SplitChange splitChange = new SplitChange();
-        if (specVersion.equals(Spec.SPEC_1_1)) {
+        if (SPEC_VERSION.equals(Spec.SPEC_1_1)) {
             splitChange.featureFlags = convertBodyToOldSpec(response.body());
-            splitChange.ruleBasedSegments = ChangeDto.createEmptyDto();
+            splitChange.ruleBasedSegments = createEmptyDTO();
         } else {
             splitChange = Json.fromJson(response.body(), SplitChange.class);
-            if (specVersion.equals(Spec.SPEC_1_3) && _lastProxyCheckTimestamp != 0) {
-                splitChange.clearCache = true;
-                _lastProxyCheckTimestamp = 0L;
-            }
         }
         return splitChange;
     }
 
+    public Long getLastProxyCheckTimestamp() {
+        return _lastProxyCheckTimestamp;
+    }
+
+    public void setLastProxyCheckTimestamp(long lastProxyCheckTimestamp) {
+        synchronized (_lock) {
+            _lastProxyCheckTimestamp = lastProxyCheckTimestamp;
+        }
+    }
+
+    private ChangeDto<RuleBasedSegment> createEmptyDTO() {
+        ChangeDto<RuleBasedSegment> dto = new ChangeDto<>();
+        dto.d = new ArrayList<>();
+        dto.t = -1;
+        dto.s = -1;
+        return dto;
+    }
     private ChangeDto<Split> convertBodyToOldSpec(String body) {
         return Json.fromJson(body, SplitChangesOldPayloadDto.class).toChangeDTO();
     }
 
     private URI buildURL(FetchOptions options, long since, long sinceRBS) throws URISyntaxException {
-        URIBuilder uriBuilder = new URIBuilder(_target).addParameter(SPEC, "" + specVersion);
+        URIBuilder uriBuilder = new URIBuilder(_target).addParameter(SPEC, "" + SPEC_VERSION);
         uriBuilder.addParameter(SINCE, "" + since);
-        if (specVersion.equals(SPEC_1_3)) {
-            uriBuilder.addParameter(RB_SINCE, "" + sinceRBS);
-        }
+        uriBuilder.addParameter(RB_SINCE, "" + sinceRBS);
         if (!options.flagSetsFilter().isEmpty()) {
             uriBuilder.addParameter(SETS, "" + options.flagSetsFilter());
         }

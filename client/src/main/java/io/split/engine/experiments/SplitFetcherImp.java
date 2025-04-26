@@ -1,6 +1,5 @@
 package io.split.engine.experiments;
 
-import io.split.Spec;
 import io.split.client.dtos.ChangeDto;
 import io.split.client.dtos.RuleBasedSegment;
 import io.split.client.dtos.Split;
@@ -21,7 +20,6 @@ import java.util.HashSet;
 import java.util.Set;
 
 import static com.google.common.base.Preconditions.checkNotNull;
-
 import static io.split.client.utils.FeatureFlagProcessor.processFeatureFlagChanges;
 import static io.split.client.utils.RuleBasedSegmentProcessor.processRuleBasedSegmentChanges;
 
@@ -126,11 +124,6 @@ public class SplitFetcherImp implements SplitFetcher {
             throw new IllegalStateException("SplitChange was null");
         }
 
-        if (change.clearCache) {
-            _splitCacheProducer.clear();
-            _ruleBasedSegmentCacheProducer.clear();
-        }
-
         if (checkExitConditions(change.featureFlags, _splitCacheProducer.getChangeNumber()) ||
             checkExitConditions(change.ruleBasedSegments, _ruleBasedSegmentCacheProducer.getChangeNumber())) {
             return segments;
@@ -156,7 +149,6 @@ public class SplitFetcherImp implements SplitFetcher {
                 // some other thread may have updated the shared state. exit
                 return segments;
             }
-
             FeatureFlagsToUpdate featureFlagsToUpdate = processFeatureFlagChanges(_parser, change.featureFlags.d, _flagSetsFilter);
             segments = featureFlagsToUpdate.getSegments();
             _splitCacheProducer.update(featureFlagsToUpdate.getToAdd(), featureFlagsToUpdate.getToRemove(), change.featureFlags.t);

@@ -1,10 +1,8 @@
 package io.split.client;
 
-import com.google.gson.JsonObject;
 import com.google.gson.stream.JsonReader;
 import io.split.client.dtos.ChangeDto;
 import io.split.client.dtos.SplitChange;
-import io.split.client.dtos.SplitChangesOldPayloadDto;
 import io.split.client.utils.InputStreamProvider;
 import io.split.client.utils.Json;
 import io.split.client.utils.LocalhostSanitizer;
@@ -21,8 +19,6 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.Arrays;
-
-import static io.split.client.utils.Json.fromJson;
 
 public class JsonLocalhostSplitChangeFetcher implements SplitChangeFetcher {
 
@@ -41,21 +37,11 @@ public class JsonLocalhostSplitChangeFetcher implements SplitChangeFetcher {
     public SplitChange fetch(long since, long sinceRBS, FetchOptions options) {
         try {
             JsonReader jsonReader = new JsonReader(new BufferedReader(new InputStreamReader(_inputStreamProvider.get(), StandardCharsets.UTF_8)));
-            if (checkOldSpec(new JsonReader(new BufferedReader(new InputStreamReader(_inputStreamProvider.get(), StandardCharsets.UTF_8))))) {
-                SplitChange splitChange = new SplitChange();
-                splitChange.featureFlags = Json.fromJson(jsonReader, SplitChangesOldPayloadDto.class).toChangeDTO();
-                splitChange.ruleBasedSegments = ChangeDto.createEmptyDto();
-                return splitChange;
-            }
-            SplitChange splitChange = fromJson(jsonReader, SplitChange.class);
+            SplitChange splitChange = Json.fromJson(jsonReader, SplitChange.class);
             return processSplitChange(splitChange, since, sinceRBS);
         } catch (Exception e) {
             throw new IllegalStateException("Problem fetching splitChanges: " + e.getMessage(), e);
         }
-    }
-
-    private boolean checkOldSpec(JsonReader jsonReader) {
-        return Json.fromJson(jsonReader, JsonObject.class).has("splits");
     }
 
     private SplitChange processSplitChange(SplitChange splitChange, long changeNumber, long changeNumberRBS) throws NoSuchAlgorithmException {

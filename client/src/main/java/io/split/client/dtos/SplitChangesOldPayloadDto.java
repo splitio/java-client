@@ -2,6 +2,7 @@ package io.split.client.dtos;
 
 import com.google.gson.annotations.SerializedName;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class SplitChangesOldPayloadDto {
@@ -14,12 +15,20 @@ public class SplitChangesOldPayloadDto {
     @SerializedName("splits")
     public List<Split> d;
 
-    public ChangeDto<Split> toChangeDTO() {
-        ChangeDto<Split> dto = new ChangeDto<>();
-        dto.s = this.s;
-        dto.t = this.t;
-        dto.d = this.d;
-        return dto;
-
+    public SplitChange toSplitChange() {
+        SplitChange splitChange = new SplitChange();
+        ChangeDto<Split> ff = new ChangeDto<>();
+        ff.s = this.s;
+        ff.t = this.t;
+        ff.d = this.d;
+        ChangeDto<RuleBasedSegment> rbs = new ChangeDto<>();
+        rbs.d = new ArrayList<>();
+        rbs.t = -1;
+        rbs.s = -1;
+        
+        splitChange.featureFlags = ff;
+        splitChange.ruleBasedSegments = rbs;
+        
+        return splitChange;
     }
 }
