@@ -22,7 +22,7 @@ import java.net.URI;
 import java.net.URISyntaxException;
 
 import static com.google.common.base.Preconditions.checkNotNull;
-import static io.split.Spec.SPEC_VERSION;
+import static io.split.Spec.SPEC_1_3;
 
 /**
  * Created by adilaijaz on 5/30/15.
@@ -35,6 +35,7 @@ public final class HttpSplitChangeFetcher implements SplitChangeFetcher {
     private static final String TILL = "till";
     private static final String SETS = "sets";
     private static final String SPEC = "s";
+    private String specVersion = SPEC_1_3;
     private final SplitHttpClient _client;
     private final URI _target;
     private final TelemetryRuntimeProducer _telemetryRuntimeProducer;
@@ -83,7 +84,7 @@ public final class HttpSplitChangeFetcher implements SplitChangeFetcher {
     }
 
     private URI buildURL(FetchOptions options, long since, long sinceRBS) throws URISyntaxException {
-        URIBuilder uriBuilder = new URIBuilder(_target).addParameter(SPEC, "" + SPEC_VERSION);
+        URIBuilder uriBuilder = new URIBuilder(_target).addParameter(SPEC, "" + specVersion);
         uriBuilder.addParameter(SINCE, "" + since);
         uriBuilder.addParameter(RB_SINCE, "" + sinceRBS);
         if (!options.flagSetsFilter().isEmpty()) {

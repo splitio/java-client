@@ -174,8 +174,6 @@ public class SplitFetcherImpTest {
         Assert.assertEquals("sample_rule_based_segment", ruleBasedSegmentCache.get("sample_rule_based_segment").ruleBasedSegment());
     }
 
-        // TODO: enable tests when JSONLocalhost support spec 1.3
-    @Ignore
     @Test
     public void testLocalHost() {
         FlagSetsFilter flagSetsFilter = new FlagSetsFilterImpl(new HashSet<>());
@@ -195,7 +193,6 @@ public class SplitFetcherImpTest {
         Assert.assertEquals(1, fetchResult.getSegments().size());
     }
 
-    @Ignore
     @Test
     public void testLocalHostFlagSets() throws IOException {
         File file = folder.newFile("test_0.json");
@@ -220,7 +217,6 @@ public class SplitFetcherImpTest {
         Assert.assertEquals(1, fetchResult.getSegments().size());
     }
 
-    @Ignore
     @Test
     public void testLocalHostFlagSetsNotIntersect() throws IOException {
         File file = folder.newFile("test_0.json");
