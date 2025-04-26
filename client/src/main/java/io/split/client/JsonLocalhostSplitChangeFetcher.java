@@ -1,7 +1,6 @@
 package io.split.client;
 
 import com.google.gson.stream.JsonReader;
-import io.split.client.dtos.ChangeDto;
 import io.split.client.dtos.SplitChange;
 import io.split.client.utils.InputStreamProvider;
 import io.split.client.utils.Json;
@@ -17,8 +16,9 @@ import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
-import java.util.ArrayList;
 import java.util.Arrays;
+
+import static io.split.client.utils.Utils.checkExitConditions;
 
 public class JsonLocalhostSplitChangeFetcher implements SplitChangeFetcher {
 
@@ -68,10 +68,6 @@ public class JsonLocalhostSplitChangeFetcher implements SplitChangeFetcher {
         splitChangeToProcess.ruleBasedSegments.s = changeNumberRBS;
 
         return splitChangeToProcess;
-    }
-
-    private <T> boolean checkExitConditions(ChangeDto<T> change, long cn) {
-        return change.t < cn && change.t != -1;
     }
 
     private byte[] getStringDigest(String Json) throws NoSuchAlgorithmException {
