@@ -1,11 +1,13 @@
 package io.split.client;
 
 import io.split.SSEMockServer;
+import io.split.Spec;
 import io.split.SplitMockServer;
 import io.split.client.api.SplitView;
 import io.split.client.dtos.EvaluationOptions;
 import io.split.client.impressions.ImpressionsManager;
 import io.split.client.utils.CustomDispatcher;
+import io.split.engine.experiments.SplitFetcherImp;
 import io.split.storages.enums.OperationMode;
 import io.split.storages.enums.StorageMode;
 import io.split.storages.pluggable.CustomStorageWrapperImp;
@@ -24,6 +26,7 @@ import org.junit.Test;
 
 import javax.ws.rs.sse.OutboundSseEvent;
 import java.io.IOException;
+import java.lang.reflect.Field;
 import java.net.URISyntaxException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
@@ -246,13 +249,14 @@ public class SplitClientIntegrationTest {
 
         splitServer.stop();
         sseServer.stop();
+        factory.destroy();
     }
 
     @Test
     public void splitClientOccupancyNotifications() throws Exception {
-        MockResponse response = new MockResponse().setBody("{\"ff\":{\"d\": [], \"s\":1585948850109, \"t\":1585948850109}, \"rbs\":{\"d\":[],\"s\":-1,\"t\":-1}}");
-        MockResponse response2 = new MockResponse().setBody("{\"ff\":{\"d\": [], \"s\":1585948850110, \"t\":1585948850110}, \"rbs\":{\"d\":[],\"s\":-1,\"t\":-1}}");
-        MockResponse response3 = new MockResponse().setBody("{\"ff\":{\"d\": [], \"s\":1585948850111, \"t\":1585948850111}, \"rbs\":{\"d\":[],\"s\":-1,\"t\":-1}}");
+        MockResponse response = new MockResponse().setBody("{\"ff\":{\"d\": [], \"s\":1585948850109, \"t\":1585948850109}, \"rbs\":{\"d\":[],\"s\":1585948850109,\"t\":1585948850109}}");
+        MockResponse response2 = new MockResponse().setBody("{\"ff\":{\"d\": [], \"s\":1585948850110, \"t\":1585948850110}, \"rbs\":{\"d\":[],\"s\":1585948850110,\"t\":1585948850110}}");
+        MockResponse response3 = new MockResponse().setBody("{\"ff\":{\"d\": [], \"s\":1585948850111, \"t\":1585948850111}, \"rbs\":{\"d\":[],\"s\":1585948850111,\"t\":1585948850111}}");
         Queue responses = new LinkedList<>();
         responses.add(response);
         Queue responses2 = new LinkedList<>();
@@ -420,7 +424,7 @@ public class SplitClientIntegrationTest {
 
     @Test
     public void splitClientMultiFactory() throws Exception {
-        MockResponse response = new MockResponse().setBody("{\"ff\":{\"d\": [], \"s\":1585948850109, \"t\":1585948850109}, \"rbs\":{\"d\":[],\"s\":-1,\"t\":-1}}");
+        MockResponse response = new MockResponse().setBody("{\"ff\":{\"d\":[],\"s\":1585948850109, \"t\":1585948850109},\"rbs\":{\"d\":[],\"s\":1585948850109,\"t\":1585948850109}}");
         Queue responses = new LinkedList<>();
         responses.add(response);
         responses.add(response);
@@ -573,9 +577,10 @@ public class SplitClientIntegrationTest {
         Queue responses = new LinkedList<>();
         responses.add(response);
 
-        SplitMockServer splitServer = new SplitMockServer(CustomDispatcher.builder()
+        CustomDispatcher dispatcher = CustomDispatcher.builder()
                 .path(CustomDispatcher.SINCE_1585948850109, responses)
-                .build());
+                .build();
+        SplitMockServer splitServer = new SplitMockServer(dispatcher);
 
         //plitMockServer splitServer = new SplitMockServer(CustomDispatcher.builder().build());
         SSEMockServer.SseEventQueue eventQueue = new SSEMockServer.SseEventQueue();
@@ -594,7 +599,6 @@ public class SplitClientIntegrationTest {
 
         // wait to check keep alive notification.
         Thread.sleep(50000);
-
         // must reconnect and after the second syncAll the result must be different
         Awaitility.await()
                 .atMost(1L, TimeUnit.MINUTES)
@@ -641,6 +645,7 @@ public class SplitClientIntegrationTest {
         Thread.sleep(1000);
         result = client.getTreatment("admin", "push_test");
         Assert.assertNotEquals("on_whitelist", result);
+        client.destroy();
     }
 
     @Test
@@ -677,6 +682,7 @@ public class SplitClientIntegrationTest {
         Thread.sleep(1000);
         result = client.getTreatment("admin", "push_test");
         Assert.assertNotEquals("on_whitelist", result);
+        client.destroy();
     }
 
     @Test
@@ -745,15 +751,15 @@ public class SplitClientIntegrationTest {
             Assert.assertNotNull(customStorageWrapper.getConfig());
             String key = customStorageWrapper.getConfig().keySet().stream().collect(Collectors.toList()).get(0);
             Assert.assertTrue(customStorageWrapper.getConfig().get(key).contains(StorageMode.PLUGGABLE.name()));
-
+            client.destroy();
         } catch (TimeoutException | InterruptedException e) {
         }
     }
 
     @Test
     public void getTreatmentFlagSetWithPolling() throws Exception {
-        MockResponse response = new MockResponse().setBody("{\"splits\":[{\"trafficTypeName\":\"client\",\"name\":\"workm\",\"trafficAllocation\":100,\"trafficAllocationSeed\":147392224,\"seed\":524417105,\"status\":\"ACTIVE\",\"killed\":false,\"defaultTreatment\":\"on\",\"changeNumber\":1602796638344,\"algo\":2,\"configurations\":{},\"sets\":[\"set1\",\"set2\"],\"conditions\":[{\"conditionType\":\"ROLLOUT\",\"matcherGroup\":{\"combiner\":\"AND\",\"matchers\":[{\"keySelector\":{\"trafficType\":\"client\",\"attribute\":null},\"matcherType\":\"IN_SEGMENT\",\"negate\":false,\"userDefinedSegmentMatcherData\":{\"segmentName\":\"new_segment\"},\"whitelistMatcherData\":null,\"unaryNumericMatcherData\":null,\"betweenMatcherData\":null,\"booleanMatcherData\":null,\"dependencyMatcherData\":null,\"stringMatcherData\":null}]},\"partitions\":[{\"treatment\":\"on\",\"size\":0},{\"treatment\":\"off\",\"size\":0},{\"treatment\":\"free\",\"size\":100},{\"treatment\":\"conta\",\"size\":0}],\"label\":\"in segment new_segment\"},{\"conditionType\":\"ROLLOUT\",\"matcherGroup\":{\"combiner\":\"AND\",\"matchers\":[{\"keySelector\":{\"trafficType\":\"client\",\"attribute\":null},\"matcherType\":\"ALL_KEYS\",\"negate\":false,\"userDefinedSegmentMatcherData\":null,\"whitelistMatcherData\":null,\"unaryNumericMatcherData\":null,\"betweenMatcherData\":null,\"booleanMatcherData\":null,\"dependencyMatcherData\":null,\"stringMatcherData\":null}]},\"partitions\":[{\"treatment\":\"on\",\"size\":100},{\"treatment\":\"off\",\"size\":0},{\"treatment\":\"free\",\"size\":0},{\"treatment\":\"conta\",\"size\":0}],\"label\":\"default rule\"}]},{\"trafficTypeName\":\"client\",\"name\":\"workm_set_3\",\"trafficAllocation\":100,\"trafficAllocationSeed\":147392224,\"seed\":524417105,\"status\":\"ACTIVE\",\"killed\":false,\"defaultTreatment\":\"on\",\"changeNumber\":1602796638344,\"algo\":2,\"configurations\":{},\"sets\":[\"set3\"],\"conditions\":[{\"conditionType\":\"ROLLOUT\",\"matcherGroup\":{\"combiner\":\"AND\",\"matchers\":[{\"keySelector\":{\"trafficType\":\"client\",\"attribute\":null},\"matcherType\":\"IN_SEGMENT\",\"negate\":false,\"userDefinedSegmentMatcherData\":{\"segmentName\":\"new_segment\"},\"whitelistMatcherData\":null,\"unaryNumericMatcherData\":null,\"betweenMatcherData\":null,\"booleanMatcherData\":null,\"dependencyMatcherData\":null,\"stringMatcherData\":null}]},\"partitions\":[{\"treatment\":\"on\",\"size\":0},{\"treatment\":\"off\",\"size\":0},{\"treatment\":\"free\",\"size\":100},{\"treatment\":\"conta\",\"size\":0}],\"label\":\"in segment new_segment\"},{\"conditionType\":\"ROLLOUT\",\"matcherGroup\":{\"combiner\":\"AND\",\"matchers\":[{\"keySelector\":{\"trafficType\":\"client\",\"attribute\":null},\"matcherType\":\"ALL_KEYS\",\"negate\":false,\"userDefinedSegmentMatcherData\":null,\"whitelistMatcherData\":null,\"unaryNumericMatcherData\":null,\"betweenMatcherData\":null,\"booleanMatcherData\":null,\"dependencyMatcherData\":null,\"stringMatcherData\":null}]},\"partitions\":[{\"treatment\":\"on\",\"size\":100},{\"treatment\":\"off\",\"size\":0},{\"treatment\":\"free\",\"size\":0},{\"treatment\":\"conta\",\"size\":0}],\"label\":\"default rule\"}]}],\"since\":-1,\"till\":1602796638344}");
-        MockResponse responseFlag = new MockResponse().setBody("{\"splits\": [], \"since\":1602796638344, \"till\":1602796638344}");
+        MockResponse response = new MockResponse().setBody("{\"ff\":{\"d\":[{\"trafficTypeName\":\"client\",\"name\":\"workm\",\"trafficAllocation\":100,\"trafficAllocationSeed\":147392224,\"seed\":524417105,\"status\":\"ACTIVE\",\"killed\":false,\"defaultTreatment\":\"on\",\"changeNumber\":1602796638344,\"algo\":2,\"configurations\":{},\"sets\":[\"set1\",\"set2\"],\"conditions\":[{\"conditionType\":\"ROLLOUT\",\"matcherGroup\":{\"combiner\":\"AND\",\"matchers\":[{\"keySelector\":{\"trafficType\":\"client\",\"attribute\":null},\"matcherType\":\"IN_SEGMENT\",\"negate\":false,\"userDefinedSegmentMatcherData\":{\"segmentName\":\"new_segment\"},\"whitelistMatcherData\":null,\"unaryNumericMatcherData\":null,\"betweenMatcherData\":null,\"booleanMatcherData\":null,\"dependencyMatcherData\":null,\"stringMatcherData\":null}]},\"partitions\":[{\"treatment\":\"on\",\"size\":0},{\"treatment\":\"off\",\"size\":0},{\"treatment\":\"free\",\"size\":100},{\"treatment\":\"conta\",\"size\":0}],\"label\":\"in segment new_segment\"},{\"conditionType\":\"ROLLOUT\",\"matcherGroup\":{\"combiner\":\"AND\",\"matchers\":[{\"keySelector\":{\"trafficType\":\"client\",\"attribute\":null},\"matcherType\":\"ALL_KEYS\",\"negate\":false,\"userDefinedSegmentMatcherData\":null,\"whitelistMatcherData\":null,\"unaryNumericMatcherData\":null,\"betweenMatcherData\":null,\"booleanMatcherData\":null,\"dependencyMatcherData\":null,\"stringMatcherData\":null}]},\"partitions\":[{\"treatment\":\"on\",\"size\":100},{\"treatment\":\"off\",\"size\":0},{\"treatment\":\"free\",\"size\":0},{\"treatment\":\"conta\",\"size\":0}],\"label\":\"default rule\"}]},{\"trafficTypeName\":\"client\",\"name\":\"workm_set_3\",\"trafficAllocation\":100,\"trafficAllocationSeed\":147392224,\"seed\":524417105,\"status\":\"ACTIVE\",\"killed\":false,\"defaultTreatment\":\"on\",\"changeNumber\":1602796638344,\"algo\":2,\"configurations\":{},\"sets\":[\"set3\"],\"conditions\":[{\"conditionType\":\"ROLLOUT\",\"matcherGroup\":{\"combiner\":\"AND\",\"matchers\":[{\"keySelector\":{\"trafficType\":\"client\",\"attribute\":null},\"matcherType\":\"IN_SEGMENT\",\"negate\":false,\"userDefinedSegmentMatcherData\":{\"segmentName\":\"new_segment\"},\"whitelistMatcherData\":null,\"unaryNumericMatcherData\":null,\"betweenMatcherData\":null,\"booleanMatcherData\":null,\"dependencyMatcherData\":null,\"stringMatcherData\":null}]},\"partitions\":[{\"treatment\":\"on\",\"size\":0},{\"treatment\":\"off\",\"size\":0},{\"treatment\":\"free\",\"size\":100},{\"treatment\":\"conta\",\"size\":0}],\"label\":\"in segment new_segment\"},{\"conditionType\":\"ROLLOUT\",\"matcherGroup\":{\"combiner\":\"AND\",\"matchers\":[{\"keySelector\":{\"trafficType\":\"client\",\"attribute\":null},\"matcherType\":\"ALL_KEYS\",\"negate\":false,\"userDefinedSegmentMatcherData\":null,\"whitelistMatcherData\":null,\"unaryNumericMatcherData\":null,\"betweenMatcherData\":null,\"booleanMatcherData\":null,\"dependencyMatcherData\":null,\"stringMatcherData\":null}]},\"partitions\":[{\"treatment\":\"on\",\"size\":100},{\"treatment\":\"off\",\"size\":0},{\"treatment\":\"free\",\"size\":0},{\"treatment\":\"conta\",\"size\":0}],\"label\":\"default rule\"}]}],\"s\":-1,\"t\":1602796638344},\"rbs\":{\"d\":[],\"t\":-1,\"s\":-1}}");
+        MockResponse responseFlag = new MockResponse().setBody("{\"ff\":{\"d\":[],\"s\":1602796638344,\"t\":1602796638344},\"rbs\":{\"d\":[],\"t\":-1,\"s\":-1}}");
         MockResponse segmentResponse = new MockResponse().setBody("{\"name\":\"new_segment\",\"added\":[\"user-1\"],\"removed\":[\"user-2\",\"user-3\"],\"since\":-1,\"till\":-1}");
         Queue responses = new LinkedList<>();
         responses.add(response);
