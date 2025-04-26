@@ -54,7 +54,6 @@ public class UserCustomRuleBasedSegmentAdapterProducer implements RuleBasedSegme
         //NoOp
     }
 
-    @Override
     public Set<String> getSegments() {
         //NoOp
         return new HashSet<>();

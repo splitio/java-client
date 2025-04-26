@@ -1,8 +1,6 @@
 package io.split.engine.experiments;
 
 import io.split.client.dtos.ChangeDto;
-import io.split.client.dtos.RuleBasedSegment;
-import io.split.client.dtos.Split;
 import io.split.client.dtos.SplitChange;
 import io.split.client.exceptions.UriTooLongException;
 import io.split.client.interceptors.FlagSetsFilter;

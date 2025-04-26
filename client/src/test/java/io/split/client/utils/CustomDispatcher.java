@@ -37,8 +37,6 @@ public class CustomDispatcher extends Dispatcher {
         return new CustomDispatcher.Builder();
     }
 
-    public String bodySince1585948850109 = "{\"ff\":{\"d\": [], \"s\":1585948850109, \"t\":1585948850110}, \"rbs\":{\"s\":1585948850109,\"t\":1585948850110,\"d\":[]}}";
-
     @NotNull
     @Override
     public MockResponse dispatch(@NotNull RecordedRequest request) {
@@ -52,7 +50,7 @@ public class CustomDispatcher extends Dispatcher {
             case CustomDispatcher.AUTH_DISABLED:
                 return getResponse(CustomDispatcher.AUTH_DISABLED,new MockResponse().setBody(inputStreamToString("streaming-auth-push-disabled.json")));
             case CustomDispatcher.SINCE_1585948850109:
-                return getResponse(CustomDispatcher.SINCE_1585948850109, new MockResponse().setBody(bodySince1585948850109));
+                return getResponse(CustomDispatcher.SINCE_1585948850109, new MockResponse().setBody("{\"ff\":{\"d\": [], \"s\":1585948850109, \"t\":1585948850110}, \"rbs\":{\"s\":1585948850109,\"t\":1585948850110,\"d\":[]}}"));
             case SINCE_1585948850109_FLAG_SET:
                 return getResponse(SINCE_1585948850109_FLAG_SET, new MockResponse().setBody("{\"ff\":{\"d\": [], \"s\":1585948850109, \"t\":1585948850110}, \"rbs\":{\"s\":1585948850109,\"t\":1585948850110,\"d\":[]}}"));
             case CustomDispatcher.SINCE_1585948850110:

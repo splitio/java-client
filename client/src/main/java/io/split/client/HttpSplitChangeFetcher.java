@@ -28,7 +28,6 @@ import java.net.URISyntaxException;
 import java.util.ArrayList;
 
 import static com.google.common.base.Preconditions.checkNotNull;
-import static io.split.Spec.SPEC_VERSION;
 import static io.split.Spec.SPEC_1_3;
 import static io.split.Spec.SPEC_1_1;
 
@@ -44,6 +43,7 @@ public final class HttpSplitChangeFetcher implements SplitChangeFetcher {
     private static final String TILL = "till";
     private static final String SETS = "sets";
     private static final String SPEC = "s";
+    private String specVersion = SPEC_1_3;
     private int PROXY_CHECK_INTERVAL_MILLISECONDS_SS =  24 * 60 * 60 * 1000;
     private Long _lastProxyCheckTimestamp = 0L;
     private final SplitHttpClient _client;
@@ -75,9 +75,9 @@ public final class HttpSplitChangeFetcher implements SplitChangeFetcher {
         long start = System.currentTimeMillis();
         SplitHttpResponse response;
         try {
-            if (SPEC_VERSION.equals(SPEC_1_1) && (System.currentTimeMillis() - _lastProxyCheckTimestamp >= PROXY_CHECK_INTERVAL_MILLISECONDS_SS)) {
+            if (specVersion.equals(SPEC_1_1) && (System.currentTimeMillis() - _lastProxyCheckTimestamp >= PROXY_CHECK_INTERVAL_MILLISECONDS_SS)) {
                 _log.info("Switching to new Feature flag spec ({}) and fetching.", SPEC_1_3);
-                SPEC_VERSION = SPEC_1_3;
+                specVersion = SPEC_1_3;
             }
             URI uri = buildURL(options, since, sinceRBS);
             response = _client.get(uri, options, null);
@@ -87,8 +87,8 @@ public final class HttpSplitChangeFetcher implements SplitChangeFetcher {
                     throw new UriTooLongException(String.format("Status code: %s. Message: %s", response.statusCode(), response.statusMessage()));
                 }
 
-                if (response.statusCode() == HttpStatus.SC_BAD_REQUEST && SPEC_VERSION.equals(Spec.SPEC_1_3) && _rootURIOverriden) {
-                    SPEC_VERSION = Spec.SPEC_1_1;
+                if (response.statusCode() == HttpStatus.SC_BAD_REQUEST && specVersion.equals(Spec.SPEC_1_3) && _rootURIOverriden) {
+                    specVersion = Spec.SPEC_1_1;
                     _log.warn("Detected proxy without support for Feature flags spec {} version, will switch to spec version {}",
                             SPEC_1_3, SPEC_1_1);
                     _lastProxyCheckTimestamp = System.currentTimeMillis();
@@ -107,7 +107,7 @@ public final class HttpSplitChangeFetcher implements SplitChangeFetcher {
         }
 
         SplitChange splitChange = new SplitChange();
-        if (SPEC_VERSION.equals(Spec.SPEC_1_1)) {
+        if (specVersion.equals(Spec.SPEC_1_1)) {
             splitChange.featureFlags = convertBodyToOldSpec(response.body());
             splitChange.ruleBasedSegments = createEmptyDTO();
         } else {
@@ -134,11 +134,11 @@ public final class HttpSplitChangeFetcher implements SplitChangeFetcher {
         return dto;
     }
     private ChangeDto<Split> convertBodyToOldSpec(String body) {
-        return Json.fromJson(body, SplitChangesOldPayloadDto.class).toChangeDTO();
+        return Json.fromJson(body, SplitChangesOldPayloadDto.class).toSplitChange().featureFlags;
     }
 
     private URI buildURL(FetchOptions options, long since, long sinceRBS) throws URISyntaxException {
-        URIBuilder uriBuilder = new URIBuilder(_target).addParameter(SPEC, "" + SPEC_VERSION);
+        URIBuilder uriBuilder = new URIBuilder(_target).addParameter(SPEC, "" + specVersion);
         uriBuilder.addParameter(SINCE, "" + since);
         uriBuilder.addParameter(RB_SINCE, "" + sinceRBS);
         if (!options.flagSetsFilter().isEmpty()) {

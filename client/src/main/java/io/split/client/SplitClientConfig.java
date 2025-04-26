@@ -412,8 +412,8 @@ public class SplitClientConfig {
         return _customHeaderDecorator;
     }
 
-    public boolean isRootURIOverriden() {
-        return _endpoint == SDK_ENDPOINT;
+    public boolean isSdkEndpointOverridden() {
+        return !_endpoint.equals(SDK_ENDPOINT);
     }
 
     public CustomHttpModule alternativeHTTPModule() { return _alternativeHTTPModule; }
