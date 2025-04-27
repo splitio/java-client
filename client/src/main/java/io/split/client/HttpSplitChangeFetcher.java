@@ -5,10 +5,7 @@ import com.google.common.annotations.VisibleForTesting;
 import io.split.Spec;
 import io.split.client.dtos.SplitChange;
 import io.split.client.dtos.SplitHttpResponse;
-import io.split.client.dtos.RuleBasedSegment;
 import io.split.client.dtos.SplitChangesOldPayloadDto;
-import io.split.client.dtos.ChangeDto;
-import io.split.client.dtos.Split;
 import io.split.client.exceptions.UriTooLongException;
 import io.split.client.utils.Json;
 import io.split.client.utils.Utils;
@@ -25,7 +22,6 @@ import org.slf4j.LoggerFactory;
 
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.util.ArrayList;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 import static io.split.Spec.SPEC_1_3;
@@ -100,41 +96,27 @@ public final class HttpSplitChangeFetcher implements SplitChangeFetcher {
                         String.format("Could not retrieve splitChanges since %s; http return code %s", since, response.statusCode())
                 );
             }
+
+            SplitChange splitChange = new SplitChange();
+            if (specVersion.equals(Spec.SPEC_1_1)) {
+                splitChange = convertBodyToOldSpec(response.body());
+            } else {
+                if (_lastProxyCheckTimestamp != 0) {
+                    splitChange.clearCache = true;
+                    _lastProxyCheckTimestamp = 0L;
+                }
+                splitChange = Json.fromJson(response.body(), SplitChange.class);
+            }
+            return splitChange;
         } catch (Exception e) {
             throw new IllegalStateException(String.format("Problem fetching splitChanges since %s: %s", since, e), e);
         } finally {
             _telemetryRuntimeProducer.recordSyncLatency(HTTPLatenciesEnum.SPLITS, System.currentTimeMillis() - start);
         }
-
-        SplitChange splitChange = new SplitChange();
-        if (specVersion.equals(Spec.SPEC_1_1)) {
-            splitChange.featureFlags = convertBodyToOldSpec(response.body());
-            splitChange.ruleBasedSegments = createEmptyDTO();
-        } else {
-            splitChange = Json.fromJson(response.body(), SplitChange.class);
-        }
-        return splitChange;
     }
 
-    public Long getLastProxyCheckTimestamp() {
-        return _lastProxyCheckTimestamp;
-    }
-
-    public void setLastProxyCheckTimestamp(long lastProxyCheckTimestamp) {
-        synchronized (_lock) {
-            _lastProxyCheckTimestamp = lastProxyCheckTimestamp;
-        }
-    }
-
-    private ChangeDto<RuleBasedSegment> createEmptyDTO() {
-        ChangeDto<RuleBasedSegment> dto = new ChangeDto<>();
-        dto.d = new ArrayList<>();
-        dto.t = -1;
-        dto.s = -1;
-        return dto;
-    }
-    private ChangeDto<Split> convertBodyToOldSpec(String body) {
-        return Json.fromJson(body, SplitChangesOldPayloadDto.class).toSplitChange().featureFlags;
+    private SplitChange convertBodyToOldSpec(String body) {
+        return Json.fromJson(body, SplitChangesOldPayloadDto.class).toSplitChange();
     }
 
     private URI buildURL(FetchOptions options, long since, long sinceRBS) throws URISyntaxException {
