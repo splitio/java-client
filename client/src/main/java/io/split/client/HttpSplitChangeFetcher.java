@@ -79,7 +79,7 @@ public final class HttpSplitChangeFetcher implements SplitChangeFetcher {
                 specVersion = SPEC_1_3;
             }
             URI uri = buildURL(options, since, sinceRBS);
-            response = _client.get(uri, options, null);
+            SplitHttpResponse response = _client.get(uri, options, null);
             if (response.statusCode() < HttpStatus.SC_OK || response.statusCode() >= HttpStatus.SC_MULTIPLE_CHOICES) {
                 if (response.statusCode() == HttpStatus.SC_REQUEST_URI_TOO_LONG) {
                     _log.error("The amount of flag sets provided are big causing uri length error.");
