@@ -164,7 +164,7 @@ public class SplitFetcherImpTest {
                 _sdkMetadata);
         URI _rootTarget = URI.create(config.endpoint());
         SplitChangeFetcher splitChangeFetcher = HttpSplitChangeFetcher.create(_splitHttpClient, _rootTarget,
-                _telemetryStorageProducer);
+                _telemetryStorageProducer, config.isSdkEndpointOverridden());
         SplitFetcherImp splitFetcher = new SplitFetcherImp(splitChangeFetcher, splitParser, splitCache, _telemetryStorageProducer,
                 flagSetsFilter, ruleBasedSegmentParser, ruleBasedSegmentCache);
 
