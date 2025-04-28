@@ -98,8 +98,8 @@ public final class HttpSplitChangeFetcher implements SplitChangeFetcher {
             }
 
             if (specVersion.equals(Spec.SPEC_1_1)) {
-                splitChange = convertBodyToOldSpec(response.body());
-            } else {
+                return Json.fromJson(response.body(), SplitChangesOldPayloadDto.class).toSplitChange();
+            }
                 if (_lastProxyCheckTimestamp != 0) {
                     splitChange.clearCache = true;
                     _lastProxyCheckTimestamp = 0L;
