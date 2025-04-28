@@ -100,7 +100,7 @@ public final class SplitHttpClientImpl implements SplitHttpClient {
                     statusMessage,
                     body,
                     Arrays.stream(response.getHeaders()).map(
-                                    h -> new SplitHttpResponse.Header(h.getName(), Collections.singletonList(h.getValue())))
+                            h -> new SplitHttpResponse.Header(h.getName(), Collections.singletonList(h.getValue())))
                             .collect(Collectors.toList()));
         } catch (Exception e) {
             throw new IllegalStateException(String.format("Problem in http get operation: %s", e), e);
