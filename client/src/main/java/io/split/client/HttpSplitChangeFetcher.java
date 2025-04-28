@@ -100,12 +100,10 @@ public final class HttpSplitChangeFetcher implements SplitChangeFetcher {
             if (specVersion.equals(Spec.SPEC_1_1)) {
                 return Json.fromJson(response.body(), SplitChangesOldPayloadDto.class).toSplitChange();
             }
-                if (_lastProxyCheckTimestamp != 0) {
-                    splitChange.clearCache = true;
-                    _lastProxyCheckTimestamp = 0L;
-                }
-                splitChange = Json.fromJson(response.body(), SplitChange.class);
-            }
+
+            SplitChange splitChange = Json.fromJson(response.body(), SplitChange.class);
+            splitChange.clearCache = _lastProxyCheckTimestamp != 0;
+            _lastProxyCheckTimestamp = 0L;
             return splitChange;
         } catch (Exception e) {
             throw new IllegalStateException(String.format("Problem fetching splitChanges since %s: %s", since, e), e);
