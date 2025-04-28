@@ -88,12 +88,16 @@ public final class SplitHttpClientImpl implements SplitHttpClient {
 
             String statusMessage = "";
             int code = response.getCode();
-            String body = "";
             if (code < HttpStatus.SC_OK || code >= HttpStatus.SC_MULTIPLE_CHOICES) {
                 statusMessage = response.getReasonPhrase();
                 _log.warn(String.format("Response status was: %s. Reason: %s", code, statusMessage));
-            } else {
+            }
+
+            String body = "";
+            try {
                 body = EntityUtils.toString(response.getEntity(), StandardCharsets.UTF_8);
+            } catch (Exception e) {
+                _log.warn(String.format("Error parsing Response.body,  %s", e.getMessage()));
             }
 
             return new SplitHttpResponse(code,
