@@ -73,7 +73,6 @@ public final class HttpSplitChangeFetcher implements SplitChangeFetcher {
     @Override
     public SplitChange fetch(long since, long sinceRBS, FetchOptions options) {
         long start = System.currentTimeMillis();
-        SplitHttpResponse response;
         try {
             if (specVersion.equals(SPEC_1_1) && (System.currentTimeMillis() - _lastProxyCheckTimestamp >= PROXY_CHECK_INTERVAL_MILLISECONDS_SS)) {
                 _log.info("Switching to new Feature flag spec ({}) and fetching.", SPEC_1_3);
