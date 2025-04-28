@@ -69,14 +69,13 @@ public final class HttpSplitChangeFetcher implements SplitChangeFetcher {
     @Override
     public SplitChange fetch(long since, long sinceRBS, FetchOptions options) {
         long start = System.currentTimeMillis();
-        SplitHttpResponse response;
         try {
             if (specVersion.equals(SPEC_1_1) && (System.currentTimeMillis() - _lastProxyCheckTimestamp >= PROXY_CHECK_INTERVAL_MILLISECONDS_SS)) {
                 _log.info("Switching to new Feature flag spec ({}) and fetching.", SPEC_1_3);
                 specVersion = SPEC_1_3;
             }
             URI uri = buildURL(options, since, sinceRBS);
-            response = _client.get(uri, options, null);
+            SplitHttpResponse response = _client.get(uri, options, null);
             if (response.statusCode() < HttpStatus.SC_OK || response.statusCode() >= HttpStatus.SC_MULTIPLE_CHOICES) {
                 if (response.statusCode() == HttpStatus.SC_REQUEST_URI_TOO_LONG) {
                     _log.error("The amount of flag sets provided are big causing uri length error.");
