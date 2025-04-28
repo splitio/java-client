@@ -140,7 +140,9 @@ public class InMemoryCacheImp implements SplitCache {
     @Override
     public void clear() {
         _concurrentMap.clear();
+        _changeNumber.set(-1);
         _concurrentTrafficTypeNameSet.clear();
+        _flagSets.clear();
     }
 
     @Override

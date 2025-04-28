@@ -9,4 +9,5 @@ public interface RuleBasedSegmentCacheProducer {
     void setChangeNumber(long changeNumber);
     long getChangeNumber();
     void update(List<ParsedRuleBasedSegment> toAdd, List<String> toRemove, long changeNumber);
+    void clear();
 }

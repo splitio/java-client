@@ -71,7 +71,9 @@ public class RuleBasedSegmentCacheInMemoryImp implements RuleBasedSegmentCache {
         return ruleBasedSegmentNamesList;
     }
 
+    @Override
     public void clear() {
+        _changeNumber.set(-1);
         _concurrentMap.clear();
     }
 

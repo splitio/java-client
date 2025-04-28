@@ -5,10 +5,7 @@ import com.google.common.annotations.VisibleForTesting;
 import io.split.Spec;
 import io.split.client.dtos.SplitChange;
 import io.split.client.dtos.SplitHttpResponse;
-import io.split.client.dtos.RuleBasedSegment;
 import io.split.client.dtos.SplitChangesOldPayloadDto;
-import io.split.client.dtos.ChangeDto;
-import io.split.client.dtos.Split;
 import io.split.client.exceptions.UriTooLongException;
 import io.split.client.utils.Json;
 import io.split.client.utils.Utils;
@@ -25,7 +22,6 @@ import org.slf4j.LoggerFactory;
 
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.util.ArrayList;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 import static io.split.Spec.SPEC_1_3;
@@ -91,7 +87,7 @@ public final class HttpSplitChangeFetcher implements SplitChangeFetcher {
                     _log.warn("Detected proxy without support for Feature flags spec {} version, will switch to spec version {}",
                             SPEC_1_3, SPEC_1_1);
                     _lastProxyCheckTimestamp = System.currentTimeMillis();
-                    return fetch(since, 0, options);
+                    return fetch(since, sinceRBS, options);
                 }
 
                 _telemetryRuntimeProducer.recordSyncError(ResourceEnum.SPLIT_SYNC, response.statusCode());
@@ -100,27 +96,18 @@ public final class HttpSplitChangeFetcher implements SplitChangeFetcher {
                 );
             }
 
-            String body = response.body();
             if (specVersion.equals(Spec.SPEC_1_1)) {
-                return Json.fromJson(body, SplitChangesOldPayloadDto.class).toSplitChange();
+                return Json.fromJson(response.body(), SplitChangesOldPayloadDto.class).toSplitChange();
             }
 
-            return Json.fromJson(body, SplitChange.class);
-
+            SplitChange splitChange = Json.fromJson(response.body(), SplitChange.class);
+            splitChange.clearCache = _lastProxyCheckTimestamp != 0;
+            _lastProxyCheckTimestamp = 0L;
+            return splitChange;
         } catch (Exception e) {
             throw new IllegalStateException(String.format("Problem fetching splitChanges since %s: %s", since, e), e);
         } finally {
             _telemetryRuntimeProducer.recordSyncLatency(HTTPLatenciesEnum.SPLITS, System.currentTimeMillis() - start);
-        }
-    }
-
-    public Long getLastProxyCheckTimestamp() {
-        return _lastProxyCheckTimestamp;
-    }
-
-    public void setLastProxyCheckTimestamp(long lastProxyCheckTimestamp) {
-        synchronized (_lock) {
-            _lastProxyCheckTimestamp = lastProxyCheckTimestamp;
         }
     }
 

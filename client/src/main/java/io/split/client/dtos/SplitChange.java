@@ -7,4 +7,5 @@ public class SplitChange {
     public ChangeDto<Split> featureFlags;
     @SerializedName("rbs")
     public ChangeDto<RuleBasedSegment> ruleBasedSegments;
+    public boolean clearCache;
 }

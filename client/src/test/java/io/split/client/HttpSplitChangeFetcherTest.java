@@ -246,10 +246,6 @@ public class HttpSplitChangeFetcherTest {
         HttpSplitChangeFetcher fetcher = HttpSplitChangeFetcher.create(splitHtpClient, rootTarget,
                 Mockito.mock(TelemetryRuntimeProducer.class), true);
 
-        Field specVersion = fetcher.getClass().getDeclaredField("specVersion");
-        specVersion.setAccessible(true);
-        specVersion.set(fetcher, Spec.SPEC_1_1);
-
         SplitChange change = fetcher.fetch(-1, -1, new FetchOptions.Builder().cacheControlHeaders(true).build());
 
         List<ClassicHttpRequest> captured = requestCaptor.getAllValues();
@@ -264,7 +260,6 @@ public class HttpSplitChangeFetcherTest {
         Assert.assertEquals(0, change.ruleBasedSegments.d.size());
         Assert.assertEquals(-1, change.ruleBasedSegments.s);
         Assert.assertEquals(-1, change.ruleBasedSegments.t);
-        Assert.assertTrue(fetcher.getLastProxyCheckTimestamp() > 0);
 
         // Set proxy interval to low number to force check for spec 1.3
         Field proxyInterval = fetcher.getClass().getDeclaredField("PROXY_CHECK_INTERVAL_MILLISECONDS_SS");

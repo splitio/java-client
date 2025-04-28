@@ -122,6 +122,11 @@ public class SplitFetcherImp implements SplitFetcher {
             throw new IllegalStateException("SplitChange was null");
         }
 
+        if (change.clearCache) {
+            _splitCacheProducer.clear();
+            _ruleBasedSegmentCacheProducer.clear();
+        }
+
         if (checkExitConditions(change.featureFlags, _splitCacheProducer.getChangeNumber()) ||
             checkExitConditions(change.ruleBasedSegments, _ruleBasedSegmentCacheProducer.getChangeNumber())) {
             return segments;
