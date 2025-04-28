@@ -125,13 +125,6 @@ public final class HttpSplitChangeFetcher implements SplitChangeFetcher {
         }
     }
 
-    private ChangeDto<RuleBasedSegment> createEmptyDTO() {
-        ChangeDto<RuleBasedSegment> dto = new ChangeDto<>();
-        dto.d = new ArrayList<>();
-        dto.t = -1;
-        dto.s = -1;
-        return dto;
-    }
 
     private URI buildURL(FetchOptions options, long since, long sinceRBS) throws URISyntaxException {
         URIBuilder uriBuilder = new URIBuilder(_target).addParameter(SPEC, "" + specVersion);
