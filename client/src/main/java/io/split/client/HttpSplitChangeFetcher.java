@@ -97,7 +97,6 @@ public final class HttpSplitChangeFetcher implements SplitChangeFetcher {
                 );
             }
 
-            SplitChange splitChange = new SplitChange();
             if (specVersion.equals(Spec.SPEC_1_1)) {
                 splitChange = convertBodyToOldSpec(response.body());
             } else {
