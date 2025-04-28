@@ -97,7 +97,7 @@ public final class SplitHttpClientImpl implements SplitHttpClient {
             try {
                 body = EntityUtils.toString(response.getEntity(), StandardCharsets.UTF_8);
             } catch (Exception e) {
-                _log.warn(String.format("Error parsing Response.body,  %s", e.getMessage()));
+                _log.warn("Error parsing Response.body", e);
             }
 
             return new SplitHttpResponse(code,
