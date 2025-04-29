@@ -4,12 +4,19 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 import io.split.client.dtos.ConditionType;
 import io.split.client.dtos.MatcherCombiner;
+import io.split.client.dtos.SplitChange;
+import io.split.client.utils.Json;
+import io.split.client.utils.RuleBasedSegmentsToUpdate;
 import io.split.engine.matchers.AttributeMatcher;
 import io.split.engine.matchers.CombiningMatcher;
 import io.split.engine.matchers.UserDefinedSegmentMatcher;
 
 import org.junit.Assert;
 import org.junit.Test;
+
+import java.util.ArrayList;
+
+import static io.split.client.utils.RuleBasedSegmentProcessor.processRuleBasedSegmentChanges;
 
 public class ParsedRuleBasedSegmentTest {
 
@@ -26,5 +33,18 @@ public class ParsedRuleBasedSegmentTest {
         Assert.assertEquals(Lists.newArrayList(new ParsedCondition(ConditionType.WHITELIST, segmentCombiningMatcher, null, "label")),
                 parsedRuleBasedSegment.parsedConditions());
         Assert.assertEquals(123, parsedRuleBasedSegment.changeNumber());
+    }
+
+    @Test
+    public void worksWithoutExcluded() {
+        RuleBasedSegmentParser parser = new RuleBasedSegmentParser();
+        String load = "{\"ff\":{\"s\":-1,\"t\":-1,\"d\":[]},\"rbs\":{\"s\":-1,\"t\":1457726098069,\"d\":[{ \"changeNumber\": 123, \"trafficTypeName\": \"user\", \"name\": \"some_name\","
+                + "\"status\": \"ACTIVE\",\"conditions\": [{\"contitionType\": \"ROLLOUT\","
+                + "\"label\": \"some_label\", \"matcherGroup\": { \"matchers\": [{ \"matcherType\": \"ALL_KEYS\", \"negate\": false}],"
+                + "\"combiner\": \"AND\"}}]}]}}";
+        SplitChange change = Json.fromJson(load, SplitChange.class);
+        RuleBasedSegmentsToUpdate toUpdate = processRuleBasedSegmentChanges(parser, change.ruleBasedSegments.d);
+        Assert.assertEquals(new ArrayList<>(), toUpdate.getToAdd().get(0).excludedKeys());
+        Assert.assertEquals(new ArrayList<>(), toUpdate.getToAdd().get(0).excludedSegments());
     }
 }

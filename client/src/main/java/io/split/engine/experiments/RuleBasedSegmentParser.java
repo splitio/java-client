@@ -2,7 +2,6 @@ package io.split.engine.experiments;
 
 import com.google.common.collect.Lists;
 import io.split.client.dtos.Condition;
-import io.split.client.dtos.Partition;
 import io.split.client.dtos.RuleBasedSegment;
 import io.split.engine.matchers.CombiningMatcher;
 import org.slf4j.Logger;
