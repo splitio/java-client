@@ -19,6 +19,7 @@ import static com.google.common.base.Preconditions.checkNotNull;
  */
 public class RuleBasedSegmentMatcher implements Matcher {
     private final String standardType = "standard";
+    private final String ruleBasedType = "rule-based";
 
     private final String _segmentName;
 
@@ -44,8 +45,19 @@ public class RuleBasedSegmentMatcher implements Matcher {
             if (segment.type.equals(standardType) && evaluationContext.getSegmentCache().isInSegment(segment.name, (String) matchValue)) {
                 return false;
             }
+
+            if (segment.type.equals(ruleBasedType)) {
+                List<ParsedCondition> conditions = evaluationContext.getRuleBasedSegmentCache().get(segment.name).parsedConditions();
+                if (matchConditions(conditions, matchValue, bucketingKey, attributes, evaluationContext)) {
+                    return true;
+                }
+            }
         }
-        List<ParsedCondition> conditions = parsedRuleBasedSegment.parsedConditions();
+
+        return matchConditions(parsedRuleBasedSegment.parsedConditions(), matchValue, bucketingKey, attributes, evaluationContext);
+    }
+
+    private boolean matchConditions(List<ParsedCondition> conditions, Object matchValue, String bucketingKey, Map<String, Object> attributes, EvaluationContext evaluationContext) {
         for (ParsedCondition parsedCondition : conditions) {
             if (parsedCondition.matcher().match((String) matchValue, bucketingKey, attributes, evaluationContext)) {
                 return true;
