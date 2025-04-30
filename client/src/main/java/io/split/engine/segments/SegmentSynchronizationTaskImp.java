@@ -161,8 +161,8 @@ public class SegmentSynchronizationTaskImp implements SegmentSynchronizationTask
     }
 
     public boolean fetchAllSynchronous() {
-        _splitCacheConsumer.getSegments().forEach(this::initialize);
-        _ruleBasedSegmentCacheConsumer.getSegments().forEach(this::initialize);
+        Set<String> names = getSegmentNames();
+        names.forEach(this::initialize);
         List<Future<Boolean>> segmentFetchExecutions = _segmentFetchers.entrySet()
                 .stream().map(e -> _scheduledExecutorService.submit(e.getValue()::runWhitCacheHeader))
                 .collect(Collectors.toList());
