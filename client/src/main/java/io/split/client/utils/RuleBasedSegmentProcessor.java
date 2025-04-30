@@ -22,10 +22,7 @@ public class RuleBasedSegmentProcessor {
         List<String> toRemove = new ArrayList<>();
         Set<String> segments = new HashSet<>();
         for (RuleBasedSegment ruleBasedSegment : ruleBasedSegments) {
-            if (ruleBasedSegment.excluded == null)
-            {
-                ruleBasedSegment.excluded = createEmptyExcluded();
-            }
+            ruleBasedSegment.excluded = checkExcluded(ruleBasedSegment.excluded);
             if (ruleBasedSegment.status != Status.ACTIVE) {
                 // archive.
                 toRemove.add(ruleBasedSegment.name);
@@ -49,4 +46,16 @@ public class RuleBasedSegmentProcessor {
         return excluded;
     }
 
+    private static Excluded checkExcluded(Excluded excluded) {
+        if (excluded == null) {
+            excluded = createEmptyExcluded();
+        }
+        if (excluded.segments == null) {
+            excluded.segments = new ArrayList<>();
+        }
+        if (excluded.keys == null) {
+            excluded.keys = new ArrayList<>();
+        }
+        return excluded;
+    }
 }
