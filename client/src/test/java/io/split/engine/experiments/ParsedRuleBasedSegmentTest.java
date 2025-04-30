@@ -44,7 +44,7 @@ public class ParsedRuleBasedSegmentTest {
                 + "\"combiner\": \"AND\"}}]}]}}";
         SplitChange change = Json.fromJson(load, SplitChange.class);
         RuleBasedSegmentsToUpdate toUpdate = processRuleBasedSegmentChanges(parser, change.ruleBasedSegments.d);
-        Assert.assertEquals(new ArrayList<>(), toUpdate.getToAdd().get(0).excludedKeys());
-        Assert.assertEquals(new ArrayList<>(), toUpdate.getToAdd().get(0).excludedSegments());
+        Assert.assertTrue(toUpdate.getToAdd().get(0).excludedKeys().isEmpty());
+        Assert.assertTrue(toUpdate.getToAdd().get(0).excludedSegments().isEmpty());
     }
 }
