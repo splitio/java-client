@@ -190,7 +190,7 @@ public class SplitFetcherImpTest {
 
         FetchResult fetchResult = splitFetcher.forceRefresh(fetchOptions);
 
-        Assert.assertEquals(1, fetchResult.getSegments().size());
+        Assert.assertEquals(2, fetchResult.getSegments().size());
     }
 
     @Test

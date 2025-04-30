@@ -3,12 +3,10 @@ package io.split.engine.experiments;
 import com.google.common.collect.Lists;
 import io.split.client.interceptors.FlagSetsFilter;
 import io.split.client.interceptors.FlagSetsFilterImpl;
-import io.split.storages.RuleBasedSegmentCacheProducer;
+import io.split.storages.*;
 import io.split.storages.memory.InMemoryCacheImp;
-import io.split.storages.SegmentCache;
 import io.split.storages.memory.RuleBasedSegmentCacheInMemoryImp;
 import io.split.storages.memory.SegmentCacheInMemoryImpl;
-import io.split.storages.SplitCache;
 import io.split.client.dtos.*;
 import io.split.engine.ConditionsTestUtil;
 import io.split.engine.common.FetchOptions;
@@ -157,14 +155,14 @@ public class SplitFetcherTest {
 
         SegmentCache segmentCache = new SegmentCacheInMemoryImpl();
         SplitCache cache = new InMemoryCacheImp(-1, FLAG_SETS_FILTER);
-        RuleBasedSegmentCacheProducer ruleBasedSegmentCacheProducer = new RuleBasedSegmentCacheInMemoryImp();
+        RuleBasedSegmentCache ruleBasedSegmentCache = new RuleBasedSegmentCacheInMemoryImp();
         RuleBasedSegmentParser ruleBasedSegmentParser = new RuleBasedSegmentParser();
 
         SegmentChangeFetcher segmentChangeFetcher = mock(SegmentChangeFetcher.class);
-        SegmentSynchronizationTask segmentSynchronizationTask = new SegmentSynchronizationTaskImp(segmentChangeFetcher, 1,10, segmentCache, TELEMETRY_STORAGE, cache, null);
+        SegmentSynchronizationTask segmentSynchronizationTask = new SegmentSynchronizationTaskImp(segmentChangeFetcher, 1,10, segmentCache, TELEMETRY_STORAGE, cache, null, ruleBasedSegmentCache);
         segmentSynchronizationTask.start();
         SplitFetcherImp fetcher = new SplitFetcherImp(splitChangeFetcher, new SplitParser(), cache, TELEMETRY_STORAGE, FLAG_SETS_FILTER,
-                ruleBasedSegmentParser, ruleBasedSegmentCacheProducer);
+                ruleBasedSegmentParser, ruleBasedSegmentCache);
 
 
         // execute the fetcher for a little bit.
@@ -182,14 +180,14 @@ public class SplitFetcherTest {
         SplitChangeFetcher splitChangeFetcher = mock(SplitChangeFetcher.class);
         when(splitChangeFetcher.fetch(-1L, -1, new FetchOptions.Builder().build())).thenThrow(new RuntimeException());
         SegmentCache segmentCache = new SegmentCacheInMemoryImpl();
-        RuleBasedSegmentCacheProducer ruleBasedSegmentCacheProducer = new RuleBasedSegmentCacheInMemoryImp();
+        RuleBasedSegmentCache ruleBasedSegmentCache = new RuleBasedSegmentCacheInMemoryImp();
         RuleBasedSegmentParser ruleBasedSegmentParser = new RuleBasedSegmentParser();
 
         SegmentChangeFetcher segmentChangeFetcher = mock(SegmentChangeFetcher.class);
-        SegmentSynchronizationTask segmentSynchronizationTask = new SegmentSynchronizationTaskImp(segmentChangeFetcher, 1,10, segmentCache, TELEMETRY_STORAGE, cache, null);
+        SegmentSynchronizationTask segmentSynchronizationTask = new SegmentSynchronizationTaskImp(segmentChangeFetcher, 1,10, segmentCache, TELEMETRY_STORAGE, cache, null, ruleBasedSegmentCache);
         segmentSynchronizationTask.start();
         SplitFetcherImp fetcher = new SplitFetcherImp(splitChangeFetcher, new SplitParser(), cache, TELEMETRY_STORAGE, FLAG_SETS_FILTER,
-            ruleBasedSegmentParser, ruleBasedSegmentCacheProducer);
+            ruleBasedSegmentParser, ruleBasedSegmentCache);
 
         // execute the fetcher for a little bit.
         executeWaitAndTerminate(fetcher, 1, 5, TimeUnit.SECONDS);
@@ -224,11 +222,11 @@ public class SplitFetcherTest {
         SplitChangeFetcher splitChangeFetcher = mock(SplitChangeFetcher.class);
         when(splitChangeFetcher.fetch(Mockito.eq(-1L), Mockito.eq(-1L), Mockito.any())).thenReturn(validReturn);
 
-        RuleBasedSegmentCacheProducer ruleBasedSegmentCacheProducer = new RuleBasedSegmentCacheInMemoryImp();
+        RuleBasedSegmentCache ruleBasedSegmentCache = new RuleBasedSegmentCacheInMemoryImp();
         RuleBasedSegmentParser ruleBasedSegmentParser = new RuleBasedSegmentParser();
         FlagSetsFilter flagSetsFilter = new FlagSetsFilterImpl(new HashSet<>(Arrays.asList("set_1", "set_2")));
         SplitFetcherImp fetcher = new SplitFetcherImp(splitChangeFetcher, new SplitParser(), cache, TELEMETRY_STORAGE, flagSetsFilter,
-                ruleBasedSegmentParser, ruleBasedSegmentCacheProducer);
+                ruleBasedSegmentParser, ruleBasedSegmentCache);
 
         executeWaitAndTerminate(fetcher, 1, 5, TimeUnit.SECONDS);
 
@@ -282,16 +280,16 @@ public class SplitFetcherTest {
         AChangePerCallSplitChangeFetcher experimentChangeFetcher = new AChangePerCallSplitChangeFetcher(segmentName);
         SplitCache cache = new InMemoryCacheImp(startingChangeNumber, FLAG_SETS_FILTER);
         SegmentCache segmentCache = new SegmentCacheInMemoryImpl();
-        RuleBasedSegmentCacheProducer ruleBasedSegmentCacheProducer = new RuleBasedSegmentCacheInMemoryImp();
+        RuleBasedSegmentCache ruleBasedSegmentCache = new RuleBasedSegmentCacheInMemoryImp();
         RuleBasedSegmentParser ruleBasedSegmentParser = new RuleBasedSegmentParser();
 
         SegmentChangeFetcher segmentChangeFetcher = mock(SegmentChangeFetcher.class);
         SegmentChange segmentChange = getSegmentChange(0L, 0L, segmentName);
         when(segmentChangeFetcher.fetch(anyString(), anyLong(), any())).thenReturn(segmentChange);
-        SegmentSynchronizationTask segmentSynchronizationTask = new SegmentSynchronizationTaskImp(segmentChangeFetcher, 1,10, segmentCache, Mockito.mock(TelemetryStorage.class), cache, null);
+        SegmentSynchronizationTask segmentSynchronizationTask = new SegmentSynchronizationTaskImp(segmentChangeFetcher, 1,10, segmentCache, Mockito.mock(TelemetryStorage.class), cache, null, ruleBasedSegmentCache);
         segmentSynchronizationTask.start();
         SplitFetcherImp fetcher = new SplitFetcherImp(experimentChangeFetcher, new SplitParser(), cache,  TELEMETRY_STORAGE, FLAG_SETS_FILTER,
-            ruleBasedSegmentParser, ruleBasedSegmentCacheProducer);
+            ruleBasedSegmentParser, ruleBasedSegmentCache);
 
         // execute the fetcher for a little bit.
         executeWaitAndTerminate(fetcher, 1, 5, TimeUnit.SECONDS);

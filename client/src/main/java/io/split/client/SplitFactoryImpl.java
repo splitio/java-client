@@ -69,6 +69,7 @@ import io.split.storages.SplitCacheConsumer;
 import io.split.storages.SplitCacheProducer;
 import io.split.storages.RuleBasedSegmentCache;
 import io.split.storages.RuleBasedSegmentCacheProducer;
+import io.split.storages.RuleBasedSegmentCacheConsumer;
 import io.split.storages.enums.OperationMode;
 import io.split.storages.memory.InMemoryCacheImp;
 import io.split.storages.memory.SegmentCacheInMemoryImpl;
@@ -218,7 +219,7 @@ public class SplitFactoryImpl implements SplitFactory {
                 splitCache, _segmentCache, telemetryStorage, _startTime);
 
         // Segments
-        _segmentSynchronizationTaskImp = buildSegments(config, segmentCache, splitCache);
+        _segmentSynchronizationTaskImp = buildSegments(config, segmentCache, splitCache, ruleBasedSegmentCache);
 
         SplitParser splitParser = new SplitParser();
         RuleBasedSegmentParser ruleBasedSegmentParser = new RuleBasedSegmentParser();
@@ -420,7 +421,8 @@ public class SplitFactoryImpl implements SplitFactory {
                 segmentCache,
                 _telemetryStorageProducer,
                 _splitCache,
-                config.getThreadFactory());
+                config.getThreadFactory(),
+                _ruleBasedSegmentCache);
 
         // SplitFetcher
         SplitChangeFetcher splitChangeFetcher = createSplitChangeFetcher(config);
@@ -607,7 +609,7 @@ public class SplitFactoryImpl implements SplitFactory {
 
     private SegmentSynchronizationTaskImp buildSegments(SplitClientConfig config,
             SegmentCacheProducer segmentCacheProducer,
-            SplitCacheConsumer splitCacheConsumer) throws URISyntaxException {
+            SplitCacheConsumer splitCacheConsumer, RuleBasedSegmentCacheConsumer ruleBasedSegmentCache) throws URISyntaxException {
         SegmentChangeFetcher segmentChangeFetcher = HttpSegmentChangeFetcher.create(_splitHttpClient, _rootTarget,
                 _telemetryStorageProducer);
 
@@ -617,7 +619,8 @@ public class SplitFactoryImpl implements SplitFactory {
                 segmentCacheProducer,
                 _telemetryStorageProducer,
                 splitCacheConsumer,
-                config.getThreadFactory());
+                config.getThreadFactory(),
+                ruleBasedSegmentCache);
     }
 
     private SplitFetcher buildSplitFetcher(SplitCacheProducer splitCacheProducer, SplitParser splitParser,
