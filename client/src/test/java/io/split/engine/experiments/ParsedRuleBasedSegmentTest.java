@@ -54,7 +54,7 @@ public class ParsedRuleBasedSegmentTest {
         Assert.assertTrue(toUpdate.getToAdd().get(0).excludedSegments().isEmpty());
 
         load = "{\"ff\":{\"s\":-1,\"t\":-1,\"d\":[]},\"rbs\":{\"s\":-1,\"t\":1457726098069,\"d\":[{ \"changeNumber\": 123, \"trafficTypeName\": \"user\", \"name\": \"some_name\","
-                + "\"status\": \"ACTIVE\",\"excluded\":{\"segments\":[\"segment1\"]},\"conditions\": [{\"contitionType\": \"ROLLOUT\","
+                + "\"status\": \"ACTIVE\",\"excluded\":{\"segments\":[{\"type\": \"standard\",\"name\":\"segment1\"}]},\"conditions\": [{\"contitionType\": \"ROLLOUT\","
                 + "\"label\": \"some_label\", \"matcherGroup\": { \"matchers\": [{ \"matcherType\": \"ALL_KEYS\", \"negate\": false}],"
                 + "\"combiner\": \"AND\"}}]}]}}";
         change = Json.fromJson(load, SplitChange.class);
@@ -62,7 +62,7 @@ public class ParsedRuleBasedSegmentTest {
         Assert.assertTrue(toUpdate.getToAdd().get(0).excludedKeys().isEmpty());
 
         load = "{\"ff\":{\"s\":-1,\"t\":-1,\"d\":[]},\"rbs\":{\"s\":-1,\"t\":1457726098069,\"d\":[{ \"changeNumber\": 123, \"trafficTypeName\": \"user\", \"name\": \"some_name\","
-                + "\"status\": \"ACTIVE\",\"excluded\":{\"segments\":[\"segment1\"], \"keys\":null},\"conditions\": [{\"contitionType\": \"ROLLOUT\","
+                + "\"status\": \"ACTIVE\",\"excluded\":{\"segments\":[{\"type\": \"standard\",\"name\":\"segment1\"}], \"keys\":null},\"conditions\": [{\"contitionType\": \"ROLLOUT\","
                 + "\"label\": \"some_label\", \"matcherGroup\": { \"matchers\": [{ \"matcherType\": \"ALL_KEYS\", \"negate\": false}],"
                 + "\"combiner\": \"AND\"}}]}]}}";
         change = Json.fromJson(load, SplitChange.class);
