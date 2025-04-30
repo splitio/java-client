@@ -1,5 +1,6 @@
 package io.split.engine.matchers;
 
+import io.split.client.dtos.ExcludedSegments;
 import io.split.engine.evaluator.EvaluationContext;
 import io.split.engine.experiments.ParsedCondition;
 import io.split.engine.experiments.ParsedRuleBasedSegment;
@@ -17,6 +18,8 @@ import static com.google.common.base.Preconditions.checkNotNull;
  * @author adil
  */
 public class RuleBasedSegmentMatcher implements Matcher {
+    private final String standardType = "standard";
+
     private final String _segmentName;
 
     public RuleBasedSegmentMatcher(String segmentName) {
@@ -37,8 +40,8 @@ public class RuleBasedSegmentMatcher implements Matcher {
             return false;
         }
 
-        for (String segmentName: parsedRuleBasedSegment.excludedSegments()) {
-            if (evaluationContext.getSegmentCache().isInSegment(segmentName, (String) matchValue)) {
+        for (ExcludedSegments segment: parsedRuleBasedSegment.excludedSegments()) {
+            if (segment.type.equals(standardType) && evaluationContext.getSegmentCache().isInSegment(segment.name, (String) matchValue)) {
                 return false;
             }
         }

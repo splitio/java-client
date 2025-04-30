@@ -4,5 +4,5 @@ import java.util.List;
 
 public class Excluded {
     public List<String> keys;
-    public List<String> segments;
+    public List<ExcludedSegments> segments;
 }
