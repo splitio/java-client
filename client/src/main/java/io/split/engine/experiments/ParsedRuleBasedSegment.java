@@ -1,6 +1,7 @@
 package io.split.engine.experiments;
 
 import com.google.common.collect.ImmutableList;
+import io.split.client.dtos.ExcludedSegments;
 import io.split.engine.matchers.AttributeMatcher;
 import io.split.engine.matchers.UserDefinedSegmentMatcher;
 
@@ -15,7 +16,7 @@ public class ParsedRuleBasedSegment {
     private final String _trafficTypeName;
     private final long _changeNumber;
     private final List<String> _excludedKeys;
-    private final List<String> _excludedSegments;
+    private final List<ExcludedSegments> _excludedSegments;
 
     public static ParsedRuleBasedSegment createParsedRuleBasedSegmentForTests(
             String ruleBasedSegment,
@@ -23,7 +24,7 @@ public class ParsedRuleBasedSegment {
             String trafficTypeName,
             long changeNumber,
             List<String> excludedKeys,
-            List<String> excludedSegments
+            List<ExcludedSegments> excludedSegments
     ) {
         return new ParsedRuleBasedSegment(
                 ruleBasedSegment,
@@ -41,7 +42,7 @@ public class ParsedRuleBasedSegment {
             String trafficTypeName,
             long changeNumber,
             List<String> excludedKeys,
-            List<String> excludedSegments
+            List<ExcludedSegments> excludedSegments
     ) {
         _ruleBasedSegment = ruleBasedSegment;
         _parsedCondition = ImmutableList.copyOf(matcherAndSplits);
@@ -64,7 +65,7 @@ public class ParsedRuleBasedSegment {
     public long changeNumber() {return _changeNumber;}
 
     public List<String> excludedKeys() {return _excludedKeys;}
-    public List<String> excludedSegments() {return _excludedSegments;}
+    public List<ExcludedSegments> excludedSegments() {return _excludedSegments;}
 
     @Override
     public int hashCode() {
