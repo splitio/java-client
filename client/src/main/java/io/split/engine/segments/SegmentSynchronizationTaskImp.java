@@ -3,6 +3,7 @@ package io.split.engine.segments;
 import com.google.common.collect.Maps;
 import io.split.client.utils.SplitExecutorFactory;
 import io.split.engine.common.FetchOptions;
+import io.split.storages.RuleBasedSegmentCacheConsumer;
 import io.split.storages.SegmentCacheProducer;
 import io.split.storages.SplitCacheConsumer;
 import io.split.telemetry.storage.TelemetryRuntimeProducer;
@@ -38,12 +39,14 @@ public class SegmentSynchronizationTaskImp implements SegmentSynchronizationTask
     private final ScheduledExecutorService _scheduledExecutorService;
     private final TelemetryRuntimeProducer _telemetryRuntimeProducer;
     private final SplitCacheConsumer _splitCacheConsumer;
+    private final RuleBasedSegmentCacheConsumer _ruleBasedSegmentCacheConsumer;
 
     private ScheduledFuture<?> _scheduledFuture;
 
     public SegmentSynchronizationTaskImp(SegmentChangeFetcher segmentChangeFetcher, long refreshEveryNSeconds, int numThreads,
                                          SegmentCacheProducer segmentCacheProducer, TelemetryRuntimeProducer telemetryRuntimeProducer,
-                                         SplitCacheConsumer splitCacheConsumer, ThreadFactory threadFactory) {
+                                         SplitCacheConsumer splitCacheConsumer, ThreadFactory threadFactory,
+                                         RuleBasedSegmentCacheConsumer ruleBasedSegmentCacheConsumer) {
         _segmentChangeFetcher = checkNotNull(segmentChangeFetcher);
 
         checkArgument(refreshEveryNSeconds >= 0L);
@@ -54,6 +57,7 @@ public class SegmentSynchronizationTaskImp implements SegmentSynchronizationTask
         _segmentCacheProducer = checkNotNull(segmentCacheProducer);
         _telemetryRuntimeProducer = checkNotNull(telemetryRuntimeProducer);
         _splitCacheConsumer = checkNotNull(splitCacheConsumer);
+        _ruleBasedSegmentCacheConsumer = checkNotNull(ruleBasedSegmentCacheConsumer);
     }
 
     public void initializeSegment(String segmentName) {
@@ -137,6 +141,7 @@ public class SegmentSynchronizationTaskImp implements SegmentSynchronizationTask
 
     public void fetchAll(boolean addCacheHeader) {
         _splitCacheConsumer.getSegments().forEach(this::initialize);
+        _ruleBasedSegmentCacheConsumer.getSegments().forEach(this::initialize);
         for (Map.Entry<String, SegmentFetcher> entry : _segmentFetchers.entrySet()) {
             SegmentFetcher fetcher = entry.getValue();
 
@@ -155,6 +160,7 @@ public class SegmentSynchronizationTaskImp implements SegmentSynchronizationTask
 
     public boolean fetchAllSynchronous() {
         _splitCacheConsumer.getSegments().forEach(this::initialize);
+        _ruleBasedSegmentCacheConsumer.getSegments().forEach(this::initialize);
         List<Future<Boolean>> segmentFetchExecutions = _segmentFetchers.entrySet()
                 .stream().map(e -> _scheduledExecutorService.submit(e.getValue()::runWhitCacheHeader))
                 .collect(Collectors.toList());
