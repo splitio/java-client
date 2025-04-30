@@ -1,5 +1,6 @@
 package io.split.client.utils;
 
+import io.split.client.dtos.Excluded;
 import io.split.client.dtos.RuleBasedSegment;
 import io.split.client.dtos.Status;
 import io.split.engine.experiments.ParsedRuleBasedSegment;
@@ -21,6 +22,10 @@ public class RuleBasedSegmentProcessor {
         List<String> toRemove = new ArrayList<>();
         Set<String> segments = new HashSet<>();
         for (RuleBasedSegment ruleBasedSegment : ruleBasedSegments) {
+            if (ruleBasedSegment.excluded == null)
+            {
+                ruleBasedSegment.excluded = createEmptyExcluded();
+            }
             if (ruleBasedSegment.status != Status.ACTIVE) {
                 // archive.
                 toRemove.add(ruleBasedSegment.name);
@@ -35,6 +40,13 @@ public class RuleBasedSegmentProcessor {
             toAdd.add(parsedRuleBasedSegment);
         }
         return new RuleBasedSegmentsToUpdate(toAdd, toRemove, segments);
+    }
+
+    private static Excluded createEmptyExcluded() {
+        Excluded excluded = new Excluded();
+        excluded.segments = new ArrayList<>();
+        excluded.keys = new ArrayList<>();
+        return excluded;
     }
 
 }
