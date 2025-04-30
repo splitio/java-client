@@ -4,21 +4,32 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 import io.split.client.dtos.ConditionType;
 import io.split.client.dtos.MatcherCombiner;
+import io.split.client.dtos.SplitChange;
+import io.split.client.utils.Json;
+import io.split.client.utils.RuleBasedSegmentsToUpdate;
 import io.split.engine.evaluator.EvaluationContext;
 import io.split.engine.evaluator.Evaluator;
 import io.split.engine.experiments.ParsedCondition;
 import io.split.engine.experiments.ParsedRuleBasedSegment;
+import io.split.engine.experiments.RuleBasedSegmentParser;
 import io.split.engine.matchers.strings.WhitelistMatcher;
 import io.split.storages.RuleBasedSegmentCache;
 import io.split.storages.RuleBasedSegmentCacheConsumer;
 import io.split.storages.SegmentCache;
 import io.split.storages.memory.RuleBasedSegmentCacheInMemoryImp;
 import io.split.storages.memory.SegmentCacheInMemoryImpl;
+import okhttp3.mockwebserver.MockResponse;
 import org.junit.Test;
 import org.mockito.Mockito;
 
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.util.HashMap;
 import java.util.Set;
 
+import static io.split.client.utils.RuleBasedSegmentProcessor.processRuleBasedSegmentChanges;
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertThat;
 
@@ -47,7 +58,29 @@ public class RuleBasedSegmentMatcherTest {
 
         assertThat(matcher.match("foo", null, null, evaluationContext), is(false));
         assertThat(matcher.match(null, null, null, evaluationContext), is(false));
-
     }
 
+    @Test
+    public void usingRbsWithinExcludedTest() throws IOException {
+        String load = new String(Files.readAllBytes(Paths.get("src/test/resources/rule_base_segments.json")), StandardCharsets.UTF_8);
+        Evaluator evaluator = Mockito.mock(Evaluator.class);
+        SegmentCache segmentCache = new SegmentCacheInMemoryImpl();
+        RuleBasedSegmentCache ruleBasedSegmentCache = new RuleBasedSegmentCacheInMemoryImp();
+        EvaluationContext evaluationContext = new EvaluationContext(evaluator, segmentCache, ruleBasedSegmentCache);
+
+        SplitChange change = Json.fromJson(load, SplitChange.class);
+        RuleBasedSegmentParser ruleBasedSegmentParser = new RuleBasedSegmentParser();
+        RuleBasedSegmentsToUpdate ruleBasedSegmentsToUpdate = processRuleBasedSegmentChanges(ruleBasedSegmentParser,
+                change.ruleBasedSegments.d);
+        ruleBasedSegmentCache.update(ruleBasedSegmentsToUpdate.getToAdd(), null, 123);
+        RuleBasedSegmentMatcher matcher = new RuleBasedSegmentMatcher("dependent_rbs");
+        HashMap<String, Object> attrib1 =  new HashMap<String, Object>() {{
+            put("email", "mauro@@split.io");
+        }};
+        HashMap<String, Object> attrib2 =  new HashMap<String, Object>() {{
+            put("email", "bilal@@split.io");
+        }};
+        assertThat(matcher.match("mauro@split.io", null, attrib1, evaluationContext), is(false));
+        assertThat(matcher.match("bilal@split.io", null, attrib2, evaluationContext), is(true));
+    }
 }

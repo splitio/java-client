@@ -57,7 +57,8 @@ public class RuleBasedSegmentMatcher implements Matcher {
         return matchConditions(parsedRuleBasedSegment.parsedConditions(), matchValue, bucketingKey, attributes, evaluationContext);
     }
 
-    private boolean matchConditions(List<ParsedCondition> conditions, Object matchValue, String bucketingKey, Map<String, Object> attributes, EvaluationContext evaluationContext) {
+    private boolean matchConditions(List<ParsedCondition> conditions, Object matchValue, String bucketingKey,
+                                    Map<String, Object> attributes, EvaluationContext evaluationContext) {
         for (ParsedCondition parsedCondition : conditions) {
             if (parsedCondition.matcher().match((String) matchValue, bucketingKey, attributes, evaluationContext)) {
                 return true;
