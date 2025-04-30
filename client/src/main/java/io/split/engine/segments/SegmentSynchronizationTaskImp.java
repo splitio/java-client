@@ -11,8 +11,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.Closeable;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
@@ -197,5 +199,12 @@ public class SegmentSynchronizationTaskImp implements SegmentSynchronizationTask
 
             _segmentFetchers.putIfAbsent(segmentName, segment);
         }
+    }
+
+    private Set<String> getSegmentNames() {
+        Set<String> names = new HashSet<>(_splitCacheConsumer.getSegments());
+        names.addAll(_ruleBasedSegmentCacheConsumer.getSegments());
+
+        return names;
     }
 }

@@ -1,11 +1,13 @@
 package io.split.engine.sse;
 
 import com.google.common.annotations.VisibleForTesting;
+import io.split.client.dtos.Split;
 import io.split.engine.sse.dtos.GenericNotificationData;
 import io.split.engine.sse.dtos.IncomingNotification;
 import io.split.engine.sse.dtos.SplitKillNotification;
 import io.split.engine.sse.dtos.StatusNotification;
 import io.split.engine.sse.dtos.SegmentQueueDto;
+import io.split.engine.sse.dtos.CommonChangeNotification;
 import io.split.engine.sse.workers.FeatureFlagsWorker;
 import io.split.engine.sse.workers.Worker;
 
@@ -42,10 +44,10 @@ public class NotificationProcessorImp implements NotificationProcessor {
     @Override
     public void processSplitKill(SplitKillNotification splitKillNotification) {
         _featureFlagsWorker.kill(splitKillNotification);
-        _featureFlagsWorker.addToQueue(new SplitKillNotification(GenericNotificationData.builder()
+        _featureFlagsWorker.addToQueue(new CommonChangeNotification<>(GenericNotificationData.builder()
                 .changeNumber(splitKillNotification.getChangeNumber())
                 .channel(splitKillNotification.getChannel())
-                .build()));
+                .build(), Split.class));
     }
 
     @Override
