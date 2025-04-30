@@ -140,8 +140,8 @@ public class SegmentSynchronizationTaskImp implements SegmentSynchronizationTask
     }
 
     public void fetchAll(boolean addCacheHeader) {
-        _splitCacheConsumer.getSegments().forEach(this::initialize);
-        _ruleBasedSegmentCacheConsumer.getSegments().forEach(this::initialize);
+        Set<String> names = getSegmentNames();
+        names.forEach(this::initialize);
         for (Map.Entry<String, SegmentFetcher> entry : _segmentFetchers.entrySet()) {
             SegmentFetcher fetcher = entry.getValue();
 
