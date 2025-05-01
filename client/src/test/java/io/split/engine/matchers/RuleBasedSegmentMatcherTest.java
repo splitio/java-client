@@ -26,6 +26,8 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Set;
 
@@ -61,7 +63,7 @@ public class RuleBasedSegmentMatcherTest {
     }
 
     @Test
-    public void usingRbsWithinExcludedTest() throws IOException {
+    public void usingRbsInConditionTest() throws IOException {
         String load = new String(Files.readAllBytes(Paths.get("src/test/resources/rule_base_segments.json")), StandardCharsets.UTF_8);
         Evaluator evaluator = Mockito.mock(Evaluator.class);
         SegmentCache segmentCache = new SegmentCacheInMemoryImpl();
@@ -81,6 +83,59 @@ public class RuleBasedSegmentMatcherTest {
             put("email", "bilal@@split.io");
         }};
         assertThat(matcher.match("mauro@split.io", null, attrib1, evaluationContext), is(false));
+        assertThat(matcher.match("bilal@split.io", null, attrib2, evaluationContext), is(true));
+    }
+
+    @Test
+    public void usingSegmentInExcludedTest() throws IOException {
+        String load = new String(Files.readAllBytes(Paths.get("src/test/resources/rule_base_segments3.json")), StandardCharsets.UTF_8);
+        Evaluator evaluator = Mockito.mock(Evaluator.class);
+        SegmentCache segmentCache = new SegmentCacheInMemoryImpl();
+        segmentCache.updateSegment("segment1", Arrays.asList("bilal@split.io"), new ArrayList<>(), 123);
+        RuleBasedSegmentCache ruleBasedSegmentCache = new RuleBasedSegmentCacheInMemoryImp();
+        EvaluationContext evaluationContext = new EvaluationContext(evaluator, segmentCache, ruleBasedSegmentCache);
+
+        SplitChange change = Json.fromJson(load, SplitChange.class);
+        RuleBasedSegmentParser ruleBasedSegmentParser = new RuleBasedSegmentParser();
+        RuleBasedSegmentsToUpdate ruleBasedSegmentsToUpdate = processRuleBasedSegmentChanges(ruleBasedSegmentParser,
+                change.ruleBasedSegments.d);
+        ruleBasedSegmentCache.update(ruleBasedSegmentsToUpdate.getToAdd(), null, 123);
+        RuleBasedSegmentMatcher matcher = new RuleBasedSegmentMatcher("sample_rule_based_segment");
+        HashMap<String, Object> attrib1 =  new HashMap<String, Object>() {{
+            put("email", "mauro@split.io");
+        }};
+        HashMap<String, Object> attrib2 =  new HashMap<String, Object>() {{
+            put("email", "bilal@split.io");
+        }};
+        HashMap<String, Object> attrib3 =  new HashMap<String, Object>() {{
+            put("email", "pato@split.io");
+        }};
+        assertThat(matcher.match("mauro@split.io", null, attrib1, evaluationContext), is(false));
+        assertThat(matcher.match("bilal@split.io", null, attrib2, evaluationContext), is(false));
+        assertThat(matcher.match("pato@split.io", null, attrib3, evaluationContext), is(true));
+    }
+
+    @Test
+    public void usingRbsInExcludedTest() throws IOException {
+        String load = new String(Files.readAllBytes(Paths.get("src/test/resources/rule_base_segments2.json")), StandardCharsets.UTF_8);
+        Evaluator evaluator = Mockito.mock(Evaluator.class);
+        SegmentCache segmentCache = new SegmentCacheInMemoryImpl();
+        RuleBasedSegmentCache ruleBasedSegmentCache = new RuleBasedSegmentCacheInMemoryImp();
+        EvaluationContext evaluationContext = new EvaluationContext(evaluator, segmentCache, ruleBasedSegmentCache);
+
+        SplitChange change = Json.fromJson(load, SplitChange.class);
+        RuleBasedSegmentParser ruleBasedSegmentParser = new RuleBasedSegmentParser();
+        RuleBasedSegmentsToUpdate ruleBasedSegmentsToUpdate = processRuleBasedSegmentChanges(ruleBasedSegmentParser,
+                change.ruleBasedSegments.d);
+        ruleBasedSegmentCache.update(ruleBasedSegmentsToUpdate.getToAdd(), null, 123);
+        RuleBasedSegmentMatcher matcher = new RuleBasedSegmentMatcher("no_excludes");
+        HashMap<String, Object> attrib1 =  new HashMap<String, Object>() {{
+            put("email", "mauro@split.io");
+        }};
+        HashMap<String, Object> attrib2 =  new HashMap<String, Object>() {{
+            put("email", "bilal@split.io");
+        }};
+        assertThat(matcher.match("mauro@split.io", null, attrib1, evaluationContext), is(true));
         assertThat(matcher.match("bilal@split.io", null, attrib2, evaluationContext), is(true));
     }
 }
