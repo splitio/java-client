@@ -18,9 +18,6 @@ import static com.google.common.base.Preconditions.checkNotNull;
  * @author adil
  */
 public class RuleBasedSegmentMatcher implements Matcher {
-    private final String standardType = "standard";
-    private final String ruleBasedType = "rule-based";
-
     private final String _segmentName;
 
     public RuleBasedSegmentMatcher(String segmentName) {
@@ -41,20 +38,28 @@ public class RuleBasedSegmentMatcher implements Matcher {
             return false;
         }
 
-        for (ExcludedSegments segment: parsedRuleBasedSegment.excludedSegments()) {
-            if (segment.type.equals(standardType) && evaluationContext.getSegmentCache().isInSegment(segment.name, (String) matchValue)) {
-                return false;
+        if (matchExcludedSegments(parsedRuleBasedSegment.excludedSegments(), matchValue, bucketingKey, attributes, evaluationContext)) {
+            return false;
+        }
+
+        return matchConditions(parsedRuleBasedSegment.parsedConditions(), matchValue, bucketingKey, attributes, evaluationContext);
+    }
+
+    private boolean matchExcludedSegments(List<ExcludedSegments> excludedSegments, Object matchValue, String bucketingKey, Map<String, Object> attributes, EvaluationContext evaluationContext) {
+        for (ExcludedSegments excludedSegment: excludedSegments) {
+            if (excludedSegment.isStandard() && evaluationContext.getSegmentCache().isInSegment(excludedSegment.name, (String) matchValue)) {
+                return true;
             }
 
-            if (segment.type.equals(ruleBasedType)) {
-                List<ParsedCondition> conditions = evaluationContext.getRuleBasedSegmentCache().get(segment.name).parsedConditions();
-                if (matchConditions(conditions, matchValue, bucketingKey, attributes, evaluationContext)) {
+            if (excludedSegment.isRuleBased()) {
+                RuleBasedSegmentMatcher excludedRbsMatcher = new RuleBasedSegmentMatcher(excludedSegment.name);
+                if (excludedRbsMatcher.match(matchValue, bucketingKey, attributes, evaluationContext)) {
                     return true;
                 }
             }
         }
 
-        return matchConditions(parsedRuleBasedSegment.parsedConditions(), matchValue, bucketingKey, attributes, evaluationContext);
+        return  false;
     }
 
     private boolean matchConditions(List<ParsedCondition> conditions, Object matchValue, String bucketingKey,

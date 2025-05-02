@@ -1,7 +1,6 @@
 package io.split.engine.matchers;
 
 import com.google.common.collect.Lists;
-import com.google.common.collect.Sets;
 import io.split.client.dtos.ConditionType;
 import io.split.client.dtos.MatcherCombiner;
 import io.split.client.dtos.SplitChange;
@@ -14,11 +13,9 @@ import io.split.engine.experiments.ParsedRuleBasedSegment;
 import io.split.engine.experiments.RuleBasedSegmentParser;
 import io.split.engine.matchers.strings.WhitelistMatcher;
 import io.split.storages.RuleBasedSegmentCache;
-import io.split.storages.RuleBasedSegmentCacheConsumer;
 import io.split.storages.SegmentCache;
 import io.split.storages.memory.RuleBasedSegmentCacheInMemoryImp;
 import io.split.storages.memory.SegmentCacheInMemoryImpl;
-import okhttp3.mockwebserver.MockResponse;
 import org.junit.Test;
 import org.mockito.Mockito;
 
@@ -29,7 +26,6 @@ import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
-import java.util.Set;
 
 import static io.split.client.utils.RuleBasedSegmentProcessor.processRuleBasedSegmentChanges;
 import static org.hamcrest.Matchers.is;
@@ -128,14 +124,14 @@ public class RuleBasedSegmentMatcherTest {
         RuleBasedSegmentsToUpdate ruleBasedSegmentsToUpdate = processRuleBasedSegmentChanges(ruleBasedSegmentParser,
                 change.ruleBasedSegments.d);
         ruleBasedSegmentCache.update(ruleBasedSegmentsToUpdate.getToAdd(), null, 123);
-        RuleBasedSegmentMatcher matcher = new RuleBasedSegmentMatcher("no_excludes");
+        RuleBasedSegmentMatcher matcher = new RuleBasedSegmentMatcher("sample_rule_based_segment");
         HashMap<String, Object> attrib1 =  new HashMap<String, Object>() {{
             put("email", "mauro@split.io");
         }};
         HashMap<String, Object> attrib2 =  new HashMap<String, Object>() {{
-            put("email", "bilal@split.io");
+            put("email", "bilal@harness.io");
         }};
-        assertThat(matcher.match("mauro@split.io", null, attrib1, evaluationContext), is(true));
-        assertThat(matcher.match("bilal@split.io", null, attrib2, evaluationContext), is(true));
+        assertThat(matcher.match("mauro", null, attrib1, evaluationContext), is(false));
+        assertThat(matcher.match("bilal", null, attrib2, evaluationContext), is(true));
     }
 }
