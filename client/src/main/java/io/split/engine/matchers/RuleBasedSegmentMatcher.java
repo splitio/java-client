@@ -45,7 +45,8 @@ public class RuleBasedSegmentMatcher implements Matcher {
         return matchConditions(parsedRuleBasedSegment.parsedConditions(), matchValue, bucketingKey, attributes, evaluationContext);
     }
 
-    private boolean matchExcludedSegments(List<ExcludedSegments> excludedSegments, Object matchValue, String bucketingKey, Map<String, Object> attributes, EvaluationContext evaluationContext) {
+    private boolean matchExcludedSegments(List<ExcludedSegments> excludedSegments, Object matchValue, String bucketingKey,
+                                          Map<String, Object> attributes, EvaluationContext evaluationContext) {
         for (ExcludedSegments excludedSegment: excludedSegments) {
             if (excludedSegment.isStandard() && evaluationContext.getSegmentCache().isInSegment(excludedSegment.name, (String) matchValue)) {
                 return true;
