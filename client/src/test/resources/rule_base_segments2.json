@@ -23,7 +23,7 @@
               "negate": false,
               "whitelistMatcherData": {
                 "whitelist": [
-                  "@split.io"
+                  "@harness.io"
                 ]
               }
             }
