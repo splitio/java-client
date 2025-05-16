@@ -1,6 +1,5 @@
 package io.split.client.dtos;
 
-import java.util.Arrays;
 import java.util.List;
 
 public class RuleBasedSegment {

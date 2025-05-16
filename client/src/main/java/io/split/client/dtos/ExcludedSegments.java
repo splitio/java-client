@@ -20,4 +20,8 @@ public class ExcludedSegments {
     public boolean isRuleBased() {
         return RULE_BASED_TYPE.equals(type);
     }
+
+    public String getSegmentName(){
+        return name;
+    }
 }
