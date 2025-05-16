@@ -34,7 +34,7 @@ public class ParsedRuleBasedSegmentTest {
                 Lists.newArrayList(new ParsedCondition(ConditionType.WHITELIST, segmentCombiningMatcher, null, "label")), "user",
                 123, Lists.newArrayList("mauro@test.io", "gaston@test.io"), excludedSegments);
 
-        Assert.assertEquals(Sets.newHashSet("employees"), parsedRuleBasedSegment.getSegmentsNames());
+        Assert.assertEquals(Sets.newHashSet("segment2", "segment1", "employees"), parsedRuleBasedSegment.getSegmentsNames());
         Assert.assertEquals("another_rule_based_segment", parsedRuleBasedSegment.ruleBasedSegment());
         Assert.assertEquals(Lists.newArrayList(new ParsedCondition(ConditionType.WHITELIST, segmentCombiningMatcher, null, "label")),
                 parsedRuleBasedSegment.parsedConditions());

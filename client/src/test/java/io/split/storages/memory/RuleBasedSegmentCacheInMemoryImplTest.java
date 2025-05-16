@@ -61,6 +61,6 @@ public class RuleBasedSegmentCacheInMemoryImplTest extends TestCase {
 
         ruleBasedSegmentCache.update(Lists.newArrayList(parsedRuleBasedSegment1, parsedRuleBasedSegment2), null, 123);
         assertEquals(Lists.newArrayList("another_rule_based_segment", "sample_rule_based_segment"), ruleBasedSegmentCache.ruleBasedSegmentNames());
-        assertEquals(Sets.newHashSet("employees"), ruleBasedSegmentCache.getSegments());
+        assertEquals(Sets.newHashSet("segment2", "segment1", "employees"), ruleBasedSegmentCache.getSegments());
     }
 }

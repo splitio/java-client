@@ -107,12 +107,20 @@ public class ParsedRuleBasedSegment {
     }
 
     public Set<String> getSegmentsNames() {
-        return parsedConditions().stream()
+        Set<String> segmentNames = excludedSegments()
+                .stream()
+                .filter(ExcludedSegments::isStandard)
+                .map(ExcludedSegments::getSegmentName)
+                .collect(Collectors.toSet());
+
+        segmentNames.addAll(parsedConditions().stream()
                 .flatMap(parsedCondition -> parsedCondition.matcher().attributeMatchers().stream())
                 .filter(ParsedRuleBasedSegment::isSegmentMatcher)
                 .map(ParsedRuleBasedSegment::asSegmentMatcherForEach)
                 .map(UserDefinedSegmentMatcher::getSegmentName)
-                .collect(Collectors.toSet());
+                .collect(Collectors.toSet()));
+
+        return  segmentNames;
     }
 
     private static boolean isSegmentMatcher(AttributeMatcher attributeMatcher) {

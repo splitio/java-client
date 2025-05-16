@@ -1,6 +1,6 @@
 package io.split.client.dtos;
 
-import java.util.Arrays;
+import java.util.ArrayList;
 import java.util.List;
 
 public class RuleBasedSegment {
@@ -17,7 +17,21 @@ public class RuleBasedSegment {
                 "name='" + name + '\'' +
                 ", status=" + status +
                 ", trafficTypeName='" + trafficTypeName + '\'' +
-                ", changeNumber=" + changeNumber +
+                ", changeNumber=" + changeNumber + '\'' +
+                excludedToString() + '\'' +
                 '}';
+    }
+
+    public String excludedToString() {
+        Excluded ts = excluded != null ? excluded : new Excluded();
+        if (ts.keys == null) {
+            ts.keys = new ArrayList<>();
+        }
+
+        if (ts.segments == null) {
+            ts.segments = new ArrayList<>();
+        }
+
+        return ", excludedKeys=" + ts.keys + '\'' + ", excludedSegments=" + ts.segments;
     }
 }
