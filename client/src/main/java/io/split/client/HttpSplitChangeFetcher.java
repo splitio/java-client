@@ -40,7 +40,7 @@ public final class HttpSplitChangeFetcher implements SplitChangeFetcher {
     private static final String SETS = "sets";
     private static final String SPEC = "s";
     private String specVersion = SPEC_1_3;
-    private int PROXY_CHECK_INTERVAL_MILLISECONDS_SS =  60000;//24 * 60 * 60 * 1000;
+    private int PROXY_CHECK_INTERVAL_MILLISECONDS_SS = 24 * 60 * 60 * 1000;
     private Long _lastProxyCheckTimestamp = 0L;
     private final SplitHttpClient _client;
     private final URI _target;
