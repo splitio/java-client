@@ -40,7 +40,7 @@ public final class HttpSplitChangeFetcher implements SplitChangeFetcher {
     private static final String SETS = "sets";
     private static final String SPEC = "s";
     private String specVersion = SPEC_1_3;
-    private int PROXY_CHECK_INTERVAL_MILLISECONDS_SS =  24 * 60 * 60 * 1000;
+    private int PROXY_CHECK_INTERVAL_MILLISECONDS_SS =  60000;//24 * 60 * 60 * 1000;
     private Long _lastProxyCheckTimestamp = 0L;
     private final SplitHttpClient _client;
     private final URI _target;
@@ -70,11 +70,13 @@ public final class HttpSplitChangeFetcher implements SplitChangeFetcher {
     public SplitChange fetch(long since, long sinceRBS, FetchOptions options) {
         long start = System.currentTimeMillis();
         try {
+            URI uri = buildURL(options, since, sinceRBS);
             if (specVersion.equals(SPEC_1_1) && (System.currentTimeMillis() - _lastProxyCheckTimestamp >= PROXY_CHECK_INTERVAL_MILLISECONDS_SS)) {
                 _log.info("Switching to new Feature flag spec ({}) and fetching.", SPEC_1_3);
                 specVersion = SPEC_1_3;
+                uri = buildURL(options, -1,-1);
             }
-            URI uri = buildURL(options, since, sinceRBS);
+
             SplitHttpResponse response = _client.get(uri, options, null);
             if (response.statusCode() < HttpStatus.SC_OK || response.statusCode() >= HttpStatus.SC_MULTIPLE_CHOICES) {
                 if (response.statusCode() == HttpStatus.SC_REQUEST_URI_TOO_LONG) {
