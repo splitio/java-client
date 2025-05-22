@@ -68,6 +68,7 @@ public final class SplitParser {
                 split.algo,
                 split.configurations,
                 split.sets,
-                split.impressionsDisabled);
+                split.impressionsDisabled,
+                split.prerequisites);
     }
 }

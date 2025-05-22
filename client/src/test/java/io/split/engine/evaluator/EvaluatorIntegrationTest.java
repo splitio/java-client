@@ -200,11 +200,11 @@ public class EvaluatorIntegrationTest {
         List<ParsedCondition> conditions = Lists.newArrayList(whitelistCondition, rollOutCondition);
         List<ParsedCondition> conditionsForRBS = Lists.newArrayList(ruleBasedSegmentCondition, rollOutCondition);
 
-        ParsedSplit parsedSplit1 = new ParsedSplit("split_1", 0, false, DEFAULT_TREATMENT_VALUE, conditions, TRAFFIC_TYPE_VALUE, 223366551, 100, 0, 2, null, new HashSet<>(), true);
-        ParsedSplit parsedSplit2 = new ParsedSplit("split_2", 0, true, DEFAULT_TREATMENT_VALUE, conditions, TRAFFIC_TYPE_VALUE, 223366552, 100, 0, 2, null, new HashSet<>(), true);
-        ParsedSplit parsedSplit3 = new ParsedSplit("split_3", 0, false, DEFAULT_TREATMENT_VALUE, conditions, TRAFFIC_TYPE_VALUE, 223366554, 100, 0, 2, null, new HashSet<>(), true);
-        ParsedSplit parsedSplit4 = new ParsedSplit("split_test", 0, killed, DEFAULT_TREATMENT_VALUE, conditions, TRAFFIC_TYPE_VALUE, 223366555, trafficAllocation, 0, 2, null, new HashSet<>(), true);
-        ParsedSplit parsedSplit5 = new ParsedSplit("split_5", 0, false, DEFAULT_TREATMENT_VALUE, conditionsForRBS, TRAFFIC_TYPE_VALUE, 223366554, 100, 0, 2, null, new HashSet<>(), true);
+        ParsedSplit parsedSplit1 = new ParsedSplit("split_1", 0, false, DEFAULT_TREATMENT_VALUE, conditions, TRAFFIC_TYPE_VALUE, 223366551, 100, 0, 2, null, new HashSet<>(), true, null);
+        ParsedSplit parsedSplit2 = new ParsedSplit("split_2", 0, true, DEFAULT_TREATMENT_VALUE, conditions, TRAFFIC_TYPE_VALUE, 223366552, 100, 0, 2, null, new HashSet<>(), true, null);
+        ParsedSplit parsedSplit3 = new ParsedSplit("split_3", 0, false, DEFAULT_TREATMENT_VALUE, conditions, TRAFFIC_TYPE_VALUE, 223366554, 100, 0, 2, null, new HashSet<>(), true, null);
+        ParsedSplit parsedSplit4 = new ParsedSplit("split_test", 0, killed, DEFAULT_TREATMENT_VALUE, conditions, TRAFFIC_TYPE_VALUE, 223366555, trafficAllocation, 0, 2, null, new HashSet<>(), true, null);
+        ParsedSplit parsedSplit5 = new ParsedSplit("split_5", 0, false, DEFAULT_TREATMENT_VALUE, conditionsForRBS, TRAFFIC_TYPE_VALUE, 223366554, 100, 0, 2, null, new HashSet<>(), true, null);
         splitCache.putMany(Stream.of(parsedSplit1, parsedSplit2, parsedSplit3, parsedSplit4, parsedSplit5).collect(Collectors.toList()));
 
         ParsedRuleBasedSegment parsedRuleBasedSegment = new ParsedRuleBasedSegment("sample_rule_based_segment",
