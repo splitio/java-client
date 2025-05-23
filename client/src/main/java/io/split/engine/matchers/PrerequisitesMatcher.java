@@ -25,7 +25,8 @@ public class PrerequisitesMatcher implements Matcher {
             return false;
         }
         for (Prerequisites prerequisites : _prerequisites) {
-            String treatment = evaluationContext.getEvaluator().evaluateFeature((String) matchValue, bucketingKey, prerequisites.featureFlagName, attributes). treatment;
+            String treatment = evaluationContext.getEvaluator().evaluateFeature((String) matchValue, bucketingKey,
+                    prerequisites.featureFlagName, attributes). treatment;
             if (!prerequisites.treatments.contains(treatment)) {
                 return false;
             }
@@ -37,7 +38,8 @@ public class PrerequisitesMatcher implements Matcher {
     public String toString() {
         StringBuilder bldr = new StringBuilder();
         bldr.append("prerequisites: ");
-        bldr.append(this._prerequisites.stream().map(pr -> pr.featureFlagName + " " + pr.treatments.toString()).map(Object::toString).collect(Collectors.joining(", ")));
+        bldr.append(this._prerequisites.stream().map(pr -> pr.featureFlagName + " " +
+                pr.treatments.toString()).map(Object::toString).collect(Collectors.joining(", ")));
         return bldr.toString();
     }
 
