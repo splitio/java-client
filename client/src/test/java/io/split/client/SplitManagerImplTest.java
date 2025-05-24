@@ -3,6 +3,7 @@ package io.split.client;
 import com.google.common.collect.Lists;
 
 import io.split.client.api.SplitView;
+import io.split.client.dtos.Prerequisites;
 import io.split.client.dtos.Split;
 import io.split.client.dtos.SplitChange;
 import io.split.client.utils.Json;
@@ -66,7 +67,11 @@ public class SplitManagerImplTest {
         String existent = "existent";
 
         SplitCacheConsumer splitCacheConsumer = mock(SplitCacheConsumer.class);
-        ParsedSplit response = ParsedSplit.createParsedSplitForTests("FeatureName", 123, true, "off", Lists.newArrayList(getTestCondition("off")), "traffic", 456L, 1, new HashSet<>(), false);
+        Prerequisites prereq = new Prerequisites();
+        prereq.featureFlagName = "feature1";
+        prereq.treatments = Lists.newArrayList("on");
+        ParsedSplit response = ParsedSplit.createParsedSplitForTests("FeatureName", 123, true, "off", Lists.newArrayList(getTestCondition("off")), "traffic", 456L, 1, new HashSet<>(), false,
+                Lists.newArrayList(prereq));
         when(splitCacheConsumer.get(existent)).thenReturn(response);
 
         SplitManagerImpl splitManager = new SplitManagerImpl(splitCacheConsumer,
@@ -81,6 +86,7 @@ public class SplitManagerImplTest {
         Assert.assertEquals("off", theOne.treatments.get(0));
         Assert.assertEquals(0, theOne.configs.size());
         Assert.assertEquals("off", theOne.defaultTreatment);
+        Assert.assertEquals(prereq, theOne.prerequisites.get(0));
     }
 
     @Test
@@ -92,7 +98,7 @@ public class SplitManagerImplTest {
         Map<String, String> configurations = new HashMap<>();
         configurations.put(Treatments.OFF, "{\"size\" : 30}");
 
-        ParsedSplit response = ParsedSplit.createParsedSplitForTests("FeatureName", 123, true, "off", Lists.newArrayList(getTestCondition("off")), "traffic", 456L, 1, configurations, new HashSet<>(), false);
+        ParsedSplit response = ParsedSplit.createParsedSplitForTests("FeatureName", 123, true, "off", Lists.newArrayList(getTestCondition("off")), "traffic", 456L, 1, configurations, new HashSet<>(), false, null);
         when(splitCacheConsumer.get(existent)).thenReturn(response);
 
         SplitManagerImpl splitManager = new SplitManagerImpl(splitCacheConsumer,
@@ -128,7 +134,7 @@ public class SplitManagerImplTest {
         List<ParsedSplit> parsedSplits = Lists.newArrayList();
         SDKReadinessGates gates = mock(SDKReadinessGates.class);
         when(gates.isSDKReady()).thenReturn(false);
-        ParsedSplit response = ParsedSplit.createParsedSplitForTests("FeatureName", 123, true, "off", Lists.newArrayList(getTestCondition("off")), "traffic", 456L, 1, new HashSet<>(), false);
+        ParsedSplit response = ParsedSplit.createParsedSplitForTests("FeatureName", 123, true, "off", Lists.newArrayList(getTestCondition("off")), "traffic", 456L, 1, new HashSet<>(), false, null);
         parsedSplits.add(response);
 
         when(splitCacheConsumer.getAll()).thenReturn(parsedSplits);
@@ -203,7 +209,7 @@ public class SplitManagerImplTest {
         String existent = "existent";
         SplitCacheConsumer splitCacheConsumer = mock(SplitCacheConsumer.class);
         ParsedSplit response = ParsedSplit.createParsedSplitForTests("FeatureName", 123, true, "off",
-                Lists.newArrayList(getTestCondition("off")), "traffic", 456L, 1, new HashSet<>(Arrays.asList("set1", "set2", "set3")), false);
+                Lists.newArrayList(getTestCondition("off")), "traffic", 456L, 1, new HashSet<>(Arrays.asList("set1", "set2", "set3")), false, null);
         when(splitCacheConsumer.get(existent)).thenReturn(response);
 
         SplitManagerImpl splitManager = new SplitManagerImpl(splitCacheConsumer,
@@ -218,7 +224,7 @@ public class SplitManagerImplTest {
         String existent = "existent";
         SplitCacheConsumer splitCacheConsumer = mock(SplitCacheConsumer.class);
         ParsedSplit response = ParsedSplit.createParsedSplitForTests("FeatureName", 123, true, "off",
-                Lists.newArrayList(getTestCondition("off")), "traffic", 456L, 1, null, false);
+                Lists.newArrayList(getTestCondition("off")), "traffic", 456L, 1, null, false, null);
         when(splitCacheConsumer.get(existent)).thenReturn(response);
 
         SplitManagerImpl splitManager = new SplitManagerImpl(splitCacheConsumer,

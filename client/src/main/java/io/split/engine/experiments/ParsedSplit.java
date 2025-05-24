@@ -1,6 +1,7 @@
 package io.split.engine.experiments;
 
 import com.google.common.collect.ImmutableList;
+import io.split.client.dtos.Prerequisites;
 import io.split.engine.matchers.AttributeMatcher;
 import io.split.engine.matchers.RuleBasedSegmentMatcher;
 import io.split.engine.matchers.UserDefinedSegmentMatcher;
@@ -34,6 +35,7 @@ public class ParsedSplit {
     private final Map<String, String> _configurations;
     private final HashSet<String> _flagSets;
     private final boolean _impressionsDisabled;
+    private List<Prerequisites> _prerequisites;
 
     public static ParsedSplit createParsedSplitForTests(
             String feature,
@@ -45,7 +47,8 @@ public class ParsedSplit {
             long changeNumber,
             int algo,
             HashSet<String> flagSets,
-            boolean impressionsDisabled
+            boolean impressionsDisabled,
+            List<Prerequisites> prerequisites
     ) {
         return new ParsedSplit(
                 feature,
@@ -60,7 +63,8 @@ public class ParsedSplit {
                 algo,
                 null,
                 flagSets,
-                impressionsDisabled
+                impressionsDisabled,
+                prerequisites
         );
     }
 
@@ -75,7 +79,8 @@ public class ParsedSplit {
             int algo,
             Map<String, String> configurations,
             HashSet<String> flagSets,
-            boolean impressionsDisabled
+            boolean impressionsDisabled,
+            List<Prerequisites> prerequisites
     ) {
         return new ParsedSplit(
                 feature,
@@ -90,7 +95,8 @@ public class ParsedSplit {
                 algo,
                 configurations,
                 flagSets,
-                impressionsDisabled
+                impressionsDisabled,
+                prerequisites
         );
     }
 
@@ -107,7 +113,8 @@ public class ParsedSplit {
             int algo,
             Map<String, String> configurations,
             HashSet<String> flagSets,
-            boolean impressionsDisabled
+            boolean impressionsDisabled,
+            List<Prerequisites> prerequisites
     ) {
         _split = feature;
         _seed = seed;
@@ -125,6 +132,7 @@ public class ParsedSplit {
         _configurations = configurations;
         _flagSets = flagSets;
         _impressionsDisabled = impressionsDisabled;
+        _prerequisites = prerequisites;
     }
 
     public String feature() {
@@ -171,6 +179,7 @@ public class ParsedSplit {
     public boolean impressionsDisabled() {
         return _impressionsDisabled;
     }
+    public List<Prerequisites> prerequisites() { return _prerequisites; }
 
     @Override
     public int hashCode() {
@@ -205,7 +214,8 @@ public class ParsedSplit {
                 && _changeNumber == other._changeNumber
                 && _algo == other._algo
                 && _configurations == null ? other._configurations == null : _configurations.equals(other._configurations)
-                && _impressionsDisabled == other._impressionsDisabled;
+                && _impressionsDisabled == other._impressionsDisabled
+                && _prerequisites == other._prerequisites;
     }
 
     @Override
@@ -231,6 +241,9 @@ public class ParsedSplit {
         bldr.append(_configurations);
         bldr.append(", impressionsDisabled:");
         bldr.append(_impressionsDisabled);
+        bldr.append(", prerequisites:");
+        bldr.append(_prerequisites);
+
         return bldr.toString();
 
     }
