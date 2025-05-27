@@ -35,7 +35,7 @@ public class ParsedSplit {
     private final Map<String, String> _configurations;
     private final HashSet<String> _flagSets;
     private final boolean _impressionsDisabled;
-    private PrerequisitesMatcher _prerequisites;
+    private PrerequisitesMatcher _prerequisitesMatcher;
 
     public static ParsedSplit createParsedSplitForTests(
             String feature,
@@ -48,7 +48,7 @@ public class ParsedSplit {
             int algo,
             HashSet<String> flagSets,
             boolean impressionsDisabled,
-            PrerequisitesMatcher prerequisites
+            PrerequisitesMatcher prerequisitesMatcher
     ) {
         return new ParsedSplit(
                 feature,
@@ -64,7 +64,7 @@ public class ParsedSplit {
                 null,
                 flagSets,
                 impressionsDisabled,
-                prerequisites
+                prerequisitesMatcher
         );
     }
 
@@ -80,7 +80,7 @@ public class ParsedSplit {
             Map<String, String> configurations,
             HashSet<String> flagSets,
             boolean impressionsDisabled,
-            PrerequisitesMatcher prerequisites
+            PrerequisitesMatcher prerequisitesMatcher
     ) {
         return new ParsedSplit(
                 feature,
@@ -96,7 +96,7 @@ public class ParsedSplit {
                 configurations,
                 flagSets,
                 impressionsDisabled,
-                prerequisites
+                prerequisitesMatcher
         );
     }
 
@@ -114,7 +114,7 @@ public class ParsedSplit {
             Map<String, String> configurations,
             HashSet<String> flagSets,
             boolean impressionsDisabled,
-            PrerequisitesMatcher prerequisites
+            PrerequisitesMatcher prerequisitesMatcher
     ) {
         _split = feature;
         _seed = seed;
@@ -132,7 +132,7 @@ public class ParsedSplit {
         _configurations = configurations;
         _flagSets = flagSets;
         _impressionsDisabled = impressionsDisabled;
-        _prerequisites = prerequisites;
+        _prerequisitesMatcher = prerequisitesMatcher;
     }
 
     public String feature() {
@@ -179,7 +179,7 @@ public class ParsedSplit {
     public boolean impressionsDisabled() {
         return _impressionsDisabled;
     }
-    public PrerequisitesMatcher prerequisites() { return _prerequisites; }
+    public PrerequisitesMatcher prerequisitesMatcher() { return _prerequisitesMatcher; }
 
     @Override
     public int hashCode() {
@@ -215,7 +215,7 @@ public class ParsedSplit {
                 && _algo == other._algo
                 && _configurations == null ? other._configurations == null : _configurations.equals(other._configurations)
                 && _impressionsDisabled == other._impressionsDisabled
-                && _prerequisites == other._prerequisites;
+                && _prerequisitesMatcher == other._prerequisitesMatcher;
     }
 
     @Override
@@ -242,7 +242,7 @@ public class ParsedSplit {
         bldr.append(", impressionsDisabled:");
         bldr.append(_impressionsDisabled);
         bldr.append(", prerequisites:");
-        bldr.append(_prerequisites);
+        bldr.append(_prerequisitesMatcher);
 
         return bldr.toString();
 

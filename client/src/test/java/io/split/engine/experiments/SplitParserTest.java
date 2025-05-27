@@ -153,7 +153,7 @@ public class SplitParserTest {
         Assert.assertEquals(actual.trafficAllocationSeed(), expected.trafficAllocationSeed());
         Assert.assertEquals(actual.getSegmentsNames(), expected.getSegmentsNames());
         Assert.assertEquals(actual.getRuleBasedSegmentsNames(), expected.getRuleBasedSegmentsNames());
-        Assert.assertEquals(actual.prerequisites().toString(), expected.prerequisites().toString());
+        Assert.assertEquals(actual.prerequisitesMatcher().toString(), expected.prerequisitesMatcher().toString());
 
         Assert.assertEquals(actual.configurations().get("on"), configurations.get("on"));
     }

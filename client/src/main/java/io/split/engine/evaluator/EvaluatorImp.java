@@ -100,7 +100,7 @@ public class EvaluatorImp implements Evaluator {
 
             String bk = (bucketingKey == null) ? matchingKey : bucketingKey;
 
-            if (!parsedSplit.prerequisites().match(matchingKey, bk, attributes, _evaluationContext)) {
+            if (!parsedSplit.prerequisitesMatcher().match(matchingKey, bk, attributes, _evaluationContext)) {
                 return new TreatmentLabelAndChangeNumber(
                         parsedSplit.defaultTreatment(),
                         Labels.PREREQUISITES_NOT_MET,
