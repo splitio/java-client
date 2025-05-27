@@ -15,6 +15,8 @@ public class PrerequisitesMatcher implements Matcher {
         _prerequisites = prerequisites;
     }
 
+    public List<Prerequisites> getPrerequisites() { return _prerequisites; }
+
     @Override
     public boolean match(Object matchValue, String bucketingKey, Map<String, Object> attributes, EvaluationContext evaluationContext) {
         if (matchValue == null) {
