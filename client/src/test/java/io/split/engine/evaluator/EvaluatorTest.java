@@ -7,6 +7,7 @@ import io.split.client.utils.Json;
 import io.split.engine.experiments.ParsedCondition;
 import io.split.engine.experiments.ParsedSplit;
 import io.split.engine.matchers.CombiningMatcher;
+import io.split.engine.matchers.PrerequisitesMatcher;
 import io.split.storages.RuleBasedSegmentCacheConsumer;
 import io.split.storages.SegmentCacheConsumer;
 import io.split.storages.SplitCacheConsumer;
@@ -70,7 +71,7 @@ public class EvaluatorTest {
 
     @Test
     public void evaluateWhenSplitIsKilledReturnDefaultTreatment() {
-        ParsedSplit split = ParsedSplit.createParsedSplitForTests(SPLIT_NAME, 0, true, DEFAULT_TREATMENT_VALUE, _conditions, TRAFFIC_TYPE_VALUE, CHANGE_NUMBER, 2, new HashSet<>(), true, null);
+        ParsedSplit split = ParsedSplit.createParsedSplitForTests(SPLIT_NAME, 0, true, DEFAULT_TREATMENT_VALUE, _conditions, TRAFFIC_TYPE_VALUE, CHANGE_NUMBER, 2, new HashSet<>(), true, new PrerequisitesMatcher(null));
         Mockito.when(_splitCacheConsumer.get(SPLIT_NAME)).thenReturn(split);
 
         EvaluatorImp.TreatmentLabelAndChangeNumber result = _evaluator.evaluateFeature(MATCHING_KEY, BUCKETING_KEY, SPLIT_NAME, null);
@@ -82,7 +83,7 @@ public class EvaluatorTest {
 
     @Test
     public void evaluateWithoutConditionsReturnDefaultTreatment() {
-        ParsedSplit split = ParsedSplit.createParsedSplitForTests(SPLIT_NAME, 0, false, DEFAULT_TREATMENT_VALUE, _conditions, TRAFFIC_TYPE_VALUE, CHANGE_NUMBER, 2, new HashSet<>(), true, null);
+        ParsedSplit split = ParsedSplit.createParsedSplitForTests(SPLIT_NAME, 0, false, DEFAULT_TREATMENT_VALUE, _conditions, TRAFFIC_TYPE_VALUE, CHANGE_NUMBER, 2, new HashSet<>(), true, new PrerequisitesMatcher(null));
         Mockito.when(_splitCacheConsumer.get(SPLIT_NAME)).thenReturn(split);
 
         EvaluatorImp.TreatmentLabelAndChangeNumber result = _evaluator.evaluateFeature(MATCHING_KEY, BUCKETING_KEY, SPLIT_NAME, null);
@@ -101,7 +102,7 @@ public class EvaluatorTest {
         ParsedCondition condition = new ParsedCondition(ConditionType.ROLLOUT, _matcher,_partitions, TEST_LABEL_VALUE);
         _conditions.add(condition);
 
-        ParsedSplit split = new ParsedSplit(SPLIT_NAME, 0, false, DEFAULT_TREATMENT_VALUE, _conditions, TRAFFIC_TYPE_VALUE, CHANGE_NUMBER, 10, 12, 2, _configurations, new HashSet<>(), true, null);
+        ParsedSplit split = new ParsedSplit(SPLIT_NAME, 0, false, DEFAULT_TREATMENT_VALUE, _conditions, TRAFFIC_TYPE_VALUE, CHANGE_NUMBER, 10, 12, 2, _configurations, new HashSet<>(), true, new PrerequisitesMatcher(null));
 
         Mockito.when(_splitCacheConsumer.get(SPLIT_NAME)).thenReturn(split);
         Mockito.when(condition.matcher().match(MATCHING_KEY, BUCKETING_KEY, null, _evaluationContext)).thenReturn(true);
@@ -122,7 +123,7 @@ public class EvaluatorTest {
         ParsedCondition condition = new ParsedCondition(ConditionType.ROLLOUT, _matcher, _partitions, TEST_LABEL_VALUE);
         _conditions.add(condition);
 
-        ParsedSplit split = new ParsedSplit(SPLIT_NAME, 0, false, DEFAULT_TREATMENT_VALUE, _conditions, TRAFFIC_TYPE_VALUE, CHANGE_NUMBER, 60, 18, 2, _configurations, new HashSet<>(), true, null);
+        ParsedSplit split = new ParsedSplit(SPLIT_NAME, 0, false, DEFAULT_TREATMENT_VALUE, _conditions, TRAFFIC_TYPE_VALUE, CHANGE_NUMBER, 60, 18, 2, _configurations, new HashSet<>(), true, new PrerequisitesMatcher(null));
 
         Mockito.when(_splitCacheConsumer.get(SPLIT_NAME)).thenReturn(split);
         Mockito.when(condition.matcher().match(Mockito.anyString(), Mockito.anyString(), Mockito.anyObject(), Mockito.anyObject())).thenReturn(true);
@@ -143,7 +144,7 @@ public class EvaluatorTest {
         ParsedCondition condition = new ParsedCondition(ConditionType.WHITELIST, _matcher, _partitions, "test whitelist label");
         _conditions.add(condition);
 
-        ParsedSplit split = new ParsedSplit(SPLIT_NAME, 0, false, DEFAULT_TREATMENT_VALUE, _conditions, TRAFFIC_TYPE_VALUE, CHANGE_NUMBER, 60, 18, 2, _configurations, new HashSet<>(), true, null);
+        ParsedSplit split = new ParsedSplit(SPLIT_NAME, 0, false, DEFAULT_TREATMENT_VALUE, _conditions, TRAFFIC_TYPE_VALUE, CHANGE_NUMBER, 60, 18, 2, _configurations, new HashSet<>(), true, new PrerequisitesMatcher(null));
 
         Mockito.when(_splitCacheConsumer.get(SPLIT_NAME)).thenReturn(split);
         Mockito.when(condition.matcher().match(Mockito.anyString(), Mockito.anyString(), Mockito.anyObject(), Mockito.anyObject())).thenReturn(true);
@@ -157,7 +158,7 @@ public class EvaluatorTest {
 
     @Test
     public void evaluateWithSets() {
-        ParsedSplit split = ParsedSplit.createParsedSplitForTests(SPLIT_NAME, 0, false, DEFAULT_TREATMENT_VALUE, _conditions, TRAFFIC_TYPE_VALUE, CHANGE_NUMBER, 2, new HashSet<>(Arrays.asList("set1", "set2")), true, null);
+        ParsedSplit split = ParsedSplit.createParsedSplitForTests(SPLIT_NAME, 0, false, DEFAULT_TREATMENT_VALUE, _conditions, TRAFFIC_TYPE_VALUE, CHANGE_NUMBER, 2, new HashSet<>(Arrays.asList("set1", "set2")), true, new PrerequisitesMatcher(null));
         List<String> sets = new ArrayList<>(Arrays.asList("set1", "empty_set"));
         Map<String, HashSet<String>> flagSets = new HashMap<>();
         flagSets.put("set1", new HashSet<>(Arrays.asList(SPLIT_NAME)));
@@ -178,7 +179,7 @@ public class EvaluatorTest {
 
     @Test
     public void evaluateWithSetsNotHaveFlags() {
-        ParsedSplit split = ParsedSplit.createParsedSplitForTests(SPLIT_NAME, 0, false, DEFAULT_TREATMENT_VALUE, _conditions, TRAFFIC_TYPE_VALUE, CHANGE_NUMBER, 2, new HashSet<>(Arrays.asList("set1", "set2")), true, null);
+        ParsedSplit split = ParsedSplit.createParsedSplitForTests(SPLIT_NAME, 0, false, DEFAULT_TREATMENT_VALUE, _conditions, TRAFFIC_TYPE_VALUE, CHANGE_NUMBER, 2, new HashSet<>(Arrays.asList("set1", "set2")), true, new PrerequisitesMatcher(null));
         List<String> sets = new ArrayList<>(Arrays.asList("set2"));
         Map<String, HashSet<String>> flagSets = new HashMap<>();
         Mockito.when(_splitCacheConsumer.getNamesByFlagSets(sets)).thenReturn(flagSets);
@@ -199,8 +200,8 @@ public class EvaluatorTest {
         _conditions.add(condition);
         List<Prerequisites> prerequisites = Arrays.asList(Json.fromJson("{\"n\": \"split1\", \"ts\": [\"" + TREATMENT_VALUE + "\"]}", Prerequisites.class));
 
-        ParsedSplit split = new ParsedSplit(SPLIT_NAME, 0, false, DEFAULT_TREATMENT_VALUE, _conditions, TRAFFIC_TYPE_VALUE, CHANGE_NUMBER, 60, 18, 2, _configurations, new HashSet<>(), true, prerequisites);
-        ParsedSplit split1 = new ParsedSplit("split1", 0, false, DEFAULT_TREATMENT_VALUE, _conditions, TRAFFIC_TYPE_VALUE, CHANGE_NUMBER, 60, 18, 2, _configurations, new HashSet<>(), true, null);
+        ParsedSplit split = new ParsedSplit(SPLIT_NAME, 0, false, DEFAULT_TREATMENT_VALUE, _conditions, TRAFFIC_TYPE_VALUE, CHANGE_NUMBER, 60, 18, 2, _configurations, new HashSet<>(), true, new PrerequisitesMatcher(prerequisites));
+        ParsedSplit split1 = new ParsedSplit("split1", 0, false, DEFAULT_TREATMENT_VALUE, _conditions, TRAFFIC_TYPE_VALUE, CHANGE_NUMBER, 60, 18, 2, _configurations, new HashSet<>(), true, new PrerequisitesMatcher(null));
 
         Mockito.when(_splitCacheConsumer.get(SPLIT_NAME)).thenReturn(split);
         Mockito.when(_splitCacheConsumer.get("split1")).thenReturn(split1);
@@ -218,7 +219,7 @@ public class EvaluatorTest {
         assertEquals(CHANGE_NUMBER, result.changeNumber);
 
         // if split is killed, label should be killed.
-        split = new ParsedSplit(SPLIT_NAME, 0, true, DEFAULT_TREATMENT_VALUE, _conditions, TRAFFIC_TYPE_VALUE, CHANGE_NUMBER, 60, 18, 2, _configurations, new HashSet<>(), true, prerequisites);
+        split = new ParsedSplit(SPLIT_NAME, 0, true, DEFAULT_TREATMENT_VALUE, _conditions, TRAFFIC_TYPE_VALUE, CHANGE_NUMBER, 60, 18, 2, _configurations, new HashSet<>(), true, new PrerequisitesMatcher(prerequisites));
         Mockito.when(_splitCacheConsumer.get(SPLIT_NAME)).thenReturn(split);
         result = _evaluator.evaluateFeature(MATCHING_KEY, BUCKETING_KEY, SPLIT_NAME, null);
         assertEquals(DEFAULT_TREATMENT_VALUE, result.treatment);

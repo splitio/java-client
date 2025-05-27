@@ -43,8 +43,10 @@ public class PrerequisitesMatcher implements Matcher {
     public String toString() {
         StringBuilder bldr = new StringBuilder();
         bldr.append("prerequisites: ");
-        bldr.append(this._prerequisites.stream().map(pr -> pr.featureFlagName + " " +
-                pr.treatments.toString()).map(Object::toString).collect(Collectors.joining(", ")));
+        if (this._prerequisites != null) {
+            bldr.append(this._prerequisites.stream().map(pr -> pr.featureFlagName + " " +
+                    pr.treatments.toString()).map(Object::toString).collect(Collectors.joining(", ")));
+        }
         return bldr.toString();
     }
 

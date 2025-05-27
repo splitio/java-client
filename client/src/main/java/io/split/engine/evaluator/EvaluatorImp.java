@@ -4,7 +4,6 @@ import io.split.client.dtos.ConditionType;
 import io.split.client.exceptions.ChangeNumberExceptionWrapper;
 import io.split.engine.experiments.ParsedCondition;
 import io.split.engine.experiments.ParsedSplit;
-import io.split.engine.matchers.PrerequisitesMatcher;
 import io.split.engine.splitter.Splitter;
 import io.split.grammar.Treatments;
 import io.split.storages.RuleBasedSegmentCacheConsumer;
@@ -28,7 +27,6 @@ public class EvaluatorImp implements Evaluator {
     private final RuleBasedSegmentCacheConsumer _ruleBasedSegmentCacheConsumer;
     private final EvaluationContext _evaluationContext;
     private final SplitCacheConsumer _splitCacheConsumer;
-    private PrerequisitesMatcher _prerequisitesMatcher;
 
     public EvaluatorImp(SplitCacheConsumer splitCacheConsumer, SegmentCacheConsumer segmentCache,
                         RuleBasedSegmentCacheConsumer ruleBasedSegmentCacheConsumer) {
@@ -102,7 +100,7 @@ public class EvaluatorImp implements Evaluator {
 
             String bk = (bucketingKey == null) ? matchingKey : bucketingKey;
 
-            if (!_prerequisitesMatcher.match(matchingKey, bk, attributes, _evaluationContext)) {
+            if (!parsedSplit.prerequisites().match(matchingKey, bk, attributes, _evaluationContext)) {
                 return new TreatmentLabelAndChangeNumber(
                         parsedSplit.defaultTreatment(),
                         Labels.PREREQUISITES_NOT_MET,
@@ -169,7 +167,6 @@ public class EvaluatorImp implements Evaluator {
             if (parsedSplit == null) {
                 return new TreatmentLabelAndChangeNumber(Treatments.CONTROL, Labels.DEFINITION_NOT_FOUND);
             }
-            _prerequisitesMatcher = new PrerequisitesMatcher(parsedSplit.prerequisites());
             return getTreatment(matchingKey, bucketingKey, parsedSplit, attributes);
         } catch (ChangeNumberExceptionWrapper e) {
             _log.error("Evaluator Exception", e.wrappedException());
