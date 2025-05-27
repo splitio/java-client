@@ -48,5 +48,8 @@ public class PrerequisitesMatcherTest {
         Mockito.when(evaluator.evaluateFeature("user", "user", "split1", null)).thenReturn(new EvaluatorImp.TreatmentLabelAndChangeNumber("on", ""));
         Assert.assertFalse(matcher.match(null, null, null, evaluationContext));
         Assert.assertFalse(matcher.match(123, null, null, evaluationContext));
+
+        matcher = new PrerequisitesMatcher(null);
+        Assert.assertFalse(matcher.match(123, null, null, evaluationContext));
     }
 }
