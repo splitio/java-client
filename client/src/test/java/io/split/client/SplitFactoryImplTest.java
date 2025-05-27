@@ -8,6 +8,7 @@ import io.split.storages.pluggable.domain.UserStorageWrapper;
 import io.split.telemetry.storage.TelemetryStorage;
 import io.split.telemetry.synchronizer.TelemetrySynchronizer;
 import junit.framework.TestCase;
+import org.awaitility.Awaitility;
 import org.junit.Assert;
 import org.junit.Ignore;
 import org.junit.Test;
@@ -23,6 +24,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.net.URISyntaxException;
+import java.util.concurrent.TimeUnit;
 
 
 public class SplitFactoryImplTest extends TestCase {
@@ -197,7 +199,10 @@ public class SplitFactoryImplTest extends TestCase {
         splitFactoryImpl.set(splitFactory, userStorageWrapper);
         assertNotNull(splitFactory.client());
         assertNotNull(splitFactory.manager());
-        Thread.sleep(2000);
+        Awaitility.await()
+                .atMost(5L, TimeUnit.SECONDS)
+                .untilAsserted(() -> Assert.assertTrue(userStorageWrapper.connect()));
+
         Mockito.verify(userStorageWrapper, Mockito.times(2)).connect();
     }
 
