@@ -1523,6 +1523,7 @@ public class SplitClientImplTest {
             assertEquals("on", client.getTreatmentsByFlagSet(randomKey, "set1", new HashMap<>()).get(test));
             assertEquals("{\"size\" : 30}", client.getTreatmentsWithConfigByFlagSet(key, "set1", attributes).get(test).config());
         }
+        assertEquals("on", client.getTreatmentsByFlagSet("randomKey", "set1").get(test));
     }
 
     @Test
@@ -1948,6 +1949,8 @@ public class SplitClientImplTest {
         }
         verify(splitCacheConsumer, times(numKeys)).fetchMany(new ArrayList<>(Arrays.asList(test)));
         verify(TELEMETRY_STORAGE, times(5)).recordLatency(Mockito.anyObject(), Mockito.anyLong());
+        getTreatmentResult = client.getTreatmentsByFlagSet("randomKey", "set1");
+        assertEquals("on", getTreatmentResult.get(test));
     }
 
     @Test
@@ -2031,6 +2034,9 @@ public class SplitClientImplTest {
         }
         verify(splitCacheConsumer, times(numKeys)).fetchMany(new ArrayList<>(Arrays.asList(test2, test)));
         verify(TELEMETRY_STORAGE, times(5)).recordLatency(Mockito.anyObject(), Mockito.anyLong());
+        getTreatmentResult = client.getTreatmentsByFlagSets("key", Arrays.asList("set1", "set3"));
+        assertEquals("on", getTreatmentResult.get(test));
+        assertEquals("on", getTreatmentResult.get(test2));
     }
 
     @Test
@@ -2082,6 +2088,12 @@ public class SplitClientImplTest {
         assertEquals("control", result.get(test2).treatment());
 
         verify(splitCacheConsumer, times(1)).fetchMany(anyList());
+
+        result = client.getTreatmentsWithConfigByFlagSet("randomKey", "set1");
+        assertEquals(2, result.size());
+        assertEquals(configurations.get("on"), result.get(test).config());
+        assertNull(result.get(test2).config());
+        assertEquals("control", result.get(test2).treatment());
     }
 
     @Test
@@ -2197,16 +2209,24 @@ public class SplitClientImplTest {
         assertEquals("on", client.getTreatmentsByFlagSets(new Key("bilal13@codigo.com", "bilal13@codigo.com"), Arrays.asList("set"), attributes, properties).get(test));
         assertEquals("on", client.getTreatmentsWithConfigByFlagSet(new Key("bilal14@codigo.com", "bilal14@codigo.com"), "set", attributes, properties).get(test).treatment());
         assertEquals("on", client.getTreatmentsWithConfigByFlagSets(new Key("bilal15@codigo.com", "bilal15@codigo.com"), Arrays.asList("set"), attributes, properties).get(test).treatment());
+        assertEquals("off", client.getTreatment("bilal16@codigo.com", test, properties));
+        assertEquals("off", client.getTreatmentWithConfig("bilal17@codigo.com", test, properties).treatment());
+        assertEquals("off", client.getTreatments("bilal18@codigo.com", Arrays.asList(test), properties).get(test));
+        assertEquals("off", client.getTreatmentsWithConfig("bilal19@codigo.com", Arrays.asList(test), properties).get(test).treatment());
+        assertEquals("off", client.getTreatmentsByFlagSet("bilal20@codigo.com", "set", properties).get(test));
+        assertEquals("off", client.getTreatmentsByFlagSets("bilal21@codigo.com", Arrays.asList("set"), properties).get(test));
+        assertEquals("off", client.getTreatmentsWithConfigByFlagSet("bilal22@codigo.com", "set", properties).get(test).treatment());
+        assertEquals("off", client.getTreatmentsWithConfigByFlagSets("bilal23@codigo.com", Arrays.asList("set"), properties).get(test).treatment());
 
         ArgumentCaptor<List> impressionCaptor = ArgumentCaptor.forClass(List.class);
-        verify(impressionsManager, times(16)).track(impressionCaptor.capture());
+        verify(impressionsManager, times(24)).track(impressionCaptor.capture());
         assertNotNull(impressionCaptor.getValue());
 
         DecoratedImpression impression = (DecoratedImpression) impressionCaptor.getAllValues().get(0).get(0);
         assertEquals("pato@codigo.com", impression.impression().key());
         assertEquals("{\"prop2\":\"val2\",\"prop1\":\"val1\"}", impression.impression().properties());
 
-        for (int i=1; i<=15; i++) {
+        for (int i=1; i<=23; i++) {
             impression = (DecoratedImpression) impressionCaptor.getAllValues().get(i).get(0);
             assertEquals("bilal" + i + "@codigo.com", impression.impression().key());
             assertEquals("{\"prop2\":\"val2\",\"prop1\":\"val1\"}", impression.impression().properties());

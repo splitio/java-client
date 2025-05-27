@@ -552,7 +552,7 @@ public final class SplitClientImpl implements SplitClient {
         
          ImpressionPropertiesValidator.ImpressionPropertiesValidatorResult iPValidatorResult = ImpressionPropertiesValidator.propertiesAreValid(
                     properties);
-         return  new GsonBuilder().create().toJson(iPValidatorResult.getValue()).toString();
+         return  new GsonBuilder().create().toJson(iPValidatorResult.getValue());
     }
 
     private Map<String, SplitResult> getTreatmentsWithConfigInternal(String matchingKey, String bucketingKey, List<String> featureFlagNames,

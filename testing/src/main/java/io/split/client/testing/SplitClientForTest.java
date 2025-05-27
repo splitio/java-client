@@ -5,11 +5,9 @@ import io.split.client.api.Key;
 import io.split.client.api.SplitResult;
 import io.split.client.dtos.EvaluationOptions;
 import io.split.grammar.Treatments;
-import io.split.telemetry.domain.enums.MethodEnum;
 
 import java.util.*;
 import java.util.concurrent.TimeoutException;
-import java.util.stream.Collectors;
 
 public class SplitClientForTest implements SplitClient {
     private Map<String, String> _tests;

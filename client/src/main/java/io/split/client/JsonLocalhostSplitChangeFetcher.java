@@ -61,6 +61,7 @@ public class JsonLocalhostSplitChangeFetcher implements SplitChangeFetcher {
             _log.warn("The till is lower than the change number or different to -1");
             return null;
         }
+      
         byte [] currHashFeatureFlags = getStringDigest(splitChange.featureFlags.d.toString());
         byte [] currHashRuleBasedSegments = getStringDigest(splitChange.ruleBasedSegments.d.toString());
         //if sha exist and is equal to before sha, or if till is equal to default till returns the same segmentChange with till equals to storage CN
