@@ -2,6 +2,8 @@ package io.split.engine.evaluator;
 
 import io.split.client.dtos.ConditionType;
 import io.split.client.dtos.Partition;
+import io.split.client.dtos.Prerequisites;
+import io.split.client.utils.Json;
 import io.split.engine.experiments.ParsedCondition;
 import io.split.engine.experiments.ParsedSplit;
 import io.split.engine.matchers.CombiningMatcher;
@@ -185,5 +187,42 @@ public class EvaluatorTest {
 
         Map<String, EvaluatorImp.TreatmentLabelAndChangeNumber> result = _evaluator.evaluateFeaturesByFlagSets(MATCHING_KEY, BUCKETING_KEY, sets, null);
         Assert.assertTrue(result.isEmpty());
+    }
+
+    @Test
+    public void evaluateWithPrerequisites() {
+        Partition partition = new Partition();
+        partition.treatment = TREATMENT_VALUE;
+        partition.size = 100;
+        _partitions.add(partition);
+        ParsedCondition condition = new ParsedCondition(ConditionType.WHITELIST, _matcher, _partitions, "test whitelist label");
+        _conditions.add(condition);
+        List<Prerequisites> prerequisites = Arrays.asList(Json.fromJson("{\"n\": \"split1\", \"ts\": [\"" + TREATMENT_VALUE + "\"]}", Prerequisites.class));
+
+        ParsedSplit split = new ParsedSplit(SPLIT_NAME, 0, false, DEFAULT_TREATMENT_VALUE, _conditions, TRAFFIC_TYPE_VALUE, CHANGE_NUMBER, 60, 18, 2, _configurations, new HashSet<>(), true, prerequisites);
+        ParsedSplit split1 = new ParsedSplit("split1", 0, false, DEFAULT_TREATMENT_VALUE, _conditions, TRAFFIC_TYPE_VALUE, CHANGE_NUMBER, 60, 18, 2, _configurations, new HashSet<>(), true, null);
+
+        Mockito.when(_splitCacheConsumer.get(SPLIT_NAME)).thenReturn(split);
+        Mockito.when(_splitCacheConsumer.get("split1")).thenReturn(split1);
+        Mockito.when(condition.matcher().match(Mockito.anyString(), Mockito.anyString(), Mockito.anyObject(), Mockito.anyObject())).thenReturn(true);
+
+        EvaluatorImp.TreatmentLabelAndChangeNumber result = _evaluator.evaluateFeature(MATCHING_KEY, BUCKETING_KEY, SPLIT_NAME, null);
+        assertEquals(TREATMENT_VALUE, result.treatment);
+        assertEquals("test whitelist label", result.label);
+        assertEquals(CHANGE_NUMBER, result.changeNumber);
+
+        Mockito.when(condition.matcher().match(Mockito.anyString(), Mockito.anyString(), Mockito.anyObject(), Mockito.anyObject())).thenReturn(false);
+        result = _evaluator.evaluateFeature(MATCHING_KEY, BUCKETING_KEY, SPLIT_NAME, null);
+        assertEquals(DEFAULT_TREATMENT_VALUE, result.treatment);
+        assertEquals(Labels.PREREQUISITES_NOT_MET, result.label);
+        assertEquals(CHANGE_NUMBER, result.changeNumber);
+
+        // if split is killed, label should be killed.
+        split = new ParsedSplit(SPLIT_NAME, 0, true, DEFAULT_TREATMENT_VALUE, _conditions, TRAFFIC_TYPE_VALUE, CHANGE_NUMBER, 60, 18, 2, _configurations, new HashSet<>(), true, prerequisites);
+        Mockito.when(_splitCacheConsumer.get(SPLIT_NAME)).thenReturn(split);
+        result = _evaluator.evaluateFeature(MATCHING_KEY, BUCKETING_KEY, SPLIT_NAME, null);
+        assertEquals(DEFAULT_TREATMENT_VALUE, result.treatment);
+        assertEquals(Labels.KILLED, result.label);
+        assertEquals(CHANGE_NUMBER, result.changeNumber);
     }
 }

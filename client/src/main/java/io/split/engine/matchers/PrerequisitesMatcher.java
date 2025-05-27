@@ -24,6 +24,11 @@ public class PrerequisitesMatcher implements Matcher {
         if (!(matchValue instanceof String)) {
             return false;
         }
+
+        if (_prerequisites == null) {
+            return true;
+        }
+
         for (Prerequisites prerequisites : _prerequisites) {
             String treatment = evaluationContext.getEvaluator().evaluateFeature((String) matchValue, bucketingKey,
                     prerequisites.featureFlagName, attributes). treatment;
