@@ -30,7 +30,7 @@ public final class LocalhostSanitizer {
     }
 
     public static SplitChange sanitization(SplitChange splitChange) {
-        splitChange = sanitizeTillAndSince(splitChange);
+        sanitizeTillAndSince(splitChange);
         splitChange.featureFlags.d = sanitizeFeatureFlags(splitChange.featureFlags.d);
         splitChange.ruleBasedSegments.d = sanitizeRuleBasedSegments(splitChange.ruleBasedSegments.d);
 
@@ -62,7 +62,6 @@ public final class LocalhostSanitizer {
 
     private static List<Split> sanitizeFeatureFlags(List<Split> featureFlags) {
         List<Split> splitsToRemove = new ArrayList<>();
-        SecureRandom random = new SecureRandom();
         if (featureFlags != null) {
             for (Split split : featureFlags) {
                 if (split.name == null) {
@@ -73,19 +72,10 @@ public final class LocalhostSanitizer {
                 split.status = sanitizeStatus(split.status);
                 split.defaultTreatment = sanitizeIfNullOrEmpty(split.defaultTreatment, LocalhostConstants.CONTROL);
                 split.changeNumber = sanitizeChangeNumber(split.changeNumber, 0);
-
-                if (split.trafficAllocation == null || split.trafficAllocation < 0 || split.trafficAllocation > LocalhostConstants.SIZE_100) {
-                    split.trafficAllocation = LocalhostConstants.SIZE_100;
-                }
-                if (split.trafficAllocationSeed == null || split.trafficAllocationSeed == 0) {
-                    split.trafficAllocationSeed = -random.nextInt(10) * LocalhostConstants.MILLI_SECONDS;
-                }
-                if (split.seed == 0) {
-                    split.seed = -random.nextInt(10) * LocalhostConstants.MILLI_SECONDS;
-                }
-                if (split.algo != LocalhostConstants.ALGO) {
-                    split.algo = LocalhostConstants.ALGO;
-                }
+                split.trafficAllocation = sanitizeTrafficAllocation(split.trafficAllocation);
+                split.trafficAllocationSeed = sanitizeSeed(split.trafficAllocationSeed);
+                split.seed = sanitizeSeed(split.seed);
+                split.algo = sanitizeAlgo(split.algo);
                 split.conditions = sanitizeConditions((ArrayList<Condition>) split.conditions, false, split.trafficTypeName);
             }
             featureFlags.removeAll(splitsToRemove);
@@ -93,6 +83,28 @@ public final class LocalhostSanitizer {
             featureFlags = new ArrayList<>();
         }
         return featureFlags;
+    }
+
+    private static int sanitizeSeed(Integer seed) {
+        SecureRandom random = new SecureRandom();
+        if (seed == null || seed == 0) {
+            seed = -random.nextInt(10) * LocalhostConstants.MILLI_SECONDS;
+        }
+        return seed;
+    }
+
+    private static int sanitizeAlgo(int algo) {
+        if (algo != LocalhostConstants.ALGO) {
+            algo = LocalhostConstants.ALGO;
+        }
+        return algo;
+    }
+
+    private static int sanitizeTrafficAllocation(Integer trafficAllocation) {
+        if (trafficAllocation == null || trafficAllocation < 0 || trafficAllocation > LocalhostConstants.SIZE_100) {
+            trafficAllocation = LocalhostConstants.SIZE_100;
+        }
+        return trafficAllocation;
     }
 
     private static ArrayList<Condition> sanitizeConditions(ArrayList<Condition> conditions, boolean createPartition, String trafficTypeName) {
@@ -114,18 +126,18 @@ public final class LocalhostSanitizer {
         }
         return conditions;
     }
-    private static String sanitizeIfNullOrEmpty(String toBeSantitized, String defaultValue) {
-        if (toBeSantitized == null || toBeSantitized.isEmpty()) {
+    private static String sanitizeIfNullOrEmpty(String toBeSanitized, String defaultValue) {
+        if (toBeSanitized == null || toBeSanitized.isEmpty()) {
             return defaultValue;
         }
-        return toBeSantitized;
+        return toBeSanitized;
     }
 
-    private static long sanitizeChangeNumber(long toBeSantitized, long defaultValue) {
-        if (toBeSantitized < 0) {
+    private static long sanitizeChangeNumber(long toBeSanitized, long defaultValue) {
+        if (toBeSanitized < 0) {
             return defaultValue;
         }
-        return toBeSantitized;
+        return toBeSanitized;
     }
 
     private static Status sanitizeStatus(Status toBeSanitized) {

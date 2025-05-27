@@ -82,7 +82,7 @@ public class CommonChangeNotification<Y> extends IncomingNotification {
         return String.format("Type: %s; Channel: %s; ChangeNumber: %s", getType(), getChannel(), getChangeNumber());
     }
 
-    private void updateDefinition(byte[] decodedBytes) throws UnsupportedEncodingException {
+    private void updateDefinition(byte[] decodedBytes) {
         definition = (Y) Json.fromJson(new String(decodedBytes, StandardCharsets.UTF_8), _definitionClass);
     }
 }
