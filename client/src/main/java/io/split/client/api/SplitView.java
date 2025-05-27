@@ -28,7 +28,7 @@ public class SplitView {
     public List<String> sets;
     public String defaultTreatment;
     public boolean impressionsDisabled;
-    public List<Prerequisites> prerequisites;
+    public String prerequisites;
 
     public static SplitView fromParsedSplit(ParsedSplit parsedSplit) {
         SplitView splitView = new SplitView();
@@ -50,7 +50,7 @@ public class SplitView {
         splitView.treatments = new ArrayList<String>(treatments);
         splitView.configs = parsedSplit.configurations() == null? Collections.<String, String>emptyMap() : parsedSplit.configurations() ;
         splitView.impressionsDisabled = parsedSplit.impressionsDisabled();
-        splitView.prerequisites = parsedSplit.prerequisites() != null ? parsedSplit.prerequisites(): new ArrayList<>();
+        splitView.prerequisites = parsedSplit.prerequisites() != null ? parsedSplit.prerequisites().toString(): "";
 
         return splitView;
     }

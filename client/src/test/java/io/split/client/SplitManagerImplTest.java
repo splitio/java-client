@@ -14,6 +14,7 @@ import io.split.engine.experiments.ParsedSplit;
 import io.split.engine.experiments.SplitParser;
 import io.split.engine.matchers.AllKeysMatcher;
 import io.split.engine.matchers.CombiningMatcher;
+import io.split.engine.matchers.PrerequisitesMatcher;
 import io.split.grammar.Treatments;
 import io.split.storages.SplitCacheConsumer;
 import io.split.telemetry.storage.InMemoryTelemetryStorage;
@@ -71,7 +72,7 @@ public class SplitManagerImplTest {
         prereq.featureFlagName = "feature1";
         prereq.treatments = Lists.newArrayList("on");
         ParsedSplit response = ParsedSplit.createParsedSplitForTests("FeatureName", 123, true, "off", Lists.newArrayList(getTestCondition("off")), "traffic", 456L, 1, new HashSet<>(), false,
-                Lists.newArrayList(prereq));
+                new PrerequisitesMatcher(Lists.newArrayList(prereq)));
         when(splitCacheConsumer.get(existent)).thenReturn(response);
 
         SplitManagerImpl splitManager = new SplitManagerImpl(splitCacheConsumer,
@@ -86,7 +87,7 @@ public class SplitManagerImplTest {
         Assert.assertEquals("off", theOne.treatments.get(0));
         Assert.assertEquals(0, theOne.configs.size());
         Assert.assertEquals("off", theOne.defaultTreatment);
-        Assert.assertEquals(prereq, theOne.prerequisites.get(0));
+        Assert.assertEquals(new PrerequisitesMatcher(Lists.newArrayList(prereq)).toString(), theOne.prerequisites);
     }
 
     @Test

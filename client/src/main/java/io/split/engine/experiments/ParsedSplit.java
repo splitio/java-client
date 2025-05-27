@@ -1,8 +1,8 @@
 package io.split.engine.experiments;
 
 import com.google.common.collect.ImmutableList;
-import io.split.client.dtos.Prerequisites;
 import io.split.engine.matchers.AttributeMatcher;
+import io.split.engine.matchers.PrerequisitesMatcher;
 import io.split.engine.matchers.RuleBasedSegmentMatcher;
 import io.split.engine.matchers.UserDefinedSegmentMatcher;
 
@@ -35,7 +35,7 @@ public class ParsedSplit {
     private final Map<String, String> _configurations;
     private final HashSet<String> _flagSets;
     private final boolean _impressionsDisabled;
-    private List<Prerequisites> _prerequisites;
+    private PrerequisitesMatcher _prerequisites;
 
     public static ParsedSplit createParsedSplitForTests(
             String feature,
@@ -48,7 +48,7 @@ public class ParsedSplit {
             int algo,
             HashSet<String> flagSets,
             boolean impressionsDisabled,
-            List<Prerequisites> prerequisites
+            PrerequisitesMatcher prerequisites
     ) {
         return new ParsedSplit(
                 feature,
@@ -80,7 +80,7 @@ public class ParsedSplit {
             Map<String, String> configurations,
             HashSet<String> flagSets,
             boolean impressionsDisabled,
-            List<Prerequisites> prerequisites
+            PrerequisitesMatcher prerequisites
     ) {
         return new ParsedSplit(
                 feature,
@@ -114,7 +114,7 @@ public class ParsedSplit {
             Map<String, String> configurations,
             HashSet<String> flagSets,
             boolean impressionsDisabled,
-            List<Prerequisites> prerequisites
+            PrerequisitesMatcher prerequisites
     ) {
         _split = feature;
         _seed = seed;
@@ -179,7 +179,7 @@ public class ParsedSplit {
     public boolean impressionsDisabled() {
         return _impressionsDisabled;
     }
-    public List<Prerequisites> prerequisites() { return _prerequisites; }
+    public PrerequisitesMatcher prerequisites() { return _prerequisites; }
 
     @Override
     public int hashCode() {
