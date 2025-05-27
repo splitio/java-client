@@ -30,13 +30,41 @@ public final class LocalhostSanitizer {
     }
 
     public static SplitChange sanitization(SplitChange splitChange) {
-        SecureRandom random = new SecureRandom();
-        List<Split> splitsToRemove = new ArrayList<>();
-        List<RuleBasedSegment> ruleBasedSegmentsToRemove = new ArrayList<>();
         splitChange = sanitizeTillAndSince(splitChange);
+        splitChange.featureFlags.d = sanitizeFeatureFlags(splitChange.featureFlags.d);
+        splitChange.ruleBasedSegments.d = sanitizeRuleBasedSegments(splitChange.ruleBasedSegments.d);
 
-        if (splitChange.featureFlags.d != null) {
-            for (Split split : splitChange.featureFlags.d) {
+        return splitChange;
+    }
+
+    private static List<RuleBasedSegment> sanitizeRuleBasedSegments(List<RuleBasedSegment> ruleBasedSegments) {
+        List<RuleBasedSegment> ruleBasedSegmentsToRemove = new ArrayList<>();
+        if (ruleBasedSegments != null) {
+            for (RuleBasedSegment ruleBasedSegment : ruleBasedSegments) {
+                if (ruleBasedSegment.name == null) {
+                    ruleBasedSegmentsToRemove.add(ruleBasedSegment);
+                    continue;
+                }
+                ruleBasedSegment.trafficTypeName = sanitizeIfNullOrEmpty(ruleBasedSegment.trafficTypeName, LocalhostConstants.USER);
+                ruleBasedSegment.status = sanitizeStatus(ruleBasedSegment.status);
+                ruleBasedSegment.changeNumber = sanitizeChangeNumber(ruleBasedSegment.changeNumber, 0);
+                ruleBasedSegment.conditions = sanitizeConditions((ArrayList<Condition>) ruleBasedSegment.conditions, false,
+                        ruleBasedSegment.trafficTypeName);
+                ruleBasedSegment.excluded.segments = sanitizeExcluded((ArrayList) ruleBasedSegment.excluded.segments);
+                ruleBasedSegment.excluded.keys = sanitizeExcluded((ArrayList) ruleBasedSegment.excluded.keys);
+            }
+            ruleBasedSegments.removeAll(ruleBasedSegmentsToRemove);
+        } else {
+            ruleBasedSegments = new ArrayList<>();
+        }
+        return ruleBasedSegments;
+    }
+
+    private static List<Split> sanitizeFeatureFlags(List<Split> featureFlags) {
+        List<Split> splitsToRemove = new ArrayList<>();
+        SecureRandom random = new SecureRandom();
+        if (featureFlags != null) {
+            for (Split split : featureFlags) {
                 if (split.name == null) {
                     splitsToRemove.add(split);
                     continue;
@@ -60,31 +88,11 @@ public final class LocalhostSanitizer {
                 }
                 split.conditions = sanitizeConditions((ArrayList<Condition>) split.conditions, false, split.trafficTypeName);
             }
-            splitChange.featureFlags.d.removeAll(splitsToRemove);
+            featureFlags.removeAll(splitsToRemove);
         } else {
-            splitChange.featureFlags.d = new ArrayList<>();
+            featureFlags = new ArrayList<>();
         }
-
-        if (splitChange.ruleBasedSegments.d != null) {
-            for (RuleBasedSegment ruleBasedSegment : splitChange.ruleBasedSegments.d) {
-                if (ruleBasedSegment.name == null) {
-                    ruleBasedSegmentsToRemove.add(ruleBasedSegment);
-                    continue;
-                }
-                ruleBasedSegment.trafficTypeName = sanitizeIfNullOrEmpty(ruleBasedSegment.trafficTypeName, LocalhostConstants.USER);
-                ruleBasedSegment.status = sanitizeStatus(ruleBasedSegment.status);
-                ruleBasedSegment.changeNumber = sanitizeChangeNumber(ruleBasedSegment.changeNumber, 0);
-                ruleBasedSegment.conditions = sanitizeConditions((ArrayList<Condition>) ruleBasedSegment.conditions, false,
-                        ruleBasedSegment.trafficTypeName);
-                ruleBasedSegment.excluded.segments = sanitizeExcluded((ArrayList) ruleBasedSegment.excluded.segments);
-                ruleBasedSegment.excluded.keys = sanitizeExcluded((ArrayList) ruleBasedSegment.excluded.keys);
-            }
-            splitChange.ruleBasedSegments.d.removeAll(ruleBasedSegmentsToRemove);
-        } else {
-            splitChange.ruleBasedSegments.d = new ArrayList<>();
-        }
-
-        return splitChange;
+        return featureFlags;
     }
 
     private static ArrayList<Condition> sanitizeConditions(ArrayList<Condition> conditions, boolean createPartition, String trafficTypeName) {

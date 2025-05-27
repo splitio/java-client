@@ -403,7 +403,7 @@ public class SplitFactoryImpl implements SplitFactory {
         SegmentCache segmentCache = new SegmentCacheInMemoryImpl();
         FlagSetsFilter flagSetsFilter = new FlagSetsFilterImpl(config.getSetsFilter());
         SplitCache splitCache = new InMemoryCacheImp(flagSetsFilter);
-        RuleBasedSegmentCache _ruleBasedSegmentCache = new RuleBasedSegmentCacheInMemoryImp();
+        RuleBasedSegmentCache ruleBasedSegmentCache = new RuleBasedSegmentCacheInMemoryImp();
         _splitCache = splitCache;
         _gates = new SDKReadinessGates();
         _segmentCache = segmentCache;
@@ -422,7 +422,7 @@ public class SplitFactoryImpl implements SplitFactory {
                 _telemetryStorageProducer,
                 _splitCache,
                 config.getThreadFactory(),
-                _ruleBasedSegmentCache);
+                ruleBasedSegmentCache);
 
         // SplitFetcher
         SplitChangeFetcher splitChangeFetcher = createSplitChangeFetcher(config);
@@ -430,7 +430,7 @@ public class SplitFactoryImpl implements SplitFactory {
         RuleBasedSegmentParser ruleBasedSegmentParser = new RuleBasedSegmentParser();
 
         _splitFetcher = new SplitFetcherImp(splitChangeFetcher, splitParser, splitCache, _telemetryStorageProducer,
-                flagSetsFilter, ruleBasedSegmentParser, _ruleBasedSegmentCache);
+                flagSetsFilter, ruleBasedSegmentParser, ruleBasedSegmentCache);
 
         // SplitSynchronizationTask
         _splitSynchronizationTask = new SplitSynchronizationTask(_splitFetcher, splitCache,
@@ -442,7 +442,7 @@ public class SplitFactoryImpl implements SplitFactory {
                 _impressionsManager, null, null, null);
 
         // Evaluator
-        _evaluator = new EvaluatorImp(splitCache, segmentCache, _ruleBasedSegmentCache);
+        _evaluator = new EvaluatorImp(splitCache, segmentCache, ruleBasedSegmentCache);
 
         EventsStorage eventsStorage = new NoopEventsStorageImp();
 

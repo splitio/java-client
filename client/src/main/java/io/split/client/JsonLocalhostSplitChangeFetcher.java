@@ -80,10 +80,10 @@ public class JsonLocalhostSplitChangeFetcher implements SplitChangeFetcher {
         return splitChangeToProcess;
     }
 
-    private byte[] getStringDigest(String Json) throws NoSuchAlgorithmException {
+    private byte[] getStringDigest(String json) throws NoSuchAlgorithmException {
         MessageDigest digest = MessageDigest.getInstance("SHA-1");
         digest.reset();
-        digest.update(Json.getBytes());
+        digest.update(json.getBytes());
         // calculate the json sha
         return digest.digest();
     }

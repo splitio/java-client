@@ -1,7 +1,5 @@
 package io.split.storages.pluggable.adapters;
 
-import io.split.client.dtos.RuleBasedSegment;
-import io.split.client.utils.Json;
 import io.split.engine.experiments.ParsedRuleBasedSegment;
 import io.split.storages.RuleBasedSegmentCacheProducer;
 import io.split.storages.pluggable.domain.PrefixAdapter;

@@ -71,14 +71,14 @@ public class FeatureFlagWorkerImp extends Worker<IncomingNotification> implement
             changeNumber = featureFlagChangeNotification.getChangeNumber();
         } else {
             CommonChangeNotification<RuleBasedSegment> ruleBasedSegmentChangeNotification = (CommonChangeNotification) incomingNotification;
-            success = AddOrUpdateRuleBasedSegment(ruleBasedSegmentChangeNotification);
+            success = addOrUpdateRuleBasedSegment(ruleBasedSegmentChangeNotification);
             changeNumberRBS = ruleBasedSegmentChangeNotification.getChangeNumber();
         }
         if (!success)
             _synchronizer.refreshSplits(changeNumber, changeNumberRBS);
     }
 
-    private boolean AddOrUpdateRuleBasedSegment(CommonChangeNotification ruleBasedSegmentChangeNotification) {
+    private boolean addOrUpdateRuleBasedSegment(CommonChangeNotification ruleBasedSegmentChangeNotification) {
         if (ruleBasedSegmentChangeNotification.getChangeNumber() <= _ruleBasedSegmentCache.getChangeNumber()) {
             return true;
         }

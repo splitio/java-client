@@ -32,8 +32,6 @@ import io.split.engine.matchers.strings.StartsWithAnyOfMatcher;
 import io.split.engine.matchers.strings.EndsWithAnyOfMatcher;
 import io.split.engine.matchers.strings.ContainsAnyOfMatcher;
 import io.split.engine.matchers.strings.RegularExpressionMatcher;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.util.List;
 
@@ -42,9 +40,8 @@ import static com.google.common.base.Preconditions.checkNotNull;
 
 public final class ParserUtils {
 
-    private static final Logger _log = LoggerFactory.getLogger(ParserUtils.class);
-
-    public ParserUtils() {
+    private ParserUtils() {
+        throw new IllegalStateException("Utility class");
     }
 
     public static boolean checkUnsupportedMatcherExist(List<Matcher> matchers) {
@@ -58,8 +55,7 @@ public final class ParserUtils {
                 break;
             }
         }
-        if (typeCheck != null)  return false;
-        return true;
+        return (typeCheck == null);
     }
 
     public static ParsedCondition getTemplateCondition() {

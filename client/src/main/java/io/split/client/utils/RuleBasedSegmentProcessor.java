@@ -16,6 +16,10 @@ import java.util.Set;
 public class RuleBasedSegmentProcessor {
     private static final Logger _log = LoggerFactory.getLogger(RuleBasedSegmentProcessor.class);
 
+    private RuleBasedSegmentProcessor() {
+        throw new IllegalStateException("Utility class");
+    }
+
     public static RuleBasedSegmentsToUpdate processRuleBasedSegmentChanges(RuleBasedSegmentParser ruleBasedSegmentParser,
                                                                            List<RuleBasedSegment> ruleBasedSegments) {
         List<ParsedRuleBasedSegment> toAdd = new ArrayList<>();
@@ -31,10 +35,10 @@ public class RuleBasedSegmentProcessor {
             ParsedRuleBasedSegment parsedRuleBasedSegment = ruleBasedSegmentParser.parse(ruleBasedSegment);
             if (parsedRuleBasedSegment == null) {
                 _log.debug(String.format("We could not parse the rule based segment definition for: %s", ruleBasedSegment.name));
-                continue;
+            } else {
+                segments.addAll(parsedRuleBasedSegment.getSegmentsNames());
+                toAdd.add(parsedRuleBasedSegment);
             }
-            segments.addAll(parsedRuleBasedSegment.getSegmentsNames());
-            toAdd.add(parsedRuleBasedSegment);
         }
         return new RuleBasedSegmentsToUpdate(toAdd, toRemove, segments);
     }

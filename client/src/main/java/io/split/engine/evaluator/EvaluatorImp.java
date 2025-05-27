@@ -24,7 +24,6 @@ public class EvaluatorImp implements Evaluator {
     private static final Logger _log = LoggerFactory.getLogger(EvaluatorImp.class);
 
     private final SegmentCacheConsumer _segmentCacheConsumer;
-    private final RuleBasedSegmentCacheConsumer _ruleBasedSegmentCacheConsumer;
     private final EvaluationContext _evaluationContext;
     private final SplitCacheConsumer _splitCacheConsumer;
 
@@ -32,7 +31,6 @@ public class EvaluatorImp implements Evaluator {
                         RuleBasedSegmentCacheConsumer ruleBasedSegmentCacheConsumer) {
         _splitCacheConsumer = checkNotNull(splitCacheConsumer);
         _segmentCacheConsumer = checkNotNull(segmentCache);
-        _ruleBasedSegmentCacheConsumer = checkNotNull(ruleBasedSegmentCacheConsumer);
         _evaluationContext = new EvaluationContext(this, _segmentCacheConsumer, ruleBasedSegmentCacheConsumer);
     }
 

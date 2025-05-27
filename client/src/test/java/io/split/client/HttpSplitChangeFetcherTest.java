@@ -8,6 +8,7 @@ import io.split.client.utils.Json;
 import io.split.client.utils.SDKMetadata;
 import io.split.engine.common.FetchOptions;
 import io.split.engine.metrics.Metrics;
+import io.split.engine.sse.client.SSEClient;
 import io.split.service.SplitHttpClient;
 import io.split.service.SplitHttpClientImpl;
 import io.split.telemetry.storage.InMemoryTelemetryStorage;
@@ -20,6 +21,7 @@ import org.apache.hc.core5.http.ClassicHttpResponse;
 import org.apache.hc.core5.http.Header;
 import org.apache.hc.core5.http.HttpEntity;
 import org.apache.hc.core5.http.HttpStatus;
+import org.awaitility.Awaitility;
 import org.junit.Assert;
 import org.junit.Test;
 import org.mockito.ArgumentCaptor;
@@ -33,6 +35,7 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 import static org.mockito.Mockito.when;
@@ -136,11 +139,9 @@ public class HttpSplitChangeFetcherTest {
 
         fetcher.fetch(-1, -1, new FetchOptions.Builder().targetChangeNumber(123).build());
         // TODO: Fix the test with integration tests update
-//        fetcher.fetch(-1, -1, new FetchOptions.Builder().build());
         List<ClassicHttpRequest> captured = requestCaptor.getAllValues();
-        Assert.assertEquals(captured.size(), 1);
+        Assert.assertEquals(1, captured.size());
         Assert.assertTrue(captured.get(0).getUri().toString().contains("till=123"));
-//        Assert.assertFalse(captured.get(1).getUri().toString().contains("till="));
     }
 
     @Test
@@ -249,7 +250,7 @@ public class HttpSplitChangeFetcherTest {
         SplitChange change = fetcher.fetch(-1, -1, new FetchOptions.Builder().cacheControlHeaders(true).build());
 
         List<ClassicHttpRequest> captured = requestCaptor.getAllValues();
-        Assert.assertEquals(captured.size(), 2);
+        Assert.assertEquals(2, captured.size());
         Assert.assertTrue(captured.get(0).getUri().toString().contains("s=1.3"));
         Assert.assertTrue(captured.get(1).getUri().toString().contains("s=1.1"));
         Assert.assertEquals(122, change.featureFlags.s);
@@ -265,7 +266,10 @@ public class HttpSplitChangeFetcherTest {
         Field proxyInterval = fetcher.getClass().getDeclaredField("PROXY_CHECK_INTERVAL_MILLISECONDS_SS");
         proxyInterval.setAccessible(true);
         proxyInterval.set(fetcher, 5);
-        Thread.sleep(1000);
+        Awaitility.await()
+                .atMost(1L, TimeUnit.SECONDS)
+                .untilAsserted(() -> Assert.assertTrue(proxyInterval.get(fetcher).equals(5)));
+
         change = fetcher.fetch(-1, -1, new FetchOptions.Builder().cacheControlHeaders(true).build());
 
         Assert.assertTrue(captured.get(2).getUri().toString().contains("s=1.3"));
@@ -277,7 +281,9 @@ public class HttpSplitChangeFetcherTest {
         Assert.assertEquals(Json.fromJson("{\"name\":\"some2\"}", Split.class).name, change.featureFlags.d.get(1).name);
 
         // test if proxy is upgraded and spec 1.3 now works.
-        Thread.sleep(1000);
+        Awaitility.await()
+                .atMost(5L, TimeUnit.SECONDS)
+                .untilAsserted(() -> Assert.assertTrue(captured.size() >= 4));
         change = fetcher.fetch(-1, -1, new FetchOptions.Builder().cacheControlHeaders(true).build());
         Assert.assertTrue(captured.get(4).getUri().toString().contains("s=1.3"));
         Assert.assertEquals(122, change.featureFlags.s);

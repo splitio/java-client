@@ -17,8 +17,8 @@ public class NotificationParserImpTest {
 
         CommonChangeNotification incomingNotification = (CommonChangeNotification) notificationParserImp.parseMessage(payload);
         Split split = (Split) incomingNotification.getDefinition();
-        Assert.assertEquals(split.name, "mauro_java");
-        Assert.assertEquals(split.changeNumber, 1684265694505L);
+        Assert.assertEquals("mauro_java", split.name);
+        Assert.assertEquals(1684265694505L, split.changeNumber);
         Assert.assertEquals(CompressType.ZLIB, incomingNotification.getCompressType());
         Assert.assertEquals(0, incomingNotification.getPreviousChangeNumber());
     }
@@ -30,8 +30,8 @@ public class NotificationParserImpTest {
 
         CommonChangeNotification incomingNotification = (CommonChangeNotification) notificationParserImp.parseMessage(payload);
         Split split = (Split) incomingNotification.getDefinition();
-        Assert.assertEquals(split.name, "mauro_java");
-        Assert.assertEquals(split.changeNumber, 1684333081259L);
+        Assert.assertEquals("mauro_java", split.name);
+        Assert.assertEquals(1684333081259L, split.changeNumber);
         Assert.assertEquals(CompressType.GZIP, incomingNotification.getCompressType());
         Assert.assertEquals(0, incomingNotification.getPreviousChangeNumber());
     }
@@ -43,8 +43,8 @@ public class NotificationParserImpTest {
 
         CommonChangeNotification incomingNotification = (CommonChangeNotification) notificationParserImp.parseMessage(payload);
         Split split = (Split) incomingNotification.getDefinition();
-        Assert.assertEquals(split.name, "mauro_java");
-        Assert.assertEquals(split.changeNumber, 1684329854385L);
+        Assert.assertEquals("mauro_java", split.name);
+        Assert.assertEquals(1684329854385L, split.changeNumber);
         Assert.assertEquals(CompressType.NOT_COMPRESSED, incomingNotification.getCompressType());
         Assert.assertEquals(0, incomingNotification.getPreviousChangeNumber());
     }

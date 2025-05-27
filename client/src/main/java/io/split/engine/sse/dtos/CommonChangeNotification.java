@@ -9,6 +9,7 @@ import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
+import java.nio.charset.StandardCharsets;
 import java.util.Base64;
 import java.util.zip.DataFormatException;
 
@@ -82,6 +83,6 @@ public class CommonChangeNotification<Y> extends IncomingNotification {
     }
 
     private void updateDefinition(byte[] decodedBytes) throws UnsupportedEncodingException {
-        definition = (Y) Json.fromJson(new String(decodedBytes, "UTF-8"), _definitionClass);
+        definition = (Y) Json.fromJson(new String(decodedBytes, StandardCharsets.UTF_8), _definitionClass);
     }
 }
