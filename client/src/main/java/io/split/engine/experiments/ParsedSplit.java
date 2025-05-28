@@ -204,16 +204,18 @@ public class ParsedSplit {
         if (!(obj instanceof ParsedSplit)) return false;
 
         ParsedSplit other = (ParsedSplit) obj;
+        boolean trafficTypeCond = _trafficTypeName == null ? other._trafficTypeName == null : _trafficTypeName.equals(other._trafficTypeName);
+        boolean configCond = _configurations == null ? other._configurations == null : _configurations.equals(other._configurations);
 
         return _split.equals(other._split)
                 && _seed == other._seed
                 && _killed == other._killed
                 && _defaultTreatment.equals(other._defaultTreatment)
                 && _parsedCondition.equals(other._parsedCondition)
-                && _trafficTypeName == null ? other._trafficTypeName == null : _trafficTypeName.equals(other._trafficTypeName)
+                && trafficTypeCond
                 && _changeNumber == other._changeNumber
                 && _algo == other._algo
-                && _configurations == null ? other._configurations == null : _configurations.equals(other._configurations)
+                && configCond
                 && _impressionsDisabled == other._impressionsDisabled
                 && _prerequisitesMatcher == other._prerequisitesMatcher;
     }

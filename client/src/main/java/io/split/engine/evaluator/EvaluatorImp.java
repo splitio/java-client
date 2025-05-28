@@ -86,7 +86,7 @@ public class EvaluatorImp implements Evaluator {
     private TreatmentLabelAndChangeNumber getTreatment(String matchingKey, String bucketingKey, ParsedSplit parsedSplit, Map<String,
             Object> attributes) throws ChangeNumberExceptionWrapper {
         try {
-            String config = parsedSplit.configurations() != null ? parsedSplit.configurations().get(parsedSplit.defaultTreatment()) : null;
+            String config = getConfig(parsedSplit, parsedSplit.defaultTreatment());
             if (parsedSplit.killed()) {
                 return new TreatmentLabelAndChangeNumber(
                         parsedSplit.defaultTreatment(),
@@ -96,7 +96,7 @@ public class EvaluatorImp implements Evaluator {
                         parsedSplit.impressionsDisabled());
             }
 
-            String bk = (bucketingKey == null) ? matchingKey : bucketingKey;
+            String bk = getBucketingKey(bucketingKey, matchingKey);
 
             if (!parsedSplit.prerequisitesMatcher().match(matchingKey, bk, attributes, _evaluationContext)) {
                 return new TreatmentLabelAndChangeNumber(
@@ -125,8 +125,7 @@ public class EvaluatorImp implements Evaluator {
 
                         if (bucket > parsedSplit.trafficAllocation()) {
                             // out of split
-                            config = parsedSplit.configurations() != null ?
-                                    parsedSplit.configurations().get(parsedSplit.defaultTreatment()) : null;
+                            config = getConfig(parsedSplit, parsedSplit.defaultTreatment());
                             return new TreatmentLabelAndChangeNumber(parsedSplit.defaultTreatment(), Labels.NOT_IN_SPLIT,
                                     parsedSplit.changeNumber(), config, parsedSplit.impressionsDisabled());
                         }
@@ -137,7 +136,7 @@ public class EvaluatorImp implements Evaluator {
 
                 if (parsedCondition.matcher().match(matchingKey, bucketingKey, attributes, _evaluationContext)) {
                     String treatment = Splitter.getTreatment(bk, parsedSplit.seed(), parsedCondition.partitions(), parsedSplit.algo());
-                    config = parsedSplit.configurations() != null ? parsedSplit.configurations().get(treatment) : null;
+                    config = getConfig(parsedSplit, treatment);
                     return new TreatmentLabelAndChangeNumber(
                             treatment,
                             parsedCondition.label(),
@@ -147,7 +146,8 @@ public class EvaluatorImp implements Evaluator {
                 }
             }
 
-            config = parsedSplit.configurations() != null ? parsedSplit.configurations().get(parsedSplit.defaultTreatment()) : null;
+            config = getConfig(parsedSplit, parsedSplit.defaultTreatment());
+
             return new TreatmentLabelAndChangeNumber(
                     parsedSplit.defaultTreatment(),
                     Labels.DEFAULT_RULE,
@@ -157,6 +157,14 @@ public class EvaluatorImp implements Evaluator {
         } catch (Exception e) {
             throw new ChangeNumberExceptionWrapper(e, parsedSplit.changeNumber());
         }
+    }
+
+    private String getBucketingKey(String bucketingKey, String matchingKey) {
+        return (bucketingKey == null) ? matchingKey : bucketingKey;
+    }
+
+    private String getConfig(ParsedSplit parsedSplit, String returnedTreatment) {
+        return parsedSplit.configurations() != null ? parsedSplit.configurations().get(returnedTreatment) : null;
     }
 
     private TreatmentLabelAndChangeNumber evaluateParsedSplit(String matchingKey, String bucketingKey, Map<String, Object> attributes,
