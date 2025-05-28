@@ -1,0 +1,61 @@
+{"ff": {"d": [], "t": -1, "s": -1},
+"rbs": {"t": -1, "s": -1, "d":
+  [{
+  "changeNumber": 5,
+  "name": "sample_rule_based_segment",
+  "status": "ACTIVE",
+  "trafficTypeName": "user",
+  "excluded":{"keys":["mauro@split.io","gaston@split.io"],"segments":[]},
+  "conditions": [
+    {
+      "matcherGroup": {
+        "combiner": "AND",
+        "matchers": [
+          {
+            "keySelector": {
+              "trafficType": "user",
+              "attribute": "email"
+            },
+            "matcherType": "ENDS_WITH",
+            "negate": false,
+            "whitelistMatcherData": {
+              "whitelist": [
+                "@split.io"
+              ]
+            }
+          }
+        ]
+      }
+    }
+  ]},
+  {
+    "changeNumber": 5,
+    "name": "dependent_rbs",
+    "status": "ACTIVE",
+    "trafficTypeName": "user",
+    "excluded": {
+      "keys": [],
+      "segments": []
+    },
+    "conditions": [
+      {
+        "conditionType": "ROLLOUT",
+        "matcherGroup": {
+          "combiner": "AND",
+          "matchers": [
+            {
+              "keySelector": {
+                "trafficType": "user"
+              },
+              "matcherType": "IN_RULE_BASED_SEGMENT",
+              "negate": false,
+              "userDefinedSegmentMatcherData": {
+                "segmentName": "sample_rule_based_segment"
+              }
+            }
+          ]
+        }
+      }
+    ]
+  }]
+}}

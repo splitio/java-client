@@ -1,6 +1,7 @@
 package io.split.client;
 
 import com.google.common.collect.Lists;
+
 import io.split.client.api.SplitView;
 import io.split.client.dtos.Split;
 import io.split.client.dtos.SplitChange;
@@ -237,7 +238,7 @@ public class SplitManagerImplTest {
         String splits = new String(Files.readAllBytes(Paths.get("src/test/resources/splits_imp_toggle.json")), StandardCharsets.UTF_8);
         SplitChange change = Json.fromJson(splits, SplitChange.class);
         SplitCacheConsumer splitCacheConsumer = mock(SplitCacheConsumer.class);
-        for (Split split : change.splits) {
+        for (Split split : change.featureFlags.d) {
             ParsedSplit parsedSplit = parser.parse(split);
             when(splitCacheConsumer.get(split.name)).thenReturn(parsedSplit);
         }

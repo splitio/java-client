@@ -11,6 +11,7 @@ import org.apache.hc.client5.http.classic.methods.HttpPost;
 import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
 import org.apache.hc.client5.http.impl.classic.CloseableHttpResponse;
 import org.apache.hc.core5.http.ContentType;
+import org.apache.hc.core5.http.HttpRequest;
 import org.apache.hc.core5.http.HttpStatus;
 import org.apache.hc.core5.http.io.entity.EntityUtils;
 import org.apache.hc.core5.http.io.entity.HttpEntities;
@@ -19,7 +20,6 @@ import org.slf4j.LoggerFactory;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
-import org.apache.hc.core5.http.HttpRequest;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.Collections;
@@ -87,24 +87,35 @@ public final class SplitHttpClientImpl implements SplitHttpClient {
             }
 
             String statusMessage = "";
-            if (response.getCode() < HttpStatus.SC_OK || response.getCode() >= HttpStatus.SC_MULTIPLE_CHOICES) {
-                _log.warn(String.format("Response status was: %s. Reason: %s", response.getCode(),
-                        response.getReasonPhrase()));
+            int code = response.getCode();
+            if (code < HttpStatus.SC_OK || code >= HttpStatus.SC_MULTIPLE_CHOICES) {
                 statusMessage = response.getReasonPhrase();
+                _log.warn(String.format("Response status was: %s. Reason: %s", code, statusMessage));
             }
 
-            return new SplitHttpResponse(response.getCode(),
+            String body = extractBodyFromResponse(response);
+
+            return new SplitHttpResponse(code,
                     statusMessage,
-                    EntityUtils.toString(response.getEntity(), StandardCharsets.UTF_8),
+                    body,
                     Arrays.stream(response.getHeaders()).map(
                             h -> new SplitHttpResponse.Header(h.getName(), Collections.singletonList(h.getValue())))
                             .collect(Collectors.toList()));
-            // response.getHeaders());
         } catch (Exception e) {
             throw new IllegalStateException(String.format("Problem in http get operation: %s", e), e);
         } finally {
             Utils.forceClose(response);
         }
+    }
+
+    private String extractBodyFromResponse(CloseableHttpResponse response) {
+        String body = "";
+        try {
+            body = EntityUtils.toString(response.getEntity(), StandardCharsets.UTF_8);
+        } catch (Exception e) {
+            _log.warn("Error parsing Response.body", e);
+        }
+        return body;
     }
 
     public SplitHttpResponse post(URI uri, String body, Map<String, List<String>> additionalHeaders)

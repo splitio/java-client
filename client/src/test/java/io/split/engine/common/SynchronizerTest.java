@@ -7,11 +7,7 @@ import io.split.client.interceptors.FlagSetsFilter;
 import io.split.client.interceptors.FlagSetsFilterImpl;
 import io.split.engine.segments.SegmentChangeFetcher;
 import io.split.engine.segments.SegmentSynchronizationTaskImp;
-import io.split.storages.SegmentCache;
-import io.split.storages.SegmentCacheProducer;
-import io.split.storages.SplitCache;
-import io.split.storages.SplitCacheConsumer;
-import io.split.storages.SplitCacheProducer;
+import io.split.storages.*;
 import io.split.storages.memory.InMemoryCacheImp;
 import io.split.engine.experiments.FetchResult;
 import io.split.engine.experiments.SplitFetcherImp;
@@ -22,9 +18,11 @@ import io.split.telemetry.storage.TelemetryRuntimeProducer;
 import io.split.telemetry.synchronizer.TelemetrySyncTask;
 import org.junit.Assert;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mockito;
+import org.mockito.internal.matchers.Any;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
@@ -43,6 +41,7 @@ public class SynchronizerTest {
     private SegmentSynchronizationTask _segmentFetcher;
     private SplitFetcherImp _splitFetcher;
     private SplitCacheProducer _splitCacheProducer;
+    private RuleBasedSegmentCacheProducer _ruleBasedSegmentCacheProducer;
     private Synchronizer _synchronizer;
     private SegmentCacheProducer _segmentCacheProducer;
     private SplitTasks _splitTasks;
@@ -56,6 +55,7 @@ public class SynchronizerTest {
         _refreshableSplitFetcherTask = Mockito.mock(SplitSynchronizationTask.class);
         _segmentFetcher = Mockito.mock(SegmentSynchronizationTask.class);
         _splitFetcher = Mockito.mock(SplitFetcherImp.class);
+        _ruleBasedSegmentCacheProducer = Mockito.mock(RuleBasedSegmentCacheProducer.class);
         _splitCacheProducer = Mockito.mock(SplitCacheProducer.class);
         _segmentCacheProducer = Mockito.mock(SegmentCache.class);
         _telemetrySyncTask = Mockito.mock(TelemetrySyncTask.class);
@@ -65,7 +65,7 @@ public class SynchronizerTest {
 
         _splitTasks = SplitTasks.build(_refreshableSplitFetcherTask, _segmentFetcher, _impressionsManager, _eventsTask, _telemetrySyncTask, _uniqueKeysTracker);
 
-        _synchronizer = new SynchronizerImp(_splitTasks, _splitFetcher, _splitCacheProducer, _segmentCacheProducer, 50, 10, 5, new HashSet<>());
+        _synchronizer = new SynchronizerImp(_splitTasks, _splitFetcher, _splitCacheProducer, _segmentCacheProducer, _ruleBasedSegmentCacheProducer, 50, 10, 5, new HashSet<>());
     }
 
     @Test
@@ -83,7 +83,7 @@ public class SynchronizerTest {
     public void testSyncAllSegments() throws InterruptedException, NoSuchFieldException, IllegalAccessException {
         SegmentSynchronizationTask segmentSynchronizationTask = new SegmentSynchronizationTaskImp(Mockito.mock(SegmentChangeFetcher.class),
                 20L, 1, _segmentCacheProducer, Mockito.mock(TelemetryRuntimeProducer.class),
-                Mockito.mock(SplitCacheConsumer.class), null);
+                Mockito.mock(SplitCacheConsumer.class), null, Mockito.mock(RuleBasedSegmentCache.class));
         Field synchronizerSegmentFetcher = SynchronizerImp.class.getDeclaredField("_segmentSynchronizationTaskImp");
         synchronizerSegmentFetcher.setAccessible(true);
         Field modifiersField = Field.class.getDeclaredField("modifiers");
@@ -120,7 +120,7 @@ public class SynchronizerTest {
     public void streamingRetryOnSplit() {
         when(_splitCacheProducer.getChangeNumber()).thenReturn(0l).thenReturn(0l).thenReturn(1l);
         when(_splitFetcher.forceRefresh(Mockito.anyObject())).thenReturn(new FetchResult(true, false, new HashSet<>()));
-        _synchronizer.refreshSplits(1L);
+        _synchronizer.refreshSplits(1L, 0L);
 
         Mockito.verify(_splitCacheProducer, Mockito.times(3)).getChangeNumber();
     }
@@ -145,7 +145,7 @@ public class SynchronizerTest {
         SegmentFetcher fetcher = Mockito.mock(SegmentFetcher.class);
         when(_segmentCacheProducer.getChangeNumber(Mockito.anyString())).thenReturn(0l).thenReturn(0l).thenReturn(1l);
         when(_segmentFetcher.getFetcher(Mockito.anyString())).thenReturn(fetcher);
-        _synchronizer.refreshSplits(1L);
+        _synchronizer.refreshSplits(1L, 0L);
 
         Mockito.verify(_splitCacheProducer, Mockito.times(3)).getChangeNumber();
         Mockito.verify(_segmentFetcher, Mockito.times(2)).getFetcher(Mockito.anyString());
@@ -158,6 +158,7 @@ public class SynchronizerTest {
                 _splitFetcher,
                 cache,
                 _segmentCacheProducer,
+                _ruleBasedSegmentCacheProducer,
                 50,
                 3,
                 1,
@@ -173,7 +174,7 @@ public class SynchronizerTest {
             return new FetchResult(true, false, new HashSet<>());
         }).when(_splitFetcher).forceRefresh(optionsCaptor.capture());
 
-        imp.refreshSplits(123L);
+        imp.refreshSplits(123L, 0L);
 
         List<FetchOptions> options = optionsCaptor.getAllValues();
         Assert.assertEquals(options.size(), 4);
@@ -190,6 +191,7 @@ public class SynchronizerTest {
                 _splitFetcher,
                 cache,
                 _segmentCacheProducer,
+                _ruleBasedSegmentCacheProducer,
                 50,
                 3,
                 1,
@@ -214,7 +216,7 @@ public class SynchronizerTest {
         backoffBase.set(imp, 1); // 1ms
 
         long before = System.currentTimeMillis();
-        imp.refreshSplits(1L);
+        imp.refreshSplits(1L, 0L);
         long after = System.currentTimeMillis();
 
         List<FetchOptions> options = optionsCaptor.getAllValues();
@@ -245,6 +247,7 @@ public class SynchronizerTest {
                 _splitFetcher,
                 cache,
                 _segmentCacheProducer,
+                _ruleBasedSegmentCacheProducer,
                 50,
                 3,
                 1,
@@ -303,6 +306,7 @@ public class SynchronizerTest {
                 _splitFetcher,
                 cache,
                 _segmentCacheProducer,
+                _ruleBasedSegmentCacheProducer,
                 50,
                 3,
                 1,
@@ -320,5 +324,19 @@ public class SynchronizerTest {
         Mockito.verify(_impressionsManager, Mockito.times(1)).close();
         Mockito.verify(_uniqueKeysTracker, Mockito.times(1)).stop();
         Mockito.verify(_telemetrySyncTask, Mockito.times(1)).stopScheduledTask();
+    }
+
+    @Test
+    public void skipSyncWhenChangeNumbersAreZero() {
+        _synchronizer.refreshSplits(0L, 0L);
+        Mockito.verify(_splitFetcher, Mockito.times(0)).forceRefresh(Mockito.anyObject());
+    }
+
+    @Test
+    public void testSyncRuleBasedSegment() {
+        when(_ruleBasedSegmentCacheProducer.getChangeNumber()).thenReturn(-1l).thenReturn(-1l).thenReturn(123l);
+        when(_splitFetcher.forceRefresh(Mockito.anyObject())).thenReturn(new FetchResult(true, false, new HashSet<>()));
+        _synchronizer.refreshSplits(0L, 123L);
+        Mockito.verify(_splitFetcher, Mockito.times(2)).forceRefresh(Mockito.anyObject());
     }
 }

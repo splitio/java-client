@@ -1,155 +1,156 @@
 {
-  "splits": [
-    {
-      "trafficTypeName": "user",
-      "name": "without_impression_toggle",
-      "trafficAllocation": 24,
-      "trafficAllocationSeed": -172559061,
-      "seed": -906334215,
-      "status": "ACTIVE",
-      "killed": true,
-      "defaultTreatment": "off",
-      "changeNumber": 1585948717645,
-      "algo": 2,
-      "configurations": {},
-      "conditions": [
-        {
-          "conditionType": "ROLLOUT",
-          "matcherGroup": {
-            "combiner": "AND",
-            "matchers": [
-              {
-                "keySelector": {
-                  "trafficType": "user",
-                  "attribute": null
-                },
-                "matcherType": "ALL_KEYS",
-                "negate": false,
-                "userDefinedSegmentMatcherData": null,
-                "whitelistMatcherData": null,
-                "unaryNumericMatcherData": null,
-                "betweenMatcherData": null,
-                "booleanMatcherData": null,
-                "dependencyMatcherData": null,
-                "stringMatcherData": null
-              }
-            ]
-          },
-          "partitions": [
-            {
-              "treatment": "on",
-              "size": 100
+  "ff": {
+    "d": [
+      {
+        "trafficTypeName": "user",
+        "name": "without_impression_toggle",
+        "trafficAllocation": 24,
+        "trafficAllocationSeed": -172559061,
+        "seed": -906334215,
+        "status": "ACTIVE",
+        "killed": true,
+        "defaultTreatment": "off",
+        "changeNumber": 1585948717645,
+        "algo": 2,
+        "configurations": {},
+        "conditions": [
+          {
+            "conditionType": "ROLLOUT",
+            "matcherGroup": {
+              "combiner": "AND",
+              "matchers": [
+                {
+                  "keySelector": {
+                    "trafficType": "user",
+                    "attribute": null
+                  },
+                  "matcherType": "ALL_KEYS",
+                  "negate": false,
+                  "userDefinedSegmentMatcherData": null,
+                  "whitelistMatcherData": null,
+                  "unaryNumericMatcherData": null,
+                  "betweenMatcherData": null,
+                  "booleanMatcherData": null,
+                  "dependencyMatcherData": null,
+                  "stringMatcherData": null
+                }
+              ]
             },
-            {
-              "treatment": "off",
-              "size": 0
-            }
-          ],
-          "label": "default rule"
-        }
-      ]
-    },
-    {
-      "trafficTypeName": "user",
-      "name": "impression_toggle_on",
-      "trafficAllocation": 24,
-      "trafficAllocationSeed": -172559061,
-      "seed": -906334215,
-      "status": "ACTIVE",
-      "killed": true,
-      "defaultTreatment": "off",
-      "changeNumber": 1585948717645,
-      "algo": 2,
-      "configurations": {},
-      "conditions": [
-        {
-          "conditionType": "ROLLOUT",
-          "matcherGroup": {
-            "combiner": "AND",
-            "matchers": [
+            "partitions": [
               {
-                "keySelector": {
-                  "trafficType": "user",
-                  "attribute": null
-                },
-                "matcherType": "ALL_KEYS",
-                "negate": false,
-                "userDefinedSegmentMatcherData": null,
-                "whitelistMatcherData": null,
-                "unaryNumericMatcherData": null,
-                "betweenMatcherData": null,
-                "booleanMatcherData": null,
-                "dependencyMatcherData": null,
-                "stringMatcherData": null
-              }
-            ]
-          },
-          "partitions": [
-            {
-              "treatment": "on",
-              "size": 100
-            },
-            {
-              "treatment": "off",
-              "size": 0
-            }
-          ],
-          "label": "default rule"
-        }
-      ],
-      "impressionsDisabled": false
-    },
-    {
-      "trafficTypeName": "user",
-      "name": "impression_toggle_off",
-      "trafficAllocation": 24,
-      "trafficAllocationSeed": -172559061,
-      "seed": -906334215,
-      "status": "ACTIVE",
-      "killed": true,
-      "defaultTreatment": "off",
-      "changeNumber": 1585948717645,
-      "algo": 2,
-      "configurations": {},
-      "conditions": [
-        {
-          "conditionType": "ROLLOUT",
-          "matcherGroup": {
-            "combiner": "AND",
-            "matchers": [
+                "treatment": "on",
+                "size": 100
+              },
               {
-                "keySelector": {
-                  "trafficType": "user",
-                  "attribute": null
-                },
-                "matcherType": "ALL_KEYS",
-                "negate": false,
-                "userDefinedSegmentMatcherData": null,
-                "whitelistMatcherData": null,
-                "unaryNumericMatcherData": null,
-                "betweenMatcherData": null,
-                "booleanMatcherData": null,
-                "dependencyMatcherData": null,
-                "stringMatcherData": null
+                "treatment": "off",
+                "size": 0
               }
-            ]
-          },
-          "partitions": [
-            {
-              "treatment": "on",
-              "size": 100
+            ],
+            "label": "default rule"
+          }
+        ]
+      },
+      {
+        "trafficTypeName": "user",
+        "name": "impression_toggle_on",
+        "trafficAllocation": 24,
+        "trafficAllocationSeed": -172559061,
+        "seed": -906334215,
+        "status": "ACTIVE",
+        "killed": true,
+        "defaultTreatment": "off",
+        "changeNumber": 1585948717645,
+        "algo": 2,
+        "configurations": {},
+        "conditions": [
+          {
+            "conditionType": "ROLLOUT",
+            "matcherGroup": {
+              "combiner": "AND",
+              "matchers": [
+                {
+                  "keySelector": {
+                    "trafficType": "user",
+                    "attribute": null
+                  },
+                  "matcherType": "ALL_KEYS",
+                  "negate": false,
+                  "userDefinedSegmentMatcherData": null,
+                  "whitelistMatcherData": null,
+                  "unaryNumericMatcherData": null,
+                  "betweenMatcherData": null,
+                  "booleanMatcherData": null,
+                  "dependencyMatcherData": null,
+                  "stringMatcherData": null
+                }
+              ]
             },
-            {
-              "treatment": "off",
-              "size": 0
-            }
-          ],
-          "label": "default rule"
-        }
-      ],
-      "impressionsDisabled": true
-    }
-  ],
-  "since": -1,
-  "till": 1602796638344
-}
+            "partitions": [
+              {
+                "treatment": "on",
+                "size": 100
+              },
+              {
+                "treatment": "off",
+                "size": 0
+              }
+            ],
+            "label": "default rule"
+          }
+        ],
+        "impressionsDisabled": false
+      },
+      {
+        "trafficTypeName": "user",
+        "name": "impression_toggle_off",
+        "trafficAllocation": 24,
+        "trafficAllocationSeed": -172559061,
+        "seed": -906334215,
+        "status": "ACTIVE",
+        "killed": true,
+        "defaultTreatment": "off",
+        "changeNumber": 1585948717645,
+        "algo": 2,
+        "configurations": {},
+        "conditions": [
+          {
+            "conditionType": "ROLLOUT",
+            "matcherGroup": {
+              "combiner": "AND",
+              "matchers": [
+                {
+                  "keySelector": {
+                    "trafficType": "user",
+                    "attribute": null
+                  },
+                  "matcherType": "ALL_KEYS",
+                  "negate": false,
+                  "userDefinedSegmentMatcherData": null,
+                  "whitelistMatcherData": null,
+                  "unaryNumericMatcherData": null,
+                  "betweenMatcherData": null,
+                  "booleanMatcherData": null,
+                  "dependencyMatcherData": null,
+                  "stringMatcherData": null
+                }
+              ]
+            },
+            "partitions": [
+              {
+                "treatment": "on",
+                "size": 100
+              },
+              {
+                "treatment": "off",
+                "size": 0
+              }
+            ],
+            "label": "default rule"
+          }
+        ],
+        "impressionsDisabled": true
+      }
+    ],
+    "s": -1,
+    "t": 1602796638344
+  }, "rbs": {"s": -1, "t": -1, "d": []}}

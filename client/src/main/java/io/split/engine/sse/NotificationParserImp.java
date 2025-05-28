@@ -1,10 +1,12 @@
 package io.split.engine.sse;
 
+import io.split.client.dtos.RuleBasedSegment;
+import io.split.client.dtos.Split;
 import io.split.client.utils.Json;
 
 import io.split.engine.sse.dtos.ControlNotification;
 import io.split.engine.sse.dtos.ErrorNotification;
-import io.split.engine.sse.dtos.FeatureFlagChangeNotification;
+import io.split.engine.sse.dtos.CommonChangeNotification;
 import io.split.engine.sse.dtos.GenericNotificationData;
 import io.split.engine.sse.dtos.IncomingNotification;
 import io.split.engine.sse.dtos.OccupancyNotification;
@@ -47,7 +49,9 @@ public class NotificationParserImp implements NotificationParser {
     private IncomingNotification parseNotification(GenericNotificationData genericNotificationData) throws Exception {
         switch (genericNotificationData.getType()) {
             case SPLIT_UPDATE:
-                return new FeatureFlagChangeNotification(genericNotificationData);
+                return new CommonChangeNotification(genericNotificationData, Split.class);
+            case RB_SEGMENT_UPDATE:
+                return new CommonChangeNotification(genericNotificationData, RuleBasedSegment.class);
             case SPLIT_KILL:
                 return new SplitKillNotification(genericNotificationData);
             case SEGMENT_UPDATE:

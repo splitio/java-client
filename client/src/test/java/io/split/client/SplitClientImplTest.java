@@ -11,6 +11,7 @@ import io.split.client.impressions.Impression;
 import io.split.client.impressions.ImpressionsManager;
 import io.split.client.interceptors.FlagSetsFilter;
 import io.split.client.interceptors.FlagSetsFilterImpl;
+import io.split.storages.RuleBasedSegmentCacheConsumer;
 import io.split.storages.SegmentCacheConsumer;
 import io.split.storages.SplitCacheConsumer;
 import io.split.engine.evaluator.EvaluatorImp;
@@ -87,6 +88,7 @@ public class SplitClientImplTest {
         SDKReadinessGates gates = mock(SDKReadinessGates.class);
         SplitCacheConsumer splitCacheConsumer = mock(SplitCacheConsumer.class);
         SegmentCacheConsumer segmentCacheConsumer = mock(SegmentCacheConsumer.class);
+        RuleBasedSegmentCacheConsumer ruleBasedSegmentCacheConsumer = mock(RuleBasedSegmentCacheConsumer.class);
         when(splitCacheConsumer.get(test)).thenReturn(parsedSplit);
 
         SplitClientImpl client = new SplitClientImpl(
@@ -96,7 +98,7 @@ public class SplitClientImplTest {
                 NoopEventsStorageImp.create(),
                 config,
                 gates,
-                new EvaluatorImp(splitCacheConsumer, segmentCacheConsumer), TELEMETRY_STORAGE, TELEMETRY_STORAGE,
+                new EvaluatorImp(splitCacheConsumer, segmentCacheConsumer, ruleBasedSegmentCacheConsumer), TELEMETRY_STORAGE, TELEMETRY_STORAGE,
                 flagSetsFilter
         );
         assertEquals(Treatments.CONTROL, client.getTreatment(null, "test1"));
@@ -116,6 +118,7 @@ public class SplitClientImplTest {
         SDKReadinessGates gates = mock(SDKReadinessGates.class);
         SplitCacheConsumer splitCacheConsumer = mock(SplitCacheConsumer.class);
         SegmentCacheConsumer segmentCacheConsumer = mock(SegmentCacheConsumer.class);
+        RuleBasedSegmentCacheConsumer ruleBasedSegmentCacheConsumer = mock(RuleBasedSegmentCacheConsumer.class);
         when(splitCacheConsumer.get(test)).thenReturn(parsedSplit);
 
         SplitClientImpl client = new SplitClientImpl(
@@ -125,7 +128,7 @@ public class SplitClientImplTest {
                 NoopEventsStorageImp.create(),
                 config,
                 gates,
-                new EvaluatorImp(splitCacheConsumer, segmentCacheConsumer), TELEMETRY_STORAGE, TELEMETRY_STORAGE,
+                new EvaluatorImp(splitCacheConsumer, segmentCacheConsumer, ruleBasedSegmentCacheConsumer), TELEMETRY_STORAGE, TELEMETRY_STORAGE,
                 flagSetsFilter
         );
         assertEquals(Treatments.CONTROL, client.getTreatment("adil@relateiq.com", null));
@@ -138,6 +141,7 @@ public class SplitClientImplTest {
         SDKReadinessGates gates = mock(SDKReadinessGates.class);
         SplitCacheConsumer splitCacheConsumer = mock(SplitCacheConsumer.class);
         SegmentCacheConsumer segmentCacheConsumer = mock(SegmentCacheConsumer.class);
+        RuleBasedSegmentCacheConsumer ruleBasedSegmentCacheConsumer = mock(RuleBasedSegmentCacheConsumer.class);
         when(splitCacheConsumer.get(anyString())).thenThrow(RuntimeException.class);
 
         SplitClientImpl client = new SplitClientImpl(
@@ -147,7 +151,7 @@ public class SplitClientImplTest {
                 NoopEventsStorageImp.create(),
                 config,
                 gates,
-                new EvaluatorImp(splitCacheConsumer, segmentCacheConsumer), TELEMETRY_STORAGE, TELEMETRY_STORAGE,
+                new EvaluatorImp(splitCacheConsumer, segmentCacheConsumer, ruleBasedSegmentCacheConsumer), TELEMETRY_STORAGE, TELEMETRY_STORAGE,
                 flagSetsFilter
         );
         assertEquals(Treatments.CONTROL, client.getTreatment("adil@relateiq.com", "test1"));
@@ -168,6 +172,7 @@ public class SplitClientImplTest {
         SDKReadinessGates gates = mock(SDKReadinessGates.class);
         SplitCacheConsumer splitCacheConsumer = mock(SplitCacheConsumer.class);
         SegmentCacheConsumer segmentCacheConsumer = mock(SegmentCacheConsumer.class);
+        RuleBasedSegmentCacheConsumer ruleBasedSegmentCacheConsumer = mock(RuleBasedSegmentCacheConsumer.class);
         when(splitCacheConsumer.get(test)).thenReturn(parsedSplit);
         when(gates.isSDKReady()).thenReturn(true);
 
@@ -178,7 +183,7 @@ public class SplitClientImplTest {
                 NoopEventsStorageImp.create(),
                 config,
                 gates,
-                new EvaluatorImp(splitCacheConsumer, segmentCacheConsumer), TELEMETRY_STORAGE, TELEMETRY_STORAGE,
+                new EvaluatorImp(splitCacheConsumer, segmentCacheConsumer, ruleBasedSegmentCacheConsumer), TELEMETRY_STORAGE, TELEMETRY_STORAGE,
                 flagSetsFilter
         );
 
@@ -206,6 +211,7 @@ public class SplitClientImplTest {
         SDKReadinessGates gates = mock(SDKReadinessGates.class);
         SplitCacheConsumer splitCacheConsumer = mock(SplitCacheConsumer.class);
         SegmentCacheConsumer segmentCacheConsumer = mock(SegmentCacheConsumer.class);
+        RuleBasedSegmentCacheConsumer ruleBasedSegmentCacheConsumer = mock(RuleBasedSegmentCacheConsumer.class);
         when(splitCacheConsumer.get(test)).thenReturn(parsedSplit);
 
         SplitClientImpl client = new SplitClientImpl(
@@ -215,7 +221,7 @@ public class SplitClientImplTest {
                 NoopEventsStorageImp.create(),
                 config,
                 gates,
-                new EvaluatorImp(splitCacheConsumer, segmentCacheConsumer), TELEMETRY_STORAGE, TELEMETRY_STORAGE,
+                new EvaluatorImp(splitCacheConsumer, segmentCacheConsumer, ruleBasedSegmentCacheConsumer), TELEMETRY_STORAGE, TELEMETRY_STORAGE,
                 flagSetsFilter
         );
         String randomKey = RandomStringUtils.random(10);
@@ -241,6 +247,7 @@ public class SplitClientImplTest {
         SDKReadinessGates gates = mock(SDKReadinessGates.class);
         SplitCacheConsumer splitCacheConsumer = mock(SplitCacheConsumer.class);
         SegmentCacheConsumer segmentCacheConsumer = mock(SegmentCacheConsumer.class);
+        RuleBasedSegmentCacheConsumer ruleBasedSegmentCacheConsumer = mock(RuleBasedSegmentCacheConsumer.class);
         when(splitCacheConsumer.get(test)).thenReturn(parsedSplit);
 
         SplitClientImpl client = new SplitClientImpl(
@@ -250,7 +257,7 @@ public class SplitClientImplTest {
                 NoopEventsStorageImp.create(),
                 config,
                 gates,
-                new EvaluatorImp(splitCacheConsumer, segmentCacheConsumer), TELEMETRY_STORAGE, TELEMETRY_STORAGE,
+                new EvaluatorImp(splitCacheConsumer, segmentCacheConsumer, ruleBasedSegmentCacheConsumer), TELEMETRY_STORAGE, TELEMETRY_STORAGE,
                 flagSetsFilter
         );
 
@@ -277,6 +284,7 @@ public class SplitClientImplTest {
         SDKReadinessGates gates = mock(SDKReadinessGates.class);
         SplitCacheConsumer splitCacheConsumer = mock(SplitCacheConsumer.class);
         SegmentCacheConsumer segmentCacheConsumer = mock(SegmentCacheConsumer.class);
+        RuleBasedSegmentCacheConsumer ruleBasedSegmentCacheConsumer = mock(RuleBasedSegmentCacheConsumer.class);
         when(splitCacheConsumer.get(test)).thenReturn(parsedSplit);
 
         SplitClientImpl client = new SplitClientImpl(
@@ -286,7 +294,7 @@ public class SplitClientImplTest {
                 NoopEventsStorageImp.create(),
                 config,
                 gates,
-                new EvaluatorImp(splitCacheConsumer, segmentCacheConsumer), TELEMETRY_STORAGE, TELEMETRY_STORAGE,
+                new EvaluatorImp(splitCacheConsumer, segmentCacheConsumer, ruleBasedSegmentCacheConsumer), TELEMETRY_STORAGE, TELEMETRY_STORAGE,
                 flagSetsFilter
         );
 
@@ -316,6 +324,7 @@ public class SplitClientImplTest {
         SDKReadinessGates gates = mock(SDKReadinessGates.class);
         SplitCacheConsumer splitCacheConsumer = mock(SplitCacheConsumer.class);
         SegmentCacheConsumer segmentCacheConsumer = mock(SegmentCacheConsumer.class);
+        RuleBasedSegmentCacheConsumer ruleBasedSegmentCacheConsumer = mock(RuleBasedSegmentCacheConsumer.class);
         when(splitCacheConsumer.get(test)).thenReturn(parsedSplit);
 
         SplitClientImpl client = new SplitClientImpl(
@@ -325,7 +334,7 @@ public class SplitClientImplTest {
                 NoopEventsStorageImp.create(),
                 config,
                 gates,
-                new EvaluatorImp(splitCacheConsumer, segmentCacheConsumer), TELEMETRY_STORAGE, TELEMETRY_STORAGE,
+                new EvaluatorImp(splitCacheConsumer, segmentCacheConsumer, ruleBasedSegmentCacheConsumer), TELEMETRY_STORAGE, TELEMETRY_STORAGE,
                 flagSetsFilter
         );
 
@@ -350,6 +359,7 @@ public class SplitClientImplTest {
         SDKReadinessGates gates = mock(SDKReadinessGates.class);
         SplitCacheConsumer splitCacheConsumer = mock(SplitCacheConsumer.class);
         SegmentCacheConsumer segmentCacheConsumer = mock(SegmentCacheConsumer.class);
+        RuleBasedSegmentCacheConsumer ruleBasedSegmentCacheConsumer = mock(RuleBasedSegmentCacheConsumer.class);
         when(splitCacheConsumer.get(test)).thenReturn(parsedSplit);
         when(gates.isSDKReady()).thenReturn(false);
 
@@ -360,7 +370,7 @@ public class SplitClientImplTest {
                 NoopEventsStorageImp.create(),
                 config,
                 gates,
-                new EvaluatorImp(splitCacheConsumer, segmentCacheConsumer), TELEMETRY_STORAGE, TELEMETRY_STORAGE,
+                new EvaluatorImp(splitCacheConsumer, segmentCacheConsumer, ruleBasedSegmentCacheConsumer), TELEMETRY_STORAGE, TELEMETRY_STORAGE,
                 flagSetsFilter
         );
 
@@ -384,6 +394,7 @@ public class SplitClientImplTest {
         SDKReadinessGates gates = mock(SDKReadinessGates.class);
         SplitCacheConsumer splitCacheConsumer = mock(SplitCacheConsumer.class);
         SegmentCacheConsumer segmentCacheConsumer = mock(SegmentCacheConsumer.class);
+        RuleBasedSegmentCacheConsumer ruleBasedSegmentCacheConsumer = mock(RuleBasedSegmentCacheConsumer.class);
         when(splitCacheConsumer.get(test)).thenReturn(parsedSplit);
 
         SplitClientImpl client = new SplitClientImpl(
@@ -393,7 +404,7 @@ public class SplitClientImplTest {
                 NoopEventsStorageImp.create(),
                 config,
                 gates,
-                new EvaluatorImp(splitCacheConsumer, segmentCacheConsumer), TELEMETRY_STORAGE, TELEMETRY_STORAGE,
+                new EvaluatorImp(splitCacheConsumer, segmentCacheConsumer, ruleBasedSegmentCacheConsumer), TELEMETRY_STORAGE, TELEMETRY_STORAGE,
                 flagSetsFilter
         );
 
@@ -423,6 +434,7 @@ public class SplitClientImplTest {
         SDKReadinessGates gates = mock(SDKReadinessGates.class);
         SplitCacheConsumer splitCacheConsumer = mock(SplitCacheConsumer.class);
         SegmentCacheConsumer segmentCacheConsumer = mock(SegmentCacheConsumer.class);
+        RuleBasedSegmentCacheConsumer ruleBasedSegmentCacheConsumer = mock(RuleBasedSegmentCacheConsumer.class);
         when(splitCacheConsumer.get(test)).thenReturn(parsedSplit);
 
         SplitClientImpl client = new SplitClientImpl(
@@ -432,7 +444,7 @@ public class SplitClientImplTest {
                 NoopEventsStorageImp.create(),
                 config,
                 gates,
-                new EvaluatorImp(splitCacheConsumer, segmentCacheConsumer), TELEMETRY_STORAGE, TELEMETRY_STORAGE,
+                new EvaluatorImp(splitCacheConsumer, segmentCacheConsumer, ruleBasedSegmentCacheConsumer), TELEMETRY_STORAGE, TELEMETRY_STORAGE,
                 flagSetsFilter
         );
 
@@ -459,6 +471,7 @@ public class SplitClientImplTest {
         SDKReadinessGates gates = mock(SDKReadinessGates.class);
         SplitCacheConsumer splitCacheConsumer = mock(SplitCacheConsumer.class);
         SegmentCacheConsumer segmentCacheConsumer = mock(SegmentCacheConsumer.class);
+        RuleBasedSegmentCacheConsumer ruleBasedSegmentCacheConsumer = mock(RuleBasedSegmentCacheConsumer.class);
         when(splitCacheConsumer.get(parent)).thenReturn(parentSplit);
         when(splitCacheConsumer.get(dependent)).thenReturn(dependentSplit);
 
@@ -469,7 +482,7 @@ public class SplitClientImplTest {
                 NoopEventsStorageImp.create(),
                 config,
                 gates,
-                new EvaluatorImp(splitCacheConsumer, segmentCacheConsumer), TELEMETRY_STORAGE, TELEMETRY_STORAGE,
+                new EvaluatorImp(splitCacheConsumer, segmentCacheConsumer, ruleBasedSegmentCacheConsumer), TELEMETRY_STORAGE, TELEMETRY_STORAGE,
                 flagSetsFilter
         );
 
@@ -493,6 +506,7 @@ public class SplitClientImplTest {
         SDKReadinessGates gates = mock(SDKReadinessGates.class);
         SplitCacheConsumer splitCacheConsumer = mock(SplitCacheConsumer.class);
         SegmentCacheConsumer segmentCacheConsumer = mock(SegmentCacheConsumer.class);
+        RuleBasedSegmentCacheConsumer ruleBasedSegmentCacheConsumer = mock(RuleBasedSegmentCacheConsumer.class);
         when(splitCacheConsumer.get(parent)).thenReturn(parentSplit);
         when(splitCacheConsumer.get(dependent)).thenReturn(dependentSplit);
 
@@ -503,7 +517,7 @@ public class SplitClientImplTest {
                 NoopEventsStorageImp.create(),
                 config,
                 gates,
-                new EvaluatorImp(splitCacheConsumer, segmentCacheConsumer), TELEMETRY_STORAGE, TELEMETRY_STORAGE,
+                new EvaluatorImp(splitCacheConsumer, segmentCacheConsumer, ruleBasedSegmentCacheConsumer), TELEMETRY_STORAGE, TELEMETRY_STORAGE,
                 flagSetsFilter
         );
 
@@ -522,6 +536,7 @@ public class SplitClientImplTest {
         SDKReadinessGates gates = mock(SDKReadinessGates.class);
         SplitCacheConsumer splitCacheConsumer = mock(SplitCacheConsumer.class);
         SegmentCacheConsumer segmentCacheConsumer = mock(SegmentCacheConsumer.class);
+        RuleBasedSegmentCacheConsumer ruleBasedSegmentCacheConsumer = mock(RuleBasedSegmentCacheConsumer.class);
         when(splitCacheConsumer.get(dependent)).thenReturn(dependentSplit);
 
         SplitClientImpl client = new SplitClientImpl(
@@ -531,7 +546,7 @@ public class SplitClientImplTest {
                 NoopEventsStorageImp.create(),
                 config,
                 gates,
-                new EvaluatorImp(splitCacheConsumer, segmentCacheConsumer), TELEMETRY_STORAGE, TELEMETRY_STORAGE,
+                new EvaluatorImp(splitCacheConsumer, segmentCacheConsumer, ruleBasedSegmentCacheConsumer), TELEMETRY_STORAGE, TELEMETRY_STORAGE,
                 flagSetsFilter
         );
 
@@ -551,6 +566,7 @@ public class SplitClientImplTest {
         SDKReadinessGates gates = mock(SDKReadinessGates.class);
         SplitCacheConsumer splitCacheConsumer = mock(SplitCacheConsumer.class);
         SegmentCacheConsumer segmentCacheConsumer = mock(SegmentCacheConsumer.class);
+        RuleBasedSegmentCacheConsumer ruleBasedSegmentCacheConsumer = mock(RuleBasedSegmentCacheConsumer.class);
         when(splitCacheConsumer.get(test)).thenReturn(parsedSplit);
 
         SplitClientImpl client = new SplitClientImpl(
@@ -560,7 +576,7 @@ public class SplitClientImplTest {
                 NoopEventsStorageImp.create(),
                 config,
                 gates,
-                new EvaluatorImp(splitCacheConsumer, segmentCacheConsumer), TELEMETRY_STORAGE, TELEMETRY_STORAGE,
+                new EvaluatorImp(splitCacheConsumer, segmentCacheConsumer, ruleBasedSegmentCacheConsumer), TELEMETRY_STORAGE, TELEMETRY_STORAGE,
                 flagSetsFilter
         );
 
@@ -585,6 +601,7 @@ public class SplitClientImplTest {
         SDKReadinessGates gates = mock(SDKReadinessGates.class);
         SplitCacheConsumer splitCacheConsumer = mock(SplitCacheConsumer.class);
         SegmentCacheConsumer segmentCacheConsumer = mock(SegmentCacheConsumer.class);
+        RuleBasedSegmentCacheConsumer ruleBasedSegmentCacheConsumer = mock(RuleBasedSegmentCacheConsumer.class);
         when(splitCacheConsumer.get(test)).thenReturn(parsedSplit);
 
         SplitClientImpl client = new SplitClientImpl(
@@ -594,7 +611,7 @@ public class SplitClientImplTest {
                 NoopEventsStorageImp.create(),
                 config,
                 gates,
-                new EvaluatorImp(splitCacheConsumer, segmentCacheConsumer), TELEMETRY_STORAGE, TELEMETRY_STORAGE,
+                new EvaluatorImp(splitCacheConsumer, segmentCacheConsumer, ruleBasedSegmentCacheConsumer), TELEMETRY_STORAGE, TELEMETRY_STORAGE,
                 flagSetsFilter
         );
 
@@ -620,6 +637,7 @@ public class SplitClientImplTest {
         SDKReadinessGates gates = mock(SDKReadinessGates.class);
         SplitCacheConsumer splitCacheConsumer = mock(SplitCacheConsumer.class);
         SegmentCacheConsumer segmentCacheConsumer = mock(SegmentCacheConsumer.class);
+        RuleBasedSegmentCacheConsumer ruleBasedSegmentCacheConsumer = mock(RuleBasedSegmentCacheConsumer.class);
         when(splitCacheConsumer.get(test)).thenReturn(parsedSplit);
 
         SplitClientImpl client = new SplitClientImpl(
@@ -629,7 +647,7 @@ public class SplitClientImplTest {
                 NoopEventsStorageImp.create(),
                 config,
                 gates,
-                new EvaluatorImp(splitCacheConsumer, segmentCacheConsumer), TELEMETRY_STORAGE, TELEMETRY_STORAGE,
+                new EvaluatorImp(splitCacheConsumer, segmentCacheConsumer, ruleBasedSegmentCacheConsumer), TELEMETRY_STORAGE, TELEMETRY_STORAGE,
                 flagSetsFilter
         );
 
@@ -657,6 +675,7 @@ public class SplitClientImplTest {
         SDKReadinessGates gates = mock(SDKReadinessGates.class);
         SplitCacheConsumer splitCacheConsumer = mock(SplitCacheConsumer.class);
         SegmentCacheConsumer segmentCacheConsumer = mock(SegmentCacheConsumer.class);
+        RuleBasedSegmentCacheConsumer ruleBasedSegmentCacheConsumer = mock(RuleBasedSegmentCacheConsumer.class);
         when(splitCacheConsumer.get(test)).thenReturn(parsedSplit);
 
         SplitClientImpl client = new SplitClientImpl(
@@ -666,7 +685,7 @@ public class SplitClientImplTest {
                 NoopEventsStorageImp.create(),
                 config,
                 gates,
-                new EvaluatorImp(splitCacheConsumer ,segmentCacheConsumer), TELEMETRY_STORAGE, TELEMETRY_STORAGE,
+                new EvaluatorImp(splitCacheConsumer ,segmentCacheConsumer, ruleBasedSegmentCacheConsumer), TELEMETRY_STORAGE, TELEMETRY_STORAGE,
                 flagSetsFilter
         );
 
@@ -699,6 +718,7 @@ public class SplitClientImplTest {
 
         SplitCacheConsumer splitCacheConsumer = mock(SplitCacheConsumer.class);
         SegmentCacheConsumer segmentCacheConsumer = mock(SegmentCacheConsumer.class);
+        RuleBasedSegmentCacheConsumer ruleBasedSegmentCacheConsumer = mock(RuleBasedSegmentCacheConsumer.class);
         when(splitCacheConsumer.get(test)).thenReturn(parsedSplit);
 
         SDKReadinessGates gates = mock(SDKReadinessGates.class);
@@ -710,7 +730,7 @@ public class SplitClientImplTest {
                 NoopEventsStorageImp.create(),
                 config,
                 gates,
-                new EvaluatorImp(splitCacheConsumer, segmentCacheConsumer), TELEMETRY_STORAGE, TELEMETRY_STORAGE,
+                new EvaluatorImp(splitCacheConsumer, segmentCacheConsumer, ruleBasedSegmentCacheConsumer), TELEMETRY_STORAGE, TELEMETRY_STORAGE,
                 flagSetsFilter
         );
 
@@ -802,6 +822,7 @@ public class SplitClientImplTest {
         SDKReadinessGates gates = mock(SDKReadinessGates.class);
         SplitCacheConsumer splitCacheConsumer = mock(SplitCacheConsumer.class);
         SegmentCacheConsumer segmentCacheConsumer = mock(SegmentCacheConsumer.class);
+        RuleBasedSegmentCacheConsumer ruleBasedSegmentCacheConsumer = mock(RuleBasedSegmentCacheConsumer.class);
         when(splitCacheConsumer.get(test)).thenReturn(parsedSplit);
 
         ImpressionsManager impressionsManager = mock(ImpressionsManager.class);
@@ -812,7 +833,7 @@ public class SplitClientImplTest {
                 NoopEventsStorageImp.create(),
                 config,
                 gates,
-                new EvaluatorImp(splitCacheConsumer, segmentCacheConsumer), TELEMETRY_STORAGE, TELEMETRY_STORAGE,
+                new EvaluatorImp(splitCacheConsumer, segmentCacheConsumer, ruleBasedSegmentCacheConsumer), TELEMETRY_STORAGE, TELEMETRY_STORAGE,
                 flagSetsFilter
         );
 
@@ -853,6 +874,7 @@ public class SplitClientImplTest {
         SDKReadinessGates gates = mock(SDKReadinessGates.class);
         SplitCacheConsumer splitCacheConsumer = mock(SplitCacheConsumer.class);
         SegmentCacheConsumer segmentCacheConsumer = mock(SegmentCacheConsumer.class);
+        RuleBasedSegmentCacheConsumer ruleBasedSegmentCacheConsumer = mock(RuleBasedSegmentCacheConsumer.class);
         when(splitCacheConsumer.get(test)).thenReturn(parsedSplit);
 
         ImpressionsManager impressionsManager = mock(ImpressionsManager.class);
@@ -865,7 +887,7 @@ public class SplitClientImplTest {
                 NoopEventsStorageImp.create(),
                 config,
                 gates,
-                new EvaluatorImp(splitCacheConsumer, segmentCacheConsumer), TELEMETRY_STORAGE, TELEMETRY_STORAGE,
+                new EvaluatorImp(splitCacheConsumer, segmentCacheConsumer, ruleBasedSegmentCacheConsumer), TELEMETRY_STORAGE, TELEMETRY_STORAGE,
                 flagSetsFilter
         );
 
@@ -899,6 +921,7 @@ public class SplitClientImplTest {
         SDKReadinessGates gates = mock(SDKReadinessGates.class);
         SplitCacheConsumer splitCacheConsumer = mock(SplitCacheConsumer.class);
         SegmentCacheConsumer segmentCacheConsumer = mock(SegmentCacheConsumer.class);
+        RuleBasedSegmentCacheConsumer ruleBasedSegmentCacheConsumer = mock(RuleBasedSegmentCacheConsumer.class);
         when(splitCacheConsumer.get(test)).thenReturn(parsedSplit);
 
         SplitClientImpl client = new SplitClientImpl(
@@ -908,7 +931,7 @@ public class SplitClientImplTest {
                 NoopEventsStorageImp.create(),
                 config,
                 gates,
-                new EvaluatorImp(splitCacheConsumer, segmentCacheConsumer), TELEMETRY_STORAGE, TELEMETRY_STORAGE,
+                new EvaluatorImp(splitCacheConsumer, segmentCacheConsumer, ruleBasedSegmentCacheConsumer), TELEMETRY_STORAGE, TELEMETRY_STORAGE,
                 flagSetsFilter
         );
 
@@ -935,6 +958,7 @@ public class SplitClientImplTest {
         SDKReadinessGates gates = mock(SDKReadinessGates.class);
         SplitCacheConsumer splitCacheConsumer = mock(SplitCacheConsumer.class);
         SegmentCacheConsumer segmentCacheConsumer = mock(SegmentCacheConsumer.class);
+        RuleBasedSegmentCacheConsumer ruleBasedSegmentCacheConsumer = mock(RuleBasedSegmentCacheConsumer.class);
         HashMap<String, HashSet<String>> flagsBySets = new HashMap<>();
         flagsBySets.put("set1", new HashSet<>(Arrays.asList(test)));
         when(splitCacheConsumer.getNamesByFlagSets(Arrays.asList("set1"))).thenReturn(flagsBySets);
@@ -950,7 +974,7 @@ public class SplitClientImplTest {
                 NoopEventsStorageImp.create(),
                 config,
                 gates,
-                new EvaluatorImp(splitCacheConsumer, segmentCacheConsumer), TELEMETRY_STORAGE, TELEMETRY_STORAGE,
+                new EvaluatorImp(splitCacheConsumer, segmentCacheConsumer, ruleBasedSegmentCacheConsumer), TELEMETRY_STORAGE, TELEMETRY_STORAGE,
                 flagSetsFilter
         );
 
@@ -975,6 +999,7 @@ public class SplitClientImplTest {
         SDKReadinessGates gates = mock(SDKReadinessGates.class);
         SplitCacheConsumer splitCacheConsumer = mock(SplitCacheConsumer.class);
         SegmentCacheConsumer segmentCacheConsumer = mock(SegmentCacheConsumer.class);
+        RuleBasedSegmentCacheConsumer ruleBasedSegmentCacheConsumer = mock(RuleBasedSegmentCacheConsumer.class);
         HashMap<String, HashSet<String>> flagsBySets = new HashMap<>();
         flagsBySets.put("set1", new HashSet<>(Arrays.asList(test)));
         when(splitCacheConsumer.getNamesByFlagSets(Arrays.asList("set1"))).thenReturn(flagsBySets);
@@ -990,7 +1015,7 @@ public class SplitClientImplTest {
                 NoopEventsStorageImp.create(),
                 config,
                 gates,
-                new EvaluatorImp(splitCacheConsumer, segmentCacheConsumer), TELEMETRY_STORAGE, TELEMETRY_STORAGE,
+                new EvaluatorImp(splitCacheConsumer, segmentCacheConsumer, ruleBasedSegmentCacheConsumer), TELEMETRY_STORAGE, TELEMETRY_STORAGE,
                 flagSetsFilter
         );
 
@@ -1017,6 +1042,7 @@ public class SplitClientImplTest {
         SDKReadinessGates gates = mock(SDKReadinessGates.class);
         SplitCacheConsumer splitCacheConsumer = mock(SplitCacheConsumer.class);
         SegmentCacheConsumer segmentCacheConsumer = mock(SegmentCacheConsumer.class);
+        RuleBasedSegmentCacheConsumer ruleBasedSegmentCacheConsumer = mock(RuleBasedSegmentCacheConsumer.class);
         when(splitCacheConsumer.get(test)).thenReturn(parsedSplit);
 
         ImpressionsManager impressionsManager = mock(ImpressionsManager.class);
@@ -1027,7 +1053,7 @@ public class SplitClientImplTest {
                 NoopEventsStorageImp.create(),
                 config,
                 gates,
-                new EvaluatorImp(splitCacheConsumer, segmentCacheConsumer), TELEMETRY_STORAGE, TELEMETRY_STORAGE,
+                new EvaluatorImp(splitCacheConsumer, segmentCacheConsumer, ruleBasedSegmentCacheConsumer), TELEMETRY_STORAGE, TELEMETRY_STORAGE,
                 flagSetsFilter
         );
 
@@ -1060,6 +1086,7 @@ public class SplitClientImplTest {
         SplitCacheConsumer splitCacheConsumer = mock(SplitCacheConsumer.class);
         SDKReadinessGates ready = mock(SDKReadinessGates.class);
         SegmentCacheConsumer segmentCacheConsumer = mock(SegmentCacheConsumer.class);
+        RuleBasedSegmentCacheConsumer ruleBasedSegmentCacheConsumer = mock(RuleBasedSegmentCacheConsumer.class);
         when(ready.waitUntilInternalReady(100)).thenReturn(true);
 
         SplitClientImpl client = new SplitClientImpl(
@@ -1069,7 +1096,7 @@ public class SplitClientImplTest {
                 NoopEventsStorageImp.create(),
                 config,
                 ready,
-                new EvaluatorImp(splitCacheConsumer, segmentCacheConsumer), TELEMETRY_STORAGE, TELEMETRY_STORAGE,
+                new EvaluatorImp(splitCacheConsumer, segmentCacheConsumer, ruleBasedSegmentCacheConsumer), TELEMETRY_STORAGE, TELEMETRY_STORAGE,
                 flagSetsFilter
         );
 
@@ -1081,6 +1108,7 @@ public class SplitClientImplTest {
         SplitCacheConsumer splitCacheConsumer = mock(SplitCacheConsumer.class);
         SDKReadinessGates ready = mock(SDKReadinessGates.class);
         SegmentCacheConsumer segmentCacheConsumer = mock(SegmentCacheConsumer.class);
+        RuleBasedSegmentCacheConsumer ruleBasedSegmentCacheConsumer = mock(RuleBasedSegmentCacheConsumer.class);
         when(ready.waitUntilInternalReady(100)).thenReturn(false);
 
         SplitClientImpl client = new SplitClientImpl(
@@ -1090,7 +1118,7 @@ public class SplitClientImplTest {
                 NoopEventsStorageImp.create(),
                 config,
                 ready,
-                new EvaluatorImp(splitCacheConsumer, segmentCacheConsumer), TELEMETRY_STORAGE, TELEMETRY_STORAGE,
+                new EvaluatorImp(splitCacheConsumer, segmentCacheConsumer, ruleBasedSegmentCacheConsumer), TELEMETRY_STORAGE, TELEMETRY_STORAGE,
                 flagSetsFilter
         );
 
@@ -1102,6 +1130,7 @@ public class SplitClientImplTest {
         SDKReadinessGates gates = mock(SDKReadinessGates.class);
         SplitCacheConsumer splitCacheConsumer = mock(SplitCacheConsumer.class);
         SegmentCacheConsumer segmentCacheConsumer = mock(SegmentCacheConsumer.class);
+        RuleBasedSegmentCacheConsumer ruleBasedSegmentCacheConsumer = mock(RuleBasedSegmentCacheConsumer.class);
         when(gates.isSDKReady()).thenReturn(false);
         SplitClientImpl client = new SplitClientImpl(
                 mock(SplitFactory.class),
@@ -1110,7 +1139,7 @@ public class SplitClientImplTest {
                 NoopEventsStorageImp.create(),
                 config,
                 gates,
-                new EvaluatorImp(splitCacheConsumer, segmentCacheConsumer), TELEMETRY_STORAGE, TELEMETRY_STORAGE,
+                new EvaluatorImp(splitCacheConsumer, segmentCacheConsumer, ruleBasedSegmentCacheConsumer), TELEMETRY_STORAGE, TELEMETRY_STORAGE,
                 flagSetsFilter
         );
 
@@ -1127,7 +1156,8 @@ public class SplitClientImplTest {
         SDKReadinessGates gates = mock(SDKReadinessGates.class);
         SplitCacheConsumer splitCacheConsumer = mock(SplitCacheConsumer.class);
         SegmentCacheConsumer segmentCacheConsumer = mock(SegmentCacheConsumer.class);
-        
+        RuleBasedSegmentCacheConsumer ruleBasedSegmentCacheConsumer = mock(RuleBasedSegmentCacheConsumer.class);
+
         SplitClientImpl client = new SplitClientImpl(
                 mock(SplitFactory.class),
                 splitCacheConsumer,
@@ -1135,7 +1165,7 @@ public class SplitClientImplTest {
                 NoopEventsStorageImp.create(),
                 config,
                 gates,
-                new EvaluatorImp(splitCacheConsumer, segmentCacheConsumer), TELEMETRY_STORAGE, TELEMETRY_STORAGE,
+                new EvaluatorImp(splitCacheConsumer, segmentCacheConsumer, ruleBasedSegmentCacheConsumer), TELEMETRY_STORAGE, TELEMETRY_STORAGE,
                 flagSetsFilter
         );
         Assert.assertFalse(client.track("validKey", "valid_traffic_type", ""));
@@ -1151,7 +1181,8 @@ public class SplitClientImplTest {
         SDKReadinessGates gates = mock(SDKReadinessGates.class);
         SplitCacheConsumer splitCacheConsumer = mock(SplitCacheConsumer.class);
         SegmentCacheConsumer segmentCacheConsumer = mock(SegmentCacheConsumer.class);
-        
+        RuleBasedSegmentCacheConsumer ruleBasedSegmentCacheConsumer = mock(RuleBasedSegmentCacheConsumer.class);
+
         SplitClientImpl client = new SplitClientImpl(
                 mock(SplitFactory.class),
                 splitCacheConsumer,
@@ -1159,7 +1190,7 @@ public class SplitClientImplTest {
                 NoopEventsStorageImp.create(),
                 config,
                 gates,
-                new EvaluatorImp(splitCacheConsumer, segmentCacheConsumer), TELEMETRY_STORAGE, TELEMETRY_STORAGE,
+                new EvaluatorImp(splitCacheConsumer, segmentCacheConsumer, ruleBasedSegmentCacheConsumer), TELEMETRY_STORAGE, TELEMETRY_STORAGE,
                 flagSetsFilter
         );
 
@@ -1172,7 +1203,8 @@ public class SplitClientImplTest {
         SDKReadinessGates gates = mock(SDKReadinessGates.class);
         SplitCacheConsumer splitCacheConsumer = mock(SplitCacheConsumer.class);
         SegmentCacheConsumer segmentCacheConsumer = mock(SegmentCacheConsumer.class);
-        
+        RuleBasedSegmentCacheConsumer ruleBasedSegmentCacheConsumer = mock(RuleBasedSegmentCacheConsumer.class);
+
         SplitClientImpl client = new SplitClientImpl(
                 mock(SplitFactory.class),
                 splitCacheConsumer,
@@ -1180,7 +1212,7 @@ public class SplitClientImplTest {
                 NoopEventsStorageImp.create(),
                 config,
                 gates,
-                new EvaluatorImp(splitCacheConsumer, segmentCacheConsumer), TELEMETRY_STORAGE, TELEMETRY_STORAGE,
+                new EvaluatorImp(splitCacheConsumer, segmentCacheConsumer, ruleBasedSegmentCacheConsumer), TELEMETRY_STORAGE, TELEMETRY_STORAGE,
                 flagSetsFilter
         );
 
@@ -1202,6 +1234,7 @@ public class SplitClientImplTest {
         SDKReadinessGates gates = mock(SDKReadinessGates.class);
         SplitCacheConsumer splitCacheConsumer = mock(SplitCacheConsumer.class);
         SegmentCacheConsumer segmentCacheConsumer = mock(SegmentCacheConsumer.class);
+        RuleBasedSegmentCacheConsumer ruleBasedSegmentCacheConsumer = mock(RuleBasedSegmentCacheConsumer.class);
         when(splitCacheConsumer.get(test)).thenReturn(parsedSplit);
 
         SplitClientImpl client = new SplitClientImpl(
@@ -1211,7 +1244,7 @@ public class SplitClientImplTest {
                 NoopEventsStorageImp.create(),
                 config,
                 gates,
-                new EvaluatorImp(splitCacheConsumer, segmentCacheConsumer), TELEMETRY_STORAGE, TELEMETRY_STORAGE,
+                new EvaluatorImp(splitCacheConsumer, segmentCacheConsumer, ruleBasedSegmentCacheConsumer), TELEMETRY_STORAGE, TELEMETRY_STORAGE,
                 flagSetsFilter
         );
         Assert.assertNotEquals(Treatments.CONTROL, client.getTreatment("valid", "split"));
@@ -1251,6 +1284,7 @@ public class SplitClientImplTest {
         SDKReadinessGates gates = mock(SDKReadinessGates.class);
         SplitCacheConsumer splitCacheConsumer = mock(SplitCacheConsumer.class);
         SegmentCacheConsumer segmentCacheConsumer = mock(SegmentCacheConsumer.class);
+        RuleBasedSegmentCacheConsumer ruleBasedSegmentCacheConsumer = mock(RuleBasedSegmentCacheConsumer.class);
         EventsStorageProducer eventClientMock = Mockito.mock(EventsStorageProducer.class);
         Mockito.when(eventClientMock.track((Event) Mockito.any(), Mockito.anyInt())).thenReturn(true);
 
@@ -1261,7 +1295,7 @@ public class SplitClientImplTest {
                 eventClientMock,
                 config,
                 gates,
-                new EvaluatorImp(splitCacheConsumer, segmentCacheConsumer), TELEMETRY_STORAGE, TELEMETRY_STORAGE,
+                new EvaluatorImp(splitCacheConsumer, segmentCacheConsumer, ruleBasedSegmentCacheConsumer), TELEMETRY_STORAGE, TELEMETRY_STORAGE,
                 flagSetsFilter
         );
 
@@ -1359,6 +1393,7 @@ public class SplitClientImplTest {
         SDKReadinessGates gates = mock(SDKReadinessGates.class);
         SplitCacheConsumer splitCacheConsumer = mock(SplitCacheConsumer.class);
         SegmentCacheConsumer segmentCacheConsumer = mock(SegmentCacheConsumer.class);
+        RuleBasedSegmentCacheConsumer ruleBasedSegmentCacheConsumer = mock(RuleBasedSegmentCacheConsumer.class);
         when(splitCacheConsumer.get(test)).thenReturn(parsedSplit);
 
         SplitFactory mockFactory = new SplitFactory() {
@@ -1384,7 +1419,7 @@ public class SplitClientImplTest {
                 NoopEventsStorageImp.create(),
                 config,
                 gates,
-                new EvaluatorImp(splitCacheConsumer, segmentCacheConsumer), TELEMETRY_STORAGE, TELEMETRY_STORAGE,
+                new EvaluatorImp(splitCacheConsumer, segmentCacheConsumer, ruleBasedSegmentCacheConsumer), TELEMETRY_STORAGE, TELEMETRY_STORAGE,
                 flagSetsFilter
         );
 
@@ -1415,6 +1450,7 @@ public class SplitClientImplTest {
         SDKReadinessGates gates = mock(SDKReadinessGates.class);
         SplitCacheConsumer splitCacheConsumer = mock(SplitCacheConsumer.class);
         SegmentCacheConsumer segmentCacheConsumer = mock(SegmentCacheConsumer.class);
+        RuleBasedSegmentCacheConsumer ruleBasedSegmentCacheConsumer = mock(RuleBasedSegmentCacheConsumer.class);
         when(splitCacheConsumer.get(test)).thenReturn(parsedSplit);
 
         SplitClientImpl client = new SplitClientImpl(
@@ -1424,7 +1460,7 @@ public class SplitClientImplTest {
                 NoopEventsStorageImp.create(),
                 config,
                 gates,
-                new EvaluatorImp(splitCacheConsumer, segmentCacheConsumer), TELEMETRY_STORAGE, TELEMETRY_STORAGE,
+                new EvaluatorImp(splitCacheConsumer, segmentCacheConsumer, ruleBasedSegmentCacheConsumer), TELEMETRY_STORAGE, TELEMETRY_STORAGE,
                 flagSetsFilter
         );
 
@@ -1459,6 +1495,7 @@ public class SplitClientImplTest {
         SDKReadinessGates gates = mock(SDKReadinessGates.class);
         SplitCacheConsumer splitCacheConsumer = mock(SplitCacheConsumer.class);
         SegmentCacheConsumer segmentCacheConsumer = mock(SegmentCacheConsumer.class);
+        RuleBasedSegmentCacheConsumer ruleBasedSegmentCacheConsumer = mock(RuleBasedSegmentCacheConsumer.class);
         HashMap<String, HashSet<String>> flagsBySets = new HashMap<>();
         flagsBySets.put("set1", new HashSet<>(Arrays.asList(test)));
         when(splitCacheConsumer.getNamesByFlagSets(Arrays.asList("set1"))).thenReturn(flagsBySets);
@@ -1474,7 +1511,7 @@ public class SplitClientImplTest {
                 NoopEventsStorageImp.create(),
                 config,
                 gates,
-                new EvaluatorImp(splitCacheConsumer, segmentCacheConsumer), TELEMETRY_STORAGE, TELEMETRY_STORAGE,
+                new EvaluatorImp(splitCacheConsumer, segmentCacheConsumer, ruleBasedSegmentCacheConsumer), TELEMETRY_STORAGE, TELEMETRY_STORAGE,
                 flagSetsFilter
         );
 
@@ -1507,6 +1544,7 @@ public class SplitClientImplTest {
         SDKReadinessGates gates = mock(SDKReadinessGates.class);
         SplitCacheConsumer splitCacheConsumer = mock(SplitCacheConsumer.class);
         SegmentCacheConsumer segmentCacheConsumer = mock(SegmentCacheConsumer.class);
+        RuleBasedSegmentCacheConsumer ruleBasedSegmentCacheConsumer = mock(RuleBasedSegmentCacheConsumer.class);
         HashMap<String, HashSet<String>> flagsBySets = new HashMap<>();
         flagsBySets.put("set1", new HashSet<>(Arrays.asList(test)));
         when(splitCacheConsumer.getNamesByFlagSets(Arrays.asList("set1"))).thenReturn(flagsBySets);
@@ -1522,7 +1560,7 @@ public class SplitClientImplTest {
                 NoopEventsStorageImp.create(),
                 config,
                 gates,
-                new EvaluatorImp(splitCacheConsumer, segmentCacheConsumer), TELEMETRY_STORAGE, TELEMETRY_STORAGE,
+                new EvaluatorImp(splitCacheConsumer, segmentCacheConsumer, ruleBasedSegmentCacheConsumer), TELEMETRY_STORAGE, TELEMETRY_STORAGE,
                 flagSetsFilter
         );
 
@@ -1549,6 +1587,7 @@ public class SplitClientImplTest {
         SDKReadinessGates gates = mock(SDKReadinessGates.class);
         SplitCacheConsumer splitCacheConsumer = mock(SplitCacheConsumer.class);
         SegmentCacheConsumer segmentCacheConsumer = mock(SegmentCacheConsumer.class);
+        RuleBasedSegmentCacheConsumer ruleBasedSegmentCacheConsumer = mock(RuleBasedSegmentCacheConsumer.class);
         when(splitCacheConsumer.get(test)).thenReturn(parsedSplit);
 
         SplitClientConfig config = SplitClientConfig.builder().setBlockUntilReadyTimeout(-100).build();
@@ -1559,7 +1598,7 @@ public class SplitClientImplTest {
                 NoopEventsStorageImp.create(),
                 config,
                 gates,
-                new EvaluatorImp(splitCacheConsumer, segmentCacheConsumer), TELEMETRY_STORAGE, TELEMETRY_STORAGE,
+                new EvaluatorImp(splitCacheConsumer, segmentCacheConsumer, ruleBasedSegmentCacheConsumer), TELEMETRY_STORAGE, TELEMETRY_STORAGE,
                 flagSetsFilter
         );
 
@@ -1579,6 +1618,7 @@ public class SplitClientImplTest {
         SDKReadinessGates gates = mock(SDKReadinessGates.class);
         SplitCacheConsumer splitCacheConsumer = mock(SplitCacheConsumer.class);
         SegmentCacheConsumer segmentCacheConsumer = mock(SegmentCacheConsumer.class);
+        RuleBasedSegmentCacheConsumer ruleBasedSegmentCacheConsumer = mock(RuleBasedSegmentCacheConsumer.class);
         when(splitCacheConsumer.fetchMany(Collections.singletonList(test))).thenReturn(splits);
 
         SplitClientImpl client = new SplitClientImpl(
@@ -1588,7 +1628,7 @@ public class SplitClientImplTest {
                 NoopEventsStorageImp.create(),
                 config,
                 gates,
-                new EvaluatorImp(splitCacheConsumer, segmentCacheConsumer), TELEMETRY_STORAGE, TELEMETRY_STORAGE,
+                new EvaluatorImp(splitCacheConsumer, segmentCacheConsumer, ruleBasedSegmentCacheConsumer), TELEMETRY_STORAGE, TELEMETRY_STORAGE,
                 flagSetsFilter
         );
         assertEquals(Treatments.CONTROL, client.getTreatments(null, Collections.singletonList("test1")).get("test1"));
@@ -1609,6 +1649,7 @@ public class SplitClientImplTest {
         SDKReadinessGates gates = mock(SDKReadinessGates.class);
         SplitCacheConsumer splitCacheConsumer = mock(SplitCacheConsumer.class);
         SegmentCacheConsumer segmentCacheConsumer = mock(SegmentCacheConsumer.class);
+        RuleBasedSegmentCacheConsumer ruleBasedSegmentCacheConsumer = mock(RuleBasedSegmentCacheConsumer.class);
         when(splitCacheConsumer.fetchMany(Collections.singletonList(test))).thenReturn(splits);
 
         SplitClientImpl client = new SplitClientImpl(
@@ -1618,7 +1659,7 @@ public class SplitClientImplTest {
                 NoopEventsStorageImp.create(),
                 config,
                 gates,
-                new EvaluatorImp(splitCacheConsumer, segmentCacheConsumer), TELEMETRY_STORAGE, TELEMETRY_STORAGE,
+                new EvaluatorImp(splitCacheConsumer, segmentCacheConsumer, ruleBasedSegmentCacheConsumer), TELEMETRY_STORAGE, TELEMETRY_STORAGE,
                 flagSetsFilter
         );
         assertEquals(0, client.getTreatments("key", null).size());
@@ -1631,6 +1672,7 @@ public class SplitClientImplTest {
         SDKReadinessGates gates = mock(SDKReadinessGates.class);
         SplitCacheConsumer splitCacheConsumer = mock(SplitCacheConsumer.class);
         SegmentCacheConsumer segmentCacheConsumer = mock(SegmentCacheConsumer.class);
+        RuleBasedSegmentCacheConsumer ruleBasedSegmentCacheConsumer = mock(RuleBasedSegmentCacheConsumer.class);
         when(splitCacheConsumer.fetchMany(anyList())).thenThrow(RuntimeException.class);
 
         SplitClientImpl client = new SplitClientImpl(
@@ -1640,7 +1682,7 @@ public class SplitClientImplTest {
                 NoopEventsStorageImp.create(),
                 config,
                 gates,
-                new EvaluatorImp(splitCacheConsumer, segmentCacheConsumer), TELEMETRY_STORAGE, TELEMETRY_STORAGE,
+                new EvaluatorImp(splitCacheConsumer, segmentCacheConsumer, ruleBasedSegmentCacheConsumer), TELEMETRY_STORAGE, TELEMETRY_STORAGE,
                 flagSetsFilter
         );
         Map<String, String> result = client.getTreatments("adil@relateiq.com", Arrays.asList("test1", "test2"));
@@ -1663,6 +1705,7 @@ public class SplitClientImplTest {
         SDKReadinessGates gates = mock(SDKReadinessGates.class);
         SplitCacheConsumer splitCacheConsumer = mock(SplitCacheConsumer.class);
         SegmentCacheConsumer segmentCacheConsumer = mock(SegmentCacheConsumer.class);
+        RuleBasedSegmentCacheConsumer ruleBasedSegmentCacheConsumer = mock(RuleBasedSegmentCacheConsumer.class);
         when(splitCacheConsumer.fetchMany(anyList())).thenReturn(splits);
         when(gates.isSDKReady()).thenReturn(true);
 
@@ -1673,7 +1716,7 @@ public class SplitClientImplTest {
                 NoopEventsStorageImp.create(),
                 config,
                 gates,
-                new EvaluatorImp(splitCacheConsumer, segmentCacheConsumer), TELEMETRY_STORAGE, TELEMETRY_STORAGE,
+                new EvaluatorImp(splitCacheConsumer, segmentCacheConsumer, ruleBasedSegmentCacheConsumer), TELEMETRY_STORAGE, TELEMETRY_STORAGE,
                 flagSetsFilter
         );
         Map<String, String> result = client.getTreatments("randomKey", Arrays.asList(test, "test2"));
@@ -1694,6 +1737,7 @@ public class SplitClientImplTest {
         SDKReadinessGates gates = mock(SDKReadinessGates.class);
         SplitCacheConsumer splitCacheConsumer = mock(SplitCacheConsumer.class);
         SegmentCacheConsumer segmentCacheConsumer = mock(SegmentCacheConsumer.class);
+        RuleBasedSegmentCacheConsumer ruleBasedSegmentCacheConsumer = mock(RuleBasedSegmentCacheConsumer.class);
         when(splitCacheConsumer.fetchMany(Collections.singletonList(test))).thenReturn(splits);
 
         SplitClientImpl client = new SplitClientImpl(
@@ -1703,7 +1747,7 @@ public class SplitClientImplTest {
                 NoopEventsStorageImp.create(),
                 config,
                 gates,
-                new EvaluatorImp(splitCacheConsumer, segmentCacheConsumer), TELEMETRY_STORAGE, TELEMETRY_STORAGE,
+                new EvaluatorImp(splitCacheConsumer, segmentCacheConsumer, ruleBasedSegmentCacheConsumer), TELEMETRY_STORAGE, TELEMETRY_STORAGE,
                 flagSetsFilter
         );
         Map<String, String> result = client.getTreatments("key", new ArrayList<>());
@@ -1718,6 +1762,7 @@ public class SplitClientImplTest {
         SDKReadinessGates gates = mock(SDKReadinessGates.class);
         SplitCacheConsumer splitCacheConsumer = mock(SplitCacheConsumer.class);
         SegmentCacheConsumer segmentCacheConsumer = mock(SegmentCacheConsumer.class);
+        RuleBasedSegmentCacheConsumer ruleBasedSegmentCacheConsumer = mock(RuleBasedSegmentCacheConsumer.class);
         when(splitCacheConsumer.get(anyString())).thenThrow(RuntimeException.class);
 
         SplitClientImpl client = new SplitClientImpl(
@@ -1727,7 +1772,7 @@ public class SplitClientImplTest {
                 NoopEventsStorageImp.create(),
                 config,
                 gates,
-                new EvaluatorImp(splitCacheConsumer, segmentCacheConsumer), TELEMETRY_STORAGE, TELEMETRY_STORAGE,
+                new EvaluatorImp(splitCacheConsumer, segmentCacheConsumer, ruleBasedSegmentCacheConsumer), TELEMETRY_STORAGE, TELEMETRY_STORAGE,
                 flagSetsFilter
         );
         Map<String, String> result = client.getTreatments("adil@relateiq.com", Arrays.asList("test1"));
@@ -1754,6 +1799,7 @@ public class SplitClientImplTest {
         SDKReadinessGates gates = mock(SDKReadinessGates.class);
         SplitCacheConsumer splitCacheConsumer = mock(SplitCacheConsumer.class);
         SegmentCacheConsumer segmentCacheConsumer = mock(SegmentCacheConsumer.class);
+        RuleBasedSegmentCacheConsumer ruleBasedSegmentCacheConsumer = mock(RuleBasedSegmentCacheConsumer.class);
         when(splitCacheConsumer.fetchMany(anyList())).thenReturn(parsedSplits);
         when(gates.isSDKReady()).thenReturn(true);
 
@@ -1764,7 +1810,7 @@ public class SplitClientImplTest {
                 NoopEventsStorageImp.create(),
                 config,
                 gates,
-                new EvaluatorImp(splitCacheConsumer, segmentCacheConsumer), TELEMETRY_STORAGE, TELEMETRY_STORAGE,
+                new EvaluatorImp(splitCacheConsumer, segmentCacheConsumer, ruleBasedSegmentCacheConsumer), TELEMETRY_STORAGE, TELEMETRY_STORAGE,
                 flagSetsFilter
         );
         Map<String, String> result = client.getTreatments("anyKey", Arrays.asList(test, test2));
@@ -1791,6 +1837,7 @@ public class SplitClientImplTest {
         SDKReadinessGates gates = mock(SDKReadinessGates.class);
         SplitCacheConsumer splitCacheConsumer = mock(SplitCacheConsumer.class);
         SegmentCacheConsumer segmentCacheConsumer = mock(SegmentCacheConsumer.class);
+        RuleBasedSegmentCacheConsumer ruleBasedSegmentCacheConsumer = mock(RuleBasedSegmentCacheConsumer.class);
         when(splitCacheConsumer.fetchMany(anyList())).thenReturn(parsedSplits);
         when(gates.isSDKReady()).thenReturn(true);
 
@@ -1801,7 +1848,7 @@ public class SplitClientImplTest {
                 NoopEventsStorageImp.create(),
                 config,
                 gates,
-                new EvaluatorImp(splitCacheConsumer, segmentCacheConsumer), TELEMETRY_STORAGE, TELEMETRY_STORAGE,
+                new EvaluatorImp(splitCacheConsumer, segmentCacheConsumer, ruleBasedSegmentCacheConsumer), TELEMETRY_STORAGE, TELEMETRY_STORAGE,
                 flagSetsFilter
         );
 
@@ -1836,6 +1883,7 @@ public class SplitClientImplTest {
         SDKReadinessGates gates = mock(SDKReadinessGates.class);
         SplitCacheConsumer splitCacheConsumer = mock(SplitCacheConsumer.class);
         SegmentCacheConsumer segmentCacheConsumer = mock(SegmentCacheConsumer.class);
+        RuleBasedSegmentCacheConsumer ruleBasedSegmentCacheConsumer = mock(RuleBasedSegmentCacheConsumer.class);
         when(splitCacheConsumer.fetchMany(anyList())).thenReturn(parsedSplits);
 
         SplitClientImpl client = new SplitClientImpl(
@@ -1845,7 +1893,7 @@ public class SplitClientImplTest {
                 NoopEventsStorageImp.create(),
                 config,
                 gates,
-                new EvaluatorImp(splitCacheConsumer, segmentCacheConsumer), TELEMETRY_STORAGE, TELEMETRY_STORAGE,
+                new EvaluatorImp(splitCacheConsumer, segmentCacheConsumer, ruleBasedSegmentCacheConsumer), TELEMETRY_STORAGE, TELEMETRY_STORAGE,
                 flagSetsFilter
         );
         Map<String, Object> attributes = new HashMap<>();
@@ -1871,6 +1919,7 @@ public class SplitClientImplTest {
         SDKReadinessGates gates = mock(SDKReadinessGates.class);
         SplitCacheConsumer splitCacheConsumer = mock(SplitCacheConsumer.class);
         SegmentCacheConsumer segmentCacheConsumer = mock(SegmentCacheConsumer.class);
+        RuleBasedSegmentCacheConsumer ruleBasedSegmentCacheConsumer = mock(RuleBasedSegmentCacheConsumer.class);
         Map<String, ParsedSplit> fetchManyResult = new HashMap<>();
         fetchManyResult.put(test, parsedSplit);
         when(splitCacheConsumer.fetchMany(new ArrayList<>(Arrays.asList(test)))).thenReturn(fetchManyResult);
@@ -1887,7 +1936,7 @@ public class SplitClientImplTest {
                 NoopEventsStorageImp.create(),
                 config,
                 gates,
-                new EvaluatorImp(splitCacheConsumer, segmentCacheConsumer), TELEMETRY_STORAGE, TELEMETRY_STORAGE,
+                new EvaluatorImp(splitCacheConsumer, segmentCacheConsumer, ruleBasedSegmentCacheConsumer), TELEMETRY_STORAGE, TELEMETRY_STORAGE,
                 flagSetsFilter
         );
 
@@ -1917,6 +1966,7 @@ public class SplitClientImplTest {
         SDKReadinessGates gates = mock(SDKReadinessGates.class);
         SplitCacheConsumer splitCacheConsumer = mock(SplitCacheConsumer.class);
         SegmentCacheConsumer segmentCacheConsumer = mock(SegmentCacheConsumer.class);
+        RuleBasedSegmentCacheConsumer ruleBasedSegmentCacheConsumer = mock(RuleBasedSegmentCacheConsumer.class);
         List<String> sets = new ArrayList<>();
         when(gates.isSDKReady()).thenReturn(true);
 
@@ -1927,7 +1977,7 @@ public class SplitClientImplTest {
                 NoopEventsStorageImp.create(),
                 config,
                 gates,
-                new EvaluatorImp(splitCacheConsumer, segmentCacheConsumer), TELEMETRY_STORAGE, TELEMETRY_STORAGE,
+                new EvaluatorImp(splitCacheConsumer, segmentCacheConsumer, ruleBasedSegmentCacheConsumer), TELEMETRY_STORAGE, TELEMETRY_STORAGE,
                 flagSetsFilter
         );
         assertTrue(client.getTreatmentsByFlagSet(RandomStringUtils.random(10), "", new HashMap<>()).isEmpty());
@@ -1949,6 +1999,7 @@ public class SplitClientImplTest {
         SDKReadinessGates gates = mock(SDKReadinessGates.class);
         SplitCacheConsumer splitCacheConsumer = mock(SplitCacheConsumer.class);
         SegmentCacheConsumer segmentCacheConsumer = mock(SegmentCacheConsumer.class);
+        RuleBasedSegmentCacheConsumer ruleBasedSegmentCacheConsumer = mock(RuleBasedSegmentCacheConsumer.class);
 
         Map<String, ParsedSplit> fetchManyResult = new HashMap<>();
         fetchManyResult.put(test, parsedSplit);
@@ -1970,7 +2021,7 @@ public class SplitClientImplTest {
                 NoopEventsStorageImp.create(),
                 config,
                 gates,
-                new EvaluatorImp(splitCacheConsumer, segmentCacheConsumer), TELEMETRY_STORAGE, TELEMETRY_STORAGE,
+                new EvaluatorImp(splitCacheConsumer, segmentCacheConsumer, ruleBasedSegmentCacheConsumer), TELEMETRY_STORAGE, TELEMETRY_STORAGE,
                 flagSetsFilter
         );
         int numKeys = 5;
@@ -2009,6 +2060,7 @@ public class SplitClientImplTest {
 
         SplitCacheConsumer splitCacheConsumer = mock(SplitCacheConsumer.class);
         SegmentCacheConsumer segmentCacheConsumer = mock(SegmentCacheConsumer.class);
+        RuleBasedSegmentCacheConsumer ruleBasedSegmentCacheConsumer = mock(RuleBasedSegmentCacheConsumer.class);
         when(splitCacheConsumer.fetchMany(anyList())).thenReturn(parsedSplits);
 
         List<String> sets = new ArrayList<>(Arrays.asList("set1"));
@@ -2025,7 +2077,7 @@ public class SplitClientImplTest {
                 NoopEventsStorageImp.create(),
                 config,
                 gates,
-                new EvaluatorImp(splitCacheConsumer, segmentCacheConsumer), TELEMETRY_STORAGE, TELEMETRY_STORAGE,
+                new EvaluatorImp(splitCacheConsumer, segmentCacheConsumer, ruleBasedSegmentCacheConsumer), TELEMETRY_STORAGE, TELEMETRY_STORAGE,
                 flagSetsFilter
         );
         Map<String, Object> attributes = new HashMap<>();
@@ -2065,6 +2117,7 @@ public class SplitClientImplTest {
 
         SplitCacheConsumer splitCacheConsumer = mock(SplitCacheConsumer.class);
         SegmentCacheConsumer segmentCacheConsumer = mock(SegmentCacheConsumer.class);
+        RuleBasedSegmentCacheConsumer ruleBasedSegmentCacheConsumer = mock(RuleBasedSegmentCacheConsumer.class);
         when(splitCacheConsumer.fetchMany(anyList())).thenReturn(parsedSplits);
 
         List<String> sets = new ArrayList<>(Arrays.asList("set1"));
@@ -2081,7 +2134,7 @@ public class SplitClientImplTest {
                 NoopEventsStorageImp.create(),
                 config,
                 gates,
-                new EvaluatorImp(splitCacheConsumer, segmentCacheConsumer), TELEMETRY_STORAGE, TELEMETRY_STORAGE,
+                new EvaluatorImp(splitCacheConsumer, segmentCacheConsumer, ruleBasedSegmentCacheConsumer), TELEMETRY_STORAGE, TELEMETRY_STORAGE,
                 flagSetsFilter
         );
         Map<String, Object> attributes = new HashMap<>();
@@ -2111,6 +2164,7 @@ public class SplitClientImplTest {
 
         SplitCacheConsumer splitCacheConsumer = mock(SplitCacheConsumer.class);
         SegmentCacheConsumer segmentCacheConsumer = mock(SegmentCacheConsumer.class);
+        RuleBasedSegmentCacheConsumer ruleBasedSegmentCacheConsumer = mock(RuleBasedSegmentCacheConsumer.class);
         when(splitCacheConsumer.get(test)).thenReturn(parsedSplit);
         when(splitCacheConsumer.fetchMany(Arrays.asList(test))).thenReturn(parsedSplits);
         Map<String, HashSet<String>> splits = new HashMap<>();
@@ -2126,7 +2180,7 @@ public class SplitClientImplTest {
                 NoopEventsStorageImp.create(),
                 config,
                 gates,
-                new EvaluatorImp(splitCacheConsumer, segmentCacheConsumer), TELEMETRY_STORAGE, TELEMETRY_STORAGE,
+                new EvaluatorImp(splitCacheConsumer, segmentCacheConsumer, ruleBasedSegmentCacheConsumer), TELEMETRY_STORAGE, TELEMETRY_STORAGE,
                 new FlagSetsFilterImpl(new HashSet<>())
         );
         Map<String, Object> attributes = ImmutableMap.<String, Object>of("age", -20, "acv", "1000000");

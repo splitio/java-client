@@ -1,5 +1,9 @@
 package io.split;
 
+import io.split.client.dtos.Condition;
+import io.split.client.dtos.Excluded;
+import io.split.client.dtos.RuleBasedSegment;
+import io.split.client.dtos.Status;
 import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
 import org.apache.hc.client5.http.impl.classic.CloseableHttpResponse;
 import org.apache.hc.core5.http.ClassicHttpResponse;
@@ -12,6 +16,8 @@ import org.mockito.Mockito;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.util.ArrayList;
+import java.util.List;
 
 public class TestHelper {
     public static CloseableHttpClient mockHttpClient(String jsonName, int httpStatus) throws IOException, IllegalAccessException, NoSuchMethodException, InvocationTargetException {
@@ -36,4 +42,20 @@ public class TestHelper {
         adaptMethod.setAccessible(true);
         return (CloseableHttpResponse) adaptMethod.invoke(null, mocked);
     }
+
+    public static RuleBasedSegment makeRuleBasedSegment(String name, List<Condition> conditions, long changeNumber) {
+        Excluded excluded = new Excluded();
+        excluded.segments = new ArrayList<>();
+        excluded.keys = new ArrayList<>();
+
+        RuleBasedSegment ruleBasedSegment = new RuleBasedSegment();
+        ruleBasedSegment.name = name;
+        ruleBasedSegment.status = Status.ACTIVE;
+        ruleBasedSegment.conditions = conditions;
+        ruleBasedSegment.trafficTypeName = "user";
+        ruleBasedSegment.changeNumber = changeNumber;
+        ruleBasedSegment.excluded = excluded;
+        return ruleBasedSegment;
+    }
+
 }

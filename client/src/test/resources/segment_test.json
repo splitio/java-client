@@ -1,0 +1,12 @@
+{
+  "name": "segment_test",
+  "added": [
+    "user1",
+    "user2",
+    "user3",
+    "user4"
+  ],
+  "removed": [],
+  "since": -1,
+  "till": 1585948850110
+}
