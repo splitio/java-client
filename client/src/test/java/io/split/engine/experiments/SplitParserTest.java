@@ -36,7 +36,6 @@ import org.junit.Assert;
 import org.junit.Test;
 import org.mockito.Mockito;
 
-import javax.validation.constraints.AssertTrue;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
@@ -513,14 +512,14 @@ public class SplitParserTest {
     @Test
     public void UnsupportedMatcher() {
         SplitParser parser = new SplitParser();
-        String splitWithUndefinedMatcher = "{\"since\":-1,\"till\": 1457726098069,\"splits\": [{ \"changeNumber\": 123, \"trafficTypeName\": \"user\", \"name\": \"some_name\","
+        String splitWithUndefinedMatcher = "{\"ff\":{\"s\":-1,\"t\": 1457726098069,\"d\": [{ \"changeNumber\": 123, \"trafficTypeName\": \"user\", \"name\": \"some_name\","
                 + "\"trafficAllocation\": 100, \"trafficAllocationSeed\": 123456, \"seed\": 321654, \"status\": \"ACTIVE\","
                 + "\"killed\": false, \"defaultTreatment\": \"off\", \"algo\": 2,\"conditions\": [{ \"partitions\": ["
                 + "{\"treatment\": \"on\", \"size\": 50}, {\"treatment\": \"off\", \"size\": 50}], \"contitionType\": \"ROLLOUT\","
                 + "\"label\": \"some_label\", \"matcherGroup\": { \"matchers\": [{ \"matcherType\": \"UNKNOWN\", \"negate\": false}],"
-                + "\"combiner\": \"AND\"}}], \"sets\": [\"set1\"]}]}";
+                + "\"combiner\": \"AND\"}}], \"sets\": [\"set1\"]}]}, \"rbs\":{\"s\":-1,\"t\":-1,\"d\":[]}}";
         SplitChange change = Json.fromJson(splitWithUndefinedMatcher, SplitChange.class);
-        for (Split split : change.splits) {
+        for (Split split : change.featureFlags.d) {
             // should not cause exception
             ParsedSplit parsedSplit = parser.parse(split);
             for (ParsedCondition parsedCondition : parsedSplit.parsedConditions()) {
@@ -536,9 +535,9 @@ public class SplitParserTest {
     @Test
     public void EqualToSemverMatcher() throws IOException {
         SplitParser parser = new SplitParser();
-        String splits = new String(Files.readAllBytes(Paths.get("src/test/resources/semver/semver-splits.json")), StandardCharsets.UTF_8);
-        SplitChange change = Json.fromJson(splits, SplitChange.class);
-        for (Split split : change.splits) {
+        String load = new String(Files.readAllBytes(Paths.get("src/test/resources/semver/semver-splits.json")), StandardCharsets.UTF_8);
+        SplitChange change = Json.fromJson(load, SplitChange.class);
+        for (Split split : change.featureFlags.d) {
             // should not cause exception
             ParsedSplit parsedSplit = parser.parse(split);
             if (split.name.equals("semver_equalto")) {
@@ -558,9 +557,9 @@ public class SplitParserTest {
     @Test
     public void GreaterThanOrEqualSemverMatcher() throws IOException {
         SplitParser parser = new SplitParser();
-        String splits = new String(Files.readAllBytes(Paths.get("src/test/resources/semver/semver-splits.json")), StandardCharsets.UTF_8);
-        SplitChange change = Json.fromJson(splits, SplitChange.class);
-        for (Split split : change.splits) {
+        String load = new String(Files.readAllBytes(Paths.get("src/test/resources/semver/semver-splits.json")), StandardCharsets.UTF_8);
+        SplitChange change = Json.fromJson(load, SplitChange.class);
+        for (Split split : change.featureFlags.d) {
             // should not cause exception
             ParsedSplit parsedSplit = parser.parse(split);
             if (split.name.equals("semver_greater_or_equalto")) {
@@ -580,9 +579,9 @@ public class SplitParserTest {
     @Test
     public void LessThanOrEqualSemverMatcher() throws IOException {
         SplitParser parser = new SplitParser();
-        String splits = new String(Files.readAllBytes(Paths.get("src/test/resources/semver/semver-splits.json")), StandardCharsets.UTF_8);
-        SplitChange change = Json.fromJson(splits, SplitChange.class);
-        for (Split split : change.splits) {
+        String load = new String(Files.readAllBytes(Paths.get("src/test/resources/semver/semver-splits.json")), StandardCharsets.UTF_8);
+        SplitChange change = Json.fromJson(load, SplitChange.class);
+        for (Split split : change.featureFlags.d) {
             // should not cause exception
             ParsedSplit parsedSplit = parser.parse(split);
             if (split.name.equals("semver_less_or_equalto")) {
@@ -602,9 +601,9 @@ public class SplitParserTest {
     @Test
     public void BetweenSemverMatcher() throws IOException {
         SplitParser parser = new SplitParser();
-        String splits = new String(Files.readAllBytes(Paths.get("src/test/resources/semver/semver-splits.json")), StandardCharsets.UTF_8);
-        SplitChange change = Json.fromJson(splits, SplitChange.class);
-        for (Split split : change.splits) {
+        String load = new String(Files.readAllBytes(Paths.get("src/test/resources/semver/semver-splits.json")), StandardCharsets.UTF_8);
+        SplitChange change = Json.fromJson(load, SplitChange.class);
+        for (Split split : change.featureFlags.d) {
             // should not cause exception
             ParsedSplit parsedSplit = parser.parse(split);
             if (split.name.equals("semver_between")) {
@@ -624,9 +623,9 @@ public class SplitParserTest {
     @Test
     public void InListSemverMatcher() throws IOException {
         SplitParser parser = new SplitParser();
-        String splits = new String(Files.readAllBytes(Paths.get("src/test/resources/semver/semver-splits.json")), StandardCharsets.UTF_8);
-        SplitChange change = Json.fromJson(splits, SplitChange.class);
-        for (Split split : change.splits) {
+        String load = new String(Files.readAllBytes(Paths.get("src/test/resources/semver/semver-splits.json")), StandardCharsets.UTF_8);
+        SplitChange change = Json.fromJson(load, SplitChange.class);
+        for (Split split : change.featureFlags.d) {
             // should not cause exception
             ParsedSplit parsedSplit = parser.parse(split);
             if (split.name.equals("semver_inlist")) {
@@ -646,10 +645,10 @@ public class SplitParserTest {
     @Test
     public void ImpressionToggleParseTest() throws IOException {
         SplitParser parser = new SplitParser();
-        String splits = new String(Files.readAllBytes(Paths.get("src/test/resources/splits_imp_toggle.json")), StandardCharsets.UTF_8);
-        SplitChange change = Json.fromJson(splits, SplitChange.class);
+        String load = new String(Files.readAllBytes(Paths.get("src/test/resources/splits_imp_toggle.json")), StandardCharsets.UTF_8);
+        SplitChange change = Json.fromJson(load, SplitChange.class);
         boolean check1 = false, check2 = false, check3 = false;
-        for (Split split : change.splits) {
+        for (Split split : change.featureFlags.d) {
             ParsedSplit parsedSplit = parser.parse(split);
             if (split.name.equals("without_impression_toggle")) {
                 assertFalse(parsedSplit.impressionsDisabled());

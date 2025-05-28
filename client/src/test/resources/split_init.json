@@ -1,5 +1,5 @@
-{
-  "splits": [
+{"ff": {
+  "d": [
     {
       "trafficTypeName": "user",
       "name": "split_1",
@@ -562,6 +562,44 @@
       ]
     }
   ],
-  "since": -1,
-  "till": 1660326991072
-}
+  "s": -1,
+  "t": 1660326991072
+}, "rbs":{"d": [
+  {
+    "changeNumber": 5,
+    "name": "sample_rule_based_segment",
+    "status": "ACTIVE",
+    "trafficTypeName": "user",
+    "excluded":{
+      "keys":["mauro@split.io","gaston@split.io"],
+      "segments":[]
+    },
+    "conditions": [
+      {
+        "conditionType": "ROLLOUT",
+        "matcherGroup": {
+          "combiner": "AND",
+          "matchers": [
+            {
+              "keySelector": {
+                "trafficType": "user",
+                "attribute": null
+              },
+              "matcherType": "IN_SEGMENT",
+              "negate": false,
+              "userDefinedSegmentMatcherData": {
+                "segmentName": "segment_2"
+              },
+              "whitelistMatcherData": null,
+              "unaryNumericMatcherData": null,
+              "betweenMatcherData": null,
+              "booleanMatcherData": null,
+              "dependencyMatcherData": null,
+              "stringMatcherData": null
+            }
+          ]
+        }
+      }
+    ]
+  }
+], "s": -1, "t": -1}}

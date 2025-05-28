@@ -11,7 +11,6 @@ import io.split.engine.matchers.AttributeMatcher;
 import io.split.engine.matchers.CombiningMatcher;
 import io.split.engine.matchers.strings.WhitelistMatcher;
 import io.split.grammar.Treatments;
-import io.split.storages.SplitCacheConsumer;
 import io.split.storages.SplitCacheProducer;
 
 import java.util.ArrayList;

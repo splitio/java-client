@@ -37,5 +37,8 @@ public enum MatcherType {
     GREATER_THAN_OR_EQUAL_TO_SEMVER,
     LESS_THAN_OR_EQUAL_TO_SEMVER,
     IN_LIST_SEMVER,
-    BETWEEN_SEMVER
+    BETWEEN_SEMVER,
+
+    /* Rule based segment */
+    IN_RULE_BASED_SEGMENT
 }

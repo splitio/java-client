@@ -4,8 +4,10 @@ import io.split.client.JsonLocalhostSplitChangeFetcher;
 import io.split.client.interceptors.FlagSetsFilter;
 import io.split.client.interceptors.FlagSetsFilterImpl;
 import io.split.engine.common.FetchOptions;
+import io.split.storages.RuleBasedSegmentCacheProducer;
 import io.split.storages.SplitCacheProducer;
 import io.split.storages.memory.InMemoryCacheImp;
+import io.split.storages.memory.RuleBasedSegmentCacheInMemoryImp;
 import io.split.telemetry.storage.NoopTelemetryStorage;
 import io.split.telemetry.storage.TelemetryStorage;
 import org.junit.Test;
@@ -25,7 +27,10 @@ public class SplitSynchronizationTaskTest {
         SplitChangeFetcher splitChangeFetcher = Mockito.mock(JsonLocalhostSplitChangeFetcher.class);
         SplitParser splitParser = new SplitParser();
         FetchOptions fetchOptions = new FetchOptions.Builder().build();
-        SplitFetcher splitFetcher = new SplitFetcherImp(splitChangeFetcher, splitParser, splitCacheProducer, TELEMETRY_STORAGE_NOOP, FLAG_SETS_FILTER);
+        RuleBasedSegmentCacheProducer ruleBasedSegmentCacheProducer = new RuleBasedSegmentCacheInMemoryImp();
+        RuleBasedSegmentParser ruleBasedSegmentParser = new RuleBasedSegmentParser();
+        SplitFetcher splitFetcher = new SplitFetcherImp(splitChangeFetcher, splitParser, splitCacheProducer, TELEMETRY_STORAGE_NOOP, FLAG_SETS_FILTER,
+                ruleBasedSegmentParser, ruleBasedSegmentCacheProducer);
 
         SplitSynchronizationTask splitSynchronizationTask = new SplitSynchronizationTask(splitFetcher, splitCacheProducer, 1000, null);
 
@@ -33,7 +38,7 @@ public class SplitSynchronizationTaskTest {
 
         Thread.sleep(2000);
 
-        Mockito.verify(splitChangeFetcher, Mockito.times(1)).fetch(-1, fetchOptions);
+        Mockito.verify(splitChangeFetcher, Mockito.times(1)).fetch(-1, -1, fetchOptions);
     }
 
     @Test

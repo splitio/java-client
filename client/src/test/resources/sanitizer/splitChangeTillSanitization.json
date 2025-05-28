@@ -1,5 +1,5 @@
-{
-  "splits": [
+{"ff": {
+  "d": [
     {
       "trafficTypeName": "user",
       "name": "test1",
@@ -50,6 +50,6 @@
       ]
     }
   ],
-  "since": 398,
-  "till": 0
-}
+  "s": 398,
+  "t": 0
+}, "rbs":{"d": [], "s": -1, "t": 0}}
