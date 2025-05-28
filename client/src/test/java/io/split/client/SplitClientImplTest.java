@@ -11,6 +11,12 @@ import io.split.client.impressions.Impression;
 import io.split.client.impressions.ImpressionsManager;
 import io.split.client.interceptors.FlagSetsFilter;
 import io.split.client.interceptors.FlagSetsFilterImpl;
+import io.split.engine.matchers.PrerequisitesMatcher;
+import io.split.engine.matchers.CombiningMatcher;
+import io.split.engine.matchers.EqualToMatcher;
+import io.split.engine.matchers.GreaterThanOrEqualToMatcher;
+import io.split.engine.matchers.AllKeysMatcher;
+import io.split.engine.matchers.DependencyMatcher;
 import io.split.storages.RuleBasedSegmentCacheConsumer;
 import io.split.storages.SegmentCacheConsumer;
 import io.split.storages.SplitCacheConsumer;
@@ -18,11 +24,6 @@ import io.split.engine.evaluator.EvaluatorImp;
 import io.split.engine.SDKReadinessGates;
 import io.split.engine.experiments.ParsedCondition;
 import io.split.engine.experiments.ParsedSplit;
-import io.split.engine.matchers.AllKeysMatcher;
-import io.split.engine.matchers.CombiningMatcher;
-import io.split.engine.matchers.DependencyMatcher;
-import io.split.engine.matchers.EqualToMatcher;
-import io.split.engine.matchers.GreaterThanOrEqualToMatcher;
 import io.split.engine.matchers.collections.ContainsAnyOfSetMatcher;
 import io.split.engine.matchers.strings.WhitelistMatcher;
 import io.split.grammar.Treatments;
@@ -83,7 +84,7 @@ public class SplitClientImplTest {
                 Lists.newArrayList(partition("on", 100)));
         List<ParsedCondition> conditions = Lists.newArrayList(rollOutToEveryone);
         ParsedSplit parsedSplit = ParsedSplit.createParsedSplitForTests(test, 123, false, Treatments.OFF, conditions,
-                null, 1, 1, new HashSet<>(), true);
+                null, 1, 1, new HashSet<>(), true, new PrerequisitesMatcher(null));
 
         SDKReadinessGates gates = mock(SDKReadinessGates.class);
         SplitCacheConsumer splitCacheConsumer = mock(SplitCacheConsumer.class);
@@ -113,7 +114,7 @@ public class SplitClientImplTest {
                 Lists.newArrayList(partition("on", 100)));
         List<ParsedCondition> conditions = Lists.newArrayList(rollOutToEveryone);
         ParsedSplit parsedSplit = ParsedSplit.createParsedSplitForTests(test, 123, false, Treatments.OFF, conditions,
-                null, 1, 1, new HashSet<>(), true);
+                null, 1, 1, new HashSet<>(), true, null);
 
         SDKReadinessGates gates = mock(SDKReadinessGates.class);
         SplitCacheConsumer splitCacheConsumer = mock(SplitCacheConsumer.class);
@@ -167,7 +168,7 @@ public class SplitClientImplTest {
                 Lists.newArrayList(partition("on", 100)));
         List<ParsedCondition> conditions = Lists.newArrayList(rollOutToEveryone);
         ParsedSplit parsedSplit = ParsedSplit.createParsedSplitForTests(test, 123, false, Treatments.OFF, conditions,
-                null, 1, 1, new HashSet<>(), true);
+                null, 1, 1, new HashSet<>(), true, new PrerequisitesMatcher(null));
 
         SDKReadinessGates gates = mock(SDKReadinessGates.class);
         SplitCacheConsumer splitCacheConsumer = mock(SplitCacheConsumer.class);
@@ -206,7 +207,7 @@ public class SplitClientImplTest {
 
         ParsedCondition rollOutToEveryone = ParsedCondition.createParsedConditionForTests(CombiningMatcher.of(new AllKeysMatcher()), Lists.newArrayList(partition("on", 100)));
         List<ParsedCondition> conditions = Lists.newArrayList(rollOutToEveryone);
-        ParsedSplit parsedSplit = ParsedSplit.createParsedSplitForTests(test, 123, false, Treatments.OFF, conditions, null, 1, 1, new HashSet<>(), true);
+        ParsedSplit parsedSplit = ParsedSplit.createParsedSplitForTests(test, 123, false, Treatments.OFF, conditions, null, 1, 1, new HashSet<>(), true, new PrerequisitesMatcher(null));
 
         SDKReadinessGates gates = mock(SDKReadinessGates.class);
         SplitCacheConsumer splitCacheConsumer = mock(SplitCacheConsumer.class);
@@ -242,7 +243,7 @@ public class SplitClientImplTest {
         Map<String, String> configurations = new HashMap<>();
         configurations.put(Treatments.ON, "{\"size\" : 30}");
 
-        ParsedSplit parsedSplit = ParsedSplit.createParsedSplitForTests(test, 123, false, Treatments.OFF, conditions, null, 1, 1, configurations, new HashSet<>(), true);
+        ParsedSplit parsedSplit = ParsedSplit.createParsedSplitForTests(test, 123, false, Treatments.OFF, conditions, null, 1, 1, configurations, new HashSet<>(), true, new PrerequisitesMatcher(null));
 
         SDKReadinessGates gates = mock(SDKReadinessGates.class);
         SplitCacheConsumer splitCacheConsumer = mock(SplitCacheConsumer.class);
@@ -279,7 +280,7 @@ public class SplitClientImplTest {
 
         ParsedCondition rollOutToEveryone = ParsedCondition.createParsedConditionForTests(CombiningMatcher.of(new WhitelistMatcher(Lists.newArrayList("adil@codigo.com"))), Lists.newArrayList(partition("on", 100)));
         List<ParsedCondition> conditions = Lists.newArrayList(rollOutToEveryone);
-        ParsedSplit parsedSplit = ParsedSplit.createParsedSplitForTests(test, 123, false, Treatments.OFF, conditions, "user", 1, 1, new HashSet<>(), true);
+        ParsedSplit parsedSplit = ParsedSplit.createParsedSplitForTests(test, 123, false, Treatments.OFF, conditions, "user", 1, 1, new HashSet<>(), true, new PrerequisitesMatcher(null));
 
         SDKReadinessGates gates = mock(SDKReadinessGates.class);
         SplitCacheConsumer splitCacheConsumer = mock(SplitCacheConsumer.class);
@@ -319,7 +320,7 @@ public class SplitClientImplTest {
         configurations.put(Treatments.OFF, "{\"size\" : 30}");
 
         ParsedSplit parsedSplit = ParsedSplit.createParsedSplitForTests(test, 123, false, Treatments.OFF, conditions,
-                "user", 1, 1, configurations, new HashSet<>(), true);
+                "user", 1, 1, configurations, new HashSet<>(), true, new PrerequisitesMatcher(null));
 
         SDKReadinessGates gates = mock(SDKReadinessGates.class);
         SplitCacheConsumer splitCacheConsumer = mock(SplitCacheConsumer.class);
@@ -354,7 +355,7 @@ public class SplitClientImplTest {
         ParsedCondition trevor_is_always_shown = ParsedCondition.createParsedConditionForTests(CombiningMatcher.of(new WhitelistMatcher(Lists.newArrayList("trevor@codigo.com"))), Lists.newArrayList(partition("on", 100)));
 
         List<ParsedCondition> conditions = Lists.newArrayList(adil_is_always_on, pato_is_never_shown, trevor_is_always_shown);
-        ParsedSplit parsedSplit = ParsedSplit.createParsedSplitForTests(test, 123, false, Treatments.OFF, conditions, null, 1, 1, new HashSet<>(), true);
+        ParsedSplit parsedSplit = ParsedSplit.createParsedSplitForTests(test, 123, false, Treatments.OFF, conditions, null, 1, 1, new HashSet<>(), true, new PrerequisitesMatcher(null));
 
         SDKReadinessGates gates = mock(SDKReadinessGates.class);
         SplitCacheConsumer splitCacheConsumer = mock(SplitCacheConsumer.class);
@@ -389,7 +390,7 @@ public class SplitClientImplTest {
 
         ParsedCondition rollOutToEveryone = ParsedCondition.createParsedConditionForTests(CombiningMatcher.of(new WhitelistMatcher(Lists.newArrayList("adil@codigo.com"))), Lists.newArrayList(partition("on", 100)));
         List<ParsedCondition> conditions = Lists.newArrayList(rollOutToEveryone);
-        ParsedSplit parsedSplit = ParsedSplit.createParsedSplitForTests(test, 123, true, Treatments.OFF, conditions, "user", 1, 1, new HashSet<>(), true);
+        ParsedSplit parsedSplit = ParsedSplit.createParsedSplitForTests(test, 123, true, Treatments.OFF, conditions, "user", 1, 1, new HashSet<>(), true, new PrerequisitesMatcher(null));
 
         SDKReadinessGates gates = mock(SDKReadinessGates.class);
         SplitCacheConsumer splitCacheConsumer = mock(SplitCacheConsumer.class);
@@ -429,7 +430,7 @@ public class SplitClientImplTest {
         configurations.put(Treatments.OFF, "{\"size\" : 30}");
 
         ParsedSplit parsedSplit = ParsedSplit.createParsedSplitForTests(test, 123, true, Treatments.OFF, conditions,
-                "user", 1, 1, configurations, new HashSet<>(), true);
+                "user", 1, 1, configurations, new HashSet<>(), true, null);
 
         SDKReadinessGates gates = mock(SDKReadinessGates.class);
         SplitCacheConsumer splitCacheConsumer = mock(SplitCacheConsumer.class);
@@ -462,11 +463,11 @@ public class SplitClientImplTest {
 
         ParsedCondition parent_is_on = ParsedCondition.createParsedConditionForTests(CombiningMatcher.of(new AllKeysMatcher()), Lists.newArrayList(partition(Treatments.ON, 100)));
         List<ParsedCondition> parent_conditions = Lists.newArrayList(parent_is_on);
-        ParsedSplit parentSplit = ParsedSplit.createParsedSplitForTests(parent, 123, false, Treatments.OFF, parent_conditions, null, 1, 1, new HashSet<>(), true);
+        ParsedSplit parentSplit = ParsedSplit.createParsedSplitForTests(parent, 123, false, Treatments.OFF, parent_conditions, null, 1, 1, new HashSet<>(), true, new PrerequisitesMatcher(null));
 
         ParsedCondition dependent_needs_parent = ParsedCondition.createParsedConditionForTests(CombiningMatcher.of(new DependencyMatcher(parent, Lists.newArrayList(Treatments.ON))), Lists.newArrayList(partition(Treatments.ON, 100)));
         List<ParsedCondition> dependent_conditions = Lists.newArrayList(dependent_needs_parent);
-        ParsedSplit dependentSplit = ParsedSplit.createParsedSplitForTests(dependent, 123, false, Treatments.OFF, dependent_conditions, null, 1, 1, new HashSet<>(), true);
+        ParsedSplit dependentSplit = ParsedSplit.createParsedSplitForTests(dependent, 123, false, Treatments.OFF, dependent_conditions, null, 1, 1, new HashSet<>(), true, new PrerequisitesMatcher(null));
 
         SDKReadinessGates gates = mock(SDKReadinessGates.class);
         SplitCacheConsumer splitCacheConsumer = mock(SplitCacheConsumer.class);
@@ -497,11 +498,11 @@ public class SplitClientImplTest {
 
         ParsedCondition parent_is_on = ParsedCondition.createParsedConditionForTests(CombiningMatcher.of(new AllKeysMatcher()), Lists.newArrayList(partition(Treatments.ON, 100)));
         List<ParsedCondition> parent_conditions = Lists.newArrayList(parent_is_on);
-        ParsedSplit parentSplit = ParsedSplit.createParsedSplitForTests(parent, 123, false, Treatments.OFF, parent_conditions, null, 1, 1, new HashSet<>(), true);
+        ParsedSplit parentSplit = ParsedSplit.createParsedSplitForTests(parent, 123, false, Treatments.OFF, parent_conditions, null, 1, 1, new HashSet<>(), true, new PrerequisitesMatcher(null));
 
         ParsedCondition dependent_needs_parent = ParsedCondition.createParsedConditionForTests(CombiningMatcher.of(new DependencyMatcher(parent, Lists.newArrayList(Treatments.OFF))), Lists.newArrayList(partition(Treatments.ON, 100)));
         List<ParsedCondition> dependent_conditions = Lists.newArrayList(dependent_needs_parent);
-        ParsedSplit dependentSplit = ParsedSplit.createParsedSplitForTests(dependent, 123, false, Treatments.OFF, dependent_conditions, null, 1, 1, new HashSet<>(), true);
+        ParsedSplit dependentSplit = ParsedSplit.createParsedSplitForTests(dependent, 123, false, Treatments.OFF, dependent_conditions, null, 1, 1, new HashSet<>(), true, new PrerequisitesMatcher(null));
 
         SDKReadinessGates gates = mock(SDKReadinessGates.class);
         SplitCacheConsumer splitCacheConsumer = mock(SplitCacheConsumer.class);
@@ -531,7 +532,7 @@ public class SplitClientImplTest {
 
         ParsedCondition dependent_needs_parent = ParsedCondition.createParsedConditionForTests(CombiningMatcher.of(new DependencyMatcher("not-exists", Lists.newArrayList(Treatments.OFF))), Lists.newArrayList(partition(Treatments.OFF, 100)));
         List<ParsedCondition> dependent_conditions = Lists.newArrayList(dependent_needs_parent);
-        ParsedSplit dependentSplit = ParsedSplit.createParsedSplitForTests(dependent, 123, false, Treatments.ON, dependent_conditions, null, 1, 1, new HashSet<>(), true);
+        ParsedSplit dependentSplit = ParsedSplit.createParsedSplitForTests(dependent, 123, false, Treatments.ON, dependent_conditions, null, 1, 1, new HashSet<>(), true, new PrerequisitesMatcher(null));
 
         SDKReadinessGates gates = mock(SDKReadinessGates.class);
         SplitCacheConsumer splitCacheConsumer = mock(SplitCacheConsumer.class);
@@ -561,7 +562,7 @@ public class SplitClientImplTest {
         ParsedCondition users_with_age_greater_than_10_are_on = ParsedCondition.createParsedConditionForTests(CombiningMatcher.of("age", new GreaterThanOrEqualToMatcher(10, DataType.NUMBER)), Lists.newArrayList(partition("on", 100)));
 
         List<ParsedCondition> conditions = Lists.newArrayList(adil_is_always_on, users_with_age_greater_than_10_are_on);
-        ParsedSplit parsedSplit = ParsedSplit.createParsedSplitForTests(test, 123, false, Treatments.OFF, conditions, null, 1, 1, new HashSet<>(), true);
+        ParsedSplit parsedSplit = ParsedSplit.createParsedSplitForTests(test, 123, false, Treatments.OFF, conditions, null, 1, 1, new HashSet<>(), true, new PrerequisitesMatcher(null));
 
         SDKReadinessGates gates = mock(SDKReadinessGates.class);
         SplitCacheConsumer splitCacheConsumer = mock(SplitCacheConsumer.class);
@@ -596,7 +597,7 @@ public class SplitClientImplTest {
         ParsedCondition age_equal_to_0_should_be_on = ParsedCondition.createParsedConditionForTests(CombiningMatcher.of("age", new EqualToMatcher(0, DataType.NUMBER)), Lists.newArrayList(partition("on", 100)));
 
         List<ParsedCondition> conditions = Lists.newArrayList(age_equal_to_0_should_be_on);
-        ParsedSplit parsedSplit = ParsedSplit.createParsedSplitForTests(test, 123, false, Treatments.OFF, conditions, "user", 1, 1, new HashSet<>(), true);
+        ParsedSplit parsedSplit = ParsedSplit.createParsedSplitForTests(test, 123, false, Treatments.OFF, conditions, "user", 1, 1, new HashSet<>(), true, new PrerequisitesMatcher(null));
 
         SDKReadinessGates gates = mock(SDKReadinessGates.class);
         SplitCacheConsumer splitCacheConsumer = mock(SplitCacheConsumer.class);
@@ -632,7 +633,7 @@ public class SplitClientImplTest {
         ParsedCondition age_equal_to_0_should_be_on = ParsedCondition.createParsedConditionForTests(CombiningMatcher.of("age", new EqualToMatcher(-20, DataType.NUMBER)), Lists.newArrayList(partition("on", 100)));
 
         List<ParsedCondition> conditions = Lists.newArrayList(age_equal_to_0_should_be_on);
-        ParsedSplit parsedSplit = ParsedSplit.createParsedSplitForTests(test, 123, false, Treatments.OFF, conditions, null, 1, 1, new HashSet<>(), true);
+        ParsedSplit parsedSplit = ParsedSplit.createParsedSplitForTests(test, 123, false, Treatments.OFF, conditions, null, 1, 1, new HashSet<>(), true, new PrerequisitesMatcher(null));
 
         SDKReadinessGates gates = mock(SDKReadinessGates.class);
         SplitCacheConsumer splitCacheConsumer = mock(SplitCacheConsumer.class);
@@ -670,7 +671,7 @@ public class SplitClientImplTest {
         ParsedCondition any_of_set = ParsedCondition.createParsedConditionForTests(CombiningMatcher.of("products", new ContainsAnyOfSetMatcher(Lists.<String>newArrayList("sms", "video"))), Lists.newArrayList(partition("on", 100)));
 
         List<ParsedCondition> conditions = Lists.newArrayList(any_of_set);
-        ParsedSplit parsedSplit = ParsedSplit.createParsedSplitForTests(test, 123, false, Treatments.OFF, conditions, null, 1, 1, new HashSet<>(), true);
+        ParsedSplit parsedSplit = ParsedSplit.createParsedSplitForTests(test, 123, false, Treatments.OFF, conditions, null, 1, 1, new HashSet<>(), true, new PrerequisitesMatcher(null));
 
         SDKReadinessGates gates = mock(SDKReadinessGates.class);
         SplitCacheConsumer splitCacheConsumer = mock(SplitCacheConsumer.class);
@@ -714,7 +715,7 @@ public class SplitClientImplTest {
         );
 
         List<ParsedCondition> conditions = Lists.newArrayList(age_equal_to_0_should_be_on);
-        ParsedSplit parsedSplit = ParsedSplit.createParsedSplitForTests(test, 123, false, Treatments.OFF, conditions, null, 1, 1, new HashSet<>(), true);
+        ParsedSplit parsedSplit = ParsedSplit.createParsedSplitForTests(test, 123, false, Treatments.OFF, conditions, null, 1, 1, new HashSet<>(), true, new PrerequisitesMatcher(null));
 
         SplitCacheConsumer splitCacheConsumer = mock(SplitCacheConsumer.class);
         SegmentCacheConsumer segmentCacheConsumer = mock(SegmentCacheConsumer.class);
@@ -817,7 +818,7 @@ public class SplitClientImplTest {
         List<ParsedCondition> conditions = Lists.newArrayList(whitelistCondition, rollOutToEveryone);
 
         ParsedSplit parsedSplit = new ParsedSplit(test, 123, false, Treatments.OFF, conditions, null, 1,
-                trafficAllocation, trafficAllocationSeed, 1, null, new HashSet<>(), true);
+                trafficAllocation, trafficAllocationSeed, 1, null, new HashSet<>(), true, new PrerequisitesMatcher(null));
 
         SDKReadinessGates gates = mock(SDKReadinessGates.class);
         SplitCacheConsumer splitCacheConsumer = mock(SplitCacheConsumer.class);
@@ -869,7 +870,7 @@ public class SplitClientImplTest {
         List<ParsedCondition> conditions = Lists.newArrayList(rollOutToEveryone);
 
         ParsedSplit parsedSplit = new ParsedSplit(test, 123, false, Treatments.OFF, conditions, null,
-                1, trafficAllocation, trafficAllocationSeed, 1, configurations, new HashSet<>(), true);
+                1, trafficAllocation, trafficAllocationSeed, 1, configurations, new HashSet<>(), true, new PrerequisitesMatcher(null));
 
         SDKReadinessGates gates = mock(SDKReadinessGates.class);
         SplitCacheConsumer splitCacheConsumer = mock(SplitCacheConsumer.class);
@@ -916,7 +917,7 @@ public class SplitClientImplTest {
         ParsedCondition aijaz_should_match = ParsedCondition.createParsedConditionForTests(CombiningMatcher.of(new WhitelistMatcher(whitelist)), Lists.newArrayList(partition("on", 100)));
 
         List<ParsedCondition> conditions = Lists.newArrayList(aijaz_should_match);
-        ParsedSplit parsedSplit = ParsedSplit.createParsedSplitForTests(test, 123, false, Treatments.OFF, conditions, "user", 1, 1, new HashSet<>(), true);
+        ParsedSplit parsedSplit = ParsedSplit.createParsedSplitForTests(test, 123, false, Treatments.OFF, conditions, "user", 1, 1, new HashSet<>(), true, new PrerequisitesMatcher(null));
 
         SDKReadinessGates gates = mock(SDKReadinessGates.class);
         SplitCacheConsumer splitCacheConsumer = mock(SplitCacheConsumer.class);
@@ -953,7 +954,7 @@ public class SplitClientImplTest {
         ParsedCondition aijaz_should_match = ParsedCondition.createParsedConditionForTests(CombiningMatcher.of(new WhitelistMatcher(whitelist)), Lists.newArrayList(partition("on", 100)));
 
         List<ParsedCondition> conditions = Lists.newArrayList(aijaz_should_match);
-        ParsedSplit parsedSplit = ParsedSplit.createParsedSplitForTests(test, 123, false, Treatments.OFF, conditions, "user", 1, 1, new HashSet<>(Arrays.asList("set1")), true);
+        ParsedSplit parsedSplit = ParsedSplit.createParsedSplitForTests(test, 123, false, Treatments.OFF, conditions, "user", 1, 1, new HashSet<>(Arrays.asList("set1")), true, new PrerequisitesMatcher(null));
 
         SDKReadinessGates gates = mock(SDKReadinessGates.class);
         SplitCacheConsumer splitCacheConsumer = mock(SplitCacheConsumer.class);
@@ -994,7 +995,7 @@ public class SplitClientImplTest {
         ParsedCondition aijaz_should_match = ParsedCondition.createParsedConditionForTests(CombiningMatcher.of(new WhitelistMatcher(whitelist)), Lists.newArrayList(partition("on", 100)));
 
         List<ParsedCondition> conditions = Lists.newArrayList(aijaz_should_match);
-        ParsedSplit parsedSplit = ParsedSplit.createParsedSplitForTests(test, 123, false, Treatments.OFF, conditions, "user", 1, 1, new HashSet<>(Arrays.asList("set1")), true);
+        ParsedSplit parsedSplit = ParsedSplit.createParsedSplitForTests(test, 123, false, Treatments.OFF, conditions, "user", 1, 1, new HashSet<>(Arrays.asList("set1")), true, new PrerequisitesMatcher(null));
 
         SDKReadinessGates gates = mock(SDKReadinessGates.class);
         SplitCacheConsumer splitCacheConsumer = mock(SplitCacheConsumer.class);
@@ -1037,7 +1038,7 @@ public class SplitClientImplTest {
         );
 
         List<ParsedCondition> conditions = Lists.newArrayList(age_equal_to_0_should_be_on);
-        ParsedSplit parsedSplit = ParsedSplit.createParsedSplitForTests(test, 123, false, Treatments.OFF, conditions, null, 1, 1, new HashSet<>(), true);
+        ParsedSplit parsedSplit = ParsedSplit.createParsedSplitForTests(test, 123, false, Treatments.OFF, conditions, null, 1, 1, new HashSet<>(), true, new PrerequisitesMatcher(null));
 
         SDKReadinessGates gates = mock(SDKReadinessGates.class);
         SplitCacheConsumer splitCacheConsumer = mock(SplitCacheConsumer.class);
@@ -1229,7 +1230,7 @@ public class SplitClientImplTest {
 
         ParsedCondition rollOutToEveryone = ParsedCondition.createParsedConditionForTests(CombiningMatcher.of(new AllKeysMatcher()), Lists.newArrayList(partition("on", 100)));
         List<ParsedCondition> conditions = Lists.newArrayList(rollOutToEveryone);
-        ParsedSplit parsedSplit = ParsedSplit.createParsedSplitForTests(test, 123, false, Treatments.OFF, conditions, null, 1, 1, new HashSet<>(), true);
+        ParsedSplit parsedSplit = ParsedSplit.createParsedSplitForTests(test, 123, false, Treatments.OFF, conditions, null, 1, 1, new HashSet<>(), true, new PrerequisitesMatcher(null));
 
         SDKReadinessGates gates = mock(SDKReadinessGates.class);
         SplitCacheConsumer splitCacheConsumer = mock(SplitCacheConsumer.class);
@@ -1388,7 +1389,7 @@ public class SplitClientImplTest {
 
         ParsedCondition rollOutToEveryone = ParsedCondition.createParsedConditionForTests(CombiningMatcher.of(new AllKeysMatcher()), Lists.newArrayList(partition("on", 100)));
         List<ParsedCondition> conditions = Lists.newArrayList(rollOutToEveryone);
-        ParsedSplit parsedSplit = ParsedSplit.createParsedSplitForTests(test, 123, false, Treatments.OFF, conditions, null, 1, 1, new HashSet<>(), true);
+        ParsedSplit parsedSplit = ParsedSplit.createParsedSplitForTests(test, 123, false, Treatments.OFF, conditions, null, 1, 1, new HashSet<>(), true, new PrerequisitesMatcher(null));
 
         SDKReadinessGates gates = mock(SDKReadinessGates.class);
         SplitCacheConsumer splitCacheConsumer = mock(SplitCacheConsumer.class);
@@ -1445,7 +1446,7 @@ public class SplitClientImplTest {
         configurations.put(Treatments.ON, "{\"size\" : 30}");
 
         ParsedSplit parsedSplit = ParsedSplit.createParsedSplitForTests(test, 123, false, Treatments.OFF, conditions,
-                null, 1, 1, configurations, new HashSet<>(), true);
+                null, 1, 1, configurations, new HashSet<>(), true, new PrerequisitesMatcher(null));
 
         SDKReadinessGates gates = mock(SDKReadinessGates.class);
         SplitCacheConsumer splitCacheConsumer = mock(SplitCacheConsumer.class);
@@ -1490,7 +1491,7 @@ public class SplitClientImplTest {
         configurations.put(Treatments.ON, "{\"size\" : 30}");
 
         ParsedSplit parsedSplit = ParsedSplit.createParsedSplitForTests(test, 123, false, Treatments.OFF, conditions,
-                null, 1, 1, configurations, new HashSet<>(Arrays.asList("set1")), true);
+                null, 1, 1, configurations, new HashSet<>(Arrays.asList("set1")), true, new PrerequisitesMatcher(null));
 
         SDKReadinessGates gates = mock(SDKReadinessGates.class);
         SplitCacheConsumer splitCacheConsumer = mock(SplitCacheConsumer.class);
@@ -1539,7 +1540,7 @@ public class SplitClientImplTest {
         configurations.put(Treatments.ON, "{\"size\" : 30}");
 
         ParsedSplit parsedSplit = ParsedSplit.createParsedSplitForTests(test, 123, false, Treatments.OFF, conditions,
-                null, 1, 1, configurations, new HashSet<>(Arrays.asList("set1")), true);
+                null, 1, 1, configurations, new HashSet<>(Arrays.asList("set1")), true, new PrerequisitesMatcher(null));
 
         SDKReadinessGates gates = mock(SDKReadinessGates.class);
         SplitCacheConsumer splitCacheConsumer = mock(SplitCacheConsumer.class);
@@ -1582,7 +1583,7 @@ public class SplitClientImplTest {
                 Lists.newArrayList(partition("on", 100)));
         List<ParsedCondition> conditions = Lists.newArrayList(rollOutToEveryone);
         ParsedSplit parsedSplit = ParsedSplit.createParsedSplitForTests(test, 123, false, Treatments.OFF, conditions,
-                null, 1, 1, new HashSet<>(), true);
+                null, 1, 1, new HashSet<>(), true, new PrerequisitesMatcher(null));
 
         SDKReadinessGates gates = mock(SDKReadinessGates.class);
         SplitCacheConsumer splitCacheConsumer = mock(SplitCacheConsumer.class);
@@ -1612,7 +1613,7 @@ public class SplitClientImplTest {
                 Lists.newArrayList(partition("on", 100)));
         List<ParsedCondition> conditions = Lists.newArrayList(rollOutToEveryone);
         ParsedSplit parsedSplit = ParsedSplit.createParsedSplitForTests(test, 123, false, Treatments.OFF, conditions,
-                null, 1, 1, new HashSet<>(), true);
+                null, 1, 1, new HashSet<>(), true, new PrerequisitesMatcher(null));
         Map<String, ParsedSplit> splits = new HashMap<>();
         splits.put(test, parsedSplit);
         SDKReadinessGates gates = mock(SDKReadinessGates.class);
@@ -1643,7 +1644,7 @@ public class SplitClientImplTest {
                 Lists.newArrayList(partition("on", 100)));
         List<ParsedCondition> conditions = Lists.newArrayList(rollOutToEveryone);
         ParsedSplit parsedSplit = ParsedSplit.createParsedSplitForTests(test, 123, false, Treatments.OFF, conditions,
-                null, 1, 1, new HashSet<>(), true);
+                null, 1, 1, new HashSet<>(), true, new PrerequisitesMatcher(null));
         Map<String, ParsedSplit> splits = new HashMap<>();
         splits.put(test, parsedSplit);
         SDKReadinessGates gates = mock(SDKReadinessGates.class);
@@ -1699,7 +1700,7 @@ public class SplitClientImplTest {
 
         ParsedCondition rollOutToEveryone = ParsedCondition.createParsedConditionForTests(CombiningMatcher.of(new AllKeysMatcher()), Lists.newArrayList(partition("on", 100)));
         List<ParsedCondition> conditions = Lists.newArrayList(rollOutToEveryone);
-        ParsedSplit parsedSplit = ParsedSplit.createParsedSplitForTests(test, 123, false, Treatments.OFF, conditions, null, 1, 1, new HashSet<>(), true);
+        ParsedSplit parsedSplit = ParsedSplit.createParsedSplitForTests(test, 123, false, Treatments.OFF, conditions, null, 1, 1, new HashSet<>(), true, new PrerequisitesMatcher(null));
         Map<String, ParsedSplit> splits = new HashMap<>();
         splits.put(test, parsedSplit);
         SDKReadinessGates gates = mock(SDKReadinessGates.class);
@@ -1731,7 +1732,7 @@ public class SplitClientImplTest {
         String test = "test1";
         ParsedCondition rollOutToEveryone = ParsedCondition.createParsedConditionForTests(CombiningMatcher.of(new AllKeysMatcher()), Lists.newArrayList(partition("on", 100)));
         List<ParsedCondition> conditions = Lists.newArrayList(rollOutToEveryone);
-        ParsedSplit parsedSplit = ParsedSplit.createParsedSplitForTests(test, 123, false, Treatments.OFF, conditions, null, 1, 1, new HashSet<>(), true);
+        ParsedSplit parsedSplit = ParsedSplit.createParsedSplitForTests(test, 123, false, Treatments.OFF, conditions, null, 1, 1, new HashSet<>(), true, new PrerequisitesMatcher(null));
         Map<String, ParsedSplit> splits = new HashMap<>();
         splits.put(test, parsedSplit);
         SDKReadinessGates gates = mock(SDKReadinessGates.class);
@@ -1789,9 +1790,9 @@ public class SplitClientImplTest {
                 Lists.newArrayList(partition("on", 100)));
         List<ParsedCondition> conditions = Lists.newArrayList(rollOutToEveryone);
         ParsedSplit parsedSplit = ParsedSplit.createParsedSplitForTests(test, 123, false, Treatments.OFF, conditions,
-                null, 1, 1, new HashSet<>(), true);
+                null, 1, 1, new HashSet<>(), true, new PrerequisitesMatcher(null));
         ParsedSplit parsedSplit2 = ParsedSplit.createParsedSplitForTests(test2, 123, false, Treatments.OFF, conditions,
-                null, 1, 1, new HashSet<>(), true);
+                null, 1, 1, new HashSet<>(), true, new PrerequisitesMatcher(null));
         Map<String, ParsedSplit> parsedSplits = new HashMap<>();
         parsedSplits.put(test, parsedSplit);
         parsedSplits.put(test2, parsedSplit2);
@@ -1830,7 +1831,7 @@ public class SplitClientImplTest {
 
         ParsedCondition rollOutToEveryone = ParsedCondition.createParsedConditionForTests(CombiningMatcher.of(new AllKeysMatcher()), Lists.newArrayList(partition("on", 100)));
         List<ParsedCondition> conditions = Lists.newArrayList(rollOutToEveryone);
-        ParsedSplit parsedSplit = ParsedSplit.createParsedSplitForTests(test, 123, false, Treatments.OFF, conditions, null, 1, 1, new HashSet<>(), true);
+        ParsedSplit parsedSplit = ParsedSplit.createParsedSplitForTests(test, 123, false, Treatments.OFF, conditions, null, 1, 1, new HashSet<>(), true, new PrerequisitesMatcher(null));
         Map<String, ParsedSplit> parsedSplits = new HashMap<>();
         parsedSplits.put(test, parsedSplit);
 
@@ -1877,7 +1878,7 @@ public class SplitClientImplTest {
 
 
         ParsedSplit parsedSplit = ParsedSplit.createParsedSplitForTests(test, 123, false, Treatments.OFF, conditions,
-                null, 1, 1, configurations, new HashSet<>(), true);
+                null, 1, 1, configurations, new HashSet<>(), true, new PrerequisitesMatcher(null));
         Map<String, ParsedSplit> parsedSplits = new HashMap<>();
         parsedSplits.put(test, parsedSplit);
         SDKReadinessGates gates = mock(SDKReadinessGates.class);
@@ -1914,7 +1915,7 @@ public class SplitClientImplTest {
                 Lists.newArrayList(partition("on", 100)));
         List<ParsedCondition> conditions = Lists.newArrayList(rollOutToEveryone);
         ParsedSplit parsedSplit = ParsedSplit.createParsedSplitForTests(test, 123, false, Treatments.OFF, conditions,
-                null, 1, 1, new HashSet<>(Arrays.asList("set1", "set2")), true);
+                null, 1, 1, new HashSet<>(Arrays.asList("set1", "set2")), true, new PrerequisitesMatcher(null));
 
         SDKReadinessGates gates = mock(SDKReadinessGates.class);
         SplitCacheConsumer splitCacheConsumer = mock(SplitCacheConsumer.class);
@@ -1961,7 +1962,7 @@ public class SplitClientImplTest {
                 Lists.newArrayList(partition("on", 100)));
         List<ParsedCondition> conditions = Lists.newArrayList(rollOutToEveryone);
         ParsedSplit parsedSplit = ParsedSplit.createParsedSplitForTests(test, 123, false, Treatments.OFF, conditions,
-                null, 1, 1, new HashSet<>(Arrays.asList("set1", "set2")), true);
+                null, 1, 1, new HashSet<>(Arrays.asList("set1", "set2")), true, new PrerequisitesMatcher(null));
 
         SDKReadinessGates gates = mock(SDKReadinessGates.class);
         SplitCacheConsumer splitCacheConsumer = mock(SplitCacheConsumer.class);
@@ -1992,9 +1993,9 @@ public class SplitClientImplTest {
                 Lists.newArrayList(partition("on", 100)));
         List<ParsedCondition> conditions = Lists.newArrayList(rollOutToEveryone);
         ParsedSplit parsedSplit = ParsedSplit.createParsedSplitForTests(test, 123, false, Treatments.OFF, conditions,
-                null, 1, 1, new HashSet<>(Arrays.asList("set1", "set2")), true);
+                null, 1, 1, new HashSet<>(Arrays.asList("set1", "set2")), true, new PrerequisitesMatcher(null));
         ParsedSplit parsedSplit2 = ParsedSplit.createParsedSplitForTests(test2, 123, false, Treatments.OFF, conditions,
-                null, 1, 1, new HashSet<>(Arrays.asList("set3", "set4")), true);
+                null, 1, 1, new HashSet<>(Arrays.asList("set3", "set4")), true, new PrerequisitesMatcher(null));
 
         SDKReadinessGates gates = mock(SDKReadinessGates.class);
         SplitCacheConsumer splitCacheConsumer = mock(SplitCacheConsumer.class);
@@ -2054,7 +2055,7 @@ public class SplitClientImplTest {
 
 
         ParsedSplit parsedSplit = ParsedSplit.createParsedSplitForTests(test, 123, false, Treatments.OFF, conditions,
-                null, 1, 1, configurations, new HashSet<>(Arrays.asList("set1")), true);
+                null, 1, 1, configurations, new HashSet<>(Arrays.asList("set1")), true, new PrerequisitesMatcher(null));
         Map<String, ParsedSplit> parsedSplits = new HashMap<>();
         parsedSplits.put(test, parsedSplit);
 
@@ -2111,7 +2112,7 @@ public class SplitClientImplTest {
 
 
         ParsedSplit parsedSplit = ParsedSplit.createParsedSplitForTests(test, 123, false, Treatments.OFF, conditions,
-                null, 1, 1, configurations, new HashSet<>(Arrays.asList("set1")), true);
+                null, 1, 1, configurations, new HashSet<>(Arrays.asList("set1")), true, new PrerequisitesMatcher(null));
         Map<String, ParsedSplit> parsedSplits = new HashMap<>();
         parsedSplits.put(test, parsedSplit);
 
@@ -2158,7 +2159,7 @@ public class SplitClientImplTest {
         );
 
         List<ParsedCondition> conditions = Lists.newArrayList(age_equal_to_0_should_be_on);
-        ParsedSplit parsedSplit = ParsedSplit.createParsedSplitForTests(test, 123, false, Treatments.OFF, conditions, null, 1, 1, new HashSet<>(Arrays.asList("set")), true);
+        ParsedSplit parsedSplit = ParsedSplit.createParsedSplitForTests(test, 123, false, Treatments.OFF, conditions, null, 1, 1, new HashSet<>(Arrays.asList("set")), true, new PrerequisitesMatcher(null));
         Map<String, ParsedSplit> parsedSplits = new HashMap<>();
         parsedSplits.put(test, parsedSplit);
 

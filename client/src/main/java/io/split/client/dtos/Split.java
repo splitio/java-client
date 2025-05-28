@@ -19,6 +19,7 @@ public class Split {
     public Map<String, String> configurations;
     public HashSet<String> sets;
     public Boolean impressionsDisabled = null;
+    public List<Prerequisites> prerequisites;
 
     @Override
     public String toString() {

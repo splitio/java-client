@@ -6,6 +6,7 @@ import io.split.client.dtos.Condition;
 import io.split.client.dtos.Partition;
 import io.split.client.dtos.Split;
 import io.split.engine.matchers.CombiningMatcher;
+import io.split.engine.matchers.PrerequisitesMatcher;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -68,6 +69,7 @@ public final class SplitParser {
                 split.algo,
                 split.configurations,
                 split.sets,
-                split.impressionsDisabled);
+                split.impressionsDisabled,
+                new PrerequisitesMatcher(split.prerequisites));
     }
 }

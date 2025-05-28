@@ -76,9 +76,23 @@ public class UserCustomSplitAdapterConsumerTest {
         SplitParser splitParser = new SplitParser();
         Split split = getSplit(SPLIT_NAME);
         Mockito.when(_userStorageWrapper.get(PrefixAdapter.buildSplitKey(SPLIT_NAME))).thenReturn(getSplitAsJson(split));
-        ParsedSplit result = _userCustomSplitAdapterConsumer.get(SPLIT_NAME);
+        ParsedSplit actual = _userCustomSplitAdapterConsumer.get(SPLIT_NAME);
         ParsedSplit expected = splitParser.parse(split);
-        Assert.assertEquals(expected, result);
+        Assert.assertEquals(actual.getRuleBasedSegmentsNames(), expected.getRuleBasedSegmentsNames());
+        Assert.assertEquals(actual.seed(), expected.seed());
+        Assert.assertEquals(actual.algo(), expected.algo());
+        Assert.assertEquals(actual.trafficAllocationSeed(), expected.trafficAllocationSeed());
+        Assert.assertEquals(actual.flagSets(), expected.flagSets());
+        Assert.assertEquals(actual.parsedConditions(), expected.parsedConditions());
+        Assert.assertEquals(actual.trafficAllocation(), expected.trafficAllocation());
+        Assert.assertEquals(actual.getSegmentsNames(), expected.getSegmentsNames());
+        Assert.assertEquals(actual.impressionsDisabled(), expected.impressionsDisabled());
+        Assert.assertEquals(actual.killed(), expected.killed());
+        Assert.assertEquals(actual.defaultTreatment(), expected.defaultTreatment());
+        Assert.assertEquals(actual.changeNumber(), expected.changeNumber());
+        Assert.assertEquals(actual.feature(), expected.feature());
+        Assert.assertEquals(actual.configurations(), expected.configurations());
+        Assert.assertEquals(actual.prerequisitesMatcher().toString(), expected.prerequisitesMatcher().toString());
     }
 
     @Test

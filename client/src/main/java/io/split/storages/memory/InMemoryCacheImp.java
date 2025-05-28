@@ -131,7 +131,8 @@ public class InMemoryCacheImp implements SplitCache {
                 parsedSplit.algo(),
                 parsedSplit.configurations(),
                 parsedSplit.flagSets(),
-                parsedSplit.impressionsDisabled()
+                parsedSplit.impressionsDisabled(),
+                parsedSplit.prerequisitesMatcher()
                 );
 
         _concurrentMap.put(splitName, updatedSplit);
