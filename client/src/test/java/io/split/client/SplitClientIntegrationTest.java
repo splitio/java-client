@@ -1101,6 +1101,80 @@ public class SplitClientIntegrationTest {
         Assert.assertTrue(check2);
     }
 
+    @Test
+    public void getTreatmentWithPrerequisites() throws Exception {
+        String splits = new String(Files.readAllBytes(Paths.get("src/test/resources/splits_prereq.json")), StandardCharsets.UTF_8);
+        List<RecordedRequest> allRequests = new ArrayList<>();
+        Dispatcher dispatcher = new Dispatcher() {
+            @Override
+            public MockResponse dispatch(RecordedRequest request) {
+                allRequests.add(request);
+                switch (request.getPath()) {
+                    case "/api/splitChanges?s=1.3&since=-1&rbSince=-1":
+                        return new MockResponse().setResponseCode(200).setBody(splits);
+                    case "/api/splitChanges?s=1.3&since=1585948850109&rbSince=1585948850109":
+                        return new MockResponse().setResponseCode(200).setBody("{\"ff\":{\"d\": [], \"s\":1585948850109, \"t\":1585948850109},\"rbs\":{\"d\":[],\"t\":1585948850109,\"s\":1585948850109}}");
+                    case "/api/segmentChanges/segment-test?since=-1":
+                        return new MockResponse().setResponseCode(200).setBody("{\"name\":\"segment-test\",\"added\":[\"user-1\"],\"removed\":[],\"since\":-1,\"till\":-1}");
+                    case "/api/testImpressions/bulk":
+                        return new MockResponse().setResponseCode(200);
+                    case "/api/testImpressions/count":
+                        return new MockResponse().setResponseCode(200);
+                    case "/v1/keys/ss":
+                        return new MockResponse().setResponseCode(200);
+                    case "/v1/metrics/usage":
+                        return new MockResponse().setResponseCode(200);
+                    case "/v1/metrics/config":
+                        return new MockResponse().setResponseCode(200);
+                }
+                return new MockResponse().setResponseCode(404);
+            }
+        };
+
+        MockWebServer splitServer = new MockWebServer();
+        splitServer.setDispatcher(dispatcher);
+        splitServer.start();
+        String serverURL = String.format("http://%s:%s", splitServer.getHostName(), splitServer.getPort());
+
+        SplitClientConfig config = SplitClientConfig.builder()
+                .setBlockUntilReadyTimeout(10000)
+                .endpoint(serverURL, serverURL)
+                .telemetryURL(serverURL + "/v1")
+                .authServiceURL(String.format("%s/api/auth/enabled", serverURL))
+                .streamingEnabled(false)
+                .featuresRefreshRate(5)
+                .impressionsMode(ImpressionsManager.Mode.DEBUG)
+                .build();
+
+        SplitFactory factory = SplitFactoryBuilder.build("fake-api-token", config);
+        SplitClient client = factory.client();
+        client.blockUntilReady();
+
+        Assert.assertEquals("on", client.getTreatment("bilal@split.io", "test_prereq", new HashMap<String, Object>() {{
+            put("email", "bilal@@split.io");
+        }}));
+        Assert.assertEquals("def_treatment", client.getTreatment("bilal@split.io", "test_prereq"));
+        Assert.assertEquals("def_treatment", client.getTreatment("mauro@split.io", "test_prereq", new HashMap<String, Object>() {{
+            put("email", "mauro@@split.io");
+        }}));
+        Assert.assertEquals("on", client.getTreatment("pato@split.io", "test_prereq", new HashMap<String, Object>() {{
+            put("email", "pato@@split.io");
+        }}));
+
+        Assert.assertEquals("on_whitelist", client.getTreatment("bilal@split.io", "prereq_chain", new HashMap<String, Object>() {{
+            put("email", "bilal@@split.io");
+        }}));
+        Assert.assertEquals("on", client.getTreatment("pato@split.io", "prereq_chain", new HashMap<String, Object>() {{
+            put("email", "pato@@split.io");
+        }}));
+        Assert.assertEquals("on_default", client.getTreatment("mauro@split.io", "prereq_chain", new HashMap<String, Object>() {{
+            put("email", "mauro@@split.io");
+        }}));
+
+        client.destroy();
+        splitServer.shutdown();
+    }
+
     private SSEMockServer buildSSEMockServer(SSEMockServer.SseEventQueue eventQueue) {
         return new SSEMockServer(eventQueue, (token, version, channel) -> {
             if (!"1.1".equals(version)) {
