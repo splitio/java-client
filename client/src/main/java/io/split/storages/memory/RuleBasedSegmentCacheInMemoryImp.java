@@ -14,6 +14,7 @@ import java.util.ArrayList;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.stream.Collectors;
+import java.util.Map;
 
 public class RuleBasedSegmentCacheInMemoryImp implements RuleBasedSegmentCache {
 
@@ -65,8 +66,8 @@ public class RuleBasedSegmentCacheInMemoryImp implements RuleBasedSegmentCache {
     @Override
     public List<String> ruleBasedSegmentNames() {
         List<String> ruleBasedSegmentNamesList = new ArrayList<>();
-        for (String key: _concurrentMap.keySet()) {
-            ruleBasedSegmentNamesList.add(_concurrentMap.get(key).ruleBasedSegment());
+        for (Map.Entry<String, ParsedRuleBasedSegment> key: _concurrentMap.entrySet()) {
+            ruleBasedSegmentNamesList.add(key.getValue().ruleBasedSegment());
         }
         return ruleBasedSegmentNamesList;
     }
@@ -103,6 +104,6 @@ public class RuleBasedSegmentCacheInMemoryImp implements RuleBasedSegmentCache {
 
     @Override
     public boolean contains(Set<String> ruleBasedSegmentNames) {
-        return getSegments().contains(ruleBasedSegmentNames);
+        return getSegments().containsAll(ruleBasedSegmentNames);
     }
 }

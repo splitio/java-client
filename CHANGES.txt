@@ -1,3 +1,7 @@
+4.15.0 (Apr 18, 2025)
+- Prevent polling threads from starting when the SDK calls destroy method.
+- Added a new optional argument to the client `getTreatment` methods to allow passing additional evaluation options, such as a map of properties to append to the generated impressions sent to Split backend. Read more in our docs.
+
 4.14.0 (Jan 17, 2025)
 - Added support for the new impressions tracking toggle available on feature flags, both respecting the setting and including the new field being returned on SplitView type objects. Read more in our docs.
 - Cleaned unused imports to fix a collision issue.

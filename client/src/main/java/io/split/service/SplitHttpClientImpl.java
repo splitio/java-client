@@ -93,12 +93,7 @@ public final class SplitHttpClientImpl implements SplitHttpClient {
                 _log.warn(String.format("Response status was: %s. Reason: %s", code, statusMessage));
             }
 
-            String body = "";
-            try {
-                body = EntityUtils.toString(response.getEntity(), StandardCharsets.UTF_8);
-            } catch (Exception e) {
-                _log.warn("Error parsing Response.body", e);
-            }
+            String body = extractBodyFromResponse(response);
 
             return new SplitHttpResponse(code,
                     statusMessage,
@@ -111,6 +106,16 @@ public final class SplitHttpClientImpl implements SplitHttpClient {
         } finally {
             Utils.forceClose(response);
         }
+    }
+
+    private String extractBodyFromResponse(CloseableHttpResponse response) {
+        String body = "";
+        try {
+            body = EntityUtils.toString(response.getEntity(), StandardCharsets.UTF_8);
+        } catch (Exception e) {
+            _log.warn("Error parsing Response.body", e);
+        }
+        return body;
     }
 
     public SplitHttpResponse post(URI uri, String body, Map<String, List<String>> additionalHeaders)

@@ -61,6 +61,7 @@ public class JsonLocalhostSplitChangeFetcher implements SplitChangeFetcher {
             _log.warn("The till is lower than the change number or different to -1");
             return null;
         }
+      
         byte [] currHashFeatureFlags = getStringDigest(splitChange.featureFlags.d.toString());
         byte [] currHashRuleBasedSegments = getStringDigest(splitChange.ruleBasedSegments.d.toString());
         //if sha exist and is equal to before sha, or if till is equal to default till returns the same segmentChange with till equals to storage CN
@@ -79,10 +80,10 @@ public class JsonLocalhostSplitChangeFetcher implements SplitChangeFetcher {
         return splitChangeToProcess;
     }
 
-    private byte[] getStringDigest(String Json) throws NoSuchAlgorithmException {
+    private byte[] getStringDigest(String json) throws NoSuchAlgorithmException {
         MessageDigest digest = MessageDigest.getInstance("SHA-1");
         digest.reset();
-        digest.update(Json.getBytes());
+        digest.update(json.getBytes());
         // calculate the json sha
         return digest.digest();
     }

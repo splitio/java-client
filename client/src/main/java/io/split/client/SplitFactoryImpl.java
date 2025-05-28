@@ -130,7 +130,7 @@ public class SplitFactoryImpl implements SplitFactory {
     private static final org.slf4j.Logger _log = LoggerFactory.getLogger(SplitFactoryImpl.class);
     private static final String LEGACY_LOG_MESSAGE = "The sdk initialize in localhost mode using Legacy file. The splitFile or "
             +
-            "inputStream doesn't add it to the config.";
+            "inputStream are not added to the config.";
     private final static long SSE_CONNECT_TIMEOUT = 30000;
     private final static long SSE_SOCKET_TIMEOUT = 70000;
 
@@ -403,7 +403,7 @@ public class SplitFactoryImpl implements SplitFactory {
         SegmentCache segmentCache = new SegmentCacheInMemoryImpl();
         FlagSetsFilter flagSetsFilter = new FlagSetsFilterImpl(config.getSetsFilter());
         SplitCache splitCache = new InMemoryCacheImp(flagSetsFilter);
-        RuleBasedSegmentCache _ruleBasedSegmentCache = new RuleBasedSegmentCacheInMemoryImp();
+        RuleBasedSegmentCache ruleBasedSegmentCache = new RuleBasedSegmentCacheInMemoryImp();
         _splitCache = splitCache;
         _gates = new SDKReadinessGates();
         _segmentCache = segmentCache;
@@ -422,7 +422,7 @@ public class SplitFactoryImpl implements SplitFactory {
                 _telemetryStorageProducer,
                 _splitCache,
                 config.getThreadFactory(),
-                _ruleBasedSegmentCache);
+                ruleBasedSegmentCache);
 
         // SplitFetcher
         SplitChangeFetcher splitChangeFetcher = createSplitChangeFetcher(config);
@@ -430,7 +430,7 @@ public class SplitFactoryImpl implements SplitFactory {
         RuleBasedSegmentParser ruleBasedSegmentParser = new RuleBasedSegmentParser();
 
         _splitFetcher = new SplitFetcherImp(splitChangeFetcher, splitParser, splitCache, _telemetryStorageProducer,
-                flagSetsFilter, ruleBasedSegmentParser, _ruleBasedSegmentCache);
+                flagSetsFilter, ruleBasedSegmentParser, ruleBasedSegmentCache);
 
         // SplitSynchronizationTask
         _splitSynchronizationTask = new SplitSynchronizationTask(_splitFetcher, splitCache,
@@ -442,7 +442,7 @@ public class SplitFactoryImpl implements SplitFactory {
                 _impressionsManager, null, null, null);
 
         // Evaluator
-        _evaluator = new EvaluatorImp(splitCache, segmentCache, _ruleBasedSegmentCache);
+        _evaluator = new EvaluatorImp(splitCache, segmentCache, ruleBasedSegmentCache);
 
         EventsStorage eventsStorage = new NoopEventsStorageImp();
 

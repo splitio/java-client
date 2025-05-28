@@ -70,12 +70,7 @@ public class LegacyLocalhostSplitChangeFetcher implements SplitChangeFetcher {
                 split.trafficAllocation = LocalhostConstants.SIZE_100;
                 split.trafficAllocationSeed = LocalhostConstants.SIZE_1;
 
-                Condition condition;
-                if (featureTreatment.length == 2) {
-                    condition = LocalhostSanitizer.createCondition(null, featureTreatment[1]);
-                } else {
-                    condition = LocalhostSanitizer.createCondition(featureTreatment[2], featureTreatment[1]);
-                }
+                Condition condition = checkCondition(featureTreatment);
                 if(condition.conditionType != ConditionType.ROLLOUT){
                     split.conditions.add(0, condition);
                 } else {
@@ -102,5 +97,15 @@ public class LegacyLocalhostSplitChangeFetcher implements SplitChangeFetcher {
                     _splitFile.getPath()), e);
             throw new IllegalStateException("Problem fetching splitChanges: " + e.getMessage(), e);
         }
+    }
+
+    private Condition checkCondition(String[] featureTreatment) {
+        Condition condition;
+        if (featureTreatment.length == 2) {
+            condition = LocalhostSanitizer.createCondition(null, featureTreatment[1]);
+        } else {
+            condition = LocalhostSanitizer.createCondition(featureTreatment[2], featureTreatment[1]);
+        }
+        return condition;
     }
 }

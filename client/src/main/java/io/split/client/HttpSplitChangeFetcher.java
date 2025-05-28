@@ -33,7 +33,6 @@ import static io.split.Spec.SPEC_1_1;
 public final class HttpSplitChangeFetcher implements SplitChangeFetcher {
     private static final Logger _log = LoggerFactory.getLogger(HttpSplitChangeFetcher.class);
 
-    private final Object _lock = new Object();
     private static final String SINCE = "since";
     private static final String RB_SINCE = "rbSince";
     private static final String TILL = "till";

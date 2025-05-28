@@ -10,6 +10,12 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class ImpressionPropertiesValidatorTest {
+
+    @Test(expected = IllegalStateException.class)
+    public void testConstructorException() {
+        ImpressionPropertiesValidator iv = new ImpressionPropertiesValidator();
+    }
+
     @Test
     public void propertiesAreValidWorks() {
         Map<String, Object> properties = new HashMap<String, Object>()

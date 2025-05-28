@@ -1,6 +1,5 @@
 package io.split.client.dtos;
 
-import java.util.ArrayList;
 import java.util.List;
 
 public class ChangeDto<T> {

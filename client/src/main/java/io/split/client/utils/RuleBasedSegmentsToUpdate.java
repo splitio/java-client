@@ -1,7 +1,6 @@
 package io.split.client.utils;
 
 import io.split.engine.experiments.ParsedRuleBasedSegment;
-import io.split.engine.experiments.ParsedSplit;
 
 import java.util.List;
 import java.util.Set;

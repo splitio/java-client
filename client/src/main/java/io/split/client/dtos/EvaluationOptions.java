@@ -10,5 +10,5 @@ public class EvaluationOptions {
     }
     public Map<String, Object> getProperties() {
         return _properties;
-    };
+    }
 }

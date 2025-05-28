@@ -30,43 +30,17 @@ public final class LocalhostSanitizer {
     }
 
     public static SplitChange sanitization(SplitChange splitChange) {
-        SecureRandom random = new SecureRandom();
-        List<Split> splitsToRemove = new ArrayList<>();
+        sanitizeTillAndSince(splitChange);
+        splitChange.featureFlags.d = sanitizeFeatureFlags(splitChange.featureFlags.d);
+        splitChange.ruleBasedSegments.d = sanitizeRuleBasedSegments(splitChange.ruleBasedSegments.d);
+
+        return splitChange;
+    }
+
+    private static List<RuleBasedSegment> sanitizeRuleBasedSegments(List<RuleBasedSegment> ruleBasedSegments) {
         List<RuleBasedSegment> ruleBasedSegmentsToRemove = new ArrayList<>();
-        splitChange = sanitizeTillAndSince(splitChange);
-
-        if (splitChange.featureFlags.d != null) {
-            for (Split split : splitChange.featureFlags.d) {
-                if (split.name == null) {
-                    splitsToRemove.add(split);
-                    continue;
-                }
-                split.trafficTypeName = sanitizeIfNullOrEmpty(split.trafficTypeName, LocalhostConstants.USER);
-                split.status = sanitizeStatus(split.status);
-                split.defaultTreatment = sanitizeIfNullOrEmpty(split.defaultTreatment, LocalhostConstants.CONTROL);
-                split.changeNumber = sanitizeChangeNumber(split.changeNumber, 0);
-
-                if (split.trafficAllocation == null || split.trafficAllocation < 0 || split.trafficAllocation > LocalhostConstants.SIZE_100) {
-                    split.trafficAllocation = LocalhostConstants.SIZE_100;
-                }
-                if (split.trafficAllocationSeed == null || split.trafficAllocationSeed == 0) {
-                    split.trafficAllocationSeed = -random.nextInt(10) * LocalhostConstants.MILLI_SECONDS;
-                }
-                if (split.seed == 0) {
-                    split.seed = -random.nextInt(10) * LocalhostConstants.MILLI_SECONDS;
-                }
-                if (split.algo != LocalhostConstants.ALGO) {
-                    split.algo = LocalhostConstants.ALGO;
-                }
-                split.conditions = sanitizeConditions((ArrayList<Condition>) split.conditions, false, split.trafficTypeName);
-            }
-            splitChange.featureFlags.d.removeAll(splitsToRemove);
-        } else {
-            splitChange.featureFlags.d = new ArrayList<>();
-        }
-
-        if (splitChange.ruleBasedSegments.d != null) {
-            for (RuleBasedSegment ruleBasedSegment : splitChange.ruleBasedSegments.d) {
+        if (ruleBasedSegments != null) {
+            for (RuleBasedSegment ruleBasedSegment : ruleBasedSegments) {
                 if (ruleBasedSegment.name == null) {
                     ruleBasedSegmentsToRemove.add(ruleBasedSegment);
                     continue;
@@ -79,12 +53,58 @@ public final class LocalhostSanitizer {
                 ruleBasedSegment.excluded.segments = sanitizeExcluded((ArrayList) ruleBasedSegment.excluded.segments);
                 ruleBasedSegment.excluded.keys = sanitizeExcluded((ArrayList) ruleBasedSegment.excluded.keys);
             }
-            splitChange.ruleBasedSegments.d.removeAll(ruleBasedSegmentsToRemove);
+            ruleBasedSegments.removeAll(ruleBasedSegmentsToRemove);
         } else {
-            splitChange.ruleBasedSegments.d = new ArrayList<>();
+            ruleBasedSegments = new ArrayList<>();
         }
+        return ruleBasedSegments;
+    }
 
-        return splitChange;
+    private static List<Split> sanitizeFeatureFlags(List<Split> featureFlags) {
+        List<Split> splitsToRemove = new ArrayList<>();
+        if (featureFlags != null) {
+            for (Split split : featureFlags) {
+                if (split.name == null) {
+                    splitsToRemove.add(split);
+                    continue;
+                }
+                split.trafficTypeName = sanitizeIfNullOrEmpty(split.trafficTypeName, LocalhostConstants.USER);
+                split.status = sanitizeStatus(split.status);
+                split.defaultTreatment = sanitizeIfNullOrEmpty(split.defaultTreatment, LocalhostConstants.CONTROL);
+                split.changeNumber = sanitizeChangeNumber(split.changeNumber, 0);
+                split.trafficAllocation = sanitizeTrafficAllocation(split.trafficAllocation);
+                split.trafficAllocationSeed = sanitizeSeed(split.trafficAllocationSeed);
+                split.seed = sanitizeSeed(split.seed);
+                split.algo = sanitizeAlgo(split.algo);
+                split.conditions = sanitizeConditions((ArrayList<Condition>) split.conditions, false, split.trafficTypeName);
+            }
+            featureFlags.removeAll(splitsToRemove);
+        } else {
+            featureFlags = new ArrayList<>();
+        }
+        return featureFlags;
+    }
+
+    private static int sanitizeSeed(Integer seed) {
+        SecureRandom random = new SecureRandom();
+        if (seed == null || seed == 0) {
+            seed = -random.nextInt(10) * LocalhostConstants.MILLI_SECONDS;
+        }
+        return seed;
+    }
+
+    private static int sanitizeAlgo(int algo) {
+        if (algo != LocalhostConstants.ALGO) {
+            algo = LocalhostConstants.ALGO;
+        }
+        return algo;
+    }
+
+    private static int sanitizeTrafficAllocation(Integer trafficAllocation) {
+        if (trafficAllocation == null || trafficAllocation < 0 || trafficAllocation > LocalhostConstants.SIZE_100) {
+            trafficAllocation = LocalhostConstants.SIZE_100;
+        }
+        return trafficAllocation;
     }
 
     private static ArrayList<Condition> sanitizeConditions(ArrayList<Condition> conditions, boolean createPartition, String trafficTypeName) {
@@ -106,18 +126,18 @@ public final class LocalhostSanitizer {
         }
         return conditions;
     }
-    private static String sanitizeIfNullOrEmpty(String toBeSantitized, String defaultValue) {
-        if (toBeSantitized == null || toBeSantitized.isEmpty()) {
+    private static String sanitizeIfNullOrEmpty(String toBeSanitized, String defaultValue) {
+        if (toBeSanitized == null || toBeSanitized.isEmpty()) {
             return defaultValue;
         }
-        return toBeSantitized;
+        return toBeSanitized;
     }
 
-    private static long sanitizeChangeNumber(long toBeSantitized, long defaultValue) {
-        if (toBeSantitized < 0) {
+    private static long sanitizeChangeNumber(long toBeSanitized, long defaultValue) {
+        if (toBeSanitized < 0) {
             return defaultValue;
         }
-        return toBeSantitized;
+        return toBeSanitized;
     }
 
     private static Status sanitizeStatus(Status toBeSanitized) {
