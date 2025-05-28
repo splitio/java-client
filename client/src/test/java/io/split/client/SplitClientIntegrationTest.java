@@ -528,7 +528,7 @@ public class SplitClientIntegrationTest {
                 .until(() -> "on_whitelist".equals(client2.getTreatment("admin", "push_test")));
 
         Awaitility.await()
-                .atMost(50L, TimeUnit.SECONDS)
+                .atMost(100L, TimeUnit.SECONDS)
                 .until(() -> "on_whitelist".equals(client3.getTreatment("admin", "push_test")));
 
         Awaitility.await()

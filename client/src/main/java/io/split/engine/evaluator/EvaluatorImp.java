@@ -117,7 +117,7 @@ public class EvaluatorImp implements Evaluator {
 
             for (ParsedCondition parsedCondition : parsedSplit.parsedConditions()) {
 
-                if (!inRollout && parsedCondition.conditionType() == ConditionType.ROLLOUT) {
+                if (checkRollout(inRollout, parsedCondition)) {
 
                     if (parsedSplit.trafficAllocation() < 100) {
                         // if the traffic allocation is 100%, no need to do anything special.
@@ -157,6 +157,10 @@ public class EvaluatorImp implements Evaluator {
         } catch (Exception e) {
             throw new ChangeNumberExceptionWrapper(e, parsedSplit.changeNumber());
         }
+    }
+
+    private boolean checkRollout(boolean inRollout, ParsedCondition parsedCondition) {
+        return (!inRollout && parsedCondition.conditionType() == ConditionType.ROLLOUT);
     }
 
     private String getBucketingKey(String bucketingKey, String matchingKey) {

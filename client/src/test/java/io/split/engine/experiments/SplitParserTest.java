@@ -100,6 +100,7 @@ public class SplitParserTest {
         compareParsed(actual, expected);
         assertTrue(expected.hashCode() != 0);
         assertTrue(expected.equals(expected));
+        Assert.assertEquals(expected.toString(), actual.toString());
     }
 
     @Test
@@ -730,6 +731,7 @@ public class SplitParserTest {
         Assert.assertEquals(actual.configurations(), expected.configurations());
         Assert.assertEquals(actual.prerequisitesMatcher().toString(), expected.prerequisitesMatcher().toString());
     }
+
     private Split makeSplit(String name, int seed, List<Condition> conditions, long changeNumber) {
         return makeSplit(name, seed, conditions, changeNumber, null);
     }
