@@ -25,8 +25,6 @@ import org.junit.Test;
 import javax.ws.rs.sse.OutboundSseEvent;
 import java.io.IOException;
 import java.net.URISyntaxException;
-
-import java.nio.Buffer;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Paths;
@@ -46,9 +44,9 @@ public class SplitClientIntegrationTest {
 
     @Test
     public void getTreatmentWithStreamingEnabled() throws Exception {
-        MockResponse response = new MockResponse().setBody("{\"splits\": [], \"since\":1585948850109, \"till\":1585948850109}");
-        MockResponse response2 = new MockResponse().setBody("{\"splits\": [], \"since\":1585948850110, \"till\":1585948850110}");
-        MockResponse response3 = new MockResponse().setBody("{\"splits\": [], \"since\":1585948850111, \"till\":1585948850111}");
+        MockResponse response = new MockResponse().setBody("{\"ff\":{\"d\": [], \"s\":1585948850109, \"t\":1585948850109}, \"rbs\":{\"d\":[],\"s\":1585948850109,\"t\":1585948850109}}");
+        MockResponse response2 = new MockResponse().setBody("{\"ff\":{\"d\": [], \"s\":1585948850110, \"t\":1585948850110}, \"rbs\":{\"d\":[],\"s\":1585948850110,\"t\":1585948850110}}");
+        MockResponse response3 = new MockResponse().setBody("{\"ff\":{\"d\": [], \"s\":1585948850111, \"t\":1585948850111}, \"rbs\":{\"d\":[],\"s\":1585948850111,\"t\":1585948850111}}");
         Queue responses = new LinkedList<>();
         responses.add(response);
         Queue responses2 = new LinkedList<>();
@@ -146,7 +144,7 @@ public class SplitClientIntegrationTest {
 
     @Test
     public void getTreatmentWithStreamingEnabledAndAuthDisabled() throws Exception {
-        MockResponse response = new MockResponse().setBody("{\"splits\": [], \"since\":1585948850109, \"till\":1585948850109}");
+        MockResponse response = new MockResponse().setBody("{\"ff\":{\"d\": [], \"s\":1585948850109, \"t\":1585948850109}, \"rbs\":{\"s\":1585948850109,\"t\":1585948850109,\"d\":[]}}");
         Queue responses = new LinkedList<>();
         responses.add(response);
         SplitMockServer splitServer = new SplitMockServer(CustomDispatcher.builder()
@@ -167,14 +165,19 @@ public class SplitClientIntegrationTest {
 
         String result = client.getTreatment("admin", "push_test");
         Assert.assertEquals("on_whitelist", result);
-
+        Assert.assertEquals("on", client.getTreatment("bilal@@split.io", "rbs_flag", new HashMap<String, Object>() {{
+            put("email", "bilal@@split.io");
+        }}));
+        Assert.assertEquals("off", client.getTreatment("mauro@split.io", "rbs_flag", new HashMap<String, Object>() {{
+            put("email", "mauro@split.io");
+        }}));
         client.destroy();
         splitServer.stop();
     }
 
     @Test
     public void getTreatmentWithStreamingDisabled() throws Exception {
-        MockResponse response = new MockResponse().setBody("{\"splits\": [], \"since\":1585948850109, \"till\":1585948850109}");
+        MockResponse response = new MockResponse().setBody("{\"ff\":{\"d\": [], \"s\":1585948850109, \"t\":1585948850109}, \"rbs\":{\"d\":[],\"s\":1585948850109,\"t\":1585948850109}}");
         Queue responses = new LinkedList<>();
         responses.add(response);
         SplitMockServer splitServer = new SplitMockServer(CustomDispatcher.builder()
@@ -207,7 +210,7 @@ public class SplitClientIntegrationTest {
 
     @Test
     public void managerSplitsWithStreamingEnabled() throws Exception {
-        MockResponse response = new MockResponse().setBody("{\"splits\": [], \"since\":1585948850109, \"till\":1585948850109}");
+        MockResponse response = new MockResponse().setBody("{\"ff\":{\"d\": [], \"s\":1585948850109, \"t\":1585948850109}, \"rbs\":{\"d\":[],\"s\":1585948850109,\"t\":1585948850109}}");
         Queue responses = new LinkedList<>();
         responses.add(response);
         SplitMockServer splitServer = new SplitMockServer(CustomDispatcher.builder()
@@ -226,8 +229,8 @@ public class SplitClientIntegrationTest {
         manager.blockUntilReady();
 
         List<SplitView> results = manager.splits();
-        Assert.assertEquals(4, results.size());
-        Assert.assertEquals(3, results.stream().filter(r -> !r.killed).toArray().length);
+        Assert.assertEquals(5, results.size());
+        Assert.assertEquals(4, results.stream().filter(r -> !r.killed).toArray().length);
 
         // SPLIT_KILL should fetch.
         OutboundSseEvent sseEventSplitKill = new OutboundEvent
@@ -239,7 +242,7 @@ public class SplitClientIntegrationTest {
 
         Awaitility.await()
                 .atMost(2L, TimeUnit.MINUTES)
-                .until(() -> 2 == manager.splits().stream().filter(r -> !r.killed).toArray().length);
+                .until(() -> 3 == manager.splits().stream().filter(r -> !r.killed).toArray().length);
 
         splitServer.stop();
         sseServer.stop();
@@ -247,9 +250,9 @@ public class SplitClientIntegrationTest {
 
     @Test
     public void splitClientOccupancyNotifications() throws Exception {
-        MockResponse response = new MockResponse().setBody("{\"splits\": [], \"since\":1585948850109, \"till\":1585948850109}");
-        MockResponse response2 = new MockResponse().setBody("{\"splits\": [], \"since\":1585948850110, \"till\":1585948850110}");
-        MockResponse response3 = new MockResponse().setBody("{\"splits\": [], \"since\":1585948850111, \"till\":1585948850111}");
+        MockResponse response = new MockResponse().setBody("{\"ff\":{\"d\": [], \"s\":1585948850109, \"t\":1585948850109}, \"rbs\":{\"d\":[],\"s\":1585948850109,\"t\":1585948850109}}");
+        MockResponse response2 = new MockResponse().setBody("{\"ff\":{\"d\": [], \"s\":1585948850110, \"t\":1585948850110}, \"rbs\":{\"d\":[],\"s\":1585948850110,\"t\":1585948850110}}");
+        MockResponse response3 = new MockResponse().setBody("{\"ff\":{\"d\": [], \"s\":1585948850111, \"t\":1585948850111}, \"rbs\":{\"d\":[],\"s\":1585948850111,\"t\":1585948850111}}");
         Queue responses = new LinkedList<>();
         responses.add(response);
         Queue responses2 = new LinkedList<>();
@@ -322,9 +325,9 @@ public class SplitClientIntegrationTest {
 
     @Test
     public void splitClientControlNotifications() throws Exception {
-        MockResponse response = new MockResponse().setBody("{\"splits\": [], \"since\":1585948850109, \"till\":1585948850109}");
-        MockResponse response2 = new MockResponse().setBody("{\"splits\": [], \"since\":1585948850110, \"till\":1585948850110}");
-        MockResponse response3 = new MockResponse().setBody("{\"splits\": [], \"since\":1585948850111, \"till\":1585948850111}");
+        MockResponse response = new MockResponse().setBody("{\"ff\":{\"d\": [], \"s\":1585948850109, \"t\":1585948850109}, \"rbs\":{\"d\":[],\"s\":1585948850109,\"t\":1585948850109}}");
+        MockResponse response2 = new MockResponse().setBody("{\"ff\":{\"d\": [], \"s\":1585948850110, \"t\":1585948850110}, \"rbs\":{\"d\":[],\"s\":1585948850110,\"t\":1585948850110}}");
+        MockResponse response3 = new MockResponse().setBody("{\"ff\":{\"d\": [], \"s\":1585948850111, \"t\":1585948850111}, \"rbs\":{\"d\":[],\"s\":1585948850111,\"t\":1585948850111}}");
         Queue responses = new LinkedList<>();
         responses.add(response);
         Queue responses2 = new LinkedList<>();
@@ -417,7 +420,7 @@ public class SplitClientIntegrationTest {
 
     @Test
     public void splitClientMultiFactory() throws Exception {
-        MockResponse response = new MockResponse().setBody("{\"splits\": [], \"since\":1585948850109, \"till\":1585948850109}");
+        MockResponse response = new MockResponse().setBody("{\"ff\":{\"d\": [], \"s\":1585948850109, \"t\":1585948850109}, \"rbs\":{\"d\":[],\"s\":1585948850109,\"t\":1585948850109}}");
         Queue responses = new LinkedList<>();
         responses.add(response);
         responses.add(response);
@@ -525,7 +528,7 @@ public class SplitClientIntegrationTest {
                 .until(() -> "on_whitelist".equals(client2.getTreatment("admin", "push_test")));
 
         Awaitility.await()
-                .atMost(50L, TimeUnit.SECONDS)
+                .atMost(100L, TimeUnit.SECONDS)
                 .until(() -> "on_whitelist".equals(client3.getTreatment("admin", "push_test")));
 
         Awaitility.await()
@@ -566,7 +569,7 @@ public class SplitClientIntegrationTest {
 
     @Test
     public void keepAlive() throws Exception {
-        MockResponse response = new MockResponse().setBody("{\"splits\": [], \"since\":1585948850109, \"till\":1585948850109}");
+        MockResponse response = new MockResponse().setBody("{\"ff\":{\"d\": [], \"s\":1585948850109, \"t\":1585948850109}, \"rbs\":{\"d\":[],\"s\":1585948850109,\"t\":1585948850109}}");
         Queue responses = new LinkedList<>();
         responses.add(response);
 
@@ -604,7 +607,7 @@ public class SplitClientIntegrationTest {
 
     @Test
     public void testConnectionClosedByRemoteHostIsProperlyHandled() throws Exception {
-        MockResponse response = new MockResponse().setBody("{\"splits\": [], \"since\":1585948850109, \"till\":1585948850109}");
+        MockResponse response = new MockResponse().setBody("{\"ff\":{\"d\": [], \"s\":1585948850109, \"t\":1585948850109}, \"rbs\":{\"d\":[],\"s\":1585948850109,\"t\":1585948850109}}");
         Queue responses = new LinkedList<>();
         responses.add(response);
         SplitMockServer splitServer = new SplitMockServer(CustomDispatcher.builder()
@@ -642,7 +645,7 @@ public class SplitClientIntegrationTest {
 
     @Test
     public void testConnectionClosedIsProperlyHandled() throws Exception {
-        MockResponse response = new MockResponse().setBody("{\"splits\": [], \"since\":1585948850109, \"till\":1585948850109}");
+        MockResponse response = new MockResponse().setBody("{\"ff\":{\"d\": [], \"s\":1585948850109, \"t\":1585948850109}, \"rbs\":{\"d\":[],\"s\":1585948850109,\"t\":1585948850109}}");
         Queue responses = new LinkedList<>();
         responses.add(response);
         SplitMockServer splitServer = new SplitMockServer(CustomDispatcher.builder()
@@ -708,15 +711,21 @@ public class SplitClientIntegrationTest {
             Assert.assertTrue(events.stream().anyMatch(e -> "keyValue".equals(e.getEventDto().key) && e.getEventDto().value == 12L));
             Assert.assertTrue(events.stream().anyMatch(e -> "keyProperties".equals(e.getEventDto().key) && e.getEventDto().properties != null));
 
-            Assert.assertEquals(2, splits.size());
+            Assert.assertEquals(3, splits.size());
             Assert.assertTrue(splits.stream().anyMatch(sw -> "first.name".equals(sw.name)));
             Assert.assertTrue(splits.stream().anyMatch(sw -> "second.name".equals(sw.name)));
             Assert.assertEquals("on", client.getTreatment("key", "first.name"));
             Assert.assertEquals("off", client.getTreatmentWithConfig("FakeKey", "second.name").treatment());
             Assert.assertEquals("control", client.getTreatment("FakeKey", "noSplit"));
+            Assert.assertEquals("on", client.getTreatment("bilal@@split.io", "rbs_flag", new HashMap<String, Object>() {{
+                put("email", "bilal@@split.io");
+            }}));
+            Assert.assertEquals("off", client.getTreatment("mauro@split.io", "rbs_flag", new HashMap<String, Object>() {{
+                put("email", "mauro@split.io");
+            }}));
 
             List<ImpressionConsumer> impressions = customStorageWrapper.getImps();
-            Assert.assertEquals(2, impressions.size());
+            Assert.assertEquals(4, impressions.size());
             Assert.assertTrue(impressions.stream().anyMatch(imp -> "first.name".equals(imp.getKeyImpression().feature) && "on".equals(imp.getKeyImpression().treatment)));
             Assert.assertTrue(impressions.stream().anyMatch(imp -> "second.name".equals(imp.getKeyImpression().feature) && "off".equals(imp.getKeyImpression().treatment)));
 
@@ -729,7 +738,7 @@ public class SplitClientIntegrationTest {
             String key3 = keys.stream().filter(key -> key.contains("getTreatmentWithConfig/")).collect(Collectors.toList()).get(0);
 
             Assert.assertEquals(Optional.of(3L), Optional.ofNullable(latencies.get(key1)));
-            Assert.assertEquals(Optional.of(1L), Optional.of(latencies.get(key2)));
+            Assert.assertEquals(Optional.of(3L), Optional.of(latencies.get(key2)));
             Assert.assertEquals(Optional.of(1L), Optional.of(latencies.get(key3)));
 
             Thread.sleep(500);
@@ -743,8 +752,8 @@ public class SplitClientIntegrationTest {
 
     @Test
     public void getTreatmentFlagSetWithPolling() throws Exception {
-        MockResponse response = new MockResponse().setBody("{\"splits\":[{\"trafficTypeName\":\"client\",\"name\":\"workm\",\"trafficAllocation\":100,\"trafficAllocationSeed\":147392224,\"seed\":524417105,\"status\":\"ACTIVE\",\"killed\":false,\"defaultTreatment\":\"on\",\"changeNumber\":1602796638344,\"algo\":2,\"configurations\":{},\"sets\":[\"set1\",\"set2\"],\"conditions\":[{\"conditionType\":\"ROLLOUT\",\"matcherGroup\":{\"combiner\":\"AND\",\"matchers\":[{\"keySelector\":{\"trafficType\":\"client\",\"attribute\":null},\"matcherType\":\"IN_SEGMENT\",\"negate\":false,\"userDefinedSegmentMatcherData\":{\"segmentName\":\"new_segment\"},\"whitelistMatcherData\":null,\"unaryNumericMatcherData\":null,\"betweenMatcherData\":null,\"booleanMatcherData\":null,\"dependencyMatcherData\":null,\"stringMatcherData\":null}]},\"partitions\":[{\"treatment\":\"on\",\"size\":0},{\"treatment\":\"off\",\"size\":0},{\"treatment\":\"free\",\"size\":100},{\"treatment\":\"conta\",\"size\":0}],\"label\":\"in segment new_segment\"},{\"conditionType\":\"ROLLOUT\",\"matcherGroup\":{\"combiner\":\"AND\",\"matchers\":[{\"keySelector\":{\"trafficType\":\"client\",\"attribute\":null},\"matcherType\":\"ALL_KEYS\",\"negate\":false,\"userDefinedSegmentMatcherData\":null,\"whitelistMatcherData\":null,\"unaryNumericMatcherData\":null,\"betweenMatcherData\":null,\"booleanMatcherData\":null,\"dependencyMatcherData\":null,\"stringMatcherData\":null}]},\"partitions\":[{\"treatment\":\"on\",\"size\":100},{\"treatment\":\"off\",\"size\":0},{\"treatment\":\"free\",\"size\":0},{\"treatment\":\"conta\",\"size\":0}],\"label\":\"default rule\"}]},{\"trafficTypeName\":\"client\",\"name\":\"workm_set_3\",\"trafficAllocation\":100,\"trafficAllocationSeed\":147392224,\"seed\":524417105,\"status\":\"ACTIVE\",\"killed\":false,\"defaultTreatment\":\"on\",\"changeNumber\":1602796638344,\"algo\":2,\"configurations\":{},\"sets\":[\"set3\"],\"conditions\":[{\"conditionType\":\"ROLLOUT\",\"matcherGroup\":{\"combiner\":\"AND\",\"matchers\":[{\"keySelector\":{\"trafficType\":\"client\",\"attribute\":null},\"matcherType\":\"IN_SEGMENT\",\"negate\":false,\"userDefinedSegmentMatcherData\":{\"segmentName\":\"new_segment\"},\"whitelistMatcherData\":null,\"unaryNumericMatcherData\":null,\"betweenMatcherData\":null,\"booleanMatcherData\":null,\"dependencyMatcherData\":null,\"stringMatcherData\":null}]},\"partitions\":[{\"treatment\":\"on\",\"size\":0},{\"treatment\":\"off\",\"size\":0},{\"treatment\":\"free\",\"size\":100},{\"treatment\":\"conta\",\"size\":0}],\"label\":\"in segment new_segment\"},{\"conditionType\":\"ROLLOUT\",\"matcherGroup\":{\"combiner\":\"AND\",\"matchers\":[{\"keySelector\":{\"trafficType\":\"client\",\"attribute\":null},\"matcherType\":\"ALL_KEYS\",\"negate\":false,\"userDefinedSegmentMatcherData\":null,\"whitelistMatcherData\":null,\"unaryNumericMatcherData\":null,\"betweenMatcherData\":null,\"booleanMatcherData\":null,\"dependencyMatcherData\":null,\"stringMatcherData\":null}]},\"partitions\":[{\"treatment\":\"on\",\"size\":100},{\"treatment\":\"off\",\"size\":0},{\"treatment\":\"free\",\"size\":0},{\"treatment\":\"conta\",\"size\":0}],\"label\":\"default rule\"}]}],\"since\":-1,\"till\":1602796638344}");
-        MockResponse responseFlag = new MockResponse().setBody("{\"splits\": [], \"since\":1602796638344, \"till\":1602796638344}");
+        MockResponse response = new MockResponse().setBody("{\"ff\":{\"d\":[{\"trafficTypeName\":\"client\",\"name\":\"workm\",\"trafficAllocation\":100,\"trafficAllocationSeed\":147392224,\"seed\":524417105,\"status\":\"ACTIVE\",\"killed\":false,\"defaultTreatment\":\"on\",\"changeNumber\":1602796638344,\"algo\":2,\"configurations\":{},\"sets\":[\"set1\",\"set2\"],\"conditions\":[{\"conditionType\":\"ROLLOUT\",\"matcherGroup\":{\"combiner\":\"AND\",\"matchers\":[{\"keySelector\":{\"trafficType\":\"client\",\"attribute\":null},\"matcherType\":\"IN_SEGMENT\",\"negate\":false,\"userDefinedSegmentMatcherData\":{\"segmentName\":\"new_segment\"},\"whitelistMatcherData\":null,\"unaryNumericMatcherData\":null,\"betweenMatcherData\":null,\"booleanMatcherData\":null,\"dependencyMatcherData\":null,\"stringMatcherData\":null}]},\"partitions\":[{\"treatment\":\"on\",\"size\":0},{\"treatment\":\"off\",\"size\":0},{\"treatment\":\"free\",\"size\":100},{\"treatment\":\"conta\",\"size\":0}],\"label\":\"in segment new_segment\"},{\"conditionType\":\"ROLLOUT\",\"matcherGroup\":{\"combiner\":\"AND\",\"matchers\":[{\"keySelector\":{\"trafficType\":\"client\",\"attribute\":null},\"matcherType\":\"ALL_KEYS\",\"negate\":false,\"userDefinedSegmentMatcherData\":null,\"whitelistMatcherData\":null,\"unaryNumericMatcherData\":null,\"betweenMatcherData\":null,\"booleanMatcherData\":null,\"dependencyMatcherData\":null,\"stringMatcherData\":null}]},\"partitions\":[{\"treatment\":\"on\",\"size\":100},{\"treatment\":\"off\",\"size\":0},{\"treatment\":\"free\",\"size\":0},{\"treatment\":\"conta\",\"size\":0}],\"label\":\"default rule\"}]},{\"trafficTypeName\":\"client\",\"name\":\"workm_set_3\",\"trafficAllocation\":100,\"trafficAllocationSeed\":147392224,\"seed\":524417105,\"status\":\"ACTIVE\",\"killed\":false,\"defaultTreatment\":\"on\",\"changeNumber\":1602796638344,\"algo\":2,\"configurations\":{},\"sets\":[\"set3\"],\"conditions\":[{\"conditionType\":\"ROLLOUT\",\"matcherGroup\":{\"combiner\":\"AND\",\"matchers\":[{\"keySelector\":{\"trafficType\":\"client\",\"attribute\":null},\"matcherType\":\"IN_SEGMENT\",\"negate\":false,\"userDefinedSegmentMatcherData\":{\"segmentName\":\"new_segment\"},\"whitelistMatcherData\":null,\"unaryNumericMatcherData\":null,\"betweenMatcherData\":null,\"booleanMatcherData\":null,\"dependencyMatcherData\":null,\"stringMatcherData\":null}]},\"partitions\":[{\"treatment\":\"on\",\"size\":0},{\"treatment\":\"off\",\"size\":0},{\"treatment\":\"free\",\"size\":100},{\"treatment\":\"conta\",\"size\":0}],\"label\":\"in segment new_segment\"},{\"conditionType\":\"ROLLOUT\",\"matcherGroup\":{\"combiner\":\"AND\",\"matchers\":[{\"keySelector\":{\"trafficType\":\"client\",\"attribute\":null},\"matcherType\":\"ALL_KEYS\",\"negate\":false,\"userDefinedSegmentMatcherData\":null,\"whitelistMatcherData\":null,\"unaryNumericMatcherData\":null,\"betweenMatcherData\":null,\"booleanMatcherData\":null,\"dependencyMatcherData\":null,\"stringMatcherData\":null}]},\"partitions\":[{\"treatment\":\"on\",\"size\":100},{\"treatment\":\"off\",\"size\":0},{\"treatment\":\"free\",\"size\":0},{\"treatment\":\"conta\",\"size\":0}],\"label\":\"default rule\"}]}],\"s\":-1,\"t\":1602796638344},\"rbs\":{\"d\":[],\"t\":-1,\"s\":-1}}");
+        MockResponse responseFlag = new MockResponse().setBody("{\"ff\":{\"d\": [], \"s\":1602796638344, \"t\":1602796638344},\"rbs\":{\"d\":[],\"t\":-1,\"s\":-1}}");
         MockResponse segmentResponse = new MockResponse().setBody("{\"name\":\"new_segment\",\"added\":[\"user-1\"],\"removed\":[\"user-2\",\"user-3\"],\"since\":-1,\"till\":-1}");
         Queue responses = new LinkedList<>();
         responses.add(response);
@@ -784,16 +793,15 @@ public class SplitClientIntegrationTest {
     public void ImpressionToggleOptimizedModeTest() throws Exception {
         String splits = new String(Files.readAllBytes(Paths.get("src/test/resources/splits_imp_toggle.json")), StandardCharsets.UTF_8);
         List<RecordedRequest> allRequests = new ArrayList<>();
-
         Dispatcher dispatcher = new Dispatcher() {
             @Override
             public MockResponse dispatch(RecordedRequest request) {
                 allRequests.add(request);
                 switch (request.getPath()) {
-                    case "/api/splitChanges?s=1.1&since=-1":
+                    case "/api/splitChanges?s=1.3&since=-1&rbSince=-1":
                         return new MockResponse().setResponseCode(200).setBody(splits);
-                    case "/api/splitChanges?s=1.1&since=1602796638344":
-                        return new MockResponse().setResponseCode(200).setBody("{\"splits\": [], \"since\":1602796638344, \"till\":1602796638344}");
+                    case "/api/splitChanges?s=1.3&since=1602796638344&rbSince=-1":
+                        return new MockResponse().setResponseCode(200).setBody("{\"ff\":{\"d\":[], \"s\":1602796638344, \"t\":1602796638344}, \"rbs\":{\"d\":[],\"s\":-1,\"t\":-1}}");
                     case "/api/testImpressions/bulk":
                         return new MockResponse().setResponseCode(200);
                     case "/api/testImpressions/count":
@@ -858,16 +866,15 @@ public class SplitClientIntegrationTest {
     public void ImpressionToggleDebugModeTest() throws Exception {
         String splits = new String(Files.readAllBytes(Paths.get("src/test/resources/splits_imp_toggle.json")), StandardCharsets.UTF_8);
         List<RecordedRequest> allRequests = new ArrayList<>();
-
         Dispatcher dispatcher = new Dispatcher() {
             @Override
             public MockResponse dispatch(RecordedRequest request) {
                 allRequests.add(request);
                 switch (request.getPath()) {
-                    case "/api/splitChanges?s=1.1&since=-1":
+                    case "/api/splitChanges?s=1.3&since=-1&rbSince=-1":
                         return new MockResponse().setResponseCode(200).setBody(splits);
-                    case "/api/splitChanges?s=1.1&since=1602796638344":
-                        return new MockResponse().setResponseCode(200).setBody("{\"splits\": [], \"since\":1602796638344, \"till\":1602796638344}");
+                    case "/api/splitChanges?s=1.3&since=1602796638344&rbSince=-1":
+                        return new MockResponse().setResponseCode(200).setBody("{\"ff\":{\"d\":[], \"s\":1602796638344, \"t\":1602796638344}, \"rbs\":{\"d\":[],\"s\":-1,\"t\":-1}}");
                     case "/api/testImpressions/bulk":
                         return new MockResponse().setResponseCode(200);
                     case "/api/testImpressions/count":
@@ -940,16 +947,15 @@ public class SplitClientIntegrationTest {
     public void ImpressionToggleNoneModeTest() throws Exception {
         String splits = new String(Files.readAllBytes(Paths.get("src/test/resources/splits_imp_toggle.json")), StandardCharsets.UTF_8);
         List<RecordedRequest> allRequests = new ArrayList<>();
-
         Dispatcher dispatcher = new Dispatcher() {
             @Override
             public MockResponse dispatch(RecordedRequest request) {
                 allRequests.add(request);
                 switch (request.getPath()) {
-                    case "/api/splitChanges?s=1.1&since=-1":
+                    case "/api/splitChanges?s=1.3&since=-1&rbSince=-1":
                         return new MockResponse().setResponseCode(200).setBody(splits);
-                    case "/api/splitChanges?s=1.1&since=1602796638344":
-                        return new MockResponse().setResponseCode(200).setBody("{\"splits\": [], \"since\":1602796638344, \"till\":1602796638344}");
+                    case "/api/splitChanges?s=1.3&since=1602796638344&rbSince=-1":
+                        return new MockResponse().setResponseCode(200).setBody("{\"ff\":{\"d\":[], \"s\":1602796638344, \"t\":1602796638344}, \"rbs\":{\"d\":[],\"s\":-1,\"t\":-1}}");
                     case "/api/testImpressions/bulk":
                         return new MockResponse().setResponseCode(200);
                     case "/api/testImpressions/count":
@@ -1018,16 +1024,15 @@ public class SplitClientIntegrationTest {
     public void ImpressionPropertiesTest() throws Exception {
         String splits = new String(Files.readAllBytes(Paths.get("src/test/resources/splits_imp_toggle.json")), StandardCharsets.UTF_8);
         List<RecordedRequest> allRequests = new ArrayList<>();
-
         Dispatcher dispatcher = new Dispatcher() {
             @Override
             public MockResponse dispatch(RecordedRequest request) {
                 allRequests.add(request);
                 switch (request.getPath()) {
-                    case "/api/splitChanges?s=1.1&since=-1":
+                    case "/api/splitChanges?s=1.3&since=-1&rbSince=-1":
                         return new MockResponse().setResponseCode(200).setBody(splits);
-                    case "/api/splitChanges?s=1.1&since=1602796638344":
-                        return new MockResponse().setResponseCode(200).setBody("{\"splits\": [], \"since\":1602796638344, \"till\":1602796638344}");
+                    case "/api/splitChanges?s=1.3&since=1602796638344&rbSince=-1":
+                        return new MockResponse().setResponseCode(200).setBody("{\"ff\":{\"d\":[], \"s\":1602796638344, \"t\":1602796638344}, \"rbs\":{\"d\":[],\"s\":-1,\"t\":-1}}");
                     case "/api/testImpressions/bulk":
                         return new MockResponse().setResponseCode(200);
                     case "/api/testImpressions/count":
@@ -1094,6 +1099,80 @@ public class SplitClientIntegrationTest {
         server.shutdown();
         Assert.assertTrue(check1);
         Assert.assertTrue(check2);
+    }
+
+    @Test
+    public void getTreatmentWithPrerequisites() throws Exception {
+        String splits = new String(Files.readAllBytes(Paths.get("src/test/resources/splits_prereq.json")), StandardCharsets.UTF_8);
+        List<RecordedRequest> allRequests = new ArrayList<>();
+        Dispatcher dispatcher = new Dispatcher() {
+            @Override
+            public MockResponse dispatch(RecordedRequest request) {
+                allRequests.add(request);
+                switch (request.getPath()) {
+                    case "/api/splitChanges?s=1.3&since=-1&rbSince=-1":
+                        return new MockResponse().setResponseCode(200).setBody(splits);
+                    case "/api/splitChanges?s=1.3&since=1585948850109&rbSince=1585948850109":
+                        return new MockResponse().setResponseCode(200).setBody("{\"ff\":{\"d\": [], \"s\":1585948850109, \"t\":1585948850109},\"rbs\":{\"d\":[],\"t\":1585948850109,\"s\":1585948850109}}");
+                    case "/api/segmentChanges/segment-test?since=-1":
+                        return new MockResponse().setResponseCode(200).setBody("{\"name\":\"segment-test\",\"added\":[\"user-1\"],\"removed\":[],\"since\":-1,\"till\":-1}");
+                    case "/api/testImpressions/bulk":
+                        return new MockResponse().setResponseCode(200);
+                    case "/api/testImpressions/count":
+                        return new MockResponse().setResponseCode(200);
+                    case "/v1/keys/ss":
+                        return new MockResponse().setResponseCode(200);
+                    case "/v1/metrics/usage":
+                        return new MockResponse().setResponseCode(200);
+                    case "/v1/metrics/config":
+                        return new MockResponse().setResponseCode(200);
+                }
+                return new MockResponse().setResponseCode(404);
+            }
+        };
+
+        MockWebServer splitServer = new MockWebServer();
+        splitServer.setDispatcher(dispatcher);
+        splitServer.start();
+        String serverURL = String.format("http://%s:%s", splitServer.getHostName(), splitServer.getPort());
+
+        SplitClientConfig config = SplitClientConfig.builder()
+                .setBlockUntilReadyTimeout(10000)
+                .endpoint(serverURL, serverURL)
+                .telemetryURL(serverURL + "/v1")
+                .authServiceURL(String.format("%s/api/auth/enabled", serverURL))
+                .streamingEnabled(false)
+                .featuresRefreshRate(5)
+                .impressionsMode(ImpressionsManager.Mode.DEBUG)
+                .build();
+
+        SplitFactory factory = SplitFactoryBuilder.build("fake-api-token", config);
+        SplitClient client = factory.client();
+        client.blockUntilReady();
+
+        Assert.assertEquals("on", client.getTreatment("bilal@split.io", "test_prereq", new HashMap<String, Object>() {{
+            put("email", "bilal@@split.io");
+        }}));
+        Assert.assertEquals("def_treatment", client.getTreatment("bilal@split.io", "test_prereq"));
+        Assert.assertEquals("def_treatment", client.getTreatment("mauro@split.io", "test_prereq", new HashMap<String, Object>() {{
+            put("email", "mauro@@split.io");
+        }}));
+        Assert.assertEquals("on", client.getTreatment("pato@split.io", "test_prereq", new HashMap<String, Object>() {{
+            put("email", "pato@@split.io");
+        }}));
+
+        Assert.assertEquals("on_whitelist", client.getTreatment("bilal@split.io", "prereq_chain", new HashMap<String, Object>() {{
+            put("email", "bilal@@split.io");
+        }}));
+        Assert.assertEquals("on", client.getTreatment("pato@split.io", "prereq_chain", new HashMap<String, Object>() {{
+            put("email", "pato@@split.io");
+        }}));
+        Assert.assertEquals("on_default", client.getTreatment("mauro@split.io", "prereq_chain", new HashMap<String, Object>() {{
+            put("email", "mauro@@split.io");
+        }}));
+
+        client.destroy();
+        splitServer.shutdown();
     }
 
     private SSEMockServer buildSSEMockServer(SSEMockServer.SseEventQueue eventQueue) {

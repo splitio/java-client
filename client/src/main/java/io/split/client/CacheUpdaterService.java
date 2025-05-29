@@ -11,7 +11,6 @@ import io.split.engine.matchers.AttributeMatcher;
 import io.split.engine.matchers.CombiningMatcher;
 import io.split.engine.matchers.strings.WhitelistMatcher;
 import io.split.grammar.Treatments;
-import io.split.storages.SplitCacheConsumer;
 import io.split.storages.SplitCacheProducer;
 
 import java.util.ArrayList;
@@ -52,7 +51,7 @@ public final  class CacheUpdaterService {
             String treatment = conditions.size() > 0 ? Treatments.CONTROL : localhostSplit.treatment;
             configurations.put(localhostSplit.treatment, localhostSplit.config);
 
-            split = new ParsedSplit(splitName, 0, false, treatment,conditions, LOCALHOST, 0, 100, 0, 0, configurations, new HashSet<>(), true);
+            split = new ParsedSplit(splitName, 0, false, treatment,conditions, LOCALHOST, 0, 100, 0, 0, configurations, new HashSet<>(), true, null);
             parsedSplits.removeIf(parsedSplit -> parsedSplit.feature().equals(splitName));
             parsedSplits.add(split);
         }

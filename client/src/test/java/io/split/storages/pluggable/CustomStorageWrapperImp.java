@@ -10,6 +10,7 @@ import io.split.client.dtos.Condition;
 import io.split.client.dtos.ConditionType;
 import io.split.client.dtos.Split;
 import io.split.client.dtos.Status;
+import io.split.client.dtos.RuleBasedSegment;
 import io.split.client.utils.Json;
 import io.split.engine.ConditionsTestUtil;
 import io.split.engine.segments.SegmentImp;
@@ -41,6 +42,8 @@ public class CustomStorageWrapperImp implements CustomStorageWrapper {
     private static final String TELEMETRY_INIT = "SPLITIO.telemetry.init";
     private static final String LATENCIES = "SPLITIO.telemetry.latencies";
     private static final String SPLIT = "SPLITIO.split.";
+    private static final String RULE_BASED_SEGMENT = "SPLITIO.rbsegment";
+    private static final String RULE_BASED_SEGMENTS = "SPLITIO.rbsegments";
     private static final String SPLITS = "SPLITIO.splits.*";
     private static final String SEGMENT = "SPLITIO.segment.";
     private static final String IMPRESSIONS = "SPLITIO.impressions";
@@ -48,6 +51,7 @@ public class CustomStorageWrapperImp implements CustomStorageWrapper {
     private static final String COUNTS = "SPLITIO.impressions.counts";
     private static final String FLAG_SET = "SPLITIO.flagSet";
     private Map<String, Split> splitsStorage = new HashMap<>();
+    private Map<String, RuleBasedSegment> ruleBasedSegmentStorage = new HashMap<>();
     private Map<String, SegmentImp> segmentStorage = new HashMap<>();
     private final ConcurrentMap<String, AtomicLongArray> _methodLatencies = Maps.newConcurrentMap();
     private final ConcurrentMap<String, Long> _latencies = Maps.newConcurrentMap();
@@ -80,6 +84,9 @@ public class CustomStorageWrapperImp implements CustomStorageWrapper {
         String value = getStorage(key);
         if(value.equals(SPLIT)){
             return _json.toJson(splitsStorage.get(key));
+        }
+        if(value.equals(RULE_BASED_SEGMENT)){
+            return _json.toJson(ruleBasedSegmentStorage.get(key));
         }
         return "";
     }
@@ -238,6 +245,10 @@ public class CustomStorageWrapperImp implements CustomStorageWrapper {
             return SPLITS;
         else if(key.startsWith(SPLIT))
             return SPLIT;
+        else if(key.startsWith(RULE_BASED_SEGMENT))
+            return RULE_BASED_SEGMENT;
+        else if(key.startsWith(RULE_BASED_SEGMENTS))
+            return RULE_BASED_SEGMENTS;
         else if (key.startsWith(LATENCIES))
             return LATENCIES;
         else if (key.startsWith(TELEMETRY_INIT))
@@ -262,6 +273,8 @@ public class CustomStorageWrapperImp implements CustomStorageWrapper {
         segmentStorage.put(PrefixAdapter.buildSegment("segmentName"), new SegmentImp(9874654L, "segmentName", Lists.newArrayList("key", "key2")));
         splitsStorage.put(PrefixAdapter.buildSplitKey("first.name"), makeSplit("first.name", 123, Lists.newArrayList(condition), 456478976L));
         splitsStorage.put(PrefixAdapter.buildSplitKey("second.name"), makeSplit("second.name", 321, Lists.newArrayList(), 568613L));
+        splitsStorage.put(PrefixAdapter.buildSplitKey("rbs_flag"), Json.fromJson("{\"changeNumber\": 10, \"trafficTypeName\": \"user\", \"name\": \"rbs_flag\", \"trafficAllocation\": 100, \"trafficAllocationSeed\": 1828377380, \"seed\": -286617921, \"status\": \"ACTIVE\", \"killed\": false, \"defaultTreatment\": \"off\", \"algo\": 2, \"conditions\": [{\"conditionType\": \"ROLLOUT\", \"matcherGroup\": {\"combiner\": \"AND\", \"matchers\": [{\"keySelector\": {\"trafficType\": \"user\"},\"matcherType\": \"IN_RULE_BASED_SEGMENT\", \"negate\": false, \"userDefinedSegmentMatcherData\": {\"segmentName\": \"sample_rule_based_segment\"}}]},\"partitions\": [{\"treatment\": \"on\", \"size\": 100},{\"treatment\": \"off\", \"size\": 0}],\"label\": \"in rule based segment sample_rule_based_segment\"},{\"conditionType\": \"ROLLOUT\", \"matcherGroup\": {\"combiner\": \"AND\", \"matchers\": [{\"keySelector\": {\"trafficType\": \"user\"},\"matcherType\": \"ALL_KEYS\", \"negate\": false}]},\"partitions\": [{\"treatment\": \"on\", \"size\": 0},{\"treatment\": \"off\", \"size\": 100}],\"label\": \"default rule\"}],\"configurations\": {},\"sets\": [],\"impressionsDisabled\": false}", Split.class));
+        ruleBasedSegmentStorage.put(PrefixAdapter.buildRuleBasedSegmentKey("sample_rule_based_segment"), Json.fromJson( "{\"changeNumber\":5,\"name\":\"sample_rule_based_segment\",\"status\":\"ACTIVE\",\"trafficTypeName\":\"user\",\"excluded\":{\"keys\":[\"mauro@split.io\"],\"segments\":[]},\"conditions\":[{\"conditionType\":\"ROLLOUT\",\"matcherGroup\":{\"combiner\":\"AND\",\"matchers\":[{\"keySelector\":{\"trafficType\":\"user\",\"attribute\":\"email\"},\"matcherType\":\"ENDS_WITH\",\"negate\":false,\"whitelistMatcherData\":{\"whitelist\":[\"@split.io\"]}}]}}]}", RuleBasedSegment.class));
         _flagSets.put("SPLITIO.flagSet.set1", new HashSet<>(new ArrayList<>(Arrays.asList("flag1", "flag2"))));
     }
 

@@ -5,6 +5,7 @@ import io.split.client.dtos.ConditionType;
 import io.split.client.dtos.Split;
 import io.split.client.dtos.SplitChange;
 import io.split.client.dtos.Status;
+import io.split.client.dtos.ChangeDto;
 import io.split.client.utils.LocalhostConstants;
 import io.split.client.utils.LocalhostSanitizer;
 import io.split.engine.common.FetchOptions;
@@ -34,11 +35,12 @@ public class LegacyLocalhostSplitChangeFetcher implements SplitChangeFetcher {
     }
 
     @Override
-    public SplitChange fetch(long since, FetchOptions options) {
+    public SplitChange fetch(long since, long sinceRBS, FetchOptions options) {
 
         try (BufferedReader reader = new BufferedReader(new FileReader(_splitFile))) {
             SplitChange splitChange = new SplitChange();
-            splitChange.splits = new ArrayList<>();
+            splitChange.featureFlags = new ChangeDto<>();
+            splitChange.featureFlags.d = new ArrayList<>();
             for (String line = reader.readLine(); line != null; line = reader.readLine()) {
                 String lineTrim = line.trim();
                 if (lineTrim.isEmpty() || lineTrim.startsWith("#")) {
@@ -51,7 +53,8 @@ public class LegacyLocalhostSplitChangeFetcher implements SplitChangeFetcher {
                     _log.info("Ignoring line since it does not have 2 or 3 columns: " + lineTrim);
                     continue;
                 }
-                Optional<Split> splitOptional = splitChange.splits.stream().filter(split -> split.name.equals(featureTreatment[0])).findFirst();
+                Optional<Split> splitOptional = splitChange.featureFlags.d.stream().
+                        filter(split -> split.name.equals(featureTreatment[0])).findFirst();
                 Split split = splitOptional.orElse(null);
                 if(split == null) {
                     split = new Split();
@@ -59,7 +62,7 @@ public class LegacyLocalhostSplitChangeFetcher implements SplitChangeFetcher {
                     split.configurations = new HashMap<>();
                     split.conditions = new ArrayList<>();
                 } else {
-                    splitChange.splits.remove(split);
+                    splitChange.featureFlags.d.remove(split);
                 }
                 split.status = Status.ACTIVE;
                 split.defaultTreatment = featureTreatment[1];
@@ -67,21 +70,20 @@ public class LegacyLocalhostSplitChangeFetcher implements SplitChangeFetcher {
                 split.trafficAllocation = LocalhostConstants.SIZE_100;
                 split.trafficAllocationSeed = LocalhostConstants.SIZE_1;
 
-                Condition condition;
-                if (featureTreatment.length == 2) {
-                    condition = LocalhostSanitizer.createCondition(null, featureTreatment[1]);
-                } else {
-                    condition = LocalhostSanitizer.createCondition(featureTreatment[2], featureTreatment[1]);
-                }
+                Condition condition = checkCondition(featureTreatment);
                 if(condition.conditionType != ConditionType.ROLLOUT){
                     split.conditions.add(0, condition);
                 } else {
                     split.conditions.add(condition);
                 }
-                splitChange.splits.add(split);
+                splitChange.featureFlags.d.add(split);
             }
-            splitChange.till = since;
-            splitChange.since = since;
+            splitChange.featureFlags.t = since;
+            splitChange.featureFlags.s = since;
+            splitChange.ruleBasedSegments = new ChangeDto<>();
+            splitChange.ruleBasedSegments.s = -1;
+            splitChange.ruleBasedSegments.t = -1;
+            splitChange.ruleBasedSegments.d = new ArrayList<>();
             return splitChange;
         } catch (FileNotFoundException f) {
             _log.warn("There was no file named " + _splitFile.getPath() + " found. " +
@@ -95,5 +97,15 @@ public class LegacyLocalhostSplitChangeFetcher implements SplitChangeFetcher {
                     _splitFile.getPath()), e);
             throw new IllegalStateException("Problem fetching splitChanges: " + e.getMessage(), e);
         }
+    }
+
+    private Condition checkCondition(String[] featureTreatment) {
+        Condition condition;
+        if (featureTreatment.length == 2) {
+            condition = LocalhostSanitizer.createCondition(null, featureTreatment[1]);
+        } else {
+            condition = LocalhostSanitizer.createCondition(featureTreatment[2], featureTreatment[1]);
+        }
+        return condition;
     }
 }

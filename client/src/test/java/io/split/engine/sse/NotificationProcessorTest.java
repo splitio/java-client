@@ -1,12 +1,8 @@
 package io.split.engine.sse;
 
-import io.split.engine.sse.dtos.ControlNotification;
-import io.split.engine.sse.dtos.FeatureFlagChangeNotification;
-import io.split.engine.sse.dtos.GenericNotificationData;
-import io.split.engine.sse.dtos.OccupancyNotification;
-import io.split.engine.sse.dtos.SegmentChangeNotification;
-import io.split.engine.sse.dtos.SegmentQueueDto;
-import io.split.engine.sse.dtos.SplitKillNotification;
+import io.split.client.dtos.RuleBasedSegment;
+import io.split.client.dtos.Split;
+import io.split.engine.sse.dtos.*;
 import io.split.engine.sse.workers.SegmentsWorkerImp;
 import io.split.engine.sse.workers.FeatureFlagsWorker;
 import io.split.engine.sse.workers.Worker;
@@ -37,9 +33,25 @@ public class NotificationProcessorTest {
                 .changeNumber(changeNumber)
                 .channel(channel)
                 .build();
-        FeatureFlagChangeNotification splitChangeNotification = new FeatureFlagChangeNotification(genericNotificationData);
+        CommonChangeNotification splitChangeNotification = new CommonChangeNotification(genericNotificationData, Split.class);
 
         _notificationProcessor.process(splitChangeNotification);
+
+        Mockito.verify(_featureFlagsWorker, Mockito.times(1)).addToQueue(Mockito.anyObject());
+    }
+
+    @Test
+    public void processRuleBasedSegmentUpdateAddToQueueInWorker() {
+        long changeNumber = 1585867723838L;
+        String channel = "splits";
+        GenericNotificationData genericNotificationData = GenericNotificationData.builder()
+                .changeNumber(changeNumber)
+                .channel(channel)
+                .type(IncomingNotification.Type.RB_SEGMENT_UPDATE)
+                .build();
+        CommonChangeNotification ruleBasedSegmentChangeNotification = new CommonChangeNotification(genericNotificationData, RuleBasedSegment.class);
+
+        _notificationProcessor.process(ruleBasedSegmentChangeNotification);
 
         Mockito.verify(_featureFlagsWorker, Mockito.times(1)).addToQueue(Mockito.anyObject());
     }

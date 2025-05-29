@@ -7,14 +7,19 @@ import io.split.client.dtos.Partition;
 import io.split.client.interceptors.FlagSetsFilter;
 import io.split.client.interceptors.FlagSetsFilterImpl;
 import io.split.engine.experiments.ParsedCondition;
+import io.split.engine.experiments.ParsedRuleBasedSegment;
 import io.split.engine.experiments.ParsedSplit;
 import io.split.engine.matchers.AttributeMatcher;
 import io.split.engine.matchers.CombiningMatcher;
+import io.split.engine.matchers.PrerequisitesMatcher;
+import io.split.engine.matchers.RuleBasedSegmentMatcher;
 import io.split.engine.matchers.strings.EndsWithAnyOfMatcher;
 import io.split.engine.matchers.strings.WhitelistMatcher;
+import io.split.storages.RuleBasedSegmentCache;
 import io.split.storages.SegmentCache;
 import io.split.storages.SplitCache;
 import io.split.storages.memory.InMemoryCacheImp;
+import io.split.storages.memory.RuleBasedSegmentCacheInMemoryImp;
 import io.split.storages.memory.SegmentCacheInMemoryImpl;
 import org.junit.Assert;
 import org.junit.Test;
@@ -33,6 +38,7 @@ public class EvaluatorIntegrationTest {
     private static final String TEST_LABEL_VALUE_WHITELIST = "test label whitelist";
     private static final String TEST_LABEL_VALUE_ROLL_OUT = "test label roll out";
     private static final String ON_TREATMENT = "on";
+    private static final String OFF_TREATMENT = "off";
 
     @Test
     public void evaluateFeatureWithWhitelistShouldReturnOn() {
@@ -152,35 +158,61 @@ public class EvaluatorIntegrationTest {
         Map<String, EvaluatorImp.TreatmentLabelAndChangeNumber> result = evaluator.evaluateFeatures("mauro@test.io", null, null, null);
     }
 
+    @Test
+    public void evaluateFeatureWithRuleBasedSegmentMatcher() {
+        Evaluator evaluator = buildEvaluatorAndLoadCache(false, 100);
+
+        EvaluatorImp.TreatmentLabelAndChangeNumber result = evaluator.evaluateFeature("mauro@test.io", null, "split_5", null);
+        Assert.assertEquals(ON_TREATMENT, result.treatment);
+
+        result = evaluator.evaluateFeature("admin", null, "split_5", null);
+        Assert.assertEquals(OFF_TREATMENT, result.treatment);
+    }
+
     private Evaluator buildEvaluatorAndLoadCache(boolean killed, int trafficAllocation) {
         FlagSetsFilter flagSetsFilter = new FlagSetsFilterImpl(new HashSet<>());
         SplitCache splitCache = new InMemoryCacheImp(flagSetsFilter);
         SegmentCache segmentCache = new SegmentCacheInMemoryImpl();
-        Evaluator evaluator = new EvaluatorImp(splitCache, segmentCache);
+        RuleBasedSegmentCache ruleBasedSegmentCache = new RuleBasedSegmentCacheInMemoryImp();
+        Evaluator evaluator = new EvaluatorImp(splitCache, segmentCache, ruleBasedSegmentCache);
 
         Partition partition = new Partition();
         partition.treatment = ON_TREATMENT;
         partition.size = 100;
 
+        Partition partitionOff = new Partition();
+        partitionOff.treatment = OFF_TREATMENT;
+        partitionOff.size = 100;
+
         List<Partition> partitions = Lists.newArrayList(partition);
 
         AttributeMatcher whiteListMatcher = AttributeMatcher.vanilla(new WhitelistMatcher(Lists.newArrayList("test_1", "admin")));
         AttributeMatcher endsWithMatcher = AttributeMatcher.vanilla(new EndsWithAnyOfMatcher(Lists.newArrayList("@test.io", "@mail.io")));
+        AttributeMatcher ruleBasedSegmentMatcher = AttributeMatcher.vanilla(new RuleBasedSegmentMatcher("sample_rule_based_segment"));
 
         CombiningMatcher whitelistCombiningMatcher = new CombiningMatcher(MatcherCombiner.AND, Lists.newArrayList(whiteListMatcher));
         CombiningMatcher endsWithCombiningMatcher = new CombiningMatcher(MatcherCombiner.AND, Lists.newArrayList(endsWithMatcher));
+        CombiningMatcher ruleBasedSegmentCombinerMatcher = new CombiningMatcher(MatcherCombiner.AND, Lists.newArrayList(ruleBasedSegmentMatcher));
 
         ParsedCondition whitelistCondition = new ParsedCondition(ConditionType.WHITELIST, whitelistCombiningMatcher, partitions, TEST_LABEL_VALUE_WHITELIST);
         ParsedCondition rollOutCondition = new ParsedCondition(ConditionType.ROLLOUT, endsWithCombiningMatcher, partitions, TEST_LABEL_VALUE_ROLL_OUT);
+        ParsedCondition ruleBasedSegmentCondition = new ParsedCondition(ConditionType.ROLLOUT, ruleBasedSegmentCombinerMatcher, Lists.newArrayList(partitionOff), TEST_LABEL_VALUE_ROLL_OUT);
 
         List<ParsedCondition> conditions = Lists.newArrayList(whitelistCondition, rollOutCondition);
+        List<ParsedCondition> conditionsForRBS = Lists.newArrayList(ruleBasedSegmentCondition, rollOutCondition);
 
-        ParsedSplit parsedSplit1 = new ParsedSplit("split_1", 0, false, DEFAULT_TREATMENT_VALUE, conditions, TRAFFIC_TYPE_VALUE, 223366551, 100, 0, 2, null, new HashSet<>(), true);
-        ParsedSplit parsedSplit2 = new ParsedSplit("split_2", 0, true, DEFAULT_TREATMENT_VALUE, conditions, TRAFFIC_TYPE_VALUE, 223366552, 100, 0, 2, null, new HashSet<>(), true);
-        ParsedSplit parsedSplit3 = new ParsedSplit("split_3", 0, false, DEFAULT_TREATMENT_VALUE, conditions, TRAFFIC_TYPE_VALUE, 223366554, 100, 0, 2, null, new HashSet<>(), true);
-        ParsedSplit parsedSplit4 = new ParsedSplit("split_test", 0, killed, DEFAULT_TREATMENT_VALUE, conditions, TRAFFIC_TYPE_VALUE, 223366555, trafficAllocation, 0, 2, null, new HashSet<>(), true);
+        ParsedSplit parsedSplit1 = new ParsedSplit("split_1", 0, false, DEFAULT_TREATMENT_VALUE, conditions, TRAFFIC_TYPE_VALUE, 223366551, 100, 0, 2, null, new HashSet<>(), true, new PrerequisitesMatcher(null));
+        ParsedSplit parsedSplit2 = new ParsedSplit("split_2", 0, true, DEFAULT_TREATMENT_VALUE, conditions, TRAFFIC_TYPE_VALUE, 223366552, 100, 0, 2, null, new HashSet<>(), true, new PrerequisitesMatcher(null));
+        ParsedSplit parsedSplit3 = new ParsedSplit("split_3", 0, false, DEFAULT_TREATMENT_VALUE, conditions, TRAFFIC_TYPE_VALUE, 223366554, 100, 0, 2, null, new HashSet<>(), true, new PrerequisitesMatcher(null));
+        ParsedSplit parsedSplit4 = new ParsedSplit("split_test", 0, killed, DEFAULT_TREATMENT_VALUE, conditions, TRAFFIC_TYPE_VALUE, 223366555, trafficAllocation, 0, 2, null, new HashSet<>(), true, new PrerequisitesMatcher(null));
+        ParsedSplit parsedSplit5 = new ParsedSplit("split_5", 0, false, DEFAULT_TREATMENT_VALUE, conditionsForRBS, TRAFFIC_TYPE_VALUE, 223366554, 100, 0, 2, null, new HashSet<>(), true, new PrerequisitesMatcher(null));
+        splitCache.putMany(Stream.of(parsedSplit1, parsedSplit2, parsedSplit3, parsedSplit4, parsedSplit5).collect(Collectors.toList()));
 
-        splitCache.putMany(Stream.of(parsedSplit1, parsedSplit2, parsedSplit3, parsedSplit4).collect(Collectors.toList()));
+        ParsedRuleBasedSegment parsedRuleBasedSegment = new ParsedRuleBasedSegment("sample_rule_based_segment",
+                Lists.newArrayList(new ParsedCondition(ConditionType.WHITELIST, whitelistCombiningMatcher, null, TEST_LABEL_VALUE_WHITELIST)),"user",
+                123, Lists.newArrayList("mauro@test.io","gaston@test.io"), Lists.newArrayList());
+        ruleBasedSegmentCache.update(Lists.newArrayList(parsedRuleBasedSegment), null, 123);
+
         return evaluator;
     }
 }

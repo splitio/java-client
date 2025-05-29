@@ -131,7 +131,8 @@ public class InMemoryCacheImp implements SplitCache {
                 parsedSplit.algo(),
                 parsedSplit.configurations(),
                 parsedSplit.flagSets(),
-                parsedSplit.impressionsDisabled()
+                parsedSplit.impressionsDisabled(),
+                parsedSplit.prerequisitesMatcher()
                 );
 
         _concurrentMap.put(splitName, updatedSplit);
@@ -140,7 +141,9 @@ public class InMemoryCacheImp implements SplitCache {
     @Override
     public void clear() {
         _concurrentMap.clear();
+        _changeNumber.set(-1);
         _concurrentTrafficTypeNameSet.clear();
+        _flagSets.clear();
     }
 
     @Override

@@ -1,13 +1,6 @@
 package io.split.engine.sse;
 
-import io.split.engine.sse.dtos.ControlNotification;
-import io.split.engine.sse.dtos.ControlType;
-import io.split.engine.sse.dtos.ErrorNotification;
-import io.split.engine.sse.dtos.FeatureFlagChangeNotification;
-import io.split.engine.sse.dtos.IncomingNotification;
-import io.split.engine.sse.dtos.OccupancyNotification;
-import io.split.engine.sse.dtos.SegmentChangeNotification;
-import io.split.engine.sse.dtos.SplitKillNotification;
+import io.split.engine.sse.dtos.*;
 import io.split.engine.sse.exceptions.EventParsingException;
 import org.junit.Before;
 import org.junit.Test;
@@ -29,7 +22,7 @@ public class NotificationParserTest {
         IncomingNotification result = notificationParser.parseMessage(payload);
         assertEquals(IncomingNotification.Type.SPLIT_UPDATE, result.getType());
         assertEquals("xxxx_xxxx_splits", result.getChannel());
-        assertEquals(1592590435115L, ((FeatureFlagChangeNotification) result).getChangeNumber());
+        assertEquals(1592590435115L, ((CommonChangeNotification) result).getChangeNumber());
     }
 
     @Test

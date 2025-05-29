@@ -32,5 +32,5 @@ public interface SplitChangeFetcher {
      * @return SegmentChange
      * @throws java.lang.RuntimeException if there was a problem computing split changes
      */
-    SplitChange fetch(long since, FetchOptions options);
+    SplitChange fetch(long since, long sinceRBS, FetchOptions options);
 }

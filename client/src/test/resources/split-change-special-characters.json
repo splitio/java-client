@@ -1,5 +1,5 @@
-{
-  "splits": [
+{ "ff": {
+  "d": [
     {
       "trafficTypeName": "user",
       "name": "DEMO_MURMUR2",
@@ -10,7 +10,10 @@
       "killed": false,
       "defaultTreatment": "of",
       "changeNumber": 1491244291288,
-      "sets": [ "set1", "set2" ],
+      "sets": [
+        "set1",
+        "set2"
+      ],
       "algo": 2,
       "configurations": {
         "on": "{\"test\": \"blue\",\"grüne Straße\": 13}",
@@ -51,6 +54,7 @@
       ]
     }
   ],
-  "since": 1491244291288,
-  "till": 1491244291288
+  "s": 1491244291288,
+  "t": 1491244291288},
+  "rbs": {"d": [], "s": -1, "t": -1}
 }

@@ -1,6 +1,7 @@
 package io.split.engine.sse;
 
 import com.google.gson.JsonObject;
+import io.split.Spec;
 import io.split.client.dtos.SplitHttpResponse;
 import io.split.client.utils.Json;
 import io.split.engine.common.FetchOptions;
@@ -18,7 +19,6 @@ import org.slf4j.LoggerFactory;
 import java.net.URI;
 
 import static com.google.common.base.Preconditions.checkNotNull;
-import static io.split.Spec.SPEC_VERSION;
 
 public class AuthApiClientImp implements AuthApiClient {
     private static final Logger _log = LoggerFactory.getLogger(AuthApiClientImp.class);
@@ -38,7 +38,7 @@ public class AuthApiClientImp implements AuthApiClient {
     public AuthenticationResponse Authenticate() {
         try {
             long initTime = System.currentTimeMillis();
-            URI uri = new URIBuilder(_target).addParameter(SPEC, "" + SPEC_VERSION).build();
+            URI uri = new URIBuilder(_target).addParameter(SPEC, "" + Spec.SPEC_1_3).build();
             SplitHttpResponse response = _httpClient.get(uri, new FetchOptions.Builder().cacheControlHeaders(false).build(), null);
             Integer statusCode = response.statusCode();
 

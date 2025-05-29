@@ -2,6 +2,8 @@ package io.split.engine.experiments;
 
 import com.google.common.collect.ImmutableList;
 import io.split.engine.matchers.AttributeMatcher;
+import io.split.engine.matchers.PrerequisitesMatcher;
+import io.split.engine.matchers.RuleBasedSegmentMatcher;
 import io.split.engine.matchers.UserDefinedSegmentMatcher;
 
 import java.util.HashSet;
@@ -33,6 +35,7 @@ public class ParsedSplit {
     private final Map<String, String> _configurations;
     private final HashSet<String> _flagSets;
     private final boolean _impressionsDisabled;
+    private PrerequisitesMatcher _prerequisitesMatcher;
 
     public static ParsedSplit createParsedSplitForTests(
             String feature,
@@ -44,7 +47,8 @@ public class ParsedSplit {
             long changeNumber,
             int algo,
             HashSet<String> flagSets,
-            boolean impressionsDisabled
+            boolean impressionsDisabled,
+            PrerequisitesMatcher prerequisitesMatcher
     ) {
         return new ParsedSplit(
                 feature,
@@ -59,7 +63,8 @@ public class ParsedSplit {
                 algo,
                 null,
                 flagSets,
-                impressionsDisabled
+                impressionsDisabled,
+                prerequisitesMatcher
         );
     }
 
@@ -74,7 +79,8 @@ public class ParsedSplit {
             int algo,
             Map<String, String> configurations,
             HashSet<String> flagSets,
-            boolean impressionsDisabled
+            boolean impressionsDisabled,
+            PrerequisitesMatcher prerequisitesMatcher
     ) {
         return new ParsedSplit(
                 feature,
@@ -89,7 +95,8 @@ public class ParsedSplit {
                 algo,
                 configurations,
                 flagSets,
-                impressionsDisabled
+                impressionsDisabled,
+                prerequisitesMatcher
         );
     }
 
@@ -106,7 +113,8 @@ public class ParsedSplit {
             int algo,
             Map<String, String> configurations,
             HashSet<String> flagSets,
-            boolean impressionsDisabled
+            boolean impressionsDisabled,
+            PrerequisitesMatcher prerequisitesMatcher
     ) {
         _split = feature;
         _seed = seed;
@@ -124,6 +132,7 @@ public class ParsedSplit {
         _configurations = configurations;
         _flagSets = flagSets;
         _impressionsDisabled = impressionsDisabled;
+        _prerequisitesMatcher = prerequisitesMatcher;
     }
 
     public String feature() {
@@ -170,6 +179,7 @@ public class ParsedSplit {
     public boolean impressionsDisabled() {
         return _impressionsDisabled;
     }
+    public PrerequisitesMatcher prerequisitesMatcher() { return _prerequisitesMatcher; }
 
     @Override
     public int hashCode() {
@@ -194,17 +204,20 @@ public class ParsedSplit {
         if (!(obj instanceof ParsedSplit)) return false;
 
         ParsedSplit other = (ParsedSplit) obj;
+        boolean trafficTypeCond = _trafficTypeName == null ? other._trafficTypeName == null : _trafficTypeName.equals(other._trafficTypeName);
+        boolean configCond = _configurations == null ? other._configurations == null : _configurations.equals(other._configurations);
 
         return _split.equals(other._split)
                 && _seed == other._seed
                 && _killed == other._killed
                 && _defaultTreatment.equals(other._defaultTreatment)
                 && _parsedCondition.equals(other._parsedCondition)
-                && _trafficTypeName == null ? other._trafficTypeName == null : _trafficTypeName.equals(other._trafficTypeName)
+                && trafficTypeCond
                 && _changeNumber == other._changeNumber
                 && _algo == other._algo
-                && _configurations == null ? other._configurations == null : _configurations.equals(other._configurations)
-                && _impressionsDisabled == other._impressionsDisabled;
+                && configCond
+                && _impressionsDisabled == other._impressionsDisabled
+                && _prerequisitesMatcher == other._prerequisitesMatcher;
     }
 
     @Override
@@ -230,6 +243,9 @@ public class ParsedSplit {
         bldr.append(_configurations);
         bldr.append(", impressionsDisabled:");
         bldr.append(_impressionsDisabled);
+        bldr.append(", prerequisites:");
+        bldr.append(_prerequisitesMatcher);
+
         return bldr.toString();
 
     }
@@ -243,6 +259,15 @@ public class ParsedSplit {
                 .collect(Collectors.toSet());
     }
 
+    public Set<String> getRuleBasedSegmentsNames() {
+        return parsedConditions().stream()
+                .flatMap(parsedCondition -> parsedCondition.matcher().attributeMatchers().stream())
+                .filter(ParsedSplit::isRuleBasedSegmentMatcher)
+                .map(ParsedSplit::asRuleBasedSegmentMatcherForEach)
+                .map(RuleBasedSegmentMatcher::getSegmentName)
+                .collect(Collectors.toSet());
+    }
+
     private static boolean isSegmentMatcher(AttributeMatcher attributeMatcher) {
         return ((AttributeMatcher.NegatableMatcher) attributeMatcher.matcher()).delegate() instanceof UserDefinedSegmentMatcher;
     }
@@ -251,4 +276,11 @@ public class ParsedSplit {
         return (UserDefinedSegmentMatcher) ((AttributeMatcher.NegatableMatcher) attributeMatcher.matcher()).delegate();
     }
 
+    private static boolean isRuleBasedSegmentMatcher(AttributeMatcher attributeMatcher) {
+        return ((AttributeMatcher.NegatableMatcher) attributeMatcher.matcher()).delegate() instanceof RuleBasedSegmentMatcher;
+    }
+
+    private static RuleBasedSegmentMatcher asRuleBasedSegmentMatcherForEach(AttributeMatcher attributeMatcher) {
+        return (RuleBasedSegmentMatcher) ((AttributeMatcher.NegatableMatcher) attributeMatcher.matcher()).delegate();
+    }
 }

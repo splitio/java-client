@@ -56,7 +56,7 @@ public class LocalhostSynchronizer implements Synchronizer{
     }
 
     @Override
-    public void refreshSplits(Long targetChangeNumber) {
+    public void refreshSplits(Long targetChangeNumber, Long ruleBasedSegmentChangeNumber) {
         FetchResult fetchResult = _splitFetcher.forceRefresh(new FetchOptions.Builder().cacheControlHeaders(true).build());
         if (fetchResult.isSuccess()){
             _log.debug("Refresh feature flags completed");
