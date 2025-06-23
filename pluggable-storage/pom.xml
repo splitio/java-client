@@ -26,6 +26,7 @@
                         <version>0.8.0</version>
                         <extensions>true</extensions>
                         <configuration>
+                            <ignorePublishedComponents>true</ignorePublishedComponents>
                             <publishingServerId>central</publishingServerId>
                             <autoPublish>false</autoPublish>
                             <waitUntil>published</waitUntil>
