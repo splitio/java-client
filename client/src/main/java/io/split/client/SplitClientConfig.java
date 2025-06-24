@@ -1,5 +1,6 @@
 package io.split.client;
 
+import io.split.client.dtos.ProxyMTLSAuth;
 import io.split.client.impressions.ImpressionListener;
 import io.split.client.impressions.ImpressionsManager;
 import io.split.client.utils.FileTypeEnum;
@@ -85,6 +86,8 @@ public class SplitClientConfig {
     private final HttpHost _proxy;
     private final String _proxyUsername;
     private final String _proxyPassword;
+    private final String _proxyToken;
+    private final ProxyMTLSAuth _proxyMtlsAuth;
 
     // To be set during startup
     public static String splitSdkVersion;
@@ -118,6 +121,8 @@ public class SplitClientConfig {
                               HttpHost proxy,
                               String proxyUsername,
                               String proxyPassword,
+                              String proxyToken,
+                              ProxyMTLSAuth proxyMtlsAuth,
                               int eventsQueueSize,
                               long eventSendIntervalInMillis,
                               int maxStringLength,
@@ -171,6 +176,8 @@ public class SplitClientConfig {
         _proxy = proxy;
         _proxyUsername = proxyUsername;
         _proxyPassword = proxyPassword;
+        _proxyToken = proxyToken;
+        _proxyMtlsAuth = proxyMtlsAuth;
         _eventsQueueSize = eventsQueueSize;
         _eventSendIntervalInMillis = eventSendIntervalInMillis;
         _maxStringLength = maxStringLength;
@@ -302,6 +309,14 @@ public class SplitClientConfig {
         return _proxyPassword;
     }
 
+    public String proxyToken() {
+        return _proxyToken;
+    }
+
+    public ProxyMTLSAuth proxyMTLSAuth() {
+        return _proxyMtlsAuth;
+    }
+
     public long eventSendIntervalInMillis() {
         return _eventSendIntervalInMillis;
     }
@@ -417,8 +432,8 @@ public class SplitClientConfig {
     }
 
     public CustomHttpModule alternativeHTTPModule() { return _alternativeHTTPModule; }
-    public static final class Builder {
 
+    public static final class Builder {
         private String _endpoint = SDK_ENDPOINT;
         private boolean _endpointSet = false;
         private String _eventsEndpoint = EVENTS_ENDPOINT;
@@ -442,6 +457,8 @@ public class SplitClientConfig {
         private int _proxyPort = -1;
         private String _proxyUsername;
         private String _proxyPassword;
+        private String _proxyToken;
+        private ProxyMTLSAuth _proxyMtlsAuth;
         private int _eventsQueueSize = 500;
         private long _eventSendIntervalInMillis = 30 * (long)1000;
         private int _maxStringLength = 250;
@@ -777,6 +794,28 @@ public class SplitClientConfig {
         }
 
         /**
+         * Set the token for authentication against the proxy (if proxy settings are enabled). (Optional).
+         *
+         * @param proxyToken
+         * @return this builder
+         */
+        public Builder proxyToken(String proxyToken) {
+            _proxyToken = proxyToken;
+            return this;
+        }
+
+        /**
+         * Set the mtls authentication against the proxy (if proxy settings are enabled). (Optional).
+         *
+         * @param proxyMtlsAuth
+         * @return this builder
+         */
+        public Builder proxyMtlsAuth(ProxyMTLSAuth proxyMtlsAuth) {
+            _proxyMtlsAuth = proxyMtlsAuth;
+            return this;
+        }
+
+        /**
          * Disables running destroy() on shutdown by default.
          *
          * @return this builder
@@ -1096,6 +1135,34 @@ public class SplitClientConfig {
             }
         }
 
+        private void verifyProxy() {
+            if (_proxyPort == -1) {
+                return;
+            }
+
+            if (_proxyUsername == null && _proxyToken == null && _proxyMtlsAuth == null) {
+                return;
+            }
+
+            if (_proxyUsername != null && _proxyToken != null) {
+                throw new IllegalArgumentException("Proxy user and Proxy token params are updated, set only one param.");
+            }
+
+            if (_proxyUsername != null && _proxyMtlsAuth != null) {
+                throw new IllegalArgumentException("Proxy user and Proxy mTLS params are updated, set only one param.");
+            }
+
+            if (_proxyToken != null && _proxyMtlsAuth != null) {
+                throw new IllegalArgumentException("Proxy token and Proxy mTLS params are updated, set only one param.");
+            }
+
+            if (_proxyMtlsAuth != null) {
+                if (_proxyMtlsAuth.getP12File() == null || _proxyMtlsAuth.getP12FilePassKey() == null) {
+                    throw new IllegalArgumentException("Proxy mTLS must have p12 file path and name, and pass phrase.");
+                }
+            }
+        }
+
         public SplitClientConfig build() {
 
             verifyRates();
@@ -1107,6 +1174,8 @@ public class SplitClientConfig {
             verifyNetworkParams();
 
             verifyAlternativeClient();
+
+            verifyProxy();
 
             if (_numThreadsForSegmentFetch <= 0) {
                 throw new IllegalArgumentException("Number of threads for fetching segments MUST be greater than zero");
@@ -1133,6 +1202,8 @@ public class SplitClientConfig {
                     proxy(),
                     _proxyUsername,
                     _proxyPassword,
+                    _proxyToken,
+                    _proxyMtlsAuth,
                     _eventsQueueSize,
                     _eventSendIntervalInMillis,
                     _maxStringLength,

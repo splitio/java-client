@@ -1,6 +1,7 @@
 package io.split.client;
 
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
+import io.split.client.dtos.ProxyMTLSAuth;
 import io.split.client.impressions.Impression;
 import io.split.client.impressions.ImpressionListener;
 import io.split.client.impressions.ImpressionsManager;
@@ -252,6 +253,88 @@ public class SplitClientConfigTest {
 
         SplitClientConfig config2 = SplitClientConfig.builder().build();
         Assert.assertNull(config2.customHeaderDecorator());
+    }
 
+    @Test
+    public void checkProxyParams() {
+        SplitClientConfig config = SplitClientConfig.builder()
+                .proxyHost("proxy-host")
+                .proxyPort(8888).build();
+        Assert.assertEquals("proxy-host", config.proxy().getHostName());
+        Assert.assertEquals(8888, config.proxy().getPort());
+
+        config = SplitClientConfig.builder()
+                .proxyHost("proxy-host")
+                .proxyPort(8888)
+                .proxyUsername("user")
+                .proxyPassword("pass")
+                .build();
+        Assert.assertEquals("user", config.proxyUsername());
+        Assert.assertEquals("pass", config.proxyPassword());
+
+        config = SplitClientConfig.builder()
+                .proxyHost("proxy-host")
+                .proxyPort(8888)
+                .proxyToken("my-token")
+                .build();
+        Assert.assertEquals("my-token", config.proxyToken());
+
+        config = SplitClientConfig.builder()
+                .proxyHost("proxy-host")
+                .proxyPort(8888)
+                .proxyMtlsAuth(new ProxyMTLSAuth.Builder().proxyP12File("path/to/file").proxyP12FilePassKey("pass-key").build())
+                .build();
+        Assert.assertEquals("path/to/file", config.proxyMTLSAuth().getP12File());
+        Assert.assertEquals("pass-key", config.proxyMTLSAuth().getP12FilePassKey());
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void cannotUseProxyTokenAndProxyUsername() {
+        SplitClientConfig.builder()
+                .proxyHost("proxy-host")
+                .proxyPort(8888)
+                .proxyUsername("user")
+                .proxyPassword("pass")
+                .proxyToken("my-token")
+                .build();
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void cannotUseProxyUserAndProxyMtls() {
+        SplitClientConfig.builder()
+                .proxyHost("proxy-host")
+                .proxyPort(8888)
+                .proxyUsername("user")
+                .proxyPassword("pass")
+                .proxyMtlsAuth(new ProxyMTLSAuth.Builder().proxyP12File("path/to/file").proxyP12FilePassKey("pass-key").build())
+                .build();
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void cannotUseProxyTokenAndProxyMtls() {
+        SplitClientConfig.builder()
+                .proxyHost("proxy-host")
+                .proxyPort(8888)
+                .proxyToken("my-token")
+                .proxyMtlsAuth(new ProxyMTLSAuth.Builder().proxyP12File("path/to/file").proxyP12FilePassKey("pass-key").build())
+                .build();
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void mustUseP12FileWithProxyMtls() {
+        SplitClientConfig.builder()
+                .proxyHost("proxy-host")
+                .proxyPort(8888)
+                .proxyMtlsAuth(new ProxyMTLSAuth.Builder().proxyP12FilePassKey("pass-key").build())
+                .build();
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void mustUseP12PassKeyWithProxyMtls() {
+        SplitClientConfig.builder()
+                .proxyHost("proxy-host")
+                .proxyPort(8888)
+                .proxyMtlsAuth(new ProxyMTLSAuth.Builder().proxyP12File("path/to/file").build())
+                .build();
     }
 }
