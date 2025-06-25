@@ -266,6 +266,7 @@ public class SplitClientConfigTest {
         config = SplitClientConfig.builder()
                 .proxyHost("proxy-host")
                 .proxyPort(8888)
+                .proxyScheme(SplitClientConfig.HttpScheme.HTTPS)
                 .proxyUsername("user")
                 .proxyPassword("pass")
                 .build();
@@ -286,6 +287,15 @@ public class SplitClientConfigTest {
                 .build();
         Assert.assertEquals("path/to/file", config.proxyMTLSAuth().getP12File());
         Assert.assertEquals("pass-key", config.proxyMTLSAuth().getP12FilePassKey());
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void cannotUseInvalidHttpScheme() {
+        SplitClientConfig.builder()
+                .proxyHost("proxy-host")
+                .proxyPort(8888)
+                .proxyScheme("ftp")
+                .build();
     }
 
     @Test(expected = IllegalArgumentException.class)

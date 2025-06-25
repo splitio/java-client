@@ -35,6 +35,11 @@ public class SplitClientConfig {
     public static final String STREAMING_ENDPOINT = "https://streaming.split.io/sse";
     public static final String TELEMETRY_ENDPOINT = "https://telemetry.split.io/api/v1";
 
+    public static class HttpScheme {
+        public static final String HTTP = "http";
+        public static final String HTTPS = "https";
+    }
+
     private final String _endpoint;
     private final String _eventsEndpoint;
 
@@ -455,6 +460,7 @@ public class SplitClientConfig {
         private int _waitBeforeShutdown = 5000;
         private String _proxyHost = "localhost";
         private int _proxyPort = -1;
+        private String _proxyScheme = HttpScheme.HTTP;
         private String _proxyUsername;
         private String _proxyPassword;
         private String _proxyToken;
@@ -772,6 +778,17 @@ public class SplitClientConfig {
         }
 
         /**
+         * The http scheme of the proxy. Default is http.
+         *
+         * @param proxyScheme protocol for the proxy
+         * @return this builder
+         */
+        public Builder proxyScheme(String proxyScheme) {
+            _proxyScheme = proxyScheme;
+            return this;
+        }
+
+        /**
          * Set the username for authentication against the proxy (if proxy settings are enabled). (Optional).
          *
          * @param proxyUsername
@@ -827,7 +844,7 @@ public class SplitClientConfig {
 
         HttpHost proxy() {
             if (_proxyPort != -1) {
-                return new HttpHost(_proxyHost, _proxyPort);
+                return new HttpHost(_proxyScheme, _proxyHost, _proxyPort);
             }
             // Default is no proxy.
             return null;
@@ -1138,6 +1155,10 @@ public class SplitClientConfig {
         private void verifyProxy() {
             if (_proxyPort == -1) {
                 return;
+            }
+
+            if (!(_proxyScheme.equals(HttpScheme.HTTP) || _proxyScheme.equals(HttpScheme.HTTPS))) {
+                throw new IllegalArgumentException("Proxy scheme must be either http or https.");
             }
 
             if (_proxyUsername == null && _proxyToken == null && _proxyMtlsAuth == null) {
