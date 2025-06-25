@@ -1,5 +1,6 @@
 package io.split.client;
 
+import io.split.client.dtos.ProxyMTLSAuth;
 import io.split.client.impressions.ImpressionsManager;
 import io.split.client.utils.FileTypeEnum;
 import io.split.integrations.IntegrationsConfig;
@@ -10,7 +11,6 @@ import io.split.telemetry.synchronizer.TelemetrySynchronizer;
 import junit.framework.TestCase;
 import org.awaitility.Awaitility;
 import org.junit.Assert;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.mockito.Mockito;
 import static org.mockito.Mockito.when;
@@ -102,9 +102,45 @@ public class SplitFactoryImplTest extends TestCase {
                 .proxyHost(ENDPOINT)
                 .build();
         SplitFactoryImpl splitFactory = new SplitFactoryImpl(API_KEY, splitClientConfig);
-
         assertNotNull(splitFactory.client());
         assertNotNull(splitFactory.manager());
+
+        splitClientConfig = SplitClientConfig.builder()
+                .enableDebug()
+                .impressionsMode(ImpressionsManager.Mode.DEBUG)
+                .impressionsRefreshRate(1)
+                .endpoint(ENDPOINT,EVENTS_ENDPOINT)
+                .telemetryURL(SplitClientConfig.TELEMETRY_ENDPOINT)
+                .authServiceURL(AUTH_SERVICE)
+                .setBlockUntilReadyTimeout(1000)
+                .proxyPort(6060)
+                .proxyToken("12345")
+                .proxyHost(ENDPOINT)
+                .build();
+        SplitFactoryImpl splitFactory2 = new SplitFactoryImpl(API_KEY, splitClientConfig);
+        assertNotNull(splitFactory2.client());
+        assertNotNull(splitFactory2.manager());
+
+        splitClientConfig = SplitClientConfig.builder()
+                .enableDebug()
+                .impressionsMode(ImpressionsManager.Mode.DEBUG)
+                .impressionsRefreshRate(1)
+                .endpoint(ENDPOINT,EVENTS_ENDPOINT)
+                .telemetryURL(SplitClientConfig.TELEMETRY_ENDPOINT)
+                .authServiceURL(AUTH_SERVICE)
+                .setBlockUntilReadyTimeout(1000)
+                .proxyPort(6060)
+                .proxyScheme("https")
+                .proxyMtlsAuth(new ProxyMTLSAuth.Builder().proxyP12File("file").proxyP12FilePassKey("pass").build())
+                .proxyHost(ENDPOINT)
+                .build();
+        SplitFactoryImpl splitFactory3 = new SplitFactoryImpl(API_KEY, splitClientConfig);
+        assertNotNull(splitFactory3.client());
+        assertNotNull(splitFactory3.manager());
+
+        splitFactory.destroy();
+        splitFactory2.destroy();
+        splitFactory3.destroy();
     }
 
     @Test

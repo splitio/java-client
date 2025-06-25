@@ -92,6 +92,7 @@ import io.split.telemetry.synchronizer.TelemetrySyncTask;
 import io.split.telemetry.synchronizer.TelemetrySynchronizer;
 
 import org.apache.hc.client5.http.auth.AuthScope;
+import org.apache.hc.client5.http.auth.BearerToken;
 import org.apache.hc.client5.http.auth.Credentials;
 import org.apache.hc.client5.http.auth.UsernamePasswordCredentials;
 import org.apache.hc.client5.http.config.RequestConfig;
@@ -113,11 +114,14 @@ import org.apache.hc.core5.util.Timeout;
 import org.slf4j.LoggerFactory;
 import pluggable.CustomStorageWrapper;
 
+import javax.net.ssl.SSLContext;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.InetAddress;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.nio.file.Paths;
+import java.security.KeyStore;
 import java.util.concurrent.ExecutorService;
 import java.util.stream.Collectors;
 import java.util.HashSet;
@@ -518,8 +522,28 @@ public class SplitFactoryImpl implements SplitFactory {
     protected static SplitHttpClient buildSplitHttpClient(String apiToken, SplitClientConfig config,
             SDKMetadata sdkMetadata, RequestDecorator requestDecorator)
             throws URISyntaxException {
+
+        SSLContext sslContext;
+        if (config.proxyMTLSAuth() != null) {
+            _log.debug("Proxy setup using mTLS");
+            try {
+                KeyStore keyStore = KeyStore.getInstance("PKCS12");
+                InputStream keystoreStream = java.nio.file.Files.newInputStream(Paths.get(config.proxyMTLSAuth().getP12File()));
+                keyStore.load(keystoreStream, config.proxyMTLSAuth().getP12FilePassKey().toCharArray());
+                sslContext = SSLContexts.custom()
+                        .loadKeyMaterial(keyStore, config.proxyMTLSAuth().getP12FilePassKey().toCharArray())
+                        .build();
+            } catch (Exception e) {
+                _log.error("Exception caught while processing p12 file for Proxy mTLS auth: ", e);
+                _log.warn("Ignoring p12 mTLS config and switching to default context");
+                sslContext = SSLContexts.createSystemDefault();
+            }
+        } else {
+            sslContext = SSLContexts.createSystemDefault();
+        }
+
         SSLConnectionSocketFactory sslSocketFactory = SSLConnectionSocketFactoryBuilder.create()
-                .setSslContext(SSLContexts.createSystemDefault())
+                .setSslContext(sslContext)
                 .setTlsVersions(TLS.V_1_1, TLS.V_1_2)
                 .build();
 
@@ -600,6 +624,15 @@ public class SplitFactoryImpl implements SplitFactory {
             AuthScope siteScope = new AuthScope(config.proxy().getHostName(), config.proxy().getPort());
             Credentials siteCreds = new UsernamePasswordCredentials(config.proxyUsername(),
                     config.proxyPassword().toCharArray());
+            credsProvider.setCredentials(siteScope, siteCreds);
+            httpClientbuilder.setDefaultCredentialsProvider(credsProvider);
+        }
+
+        if (config.proxyToken() != null) {
+            _log.debug("Proxy setup using token");
+            BasicCredentialsProvider credsProvider = new BasicCredentialsProvider();
+            AuthScope siteScope = new AuthScope(config.proxy().getHostName(), config.proxy().getPort());
+            Credentials siteCreds = new BearerToken(config.proxyToken());
             credsProvider.setCredentials(siteScope, siteCreds);
             httpClientbuilder.setDefaultCredentialsProvider(credsProvider);
         }
