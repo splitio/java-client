@@ -14,11 +14,11 @@ import org.apache.hc.client5.http.auth.AuthScope;
 import org.apache.hc.client5.http.auth.BearerToken;
 import org.apache.hc.client5.http.auth.UsernamePasswordCredentials;
 import org.apache.hc.client5.http.impl.auth.BasicCredentialsProvider;
-import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
-import org.apache.hc.client5.http.impl.classic.CloseableHttpResponse;
-import org.apache.hc.client5.http.impl.classic.MinimalHttpClient;
+import org.apache.hc.client5.http.impl.io.DefaultHttpClientConnectionOperator;
+import org.apache.hc.client5.http.impl.io.PoolingHttpClientConnectionManager;
 import org.apache.hc.client5.http.impl.routing.DefaultProxyRoutePlanner;
 import org.apache.hc.core5.http.HttpHost;
+import org.apache.hc.core5.http.config.Registry;
 import org.awaitility.Awaitility;
 import org.junit.Assert;
 import org.junit.Test;
@@ -34,6 +34,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.net.URISyntaxException;
+import java.util.HashMap;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 
@@ -98,12 +99,12 @@ public class SplitFactoryImplTest extends TestCase {
     }
 
     @Test
-    public void testFactoryInstantiationWithProxy() throws Exception {
+    public void testFactoryInstantiationWithProxyCredentials() throws Exception {
         SplitClientConfig splitClientConfig = SplitClientConfig.builder()
                 .enableDebug()
                 .impressionsMode(ImpressionsManager.Mode.DEBUG)
                 .impressionsRefreshRate(1)
-                .endpoint(ENDPOINT,EVENTS_ENDPOINT)
+                .endpoint(ENDPOINT, EVENTS_ENDPOINT)
                 .telemetryURL(SplitClientConfig.TELEMETRY_ENDPOINT)
                 .authServiceURL(AUTH_SERVICE)
                 .setBlockUntilReadyTimeout(1000)
@@ -147,11 +148,16 @@ public class SplitFactoryImplTest extends TestCase {
         Assert.assertEquals("test", credMap.entrySet().stream().iterator().next().getValue().getUserName());
         assertNotNull(credMap.entrySet().stream().iterator().next().getValue().getUserPassword());
 
-        splitClientConfig = SplitClientConfig.builder()
+        splitFactory.destroy();
+    }
+
+    @Test
+    public void testFactoryInstantiationWithProxyToken() throws Exception {
+        SplitClientConfig splitClientConfig = SplitClientConfig.builder()
                 .enableDebug()
                 .impressionsMode(ImpressionsManager.Mode.DEBUG)
                 .impressionsRefreshRate(1)
-                .endpoint(ENDPOINT,EVENTS_ENDPOINT)
+                .endpoint(ENDPOINT, EVENTS_ENDPOINT)
                 .telemetryURL(SplitClientConfig.TELEMETRY_ENDPOINT)
                 .authServiceURL(AUTH_SERVICE)
                 .setBlockUntilReadyTimeout(1000)
@@ -171,7 +177,7 @@ public class SplitFactoryImplTest extends TestCase {
         httpClientField2.setAccessible(true);
         Class<?> InternalHttp2 = Class.forName("org.apache.hc.client5.http.impl.classic.InternalHttpClient");
 
-        Field credentialsProviderField2 = InternalHttp.getDeclaredField("credentialsProvider");
+        Field credentialsProviderField2 = InternalHttp2.getDeclaredField("credentialsProvider");
         credentialsProviderField2.setAccessible(true);
         BasicCredentialsProvider credentialsProvider2 = (BasicCredentialsProvider) credentialsProviderField2.get(InternalHttp2.cast(httpClientField2.get(client2)));
 
@@ -181,7 +187,12 @@ public class SplitFactoryImplTest extends TestCase {
 
         Assert.assertEquals("123456789", credMap2.entrySet().stream().iterator().next().getValue().getToken());
 
-        splitClientConfig = SplitClientConfig.builder()
+        splitFactory2.destroy();
+    }
+
+    @Test
+    public void testFactoryInstantiationWithProxyMtls() throws Exception {
+        SplitClientConfig splitClientConfig = SplitClientConfig.builder()
                 .enableDebug()
                 .impressionsMode(ImpressionsManager.Mode.DEBUG)
                 .impressionsRefreshRate(1)
@@ -191,15 +202,61 @@ public class SplitFactoryImplTest extends TestCase {
                 .setBlockUntilReadyTimeout(1000)
                 .proxyPort(6060)
                 .proxyScheme("https")
-                .proxyMtlsAuth(new ProxyMTLSAuth.Builder().proxyP12File("file").proxyP12FilePassKey("pass").build())
+                .proxyMtlsAuth(new ProxyMTLSAuth.Builder().proxyP12File("src/test/resources/keyStore.p12").proxyP12FilePassKey("split").build())
                 .proxyHost(ENDPOINT)
                 .build();
         SplitFactoryImpl splitFactory3 = new SplitFactoryImpl(API_KEY, splitClientConfig);
         assertNotNull(splitFactory3.client());
         assertNotNull(splitFactory3.manager());
 
-        splitFactory.destroy();
-        splitFactory2.destroy();
+        Field splitHttpClientField3 = SplitFactoryImpl.class.getDeclaredField("_splitHttpClient");
+        splitHttpClientField3.setAccessible(true);
+        SplitHttpClientImpl client3 = (SplitHttpClientImpl) splitHttpClientField3.get(splitFactory3);
+
+        Field httpClientField3 = SplitHttpClientImpl.class.getDeclaredField("_client");
+        httpClientField3.setAccessible(true);
+        Class<?> InternalHttp3 = Class.forName("org.apache.hc.client5.http.impl.classic.InternalHttpClient");
+
+        Field connManagerField = InternalHttp3.getDeclaredField("connManager");
+        connManagerField.setAccessible(true);
+        PoolingHttpClientConnectionManager connManager = (PoolingHttpClientConnectionManager) connManagerField.get(InternalHttp3.cast(httpClientField3.get(client3)));
+
+        Field connectionOperatorField = PoolingHttpClientConnectionManager.class.getDeclaredField("connectionOperator");
+        connectionOperatorField.setAccessible(true);
+        DefaultHttpClientConnectionOperator connectionOperator = (DefaultHttpClientConnectionOperator) connectionOperatorField.get(connManager);
+
+        Field tlsSocketStrategyLookupField = DefaultHttpClientConnectionOperator.class.getDeclaredField("tlsSocketStrategyLookup");
+        tlsSocketStrategyLookupField.setAccessible(true);
+        Registry tlsSocketStrategyLookup = (Registry) tlsSocketStrategyLookupField.get(connectionOperator);
+
+        Field mapField = Registry.class.getDeclaredField("map");
+        mapField.setAccessible(true);
+        Class<?> map =  mapField.get(tlsSocketStrategyLookup).getClass();
+
+        Class<?> value = ((ConcurrentHashMap) map.cast(mapField.get(tlsSocketStrategyLookup))).get("https").getClass();
+
+        Field arg1Field = value.getDeclaredField("arg$1");
+        arg1Field.setAccessible(true);
+        Class<?> sslConnectionSocketFactory = arg1Field.get(((ConcurrentHashMap) map.cast(mapField.get(tlsSocketStrategyLookup))).get("https")).getClass();
+
+        Field socketFactoryField = sslConnectionSocketFactory.getDeclaredField("socketFactory");
+        socketFactoryField.setAccessible(true);
+        Class<?> socketFactory = socketFactoryField.get(arg1Field.get(((ConcurrentHashMap) map.cast(mapField.get(tlsSocketStrategyLookup))).get("https"))).getClass();
+
+        Field contextField = socketFactory.getDeclaredField("context");
+        contextField.setAccessible(true);
+        Class<?> context = Class.forName("sun.security.ssl.SSLContextImpl");
+
+        Field keyManagerField = context.getDeclaredField("keyManager");
+        keyManagerField.setAccessible(true);
+        Class<?> keyManager = keyManagerField.get(contextField.get(socketFactoryField.get(arg1Field.get(((ConcurrentHashMap) map.cast(mapField.get(tlsSocketStrategyLookup))).get("https"))))).getClass();
+
+        Field credentialsMapField = keyManager.getDeclaredField("credentialsMap");
+        credentialsMapField.setAccessible(true);
+        HashMap<String,Object> credentialsMap = (HashMap) credentialsMapField.get(keyManagerField.get(contextField.get(socketFactoryField.get(arg1Field.get(((ConcurrentHashMap) map.cast(mapField.get(tlsSocketStrategyLookup))).get("https"))))));
+
+        assertNotNull(credentialsMap.get("1"));
+
         splitFactory3.destroy();
     }
 
