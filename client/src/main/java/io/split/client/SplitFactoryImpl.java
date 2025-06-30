@@ -92,7 +92,6 @@ import io.split.telemetry.synchronizer.TelemetrySyncTask;
 import io.split.telemetry.synchronizer.TelemetrySynchronizer;
 
 import org.apache.hc.client5.http.auth.AuthScope;
-import org.apache.hc.client5.http.auth.BearerToken;
 import org.apache.hc.client5.http.auth.Credentials;
 import org.apache.hc.client5.http.auth.UsernamePasswordCredentials;
 import org.apache.hc.client5.http.config.RequestConfig;
@@ -635,13 +634,9 @@ public class SplitFactoryImpl implements SplitFactory {
             httpClientbuilder.setDefaultCredentialsProvider(credsProvider);
         }
 
-        if (config.proxyToken() != null) {
+        if (config.proxyRuntimeStorage().getJwtToken() != null) {
             _log.debug("Proxy setup using token");
-            BasicCredentialsProvider credsProvider = new BasicCredentialsProvider();
-            AuthScope siteScope = new AuthScope(config.proxy().getHostName(), config.proxy().getPort());
-            Credentials siteCreds = new BearerToken(config.proxyToken());
-            credsProvider.setCredentials(siteScope, siteCreds);
-            httpClientbuilder.setDefaultCredentialsProvider(credsProvider);
+            httpClientbuilder.setDefaultCredentialsProvider(new HttpClientDynamicCredentials(config.proxyRuntimeStorage()));
         }
 
         return httpClientbuilder;

@@ -91,7 +91,7 @@ public class SplitClientConfig {
     private final HttpHost _proxy;
     private final String _proxyUsername;
     private final String _proxyPassword;
-    private final String _proxyToken;
+    private final ProxyRuntimeStorage _proxyRuntimeStorage;
     private final ProxyMTLSAuth _proxyMtlsAuth;
 
     // To be set during startup
@@ -126,7 +126,7 @@ public class SplitClientConfig {
                               HttpHost proxy,
                               String proxyUsername,
                               String proxyPassword,
-                              String proxyToken,
+                              ProxyRuntimeStorage proxyRuntimeStorage,
                               ProxyMTLSAuth proxyMtlsAuth,
                               int eventsQueueSize,
                               long eventSendIntervalInMillis,
@@ -181,7 +181,7 @@ public class SplitClientConfig {
         _proxy = proxy;
         _proxyUsername = proxyUsername;
         _proxyPassword = proxyPassword;
-        _proxyToken = proxyToken;
+        _proxyRuntimeStorage = proxyRuntimeStorage;
         _proxyMtlsAuth = proxyMtlsAuth;
         _eventsQueueSize = eventsQueueSize;
         _eventSendIntervalInMillis = eventSendIntervalInMillis;
@@ -314,8 +314,8 @@ public class SplitClientConfig {
         return _proxyPassword;
     }
 
-    public String proxyToken() {
-        return _proxyToken;
+    public ProxyRuntimeStorage proxyRuntimeStorage() {
+        return _proxyRuntimeStorage;
     }
 
     public ProxyMTLSAuth proxyMTLSAuth() {
@@ -463,7 +463,7 @@ public class SplitClientConfig {
         private String _proxyScheme = HttpScheme.HTTP;
         private String _proxyUsername;
         private String _proxyPassword;
-        private String _proxyToken;
+        private ProxyRuntimeStorage _proxyRuntimeStorage;
         private ProxyMTLSAuth _proxyMtlsAuth;
         private int _eventsQueueSize = 500;
         private long _eventSendIntervalInMillis = 30 * (long)1000;
@@ -813,11 +813,11 @@ public class SplitClientConfig {
         /**
          * Set the token for authentication against the proxy (if proxy settings are enabled). (Optional).
          *
-         * @param proxyToken
+         * @param proxyRuntimeStorage
          * @return this builder
          */
-        public Builder proxyToken(String proxyToken) {
-            _proxyToken = proxyToken;
+        public Builder proxyRuntimeStorage(ProxyRuntimeStorage proxyRuntimeStorage) {
+            _proxyRuntimeStorage = proxyRuntimeStorage;
             return this;
         }
 
@@ -1161,11 +1161,11 @@ public class SplitClientConfig {
                 throw new IllegalArgumentException("Proxy scheme must be either http or https.");
             }
 
-            if (_proxyUsername == null && _proxyToken == null && _proxyMtlsAuth == null) {
+            if (_proxyUsername == null && _proxyRuntimeStorage == null && _proxyMtlsAuth == null) {
                 return;
             }
 
-            if (_proxyUsername != null && _proxyToken != null) {
+            if (_proxyUsername != null && _proxyRuntimeStorage != null) {
                 throw new IllegalArgumentException("Proxy user and Proxy token params are updated, set only one param.");
             }
 
@@ -1173,7 +1173,7 @@ public class SplitClientConfig {
                 throw new IllegalArgumentException("Proxy user and Proxy mTLS params are updated, set only one param.");
             }
 
-            if (_proxyToken != null && _proxyMtlsAuth != null) {
+            if (_proxyRuntimeStorage != null && _proxyMtlsAuth != null) {
                 throw new IllegalArgumentException("Proxy token and Proxy mTLS params are updated, set only one param.");
             }
 
@@ -1223,7 +1223,7 @@ public class SplitClientConfig {
                     proxy(),
                     _proxyUsername,
                     _proxyPassword,
-                    _proxyToken,
+                    _proxyRuntimeStorage,
                     _proxyMtlsAuth,
                     _eventsQueueSize,
                     _eventSendIntervalInMillis,
