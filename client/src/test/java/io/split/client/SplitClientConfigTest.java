@@ -273,12 +273,19 @@ public class SplitClientConfigTest {
         Assert.assertEquals("user", config.proxyUsername());
         Assert.assertEquals("pass", config.proxyPassword());
 
+        ProxyRuntimeStorage proxyRuntimeStorage = new ProxyRuntimeStorage() {
+            @Override
+            public String getJwtToken() {
+                return "my-token";
+            }
+        };
+
         config = SplitClientConfig.builder()
                 .proxyHost("proxy-host")
                 .proxyPort(8888)
-                .proxyToken("my-token")
+                .proxyRuntimeStorage(proxyRuntimeStorage)
                 .build();
-        Assert.assertEquals("my-token", config.proxyToken());
+        Assert.assertEquals(proxyRuntimeStorage, config.proxyRuntimeStorage());
 
         config = SplitClientConfig.builder()
                 .proxyHost("proxy-host")
@@ -300,12 +307,19 @@ public class SplitClientConfigTest {
 
     @Test(expected = IllegalArgumentException.class)
     public void cannotUseProxyTokenAndProxyUsername() {
+        ProxyRuntimeStorage proxyRuntimeStorage = new ProxyRuntimeStorage() {
+            @Override
+            public String getJwtToken() {
+                return "my-token";
+            }
+        };
+
         SplitClientConfig.builder()
                 .proxyHost("proxy-host")
                 .proxyPort(8888)
                 .proxyUsername("user")
                 .proxyPassword("pass")
-                .proxyToken("my-token")
+                .proxyRuntimeStorage(proxyRuntimeStorage)
                 .build();
     }
 
@@ -322,10 +336,17 @@ public class SplitClientConfigTest {
 
     @Test(expected = IllegalArgumentException.class)
     public void cannotUseProxyTokenAndProxyMtls() {
+        ProxyRuntimeStorage proxyRuntimeStorage = new ProxyRuntimeStorage() {
+            @Override
+            public String getJwtToken() {
+                return "my-token";
+            }
+        };
+
         SplitClientConfig.builder()
                 .proxyHost("proxy-host")
                 .proxyPort(8888)
-                .proxyToken("my-token")
+                .proxyRuntimeStorage(proxyRuntimeStorage)
                 .proxyMtlsAuth(new ProxyMTLSAuth.Builder().proxyP12File("path/to/file").proxyP12FilePassKey("pass-key").build())
                 .build();
     }

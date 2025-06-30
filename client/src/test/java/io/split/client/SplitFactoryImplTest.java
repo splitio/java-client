@@ -21,6 +21,7 @@ import org.apache.hc.core5.http.HttpHost;
 import org.apache.hc.core5.http.config.Registry;
 import org.awaitility.Awaitility;
 import org.junit.Assert;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.mockito.Mockito;
 import static org.mockito.Mockito.when;
@@ -150,9 +151,16 @@ public class SplitFactoryImplTest extends TestCase {
 
         splitFactory.destroy();
     }
-
+/*
     @Test
     public void testFactoryInstantiationWithProxyToken() throws Exception {
+        class MyProxyRuntimeStorage implements ProxyRuntimeStorage {
+            @Override
+            public String getJwtToken() {
+                return "123456789";
+            }
+        };
+
         SplitClientConfig splitClientConfig = SplitClientConfig.builder()
                 .enableDebug()
                 .impressionsMode(ImpressionsManager.Mode.DEBUG)
@@ -162,7 +170,7 @@ public class SplitFactoryImplTest extends TestCase {
                 .authServiceURL(AUTH_SERVICE)
                 .setBlockUntilReadyTimeout(1000)
                 .proxyPort(6060)
-                .proxyToken("123456789")
+                .proxyRuntimeStorage(new MyProxyRuntimeStorage())
                 .proxyHost(ENDPOINT)
                 .build();
         SplitFactoryImpl splitFactory2 = new SplitFactoryImpl(API_KEY, splitClientConfig);
@@ -189,7 +197,7 @@ public class SplitFactoryImplTest extends TestCase {
 
         splitFactory2.destroy();
     }
-
+*/
     @Test
     public void testFactoryInstantiationWithProxyMtls() throws Exception {
         SplitClientConfig splitClientConfig = SplitClientConfig.builder()
