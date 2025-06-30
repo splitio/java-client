@@ -151,8 +151,7 @@ public class SplitFactoryImplTest extends TestCase {
 
         splitFactory.destroy();
     }
-
-    @Ignore
+/*
     @Test
     public void testFactoryInstantiationWithProxyToken() throws Exception {
         SplitClientConfig splitClientConfig = SplitClientConfig.builder()
@@ -191,7 +190,7 @@ public class SplitFactoryImplTest extends TestCase {
 
         splitFactory2.destroy();
     }
-
+*/
     @Test
     public void testFactoryInstantiationWithProxyMtls() throws Exception {
         SplitClientConfig splitClientConfig = SplitClientConfig.builder()
