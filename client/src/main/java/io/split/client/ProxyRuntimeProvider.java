@@ -1,6 +1,6 @@
 package io.split.client;
 
-public interface ProxyRuntimeStorage
+public interface ProxyRuntimeProvider
 {
     /**
      * Get the additional headers needed for all http operations

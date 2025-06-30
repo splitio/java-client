@@ -273,7 +273,7 @@ public class SplitClientConfigTest {
         Assert.assertEquals("user", config.proxyUsername());
         Assert.assertEquals("pass", config.proxyPassword());
 
-        ProxyRuntimeStorage proxyRuntimeStorage = new ProxyRuntimeStorage() {
+        ProxyRuntimeProvider proxyRuntimeProvider = new ProxyRuntimeProvider() {
             @Override
             public String getJwtToken() {
                 return "my-token";
@@ -283,9 +283,9 @@ public class SplitClientConfigTest {
         config = SplitClientConfig.builder()
                 .proxyHost("proxy-host")
                 .proxyPort(8888)
-                .proxyRuntimeStorage(proxyRuntimeStorage)
+                .proxyRuntimeStorage(proxyRuntimeProvider)
                 .build();
-        Assert.assertEquals(proxyRuntimeStorage, config.proxyRuntimeStorage());
+        Assert.assertEquals(proxyRuntimeProvider, config.proxyRuntimeStorage());
 
         config = SplitClientConfig.builder()
                 .proxyHost("proxy-host")
@@ -307,7 +307,7 @@ public class SplitClientConfigTest {
 
     @Test(expected = IllegalArgumentException.class)
     public void cannotUseProxyTokenAndProxyUsername() {
-        ProxyRuntimeStorage proxyRuntimeStorage = new ProxyRuntimeStorage() {
+        ProxyRuntimeProvider proxyRuntimeProvider = new ProxyRuntimeProvider() {
             @Override
             public String getJwtToken() {
                 return "my-token";
@@ -319,7 +319,7 @@ public class SplitClientConfigTest {
                 .proxyPort(8888)
                 .proxyUsername("user")
                 .proxyPassword("pass")
-                .proxyRuntimeStorage(proxyRuntimeStorage)
+                .proxyRuntimeStorage(proxyRuntimeProvider)
                 .build();
     }
 
@@ -336,7 +336,7 @@ public class SplitClientConfigTest {
 
     @Test(expected = IllegalArgumentException.class)
     public void cannotUseProxyTokenAndProxyMtls() {
-        ProxyRuntimeStorage proxyRuntimeStorage = new ProxyRuntimeStorage() {
+        ProxyRuntimeProvider proxyRuntimeProvider = new ProxyRuntimeProvider() {
             @Override
             public String getJwtToken() {
                 return "my-token";
@@ -346,7 +346,7 @@ public class SplitClientConfigTest {
         SplitClientConfig.builder()
                 .proxyHost("proxy-host")
                 .proxyPort(8888)
-                .proxyRuntimeStorage(proxyRuntimeStorage)
+                .proxyRuntimeStorage(proxyRuntimeProvider)
                 .proxyMtlsAuth(new ProxyMTLSAuth.Builder().proxyP12File("path/to/file").proxyP12FilePassKey("pass-key").build())
                 .build();
     }

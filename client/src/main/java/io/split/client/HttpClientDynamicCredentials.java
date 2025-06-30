@@ -7,10 +7,10 @@ import org.apache.hc.core5.http.protocol.HttpContext;
 
 class HttpClientDynamicCredentials implements  org.apache.hc.client5.http.auth.CredentialsProvider {
 
-    private final ProxyRuntimeStorage _proxyRuntimeStorage;
+    private final ProxyRuntimeProvider _proxyRuntimeProvider;
 
-    public HttpClientDynamicCredentials (ProxyRuntimeStorage proxyRuntimeStorage) {
-        _proxyRuntimeStorage = proxyRuntimeStorage;
+    public HttpClientDynamicCredentials (ProxyRuntimeProvider proxyRuntimeProvider) {
+        _proxyRuntimeProvider = proxyRuntimeProvider;
     }
 
     @Override
@@ -18,7 +18,7 @@ class HttpClientDynamicCredentials implements  org.apache.hc.client5.http.auth.C
 
         // This Provider is invoked every time a request is made.
         // This should invoke a user-custom provider responsible for:
-        return new BearerToken(_proxyRuntimeStorage.getJwtToken());
+        return new BearerToken(_proxyRuntimeProvider.getJwtToken());
     }
 
 }
