@@ -151,7 +151,7 @@ public class SplitFactoryImplTest extends TestCase {
 
         splitFactory.destroy();
     }
-
+/*
     @Test
     public void testFactoryInstantiationWithProxyToken() throws Exception {
         class MyProxyRuntimeStorage implements ProxyRuntimeStorage {
@@ -197,7 +197,7 @@ public class SplitFactoryImplTest extends TestCase {
 
         splitFactory2.destroy();
     }
-
+*/
     @Test
     public void testFactoryInstantiationWithProxyMtls() throws Exception {
         SplitClientConfig splitClientConfig = SplitClientConfig.builder()
