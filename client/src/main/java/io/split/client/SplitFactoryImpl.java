@@ -523,24 +523,7 @@ public class SplitFactoryImpl implements SplitFactory {
             SDKMetadata sdkMetadata, RequestDecorator requestDecorator)
             throws URISyntaxException {
 
-        SSLContext sslContext;
-        if (config.proxyMTLSAuth() != null) {
-            _log.debug("Proxy setup using mTLS");
-            try {
-                KeyStore keyStore = KeyStore.getInstance("PKCS12");
-                InputStream keystoreStream = java.nio.file.Files.newInputStream(Paths.get(config.proxyMTLSAuth().getP12File()));
-                keyStore.load(keystoreStream, config.proxyMTLSAuth().getP12FilePassKey().toCharArray());
-                sslContext = SSLContexts.custom()
-                        .loadKeyMaterial(keyStore, config.proxyMTLSAuth().getP12FilePassKey().toCharArray())
-                        .build();
-            } catch (Exception e) {
-                _log.error("Exception caught while processing p12 file for Proxy mTLS auth: ", e);
-                _log.warn("Ignoring p12 mTLS config and switching to default context");
-                sslContext = SSLContexts.createSystemDefault();
-            }
-        } else {
-            sslContext = SSLContexts.createSystemDefault();
-        }
+        SSLContext sslContext = buildSSLContext(config);
 
         SSLConnectionSocketFactory sslSocketFactory = SSLConnectionSocketFactoryBuilder.create()
                 .setSslContext(sslContext)
@@ -585,8 +568,10 @@ public class SplitFactoryImpl implements SplitFactory {
                 .setConnectTimeout(Timeout.ofMilliseconds(SSE_CONNECT_TIMEOUT))
                 .build();
 
+        SSLContext sslContext = buildSSLContext(config);
+
         SSLConnectionSocketFactory sslSocketFactory = SSLConnectionSocketFactoryBuilder.create()
-                .setSslContext(SSLContexts.createSystemDefault())
+                .setSslContext(sslContext)
                 .setTlsVersions(TLS.V_1_1, TLS.V_1_2)
                 .build();
 
@@ -611,6 +596,28 @@ public class SplitFactoryImpl implements SplitFactory {
         }
 
         return httpClientbuilder.build();
+    }
+
+    private static SSLContext buildSSLContext(SplitClientConfig config) {
+        SSLContext sslContext;
+        if (config.proxyMTLSAuth() != null) {
+            _log.debug("Proxy setup using mTLS");
+            try {
+                KeyStore keyStore = KeyStore.getInstance("PKCS12");
+                InputStream keystoreStream = java.nio.file.Files.newInputStream(Paths.get(config.proxyMTLSAuth().getP12File()));
+                keyStore.load(keystoreStream, config.proxyMTLSAuth().getP12FilePassKey().toCharArray());
+                sslContext = SSLContexts.custom()
+                        .loadKeyMaterial(keyStore, config.proxyMTLSAuth().getP12FilePassKey().toCharArray())
+                        .build();
+            } catch (Exception e) {
+                _log.error("Exception caught while processing p12 file for Proxy mTLS auth: ", e);
+                _log.warn("Ignoring p12 mTLS config and switching to default context");
+                sslContext = SSLContexts.createSystemDefault();
+            }
+        } else {
+            sslContext = SSLContexts.createSystemDefault();
+        }
+        return sslContext;
     }
 
     private static HttpClientBuilder setupProxy(HttpClientBuilder httpClientbuilder, SplitClientConfig config) {
