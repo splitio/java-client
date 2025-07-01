@@ -36,6 +36,9 @@ public class SplitClientConfig {
     public static final String TELEMETRY_ENDPOINT = "https://telemetry.split.io/api/v1";
 
     public static class HttpScheme {
+        private HttpScheme() {
+            throw new IllegalStateException("Utility class");
+        }
         public static final String HTTP = "http";
         public static final String HTTPS = "https";
     }
@@ -1177,10 +1180,8 @@ public class SplitClientConfig {
                 throw new IllegalArgumentException("Proxy token and Proxy mTLS params are updated, set only one param.");
             }
 
-            if (_proxyMtlsAuth != null) {
-                if (_proxyMtlsAuth.getP12File() == null || _proxyMtlsAuth.getP12FilePassKey() == null) {
-                    throw new IllegalArgumentException("Proxy mTLS must have p12 file path and name, and pass phrase.");
-                }
+            if (_proxyMtlsAuth != null && (_proxyMtlsAuth.getP12File() == null || _proxyMtlsAuth.getP12FilePassKey() == null)) {
+                throw new IllegalArgumentException("Proxy mTLS must have p12 file path and name, and pass phrase.");
             }
         }
 

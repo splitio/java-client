@@ -520,7 +520,7 @@ public class SplitFactoryImpl implements SplitFactory {
 
     protected static SplitHttpClient buildSplitHttpClient(String apiToken, SplitClientConfig config,
             SDKMetadata sdkMetadata, RequestDecorator requestDecorator)
-            throws URISyntaxException {
+            throws URISyntaxException, IOException {
 
         SSLContext sslContext = buildSSLContext(config);
 
@@ -562,7 +562,7 @@ public class SplitFactoryImpl implements SplitFactory {
     }
 
     private static CloseableHttpClient buildSSEdHttpClient(String apiToken, SplitClientConfig config,
-            SDKMetadata sdkMetadata) {
+            SDKMetadata sdkMetadata) throws IOException {
         RequestConfig requestConfig = RequestConfig.custom()
                 .setConnectTimeout(Timeout.ofMilliseconds(SSE_CONNECT_TIMEOUT))
                 .build();
@@ -597,13 +597,14 @@ public class SplitFactoryImpl implements SplitFactory {
         return httpClientbuilder.build();
     }
 
-    private static SSLContext buildSSLContext(SplitClientConfig config) {
+    private static SSLContext buildSSLContext(SplitClientConfig config) throws IOException {
         SSLContext sslContext;
         if (config.proxyMTLSAuth() != null) {
             _log.debug("Proxy setup using mTLS");
+            InputStream keystoreStream = null;
             try {
                 KeyStore keyStore = KeyStore.getInstance("PKCS12");
-                InputStream keystoreStream = java.nio.file.Files.newInputStream(Paths.get(config.proxyMTLSAuth().getP12File()));
+                keystoreStream = java.nio.file.Files.newInputStream(Paths.get(config.proxyMTLSAuth().getP12File()));
                 keyStore.load(keystoreStream, config.proxyMTLSAuth().getP12FilePassKey().toCharArray());
                 sslContext = SSLContexts.custom()
                         .loadKeyMaterial(keyStore, config.proxyMTLSAuth().getP12FilePassKey().toCharArray())
@@ -612,6 +613,8 @@ public class SplitFactoryImpl implements SplitFactory {
                 _log.error("Exception caught while processing p12 file for Proxy mTLS auth: ", e);
                 _log.warn("Ignoring p12 mTLS config and switching to default context");
                 sslContext = SSLContexts.createSystemDefault();
+            } finally {
+                keystoreStream.close();
             }
         } else {
             sslContext = SSLContexts.createSystemDefault();
