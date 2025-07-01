@@ -283,9 +283,9 @@ public class SplitClientConfigTest {
         config = SplitClientConfig.builder()
                 .proxyHost("proxy-host")
                 .proxyPort(8888)
-                .proxyRuntimeStorage(proxyRuntimeProvider)
+                .proxyRuntimeProvider(proxyRuntimeProvider)
                 .build();
-        Assert.assertEquals(proxyRuntimeProvider, config.proxyRuntimeStorage());
+        Assert.assertEquals(proxyRuntimeProvider, config.proxyRuntimeProvider());
 
         config = SplitClientConfig.builder()
                 .proxyHost("proxy-host")
@@ -319,7 +319,7 @@ public class SplitClientConfigTest {
                 .proxyPort(8888)
                 .proxyUsername("user")
                 .proxyPassword("pass")
-                .proxyRuntimeStorage(proxyRuntimeProvider)
+                .proxyRuntimeProvider(proxyRuntimeProvider)
                 .build();
     }
 
@@ -346,7 +346,7 @@ public class SplitClientConfigTest {
         SplitClientConfig.builder()
                 .proxyHost("proxy-host")
                 .proxyPort(8888)
-                .proxyRuntimeStorage(proxyRuntimeProvider)
+                .proxyRuntimeProvider(proxyRuntimeProvider)
                 .proxyMtlsAuth(new ProxyMTLSAuth.Builder().proxyP12File("path/to/file").proxyP12FilePassKey("pass-key").build())
                 .build();
     }

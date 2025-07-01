@@ -151,10 +151,10 @@ public class SplitFactoryImplTest extends TestCase {
 
         splitFactory.destroy();
     }
-/*
+
     @Test
     public void testFactoryInstantiationWithProxyToken() throws Exception {
-        class MyProxyRuntimeStorage implements ProxyRuntimeStorage {
+        class MyProxyRuntimeProvider implements ProxyRuntimeProvider {
             @Override
             public String getJwtToken() {
                 return "123456789";
@@ -170,7 +170,7 @@ public class SplitFactoryImplTest extends TestCase {
                 .authServiceURL(AUTH_SERVICE)
                 .setBlockUntilReadyTimeout(1000)
                 .proxyPort(6060)
-                .proxyRuntimeStorage(new MyProxyRuntimeStorage())
+                .proxyRuntimeProvider(new MyProxyRuntimeProvider())
                 .proxyHost(ENDPOINT)
                 .build();
         SplitFactoryImpl splitFactory2 = new SplitFactoryImpl(API_KEY, splitClientConfig);
@@ -187,17 +187,17 @@ public class SplitFactoryImplTest extends TestCase {
 
         Field credentialsProviderField2 = InternalHttp2.getDeclaredField("credentialsProvider");
         credentialsProviderField2.setAccessible(true);
-        BasicCredentialsProvider credentialsProvider2 = (BasicCredentialsProvider) credentialsProviderField2.get(InternalHttp2.cast(httpClientField2.get(client2)));
+        HttpClientDynamicCredentials credentialsProvider2 = (HttpClientDynamicCredentials) credentialsProviderField2.get(InternalHttp2.cast(httpClientField2.get(client2)));
 
-        Field credMapField2 = BasicCredentialsProvider.class.getDeclaredField("credMap");
-        credMapField2.setAccessible(true);
-        ConcurrentHashMap<AuthScope, BearerToken> credMap2 = (ConcurrentHashMap) credMapField2.get(credentialsProvider2);
+        Field proxyRuntimeField = HttpClientDynamicCredentials.class.getDeclaredField("_proxyRuntimeProvider");
+        proxyRuntimeField.setAccessible(true);
+        MyProxyRuntimeProvider proxyRuntime = (MyProxyRuntimeProvider) proxyRuntimeField.get(credentialsProvider2);
 
-        Assert.assertEquals("123456789", credMap2.entrySet().stream().iterator().next().getValue().getToken());
+        assertNotNull("123456789", proxyRuntime.getJwtToken());
 
         splitFactory2.destroy();
     }
-*/
+
     @Test
     public void testFactoryInstantiationWithProxyMtls() throws Exception {
         SplitClientConfig splitClientConfig = SplitClientConfig.builder()

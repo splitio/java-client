@@ -314,7 +314,7 @@ public class SplitClientConfig {
         return _proxyPassword;
     }
 
-    public ProxyRuntimeProvider proxyRuntimeStorage() {
+    public ProxyRuntimeProvider proxyRuntimeProvider() {
         return _proxyRuntimeProvider;
     }
 
@@ -816,7 +816,7 @@ public class SplitClientConfig {
          * @param proxyRuntimeProvider
          * @return this builder
          */
-        public Builder proxyRuntimeStorage(ProxyRuntimeProvider proxyRuntimeProvider) {
+        public Builder proxyRuntimeProvider(ProxyRuntimeProvider proxyRuntimeProvider) {
             _proxyRuntimeProvider = proxyRuntimeProvider;
             return this;
         }
