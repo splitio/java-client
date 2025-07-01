@@ -91,7 +91,7 @@ public class SplitClientConfig {
     private final HttpHost _proxy;
     private final String _proxyUsername;
     private final String _proxyPassword;
-    private final ProxyRuntimeProvider _proxyRuntimeProvider;
+    private final ProxyCredentialsProvider _proxyCredentialsProvider;
     private final ProxyMTLSAuth _proxyMtlsAuth;
 
     // To be set during startup
@@ -126,7 +126,7 @@ public class SplitClientConfig {
                               HttpHost proxy,
                               String proxyUsername,
                               String proxyPassword,
-                              ProxyRuntimeProvider proxyRuntimeProvider,
+                              ProxyCredentialsProvider proxyCredentialsProvider,
                               ProxyMTLSAuth proxyMtlsAuth,
                               int eventsQueueSize,
                               long eventSendIntervalInMillis,
@@ -181,7 +181,7 @@ public class SplitClientConfig {
         _proxy = proxy;
         _proxyUsername = proxyUsername;
         _proxyPassword = proxyPassword;
-        _proxyRuntimeProvider = proxyRuntimeProvider;
+        _proxyCredentialsProvider = proxyCredentialsProvider;
         _proxyMtlsAuth = proxyMtlsAuth;
         _eventsQueueSize = eventsQueueSize;
         _eventSendIntervalInMillis = eventSendIntervalInMillis;
@@ -314,8 +314,8 @@ public class SplitClientConfig {
         return _proxyPassword;
     }
 
-    public ProxyRuntimeProvider proxyRuntimeProvider() {
-        return _proxyRuntimeProvider;
+    public ProxyCredentialsProvider proxyCredentialsProvider() {
+        return _proxyCredentialsProvider;
     }
 
     public ProxyMTLSAuth proxyMTLSAuth() {
@@ -463,7 +463,7 @@ public class SplitClientConfig {
         private String _proxyScheme = HttpScheme.HTTP;
         private String _proxyUsername;
         private String _proxyPassword;
-        private ProxyRuntimeProvider _proxyRuntimeProvider;
+        private ProxyCredentialsProvider _proxyCredentialsProvider;
         private ProxyMTLSAuth _proxyMtlsAuth;
         private int _eventsQueueSize = 500;
         private long _eventSendIntervalInMillis = 30 * (long)1000;
@@ -813,11 +813,11 @@ public class SplitClientConfig {
         /**
          * Set the token for authentication against the proxy (if proxy settings are enabled). (Optional).
          *
-         * @param proxyRuntimeProvider
+         * @param proxyCredentialsProvider
          * @return this builder
          */
-        public Builder proxyRuntimeProvider(ProxyRuntimeProvider proxyRuntimeProvider) {
-            _proxyRuntimeProvider = proxyRuntimeProvider;
+        public Builder proxyCredentialsProvider(ProxyCredentialsProvider proxyCredentialsProvider) {
+            _proxyCredentialsProvider = proxyCredentialsProvider;
             return this;
         }
 
@@ -1161,11 +1161,11 @@ public class SplitClientConfig {
                 throw new IllegalArgumentException("Proxy scheme must be either http or https.");
             }
 
-            if (_proxyUsername == null && _proxyRuntimeProvider == null && _proxyMtlsAuth == null) {
+            if (_proxyUsername == null && _proxyCredentialsProvider == null && _proxyMtlsAuth == null) {
                 return;
             }
 
-            if (_proxyUsername != null && _proxyRuntimeProvider != null) {
+            if (_proxyUsername != null && _proxyCredentialsProvider != null) {
                 throw new IllegalArgumentException("Proxy user and Proxy token params are updated, set only one param.");
             }
 
@@ -1173,7 +1173,7 @@ public class SplitClientConfig {
                 throw new IllegalArgumentException("Proxy user and Proxy mTLS params are updated, set only one param.");
             }
 
-            if (_proxyRuntimeProvider != null && _proxyMtlsAuth != null) {
+            if (_proxyCredentialsProvider != null && _proxyMtlsAuth != null) {
                 throw new IllegalArgumentException("Proxy token and Proxy mTLS params are updated, set only one param.");
             }
 
@@ -1223,7 +1223,7 @@ public class SplitClientConfig {
                     proxy(),
                     _proxyUsername,
                     _proxyPassword,
-                        _proxyRuntimeProvider,
+                        _proxyCredentialsProvider,
                     _proxyMtlsAuth,
                     _eventsQueueSize,
                     _eventSendIntervalInMillis,

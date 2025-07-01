@@ -11,7 +11,6 @@ import io.split.telemetry.storage.TelemetryStorage;
 import io.split.telemetry.synchronizer.TelemetrySynchronizer;
 import junit.framework.TestCase;
 import org.apache.hc.client5.http.auth.AuthScope;
-import org.apache.hc.client5.http.auth.BearerToken;
 import org.apache.hc.client5.http.auth.UsernamePasswordCredentials;
 import org.apache.hc.client5.http.impl.auth.BasicCredentialsProvider;
 import org.apache.hc.client5.http.impl.io.DefaultHttpClientConnectionOperator;
@@ -21,7 +20,6 @@ import org.apache.hc.core5.http.HttpHost;
 import org.apache.hc.core5.http.config.Registry;
 import org.awaitility.Awaitility;
 import org.junit.Assert;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.mockito.Mockito;
 import static org.mockito.Mockito.when;
@@ -154,7 +152,7 @@ public class SplitFactoryImplTest extends TestCase {
 
     @Test
     public void testFactoryInstantiationWithProxyToken() throws Exception {
-        class MyProxyRuntimeProvider implements ProxyRuntimeProvider {
+        class MyProxyCredentialsProvider implements ProxyCredentialsProvider {
             @Override
             public String getJwtToken() {
                 return "123456789";
@@ -170,7 +168,7 @@ public class SplitFactoryImplTest extends TestCase {
                 .authServiceURL(AUTH_SERVICE)
                 .setBlockUntilReadyTimeout(1000)
                 .proxyPort(6060)
-                .proxyRuntimeProvider(new MyProxyRuntimeProvider())
+                .proxyCredentialsProvider(new MyProxyCredentialsProvider())
                 .proxyHost(ENDPOINT)
                 .build();
         SplitFactoryImpl splitFactory2 = new SplitFactoryImpl(API_KEY, splitClientConfig);
@@ -189,9 +187,9 @@ public class SplitFactoryImplTest extends TestCase {
         credentialsProviderField2.setAccessible(true);
         HttpClientDynamicCredentials credentialsProvider2 = (HttpClientDynamicCredentials) credentialsProviderField2.get(InternalHttp2.cast(httpClientField2.get(client2)));
 
-        Field proxyRuntimeField = HttpClientDynamicCredentials.class.getDeclaredField("_proxyRuntimeProvider");
+        Field proxyRuntimeField = HttpClientDynamicCredentials.class.getDeclaredField("_proxyCredentialsProvider");
         proxyRuntimeField.setAccessible(true);
-        MyProxyRuntimeProvider proxyRuntime = (MyProxyRuntimeProvider) proxyRuntimeField.get(credentialsProvider2);
+        MyProxyCredentialsProvider proxyRuntime = (MyProxyCredentialsProvider) proxyRuntimeField.get(credentialsProvider2);
 
         assertNotNull("123456789", proxyRuntime.getJwtToken());
 

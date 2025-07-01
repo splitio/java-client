@@ -7,10 +7,10 @@ import org.apache.hc.core5.http.protocol.HttpContext;
 
 class HttpClientDynamicCredentials implements  org.apache.hc.client5.http.auth.CredentialsProvider {
 
-    private final ProxyRuntimeProvider _proxyRuntimeProvider;
+    private final ProxyCredentialsProvider _proxyCredentialsProvider;
 
-    public HttpClientDynamicCredentials (ProxyRuntimeProvider proxyRuntimeProvider) {
-        _proxyRuntimeProvider = proxyRuntimeProvider;
+    public HttpClientDynamicCredentials (ProxyCredentialsProvider proxyCredentialsProvider) {
+        _proxyCredentialsProvider = proxyCredentialsProvider;
     }
 
     @Override
@@ -18,7 +18,7 @@ class HttpClientDynamicCredentials implements  org.apache.hc.client5.http.auth.C
 
         // This Provider is invoked every time a request is made.
         // This should invoke a user-custom provider responsible for:
-        return new BearerToken(_proxyRuntimeProvider.getJwtToken());
+        return new BearerToken(_proxyCredentialsProvider.getJwtToken());
     }
 
 }

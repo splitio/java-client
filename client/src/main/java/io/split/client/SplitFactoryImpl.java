@@ -634,9 +634,9 @@ public class SplitFactoryImpl implements SplitFactory {
             httpClientbuilder.setDefaultCredentialsProvider(credsProvider);
         }
 
-        if (config.proxyRuntimeProvider() != null) {
+        if (config.proxyCredentialsProvider() != null) {
             _log.debug("Proxy setup using token");
-            httpClientbuilder.setDefaultCredentialsProvider(new HttpClientDynamicCredentials(config.proxyRuntimeProvider()));
+            httpClientbuilder.setDefaultCredentialsProvider(new HttpClientDynamicCredentials(config.proxyCredentialsProvider()));
         }
 
         return httpClientbuilder;

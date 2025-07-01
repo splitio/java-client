@@ -1,6 +1,6 @@
 package io.split.client;
 
-public interface ProxyRuntimeProvider
+public interface ProxyCredentialsProvider
 {
     /**
      * Get the additional headers needed for all http operations
