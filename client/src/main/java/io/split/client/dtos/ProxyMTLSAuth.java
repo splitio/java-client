@@ -20,10 +20,7 @@ public class ProxyMTLSAuth {
     public static class Builder {
         private String _p12File;
         private String _p12FilePassKey;
-
-        public Builder() {
-        }
-
+        
         public ProxyMTLSAuth.Builder proxyP12File(String p12File) {
             _p12File = p12File;
             return this;

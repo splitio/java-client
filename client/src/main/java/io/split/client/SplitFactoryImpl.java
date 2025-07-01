@@ -597,7 +597,7 @@ public class SplitFactoryImpl implements SplitFactory {
         return httpClientbuilder.build();
     }
 
-    private static SSLContext buildSSLContext(SplitClientConfig config) throws IOException {
+    private static SSLContext buildSSLContext(SplitClientConfig config) throws IOException, NullPointerException {
         SSLContext sslContext;
         if (config.proxyMTLSAuth() != null) {
             _log.debug("Proxy setup using mTLS");
