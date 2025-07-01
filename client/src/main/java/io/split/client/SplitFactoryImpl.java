@@ -614,7 +614,11 @@ public class SplitFactoryImpl implements SplitFactory {
                 _log.warn("Ignoring p12 mTLS config and switching to default context");
                 sslContext = SSLContexts.createSystemDefault();
             } finally {
-                keystoreStream.close();
+                try {
+                    keystoreStream.close();
+                } catch (NullPointerException e) {
+                    _log.error("Exception caught while closing file stream handler: ", e);
+                }
             }
         } else {
             sslContext = SSLContexts.createSystemDefault();
