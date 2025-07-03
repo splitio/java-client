@@ -12,7 +12,7 @@ import java.util.List;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 
-import static com.google.gson.internal.$Gson$Preconditions.checkNotNull;
+import static com.google.gson.internal.GsonPreconditions.checkNotNull;
 
 public class InMemoryEventsStorage implements EventsStorage{
 
