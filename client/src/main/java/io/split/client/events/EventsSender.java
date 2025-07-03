@@ -12,7 +12,7 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.List;
 
-import static com.google.gson.internal.$Gson$Preconditions.checkNotNull;
+import static com.google.gson.internal.GsonPreconditions.checkNotNull;
 
 public class EventsSender {
 
