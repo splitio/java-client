@@ -117,7 +117,7 @@ public class UniqueKeysTrackerImp implements UniqueKeysTracker{
         }
         try {
             if (uniqueKeysTracker.size() == 0) {
-                _log.warn("The Unique Keys Tracker is empty");
+                _log.debug("The Unique Keys Tracker is empty");
                 return;
             }
             HashMap<String, HashSet<String>> uniqueKeysHashMap = popAll();
