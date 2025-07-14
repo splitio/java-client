@@ -104,6 +104,6 @@ public class RuleBasedSegmentCacheInMemoryImp implements RuleBasedSegmentCache {
 
     @Override
     public boolean contains(Set<String> ruleBasedSegmentNames) {
-        return getSegments().containsAll(ruleBasedSegmentNames);
+        return _concurrentMap.keySet().containsAll(ruleBasedSegmentNames);
     }
 }
