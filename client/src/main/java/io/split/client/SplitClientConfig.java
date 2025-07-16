@@ -1,6 +1,6 @@
 package io.split.client;
 
-import io.split.client.dtos.ProxyMTLSAuth;
+import io.split.client.dtos.ProxyConfiguration;
 import io.split.client.impressions.ImpressionListener;
 import io.split.client.impressions.ImpressionsManager;
 import io.split.client.utils.FileTypeEnum;
@@ -91,11 +91,10 @@ public class SplitClientConfig {
     private final ThreadFactory _threadFactory;
 
     // Proxy configs
+    private final ProxyConfiguration _proxyConfiguration;
     private final HttpHost _proxy;
     private final String _proxyUsername;
     private final String _proxyPassword;
-    private final ProxyCredentialsProvider _proxyCredentialsProvider;
-    private final ProxyMTLSAuth _proxyMtlsAuth;
 
     // To be set during startup
     public static String splitSdkVersion;
@@ -129,8 +128,7 @@ public class SplitClientConfig {
                               HttpHost proxy,
                               String proxyUsername,
                               String proxyPassword,
-                              ProxyCredentialsProvider proxyCredentialsProvider,
-                              ProxyMTLSAuth proxyMtlsAuth,
+                              ProxyConfiguration proxyConfiguration,
                               int eventsQueueSize,
                               long eventSendIntervalInMillis,
                               int maxStringLength,
@@ -184,8 +182,7 @@ public class SplitClientConfig {
         _proxy = proxy;
         _proxyUsername = proxyUsername;
         _proxyPassword = proxyPassword;
-        _proxyCredentialsProvider = proxyCredentialsProvider;
-        _proxyMtlsAuth = proxyMtlsAuth;
+        _proxyConfiguration = proxyConfiguration;
         _eventsQueueSize = eventsQueueSize;
         _eventSendIntervalInMillis = eventSendIntervalInMillis;
         _maxStringLength = maxStringLength;
@@ -317,12 +314,8 @@ public class SplitClientConfig {
         return _proxyPassword;
     }
 
-    public ProxyCredentialsProvider proxyCredentialsProvider() {
-        return _proxyCredentialsProvider;
-    }
-
-    public ProxyMTLSAuth proxyMTLSAuth() {
-        return _proxyMtlsAuth;
+    public ProxyConfiguration proxyConfiguration() {
+        return _proxyConfiguration;
     }
 
     public long eventSendIntervalInMillis() {
@@ -463,11 +456,9 @@ public class SplitClientConfig {
         private int _waitBeforeShutdown = 5000;
         private String _proxyHost = "localhost";
         private int _proxyPort = -1;
-        private String _proxyScheme = HttpScheme.HTTP;
         private String _proxyUsername;
         private String _proxyPassword;
-        private ProxyCredentialsProvider _proxyCredentialsProvider;
-        private ProxyMTLSAuth _proxyMtlsAuth;
+        private ProxyConfiguration _proxyConfiguration;
         private int _eventsQueueSize = 500;
         private long _eventSendIntervalInMillis = 30 * (long)1000;
         private int _maxStringLength = 250;
@@ -760,10 +751,14 @@ public class SplitClientConfig {
 
         /**
          * The host location of the proxy. Default is localhost.
+         * @deprecated
+         * This method is deprecated.
+         * <p> Use {@link ProxyConfiguration)} instead.
          *
          * @param proxyHost location of the proxy
          * @return this builder
          */
+        @Deprecated
         public Builder proxyHost(String proxyHost) {
             _proxyHost = proxyHost;
             return this;
@@ -771,32 +766,29 @@ public class SplitClientConfig {
 
         /**
          * The port of the proxy. Default is -1.
+         * @deprecated
+         * This method is deprecated.
+         * <p> Use {@link ProxyConfiguration)} instead.
          *
          * @param proxyPort port for the proxy
          * @return this builder
          */
+        @Deprecated
         public Builder proxyPort(int proxyPort) {
             _proxyPort = proxyPort;
             return this;
         }
 
         /**
-         * The http scheme of the proxy. Default is http.
-         *
-         * @param proxyScheme protocol for the proxy
-         * @return this builder
-         */
-        public Builder proxyScheme(String proxyScheme) {
-            _proxyScheme = proxyScheme;
-            return this;
-        }
-
-        /**
          * Set the username for authentication against the proxy (if proxy settings are enabled). (Optional).
+         * @deprecated
+         * This method is deprecated.
+         * <p> Use {@link ProxyConfiguration)} instead.
          *
          * @param proxyUsername
          * @return this builder
          */
+        @Deprecated
         public Builder proxyUsername(String proxyUsername) {
             _proxyUsername = proxyUsername;
             return this;
@@ -814,24 +806,13 @@ public class SplitClientConfig {
         }
 
         /**
-         * Set the token for authentication against the proxy (if proxy settings are enabled). (Optional).
-         *
-         * @param proxyCredentialsProvider
-         * @return this builder
-         */
-        public Builder proxyCredentialsProvider(ProxyCredentialsProvider proxyCredentialsProvider) {
-            _proxyCredentialsProvider = proxyCredentialsProvider;
-            return this;
-        }
-
-        /**
          * Set the mtls authentication against the proxy (if proxy settings are enabled). (Optional).
          *
-         * @param proxyMtlsAuth
+         * @param proxyConfiguration
          * @return this builder
          */
-        public Builder proxyMtlsAuth(ProxyMTLSAuth proxyMtlsAuth) {
-            _proxyMtlsAuth = proxyMtlsAuth;
+        public Builder proxyConfiguration(ProxyConfiguration proxyConfiguration) {
+            _proxyConfiguration = proxyConfiguration;
             return this;
         }
 
@@ -847,7 +828,7 @@ public class SplitClientConfig {
 
         HttpHost proxy() {
             if (_proxyPort != -1) {
-                return new HttpHost(_proxyScheme, _proxyHost, _proxyPort);
+                return new HttpHost(_proxyHost, _proxyPort);
             }
             // Default is no proxy.
             return null;
@@ -986,7 +967,7 @@ public class SplitClientConfig {
 
         /**
          *
-         * @param storage mode
+         * @param mode
          * @return this builder
          */
         public Builder storageMode(StorageMode mode) {
@@ -1156,31 +1137,16 @@ public class SplitClientConfig {
         }
 
         private void verifyProxy() {
-            if (_proxyPort == -1) {
+            if (_proxyConfiguration == null)
                 return;
-            }
 
-            if (!(_proxyScheme.equals(HttpScheme.HTTP) || _proxyScheme.equals(HttpScheme.HTTPS))) {
+            if (!(_proxyConfiguration.getHost().getSchemeName().equals(HttpScheme.HTTP) ||
+                    _proxyConfiguration.getHost().getSchemeName().equals(HttpScheme.HTTPS))) {
                 throw new IllegalArgumentException("Proxy scheme must be either http or https.");
             }
 
-            if (_proxyUsername == null && _proxyCredentialsProvider == null && _proxyMtlsAuth == null) {
-                return;
-            }
-
-            if (_proxyUsername != null && _proxyCredentialsProvider != null) {
-                throw new IllegalArgumentException("Proxy user and Proxy token params are updated, set only one param.");
-            }
-
-            if (_proxyUsername != null && _proxyMtlsAuth != null) {
-                throw new IllegalArgumentException("Proxy user and Proxy mTLS params are updated, set only one param.");
-            }
-
-            if (_proxyCredentialsProvider != null && _proxyMtlsAuth != null) {
-                throw new IllegalArgumentException("Proxy token and Proxy mTLS params are updated, set only one param.");
-            }
-
-            if (_proxyMtlsAuth != null && (_proxyMtlsAuth.getP12File() == null || _proxyMtlsAuth.getP12FilePassKey() == null)) {
+            if ((_proxyConfiguration.getP12File() != null && _proxyConfiguration.getPassKey() == null) ||
+                    (_proxyConfiguration.getP12File() == null && _proxyConfiguration.getPassKey() != null)) {
                 throw new IllegalArgumentException("Proxy mTLS must have p12 file path and name, and pass phrase.");
             }
         }
@@ -1224,8 +1190,7 @@ public class SplitClientConfig {
                     proxy(),
                     _proxyUsername,
                     _proxyPassword,
-                        _proxyCredentialsProvider,
-                    _proxyMtlsAuth,
+                    _proxyConfiguration,
                     _eventsQueueSize,
                     _eventSendIntervalInMillis,
                     _maxStringLength,

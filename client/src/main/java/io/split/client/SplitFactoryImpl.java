@@ -1,6 +1,7 @@
 package io.split.client;
 
 import com.google.common.io.Files;
+import io.split.client.dtos.BearerCredentialsProvider;
 import io.split.client.dtos.Metadata;
 import io.split.client.events.EventsSender;
 import io.split.client.events.EventsStorage;
@@ -105,6 +106,7 @@ import org.apache.hc.client5.http.impl.io.PoolingHttpClientConnectionManagerBuil
 import org.apache.hc.client5.http.impl.routing.DefaultProxyRoutePlanner;
 import org.apache.hc.client5.http.ssl.SSLConnectionSocketFactory;
 import org.apache.hc.client5.http.ssl.SSLConnectionSocketFactoryBuilder;
+import org.apache.hc.core5.http.HttpHost;
 import org.apache.hc.core5.http.io.SocketConfig;
 import org.apache.hc.core5.http.ssl.TLS;
 import org.apache.hc.core5.ssl.SSLContexts;
@@ -551,7 +553,7 @@ public class SplitFactoryImpl implements SplitFactory {
                 .addResponseInterceptorLast((new GzipDecoderResponseInterceptor()));
 
         // Set up proxy is it exists
-        if (config.proxy() != null) {
+        if (config.proxy() != null || config.proxyConfiguration() != null) {
             httpClientbuilder = setupProxy(httpClientbuilder, config);
         }
 
@@ -590,7 +592,7 @@ public class SplitFactoryImpl implements SplitFactory {
                 .addRequestInterceptorLast(ClientKeyInterceptorFilter.instance(apiToken));
 
         // Set up proxy is it exists
-        if (config.proxy() != null) {
+        if (config.proxy() != null || config.proxyConfiguration() != null) {
             httpClientbuilder = setupProxy(httpClientbuilder, config);
         }
 
@@ -599,15 +601,15 @@ public class SplitFactoryImpl implements SplitFactory {
 
     private static SSLContext buildSSLContext(SplitClientConfig config) throws IOException, NullPointerException {
         SSLContext sslContext;
-        if (config.proxyMTLSAuth() != null) {
+        if (config.proxyConfiguration() != null && config.proxyConfiguration().getP12File() != null) {
             _log.debug("Proxy setup using mTLS");
             InputStream keystoreStream = null;
             try {
                 KeyStore keyStore = KeyStore.getInstance("PKCS12");
-                keystoreStream = java.nio.file.Files.newInputStream(Paths.get(config.proxyMTLSAuth().getP12File()));
-                keyStore.load(keystoreStream, config.proxyMTLSAuth().getP12FilePassKey().toCharArray());
+                keystoreStream = java.nio.file.Files.newInputStream(Paths.get(config.proxyConfiguration().getP12File()));
+                keyStore.load(keystoreStream, config.proxyConfiguration().getPassKey().toCharArray());
                 sslContext = SSLContexts.custom()
-                        .loadKeyMaterial(keyStore, config.proxyMTLSAuth().getP12FilePassKey().toCharArray())
+                        .loadKeyMaterial(keyStore, config.proxyConfiguration().getPassKey().toCharArray())
                         .build();
             } catch (Exception e) {
                 _log.error("Exception caught while processing p12 file for Proxy mTLS auth: ", e);
@@ -626,22 +628,43 @@ public class SplitFactoryImpl implements SplitFactory {
 
     private static HttpClientBuilder setupProxy(HttpClientBuilder httpClientbuilder, SplitClientConfig config) {
         _log.info("Initializing Split SDK with proxy settings");
-        DefaultProxyRoutePlanner routePlanner = new DefaultProxyRoutePlanner(config.proxy());
+        HttpHost proxyHost;
+        if (config.proxyConfiguration() != null && config.proxyConfiguration().getHost() != null) {
+            proxyHost = config.proxyConfiguration().getHost();
+        } else {
+            proxyHost = config.proxy();
+        }
+        DefaultProxyRoutePlanner routePlanner = new DefaultProxyRoutePlanner(proxyHost);
         httpClientbuilder.setRoutePlanner(routePlanner);
 
-        if (config.proxyUsername() != null && config.proxyPassword() != null) {
+        if ((config.proxyUsername() != null && config.proxyPassword() != null) ||
+                (config.proxyConfiguration() != null && config.proxyConfiguration().getProxyCredentialsProvider() != null &&
+                        config.proxyConfiguration().getProxyCredentialsProvider() instanceof io.split.client.dtos.BasicCredentialsProvider)) {
             _log.debug("Proxy setup using credentials");
+            String userName;
+            String password;
+            if (config.proxyUsername() != null && config.proxyPassword() != null) {
+                userName = config.proxyUsername();
+                password = config.proxyPassword();
+            } else {
+                io.split.client.dtos.BasicCredentialsProvider basicAuth =
+                        (io.split.client.dtos.BasicCredentialsProvider) config.proxyConfiguration().getProxyCredentialsProvider();
+                userName = basicAuth.getUsername();
+                password = basicAuth.getPassword();
+            }
             BasicCredentialsProvider credsProvider = new BasicCredentialsProvider();
-            AuthScope siteScope = new AuthScope(config.proxy().getHostName(), config.proxy().getPort());
-            Credentials siteCreds = new UsernamePasswordCredentials(config.proxyUsername(),
-                    config.proxyPassword().toCharArray());
+            AuthScope siteScope = new AuthScope(proxyHost.getHostName(), proxyHost.getPort());
+            Credentials siteCreds = new UsernamePasswordCredentials(userName,
+                    password.toCharArray());
             credsProvider.setCredentials(siteScope, siteCreds);
             httpClientbuilder.setDefaultCredentialsProvider(credsProvider);
         }
 
-        if (config.proxyCredentialsProvider() != null) {
-            _log.debug("Proxy setup using token");
-            httpClientbuilder.setDefaultCredentialsProvider(new HttpClientDynamicCredentials(config.proxyCredentialsProvider()));
+        if (config.proxyConfiguration() != null &&
+                config.proxyConfiguration().getProxyCredentialsProvider() instanceof io.split.client.dtos.BearerCredentialsProvider) {
+            _log.debug("Proxy setup using Bearer token");
+            httpClientbuilder.setDefaultCredentialsProvider(new HttpClientDynamicCredentials(
+                    (BearerCredentialsProvider) config.proxyConfiguration().getProxyCredentialsProvider()));
         }
 
         return httpClientbuilder;
