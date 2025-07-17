@@ -2,6 +2,7 @@ package io.split.client.dtos;
 
 import org.apache.hc.core5.http.HttpHost;
 
+import java.net.MalformedURLException;
 import java.net.URL;
 
 public class ProxyConfiguration {
@@ -39,8 +40,12 @@ public class ProxyConfiguration {
             return this;
         }
 
-        public ProxyConfiguration.Builder url(URL url) {
-            _proxyHost = new HttpHost(url.getProtocol(), url.getHost(), url.getPort());
+        public ProxyConfiguration.Builder url(URL url) throws MalformedURLException {
+            try {
+                _proxyHost = new HttpHost(url.getProtocol(), url.getHost(), url.getPort());
+            } catch (Exception exc) {
+                throw new MalformedURLException("roxy configuration is ignored. The proxy `url` was not provided or is malformed");
+            }
             return this;
         }
 

@@ -1,6 +1,5 @@
 package io.split.client;
 
-import io.split.client.dtos.BearerCredentialsProvider;
 import io.split.client.dtos.ProxyConfiguration;
 import io.split.client.impressions.ImpressionsManager;
 import io.split.client.utils.FileTypeEnum;
