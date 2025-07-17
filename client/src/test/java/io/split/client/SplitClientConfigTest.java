@@ -334,6 +334,14 @@ public class SplitClientConfigTest {
     }
 
     @Test(expected = IllegalArgumentException.class)
+    public void mustUseUrl() throws MalformedURLException {
+        SplitClientConfig.builder()
+                .proxyConfiguration(new ProxyConfiguration.Builder()
+                        .build())
+                .build();
+    }
+
+    @Test(expected = IllegalArgumentException.class)
     public void mustUseP12FileWithProxyMtls() throws MalformedURLException {
         SplitClientConfig.builder()
                 .proxyConfiguration(new ProxyConfiguration.Builder()
