@@ -137,8 +137,6 @@
     <profiles>
         <profile>
             <id>test</id>
-            <distributionManagement>
-            </distributionManagement>
             <build>
                 <plugins>
                     <plugin>
