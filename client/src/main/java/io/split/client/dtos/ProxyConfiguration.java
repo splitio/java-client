@@ -44,7 +44,7 @@ public class ProxyConfiguration {
             try {
                 _proxyHost = new HttpHost(url.getProtocol(), url.getHost(), url.getPort());
             } catch (Exception exc) {
-                throw new MalformedURLException("roxy configuration is ignored. The proxy `url` was not provided or is malformed");
+                throw new MalformedURLException("Proxy configuration is ignored. The proxy `url` was not provided or is malformed");
             }
             return this;
         }
