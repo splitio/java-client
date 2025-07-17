@@ -1,5 +1,6 @@
 package io.split.client;
 
+import io.split.client.dtos.BearerCredentialsProvider;
 import org.apache.hc.client5.http.auth.AuthScope;
 import org.apache.hc.client5.http.auth.BearerToken;
 import org.apache.hc.client5.http.auth.Credentials;
@@ -7,10 +8,10 @@ import org.apache.hc.core5.http.protocol.HttpContext;
 
 class HttpClientDynamicCredentials implements  org.apache.hc.client5.http.auth.CredentialsProvider {
 
-    private final ProxyCredentialsProvider _proxyCredentialsProvider;
+    private final BearerCredentialsProvider _bearerCredentialsProvider;
 
-    public HttpClientDynamicCredentials (ProxyCredentialsProvider proxyCredentialsProvider) {
-        _proxyCredentialsProvider = proxyCredentialsProvider;
+    public HttpClientDynamicCredentials (BearerCredentialsProvider bearerCredentialsProvider) {
+        _bearerCredentialsProvider = bearerCredentialsProvider;
     }
 
     @Override
@@ -18,7 +19,7 @@ class HttpClientDynamicCredentials implements  org.apache.hc.client5.http.auth.C
 
         // This Provider is invoked every time a request is made.
         // This should invoke a user-custom provider responsible for:
-        return new BearerToken(_proxyCredentialsProvider.getJwtToken());
+        return new BearerToken(_bearerCredentialsProvider.getToken());
     }
 
 }

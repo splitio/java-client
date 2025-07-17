@@ -1,6 +1,6 @@
 package io.split.client;
 
-import io.split.client.dtos.ProxyMTLSAuth;
+import io.split.client.dtos.ProxyConfiguration;
 import io.split.client.impressions.ImpressionsManager;
 import io.split.client.utils.FileTypeEnum;
 import io.split.integrations.IntegrationsConfig;
@@ -33,6 +33,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.net.URISyntaxException;
+import java.net.URL;
 import java.util.HashMap;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
@@ -98,7 +99,7 @@ public class SplitFactoryImplTest extends TestCase {
     }
 
     @Test
-    public void testFactoryInstantiationWithProxyCredentials() throws Exception {
+    public void testFactoryInstantiationWithLegacyProxy() throws Exception {
         SplitClientConfig splitClientConfig = SplitClientConfig.builder()
                 .enableDebug()
                 .impressionsMode(ImpressionsManager.Mode.DEBUG)
@@ -107,10 +108,42 @@ public class SplitFactoryImplTest extends TestCase {
                 .telemetryURL(SplitClientConfig.TELEMETRY_ENDPOINT)
                 .authServiceURL(AUTH_SERVICE)
                 .setBlockUntilReadyTimeout(1000)
-                .proxyPort(6060)
-                .proxyUsername("test")
-                .proxyPassword("password")
-                .proxyHost(ENDPOINT)
+                .proxyPort(8888)
+                .proxyHost("proxy-host")
+                .proxyUsername("user")
+                .proxyPassword("pass")
+                .build();
+        SplitFactoryImpl splitFactory = new SplitFactoryImpl(API_KEY, splitClientConfig);
+        assertNotNull(splitFactory.client());
+
+        splitFactory.destroy();
+    }
+
+    @Test
+    public void testFactoryInstantiationWithProxyCredentials() throws Exception {
+        class MyBearerCredentialsProvider implements io.split.client.dtos.BasicCredentialsProvider {
+            @Override
+            public String getUsername() {
+                return "test";
+            }
+            @Override
+            public String getPassword() {
+                return "password";
+            }
+        };
+
+        SplitClientConfig splitClientConfig = SplitClientConfig.builder()
+                .enableDebug()
+                .impressionsMode(ImpressionsManager.Mode.DEBUG)
+                .impressionsRefreshRate(1)
+                .endpoint(ENDPOINT, EVENTS_ENDPOINT)
+                .telemetryURL(SplitClientConfig.TELEMETRY_ENDPOINT)
+                .authServiceURL(AUTH_SERVICE)
+                .setBlockUntilReadyTimeout(1000)
+                .proxyConfiguration(ProxyConfiguration.builder()
+                        .url(new URL("http://proxy-name:6060"))
+                        .credentialsProvider(new MyBearerCredentialsProvider())
+                        .build())
                 .build();
         SplitFactoryImpl splitFactory = new SplitFactoryImpl(API_KEY, splitClientConfig);
         assertNotNull(splitFactory.client());
@@ -133,7 +166,7 @@ public class SplitFactoryImplTest extends TestCase {
         HttpHost proxy = (HttpHost) proxyField.get(routePlanner);
 
         Assert.assertEquals("http", proxy.getSchemeName());
-        Assert.assertEquals(ENDPOINT, proxy.getHostName());
+        Assert.assertEquals("proxy-name", proxy.getHostName());
         Assert.assertEquals(6060, proxy.getPort());
 
         Field credentialsProviderField = InternalHttp.getDeclaredField("credentialsProvider");
@@ -152,9 +185,9 @@ public class SplitFactoryImplTest extends TestCase {
 
     @Test
     public void testFactoryInstantiationWithProxyToken() throws Exception {
-        class MyProxyCredentialsProvider implements ProxyCredentialsProvider {
+        class MyBearerCredentialsProvider implements io.split.client.dtos.BearerCredentialsProvider {
             @Override
-            public String getJwtToken() {
+            public String getToken() {
                 return "123456789";
             }
         };
@@ -167,9 +200,10 @@ public class SplitFactoryImplTest extends TestCase {
                 .telemetryURL(SplitClientConfig.TELEMETRY_ENDPOINT)
                 .authServiceURL(AUTH_SERVICE)
                 .setBlockUntilReadyTimeout(1000)
-                .proxyPort(6060)
-                .proxyCredentialsProvider(new MyProxyCredentialsProvider())
-                .proxyHost(ENDPOINT)
+                .proxyConfiguration(ProxyConfiguration.builder()
+                        .url(new URL("http://proxy-name:6060"))
+                        .credentialsProvider(new MyBearerCredentialsProvider())
+                        .build())
                 .build();
         SplitFactoryImpl splitFactory2 = new SplitFactoryImpl(API_KEY, splitClientConfig);
         assertNotNull(splitFactory2.client());
@@ -187,11 +221,11 @@ public class SplitFactoryImplTest extends TestCase {
         credentialsProviderField2.setAccessible(true);
         HttpClientDynamicCredentials credentialsProvider2 = (HttpClientDynamicCredentials) credentialsProviderField2.get(InternalHttp2.cast(httpClientField2.get(client2)));
 
-        Field proxyRuntimeField = HttpClientDynamicCredentials.class.getDeclaredField("_proxyCredentialsProvider");
+        Field proxyRuntimeField = HttpClientDynamicCredentials.class.getDeclaredField("_bearerCredentialsProvider");
         proxyRuntimeField.setAccessible(true);
-        MyProxyCredentialsProvider proxyRuntime = (MyProxyCredentialsProvider) proxyRuntimeField.get(credentialsProvider2);
+        MyBearerCredentialsProvider proxyRuntime = (MyBearerCredentialsProvider) proxyRuntimeField.get(credentialsProvider2);
 
-        assertNotNull("123456789", proxyRuntime.getJwtToken());
+        assertNotNull("123456789", proxyRuntime.getToken());
 
         splitFactory2.destroy();
     }
@@ -206,10 +240,10 @@ public class SplitFactoryImplTest extends TestCase {
                 .telemetryURL(SplitClientConfig.TELEMETRY_ENDPOINT)
                 .authServiceURL(AUTH_SERVICE)
                 .setBlockUntilReadyTimeout(1000)
-                .proxyPort(6060)
-                .proxyScheme("https")
-                .proxyMtlsAuth(new ProxyMTLSAuth.Builder().proxyP12File("src/test/resources/keyStore.p12").proxyP12FilePassKey("split").build())
-                .proxyHost(ENDPOINT)
+                .proxyConfiguration(ProxyConfiguration.builder()
+                        .url(new URL("http://proxy-name:6060"))
+                        .mtls("src/test/resources/keyStore.p12", "split")
+                        .build())
                 .build();
         SplitFactoryImpl splitFactory3 = new SplitFactoryImpl(API_KEY, splitClientConfig);
         assertNotNull(splitFactory3.client());

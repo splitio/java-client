@@ -1,7 +1,9 @@
 package io.split.client;
 
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
-import io.split.client.dtos.ProxyMTLSAuth;
+import io.split.client.dtos.BasicCredentialsProvider;
+import io.split.client.dtos.BearerCredentialsProvider;
+import io.split.client.dtos.ProxyConfiguration;
 import io.split.client.impressions.Impression;
 import io.split.client.impressions.ImpressionListener;
 import io.split.client.impressions.ImpressionsManager;
@@ -11,6 +13,8 @@ import org.junit.Assert;
 import org.junit.Test;
 import org.mockito.Mockito;
 
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -256,116 +260,104 @@ public class SplitClientConfigTest {
     }
 
     @Test
-    public void checkProxyParams() {
+    public void checkProxyParams() throws MalformedURLException {
         SplitClientConfig config = SplitClientConfig.builder()
-                .proxyHost("proxy-host")
-                .proxyPort(8888).build();
-        Assert.assertEquals("proxy-host", config.proxy().getHostName());
-        Assert.assertEquals(8888, config.proxy().getPort());
+                .proxyConfiguration(new ProxyConfiguration.Builder()
+                        .url(new URL("https://proxy-host:8888"))
+                        .build())
+                .build();
+        Assert.assertEquals("proxy-host", config.proxyConfiguration().getHost().getHostName());
+        Assert.assertEquals(8888, config.proxyConfiguration().getHost().getPort());
+        Assert.assertEquals("https", config.proxyConfiguration().getHost().getSchemeName());
 
         config = SplitClientConfig.builder()
-                .proxyHost("proxy-host")
-                .proxyPort(8888)
-                .proxyScheme(SplitClientConfig.HttpScheme.HTTPS)
-                .proxyUsername("user")
-                .proxyPassword("pass")
-                .build();
-        Assert.assertEquals("user", config.proxyUsername());
-        Assert.assertEquals("pass", config.proxyPassword());
+                .proxyConfiguration(new ProxyConfiguration.Builder()
+                        .url(new URL("https://proxy-host:888"))
+                        .credentialsProvider(new io.split.client.dtos.BasicCredentialsProvider() {
+                            @Override
+                            public String getUsername() {
+                                return "user";
+                            }
 
-        ProxyCredentialsProvider proxyCredentialsProvider = new ProxyCredentialsProvider() {
+                            @Override
+                            public String getPassword() {
+                                return "pass";
+                            }
+                        })
+                        .build())
+                .build();
+        io.split.client.dtos.BasicCredentialsProvider basicAuth = (io.split.client.dtos.BasicCredentialsProvider) config.proxyConfiguration().getProxyCredentialsProvider();
+        Assert.assertEquals("user", basicAuth.getUsername());
+        Assert.assertEquals("pass", basicAuth.getPassword());
+
+        io.split.client.dtos.BearerCredentialsProvider bearerCredentialsProvider = new io.split.client.dtos.BearerCredentialsProvider() {
             @Override
-            public String getJwtToken() {
+            public String getToken() {
                 return "my-token";
             }
         };
 
         config = SplitClientConfig.builder()
-                .proxyHost("proxy-host")
-                .proxyPort(8888)
-                .proxyCredentialsProvider(proxyCredentialsProvider)
+                .proxyConfiguration(new ProxyConfiguration.Builder()
+                        .url(new URL("https://proxy-host:888"))
+                        .credentialsProvider(bearerCredentialsProvider)
+                        .build())
                 .build();
-        Assert.assertEquals(proxyCredentialsProvider, config.proxyCredentialsProvider());
+        Assert.assertEquals(bearerCredentialsProvider, config.proxyConfiguration().getProxyCredentialsProvider());
 
         config = SplitClientConfig.builder()
-                .proxyHost("proxy-host")
-                .proxyPort(8888)
-                .proxyMtlsAuth(new ProxyMTLSAuth.Builder().proxyP12File("path/to/file").proxyP12FilePassKey("pass-key").build())
+                .proxyConfiguration(new ProxyConfiguration.Builder()
+                        .url(new URL("https://proxy-host:888"))
+                        .mtls("path/to/file", "pass-key")
+                        .build())
                 .build();
-        Assert.assertEquals("path/to/file", config.proxyMTLSAuth().getP12File());
-        Assert.assertEquals("pass-key", config.proxyMTLSAuth().getP12FilePassKey());
+        Assert.assertEquals("path/to/file", config.proxyConfiguration().getP12File());
+        Assert.assertEquals("pass-key", config.proxyConfiguration().getPassKey());
     }
 
     @Test(expected = IllegalArgumentException.class)
-    public void cannotUseInvalidHttpScheme() {
+    public void cannotUseInvalidHttpScheme() throws MalformedURLException {
         SplitClientConfig.builder()
-                .proxyHost("proxy-host")
-                .proxyPort(8888)
-                .proxyScheme("ftp")
+                .proxyConfiguration(new ProxyConfiguration.Builder()
+                        .url(new URL("ftp://proxy-host:888"))
+                        .build())
                 .build();
     }
 
-    @Test(expected = IllegalArgumentException.class)
-    public void cannotUseProxyTokenAndProxyUsername() {
-        ProxyCredentialsProvider proxyCredentialsProvider = new ProxyCredentialsProvider() {
-            @Override
-            public String getJwtToken() {
-                return "my-token";
-            }
-        };
-
+    @Test(expected = MalformedURLException.class)
+    public void cannotUseInvalidUrl() throws MalformedURLException {
         SplitClientConfig.builder()
-                .proxyHost("proxy-host")
-                .proxyPort(8888)
-                .proxyUsername("user")
-                .proxyPassword("pass")
-                .proxyCredentialsProvider(proxyCredentialsProvider)
+                .proxyConfiguration(new ProxyConfiguration.Builder()
+                        .url(new URL(""))
+                        .build())
                 .build();
     }
 
     @Test(expected = IllegalArgumentException.class)
-    public void cannotUseProxyUserAndProxyMtls() {
+    public void mustUseUrl() throws MalformedURLException {
         SplitClientConfig.builder()
-                .proxyHost("proxy-host")
-                .proxyPort(8888)
-                .proxyUsername("user")
-                .proxyPassword("pass")
-                .proxyMtlsAuth(new ProxyMTLSAuth.Builder().proxyP12File("path/to/file").proxyP12FilePassKey("pass-key").build())
+                .proxyConfiguration(new ProxyConfiguration.Builder()
+                        .build())
                 .build();
     }
 
     @Test(expected = IllegalArgumentException.class)
-    public void cannotUseProxyTokenAndProxyMtls() {
-        ProxyCredentialsProvider proxyCredentialsProvider = new ProxyCredentialsProvider() {
-            @Override
-            public String getJwtToken() {
-                return "my-token";
-            }
-        };
-
+    public void mustUseP12FileWithProxyMtls() throws MalformedURLException {
         SplitClientConfig.builder()
-                .proxyHost("proxy-host")
-                .proxyPort(8888)
-                .proxyCredentialsProvider(proxyCredentialsProvider)
-                .proxyMtlsAuth(new ProxyMTLSAuth.Builder().proxyP12File("path/to/file").proxyP12FilePassKey("pass-key").build())
+                .proxyConfiguration(new ProxyConfiguration.Builder()
+                        .url(new URL("https://proxy-host:888"))
+                        .mtls(null, "pass-key")
+                        .build())
                 .build();
     }
 
     @Test(expected = IllegalArgumentException.class)
-    public void mustUseP12FileWithProxyMtls() {
+    public void mustUseP12PassKeyWithProxyMtls() throws MalformedURLException {
         SplitClientConfig.builder()
-                .proxyHost("proxy-host")
-                .proxyPort(8888)
-                .proxyMtlsAuth(new ProxyMTLSAuth.Builder().proxyP12FilePassKey("pass-key").build())
-                .build();
-    }
-
-    @Test(expected = IllegalArgumentException.class)
-    public void mustUseP12PassKeyWithProxyMtls() {
-        SplitClientConfig.builder()
-                .proxyHost("proxy-host")
-                .proxyPort(8888)
-                .proxyMtlsAuth(new ProxyMTLSAuth.Builder().proxyP12File("path/to/file").build())
+                .proxyConfiguration(new ProxyConfiguration.Builder()
+                        .url(new URL("https://proxy-host:888"))
+                        .mtls("path/to/file", null)
+                        .build())
                 .build();
     }
 }
