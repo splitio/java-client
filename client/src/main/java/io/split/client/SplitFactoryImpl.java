@@ -632,6 +632,7 @@ public class SplitFactoryImpl implements SplitFactory {
         if (config.proxyConfiguration() != null && config.proxyConfiguration().getHost() != null) {
             proxyHost = config.proxyConfiguration().getHost();
         } else {
+            _log.warn("`proxyHost`, `proxyPort` configuration methods are deprecated. Please use `ProxyConfiguration` builder instead.");
             proxyHost = config.proxy();
         }
         DefaultProxyRoutePlanner routePlanner = new DefaultProxyRoutePlanner(proxyHost);
@@ -643,14 +644,16 @@ public class SplitFactoryImpl implements SplitFactory {
             _log.debug("Proxy setup using credentials");
             String userName;
             String password;
-            if (config.proxyUsername() != null && config.proxyPassword() != null) {
-                userName = config.proxyUsername();
-                password = config.proxyPassword();
-            } else {
+            if (config.proxyUsername() == null && config.proxyPassword() == null) {
                 io.split.client.dtos.BasicCredentialsProvider basicAuth =
                         (io.split.client.dtos.BasicCredentialsProvider) config.proxyConfiguration().getProxyCredentialsProvider();
                 userName = basicAuth.getUsername();
                 password = basicAuth.getPassword();
+            } else {
+                _log.warn("`proxyUsername` and `proxyPassword` configuration methods are deprecated. " +
+                        "Please use `ProxyConfiguration` builder instead.");
+                userName = config.proxyUsername();
+                password = config.proxyPassword();
             }
             BasicCredentialsProvider credsProvider = new BasicCredentialsProvider();
             AuthScope siteScope = new AuthScope(proxyHost.getHostName(), proxyHost.getPort());
