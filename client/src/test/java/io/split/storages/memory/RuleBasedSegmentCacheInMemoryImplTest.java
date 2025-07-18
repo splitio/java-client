@@ -16,6 +16,8 @@ import org.junit.Test;
 import com.google.common.collect.Lists;
 
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
 
 public class RuleBasedSegmentCacheInMemoryImplTest extends TestCase {
@@ -31,6 +33,8 @@ public class RuleBasedSegmentCacheInMemoryImplTest extends TestCase {
         ruleBasedSegmentCache.update(Lists.newArrayList(parsedRuleBasedSegment), null, 123);
         assertEquals(123, ruleBasedSegmentCache.getChangeNumber());
         assertEquals(parsedRuleBasedSegment, ruleBasedSegmentCache.get("sample_rule_based_segment"));
+        assertTrue(ruleBasedSegmentCache.contains(new HashSet<>(Arrays.asList("sample_rule_based_segment"))));
+        assertFalse(ruleBasedSegmentCache.contains(new HashSet<>(Arrays.asList("sample_rule_based_segment", "123"))));
 
         ruleBasedSegmentCache.update(null, Lists.newArrayList("sample_rule_based_segment"), 124);
         assertEquals(124, ruleBasedSegmentCache.getChangeNumber());
@@ -62,5 +66,7 @@ public class RuleBasedSegmentCacheInMemoryImplTest extends TestCase {
         ruleBasedSegmentCache.update(Lists.newArrayList(parsedRuleBasedSegment1, parsedRuleBasedSegment2), null, 123);
         assertEquals(Lists.newArrayList("another_rule_based_segment", "sample_rule_based_segment"), ruleBasedSegmentCache.ruleBasedSegmentNames());
         assertEquals(Sets.newHashSet("segment2", "segment1", "employees"), ruleBasedSegmentCache.getSegments());
+        assertTrue(ruleBasedSegmentCache.contains(new HashSet<>(Arrays.asList("sample_rule_based_segment", "another_rule_based_segment"))));
+        assertTrue(ruleBasedSegmentCache.contains(new HashSet<>(Arrays.asList("sample_rule_based_segment"))));
     }
 }
