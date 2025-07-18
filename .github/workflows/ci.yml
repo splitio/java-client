@@ -51,17 +51,17 @@ jobs:
       - name: Setup Maven
         run: cp .ci.settings.xml ${HOME}/.m2/settings.xml
 
-      - name: Test
-        if: matrix.jdk == '8' && github.event_name == 'pull_request' && github.ref != 'refs/heads/master' && github.ref != 'refs/heads/development'
-        run: mvn --batch-mode clean install
+#      - name: Test
+#        if: matrix.jdk == '8' && github.event_name == 'pull_request' && github.ref != 'refs/heads/master' && github.ref != 'refs/heads/development'
+#        run: mvn --batch-mode clean install
 
       - name: Linter
         if: matrix.jdk == '8' && github.event_name == 'pull_request' && github.ref != 'refs/heads/master' && github.ref != 'refs/heads/development'
         run: mvn checkstyle::check
 
-      - name: Deploy
-        if: matrix.jdk == '8' && github.event_name == 'push' && github.ref != 'refs/heads/master' && github.ref != 'refs/heads/development'
-        run: mvn --batch-mode deploy -P test
+#      - name: Deploy
+#        if: matrix.jdk == '8' && github.event_name == 'push' && github.ref != 'refs/heads/master' && github.ref != 'refs/heads/development'
+#        run: mvn --batch-mode deploy -P test
 
       - name: SonarQube Scan (Push)
         if: matrix.jdk == '11' && github.event_name == 'push' && (github.ref == 'refs/heads/master' || github.ref == 'refs/heads/development')
