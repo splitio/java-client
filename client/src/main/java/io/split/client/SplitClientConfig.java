@@ -1142,7 +1142,7 @@ public class SplitClientConfig {
             if (_proxyConfiguration == null)
                 return;
 
-            if (!_proxyHost.equals("localhost")) {
+            if (_proxyPort != -1) {
                 _log.warn("Both the deprecated proxy configuration methods (`proxyHost`, `proxyPort`, `proxyUsername`, or `proxyPassword`) " +
                         "and the new `ProxyConfiguration` builder are being used. `ProxyConfiguration` will take precedence.");
             }
