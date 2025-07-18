@@ -53,16 +53,8 @@
             <id>ossrh</id>
             <url>https://oss.sonatype.org/content/repositories/releases</url>
         </repository>
-        <repository>
-            <id>maven-all-virtual</id>
-            <url>https://splitio.jfrog.io/artifactory/maven-all-virtual</url>
-        </repository>
     </repositories>
     <pluginRepositories>
-        <pluginRepository>
-            <id>maven-all-virtual</id>
-            <url>https://splitio.jfrog.io/artifactory/maven-all-virtual</url>
-        </pluginRepository>
     </pluginRepositories>
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -145,16 +137,6 @@
     <profiles>
         <profile>
             <id>test</id>
-            <distributionManagement>
-                <repository>
-                    <id>maven-dev</id>
-                    <url>https://splitio.jfrog.io/artifactory/maven-dev/</url>
-                </repository>
-                <snapshotRepository>
-                    <id>maven-dev</id>
-                    <url>https://splitio.jfrog.io/artifactory/maven-dev/</url>
-                </snapshotRepository>
-            </distributionManagement>
             <build>
                 <plugins>
                     <plugin>
