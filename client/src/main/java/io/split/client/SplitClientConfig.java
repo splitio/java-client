@@ -9,6 +9,7 @@ import io.split.service.CustomHttpModule;
 import io.split.storages.enums.OperationMode;
 import io.split.storages.enums.StorageMode;
 import org.apache.hc.core5.http.HttpHost;
+import org.slf4j.LoggerFactory;
 import pluggable.CustomStorageWrapper;
 
 import java.io.IOException;
@@ -28,6 +29,7 @@ import static io.split.inputValidation.FlagSetsValidator.cleanup;
  */
 public class SplitClientConfig {
 
+    private static final org.slf4j.Logger _log = LoggerFactory.getLogger(SplitClientConfig.class);
     public static final String LOCALHOST_DEFAULT_FILE = "split.yaml";
     public static final String SDK_ENDPOINT = "https://sdk.split.io";
     public static final String EVENTS_ENDPOINT = "https://events.split.io";
@@ -1139,6 +1141,11 @@ public class SplitClientConfig {
         private void verifyProxy() {
             if (_proxyConfiguration == null)
                 return;
+
+            if (!_proxyHost.equals("localhost")) {
+                _log.warn("Both the deprecated proxy configuration methods (`proxyHost`, `proxyPort`, `proxyUsername`, or `proxyPassword`) " +
+                        "and the new `ProxyConfiguration` builder are being used. `ProxyConfiguration` will take precedence.");
+            }
 
             if (!(_proxyConfiguration.getHost().getSchemeName().equals(HttpScheme.HTTP) ||
                     _proxyConfiguration.getHost().getSchemeName().equals(HttpScheme.HTTPS))) {

@@ -629,32 +629,35 @@ public class SplitFactoryImpl implements SplitFactory {
     private static HttpClientBuilder setupProxy(HttpClientBuilder httpClientbuilder, SplitClientConfig config) {
         _log.info("Initializing Split SDK with proxy settings");
         HttpHost proxyHost;
-        if (config.proxyConfiguration() != null && config.proxyConfiguration().getHost() != null) {
+        String userName = null;
+        String password = null;
+        if (config.proxyConfiguration() != null) {
             proxyHost = config.proxyConfiguration().getHost();
-        } else {
-            _log.warn("`proxyHost`, `proxyPort` configuration methods are deprecated. Please use `ProxyConfiguration` builder instead.");
-            proxyHost = config.proxy();
-        }
-        DefaultProxyRoutePlanner routePlanner = new DefaultProxyRoutePlanner(proxyHost);
-        httpClientbuilder.setRoutePlanner(routePlanner);
-
-        if ((config.proxyUsername() != null && config.proxyPassword() != null) ||
-                (config.proxyConfiguration() != null && config.proxyConfiguration().getProxyCredentialsProvider() != null &&
-                        config.proxyConfiguration().getProxyCredentialsProvider() instanceof io.split.client.dtos.BasicCredentialsProvider)) {
-            _log.debug("Proxy setup using credentials");
-            String userName;
-            String password;
-            if (config.proxyUsername() == null && config.proxyPassword() == null) {
+            if (config.proxyConfiguration().getProxyCredentialsProvider() != null &&
+                    config.proxyConfiguration().getProxyCredentialsProvider() instanceof io.split.client.dtos.BasicCredentialsProvider) {
                 io.split.client.dtos.BasicCredentialsProvider basicAuth =
                         (io.split.client.dtos.BasicCredentialsProvider) config.proxyConfiguration().getProxyCredentialsProvider();
                 userName = basicAuth.getUsername();
                 password = basicAuth.getPassword();
-            } else {
-                _log.warn("`proxyUsername` and `proxyPassword` configuration methods are deprecated. " +
-                        "Please use `ProxyConfiguration` builder instead.");
+            }
+            if (config.proxyConfiguration().getProxyCredentialsProvider() instanceof io.split.client.dtos.BearerCredentialsProvider) {
+                _log.debug("Proxy setup using Bearer token");
+                httpClientbuilder.setDefaultCredentialsProvider(new HttpClientDynamicCredentials(
+                        (BearerCredentialsProvider) config.proxyConfiguration().getProxyCredentialsProvider()));
+            }
+        } else {
+            proxyHost = config.proxy();
+            if (config.proxyUsername() != null && config.proxyPassword() != null) {
                 userName = config.proxyUsername();
                 password = config.proxyPassword();
             }
+        }
+
+        DefaultProxyRoutePlanner routePlanner = new DefaultProxyRoutePlanner(proxyHost);
+        httpClientbuilder.setRoutePlanner(routePlanner);
+
+        if (userName != null && password != null) {
+            _log.debug("Proxy setup using credentials");
             BasicCredentialsProvider credsProvider = new BasicCredentialsProvider();
             AuthScope siteScope = new AuthScope(proxyHost.getHostName(), proxyHost.getPort());
             Credentials siteCreds = new UsernamePasswordCredentials(userName,
@@ -662,14 +665,7 @@ public class SplitFactoryImpl implements SplitFactory {
             credsProvider.setCredentials(siteScope, siteCreds);
             httpClientbuilder.setDefaultCredentialsProvider(credsProvider);
         }
-
-        if (config.proxyConfiguration() != null &&
-                config.proxyConfiguration().getProxyCredentialsProvider() instanceof io.split.client.dtos.BearerCredentialsProvider) {
-            _log.debug("Proxy setup using Bearer token");
-            httpClientbuilder.setDefaultCredentialsProvider(new HttpClientDynamicCredentials(
-                    (BearerCredentialsProvider) config.proxyConfiguration().getProxyCredentialsProvider()));
-        }
-
+        
         return httpClientbuilder;
     }
 
