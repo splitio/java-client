@@ -59,9 +59,9 @@ jobs:
         if: matrix.jdk == '8' && github.event_name == 'pull_request' && github.ref != 'refs/heads/master' && github.ref != 'refs/heads/development'
         run: mvn checkstyle::check
 
-      - name: Deploy
-        if: matrix.jdk == '8' && github.event_name == 'push' && github.ref != 'refs/heads/master' && github.ref != 'refs/heads/development'
-        run: mvn --batch-mode deploy -P test
+#      - name: Deploy
+#       if: matrix.jdk == '8' && github.event_name == 'push' && github.ref != 'refs/heads/master' && github.ref != 'refs/heads/development'
+#        run: mvn --batch-mode deploy -P test
 
       - name: SonarQube Scan (Push)
         if: matrix.jdk == '11' && github.event_name == 'push' && (github.ref == 'refs/heads/master' || github.ref == 'refs/heads/development')

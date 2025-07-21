@@ -5,10 +5,10 @@
     <parent>
         <artifactId>java-client-parent</artifactId>
         <groupId>io.split.client</groupId>
-        <version>4.16.0</version>
+        <version>4.16.1</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
-    <version>4.16.0</version>
+    <version>4.16.1</version>
     <artifactId>okhttp-modules</artifactId>
     <packaging>jar</packaging>
     <name>http-modules</name>
@@ -20,12 +20,15 @@
             <build>
                 <plugins>
                     <plugin>
-                        <groupId>org.sonatype.plugins</groupId>
-                        <artifactId>nexus-staging-maven-plugin</artifactId>
-                        <version>1.6.3</version>
+                        <groupId>org.sonatype.central</groupId>
+                        <artifactId>central-publishing-maven-plugin</artifactId>
+                        <version>0.8.0</version>
                         <extensions>true</extensions>
                         <configuration>
-                            <skipNexusStagingDeployMojo>false</skipNexusStagingDeployMojo>
+                            <ignorePublishedComponents>true</ignorePublishedComponents>
+                            <publishingServerId>central</publishingServerId>
+                            <autoPublish>false</autoPublish>
+                            <waitUntil>published</waitUntil>
                         </configuration>
                     </plugin>
                 </plugins>
