@@ -1,6 +1,7 @@
 4.16.1 (Jul 21, 2025)
-- Upgraded org.apache.commons-commons-lang3 to 3.18.0
-- Upgraded com.google.code.gson.gson to 2.13.1
+- Fixed vulnerabilities: 
+    - Upgraded org.apache.commons-commons-lang3 to 3.18.0
+    - Upgraded com.google.code.gson.gson to 2.13.1
 
 4.16.0 (May 28, 2025)
 - Added support for rule-based segments. These segments determine membership at runtime by evaluating their configured rules against the user attributes provided to the SDK.
