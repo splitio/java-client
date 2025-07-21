@@ -5,10 +5,10 @@
     <parent>
         <artifactId>java-client-parent</artifactId>
         <groupId>io.split.client</groupId>
-        <version>4.16.0</version>
+        <version>4.16.1</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
-    <version>4.16.0</version>
+    <version>4.16.1</version>
     <artifactId>okhttp-modules</artifactId>
     <packaging>jar</packaging>
     <name>http-modules</name>
