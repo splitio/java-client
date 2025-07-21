@@ -1,3 +1,8 @@
+4.16.1 (Jul 21, 2025)
+- Fixed vulnerabilities: 
+    - Upgraded org.apache.commons-commons-lang3 to 3.18.0
+    - Upgraded com.google.code.gson.gson to 2.13.1
+
 4.16.0 (May 28, 2025)
 - Added support for rule-based segments. These segments determine membership at runtime by evaluating their configured rules against the user attributes provided to the SDK.
 - Added support for feature flag prerequisites. This allows customers to define dependency conditions between flags, which are evaluated before any allowlists or targeting rules.
