@@ -628,48 +628,56 @@ public class SplitFactoryImpl implements SplitFactory {
 
     private static HttpClientBuilder setupProxy(HttpClientBuilder httpClientbuilder, SplitClientConfig config) {
         _log.info("Initializing Split SDK with proxy settings");
-        HttpHost proxyHost;
-        if (config.proxyConfiguration() != null && config.proxyConfiguration().getHost() != null) {
-            proxyHost = config.proxyConfiguration().getHost();
+        if (config.proxyConfiguration() != null) {
+            return useProxyConfiguration(httpClientbuilder, config);
         } else {
-            _log.warn("`proxyHost`, `proxyPort` configuration methods are deprecated. Please use `ProxyConfiguration` builder instead.");
-            proxyHost = config.proxy();
+            return useLegacyProxyConfiguration(httpClientbuilder, config);
         }
+    }
+
+    private static HttpClientBuilder useLegacyProxyConfiguration(HttpClientBuilder httpClientbuilder, SplitClientConfig config) {
+        HttpHost proxyHost = config.proxy();
+        httpClientbuilder = addProxyHost(httpClientbuilder, proxyHost);
+        if (config.proxyUsername() != null && config.proxyPassword() != null) {
+            return addProxyBasicAuth(httpClientbuilder, proxyHost, config.proxyUsername(), config.proxyPassword());
+        }
+        
+        return httpClientbuilder;
+    }
+
+    private static HttpClientBuilder useProxyConfiguration(HttpClientBuilder httpClientbuilder, SplitClientConfig config) {
+        HttpHost proxyHost = config.proxyConfiguration().getHost();
+        httpClientbuilder = addProxyHost(httpClientbuilder, proxyHost);
+        if (config.proxyConfiguration().getProxyCredentialsProvider() == null) {
+            return httpClientbuilder;
+        }
+
+        if (config.proxyConfiguration().getProxyCredentialsProvider() instanceof io.split.client.dtos.BasicCredentialsProvider) {
+            io.split.client.dtos.BasicCredentialsProvider basicAuth =
+                    (io.split.client.dtos.BasicCredentialsProvider) config.proxyConfiguration().getProxyCredentialsProvider();
+            return addProxyBasicAuth(httpClientbuilder, proxyHost, basicAuth.getUsername(), basicAuth.getPassword());
+        }
+
+        _log.debug("Proxy setup using Bearer token");
+        httpClientbuilder.setDefaultCredentialsProvider(new HttpClientDynamicCredentials(
+                    (BearerCredentialsProvider) config.proxyConfiguration().getProxyCredentialsProvider()));
+        return httpClientbuilder;
+    }
+
+    private static HttpClientBuilder addProxyHost(HttpClientBuilder httpClientbuilder, HttpHost proxyHost) {
         DefaultProxyRoutePlanner routePlanner = new DefaultProxyRoutePlanner(proxyHost);
         httpClientbuilder.setRoutePlanner(routePlanner);
+        return httpClientbuilder;
+    }
 
-        if ((config.proxyUsername() != null && config.proxyPassword() != null) ||
-                (config.proxyConfiguration() != null && config.proxyConfiguration().getProxyCredentialsProvider() != null &&
-                        config.proxyConfiguration().getProxyCredentialsProvider() instanceof io.split.client.dtos.BasicCredentialsProvider)) {
-            _log.debug("Proxy setup using credentials");
-            String userName;
-            String password;
-            if (config.proxyUsername() == null && config.proxyPassword() == null) {
-                io.split.client.dtos.BasicCredentialsProvider basicAuth =
-                        (io.split.client.dtos.BasicCredentialsProvider) config.proxyConfiguration().getProxyCredentialsProvider();
-                userName = basicAuth.getUsername();
-                password = basicAuth.getPassword();
-            } else {
-                _log.warn("`proxyUsername` and `proxyPassword` configuration methods are deprecated. " +
-                        "Please use `ProxyConfiguration` builder instead.");
-                userName = config.proxyUsername();
-                password = config.proxyPassword();
-            }
-            BasicCredentialsProvider credsProvider = new BasicCredentialsProvider();
-            AuthScope siteScope = new AuthScope(proxyHost.getHostName(), proxyHost.getPort());
-            Credentials siteCreds = new UsernamePasswordCredentials(userName,
-                    password.toCharArray());
-            credsProvider.setCredentials(siteScope, siteCreds);
-            httpClientbuilder.setDefaultCredentialsProvider(credsProvider);
-        }
-
-        if (config.proxyConfiguration() != null &&
-                config.proxyConfiguration().getProxyCredentialsProvider() instanceof io.split.client.dtos.BearerCredentialsProvider) {
-            _log.debug("Proxy setup using Bearer token");
-            httpClientbuilder.setDefaultCredentialsProvider(new HttpClientDynamicCredentials(
-                    (BearerCredentialsProvider) config.proxyConfiguration().getProxyCredentialsProvider()));
-        }
-
+    private static HttpClientBuilder addProxyBasicAuth(HttpClientBuilder httpClientbuilder, HttpHost proxyHost, String userName, String password) {
+        _log.debug("Proxy setup using Basic authentication");
+        BasicCredentialsProvider credsProvider = new BasicCredentialsProvider();
+        AuthScope siteScope = new AuthScope(proxyHost.getHostName(), proxyHost.getPort());
+        Credentials siteCreds = new UsernamePasswordCredentials(userName,
+                password.toCharArray());
+        credsProvider.setCredentials(siteScope, siteCreds);
+        httpClientbuilder.setDefaultCredentialsProvider(credsProvider);
         return httpClientbuilder;
     }
 
