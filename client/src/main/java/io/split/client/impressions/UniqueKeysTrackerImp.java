@@ -179,8 +179,8 @@ public class UniqueKeysTrackerImp implements UniqueKeysTracker{
 
     private int getTrackerKeysSize() {
         int totalSize = 0;
-        for (String key : uniqueKeysTracker.keySet()) {
-            totalSize += uniqueKeysTracker.get(key).size();
+        for (Map.Entry<String,HashSet<String>> item : uniqueKeysTracker.entrySet()) {
+            totalSize += item.getValue().size();
         }
         return totalSize;
     }

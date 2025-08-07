@@ -6,11 +6,8 @@ import io.split.telemetry.synchronizer.TelemetrySynchronizer;
 import org.junit.Assert;
 import org.junit.Test;
 import org.mockito.Mockito;
-
-import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.lang.reflect.Modifier;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -110,7 +107,7 @@ public class UniqueKeysTrackerImpTest {
     }
 
     @Test
-    public void testUniqueKeysChunks() throws NoSuchMethodException, InvocationTargetException, IllegalAccessException, NoSuchFieldException {
+    public void testUniqueKeysChunks() throws NoSuchMethodException, InvocationTargetException, IllegalAccessException {
         UniqueKeysTrackerImp uniqueKeysTrackerImp = new UniqueKeysTrackerImp(_telemetrySynchronizer, 10000, 10000, null);
         HashMap<String, HashSet<String>> uniqueKeysHashMap = new HashMap<>();
         HashSet<String> feature1 = new HashSet<>();
@@ -138,7 +135,7 @@ public class UniqueKeysTrackerImpTest {
         uniqueKeysHashMap.put("feature3", feature3);
         uniqueKeysHashMap.put("feature4", feature4);
         uniqueKeysHashMap.put("feature5", feature5);
-        
+
         List<UniqueKeys.UniqueKey> uniqueKeysFromPopAll = new ArrayList<>();
         for (Map.Entry<String, HashSet<String>> uniqueKeyEntry : uniqueKeysHashMap.entrySet()) {
             UniqueKeys.UniqueKey uniqueKey = new UniqueKeys.UniqueKey(uniqueKeyEntry.getKey(), new ArrayList<>(uniqueKeyEntry.getValue()));
@@ -158,5 +155,20 @@ public class UniqueKeysTrackerImpTest {
             }
             Assert.assertTrue(chunkSize <= 5000);
         }
+    }
+
+    @Test
+    public void testTrackReachMaxKeys() throws NoSuchMethodException, InvocationTargetException, IllegalAccessException {
+        TelemetrySynchronizer telemetrySynchronizer = Mockito.mock(TelemetryInMemorySubmitter.class);
+        UniqueKeysTrackerImp uniqueKeysTrackerImp = new UniqueKeysTrackerImp(telemetrySynchronizer, 10000, 10000, null);
+        for (int i=1; i<6000; i++) {
+            Assert.assertTrue(uniqueKeysTrackerImp.track("feature1", "key" + i));
+            Assert.assertTrue(uniqueKeysTrackerImp.track("feature2", "key" + i));
+        }
+        Mockito.verify(telemetrySynchronizer, Mockito.times(2)).synchronizeUniqueKeys(Mockito.anyObject());
+        Method methodGetTrackerSize = uniqueKeysTrackerImp.getClass().getDeclaredMethod("getTrackerKeysSize");
+        methodGetTrackerSize.setAccessible(true);
+        int trackerSize = (int) methodGetTrackerSize.invoke(uniqueKeysTrackerImp);
+        Assert.assertTrue(trackerSize == 1998);
     }
 }
