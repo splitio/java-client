@@ -28,6 +28,7 @@ public class UniqueKeysTrackerImp implements UniqueKeysTracker{
     private static final double MARGIN_ERROR = 0.01;
     private static final int MAX_UNIQUE_KEYS_POST_SIZE = 5000;
     private static final int MAX_AMOUNT_OF_KEYS = 10000000;
+    private int trackerKeysSize = 0;
     private FilterAdapter filterAdapter;
     private final TelemetrySynchronizer _telemetrySynchronizer;
     private final ScheduledExecutorService _uniqueKeysSyncScheduledExecutorService;
@@ -60,10 +61,11 @@ public class UniqueKeysTrackerImp implements UniqueKeysTracker{
                 (feature, current) -> {
                     HashSet<String> keysByFeature = Optional.ofNullable(current).orElse(new HashSet<>());
                     keysByFeature.add(key);
+                    trackerKeysSize++;
                     return keysByFeature;
                 });
         _logger.debug("The feature flag " + featureFlagName + " and key " + key + " was added");
-        if (getTrackerKeysSize() >= MAX_UNIQUE_KEYS_POST_SIZE){
+        if (trackerKeysSize >= MAX_UNIQUE_KEYS_POST_SIZE){
             _logger.warn("The UniqueKeysTracker size reached the maximum limit");
             try {
                 sendUniqueKeys();
@@ -108,6 +110,7 @@ public class UniqueKeysTrackerImp implements UniqueKeysTracker{
             HashSet<String> value = uniqueKeysTracker.remove(key);
             toReturn.put(key, value);
         }
+        trackerKeysSize = 0;
         return toReturn;
     }
 
@@ -188,6 +191,7 @@ public class UniqueKeysTrackerImp implements UniqueKeysTracker{
     private interface ExecuteUniqueKeysAction{
         void execute();
     }
+
     private class ExecuteCleanFilter implements ExecuteUniqueKeysAction {
 
         @Override

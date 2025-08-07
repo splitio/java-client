@@ -6,6 +6,8 @@ import io.split.telemetry.synchronizer.TelemetrySynchronizer;
 import org.junit.Assert;
 import org.junit.Test;
 import org.mockito.Mockito;
+
+import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.HashMap;
@@ -158,7 +160,7 @@ public class UniqueKeysTrackerImpTest {
     }
 
     @Test
-    public void testTrackReachMaxKeys() throws NoSuchMethodException, InvocationTargetException, IllegalAccessException {
+    public void testTrackReachMaxKeys() throws NoSuchMethodException, InvocationTargetException, IllegalAccessException, NoSuchFieldException {
         TelemetrySynchronizer telemetrySynchronizer = Mockito.mock(TelemetryInMemorySubmitter.class);
         UniqueKeysTrackerImp uniqueKeysTrackerImp = new UniqueKeysTrackerImp(telemetrySynchronizer, 10000, 10000, null);
         for (int i=1; i<6000; i++) {
@@ -166,9 +168,10 @@ public class UniqueKeysTrackerImpTest {
             Assert.assertTrue(uniqueKeysTrackerImp.track("feature2", "key" + i));
         }
         Mockito.verify(telemetrySynchronizer, Mockito.times(2)).synchronizeUniqueKeys(Mockito.anyObject());
-        Method methodGetTrackerSize = uniqueKeysTrackerImp.getClass().getDeclaredMethod("getTrackerKeysSize");
-        methodGetTrackerSize.setAccessible(true);
-        int trackerSize = (int) methodGetTrackerSize.invoke(uniqueKeysTrackerImp);
+
+        Field getTrackerSize = uniqueKeysTrackerImp.getClass().getDeclaredField("trackerKeysSize");
+        getTrackerSize.setAccessible(true);
+        int trackerSize = (int) getTrackerSize.get(uniqueKeysTrackerImp);
         Assert.assertTrue(trackerSize == 1998);
     }
 }
