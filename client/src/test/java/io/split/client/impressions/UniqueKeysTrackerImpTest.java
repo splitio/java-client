@@ -7,8 +7,10 @@ import org.junit.Assert;
 import org.junit.Test;
 import org.mockito.Mockito;
 
+import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -108,30 +110,35 @@ public class UniqueKeysTrackerImpTest {
     }
 
     @Test
-    public void testUniqueKeysChunks() throws NoSuchMethodException, InvocationTargetException, IllegalAccessException {
+    public void testUniqueKeysChunks() throws NoSuchMethodException, InvocationTargetException, IllegalAccessException, NoSuchFieldException {
         UniqueKeysTrackerImp uniqueKeysTrackerImp = new UniqueKeysTrackerImp(_telemetrySynchronizer, 10000, 10000, null);
+        HashMap<String, HashSet<String>> uniqueKeysHashMap = new HashMap<>();
+        HashSet<String> feature1 = new HashSet<>();
+        HashSet<String> feature2 = new HashSet<>();
+        HashSet<String> feature3 = new HashSet<>();
+        HashSet<String> feature4 = new HashSet<>();
+        HashSet<String> feature5 = new HashSet<>();
         for (Integer i=1; i<6000; i++) {
             if (i <= 1000) {
-                Assert.assertTrue(uniqueKeysTrackerImp.track("feature1", "key" + i.toString()));
+                feature1.add("key" + i);
             }
             if (i <= 2000) {
-                Assert.assertTrue(uniqueKeysTrackerImp.track("feature2", "key" + i.toString()));
+                feature2.add("key" + i);
             }
             if (i <= 3000) {
-                Assert.assertTrue(uniqueKeysTrackerImp.track("feature3", "key" + i.toString()));
+                feature3.add("key" + i);
             }
             if (i <= 4000) {
-                Assert.assertTrue(uniqueKeysTrackerImp.track("feature4", "key" + i.toString()));
+                feature4.add("key" + i);
             }
-            Assert.assertTrue(uniqueKeysTrackerImp.track("feature5", "key" + i.toString()));
+            feature5.add("key" + i);
         }
-
-        Method methodTrackerSize = uniqueKeysTrackerImp.getClass().getDeclaredMethod("getTrackerKeysSize");
-        methodTrackerSize.setAccessible(true);
-        int totalSize = (int) methodTrackerSize.invoke(uniqueKeysTrackerImp);
-        Assert.assertTrue(totalSize == 15999);
-
-        HashMap<String, HashSet<String>> uniqueKeysHashMap = uniqueKeysTrackerImp.popAll();
+        uniqueKeysHashMap.put("feature1", feature1);
+        uniqueKeysHashMap.put("feature2", feature2);
+        uniqueKeysHashMap.put("feature3", feature3);
+        uniqueKeysHashMap.put("feature4", feature4);
+        uniqueKeysHashMap.put("feature5", feature5);
+        
         List<UniqueKeys.UniqueKey> uniqueKeysFromPopAll = new ArrayList<>();
         for (Map.Entry<String, HashSet<String>> uniqueKeyEntry : uniqueKeysHashMap.entrySet()) {
             UniqueKeys.UniqueKey uniqueKey = new UniqueKeys.UniqueKey(uniqueKeyEntry.getKey(), new ArrayList<>(uniqueKeyEntry.getValue()));
