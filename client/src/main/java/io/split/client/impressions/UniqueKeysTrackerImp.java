@@ -157,7 +157,7 @@ public class UniqueKeysTrackerImp implements UniqueKeysTracker{
         return finalChunk;
     }
 
-    private List<List<UniqueKeys.UniqueKey>> getChunks(List<UniqueKeys.UniqueKey> uniqeKeys) {
+    private List<List<UniqueKeys.UniqueKey>> getChunks(List<UniqueKeys.UniqueKey> uniqueKeys) {
         List<List<UniqueKeys.UniqueKey>> chunks = new ArrayList<>();
         List<UniqueKeys.UniqueKey> intermediateChunk = new ArrayList<>();
         for (UniqueKeys.UniqueKey uniqueKey : uniqeKeys) {
