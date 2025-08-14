@@ -180,15 +180,7 @@ public class UniqueKeysTrackerImp implements UniqueKeysTracker{
         }
         return totalSize;
     }
-
-    private int getTrackerKeysSize() {
-        int totalSize = 0;
-        for (Map.Entry<String,HashSet<String>> item : uniqueKeysTracker.entrySet()) {
-            totalSize += item.getValue().size();
-        }
-        return totalSize;
-    }
-
+    
     private interface ExecuteUniqueKeysAction{
         void execute();
     }
