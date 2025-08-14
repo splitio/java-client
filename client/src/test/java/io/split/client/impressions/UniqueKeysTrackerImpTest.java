@@ -15,6 +15,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.ArrayList;
+import java.util.concurrent.atomic.AtomicInteger;
 
 public class UniqueKeysTrackerImpTest {
     private static TelemetrySynchronizer _telemetrySynchronizer = Mockito.mock(TelemetryInMemorySubmitter.class);
@@ -171,7 +172,7 @@ public class UniqueKeysTrackerImpTest {
 
         Field getTrackerSize = uniqueKeysTrackerImp.getClass().getDeclaredField("trackerKeysSize");
         getTrackerSize.setAccessible(true);
-        int trackerSize = (int) getTrackerSize.get(uniqueKeysTrackerImp);
-        Assert.assertTrue(trackerSize == 1998);
+        AtomicInteger trackerSize = (AtomicInteger) getTrackerSize.get(uniqueKeysTrackerImp);
+        Assert.assertTrue(trackerSize.intValue() == 1998);
     }
 }
