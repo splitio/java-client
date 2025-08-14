@@ -22,13 +22,14 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
 
 public class UniqueKeysTrackerImp implements UniqueKeysTracker{
     private static final Logger _log = LoggerFactory.getLogger(UniqueKeysTrackerImp.class);
     private static final double MARGIN_ERROR = 0.01;
     private static final int MAX_UNIQUE_KEYS_POST_SIZE = 5000;
     private static final int MAX_AMOUNT_OF_KEYS = 10000000;
-    private int trackerKeysSize = 0;
+    private final AtomicInteger trackerKeysSize = new AtomicInteger(0);
     private FilterAdapter filterAdapter;
     private final TelemetrySynchronizer _telemetrySynchronizer;
     private final ScheduledExecutorService _uniqueKeysSyncScheduledExecutorService;
@@ -61,11 +62,11 @@ public class UniqueKeysTrackerImp implements UniqueKeysTracker{
                 (feature, current) -> {
                     HashSet<String> keysByFeature = Optional.ofNullable(current).orElse(new HashSet<>());
                     keysByFeature.add(key);
-                    trackerKeysSize++;
+                    trackerKeysSize.incrementAndGet();
                     return keysByFeature;
                 });
         _logger.debug("The feature flag " + featureFlagName + " and key " + key + " was added");
-        if (trackerKeysSize >= MAX_UNIQUE_KEYS_POST_SIZE){
+        if (trackerKeysSize.intValue() >= MAX_UNIQUE_KEYS_POST_SIZE){
             _logger.warn("The UniqueKeysTracker size reached the maximum limit");
             try {
                 sendUniqueKeys();
@@ -110,7 +111,7 @@ public class UniqueKeysTrackerImp implements UniqueKeysTracker{
             HashSet<String> value = uniqueKeysTracker.remove(key);
             toReturn.put(key, value);
         }
-        trackerKeysSize = 0;
+        trackerKeysSize.set(0);
         return toReturn;
     }
 
@@ -121,7 +122,7 @@ public class UniqueKeysTrackerImp implements UniqueKeysTracker{
         }
 
         try {
-            if (uniqueKeysTracker.size() == 0) {
+            if (uniqueKeysTracker.isEmpty()) {
                 _log.debug("The Unique Keys Tracker is empty");
                 return;
             }
