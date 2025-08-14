@@ -9,7 +9,7 @@
     </parent>
     <artifactId>java-client-testing</artifactId>
     <packaging>jar</packaging>
-    <version>4.16.0</version>
+    <version>4.16.1</version>
     <name>Java Client For Testing</name>
     <description>Testing suite for Java SDK for Split</description>
     <dependencies>
@@ -39,7 +39,7 @@
                             <publishingServerId>central</publishingServerId>
                             <autoPublish>false</autoPublish>
                             <waitUntil>published</waitUntil>
-                            <ignorePublishedComponents>true</ignorePublishedComponents>
+                            <ignorePublishedComponents>false</ignorePublishedComponents>
                         </configuration>
                     </plugin>
                 </plugins>
