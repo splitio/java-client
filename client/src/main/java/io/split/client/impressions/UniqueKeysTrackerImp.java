@@ -160,7 +160,7 @@ public class UniqueKeysTrackerImp implements UniqueKeysTracker{
     private List<List<UniqueKeys.UniqueKey>> getChunks(List<UniqueKeys.UniqueKey> uniqueKeys) {
         List<List<UniqueKeys.UniqueKey>> chunks = new ArrayList<>();
         List<UniqueKeys.UniqueKey> intermediateChunk = new ArrayList<>();
-        for (UniqueKeys.UniqueKey uniqueKey : uniqeKeys) {
+        for (UniqueKeys.UniqueKey uniqueKey : uniqueKeys) {
             if ((getChunkSize(intermediateChunk) + uniqueKey.keysDto.size()) > MAX_UNIQUE_KEYS_POST_SIZE) {
                 chunks.add(intermediateChunk);
                 intermediateChunk = new ArrayList<>();
