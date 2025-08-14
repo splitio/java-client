@@ -143,7 +143,7 @@ public class UniqueKeysTrackerImp implements UniqueKeysTracker{
         }
     }
 
-    private List<UniqueKeys.UniqueKey> capChunksToMaxSize(List<UniqueKeys.UniqueKey> uniqeKeys) {
+    private List<UniqueKeys.UniqueKey> capChunksToMaxSize(List<UniqueKeys.UniqueKey> uniqueKeys) {
         List<UniqueKeys.UniqueKey> finalChunk = new ArrayList<>();
         for (UniqueKeys.UniqueKey uniqueKey : uniqeKeys) {
             if (uniqueKey.keysDto.size() > MAX_UNIQUE_KEYS_POST_SIZE) {
