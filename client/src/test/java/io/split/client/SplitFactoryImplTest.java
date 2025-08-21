@@ -242,7 +242,7 @@ public class SplitFactoryImplTest extends TestCase {
                 .setBlockUntilReadyTimeout(1000)
                 .proxyConfiguration(ProxyConfiguration.builder()
                         .url(new URL("http://proxy-name:6060"))
-                        .mtls("src/test/resources/keyStore.p12", "split")
+                        .mtls(new FileInputStream("src/test/resources/keyStore.p12"), "split")
                         .build())
                 .build();
         SplitFactoryImpl splitFactory3 = new SplitFactoryImpl(API_KEY, splitClientConfig);

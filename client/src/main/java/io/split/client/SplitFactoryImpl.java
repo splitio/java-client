@@ -116,6 +116,8 @@ import org.slf4j.LoggerFactory;
 import pluggable.CustomStorageWrapper;
 
 import javax.net.ssl.SSLContext;
+import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.InetAddress;
@@ -606,7 +608,7 @@ public class SplitFactoryImpl implements SplitFactory {
             InputStream keystoreStream = null;
             try {
                 KeyStore keyStore = KeyStore.getInstance("PKCS12");
-                keystoreStream = java.nio.file.Files.newInputStream(Paths.get(config.proxyConfiguration().getP12File()));
+                keystoreStream = config.proxyConfiguration().getP12File();
                 keyStore.load(keystoreStream, config.proxyConfiguration().getPassKey().toCharArray());
                 sslContext = SSLContexts.custom()
                         .loadKeyMaterial(keyStore, config.proxyConfiguration().getPassKey().toCharArray())
