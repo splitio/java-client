@@ -116,14 +116,11 @@ import org.slf4j.LoggerFactory;
 import pluggable.CustomStorageWrapper;
 
 import javax.net.ssl.SSLContext;
-import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.InetAddress;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.nio.file.Paths;
 import java.security.KeyStore;
 import java.util.concurrent.ExecutorService;
 import java.util.stream.Collectors;
