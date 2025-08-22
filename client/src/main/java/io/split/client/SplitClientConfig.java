@@ -1,5 +1,6 @@
 package io.split.client;
 
+import io.split.client.dtos.ProxyConfiguration;
 import io.split.client.impressions.ImpressionListener;
 import io.split.client.impressions.ImpressionsManager;
 import io.split.client.utils.FileTypeEnum;
@@ -8,6 +9,7 @@ import io.split.service.CustomHttpModule;
 import io.split.storages.enums.OperationMode;
 import io.split.storages.enums.StorageMode;
 import org.apache.hc.core5.http.HttpHost;
+import org.slf4j.LoggerFactory;
 import pluggable.CustomStorageWrapper;
 
 import java.io.IOException;
@@ -27,12 +29,21 @@ import static io.split.inputValidation.FlagSetsValidator.cleanup;
  */
 public class SplitClientConfig {
 
+    private static final org.slf4j.Logger _log = LoggerFactory.getLogger(SplitClientConfig.class);
     public static final String LOCALHOST_DEFAULT_FILE = "split.yaml";
     public static final String SDK_ENDPOINT = "https://sdk.split.io";
     public static final String EVENTS_ENDPOINT = "https://events.split.io";
     public static final String AUTH_ENDPOINT = "https://auth.split.io/api/v2/auth";
     public static final String STREAMING_ENDPOINT = "https://streaming.split.io/sse";
     public static final String TELEMETRY_ENDPOINT = "https://telemetry.split.io/api/v1";
+
+    public static class HttpScheme {
+        private HttpScheme() {
+            throw new IllegalStateException("Utility class");
+        }
+        public static final String HTTP = "http";
+        public static final String HTTPS = "https";
+    }
 
     private final String _endpoint;
     private final String _eventsEndpoint;
@@ -82,6 +93,7 @@ public class SplitClientConfig {
     private final ThreadFactory _threadFactory;
 
     // Proxy configs
+    private final ProxyConfiguration _proxyConfiguration;
     private final HttpHost _proxy;
     private final String _proxyUsername;
     private final String _proxyPassword;
@@ -118,6 +130,7 @@ public class SplitClientConfig {
                               HttpHost proxy,
                               String proxyUsername,
                               String proxyPassword,
+                              ProxyConfiguration proxyConfiguration,
                               int eventsQueueSize,
                               long eventSendIntervalInMillis,
                               int maxStringLength,
@@ -171,6 +184,7 @@ public class SplitClientConfig {
         _proxy = proxy;
         _proxyUsername = proxyUsername;
         _proxyPassword = proxyPassword;
+        _proxyConfiguration = proxyConfiguration;
         _eventsQueueSize = eventsQueueSize;
         _eventSendIntervalInMillis = eventSendIntervalInMillis;
         _maxStringLength = maxStringLength;
@@ -302,6 +316,10 @@ public class SplitClientConfig {
         return _proxyPassword;
     }
 
+    public ProxyConfiguration proxyConfiguration() {
+        return _proxyConfiguration;
+    }
+
     public long eventSendIntervalInMillis() {
         return _eventSendIntervalInMillis;
     }
@@ -417,8 +435,8 @@ public class SplitClientConfig {
     }
 
     public CustomHttpModule alternativeHTTPModule() { return _alternativeHTTPModule; }
-    public static final class Builder {
 
+    public static final class Builder {
         private String _endpoint = SDK_ENDPOINT;
         private boolean _endpointSet = false;
         private String _eventsEndpoint = EVENTS_ENDPOINT;
@@ -442,6 +460,7 @@ public class SplitClientConfig {
         private int _proxyPort = -1;
         private String _proxyUsername;
         private String _proxyPassword;
+        private ProxyConfiguration _proxyConfiguration;
         private int _eventsQueueSize = 500;
         private long _eventSendIntervalInMillis = 30 * (long)1000;
         private int _maxStringLength = 250;
@@ -734,10 +753,14 @@ public class SplitClientConfig {
 
         /**
          * The host location of the proxy. Default is localhost.
+         * @deprecated
+         * This method is deprecated.
+         * <p> Use {@link ProxyConfiguration)} instead.
          *
          * @param proxyHost location of the proxy
          * @return this builder
          */
+        @Deprecated
         public Builder proxyHost(String proxyHost) {
             _proxyHost = proxyHost;
             return this;
@@ -745,10 +768,14 @@ public class SplitClientConfig {
 
         /**
          * The port of the proxy. Default is -1.
+         * @deprecated
+         * This method is deprecated.
+         * <p> Use {@link ProxyConfiguration)} instead.
          *
          * @param proxyPort port for the proxy
          * @return this builder
          */
+        @Deprecated
         public Builder proxyPort(int proxyPort) {
             _proxyPort = proxyPort;
             return this;
@@ -756,10 +783,14 @@ public class SplitClientConfig {
 
         /**
          * Set the username for authentication against the proxy (if proxy settings are enabled). (Optional).
+         * @deprecated
+         * This method is deprecated.
+         * <p> Use {@link ProxyConfiguration)} instead.
          *
          * @param proxyUsername
          * @return this builder
          */
+        @Deprecated
         public Builder proxyUsername(String proxyUsername) {
             _proxyUsername = proxyUsername;
             return this;
@@ -773,6 +804,17 @@ public class SplitClientConfig {
          */
         public Builder proxyPassword(String proxyPassword) {
             _proxyPassword = proxyPassword;
+            return this;
+        }
+
+        /**
+         * Set the mtls authentication against the proxy (if proxy settings are enabled). (Optional).
+         *
+         * @param proxyConfiguration
+         * @return this builder
+         */
+        public Builder proxyConfiguration(ProxyConfiguration proxyConfiguration) {
+            _proxyConfiguration = proxyConfiguration;
             return this;
         }
 
@@ -927,7 +969,7 @@ public class SplitClientConfig {
 
         /**
          *
-         * @param storage mode
+         * @param mode
          * @return this builder
          */
         public Builder storageMode(StorageMode mode) {
@@ -1096,6 +1138,26 @@ public class SplitClientConfig {
             }
         }
 
+        private void verifyProxy() {
+            if (_proxyConfiguration == null)
+                return;
+
+            if (_proxyPort != -1) {
+                _log.warn("Both the deprecated proxy configuration methods (`proxyHost`, `proxyPort`, `proxyUsername`, or `proxyPassword`) " +
+                        "and the new `ProxyConfiguration` builder are being used. `ProxyConfiguration` will take precedence.");
+            }
+
+            if (!(_proxyConfiguration.getHost().getSchemeName().equals(HttpScheme.HTTP) ||
+                    _proxyConfiguration.getHost().getSchemeName().equals(HttpScheme.HTTPS))) {
+                throw new IllegalArgumentException("Proxy scheme must be either http or https.");
+            }
+
+            if ((_proxyConfiguration.getP12File() != null && _proxyConfiguration.getPassKey() == null) ||
+                    (_proxyConfiguration.getP12File() == null && _proxyConfiguration.getPassKey() != null)) {
+                throw new IllegalArgumentException("Proxy mTLS must have p12 file path and name, and pass phrase.");
+            }
+        }
+
         public SplitClientConfig build() {
 
             verifyRates();
@@ -1107,6 +1169,8 @@ public class SplitClientConfig {
             verifyNetworkParams();
 
             verifyAlternativeClient();
+
+            verifyProxy();
 
             if (_numThreadsForSegmentFetch <= 0) {
                 throw new IllegalArgumentException("Number of threads for fetching segments MUST be greater than zero");
@@ -1133,6 +1197,7 @@ public class SplitClientConfig {
                     proxy(),
                     _proxyUsername,
                     _proxyPassword,
+                    _proxyConfiguration,
                     _eventsQueueSize,
                     _eventSendIntervalInMillis,
                     _maxStringLength,

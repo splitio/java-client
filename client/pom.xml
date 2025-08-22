@@ -5,9 +5,9 @@
     <parent>
         <groupId>io.split.client</groupId>
         <artifactId>java-client-parent</artifactId>
-        <version>4.16.1</version>
+        <version>4.17.0-rc3</version>
     </parent>
-    <version>4.16.1</version>
+    <version>4.17.0-rc3</version>
     <artifactId>java-client</artifactId>
     <packaging>jar</packaging>
     <name>Java Client</name>
@@ -24,7 +24,7 @@
                         <version>0.8.0</version>
                         <extensions>true</extensions>
                         <configuration>
-                            <ignorePublishedComponents>true</ignorePublishedComponents>
+                            <ignorePublishedComponents>false</ignorePublishedComponents>
                             <publishingServerId>central</publishingServerId>
                             <autoPublish>false</autoPublish>
                             <waitUntil>published</waitUntil>
