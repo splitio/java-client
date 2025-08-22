@@ -636,7 +636,7 @@ public class SplitFactoryImpl implements SplitFactory {
 
     private static HttpClientBuilder useLegacyProxyConfiguration(HttpClientBuilder httpClientbuilder, SplitClientConfig config) {
         HttpHost proxyHost = config.proxy();
-        httpClientbuilder = addProxyHost(httpClientbuilder, proxyHost);
+        addProxyHost(httpClientbuilder, proxyHost);
         if (config.proxyUsername() != null && config.proxyPassword() != null) {
             return addProxyBasicAuth(httpClientbuilder, proxyHost, config.proxyUsername(), config.proxyPassword());
         }
@@ -646,7 +646,7 @@ public class SplitFactoryImpl implements SplitFactory {
 
     private static HttpClientBuilder useProxyConfiguration(HttpClientBuilder httpClientbuilder, SplitClientConfig config) {
         HttpHost proxyHost = config.proxyConfiguration().getHost();
-        httpClientbuilder = addProxyHost(httpClientbuilder, proxyHost);
+        addProxyHost(httpClientbuilder, proxyHost);
         if (config.proxyConfiguration().getProxyCredentialsProvider() == null) {
             return httpClientbuilder;
         }
@@ -663,10 +663,9 @@ public class SplitFactoryImpl implements SplitFactory {
         return httpClientbuilder;
     }
 
-    private static HttpClientBuilder addProxyHost(HttpClientBuilder httpClientbuilder, HttpHost proxyHost) {
+    private static void addProxyHost(HttpClientBuilder httpClientbuilder, HttpHost proxyHost) {
         DefaultProxyRoutePlanner routePlanner = new DefaultProxyRoutePlanner(proxyHost);
         httpClientbuilder.setRoutePlanner(routePlanner);
-        return httpClientbuilder;
     }
 
     private static HttpClientBuilder addProxyBasicAuth(HttpClientBuilder httpClientbuilder, HttpHost proxyHost, String userName, String password) {
