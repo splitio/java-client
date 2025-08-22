@@ -5,10 +5,10 @@
     <parent>
         <artifactId>java-client-parent</artifactId>
         <groupId>io.split.client</groupId>
-        <version>4.16.1</version>
+        <version>4.17.0</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
-    <version>4.16.1</version>
+    <version>4.17.0</version>
     <artifactId>okhttp-modules</artifactId>
     <packaging>jar</packaging>
     <name>http-modules</name>
@@ -25,7 +25,7 @@
                         <version>0.8.0</version>
                         <extensions>true</extensions>
                         <configuration>
-                            <ignorePublishedComponents>true</ignorePublishedComponents>
+                            <ignorePublishedComponents>false</ignorePublishedComponents>
                             <publishingServerId>central</publishingServerId>
                             <autoPublish>false</autoPublish>
                             <waitUntil>published</waitUntil>

@@ -1,3 +1,7 @@
+4.17.0 (Aug 22, 2025)
+- Added a maximum size payload when posting unique keys telemetry in batches
+- Added ProxyConfiguration parameter to support proxies, including Harness Forward Proxy, allowing also for more secured authentication options: MTLS, Bearer token and user/password authentication. Read more in our docs.
+
 4.16.1 (Jul 21, 2025)
 - Fixed vulnerabilities: 
     - Upgraded org.apache.commons-commons-lang3 to 3.18.0

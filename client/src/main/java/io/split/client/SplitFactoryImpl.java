@@ -1,6 +1,7 @@
 package io.split.client;
 
 import com.google.common.io.Files;
+import io.split.client.dtos.BearerCredentialsProvider;
 import io.split.client.dtos.Metadata;
 import io.split.client.events.EventsSender;
 import io.split.client.events.EventsStorage;
@@ -105,6 +106,7 @@ import org.apache.hc.client5.http.impl.io.PoolingHttpClientConnectionManagerBuil
 import org.apache.hc.client5.http.impl.routing.DefaultProxyRoutePlanner;
 import org.apache.hc.client5.http.ssl.SSLConnectionSocketFactory;
 import org.apache.hc.client5.http.ssl.SSLConnectionSocketFactoryBuilder;
+import org.apache.hc.core5.http.HttpHost;
 import org.apache.hc.core5.http.io.SocketConfig;
 import org.apache.hc.core5.http.ssl.TLS;
 import org.apache.hc.core5.ssl.SSLContexts;
@@ -113,11 +115,13 @@ import org.apache.hc.core5.util.Timeout;
 import org.slf4j.LoggerFactory;
 import pluggable.CustomStorageWrapper;
 
+import javax.net.ssl.SSLContext;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.InetAddress;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.security.KeyStore;
 import java.util.concurrent.ExecutorService;
 import java.util.stream.Collectors;
 import java.util.HashSet;
@@ -517,9 +521,12 @@ public class SplitFactoryImpl implements SplitFactory {
 
     protected static SplitHttpClient buildSplitHttpClient(String apiToken, SplitClientConfig config,
             SDKMetadata sdkMetadata, RequestDecorator requestDecorator)
-            throws URISyntaxException {
+            throws URISyntaxException, IOException {
+
+        SSLContext sslContext = buildSSLContext(config);
+
         SSLConnectionSocketFactory sslSocketFactory = SSLConnectionSocketFactoryBuilder.create()
-                .setSslContext(SSLContexts.createSystemDefault())
+                .setSslContext(sslContext)
                 .setTlsVersions(TLS.V_1_1, TLS.V_1_2)
                 .build();
 
@@ -545,7 +552,7 @@ public class SplitFactoryImpl implements SplitFactory {
                 .addResponseInterceptorLast((new GzipDecoderResponseInterceptor()));
 
         // Set up proxy is it exists
-        if (config.proxy() != null) {
+        if (config.proxy() != null || config.proxyConfiguration() != null) {
             httpClientbuilder = setupProxy(httpClientbuilder, config);
         }
 
@@ -556,13 +563,15 @@ public class SplitFactoryImpl implements SplitFactory {
     }
 
     private static CloseableHttpClient buildSSEdHttpClient(String apiToken, SplitClientConfig config,
-            SDKMetadata sdkMetadata) {
+            SDKMetadata sdkMetadata) throws IOException {
         RequestConfig requestConfig = RequestConfig.custom()
                 .setConnectTimeout(Timeout.ofMilliseconds(SSE_CONNECT_TIMEOUT))
                 .build();
 
+        SSLContext sslContext = buildSSLContext(config);
+
         SSLConnectionSocketFactory sslSocketFactory = SSLConnectionSocketFactoryBuilder.create()
-                .setSslContext(SSLContexts.createSystemDefault())
+                .setSslContext(sslContext)
                 .setTlsVersions(TLS.V_1_1, TLS.V_1_2)
                 .build();
 
@@ -582,28 +591,91 @@ public class SplitFactoryImpl implements SplitFactory {
                 .addRequestInterceptorLast(ClientKeyInterceptorFilter.instance(apiToken));
 
         // Set up proxy is it exists
-        if (config.proxy() != null) {
+        if (config.proxy() != null || config.proxyConfiguration() != null) {
             httpClientbuilder = setupProxy(httpClientbuilder, config);
         }
 
         return httpClientbuilder.build();
     }
 
+    private static SSLContext buildSSLContext(SplitClientConfig config) throws IOException, NullPointerException {
+        SSLContext sslContext;
+        if (config.proxyConfiguration() != null && config.proxyConfiguration().getP12File() != null) {
+            _log.debug("Proxy setup using mTLS");
+            InputStream keystoreStream = null;
+            try {
+                KeyStore keyStore = KeyStore.getInstance("PKCS12");
+                keystoreStream = config.proxyConfiguration().getP12File();
+                keyStore.load(keystoreStream, config.proxyConfiguration().getPassKey().toCharArray());
+                sslContext = SSLContexts.custom()
+                        .loadKeyMaterial(keyStore, config.proxyConfiguration().getPassKey().toCharArray())
+                        .build();
+            } catch (Exception e) {
+                _log.error("Exception caught while processing p12 file for Proxy mTLS auth: ", e);
+                _log.warn("Ignoring p12 mTLS config and switching to default context");
+                sslContext = SSLContexts.createSystemDefault();
+            } finally {
+                if (keystoreStream != null) {
+                    keystoreStream.close();
+                }
+            }
+        } else {
+            sslContext = SSLContexts.createSystemDefault();
+        }
+        return sslContext;
+    }
+
     private static HttpClientBuilder setupProxy(HttpClientBuilder httpClientbuilder, SplitClientConfig config) {
         _log.info("Initializing Split SDK with proxy settings");
-        DefaultProxyRoutePlanner routePlanner = new DefaultProxyRoutePlanner(config.proxy());
-        httpClientbuilder.setRoutePlanner(routePlanner);
+        if (config.proxyConfiguration() != null) {
+            return useProxyConfiguration(httpClientbuilder, config);
+        } else {
+            return useLegacyProxyConfiguration(httpClientbuilder, config);
+        }
+    }
 
+    private static HttpClientBuilder useLegacyProxyConfiguration(HttpClientBuilder httpClientbuilder, SplitClientConfig config) {
+        HttpHost proxyHost = config.proxy();
+        addProxyHost(httpClientbuilder, proxyHost);
         if (config.proxyUsername() != null && config.proxyPassword() != null) {
-            _log.debug("Proxy setup using credentials");
-            BasicCredentialsProvider credsProvider = new BasicCredentialsProvider();
-            AuthScope siteScope = new AuthScope(config.proxy().getHostName(), config.proxy().getPort());
-            Credentials siteCreds = new UsernamePasswordCredentials(config.proxyUsername(),
-                    config.proxyPassword().toCharArray());
-            credsProvider.setCredentials(siteScope, siteCreds);
-            httpClientbuilder.setDefaultCredentialsProvider(credsProvider);
+            return addProxyBasicAuth(httpClientbuilder, proxyHost, config.proxyUsername(), config.proxyPassword());
+        }
+        
+        return httpClientbuilder;
+    }
+
+    private static HttpClientBuilder useProxyConfiguration(HttpClientBuilder httpClientbuilder, SplitClientConfig config) {
+        HttpHost proxyHost = config.proxyConfiguration().getHost();
+        addProxyHost(httpClientbuilder, proxyHost);
+        if (config.proxyConfiguration().getProxyCredentialsProvider() == null) {
+            return httpClientbuilder;
         }
 
+        if (config.proxyConfiguration().getProxyCredentialsProvider() instanceof io.split.client.dtos.BasicCredentialsProvider) {
+            io.split.client.dtos.BasicCredentialsProvider basicAuth =
+                    (io.split.client.dtos.BasicCredentialsProvider) config.proxyConfiguration().getProxyCredentialsProvider();
+            return addProxyBasicAuth(httpClientbuilder, proxyHost, basicAuth.getUsername(), basicAuth.getPassword());
+        }
+
+        _log.debug("Proxy setup using Bearer token");
+        httpClientbuilder.setDefaultCredentialsProvider(new HttpClientDynamicCredentials(
+                    (BearerCredentialsProvider) config.proxyConfiguration().getProxyCredentialsProvider()));
+        return httpClientbuilder;
+    }
+
+    private static void addProxyHost(HttpClientBuilder httpClientbuilder, HttpHost proxyHost) {
+        DefaultProxyRoutePlanner routePlanner = new DefaultProxyRoutePlanner(proxyHost);
+        httpClientbuilder.setRoutePlanner(routePlanner);
+    }
+
+    private static HttpClientBuilder addProxyBasicAuth(HttpClientBuilder httpClientbuilder, HttpHost proxyHost, String userName, String password) {
+        _log.debug("Proxy setup using Basic authentication");
+        BasicCredentialsProvider credsProvider = new BasicCredentialsProvider();
+        AuthScope siteScope = new AuthScope(proxyHost.getHostName(), proxyHost.getPort());
+        Credentials siteCreds = new UsernamePasswordCredentials(userName,
+                password.toCharArray());
+        credsProvider.setCredentials(siteScope, siteCreds);
+        httpClientbuilder.setDefaultCredentialsProvider(credsProvider);
         return httpClientbuilder;
     }
 

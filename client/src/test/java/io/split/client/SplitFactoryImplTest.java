@@ -1,16 +1,25 @@
 package io.split.client;
 
+import io.split.client.dtos.ProxyConfiguration;
 import io.split.client.impressions.ImpressionsManager;
 import io.split.client.utils.FileTypeEnum;
 import io.split.integrations.IntegrationsConfig;
+import io.split.service.SplitHttpClientImpl;
 import io.split.storages.enums.OperationMode;
 import io.split.storages.pluggable.domain.UserStorageWrapper;
 import io.split.telemetry.storage.TelemetryStorage;
 import io.split.telemetry.synchronizer.TelemetrySynchronizer;
 import junit.framework.TestCase;
+import org.apache.hc.client5.http.auth.AuthScope;
+import org.apache.hc.client5.http.auth.UsernamePasswordCredentials;
+import org.apache.hc.client5.http.impl.auth.BasicCredentialsProvider;
+import org.apache.hc.client5.http.impl.io.DefaultHttpClientConnectionOperator;
+import org.apache.hc.client5.http.impl.io.PoolingHttpClientConnectionManager;
+import org.apache.hc.client5.http.impl.routing.DefaultProxyRoutePlanner;
+import org.apache.hc.core5.http.HttpHost;
+import org.apache.hc.core5.http.config.Registry;
 import org.awaitility.Awaitility;
 import org.junit.Assert;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.mockito.Mockito;
 import static org.mockito.Mockito.when;
@@ -24,6 +33,9 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.net.URISyntaxException;
+import java.net.URL;
+import java.util.HashMap;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 
 
@@ -87,7 +99,139 @@ public class SplitFactoryImplTest extends TestCase {
     }
 
     @Test
-    public void testFactoryInstantiationWithProxy() throws Exception {
+    public void testFactoryInstantiationWithLegacyProxy() throws Exception {
+        SplitClientConfig splitClientConfig = SplitClientConfig.builder()
+                .enableDebug()
+                .impressionsMode(ImpressionsManager.Mode.DEBUG)
+                .impressionsRefreshRate(1)
+                .endpoint(ENDPOINT, EVENTS_ENDPOINT)
+                .telemetryURL(SplitClientConfig.TELEMETRY_ENDPOINT)
+                .authServiceURL(AUTH_SERVICE)
+                .setBlockUntilReadyTimeout(1000)
+                .proxyPort(8888)
+                .proxyHost("proxy-host")
+                .proxyUsername("user")
+                .proxyPassword("pass")
+                .build();
+        SplitFactoryImpl splitFactory = new SplitFactoryImpl(API_KEY, splitClientConfig);
+        assertNotNull(splitFactory.client());
+
+        splitFactory.destroy();
+    }
+
+    @Test
+    public void testFactoryInstantiationWithProxyCredentials() throws Exception {
+        class MyBearerCredentialsProvider implements io.split.client.dtos.BasicCredentialsProvider {
+            @Override
+            public String getUsername() {
+                return "test";
+            }
+            @Override
+            public String getPassword() {
+                return "password";
+            }
+        };
+
+        SplitClientConfig splitClientConfig = SplitClientConfig.builder()
+                .enableDebug()
+                .impressionsMode(ImpressionsManager.Mode.DEBUG)
+                .impressionsRefreshRate(1)
+                .endpoint(ENDPOINT, EVENTS_ENDPOINT)
+                .telemetryURL(SplitClientConfig.TELEMETRY_ENDPOINT)
+                .authServiceURL(AUTH_SERVICE)
+                .setBlockUntilReadyTimeout(1000)
+                .proxyConfiguration(ProxyConfiguration.builder()
+                        .url(new URL("http://proxy-name:6060"))
+                        .credentialsProvider(new MyBearerCredentialsProvider())
+                        .build())
+                .build();
+        SplitFactoryImpl splitFactory = new SplitFactoryImpl(API_KEY, splitClientConfig);
+        assertNotNull(splitFactory.client());
+        assertNotNull(splitFactory.manager());
+
+        Field splitHttpClientField = SplitFactoryImpl.class.getDeclaredField("_splitHttpClient");
+        splitHttpClientField.setAccessible(true);
+        SplitHttpClientImpl client = (SplitHttpClientImpl) splitHttpClientField.get(splitFactory);
+
+        Field httpClientField = SplitHttpClientImpl.class.getDeclaredField("_client");
+        httpClientField.setAccessible(true);
+        Class<?> InternalHttp = Class.forName("org.apache.hc.client5.http.impl.classic.InternalHttpClient");
+
+        Field routePlannerField = InternalHttp.getDeclaredField("routePlanner");
+        routePlannerField.setAccessible(true);
+        DefaultProxyRoutePlanner routePlanner = (DefaultProxyRoutePlanner) routePlannerField.get(InternalHttp.cast(httpClientField.get(client)));
+
+        Field proxyField = DefaultProxyRoutePlanner.class.getDeclaredField("proxy");
+        proxyField.setAccessible(true);
+        HttpHost proxy = (HttpHost) proxyField.get(routePlanner);
+
+        Assert.assertEquals("http", proxy.getSchemeName());
+        Assert.assertEquals("proxy-name", proxy.getHostName());
+        Assert.assertEquals(6060, proxy.getPort());
+
+        Field credentialsProviderField = InternalHttp.getDeclaredField("credentialsProvider");
+        credentialsProviderField.setAccessible(true);
+        BasicCredentialsProvider credentialsProvider = (BasicCredentialsProvider) credentialsProviderField.get(InternalHttp.cast(httpClientField.get(client)));
+
+        Field credMapField = BasicCredentialsProvider.class.getDeclaredField("credMap");
+        credMapField.setAccessible(true);
+        ConcurrentHashMap<AuthScope, UsernamePasswordCredentials> credMap = (ConcurrentHashMap) credMapField.get(credentialsProvider);
+
+        Assert.assertEquals("test", credMap.entrySet().stream().iterator().next().getValue().getUserName());
+        assertNotNull(credMap.entrySet().stream().iterator().next().getValue().getUserPassword());
+
+        splitFactory.destroy();
+    }
+
+    @Test
+    public void testFactoryInstantiationWithProxyToken() throws Exception {
+        class MyBearerCredentialsProvider implements io.split.client.dtos.BearerCredentialsProvider {
+            @Override
+            public String getToken() {
+                return "123456789";
+            }
+        };
+
+        SplitClientConfig splitClientConfig = SplitClientConfig.builder()
+                .enableDebug()
+                .impressionsMode(ImpressionsManager.Mode.DEBUG)
+                .impressionsRefreshRate(1)
+                .endpoint(ENDPOINT, EVENTS_ENDPOINT)
+                .telemetryURL(SplitClientConfig.TELEMETRY_ENDPOINT)
+                .authServiceURL(AUTH_SERVICE)
+                .setBlockUntilReadyTimeout(1000)
+                .proxyConfiguration(ProxyConfiguration.builder()
+                        .url(new URL("http://proxy-name:6060"))
+                        .credentialsProvider(new MyBearerCredentialsProvider())
+                        .build())
+                .build();
+        SplitFactoryImpl splitFactory2 = new SplitFactoryImpl(API_KEY, splitClientConfig);
+        assertNotNull(splitFactory2.client());
+        assertNotNull(splitFactory2.manager());
+
+        Field splitHttpClientField2 = SplitFactoryImpl.class.getDeclaredField("_splitHttpClient");
+        splitHttpClientField2.setAccessible(true);
+        SplitHttpClientImpl client2 = (SplitHttpClientImpl) splitHttpClientField2.get(splitFactory2);
+
+        Field httpClientField2 = SplitHttpClientImpl.class.getDeclaredField("_client");
+        httpClientField2.setAccessible(true);
+        Class<?> InternalHttp2 = Class.forName("org.apache.hc.client5.http.impl.classic.InternalHttpClient");
+
+        Field credentialsProviderField2 = InternalHttp2.getDeclaredField("credentialsProvider");
+        credentialsProviderField2.setAccessible(true);
+        HttpClientDynamicCredentials credentialsProvider2 = (HttpClientDynamicCredentials) credentialsProviderField2.get(InternalHttp2.cast(httpClientField2.get(client2)));
+
+        Field proxyRuntimeField = HttpClientDynamicCredentials.class.getDeclaredField("_bearerCredentialsProvider");
+        proxyRuntimeField.setAccessible(true);
+        MyBearerCredentialsProvider proxyRuntime = (MyBearerCredentialsProvider) proxyRuntimeField.get(credentialsProvider2);
+
+        assertNotNull("123456789", proxyRuntime.getToken());
+
+        splitFactory2.destroy();
+    }
+
+    @Test
+    public void testFactoryInstantiationWithProxyMtls() throws Exception {
         SplitClientConfig splitClientConfig = SplitClientConfig.builder()
                 .enableDebug()
                 .impressionsMode(ImpressionsManager.Mode.DEBUG)
@@ -96,15 +240,64 @@ public class SplitFactoryImplTest extends TestCase {
                 .telemetryURL(SplitClientConfig.TELEMETRY_ENDPOINT)
                 .authServiceURL(AUTH_SERVICE)
                 .setBlockUntilReadyTimeout(1000)
-                .proxyPort(6060)
-                .proxyUsername("test")
-                .proxyPassword("password")
-                .proxyHost(ENDPOINT)
+                .proxyConfiguration(ProxyConfiguration.builder()
+                        .url(new URL("http://proxy-name:6060"))
+                        .mtls(new FileInputStream("src/test/resources/keyStore.p12"), "split")
+                        .build())
                 .build();
-        SplitFactoryImpl splitFactory = new SplitFactoryImpl(API_KEY, splitClientConfig);
+        SplitFactoryImpl splitFactory3 = new SplitFactoryImpl(API_KEY, splitClientConfig);
+        assertNotNull(splitFactory3.client());
+        assertNotNull(splitFactory3.manager());
 
-        assertNotNull(splitFactory.client());
-        assertNotNull(splitFactory.manager());
+        Field splitHttpClientField3 = SplitFactoryImpl.class.getDeclaredField("_splitHttpClient");
+        splitHttpClientField3.setAccessible(true);
+        SplitHttpClientImpl client3 = (SplitHttpClientImpl) splitHttpClientField3.get(splitFactory3);
+
+        Field httpClientField3 = SplitHttpClientImpl.class.getDeclaredField("_client");
+        httpClientField3.setAccessible(true);
+        Class<?> InternalHttp3 = Class.forName("org.apache.hc.client5.http.impl.classic.InternalHttpClient");
+
+        Field connManagerField = InternalHttp3.getDeclaredField("connManager");
+        connManagerField.setAccessible(true);
+        PoolingHttpClientConnectionManager connManager = (PoolingHttpClientConnectionManager) connManagerField.get(InternalHttp3.cast(httpClientField3.get(client3)));
+
+        Field connectionOperatorField = PoolingHttpClientConnectionManager.class.getDeclaredField("connectionOperator");
+        connectionOperatorField.setAccessible(true);
+        DefaultHttpClientConnectionOperator connectionOperator = (DefaultHttpClientConnectionOperator) connectionOperatorField.get(connManager);
+
+        Field tlsSocketStrategyLookupField = DefaultHttpClientConnectionOperator.class.getDeclaredField("tlsSocketStrategyLookup");
+        tlsSocketStrategyLookupField.setAccessible(true);
+        Registry tlsSocketStrategyLookup = (Registry) tlsSocketStrategyLookupField.get(connectionOperator);
+
+        Field mapField = Registry.class.getDeclaredField("map");
+        mapField.setAccessible(true);
+        Class<?> map =  mapField.get(tlsSocketStrategyLookup).getClass();
+
+        Class<?> value = ((ConcurrentHashMap) map.cast(mapField.get(tlsSocketStrategyLookup))).get("https").getClass();
+
+        Field arg1Field = value.getDeclaredField("arg$1");
+        arg1Field.setAccessible(true);
+        Class<?> sslConnectionSocketFactory = arg1Field.get(((ConcurrentHashMap) map.cast(mapField.get(tlsSocketStrategyLookup))).get("https")).getClass();
+
+        Field socketFactoryField = sslConnectionSocketFactory.getDeclaredField("socketFactory");
+        socketFactoryField.setAccessible(true);
+        Class<?> socketFactory = socketFactoryField.get(arg1Field.get(((ConcurrentHashMap) map.cast(mapField.get(tlsSocketStrategyLookup))).get("https"))).getClass();
+
+        Field contextField = socketFactory.getDeclaredField("context");
+        contextField.setAccessible(true);
+        Class<?> context = Class.forName("sun.security.ssl.SSLContextImpl");
+
+        Field keyManagerField = context.getDeclaredField("keyManager");
+        keyManagerField.setAccessible(true);
+        Class<?> keyManager = keyManagerField.get(contextField.get(socketFactoryField.get(arg1Field.get(((ConcurrentHashMap) map.cast(mapField.get(tlsSocketStrategyLookup))).get("https"))))).getClass();
+
+        Field credentialsMapField = keyManager.getDeclaredField("credentialsMap");
+        credentialsMapField.setAccessible(true);
+        HashMap<String,Object> credentialsMap = (HashMap) credentialsMapField.get(keyManagerField.get(contextField.get(socketFactoryField.get(arg1Field.get(((ConcurrentHashMap) map.cast(mapField.get(tlsSocketStrategyLookup))).get("https"))))));
+
+        assertNotNull(credentialsMap.get("1"));
+
+        splitFactory3.destroy();
     }
 
     @Test
