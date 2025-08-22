@@ -1,5 +1,6 @@
 package io.split.client.impressions;
 
+import com.google.common.collect.Lists;
 import io.split.client.dtos.UniqueKeys;
 import io.split.client.impressions.filters.BloomFilterImp;
 import io.split.client.impressions.filters.Filter;
@@ -21,12 +22,14 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
 
 public class UniqueKeysTrackerImp implements UniqueKeysTracker{
     private static final Logger _log = LoggerFactory.getLogger(UniqueKeysTrackerImp.class);
     private static final double MARGIN_ERROR = 0.01;
-    private static final int MAX_AMOUNT_OF_TRACKED_UNIQUE_KEYS = 30000;
+    private static final int MAX_UNIQUE_KEYS_POST_SIZE = 5000;
     private static final int MAX_AMOUNT_OF_KEYS = 10000000;
+    private final AtomicInteger trackerKeysSize = new AtomicInteger(0);
     private FilterAdapter filterAdapter;
     private final TelemetrySynchronizer _telemetrySynchronizer;
     private final ScheduledExecutorService _uniqueKeysSyncScheduledExecutorService;
@@ -59,10 +62,11 @@ public class UniqueKeysTrackerImp implements UniqueKeysTracker{
                 (feature, current) -> {
                     HashSet<String> keysByFeature = Optional.ofNullable(current).orElse(new HashSet<>());
                     keysByFeature.add(key);
+                    trackerKeysSize.incrementAndGet();
                     return keysByFeature;
                 });
         _logger.debug("The feature flag " + featureFlagName + " and key " + key + " was added");
-        if (uniqueKeysTracker.size() >= MAX_AMOUNT_OF_TRACKED_UNIQUE_KEYS){
+        if (trackerKeysSize.intValue() >= MAX_UNIQUE_KEYS_POST_SIZE){
             _logger.warn("The UniqueKeysTracker size reached the maximum limit");
             try {
                 sendUniqueKeys();
@@ -107,6 +111,7 @@ public class UniqueKeysTrackerImp implements UniqueKeysTracker{
             HashSet<String> value = uniqueKeysTracker.remove(key);
             toReturn.put(key, value);
         }
+        trackerKeysSize.set(0);
         return toReturn;
     }
 
@@ -115,26 +120,71 @@ public class UniqueKeysTrackerImp implements UniqueKeysTracker{
             _log.debug("SendUniqueKeys already running");
             return;
         }
+
         try {
-            if (uniqueKeysTracker.size() == 0) {
-                _log.warn("The Unique Keys Tracker is empty");
+            if (uniqueKeysTracker.isEmpty()) {
+                _log.debug("The Unique Keys Tracker is empty");
                 return;
             }
+
             HashMap<String, HashSet<String>> uniqueKeysHashMap = popAll();
             List<UniqueKeys.UniqueKey> uniqueKeysFromPopAll = new ArrayList<>();
             for (Map.Entry<String, HashSet<String>> uniqueKeyEntry : uniqueKeysHashMap.entrySet()) {
                 UniqueKeys.UniqueKey uniqueKey = new UniqueKeys.UniqueKey(uniqueKeyEntry.getKey(), new ArrayList<>(uniqueKeyEntry.getValue()));
                 uniqueKeysFromPopAll.add(uniqueKey);
             }
-            _telemetrySynchronizer.synchronizeUniqueKeys(new UniqueKeys(uniqueKeysFromPopAll));
+            uniqueKeysFromPopAll = capChunksToMaxSize(uniqueKeysFromPopAll);
+
+            for (List<UniqueKeys.UniqueKey> chunk : getChunks(uniqueKeysFromPopAll)) {
+                _telemetrySynchronizer.synchronizeUniqueKeys(new UniqueKeys(chunk));
+            }
         } finally {
             sendGuard.set(false);
         }
     }
 
+    private List<UniqueKeys.UniqueKey> capChunksToMaxSize(List<UniqueKeys.UniqueKey> uniqueKeys) {
+        List<UniqueKeys.UniqueKey> finalChunk = new ArrayList<>();
+        for (UniqueKeys.UniqueKey uniqueKey : uniqueKeys) {
+            if (uniqueKey.keysDto.size() > MAX_UNIQUE_KEYS_POST_SIZE) {
+                for(List<String> subChunk : Lists.partition(uniqueKey.keysDto, MAX_UNIQUE_KEYS_POST_SIZE)) {
+                    finalChunk.add(new UniqueKeys.UniqueKey(uniqueKey.featureName, subChunk));
+                }
+                continue;
+            }
+            finalChunk.add(uniqueKey);
+        }
+        return finalChunk;
+    }
+
+    private List<List<UniqueKeys.UniqueKey>> getChunks(List<UniqueKeys.UniqueKey> uniqueKeys) {
+        List<List<UniqueKeys.UniqueKey>> chunks = new ArrayList<>();
+        List<UniqueKeys.UniqueKey> intermediateChunk = new ArrayList<>();
+        for (UniqueKeys.UniqueKey uniqueKey : uniqueKeys) {
+            if ((getChunkSize(intermediateChunk) + uniqueKey.keysDto.size()) > MAX_UNIQUE_KEYS_POST_SIZE) {
+                chunks.add(intermediateChunk);
+                intermediateChunk = new ArrayList<>();
+            }
+            intermediateChunk.add(uniqueKey);
+        }
+        if (!intermediateChunk.isEmpty()) {
+            chunks.add(intermediateChunk);
+        }
+        return chunks;
+    }
+
+    private int getChunkSize(List<UniqueKeys.UniqueKey> uniqueKeysChunk) {
+        int totalSize = 0;
+        for (UniqueKeys.UniqueKey uniqueKey : uniqueKeysChunk) {
+            totalSize += uniqueKey.keysDto.size();
+        }
+        return totalSize;
+    }
+    
     private interface ExecuteUniqueKeysAction{
         void execute();
     }
+
     private class ExecuteCleanFilter implements ExecuteUniqueKeysAction {
 
         @Override

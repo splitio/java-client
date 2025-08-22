@@ -96,7 +96,7 @@ public class UserCustomRuleBasedSegmentAdapterConsumer implements RuleBasedSegme
 
     @Override
     public boolean contains(Set<String> ruleBasedSegmentNames) {
-        return getSegments().containsAll(ruleBasedSegmentNames);
+        return _userStorageWrapper.getKeysByPrefix(PrefixAdapter.buildGetAllRuleBasedSegment()).containsAll(ruleBasedSegmentNames);
     }
 
 }

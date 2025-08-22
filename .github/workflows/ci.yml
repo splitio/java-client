@@ -60,7 +60,7 @@ jobs:
         run: mvn checkstyle::check
 
 #      - name: Deploy
-#        if: matrix.jdk == '8' && github.event_name == 'push' && github.ref != 'refs/heads/master' && github.ref != 'refs/heads/development'
+#       if: matrix.jdk == '8' && github.event_name == 'push' && github.ref != 'refs/heads/master' && github.ref != 'refs/heads/development'
 #        run: mvn --batch-mode deploy -P test
 
       - name: SonarQube Scan (Push)
