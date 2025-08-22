@@ -2,18 +2,19 @@ package io.split.client.dtos;
 
 import org.apache.hc.core5.http.HttpHost;
 
+import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
 
 public class ProxyConfiguration {
     private final HttpHost _proxyHost;
     private ProxyCredentialsProvider _provider;
-    private final String _p12File;
+    private final InputStream _p12File;
     private final String _passKey;
 
     private ProxyConfiguration(HttpHost proxyHost,
                                ProxyCredentialsProvider proxyCredentialsProvider,
-                               String p12File, String passKey) {
+                               InputStream p12File, String passKey) {
         _proxyHost = proxyHost;
         _p12File = p12File;
         _passKey = passKey;
@@ -21,7 +22,7 @@ public class ProxyConfiguration {
     }
 
     public HttpHost getHost() { return _proxyHost; }
-    public String getP12File() { return _p12File; }
+    public InputStream getP12File() { return _p12File; }
     public String getPassKey() { return _passKey; }
     public ProxyCredentialsProvider getProxyCredentialsProvider() { return _provider; }
 
@@ -32,7 +33,7 @@ public class ProxyConfiguration {
     public static class Builder {
         private ProxyCredentialsProvider _provider;
         private HttpHost _proxyHost;
-        private String _p12File;
+        private InputStream _p12File;
         private String _passKey;
 
         public ProxyConfiguration.Builder credentialsProvider(ProxyCredentialsProvider provider) {
@@ -49,7 +50,7 @@ public class ProxyConfiguration {
             return this;
         }
 
-        public ProxyConfiguration.Builder mtls(String p12File, String passKey) {
+        public ProxyConfiguration.Builder mtls(InputStream p12File, String passKey) {
             _passKey = passKey;
             _p12File = p12File;
             return this;

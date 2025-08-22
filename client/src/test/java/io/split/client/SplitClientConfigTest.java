@@ -13,6 +13,8 @@ import org.junit.Assert;
 import org.junit.Test;
 import org.mockito.Mockito;
 
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.List;
@@ -260,7 +262,7 @@ public class SplitClientConfigTest {
     }
 
     @Test
-    public void checkProxyParams() throws MalformedURLException {
+    public void checkProxyParams() throws MalformedURLException, FileNotFoundException {
         SplitClientConfig config = SplitClientConfig.builder()
                 .proxyConfiguration(new ProxyConfiguration.Builder()
                         .url(new URL("https://proxy-host:8888"))
@@ -304,14 +306,14 @@ public class SplitClientConfigTest {
                         .build())
                 .build();
         Assert.assertEquals(bearerCredentialsProvider, config.proxyConfiguration().getProxyCredentialsProvider());
-
+        FileInputStream p12File = new FileInputStream("src/test/resources/keyStore.p12");
         config = SplitClientConfig.builder()
                 .proxyConfiguration(new ProxyConfiguration.Builder()
                         .url(new URL("https://proxy-host:888"))
-                        .mtls("path/to/file", "pass-key")
+                        .mtls(p12File, "pass-key")
                         .build())
                 .build();
-        Assert.assertEquals("path/to/file", config.proxyConfiguration().getP12File());
+        Assert.assertEquals(p12File, config.proxyConfiguration().getP12File());
         Assert.assertEquals("pass-key", config.proxyConfiguration().getPassKey());
     }
 
@@ -352,11 +354,11 @@ public class SplitClientConfigTest {
     }
 
     @Test(expected = IllegalArgumentException.class)
-    public void mustUseP12PassKeyWithProxyMtls() throws MalformedURLException {
+    public void mustUseP12PassKeyWithProxyMtls() throws MalformedURLException, FileNotFoundException {
         SplitClientConfig.builder()
                 .proxyConfiguration(new ProxyConfiguration.Builder()
                         .url(new URL("https://proxy-host:888"))
-                        .mtls("path/to/file", null)
+                        .mtls(new FileInputStream("src/test/resources/keyStore.p12"), null)
                         .build())
                 .build();
     }

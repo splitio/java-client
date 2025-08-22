@@ -121,7 +121,6 @@ import java.io.InputStream;
 import java.net.InetAddress;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.nio.file.Paths;
 import java.security.KeyStore;
 import java.util.concurrent.ExecutorService;
 import java.util.stream.Collectors;
@@ -606,7 +605,7 @@ public class SplitFactoryImpl implements SplitFactory {
             InputStream keystoreStream = null;
             try {
                 KeyStore keyStore = KeyStore.getInstance("PKCS12");
-                keystoreStream = java.nio.file.Files.newInputStream(Paths.get(config.proxyConfiguration().getP12File()));
+                keystoreStream = config.proxyConfiguration().getP12File();
                 keyStore.load(keystoreStream, config.proxyConfiguration().getPassKey().toCharArray());
                 sslContext = SSLContexts.custom()
                         .loadKeyMaterial(keyStore, config.proxyConfiguration().getPassKey().toCharArray())
