@@ -1,6 +1,7 @@
 package io.split.storages.pluggable.adapters;
 
 import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
 import io.split.client.dtos.*;
 import io.split.client.utils.Json;
 import io.split.engine.ConditionsTestUtil;
@@ -16,10 +17,14 @@ import pluggable.CustomStorageWrapper;
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 import java.util.*;
+import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.atomic.AtomicLong;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import static io.split.TestHelper.makeRuleBasedSegment;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 
 public class UserCustomRuleBasedSegmentAdapterConsumerTest {
 
@@ -66,10 +71,16 @@ public class UserCustomRuleBasedSegmentAdapterConsumerTest {
     public void testGetRuleBasedSegment() {
         RuleBasedSegmentParser ruleBasedSegmentParser = new RuleBasedSegmentParser();
         RuleBasedSegment ruleBasedSegment = getRuleBasedSegment(RULE_BASED_SEGMENT_NAME);
-        Mockito.when(_userStorageWrapper.get(PrefixAdapter.buildRuleBasedSegmentKey(RULE_BASED_SEGMENT_NAME))).thenReturn(getRuleBasedSegmentAsJson(ruleBasedSegment));
-        ParsedRuleBasedSegment result = _userCustomRuleBasedSegmentAdapterConsumer.get(RULE_BASED_SEGMENT_NAME);
         ParsedRuleBasedSegment expected = ruleBasedSegmentParser.parse(ruleBasedSegment);
+        ConcurrentMap<String, ParsedRuleBasedSegment> rbsCollection = Maps.newConcurrentMap();
+        rbsCollection.put(RULE_BASED_SEGMENT_NAME, expected);
+        Mockito.when(_userStorageWrapper.get(PrefixAdapter.buildRuleBasedSegmentKey(RULE_BASED_SEGMENT_NAME))).thenReturn(getRuleBasedSegmentAsJson(ruleBasedSegment));
+        Mockito.when(_userStorageWrapper.getKeysByPrefix("SPLITIO.rbsegment*")).thenReturn(new HashSet<>(Arrays.asList(RULE_BASED_SEGMENT_NAME)));
+        ParsedRuleBasedSegment result = _userCustomRuleBasedSegmentAdapterConsumer.get(RULE_BASED_SEGMENT_NAME);
         Assert.assertEquals(expected, result);
+        assertTrue(_userCustomRuleBasedSegmentAdapterConsumer.contains(new HashSet<>(Arrays.asList(RULE_BASED_SEGMENT_NAME))));
+        assertFalse(_userCustomRuleBasedSegmentAdapterConsumer.contains(new HashSet<>(Arrays.asList(RULE_BASED_SEGMENT_NAME, "123"))));
+
     }
 
     @Test
@@ -135,7 +146,7 @@ public class UserCustomRuleBasedSegmentAdapterConsumerTest {
         Mockito.when(_userStorageWrapper.getMany(Mockito.anyObject())).
                 thenReturn(getManyExpected);
         HashSet<String> segmentResult = (HashSet<String>) _userCustomRuleBasedSegmentAdapterConsumer.getSegments();
-        Assert.assertTrue(segmentResult.contains("employee"));
+        assertTrue(segmentResult.contains("employee"));
     }
 
     @Test

@@ -39,7 +39,7 @@
                             <publishingServerId>central</publishingServerId>
                             <autoPublish>false</autoPublish>
                             <waitUntil>published</waitUntil>
-                            <ignorePublishedComponents>true</ignorePublishedComponents>
+                            <ignorePublishedComponents>false</ignorePublishedComponents>
                         </configuration>
                     </plugin>
                 </plugins>
