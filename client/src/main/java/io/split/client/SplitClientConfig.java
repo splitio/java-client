@@ -1,5 +1,7 @@
 package io.split.client;
 
+import io.split.client.dtos.FallbackTreatment;
+import io.split.client.dtos.FallbackTreatmentsConfiguration;
 import io.split.client.dtos.ProxyConfiguration;
 import io.split.client.impressions.ImpressionListener;
 import io.split.client.impressions.ImpressionsManager;
@@ -20,6 +22,8 @@ import java.util.Properties;
 import java.util.concurrent.ThreadFactory;
 import java.io.InputStream;
 
+import static io.split.inputValidation.FallbackTreatmentValidator.isValidByFlagTreatment;
+import static io.split.inputValidation.FallbackTreatmentValidator.isValidTreatment;
 import static io.split.inputValidation.FlagSetsValidator.cleanup;
 
 /**
@@ -91,6 +95,7 @@ public class SplitClientConfig {
     private final CustomStorageWrapper _customStorageWrapper;
     private final StorageMode _storageMode;
     private final ThreadFactory _threadFactory;
+    private final FallbackTreatmentsConfiguration _fallbackTreatments;
 
     // Proxy configs
     private final ProxyConfiguration _proxyConfiguration;
@@ -163,7 +168,8 @@ public class SplitClientConfig {
                               HashSet<String> flagSetsFilter,
                               int invalidSets,
                               CustomHeaderDecorator customHeaderDecorator,
-                              CustomHttpModule alternativeHTTPModule) {
+                              CustomHttpModule alternativeHTTPModule,
+                              FallbackTreatmentsConfiguration fallbackTreatments) {
         _endpoint = endpoint;
         _eventsEndpoint = eventsEndpoint;
         _featuresRefreshRate = pollForFeatureChangesEveryNSeconds;
@@ -218,6 +224,7 @@ public class SplitClientConfig {
         _invalidSets = invalidSets;
         _customHeaderDecorator = customHeaderDecorator;
         _alternativeHTTPModule = alternativeHTTPModule;
+        _fallbackTreatments = fallbackTreatments;
 
         Properties props = new Properties();
         try {
@@ -436,6 +443,8 @@ public class SplitClientConfig {
 
     public CustomHttpModule alternativeHTTPModule() { return _alternativeHTTPModule; }
 
+    public FallbackTreatmentsConfiguration fallbackTreatments() { return _fallbackTreatments; }
+
     public static final class Builder {
         private String _endpoint = SDK_ENDPOINT;
         private boolean _endpointSet = false;
@@ -494,6 +503,7 @@ public class SplitClientConfig {
         private int _invalidSetsCount = 0;
         private CustomHeaderDecorator _customHeaderDecorator = null;
         private CustomHttpModule _alternativeHTTPModule = null;
+        private FallbackTreatmentsConfiguration _fallbackTreatments;
 
         public Builder() {
         }
@@ -1023,6 +1033,17 @@ public class SplitClientConfig {
         }
 
         /**
+         * Fallback Treatments
+         *
+         * @param fallbackTreatments
+         * @return this builder
+         */
+        public Builder fallbackTreatments(FallbackTreatmentsConfiguration fallbackTreatments) {
+            _fallbackTreatments = fallbackTreatments;
+            return this;
+        }
+
+        /**
          * Thread Factory
          *
          * @param threadFactory
@@ -1158,6 +1179,21 @@ public class SplitClientConfig {
             }
         }
 
+        private void verifyFallbackTreatments() {
+            if (_fallbackTreatments == null)
+                return;
+
+            if (_fallbackTreatments.getGlobalFallbackTreatment() != null) {
+                _fallbackTreatments.setGlobalFallbackTreatment(new FallbackTreatment(
+                        isValidTreatment(_fallbackTreatments.getGlobalFallbackTreatment().getTreatment(), "config"),
+                        _fallbackTreatments.getGlobalFallbackTreatment().getConfig()));
+            }
+
+            if (_fallbackTreatments.getByFlagFallbackTreatment() != null) {
+                _fallbackTreatments.setByFlagFallbackTreatment(isValidByFlagTreatment(_fallbackTreatments.getByFlagFallbackTreatment(), "config"));
+            }
+        }
+
         public SplitClientConfig build() {
 
             verifyRates();
@@ -1171,6 +1207,8 @@ public class SplitClientConfig {
             verifyAlternativeClient();
 
             verifyProxy();
+
+            verifyFallbackTreatments();
 
             if (_numThreadsForSegmentFetch <= 0) {
                 throw new IllegalArgumentException("Number of threads for fetching segments MUST be greater than zero");
@@ -1230,7 +1268,8 @@ public class SplitClientConfig {
                     _flagSetsFilter,
                     _invalidSetsCount,
                     _customHeaderDecorator,
-                    _alternativeHTTPModule);
+                    _alternativeHTTPModule,
+                    _fallbackTreatments);
         }
     }
 }

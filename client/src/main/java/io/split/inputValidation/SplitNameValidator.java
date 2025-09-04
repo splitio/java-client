@@ -6,10 +6,13 @@ import org.slf4j.LoggerFactory;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 public class SplitNameValidator {
     private static final Logger _log = LoggerFactory.getLogger(SplitNameValidator.class);
+    private static final int MAX_LENGTH = 100;
+    private static final Pattern NAME_MATCHER = Pattern.compile("^[0-9]+[.a-zA-Z0-9_-]*$|^[a-zA-Z]+[a-zA-Z0-9_-]*$");
 
     public static Optional<String> isValid(String name, String method) {
         if (name == null) {
@@ -26,6 +29,16 @@ public class SplitNameValidator {
         if (!trimmed.equals(name)) {
             _log.warn(String.format("%s: feature flag name %s has extra whitespace, trimming", method, name));
             name = trimmed;
+        }
+
+        if (name.length() > MAX_LENGTH) {
+            return Optional.empty();
+        }
+
+        if (!NAME_MATCHER.matcher(name).find()) {
+            _log.error(String.format("%s: you passed %s, feature flag name must adhere to the regular expression " +
+                    "^[0-9]+[.a-zA-Z0-9_-]*$|^[a-zA-Z]+[a-zA-Z0-9_-]*$", method, name));
+            return Optional.empty();
         }
 
         return Optional.of(name);
