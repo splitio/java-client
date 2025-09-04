@@ -177,7 +177,7 @@ public class EvaluatorImp implements Evaluator {
     }
 
     private TreatmentLabelAndChangeNumber evaluateParsedSplit(String matchingKey, String bucketingKey, Map<String, Object> attributes,
-                                                              ParsedSplit parsedSplit, String feature_name) {
+                                                              ParsedSplit parsedSplit, String featureName) {
         try {
             if (parsedSplit == null) {
                 return checkFallbackTreatments(Treatments.CONTROL, Labels.DEFINITION_NOT_FOUND, feature_name, null, _fallbackTreatmentsConfiguration);
