@@ -188,7 +188,7 @@ public class EvaluatorImp implements Evaluator {
             return checkFallbackTreatments(Treatments.CONTROL, Labels.EXCEPTION, featureName, e.changeNumber(), _fallbackTreatmentsConfiguration);
         } catch (Exception e) {
             _log.error("Evaluator Exception", e);
-            return checkFallbackTreatments(Treatments.CONTROL, Labels.EXCEPTION, feature_name, null, _fallbackTreatmentsConfiguration);
+            return checkFallbackTreatments(Treatments.CONTROL, Labels.EXCEPTION, featureName, null, _fallbackTreatmentsConfiguration);
         }
     }
 
