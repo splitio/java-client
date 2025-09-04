@@ -180,7 +180,7 @@ public class EvaluatorImp implements Evaluator {
                                                               ParsedSplit parsedSplit, String featureName) {
         try {
             if (parsedSplit == null) {
-                return checkFallbackTreatments(Treatments.CONTROL, Labels.DEFINITION_NOT_FOUND, feature_name, null, _fallbackTreatmentsConfiguration);
+                return checkFallbackTreatments(Treatments.CONTROL, Labels.DEFINITION_NOT_FOUND, featureName, null, _fallbackTreatmentsConfiguration);
             }
             return getTreatment(matchingKey, bucketingKey, parsedSplit, attributes);
         } catch (ChangeNumberExceptionWrapper e) {
