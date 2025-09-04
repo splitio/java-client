@@ -185,7 +185,7 @@ public class EvaluatorImp implements Evaluator {
             return getTreatment(matchingKey, bucketingKey, parsedSplit, attributes);
         } catch (ChangeNumberExceptionWrapper e) {
             _log.error("Evaluator Exception", e.wrappedException());
-            return checkFallbackTreatments(Treatments.CONTROL, Labels.EXCEPTION, feature_name, e.changeNumber(), _fallbackTreatmentsConfiguration);
+            return checkFallbackTreatments(Treatments.CONTROL, Labels.EXCEPTION, featureName, e.changeNumber(), _fallbackTreatmentsConfiguration);
         } catch (Exception e) {
             _log.error("Evaluator Exception", e);
             return checkFallbackTreatments(Treatments.CONTROL, Labels.EXCEPTION, feature_name, null, _fallbackTreatmentsConfiguration);
