@@ -257,7 +257,7 @@ public class SplitFactoryImpl implements SplitFactory {
                 config.getThreadFactory());
 
         // Evaluator
-        _evaluator = new EvaluatorImp(splitCache, segmentCache, ruleBasedSegmentCache);
+        _evaluator = new EvaluatorImp(splitCache, segmentCache, ruleBasedSegmentCache, null);
 
         // SplitClient
         _client = new SplitClientImpl(this,
@@ -348,7 +348,8 @@ public class SplitFactoryImpl implements SplitFactory {
         _telemetrySynchronizer = new TelemetryConsumerSubmitter(customStorageWrapper, _sdkMetadata);
         UserCustomRuleBasedSegmentAdapterConsumer userCustomRuleBasedSegmentAdapterConsumer =
                 new UserCustomRuleBasedSegmentAdapterConsumer(customStorageWrapper);
-        _evaluator = new EvaluatorImp(userCustomSplitAdapterConsumer, userCustomSegmentAdapterConsumer, userCustomRuleBasedSegmentAdapterConsumer);
+        _evaluator = new EvaluatorImp(userCustomSplitAdapterConsumer, userCustomSegmentAdapterConsumer,
+                userCustomRuleBasedSegmentAdapterConsumer, null);
         _impressionsSender = PluggableImpressionSender.create(customStorageWrapper);
         _uniqueKeysTracker = createUniqueKeysTracker(config);
         _impressionsManager = buildImpressionsManager(config, userCustomImpressionAdapterConsumer,
@@ -446,7 +447,7 @@ public class SplitFactoryImpl implements SplitFactory {
                 _impressionsManager, null, null, null);
 
         // Evaluator
-        _evaluator = new EvaluatorImp(splitCache, segmentCache, ruleBasedSegmentCache);
+        _evaluator = new EvaluatorImp(splitCache, segmentCache, ruleBasedSegmentCache, null);
 
         EventsStorage eventsStorage = new NoopEventsStorageImp();
 

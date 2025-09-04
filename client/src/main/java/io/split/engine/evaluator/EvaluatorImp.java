@@ -1,6 +1,7 @@
 package io.split.engine.evaluator;
 
 import io.split.client.dtos.ConditionType;
+import io.split.client.dtos.FallbackTreatmentsConfiguration;
 import io.split.client.exceptions.ChangeNumberExceptionWrapper;
 import io.split.engine.experiments.ParsedCondition;
 import io.split.engine.experiments.ParsedSplit;
@@ -19,6 +20,7 @@ import java.util.List;
 import java.util.Map;
 
 import static com.google.common.base.Preconditions.checkNotNull;
+import static io.split.client.utils.Utils.checkFallbackTreatments;
 
 public class EvaluatorImp implements Evaluator {
     private static final Logger _log = LoggerFactory.getLogger(EvaluatorImp.class);
@@ -26,19 +28,22 @@ public class EvaluatorImp implements Evaluator {
     private final SegmentCacheConsumer _segmentCacheConsumer;
     private final EvaluationContext _evaluationContext;
     private final SplitCacheConsumer _splitCacheConsumer;
+    private final FallbackTreatmentsConfiguration _fallbackTreatmentsConfiguration;
 
     public EvaluatorImp(SplitCacheConsumer splitCacheConsumer, SegmentCacheConsumer segmentCache,
-                        RuleBasedSegmentCacheConsumer ruleBasedSegmentCacheConsumer) {
+                        RuleBasedSegmentCacheConsumer ruleBasedSegmentCacheConsumer,
+                        FallbackTreatmentsConfiguration fallbackTreatmentsConfiguration) {
         _splitCacheConsumer = checkNotNull(splitCacheConsumer);
         _segmentCacheConsumer = checkNotNull(segmentCache);
         _evaluationContext = new EvaluationContext(this, _segmentCacheConsumer, ruleBasedSegmentCacheConsumer);
+        _fallbackTreatmentsConfiguration = fallbackTreatmentsConfiguration;
     }
 
     @Override
     public TreatmentLabelAndChangeNumber evaluateFeature(String matchingKey, String bucketingKey, String featureFlag, Map<String,
             Object> attributes) {
         ParsedSplit parsedSplit = _splitCacheConsumer.get(featureFlag);
-        return evaluateParsedSplit(matchingKey, bucketingKey, attributes, parsedSplit);
+        return evaluateParsedSplit(matchingKey, bucketingKey, attributes, parsedSplit, featureFlag);
     }
 
     @Override
@@ -49,7 +54,7 @@ public class EvaluatorImp implements Evaluator {
         if (parsedSplits == null) {
             return results;
         }
-        featureFlags.forEach(s -> results.put(s, evaluateParsedSplit(matchingKey, bucketingKey, attributes, parsedSplits.get(s))));
+        featureFlags.forEach(s -> results.put(s, evaluateParsedSplit(matchingKey, bucketingKey, attributes, parsedSplits.get(s), s)));
         return results;
     }
 
@@ -172,18 +177,18 @@ public class EvaluatorImp implements Evaluator {
     }
 
     private TreatmentLabelAndChangeNumber evaluateParsedSplit(String matchingKey, String bucketingKey, Map<String, Object> attributes,
-                                                              ParsedSplit parsedSplit) {
+                                                              ParsedSplit parsedSplit, String feature_name) {
         try {
             if (parsedSplit == null) {
-                return new TreatmentLabelAndChangeNumber(Treatments.CONTROL, Labels.DEFINITION_NOT_FOUND);
+                return checkFallbackTreatments(Treatments.CONTROL, Labels.DEFINITION_NOT_FOUND, feature_name, null, _fallbackTreatmentsConfiguration);
             }
             return getTreatment(matchingKey, bucketingKey, parsedSplit, attributes);
         } catch (ChangeNumberExceptionWrapper e) {
             _log.error("Evaluator Exception", e.wrappedException());
-            return new EvaluatorImp.TreatmentLabelAndChangeNumber(Treatments.CONTROL, Labels.EXCEPTION, e.changeNumber());
+            return checkFallbackTreatments(Treatments.CONTROL, Labels.EXCEPTION, feature_name, e.changeNumber(), _fallbackTreatmentsConfiguration);
         } catch (Exception e) {
             _log.error("Evaluator Exception", e);
-            return new EvaluatorImp.TreatmentLabelAndChangeNumber(Treatments.CONTROL, Labels.EXCEPTION);
+            return checkFallbackTreatments(Treatments.CONTROL, Labels.EXCEPTION, feature_name, null, _fallbackTreatmentsConfiguration);
         }
     }
 

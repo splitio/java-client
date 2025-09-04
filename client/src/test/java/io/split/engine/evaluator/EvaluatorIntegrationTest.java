@@ -174,7 +174,7 @@ public class EvaluatorIntegrationTest {
         SplitCache splitCache = new InMemoryCacheImp(flagSetsFilter);
         SegmentCache segmentCache = new SegmentCacheInMemoryImpl();
         RuleBasedSegmentCache ruleBasedSegmentCache = new RuleBasedSegmentCacheInMemoryImp();
-        Evaluator evaluator = new EvaluatorImp(splitCache, segmentCache, ruleBasedSegmentCache);
+        Evaluator evaluator = new EvaluatorImp(splitCache, segmentCache, ruleBasedSegmentCache, null);
 
         Partition partition = new Partition();
         partition.treatment = ON_TREATMENT;
