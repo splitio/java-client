@@ -1185,7 +1185,7 @@ public class SplitClientConfig {
 
             if (_fallbackTreatments.getGlobalFallbackTreatment() != null) {
                 _fallbackTreatments.setGlobalFallbackTreatment(new FallbackTreatment(
-                        isValidTreatment(_fallbackTreatments.getGlobalFallbackTreatment().getTreatment(), "config"),
+                        isValidTreatment(_fallbackTreatments.getGlobalFallbackTreatment().getTreatment(), "Fallback treatments"),
                         _fallbackTreatments.getGlobalFallbackTreatment().getConfig()));
             }
 
