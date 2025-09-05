@@ -14,12 +14,6 @@ public class FallbackTreatmentsConfiguration {
     public FallbackTreatment getGlobalFallbackTreatment() {
         return _globalFallbackTreatment;
     }
-    public void setGlobalFallbackTreatment(FallbackTreatment newValue) {
-         _globalFallbackTreatment = newValue;
-    }
 
     public Map<String, FallbackTreatment> getByFlagFallbackTreatment() { return _byFlagFallbackTreatment;}
-    public void setByFlagFallbackTreatment(Map<String, FallbackTreatment> newValue) {
-        _byFlagFallbackTreatment = newValue;
-    }
 }

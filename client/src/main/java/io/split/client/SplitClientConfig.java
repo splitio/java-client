@@ -18,6 +18,7 @@ import java.io.IOException;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Properties;
 import java.util.concurrent.ThreadFactory;
 import java.io.InputStream;
@@ -1183,15 +1184,19 @@ public class SplitClientConfig {
             if (_fallbackTreatments == null)
                 return;
 
+            FallbackTreatment processedGlobalFallbackTreatment = _fallbackTreatments.getGlobalFallbackTreatment();
+            Map<String, FallbackTreatment> processedByFlagFallbackTreatment = _fallbackTreatments.getByFlagFallbackTreatment();
+
             if (_fallbackTreatments.getGlobalFallbackTreatment() != null) {
-                _fallbackTreatments.setGlobalFallbackTreatment(new FallbackTreatment(
+                processedGlobalFallbackTreatment = new FallbackTreatment(
                         isValidTreatment(_fallbackTreatments.getGlobalFallbackTreatment().getTreatment(), "Fallback treatments"),
-                        _fallbackTreatments.getGlobalFallbackTreatment().getConfig()));
+                        _fallbackTreatments.getGlobalFallbackTreatment().getConfig());
             }
 
             if (_fallbackTreatments.getByFlagFallbackTreatment() != null) {
-                _fallbackTreatments.setByFlagFallbackTreatment(isValidByFlagTreatment(_fallbackTreatments.getByFlagFallbackTreatment(), "config"));
+                processedByFlagFallbackTreatment = isValidByFlagTreatment(_fallbackTreatments.getByFlagFallbackTreatment(), "config");
             }
+            _fallbackTreatments = new FallbackTreatmentsConfiguration(processedGlobalFallbackTreatment, processedByFlagFallbackTreatment);
         }
 
         public SplitClientConfig build() {
