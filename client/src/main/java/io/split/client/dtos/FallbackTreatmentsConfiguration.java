@@ -3,8 +3,8 @@ package io.split.client.dtos;
 import java.util.Map;
 
 public class FallbackTreatmentsConfiguration {
-    private FallbackTreatment _globalFallbackTreatment;
-    private Map<String, FallbackTreatment> _byFlagFallbackTreatment;
+    private final FallbackTreatment _globalFallbackTreatment;
+    private final Map<String, FallbackTreatment> _byFlagFallbackTreatment;
 
     public FallbackTreatmentsConfiguration(FallbackTreatment globalFallbackTreatment, Map<String, FallbackTreatment> byFlagFallbackTreatment) {
         _globalFallbackTreatment = globalFallbackTreatment;
