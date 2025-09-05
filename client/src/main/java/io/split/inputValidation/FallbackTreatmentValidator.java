@@ -34,13 +34,13 @@ public class FallbackTreatmentValidator {
             name = trimmed;
         }
 
-        if (!TREATMENT_MATCHER.matcher(name).find()) {
-            _log.error(String.format("%s: you passed %s, treatment must adhere to the regular expression " +
-                    "^[0-9]+[.a-zA-Z0-9_-]*$|^[a-zA-Z]+[a-zA-Z0-9_-]*$", method, name));
+        if (name.length() > MAX_LENGTH) {
             return null;
         }
 
-        if (name.length() > MAX_LENGTH) {
+        if (!TREATMENT_MATCHER.matcher(name).find()) {
+            _log.error(String.format("%s: you passed %s, treatment must adhere to the regular expression " +
+                    "^[0-9]+[.a-zA-Z0-9_-]*$|^[a-zA-Z]+[a-zA-Z0-9_-]*$", method, name));
             return null;
         }
 
