@@ -229,7 +229,8 @@ public class EvaluatorTest {
     public void evaluateFallbackTreatmentWorks() {
         Mockito.when(_splitCacheConsumer.get(SPLIT_NAME)).thenReturn(null);
         FallbackTreatmentsConfiguration fallbackTreatmentsConfiguration = new FallbackTreatmentsConfiguration(new FallbackTreatment("on"), null);
-        _evaluator = new EvaluatorImp(_splitCacheConsumer, _segmentCacheConsumer, _ruleBasedSegmentCacheConsumer, fallbackTreatmentsConfiguration);
+        FallbackTreatmentCalculator fallbackTreatmentCalculator = new FallbackTreatmentCalculatorImp(fallbackTreatmentsConfiguration);
+        _evaluator = new EvaluatorImp(_splitCacheConsumer, _segmentCacheConsumer, _ruleBasedSegmentCacheConsumer, fallbackTreatmentCalculator);
 
         EvaluatorImp.TreatmentLabelAndChangeNumber result = _evaluator.evaluateFeature(MATCHING_KEY, BUCKETING_KEY, SPLIT_NAME, null);
         assertEquals("on", result.treatment);
@@ -245,7 +246,8 @@ public class EvaluatorTest {
         Mockito.when(_splitCacheConsumer.get(SPLIT_NAME)).thenReturn(null);
         Mockito.when(_splitCacheConsumer.get("another_name")).thenReturn(null);
         fallbackTreatmentsConfiguration = new FallbackTreatmentsConfiguration(null, new HashMap<String, FallbackTreatment>() {{ put(SPLIT_NAME, new FallbackTreatment("off")); }} );
-        _evaluator = new EvaluatorImp(_splitCacheConsumer, _segmentCacheConsumer, _ruleBasedSegmentCacheConsumer, fallbackTreatmentsConfiguration);
+        fallbackTreatmentCalculator = new FallbackTreatmentCalculatorImp(fallbackTreatmentsConfiguration);
+        _evaluator = new EvaluatorImp(_splitCacheConsumer, _segmentCacheConsumer, _ruleBasedSegmentCacheConsumer, fallbackTreatmentCalculator);
 
         result = _evaluator.evaluateFeature(MATCHING_KEY, BUCKETING_KEY, SPLIT_NAME, null);
         assertEquals("off", result.treatment);
@@ -271,7 +273,8 @@ public class EvaluatorTest {
         Mockito.when(_splitCacheConsumer.get(SPLIT_NAME)).thenReturn(null);
         Mockito.when(_splitCacheConsumer.get("another_name")).thenReturn(null);
         fallbackTreatmentsConfiguration = new FallbackTreatmentsConfiguration(new FallbackTreatment("on"), new HashMap<String, FallbackTreatment>() {{ put(SPLIT_NAME, new FallbackTreatment("off")); }} );
-        _evaluator = new EvaluatorImp(_splitCacheConsumer, _segmentCacheConsumer, _ruleBasedSegmentCacheConsumer, fallbackTreatmentsConfiguration);
+        fallbackTreatmentCalculator = new FallbackTreatmentCalculatorImp(fallbackTreatmentsConfiguration);
+        _evaluator = new EvaluatorImp(_splitCacheConsumer, _segmentCacheConsumer, _ruleBasedSegmentCacheConsumer, fallbackTreatmentCalculator);
 
         result = _evaluator.evaluateFeature(MATCHING_KEY, BUCKETING_KEY, SPLIT_NAME, null);
         assertEquals("off", result.treatment);

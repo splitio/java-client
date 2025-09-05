@@ -1,6 +1,8 @@
 package io.split.engine.evaluator;
 
 import io.split.client.dtos.ConditionType;
+import io.split.client.dtos.FallbackTreatment;
+import io.split.client.dtos.FallbackTreatmentCalculator;
 import io.split.client.dtos.FallbackTreatmentsConfiguration;
 import io.split.client.exceptions.ChangeNumberExceptionWrapper;
 import io.split.engine.experiments.ParsedCondition;
@@ -20,7 +22,6 @@ import java.util.List;
 import java.util.Map;
 
 import static com.google.common.base.Preconditions.checkNotNull;
-import static io.split.client.utils.Utils.checkFallbackTreatments;
 
 public class EvaluatorImp implements Evaluator {
     private static final Logger _log = LoggerFactory.getLogger(EvaluatorImp.class);
@@ -28,15 +29,15 @@ public class EvaluatorImp implements Evaluator {
     private final SegmentCacheConsumer _segmentCacheConsumer;
     private final EvaluationContext _evaluationContext;
     private final SplitCacheConsumer _splitCacheConsumer;
-    private final FallbackTreatmentsConfiguration _fallbackTreatmentsConfiguration;
+    private final FallbackTreatmentCalculator _fallbackTreatmentCalculator;
 
     public EvaluatorImp(SplitCacheConsumer splitCacheConsumer, SegmentCacheConsumer segmentCache,
                         RuleBasedSegmentCacheConsumer ruleBasedSegmentCacheConsumer,
-                        FallbackTreatmentsConfiguration fallbackTreatmentsConfiguration) {
+                        FallbackTreatmentCalculator fallbackTreatmentCalculator) {
         _splitCacheConsumer = checkNotNull(splitCacheConsumer);
         _segmentCacheConsumer = checkNotNull(segmentCache);
         _evaluationContext = new EvaluationContext(this, _segmentCacheConsumer, ruleBasedSegmentCacheConsumer);
-        _fallbackTreatmentsConfiguration = fallbackTreatmentsConfiguration;
+        _fallbackTreatmentCalculator = fallbackTreatmentCalculator;
     }
 
     @Override
@@ -179,16 +180,20 @@ public class EvaluatorImp implements Evaluator {
     private TreatmentLabelAndChangeNumber evaluateParsedSplit(String matchingKey, String bucketingKey, Map<String, Object> attributes,
                                                               ParsedSplit parsedSplit, String featureName) {
         try {
+
             if (parsedSplit == null) {
-                return checkFallbackTreatments(Treatments.CONTROL, Labels.DEFINITION_NOT_FOUND, featureName, null, _fallbackTreatmentsConfiguration);
+                FallbackTreatment fallbackTreatment = _fallbackTreatmentCalculator.resolve(featureName, Labels.DEFINITION_NOT_FOUND);
+                return new TreatmentLabelAndChangeNumber(fallbackTreatment.getTreatment(), fallbackTreatment.getLabel());
             }
             return getTreatment(matchingKey, bucketingKey, parsedSplit, attributes);
         } catch (ChangeNumberExceptionWrapper e) {
             _log.error("Evaluator Exception", e.wrappedException());
-            return checkFallbackTreatments(Treatments.CONTROL, Labels.EXCEPTION, featureName, e.changeNumber(), _fallbackTreatmentsConfiguration);
+            FallbackTreatment fallbackTreatment = _fallbackTreatmentCalculator.resolve(featureName, Labels.EXCEPTION);
+            return new TreatmentLabelAndChangeNumber(fallbackTreatment.getTreatment(), fallbackTreatment.getLabel(), e.changeNumber());
         } catch (Exception e) {
             _log.error("Evaluator Exception", e);
-            return checkFallbackTreatments(Treatments.CONTROL, Labels.EXCEPTION, featureName, null, _fallbackTreatmentsConfiguration);
+            FallbackTreatment fallbackTreatment = _fallbackTreatmentCalculator.resolve(featureName, Labels.EXCEPTION);
+            return new TreatmentLabelAndChangeNumber(fallbackTreatment.getTreatment(), fallbackTreatment.getLabel());
         }
     }
 

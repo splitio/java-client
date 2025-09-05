@@ -1,8 +1,6 @@
 package io.split.client.utils;
 
 import io.split.client.dtos.ChangeDto;
-import io.split.client.dtos.FallbackTreatmentsConfiguration;
-import io.split.engine.evaluator.EvaluatorImp.TreatmentLabelAndChangeNumber;
 import org.apache.hc.client5.http.impl.classic.CloseableHttpResponse;
 import org.apache.hc.core5.http.ContentType;
 import org.apache.hc.core5.http.HttpEntity;
@@ -46,31 +44,5 @@ public class Utils {
 
     public static <T> boolean checkExitConditions(ChangeDto<T> change, long cn) {
         return change.t < cn && change.t != -1;
-    }
-
-    public static TreatmentLabelAndChangeNumber checkFallbackTreatments(String treatment, String label,
-                                                                        String feature_name, Long changeNumber,
-                                                                        FallbackTreatmentsConfiguration fallbackTreatmentsConfiguration) {
-        if (fallbackTreatmentsConfiguration != null) {
-            if (fallbackTreatmentsConfiguration.getByFlagFallbackTreatment() != null
-                    && fallbackTreatmentsConfiguration.getByFlagFallbackTreatment().get(feature_name) != null
-                    && !fallbackTreatmentsConfiguration.getByFlagFallbackTreatment().get(feature_name).getTreatment().isEmpty()) {
-                return new TreatmentLabelAndChangeNumber(
-                        fallbackTreatmentsConfiguration.getByFlagFallbackTreatment().get(feature_name).getTreatment(),
-                        fallbackTreatmentsConfiguration.getByFlagFallbackTreatment().get(feature_name).getLabel() + label,
-                        changeNumber);
-            }
-
-            if (fallbackTreatmentsConfiguration.getGlobalFallbackTreatment() != null
-                    && !fallbackTreatmentsConfiguration.getGlobalFallbackTreatment().getTreatment().isEmpty()) {
-                return new TreatmentLabelAndChangeNumber(fallbackTreatmentsConfiguration.getGlobalFallbackTreatment().getTreatment(),
-                        fallbackTreatmentsConfiguration.getGlobalFallbackTreatment().getLabel() + label,
-                        changeNumber);
-            }
-        }
-
-        return new TreatmentLabelAndChangeNumber(treatment,
-        label,
-        changeNumber);
     }
 }
