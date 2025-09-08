@@ -1,8 +1,6 @@
 package io.split.engine.evaluator;
 
-import io.split.client.dtos.ConditionType;
-import io.split.client.dtos.Partition;
-import io.split.client.dtos.Prerequisites;
+import io.split.client.dtos.*;
 import io.split.client.utils.Json;
 import io.split.engine.experiments.ParsedCondition;
 import io.split.engine.experiments.ParsedSplit;
@@ -50,7 +48,7 @@ public class EvaluatorTest {
         _splitCacheConsumer = Mockito.mock(SplitCacheConsumer.class);
         _segmentCacheConsumer = Mockito.mock(SegmentCacheConsumer.class);
         _ruleBasedSegmentCacheConsumer = Mockito.mock(RuleBasedSegmentCacheConsumer.class);
-        _evaluator = new EvaluatorImp(_splitCacheConsumer, _segmentCacheConsumer, _ruleBasedSegmentCacheConsumer);
+        _evaluator = new EvaluatorImp(_splitCacheConsumer, _segmentCacheConsumer, _ruleBasedSegmentCacheConsumer, null);
         _matcher = Mockito.mock(CombiningMatcher.class);
         _evaluationContext = Mockito.mock(EvaluationContext.class);
 
@@ -225,5 +223,77 @@ public class EvaluatorTest {
         assertEquals(DEFAULT_TREATMENT_VALUE, result.treatment);
         assertEquals(Labels.KILLED, result.label);
         assertEquals(CHANGE_NUMBER, result.changeNumber);
+    }
+
+    @Test
+    public void evaluateFallbackTreatmentWorks() {
+        Mockito.when(_splitCacheConsumer.get(SPLIT_NAME)).thenReturn(null);
+        FallbackTreatmentsConfiguration fallbackTreatmentsConfiguration = new FallbackTreatmentsConfiguration(new FallbackTreatment("on"), null);
+        FallbackTreatmentCalculator fallbackTreatmentCalculator = new FallbackTreatmentCalculatorImp(fallbackTreatmentsConfiguration);
+        _evaluator = new EvaluatorImp(_splitCacheConsumer, _segmentCacheConsumer, _ruleBasedSegmentCacheConsumer, fallbackTreatmentCalculator);
+
+        EvaluatorImp.TreatmentLabelAndChangeNumber result = _evaluator.evaluateFeature(MATCHING_KEY, BUCKETING_KEY, SPLIT_NAME, null);
+        assertEquals("on", result.treatment);
+        assertEquals("fallback - definition not found", result.label);
+
+        ParsedSplit split = new ParsedSplit(SPLIT_NAME, 0, false, DEFAULT_TREATMENT_VALUE, _conditions, null, CHANGE_NUMBER, 60, 18, 2, _configurations, new HashSet<>(), false, null);
+        Mockito.when(_splitCacheConsumer.get(SPLIT_NAME)).thenReturn(split);
+        result = _evaluator.evaluateFeature(MATCHING_KEY, BUCKETING_KEY, SPLIT_NAME, null);
+        assertEquals("on", result.treatment);
+        assertEquals("fallback - exception", result.label);
+
+        // using byflag only
+        Mockito.when(_splitCacheConsumer.get(SPLIT_NAME)).thenReturn(null);
+        Mockito.when(_splitCacheConsumer.get("another_name")).thenReturn(null);
+        fallbackTreatmentsConfiguration = new FallbackTreatmentsConfiguration(null, new HashMap<String, FallbackTreatment>() {{ put(SPLIT_NAME, new FallbackTreatment("off")); }} );
+        fallbackTreatmentCalculator = new FallbackTreatmentCalculatorImp(fallbackTreatmentsConfiguration);
+        _evaluator = new EvaluatorImp(_splitCacheConsumer, _segmentCacheConsumer, _ruleBasedSegmentCacheConsumer, fallbackTreatmentCalculator);
+
+        result = _evaluator.evaluateFeature(MATCHING_KEY, BUCKETING_KEY, SPLIT_NAME, null);
+        assertEquals("off", result.treatment);
+        assertEquals("fallback - definition not found", result.label);
+
+        result = _evaluator.evaluateFeature(MATCHING_KEY, BUCKETING_KEY, "another_name", null);
+        assertEquals("control", result.treatment);
+        assertEquals("definition not found", result.label);
+
+        split = new ParsedSplit(SPLIT_NAME, 0, false, DEFAULT_TREATMENT_VALUE, _conditions, null, CHANGE_NUMBER, 60, 18, 2, _configurations, new HashSet<>(), false, null);
+        Mockito.when(_splitCacheConsumer.get(SPLIT_NAME)).thenReturn(split);
+        result = _evaluator.evaluateFeature(MATCHING_KEY, BUCKETING_KEY, SPLIT_NAME, null);
+        assertEquals("off", result.treatment);
+        assertEquals("fallback - exception", result.label);
+
+        split = new ParsedSplit("another_name", 0, false, DEFAULT_TREATMENT_VALUE, _conditions, null, CHANGE_NUMBER, 60, 18, 2, _configurations, new HashSet<>(), false, null);
+        Mockito.when(_splitCacheConsumer.get("another_name")).thenReturn(split);
+        result = _evaluator.evaluateFeature(MATCHING_KEY, BUCKETING_KEY, "another_name", null);
+        assertEquals("control", result.treatment);
+        assertEquals("exception", result.label);
+
+        // with byflag
+        Mockito.when(_splitCacheConsumer.get(SPLIT_NAME)).thenReturn(null);
+        Mockito.when(_splitCacheConsumer.get("another_name")).thenReturn(null);
+        fallbackTreatmentsConfiguration = new FallbackTreatmentsConfiguration(new FallbackTreatment("on"), new HashMap<String, FallbackTreatment>() {{ put(SPLIT_NAME, new FallbackTreatment("off")); }} );
+        fallbackTreatmentCalculator = new FallbackTreatmentCalculatorImp(fallbackTreatmentsConfiguration);
+        _evaluator = new EvaluatorImp(_splitCacheConsumer, _segmentCacheConsumer, _ruleBasedSegmentCacheConsumer, fallbackTreatmentCalculator);
+
+        result = _evaluator.evaluateFeature(MATCHING_KEY, BUCKETING_KEY, SPLIT_NAME, null);
+        assertEquals("off", result.treatment);
+        assertEquals("fallback - definition not found", result.label);
+
+        result = _evaluator.evaluateFeature(MATCHING_KEY, BUCKETING_KEY, "another_name", null);
+        assertEquals("on", result.treatment);
+        assertEquals("fallback - definition not found", result.label);
+
+        split = new ParsedSplit(SPLIT_NAME, 0, false, DEFAULT_TREATMENT_VALUE, _conditions, null, CHANGE_NUMBER, 60, 18, 2, _configurations, new HashSet<>(), false, null);
+        Mockito.when(_splitCacheConsumer.get(SPLIT_NAME)).thenReturn(split);
+        result = _evaluator.evaluateFeature(MATCHING_KEY, BUCKETING_KEY, SPLIT_NAME, null);
+        assertEquals("off", result.treatment);
+        assertEquals("fallback - exception", result.label);
+
+        split = new ParsedSplit("another_name", 0, false, DEFAULT_TREATMENT_VALUE, _conditions, null, CHANGE_NUMBER, 60, 18, 2, _configurations, new HashSet<>(), false, null);
+        Mockito.when(_splitCacheConsumer.get("another_name")).thenReturn(split);
+        result = _evaluator.evaluateFeature(MATCHING_KEY, BUCKETING_KEY, "another_name", null);
+        assertEquals("on", result.treatment);
+        assertEquals("fallback - exception", result.label);
     }
 }

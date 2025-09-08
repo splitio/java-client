@@ -99,7 +99,7 @@ public class SplitClientImplTest {
                 NoopEventsStorageImp.create(),
                 config,
                 gates,
-                new EvaluatorImp(splitCacheConsumer, segmentCacheConsumer, ruleBasedSegmentCacheConsumer), TELEMETRY_STORAGE, TELEMETRY_STORAGE,
+                new EvaluatorImp(splitCacheConsumer, segmentCacheConsumer, ruleBasedSegmentCacheConsumer, null), TELEMETRY_STORAGE, TELEMETRY_STORAGE,
                 flagSetsFilter
         );
         assertEquals(Treatments.CONTROL, client.getTreatment(null, "test1"));
@@ -129,7 +129,7 @@ public class SplitClientImplTest {
                 NoopEventsStorageImp.create(),
                 config,
                 gates,
-                new EvaluatorImp(splitCacheConsumer, segmentCacheConsumer, ruleBasedSegmentCacheConsumer), TELEMETRY_STORAGE, TELEMETRY_STORAGE,
+                new EvaluatorImp(splitCacheConsumer, segmentCacheConsumer, ruleBasedSegmentCacheConsumer, null), TELEMETRY_STORAGE, TELEMETRY_STORAGE,
                 flagSetsFilter
         );
         assertEquals(Treatments.CONTROL, client.getTreatment("adil@relateiq.com", null));
@@ -152,7 +152,7 @@ public class SplitClientImplTest {
                 NoopEventsStorageImp.create(),
                 config,
                 gates,
-                new EvaluatorImp(splitCacheConsumer, segmentCacheConsumer, ruleBasedSegmentCacheConsumer), TELEMETRY_STORAGE, TELEMETRY_STORAGE,
+                new EvaluatorImp(splitCacheConsumer, segmentCacheConsumer, ruleBasedSegmentCacheConsumer, null), TELEMETRY_STORAGE, TELEMETRY_STORAGE,
                 flagSetsFilter
         );
         assertEquals(Treatments.CONTROL, client.getTreatment("adil@relateiq.com", "test1"));
@@ -184,7 +184,7 @@ public class SplitClientImplTest {
                 NoopEventsStorageImp.create(),
                 config,
                 gates,
-                new EvaluatorImp(splitCacheConsumer, segmentCacheConsumer, ruleBasedSegmentCacheConsumer), TELEMETRY_STORAGE, TELEMETRY_STORAGE,
+                new EvaluatorImp(splitCacheConsumer, segmentCacheConsumer, ruleBasedSegmentCacheConsumer, null), TELEMETRY_STORAGE, TELEMETRY_STORAGE,
                 flagSetsFilter
         );
 
@@ -222,7 +222,7 @@ public class SplitClientImplTest {
                 NoopEventsStorageImp.create(),
                 config,
                 gates,
-                new EvaluatorImp(splitCacheConsumer, segmentCacheConsumer, ruleBasedSegmentCacheConsumer), TELEMETRY_STORAGE, TELEMETRY_STORAGE,
+                new EvaluatorImp(splitCacheConsumer, segmentCacheConsumer, ruleBasedSegmentCacheConsumer, null), TELEMETRY_STORAGE, TELEMETRY_STORAGE,
                 flagSetsFilter
         );
         String randomKey = RandomStringUtils.random(10);
@@ -258,7 +258,7 @@ public class SplitClientImplTest {
                 NoopEventsStorageImp.create(),
                 config,
                 gates,
-                new EvaluatorImp(splitCacheConsumer, segmentCacheConsumer, ruleBasedSegmentCacheConsumer), TELEMETRY_STORAGE, TELEMETRY_STORAGE,
+                new EvaluatorImp(splitCacheConsumer, segmentCacheConsumer, ruleBasedSegmentCacheConsumer, null), TELEMETRY_STORAGE, TELEMETRY_STORAGE,
                 flagSetsFilter
         );
 
@@ -295,7 +295,7 @@ public class SplitClientImplTest {
                 NoopEventsStorageImp.create(),
                 config,
                 gates,
-                new EvaluatorImp(splitCacheConsumer, segmentCacheConsumer, ruleBasedSegmentCacheConsumer), TELEMETRY_STORAGE, TELEMETRY_STORAGE,
+                new EvaluatorImp(splitCacheConsumer, segmentCacheConsumer, ruleBasedSegmentCacheConsumer, null), TELEMETRY_STORAGE, TELEMETRY_STORAGE,
                 flagSetsFilter
         );
 
@@ -335,7 +335,7 @@ public class SplitClientImplTest {
                 NoopEventsStorageImp.create(),
                 config,
                 gates,
-                new EvaluatorImp(splitCacheConsumer, segmentCacheConsumer, ruleBasedSegmentCacheConsumer), TELEMETRY_STORAGE, TELEMETRY_STORAGE,
+                new EvaluatorImp(splitCacheConsumer, segmentCacheConsumer, ruleBasedSegmentCacheConsumer, null), TELEMETRY_STORAGE, TELEMETRY_STORAGE,
                 flagSetsFilter
         );
 
@@ -371,7 +371,7 @@ public class SplitClientImplTest {
                 NoopEventsStorageImp.create(),
                 config,
                 gates,
-                new EvaluatorImp(splitCacheConsumer, segmentCacheConsumer, ruleBasedSegmentCacheConsumer), TELEMETRY_STORAGE, TELEMETRY_STORAGE,
+                new EvaluatorImp(splitCacheConsumer, segmentCacheConsumer, ruleBasedSegmentCacheConsumer, null), TELEMETRY_STORAGE, TELEMETRY_STORAGE,
                 flagSetsFilter
         );
 
@@ -405,7 +405,7 @@ public class SplitClientImplTest {
                 NoopEventsStorageImp.create(),
                 config,
                 gates,
-                new EvaluatorImp(splitCacheConsumer, segmentCacheConsumer, ruleBasedSegmentCacheConsumer), TELEMETRY_STORAGE, TELEMETRY_STORAGE,
+                new EvaluatorImp(splitCacheConsumer, segmentCacheConsumer, ruleBasedSegmentCacheConsumer, null), TELEMETRY_STORAGE, TELEMETRY_STORAGE,
                 flagSetsFilter
         );
 
@@ -445,7 +445,7 @@ public class SplitClientImplTest {
                 NoopEventsStorageImp.create(),
                 config,
                 gates,
-                new EvaluatorImp(splitCacheConsumer, segmentCacheConsumer, ruleBasedSegmentCacheConsumer), TELEMETRY_STORAGE, TELEMETRY_STORAGE,
+                new EvaluatorImp(splitCacheConsumer, segmentCacheConsumer, ruleBasedSegmentCacheConsumer, null), TELEMETRY_STORAGE, TELEMETRY_STORAGE,
                 flagSetsFilter
         );
 
@@ -483,7 +483,7 @@ public class SplitClientImplTest {
                 NoopEventsStorageImp.create(),
                 config,
                 gates,
-                new EvaluatorImp(splitCacheConsumer, segmentCacheConsumer, ruleBasedSegmentCacheConsumer), TELEMETRY_STORAGE, TELEMETRY_STORAGE,
+                new EvaluatorImp(splitCacheConsumer, segmentCacheConsumer, ruleBasedSegmentCacheConsumer, null), TELEMETRY_STORAGE, TELEMETRY_STORAGE,
                 flagSetsFilter
         );
 
@@ -518,7 +518,7 @@ public class SplitClientImplTest {
                 NoopEventsStorageImp.create(),
                 config,
                 gates,
-                new EvaluatorImp(splitCacheConsumer, segmentCacheConsumer, ruleBasedSegmentCacheConsumer), TELEMETRY_STORAGE, TELEMETRY_STORAGE,
+                new EvaluatorImp(splitCacheConsumer, segmentCacheConsumer, ruleBasedSegmentCacheConsumer, null), TELEMETRY_STORAGE, TELEMETRY_STORAGE,
                 flagSetsFilter
         );
 
@@ -547,7 +547,7 @@ public class SplitClientImplTest {
                 NoopEventsStorageImp.create(),
                 config,
                 gates,
-                new EvaluatorImp(splitCacheConsumer, segmentCacheConsumer, ruleBasedSegmentCacheConsumer), TELEMETRY_STORAGE, TELEMETRY_STORAGE,
+                new EvaluatorImp(splitCacheConsumer, segmentCacheConsumer, ruleBasedSegmentCacheConsumer, null), TELEMETRY_STORAGE, TELEMETRY_STORAGE,
                 flagSetsFilter
         );
 
@@ -577,7 +577,7 @@ public class SplitClientImplTest {
                 NoopEventsStorageImp.create(),
                 config,
                 gates,
-                new EvaluatorImp(splitCacheConsumer, segmentCacheConsumer, ruleBasedSegmentCacheConsumer), TELEMETRY_STORAGE, TELEMETRY_STORAGE,
+                new EvaluatorImp(splitCacheConsumer, segmentCacheConsumer, ruleBasedSegmentCacheConsumer, null), TELEMETRY_STORAGE, TELEMETRY_STORAGE,
                 flagSetsFilter
         );
 
@@ -612,7 +612,7 @@ public class SplitClientImplTest {
                 NoopEventsStorageImp.create(),
                 config,
                 gates,
-                new EvaluatorImp(splitCacheConsumer, segmentCacheConsumer, ruleBasedSegmentCacheConsumer), TELEMETRY_STORAGE, TELEMETRY_STORAGE,
+                new EvaluatorImp(splitCacheConsumer, segmentCacheConsumer, ruleBasedSegmentCacheConsumer, null), TELEMETRY_STORAGE, TELEMETRY_STORAGE,
                 flagSetsFilter
         );
 
@@ -648,7 +648,7 @@ public class SplitClientImplTest {
                 NoopEventsStorageImp.create(),
                 config,
                 gates,
-                new EvaluatorImp(splitCacheConsumer, segmentCacheConsumer, ruleBasedSegmentCacheConsumer), TELEMETRY_STORAGE, TELEMETRY_STORAGE,
+                new EvaluatorImp(splitCacheConsumer, segmentCacheConsumer, ruleBasedSegmentCacheConsumer, null), TELEMETRY_STORAGE, TELEMETRY_STORAGE,
                 flagSetsFilter
         );
 
@@ -686,7 +686,7 @@ public class SplitClientImplTest {
                 NoopEventsStorageImp.create(),
                 config,
                 gates,
-                new EvaluatorImp(splitCacheConsumer ,segmentCacheConsumer, ruleBasedSegmentCacheConsumer), TELEMETRY_STORAGE, TELEMETRY_STORAGE,
+                new EvaluatorImp(splitCacheConsumer ,segmentCacheConsumer, ruleBasedSegmentCacheConsumer, null), TELEMETRY_STORAGE, TELEMETRY_STORAGE,
                 flagSetsFilter
         );
 
@@ -731,7 +731,7 @@ public class SplitClientImplTest {
                 NoopEventsStorageImp.create(),
                 config,
                 gates,
-                new EvaluatorImp(splitCacheConsumer, segmentCacheConsumer, ruleBasedSegmentCacheConsumer), TELEMETRY_STORAGE, TELEMETRY_STORAGE,
+                new EvaluatorImp(splitCacheConsumer, segmentCacheConsumer, ruleBasedSegmentCacheConsumer, null), TELEMETRY_STORAGE, TELEMETRY_STORAGE,
                 flagSetsFilter
         );
 
@@ -834,7 +834,7 @@ public class SplitClientImplTest {
                 NoopEventsStorageImp.create(),
                 config,
                 gates,
-                new EvaluatorImp(splitCacheConsumer, segmentCacheConsumer, ruleBasedSegmentCacheConsumer), TELEMETRY_STORAGE, TELEMETRY_STORAGE,
+                new EvaluatorImp(splitCacheConsumer, segmentCacheConsumer, ruleBasedSegmentCacheConsumer, null), TELEMETRY_STORAGE, TELEMETRY_STORAGE,
                 flagSetsFilter
         );
 
@@ -888,7 +888,7 @@ public class SplitClientImplTest {
                 NoopEventsStorageImp.create(),
                 config,
                 gates,
-                new EvaluatorImp(splitCacheConsumer, segmentCacheConsumer, ruleBasedSegmentCacheConsumer), TELEMETRY_STORAGE, TELEMETRY_STORAGE,
+                new EvaluatorImp(splitCacheConsumer, segmentCacheConsumer, ruleBasedSegmentCacheConsumer, null), TELEMETRY_STORAGE, TELEMETRY_STORAGE,
                 flagSetsFilter
         );
 
@@ -932,7 +932,7 @@ public class SplitClientImplTest {
                 NoopEventsStorageImp.create(),
                 config,
                 gates,
-                new EvaluatorImp(splitCacheConsumer, segmentCacheConsumer, ruleBasedSegmentCacheConsumer), TELEMETRY_STORAGE, TELEMETRY_STORAGE,
+                new EvaluatorImp(splitCacheConsumer, segmentCacheConsumer, ruleBasedSegmentCacheConsumer, null), TELEMETRY_STORAGE, TELEMETRY_STORAGE,
                 flagSetsFilter
         );
 
@@ -975,7 +975,7 @@ public class SplitClientImplTest {
                 NoopEventsStorageImp.create(),
                 config,
                 gates,
-                new EvaluatorImp(splitCacheConsumer, segmentCacheConsumer, ruleBasedSegmentCacheConsumer), TELEMETRY_STORAGE, TELEMETRY_STORAGE,
+                new EvaluatorImp(splitCacheConsumer, segmentCacheConsumer, ruleBasedSegmentCacheConsumer, null), TELEMETRY_STORAGE, TELEMETRY_STORAGE,
                 flagSetsFilter
         );
 
@@ -1016,7 +1016,7 @@ public class SplitClientImplTest {
                 NoopEventsStorageImp.create(),
                 config,
                 gates,
-                new EvaluatorImp(splitCacheConsumer, segmentCacheConsumer, ruleBasedSegmentCacheConsumer), TELEMETRY_STORAGE, TELEMETRY_STORAGE,
+                new EvaluatorImp(splitCacheConsumer, segmentCacheConsumer, ruleBasedSegmentCacheConsumer, null), TELEMETRY_STORAGE, TELEMETRY_STORAGE,
                 flagSetsFilter
         );
 
@@ -1054,7 +1054,7 @@ public class SplitClientImplTest {
                 NoopEventsStorageImp.create(),
                 config,
                 gates,
-                new EvaluatorImp(splitCacheConsumer, segmentCacheConsumer, ruleBasedSegmentCacheConsumer), TELEMETRY_STORAGE, TELEMETRY_STORAGE,
+                new EvaluatorImp(splitCacheConsumer, segmentCacheConsumer, ruleBasedSegmentCacheConsumer, null), TELEMETRY_STORAGE, TELEMETRY_STORAGE,
                 flagSetsFilter
         );
 
@@ -1097,7 +1097,7 @@ public class SplitClientImplTest {
                 NoopEventsStorageImp.create(),
                 config,
                 ready,
-                new EvaluatorImp(splitCacheConsumer, segmentCacheConsumer, ruleBasedSegmentCacheConsumer), TELEMETRY_STORAGE, TELEMETRY_STORAGE,
+                new EvaluatorImp(splitCacheConsumer, segmentCacheConsumer, ruleBasedSegmentCacheConsumer, null), TELEMETRY_STORAGE, TELEMETRY_STORAGE,
                 flagSetsFilter
         );
 
@@ -1119,7 +1119,7 @@ public class SplitClientImplTest {
                 NoopEventsStorageImp.create(),
                 config,
                 ready,
-                new EvaluatorImp(splitCacheConsumer, segmentCacheConsumer, ruleBasedSegmentCacheConsumer), TELEMETRY_STORAGE, TELEMETRY_STORAGE,
+                new EvaluatorImp(splitCacheConsumer, segmentCacheConsumer, ruleBasedSegmentCacheConsumer, null), TELEMETRY_STORAGE, TELEMETRY_STORAGE,
                 flagSetsFilter
         );
 
@@ -1140,7 +1140,7 @@ public class SplitClientImplTest {
                 NoopEventsStorageImp.create(),
                 config,
                 gates,
-                new EvaluatorImp(splitCacheConsumer, segmentCacheConsumer, ruleBasedSegmentCacheConsumer), TELEMETRY_STORAGE, TELEMETRY_STORAGE,
+                new EvaluatorImp(splitCacheConsumer, segmentCacheConsumer, ruleBasedSegmentCacheConsumer, null), TELEMETRY_STORAGE, TELEMETRY_STORAGE,
                 flagSetsFilter
         );
 
@@ -1166,7 +1166,7 @@ public class SplitClientImplTest {
                 NoopEventsStorageImp.create(),
                 config,
                 gates,
-                new EvaluatorImp(splitCacheConsumer, segmentCacheConsumer, ruleBasedSegmentCacheConsumer), TELEMETRY_STORAGE, TELEMETRY_STORAGE,
+                new EvaluatorImp(splitCacheConsumer, segmentCacheConsumer, ruleBasedSegmentCacheConsumer, null), TELEMETRY_STORAGE, TELEMETRY_STORAGE,
                 flagSetsFilter
         );
         Assert.assertFalse(client.track("validKey", "valid_traffic_type", ""));
@@ -1191,7 +1191,7 @@ public class SplitClientImplTest {
                 NoopEventsStorageImp.create(),
                 config,
                 gates,
-                new EvaluatorImp(splitCacheConsumer, segmentCacheConsumer, ruleBasedSegmentCacheConsumer), TELEMETRY_STORAGE, TELEMETRY_STORAGE,
+                new EvaluatorImp(splitCacheConsumer, segmentCacheConsumer, ruleBasedSegmentCacheConsumer, null), TELEMETRY_STORAGE, TELEMETRY_STORAGE,
                 flagSetsFilter
         );
 
@@ -1213,7 +1213,7 @@ public class SplitClientImplTest {
                 NoopEventsStorageImp.create(),
                 config,
                 gates,
-                new EvaluatorImp(splitCacheConsumer, segmentCacheConsumer, ruleBasedSegmentCacheConsumer), TELEMETRY_STORAGE, TELEMETRY_STORAGE,
+                new EvaluatorImp(splitCacheConsumer, segmentCacheConsumer, ruleBasedSegmentCacheConsumer, null), TELEMETRY_STORAGE, TELEMETRY_STORAGE,
                 flagSetsFilter
         );
 
@@ -1245,7 +1245,7 @@ public class SplitClientImplTest {
                 NoopEventsStorageImp.create(),
                 config,
                 gates,
-                new EvaluatorImp(splitCacheConsumer, segmentCacheConsumer, ruleBasedSegmentCacheConsumer), TELEMETRY_STORAGE, TELEMETRY_STORAGE,
+                new EvaluatorImp(splitCacheConsumer, segmentCacheConsumer, ruleBasedSegmentCacheConsumer, null), TELEMETRY_STORAGE, TELEMETRY_STORAGE,
                 flagSetsFilter
         );
         Assert.assertNotEquals(Treatments.CONTROL, client.getTreatment("valid", "split"));
@@ -1296,7 +1296,7 @@ public class SplitClientImplTest {
                 eventClientMock,
                 config,
                 gates,
-                new EvaluatorImp(splitCacheConsumer, segmentCacheConsumer, ruleBasedSegmentCacheConsumer), TELEMETRY_STORAGE, TELEMETRY_STORAGE,
+                new EvaluatorImp(splitCacheConsumer, segmentCacheConsumer, ruleBasedSegmentCacheConsumer, null), TELEMETRY_STORAGE, TELEMETRY_STORAGE,
                 flagSetsFilter
         );
 
@@ -1420,7 +1420,7 @@ public class SplitClientImplTest {
                 NoopEventsStorageImp.create(),
                 config,
                 gates,
-                new EvaluatorImp(splitCacheConsumer, segmentCacheConsumer, ruleBasedSegmentCacheConsumer), TELEMETRY_STORAGE, TELEMETRY_STORAGE,
+                new EvaluatorImp(splitCacheConsumer, segmentCacheConsumer, ruleBasedSegmentCacheConsumer, null), TELEMETRY_STORAGE, TELEMETRY_STORAGE,
                 flagSetsFilter
         );
 
@@ -1461,7 +1461,7 @@ public class SplitClientImplTest {
                 NoopEventsStorageImp.create(),
                 config,
                 gates,
-                new EvaluatorImp(splitCacheConsumer, segmentCacheConsumer, ruleBasedSegmentCacheConsumer), TELEMETRY_STORAGE, TELEMETRY_STORAGE,
+                new EvaluatorImp(splitCacheConsumer, segmentCacheConsumer, ruleBasedSegmentCacheConsumer, null), TELEMETRY_STORAGE, TELEMETRY_STORAGE,
                 flagSetsFilter
         );
 
@@ -1512,7 +1512,7 @@ public class SplitClientImplTest {
                 NoopEventsStorageImp.create(),
                 config,
                 gates,
-                new EvaluatorImp(splitCacheConsumer, segmentCacheConsumer, ruleBasedSegmentCacheConsumer), TELEMETRY_STORAGE, TELEMETRY_STORAGE,
+                new EvaluatorImp(splitCacheConsumer, segmentCacheConsumer, ruleBasedSegmentCacheConsumer, null), TELEMETRY_STORAGE, TELEMETRY_STORAGE,
                 flagSetsFilter
         );
 
@@ -1561,7 +1561,7 @@ public class SplitClientImplTest {
                 NoopEventsStorageImp.create(),
                 config,
                 gates,
-                new EvaluatorImp(splitCacheConsumer, segmentCacheConsumer, ruleBasedSegmentCacheConsumer), TELEMETRY_STORAGE, TELEMETRY_STORAGE,
+                new EvaluatorImp(splitCacheConsumer, segmentCacheConsumer, ruleBasedSegmentCacheConsumer, null), TELEMETRY_STORAGE, TELEMETRY_STORAGE,
                 flagSetsFilter
         );
 
@@ -1599,7 +1599,7 @@ public class SplitClientImplTest {
                 NoopEventsStorageImp.create(),
                 config,
                 gates,
-                new EvaluatorImp(splitCacheConsumer, segmentCacheConsumer, ruleBasedSegmentCacheConsumer), TELEMETRY_STORAGE, TELEMETRY_STORAGE,
+                new EvaluatorImp(splitCacheConsumer, segmentCacheConsumer, ruleBasedSegmentCacheConsumer, null), TELEMETRY_STORAGE, TELEMETRY_STORAGE,
                 flagSetsFilter
         );
 
@@ -1629,7 +1629,7 @@ public class SplitClientImplTest {
                 NoopEventsStorageImp.create(),
                 config,
                 gates,
-                new EvaluatorImp(splitCacheConsumer, segmentCacheConsumer, ruleBasedSegmentCacheConsumer), TELEMETRY_STORAGE, TELEMETRY_STORAGE,
+                new EvaluatorImp(splitCacheConsumer, segmentCacheConsumer, ruleBasedSegmentCacheConsumer, null), TELEMETRY_STORAGE, TELEMETRY_STORAGE,
                 flagSetsFilter
         );
         assertEquals(Treatments.CONTROL, client.getTreatments(null, Collections.singletonList("test1")).get("test1"));
@@ -1660,7 +1660,7 @@ public class SplitClientImplTest {
                 NoopEventsStorageImp.create(),
                 config,
                 gates,
-                new EvaluatorImp(splitCacheConsumer, segmentCacheConsumer, ruleBasedSegmentCacheConsumer), TELEMETRY_STORAGE, TELEMETRY_STORAGE,
+                new EvaluatorImp(splitCacheConsumer, segmentCacheConsumer, ruleBasedSegmentCacheConsumer, null), TELEMETRY_STORAGE, TELEMETRY_STORAGE,
                 flagSetsFilter
         );
         assertEquals(0, client.getTreatments("key", null).size());
@@ -1683,7 +1683,7 @@ public class SplitClientImplTest {
                 NoopEventsStorageImp.create(),
                 config,
                 gates,
-                new EvaluatorImp(splitCacheConsumer, segmentCacheConsumer, ruleBasedSegmentCacheConsumer), TELEMETRY_STORAGE, TELEMETRY_STORAGE,
+                new EvaluatorImp(splitCacheConsumer, segmentCacheConsumer, ruleBasedSegmentCacheConsumer, null), TELEMETRY_STORAGE, TELEMETRY_STORAGE,
                 flagSetsFilter
         );
         Map<String, String> result = client.getTreatments("adil@relateiq.com", Arrays.asList("test1", "test2"));
@@ -1717,7 +1717,7 @@ public class SplitClientImplTest {
                 NoopEventsStorageImp.create(),
                 config,
                 gates,
-                new EvaluatorImp(splitCacheConsumer, segmentCacheConsumer, ruleBasedSegmentCacheConsumer), TELEMETRY_STORAGE, TELEMETRY_STORAGE,
+                new EvaluatorImp(splitCacheConsumer, segmentCacheConsumer, ruleBasedSegmentCacheConsumer, null), TELEMETRY_STORAGE, TELEMETRY_STORAGE,
                 flagSetsFilter
         );
         Map<String, String> result = client.getTreatments("randomKey", Arrays.asList(test, "test2"));
@@ -1748,7 +1748,7 @@ public class SplitClientImplTest {
                 NoopEventsStorageImp.create(),
                 config,
                 gates,
-                new EvaluatorImp(splitCacheConsumer, segmentCacheConsumer, ruleBasedSegmentCacheConsumer), TELEMETRY_STORAGE, TELEMETRY_STORAGE,
+                new EvaluatorImp(splitCacheConsumer, segmentCacheConsumer, ruleBasedSegmentCacheConsumer, null), TELEMETRY_STORAGE, TELEMETRY_STORAGE,
                 flagSetsFilter
         );
         Map<String, String> result = client.getTreatments("key", new ArrayList<>());
@@ -1773,7 +1773,7 @@ public class SplitClientImplTest {
                 NoopEventsStorageImp.create(),
                 config,
                 gates,
-                new EvaluatorImp(splitCacheConsumer, segmentCacheConsumer, ruleBasedSegmentCacheConsumer), TELEMETRY_STORAGE, TELEMETRY_STORAGE,
+                new EvaluatorImp(splitCacheConsumer, segmentCacheConsumer, ruleBasedSegmentCacheConsumer, null), TELEMETRY_STORAGE, TELEMETRY_STORAGE,
                 flagSetsFilter
         );
         Map<String, String> result = client.getTreatments("adil@relateiq.com", Arrays.asList("test1"));
@@ -1811,7 +1811,7 @@ public class SplitClientImplTest {
                 NoopEventsStorageImp.create(),
                 config,
                 gates,
-                new EvaluatorImp(splitCacheConsumer, segmentCacheConsumer, ruleBasedSegmentCacheConsumer), TELEMETRY_STORAGE, TELEMETRY_STORAGE,
+                new EvaluatorImp(splitCacheConsumer, segmentCacheConsumer, ruleBasedSegmentCacheConsumer, null), TELEMETRY_STORAGE, TELEMETRY_STORAGE,
                 flagSetsFilter
         );
         Map<String, String> result = client.getTreatments("anyKey", Arrays.asList(test, test2));
@@ -1849,7 +1849,7 @@ public class SplitClientImplTest {
                 NoopEventsStorageImp.create(),
                 config,
                 gates,
-                new EvaluatorImp(splitCacheConsumer, segmentCacheConsumer, ruleBasedSegmentCacheConsumer), TELEMETRY_STORAGE, TELEMETRY_STORAGE,
+                new EvaluatorImp(splitCacheConsumer, segmentCacheConsumer, ruleBasedSegmentCacheConsumer, null), TELEMETRY_STORAGE, TELEMETRY_STORAGE,
                 flagSetsFilter
         );
 
@@ -1894,7 +1894,7 @@ public class SplitClientImplTest {
                 NoopEventsStorageImp.create(),
                 config,
                 gates,
-                new EvaluatorImp(splitCacheConsumer, segmentCacheConsumer, ruleBasedSegmentCacheConsumer), TELEMETRY_STORAGE, TELEMETRY_STORAGE,
+                new EvaluatorImp(splitCacheConsumer, segmentCacheConsumer, ruleBasedSegmentCacheConsumer, null), TELEMETRY_STORAGE, TELEMETRY_STORAGE,
                 flagSetsFilter
         );
         Map<String, Object> attributes = new HashMap<>();
@@ -1937,7 +1937,7 @@ public class SplitClientImplTest {
                 NoopEventsStorageImp.create(),
                 config,
                 gates,
-                new EvaluatorImp(splitCacheConsumer, segmentCacheConsumer, ruleBasedSegmentCacheConsumer), TELEMETRY_STORAGE, TELEMETRY_STORAGE,
+                new EvaluatorImp(splitCacheConsumer, segmentCacheConsumer, ruleBasedSegmentCacheConsumer, null), TELEMETRY_STORAGE, TELEMETRY_STORAGE,
                 flagSetsFilter
         );
 
@@ -1978,7 +1978,7 @@ public class SplitClientImplTest {
                 NoopEventsStorageImp.create(),
                 config,
                 gates,
-                new EvaluatorImp(splitCacheConsumer, segmentCacheConsumer, ruleBasedSegmentCacheConsumer), TELEMETRY_STORAGE, TELEMETRY_STORAGE,
+                new EvaluatorImp(splitCacheConsumer, segmentCacheConsumer, ruleBasedSegmentCacheConsumer, null), TELEMETRY_STORAGE, TELEMETRY_STORAGE,
                 flagSetsFilter
         );
         assertTrue(client.getTreatmentsByFlagSet(RandomStringUtils.random(10), "", new HashMap<>()).isEmpty());
@@ -2022,7 +2022,7 @@ public class SplitClientImplTest {
                 NoopEventsStorageImp.create(),
                 config,
                 gates,
-                new EvaluatorImp(splitCacheConsumer, segmentCacheConsumer, ruleBasedSegmentCacheConsumer), TELEMETRY_STORAGE, TELEMETRY_STORAGE,
+                new EvaluatorImp(splitCacheConsumer, segmentCacheConsumer, ruleBasedSegmentCacheConsumer, null), TELEMETRY_STORAGE, TELEMETRY_STORAGE,
                 flagSetsFilter
         );
         int numKeys = 5;
@@ -2078,7 +2078,7 @@ public class SplitClientImplTest {
                 NoopEventsStorageImp.create(),
                 config,
                 gates,
-                new EvaluatorImp(splitCacheConsumer, segmentCacheConsumer, ruleBasedSegmentCacheConsumer), TELEMETRY_STORAGE, TELEMETRY_STORAGE,
+                new EvaluatorImp(splitCacheConsumer, segmentCacheConsumer, ruleBasedSegmentCacheConsumer, null), TELEMETRY_STORAGE, TELEMETRY_STORAGE,
                 flagSetsFilter
         );
         Map<String, Object> attributes = new HashMap<>();
@@ -2135,7 +2135,7 @@ public class SplitClientImplTest {
                 NoopEventsStorageImp.create(),
                 config,
                 gates,
-                new EvaluatorImp(splitCacheConsumer, segmentCacheConsumer, ruleBasedSegmentCacheConsumer), TELEMETRY_STORAGE, TELEMETRY_STORAGE,
+                new EvaluatorImp(splitCacheConsumer, segmentCacheConsumer, ruleBasedSegmentCacheConsumer, null), TELEMETRY_STORAGE, TELEMETRY_STORAGE,
                 flagSetsFilter
         );
         Map<String, Object> attributes = new HashMap<>();
@@ -2181,7 +2181,7 @@ public class SplitClientImplTest {
                 NoopEventsStorageImp.create(),
                 config,
                 gates,
-                new EvaluatorImp(splitCacheConsumer, segmentCacheConsumer, ruleBasedSegmentCacheConsumer), TELEMETRY_STORAGE, TELEMETRY_STORAGE,
+                new EvaluatorImp(splitCacheConsumer, segmentCacheConsumer, ruleBasedSegmentCacheConsumer, null), TELEMETRY_STORAGE, TELEMETRY_STORAGE,
                 new FlagSetsFilterImpl(new HashSet<>())
         );
         Map<String, Object> attributes = ImmutableMap.<String, Object>of("age", -20, "acv", "1000000");

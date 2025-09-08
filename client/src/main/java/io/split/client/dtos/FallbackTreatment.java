@@ -10,13 +10,19 @@ public class FallbackTreatment {
     public FallbackTreatment(String treatment, Map<String, Object> config) {
         _treatment = treatment;
         _config = config;
-        _label = "fallback - ";
+        _label = null;
     }
 
     public FallbackTreatment(String treatment) {
         _treatment = treatment;
         _config = null;
-        _label = "fallback - ";
+        _label = null;
+    }
+
+    public FallbackTreatment(String treatment, Map<String, Object> config, String label) {
+        _treatment = treatment;
+        _config = config;
+        _label = label;
     }
 
     public Map<String, Object> getConfig() {

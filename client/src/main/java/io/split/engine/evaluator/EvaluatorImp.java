@@ -1,6 +1,9 @@
 package io.split.engine.evaluator;
 
 import io.split.client.dtos.ConditionType;
+import io.split.client.dtos.FallbackTreatment;
+import io.split.client.dtos.FallbackTreatmentCalculator;
+import io.split.client.dtos.FallbackTreatmentsConfiguration;
 import io.split.client.exceptions.ChangeNumberExceptionWrapper;
 import io.split.engine.experiments.ParsedCondition;
 import io.split.engine.experiments.ParsedSplit;
@@ -26,19 +29,22 @@ public class EvaluatorImp implements Evaluator {
     private final SegmentCacheConsumer _segmentCacheConsumer;
     private final EvaluationContext _evaluationContext;
     private final SplitCacheConsumer _splitCacheConsumer;
+    private final FallbackTreatmentCalculator _fallbackTreatmentCalculator;
 
     public EvaluatorImp(SplitCacheConsumer splitCacheConsumer, SegmentCacheConsumer segmentCache,
-                        RuleBasedSegmentCacheConsumer ruleBasedSegmentCacheConsumer) {
+                        RuleBasedSegmentCacheConsumer ruleBasedSegmentCacheConsumer,
+                        FallbackTreatmentCalculator fallbackTreatmentCalculator) {
         _splitCacheConsumer = checkNotNull(splitCacheConsumer);
         _segmentCacheConsumer = checkNotNull(segmentCache);
         _evaluationContext = new EvaluationContext(this, _segmentCacheConsumer, ruleBasedSegmentCacheConsumer);
+        _fallbackTreatmentCalculator = fallbackTreatmentCalculator;
     }
 
     @Override
     public TreatmentLabelAndChangeNumber evaluateFeature(String matchingKey, String bucketingKey, String featureFlag, Map<String,
             Object> attributes) {
         ParsedSplit parsedSplit = _splitCacheConsumer.get(featureFlag);
-        return evaluateParsedSplit(matchingKey, bucketingKey, attributes, parsedSplit);
+        return evaluateParsedSplit(matchingKey, bucketingKey, attributes, parsedSplit, featureFlag);
     }
 
     @Override
@@ -49,7 +55,7 @@ public class EvaluatorImp implements Evaluator {
         if (parsedSplits == null) {
             return results;
         }
-        featureFlags.forEach(s -> results.put(s, evaluateParsedSplit(matchingKey, bucketingKey, attributes, parsedSplits.get(s))));
+        featureFlags.forEach(s -> results.put(s, evaluateParsedSplit(matchingKey, bucketingKey, attributes, parsedSplits.get(s), s)));
         return results;
     }
 
@@ -172,18 +178,22 @@ public class EvaluatorImp implements Evaluator {
     }
 
     private TreatmentLabelAndChangeNumber evaluateParsedSplit(String matchingKey, String bucketingKey, Map<String, Object> attributes,
-                                                              ParsedSplit parsedSplit) {
+                                                              ParsedSplit parsedSplit, String featureName) {
         try {
+
             if (parsedSplit == null) {
-                return new TreatmentLabelAndChangeNumber(Treatments.CONTROL, Labels.DEFINITION_NOT_FOUND);
+                FallbackTreatment fallbackTreatment = _fallbackTreatmentCalculator.resolve(featureName, Labels.DEFINITION_NOT_FOUND);
+                return new TreatmentLabelAndChangeNumber(fallbackTreatment.getTreatment(), fallbackTreatment.getLabel());
             }
             return getTreatment(matchingKey, bucketingKey, parsedSplit, attributes);
         } catch (ChangeNumberExceptionWrapper e) {
             _log.error("Evaluator Exception", e.wrappedException());
-            return new EvaluatorImp.TreatmentLabelAndChangeNumber(Treatments.CONTROL, Labels.EXCEPTION, e.changeNumber());
+            FallbackTreatment fallbackTreatment = _fallbackTreatmentCalculator.resolve(featureName, Labels.EXCEPTION);
+            return new TreatmentLabelAndChangeNumber(fallbackTreatment.getTreatment(), fallbackTreatment.getLabel(), e.changeNumber());
         } catch (Exception e) {
             _log.error("Evaluator Exception", e);
-            return new EvaluatorImp.TreatmentLabelAndChangeNumber(Treatments.CONTROL, Labels.EXCEPTION);
+            FallbackTreatment fallbackTreatment = _fallbackTreatmentCalculator.resolve(featureName, Labels.EXCEPTION);
+            return new TreatmentLabelAndChangeNumber(fallbackTreatment.getTreatment(), fallbackTreatment.getLabel());
         }
     }
 
