@@ -46,7 +46,6 @@ import static io.split.inputValidation.FlagSetsValidator.cleanup;
  * @author adil
  */
 public final class SplitClientImpl implements SplitClient {
-//    public static final SplitResult SPLIT_RESULT_CONTROL = new SplitResult(Treatments.CONTROL, null);
     private static final String CLIENT_DESTROY = "Client has already been destroyed - no calls possible";
     private static final String CATCHALL_EXCEPTION = "CatchAll Exception";
     private static final String MATCHING_KEY = "matchingKey";
