@@ -712,10 +712,10 @@ public class SplitClientIntegrationTest {
             Assert.assertTrue(events.stream().anyMatch(e -> "keyProperties".equals(e.getEventDto().key) && e.getEventDto().properties != null));
 
             Assert.assertEquals(3, splits.size());
-            Assert.assertTrue(splits.stream().anyMatch(sw -> "first.name".equals(sw.name)));
-            Assert.assertTrue(splits.stream().anyMatch(sw -> "second.name".equals(sw.name)));
-            Assert.assertEquals("on", client.getTreatment("key", "first.name"));
-            Assert.assertEquals("off", client.getTreatmentWithConfig("FakeKey", "second.name").treatment());
+            Assert.assertTrue(splits.stream().anyMatch(sw -> "first-name".equals(sw.name)));
+            Assert.assertTrue(splits.stream().anyMatch(sw -> "second-name".equals(sw.name)));
+            Assert.assertEquals("on", client.getTreatment("key", "first-name"));
+            Assert.assertEquals("off", client.getTreatmentWithConfig("FakeKey", "second-name").treatment());
             Assert.assertEquals("control", client.getTreatment("FakeKey", "noSplit"));
             Assert.assertEquals("on", client.getTreatment("bilal@@split.io", "rbs_flag", new HashMap<String, Object>() {{
                 put("email", "bilal@@split.io");
@@ -726,8 +726,8 @@ public class SplitClientIntegrationTest {
 
             List<ImpressionConsumer> impressions = customStorageWrapper.getImps();
             Assert.assertEquals(4, impressions.size());
-            Assert.assertTrue(impressions.stream().anyMatch(imp -> "first.name".equals(imp.getKeyImpression().feature) && "on".equals(imp.getKeyImpression().treatment)));
-            Assert.assertTrue(impressions.stream().anyMatch(imp -> "second.name".equals(imp.getKeyImpression().feature) && "off".equals(imp.getKeyImpression().treatment)));
+            Assert.assertTrue(impressions.stream().anyMatch(imp -> "first-name".equals(imp.getKeyImpression().feature) && "on".equals(imp.getKeyImpression().treatment)));
+            Assert.assertTrue(impressions.stream().anyMatch(imp -> "second-name".equals(imp.getKeyImpression().feature) && "off".equals(imp.getKeyImpression().treatment)));
 
             Map<String, Long> latencies = customStorageWrapper.getLatencies();
 

@@ -85,7 +85,7 @@ public class SplitParserTest {
 
         List<Condition> conditions = Lists.newArrayList(c);
 
-        Split split = makeSplit("first.name", 123, conditions, 1);
+        Split split = makeSplit("first-name", 123, conditions, 1);
 
         ParsedSplit actual = parser.parse(split);
 
@@ -95,7 +95,7 @@ public class SplitParserTest {
         ParsedCondition parsedCondition = ParsedCondition.createParsedConditionForTests(combiningMatcher, partitions);
         List<ParsedCondition> listOfMatcherAndSplits = Lists.newArrayList(parsedCondition);
 
-        ParsedSplit expected = ParsedSplit.createParsedSplitForTests("first.name", 123, false, Treatments.OFF, listOfMatcherAndSplits, "user", 1, 1, null, false, new PrerequisitesMatcher(null));
+        ParsedSplit expected = ParsedSplit.createParsedSplitForTests("first-name", 123, false, Treatments.OFF, listOfMatcherAndSplits, "user", 1, 1, null, false, new PrerequisitesMatcher(null));
 
         compareParsed(actual, expected);
         assertTrue(expected.hashCode() != 0);
@@ -128,7 +128,7 @@ public class SplitParserTest {
         Map<String, String> configurations = new HashMap<>();
         configurations.put("on", "{\"size\":15,\"test\":20}");
         configurations.put("off", "{\"size\":10}");
-        Split split = makeSplit("first.name", 123, conditions, 1, configurations);
+        Split split = makeSplit("first-name", 123, conditions, 1, configurations);
 
         ParsedSplit actual = parser.parse(split);
 
@@ -138,7 +138,7 @@ public class SplitParserTest {
         ParsedCondition parsedCondition = ParsedCondition.createParsedConditionForTests(combiningMatcher, partitions);
         List<ParsedCondition> listOfMatcherAndSplits = Lists.newArrayList(parsedCondition);
 
-        ParsedSplit expected = ParsedSplit.createParsedSplitForTests("first.name", 123, false, Treatments.OFF,
+        ParsedSplit expected = ParsedSplit.createParsedSplitForTests("first-name", 123, false, Treatments.OFF,
                 listOfMatcherAndSplits, "user", 1, 1, configurations, new HashSet<>(), false, new PrerequisitesMatcher(null));
 
         Assert.assertEquals(actual.parsedConditions(), expected.parsedConditions());
@@ -184,7 +184,7 @@ public class SplitParserTest {
 
         List<Condition> conditions = Lists.newArrayList(c1, c2);
 
-        Split split = makeSplit("first.name", 123, conditions, 1);
+        Split split = makeSplit("first-name", 123, conditions, 1);
 
         ParsedSplit actual = parser.parse(split);
 
@@ -192,7 +192,7 @@ public class SplitParserTest {
         ParsedCondition parsedCondition2 = ParsedCondition.createParsedConditionForTests(CombiningMatcher.of(new UserDefinedSegmentMatcher(SALES_PEOPLE)), turnOff);
         List<ParsedCondition> listOfParsedConditions = Lists.newArrayList(parsedCondition1, parsedCondition2);
 
-        ParsedSplit expected = ParsedSplit.createParsedSplitForTests("first.name", 123, false, Treatments.OFF, listOfParsedConditions, "user", 1, 1, null, false, new PrerequisitesMatcher(null));
+        ParsedSplit expected = ParsedSplit.createParsedSplitForTests("first-name", 123, false, Treatments.OFF, listOfParsedConditions, "user", 1, 1, null, false, new PrerequisitesMatcher(null));
 
         compareParsed(actual, expected);
     }
@@ -218,7 +218,7 @@ public class SplitParserTest {
             conditions.add(c);
         }
 
-        Split split = makeSplit("first.name", 123, conditions, 1);
+        Split split = makeSplit("first-name", 123, conditions, 1);
 
         Assert.assertNotNull(parser.parse(split));
     }
@@ -251,7 +251,7 @@ public class SplitParserTest {
 
         List<Condition> conditions = Lists.newArrayList(c);
 
-        Split split = makeSplit("first.name", 123, conditions, 1);
+        Split split = makeSplit("first-name", 123, conditions, 1);
 
         ParsedSplit actual = parser.parse(split);
 
@@ -261,7 +261,7 @@ public class SplitParserTest {
         ParsedCondition parsedCondition = ParsedCondition.createParsedConditionForTests(combiningMatcher, partitions);
         List<ParsedCondition> listOfMatcherAndSplits = Lists.newArrayList(parsedCondition);
 
-        ParsedSplit expected = ParsedSplit.createParsedSplitForTests("first.name", 123, false, Treatments.OFF, listOfMatcherAndSplits, "user", 1, 1, null, false, new PrerequisitesMatcher(null));
+        ParsedSplit expected = ParsedSplit.createParsedSplitForTests("first-name", 123, false, Treatments.OFF, listOfMatcherAndSplits, "user", 1, 1, null, false, new PrerequisitesMatcher(null));
 
         compareParsed(actual, expected);
     }
@@ -285,7 +285,7 @@ public class SplitParserTest {
 
         List<Condition> conditions = Lists.newArrayList(c);
 
-        Split split = makeSplit("first.name", 123, conditions, 1);
+        Split split = makeSplit("first-name", 123, conditions, 1);
 
         ParsedSplit actual = parser.parse(split);
 
@@ -294,7 +294,7 @@ public class SplitParserTest {
         ParsedCondition parsedCondition = ParsedCondition.createParsedConditionForTests(combiningMatcher, partitions);
         List<ParsedCondition> listOfMatcherAndSplits = Lists.newArrayList(parsedCondition);
 
-        ParsedSplit expected = ParsedSplit.createParsedSplitForTests("first.name", 123, false, Treatments.OFF, listOfMatcherAndSplits, "user", 1, 1, null, false, new PrerequisitesMatcher(null));
+        ParsedSplit expected = ParsedSplit.createParsedSplitForTests("first-name", 123, false, Treatments.OFF, listOfMatcherAndSplits, "user", 1, 1, null, false, new PrerequisitesMatcher(null));
 
         compareParsed(actual, expected);
     }
@@ -317,7 +317,7 @@ public class SplitParserTest {
 
         List<Condition> conditions = Lists.newArrayList(c);
 
-        Split split = makeSplit("first.name", 123, conditions, 1);
+        Split split = makeSplit("first-name", 123, conditions, 1);
 
         ParsedSplit actual = parser.parse(split);
 
@@ -326,7 +326,7 @@ public class SplitParserTest {
         ParsedCondition parsedCondition = ParsedCondition.createParsedConditionForTests(combiningMatcher, partitions);
         List<ParsedCondition> listOfMatcherAndSplits = Lists.newArrayList(parsedCondition);
 
-        ParsedSplit expected = ParsedSplit.createParsedSplitForTests("first.name", 123, false, Treatments.OFF, listOfMatcherAndSplits, "user", 1, 1, null, false, new PrerequisitesMatcher(null));
+        ParsedSplit expected = ParsedSplit.createParsedSplitForTests("first-name", 123, false, Treatments.OFF, listOfMatcherAndSplits, "user", 1, 1, null, false, new PrerequisitesMatcher(null));
 
         compareParsed(actual, expected);
     }
@@ -348,7 +348,7 @@ public class SplitParserTest {
 
         List<Condition> conditions = Lists.newArrayList(c);
 
-        Split split = makeSplit("first.name", 123, conditions, 1);
+        Split split = makeSplit("first-name", 123, conditions, 1);
 
         ParsedSplit actual = parser.parse(split);
 
@@ -357,7 +357,7 @@ public class SplitParserTest {
         ParsedCondition parsedCondition = ParsedCondition.createParsedConditionForTests(combiningMatcher, partitions);
         List<ParsedCondition> listOfMatcherAndSplits = Lists.newArrayList(parsedCondition);
 
-        ParsedSplit expected = ParsedSplit.createParsedSplitForTests("first.name", 123, false, Treatments.OFF, listOfMatcherAndSplits, "user", 1, 1, null, false, new PrerequisitesMatcher(null));
+        ParsedSplit expected = ParsedSplit.createParsedSplitForTests("first-name", 123, false, Treatments.OFF, listOfMatcherAndSplits, "user", 1, 1, null, false, new PrerequisitesMatcher(null));
 
         compareParsed(actual, expected);
     }
@@ -384,7 +384,7 @@ public class SplitParserTest {
 
         List<Condition> conditions = Lists.newArrayList(c);
 
-        Split split = makeSplit("first.name", 123, conditions, 1);
+        Split split = makeSplit("first-name", 123, conditions, 1);
 
         ParsedSplit actual = parser.parse(split);
 
@@ -393,7 +393,7 @@ public class SplitParserTest {
         ParsedCondition parsedCondition = ParsedCondition.createParsedConditionForTests(combiningMatcher, partitions);
         List<ParsedCondition> listOfMatcherAndSplits = Lists.newArrayList(parsedCondition);
 
-        ParsedSplit expected = ParsedSplit.createParsedSplitForTests("first.name", 123, false, Treatments.OFF, listOfMatcherAndSplits, "user", 1, 1, null, false, new PrerequisitesMatcher(null));
+        ParsedSplit expected = ParsedSplit.createParsedSplitForTests("first-name", 123, false, Treatments.OFF, listOfMatcherAndSplits, "user", 1, 1, null, false, new PrerequisitesMatcher(null));
 
         compareParsed(actual, expected);
     }
