@@ -2,6 +2,7 @@ package io.split.client;
 
 import com.google.common.io.Files;
 import io.split.client.dtos.BearerCredentialsProvider;
+import io.split.client.dtos.FallbackTreatmentCalculatorImp;
 import io.split.client.dtos.Metadata;
 import io.split.client.events.EventsSender;
 import io.split.client.events.EventsStorage;
@@ -256,8 +257,9 @@ public class SplitFactoryImpl implements SplitFactory {
         _telemetrySyncTask = new TelemetrySyncTask(config.getTelemetryRefreshRate(), _telemetrySynchronizer,
                 config.getThreadFactory());
 
+        FallbackTreatmentCalculatorImp fallbackTreatmentCalculatorImp = new FallbackTreatmentCalculatorImp(null);
         // Evaluator
-        _evaluator = new EvaluatorImp(splitCache, segmentCache, ruleBasedSegmentCache, null);
+        _evaluator = new EvaluatorImp(splitCache, segmentCache, ruleBasedSegmentCache, fallbackTreatmentCalculatorImp);
 
         // SplitClient
         _client = new SplitClientImpl(this,
@@ -269,7 +271,9 @@ public class SplitFactoryImpl implements SplitFactory {
                 _evaluator,
                 _telemetryStorageProducer, // TelemetryEvaluation instance
                 _telemetryStorageProducer, // TelemetryConfiguration instance
-                flagSetsFilter);
+                flagSetsFilter,
+                fallbackTreatmentCalculatorImp
+        );
 
         // SplitManager
         _manager = new SplitManagerImpl(splitCache, config, _gates, _telemetryStorageProducer);
@@ -348,8 +352,9 @@ public class SplitFactoryImpl implements SplitFactory {
         _telemetrySynchronizer = new TelemetryConsumerSubmitter(customStorageWrapper, _sdkMetadata);
         UserCustomRuleBasedSegmentAdapterConsumer userCustomRuleBasedSegmentAdapterConsumer =
                 new UserCustomRuleBasedSegmentAdapterConsumer(customStorageWrapper);
+        FallbackTreatmentCalculatorImp fallbackTreatmentCalculatorImp = new FallbackTreatmentCalculatorImp(null);
         _evaluator = new EvaluatorImp(userCustomSplitAdapterConsumer, userCustomSegmentAdapterConsumer,
-                userCustomRuleBasedSegmentAdapterConsumer, null);
+                userCustomRuleBasedSegmentAdapterConsumer, fallbackTreatmentCalculatorImp);
         _impressionsSender = PluggableImpressionSender.create(customStorageWrapper);
         _uniqueKeysTracker = createUniqueKeysTracker(config);
         _impressionsManager = buildImpressionsManager(config, userCustomImpressionAdapterConsumer,
@@ -378,7 +383,9 @@ public class SplitFactoryImpl implements SplitFactory {
                 _evaluator,
                 _telemetryStorageProducer, // TelemetryEvaluation instance
                 _telemetryStorageProducer, // TelemetryConfiguration instance
-                flagSetsFilter);
+                flagSetsFilter,
+                fallbackTreatmentCalculatorImp
+        );
 
         // SyncManager
         _syncManager = new ConsumerSyncManager(synchronizer);
@@ -446,8 +453,9 @@ public class SplitFactoryImpl implements SplitFactory {
         SplitTasks splitTasks = SplitTasks.build(_splitSynchronizationTask, _segmentSynchronizationTaskImp,
                 _impressionsManager, null, null, null);
 
+        FallbackTreatmentCalculatorImp fallbackTreatmentCalculatorImp = new FallbackTreatmentCalculatorImp(null);
         // Evaluator
-        _evaluator = new EvaluatorImp(splitCache, segmentCache, ruleBasedSegmentCache, null);
+        _evaluator = new EvaluatorImp(splitCache, segmentCache, ruleBasedSegmentCache, fallbackTreatmentCalculatorImp);
 
         EventsStorage eventsStorage = new NoopEventsStorageImp();
 
@@ -461,7 +469,9 @@ public class SplitFactoryImpl implements SplitFactory {
                 _evaluator,
                 _telemetryStorageProducer, // TelemetryEvaluation instance
                 _telemetryStorageProducer, // TelemetryConfiguration instance
-                flagSetsFilter);
+                flagSetsFilter,
+                fallbackTreatmentCalculatorImp
+        );
 
         // Synchronizer
         Synchronizer synchronizer = new LocalhostSynchronizer(splitTasks, _splitFetcher,

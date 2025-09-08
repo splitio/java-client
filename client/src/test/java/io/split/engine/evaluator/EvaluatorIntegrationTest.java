@@ -2,6 +2,7 @@ package io.split.engine.evaluator;
 
 import com.google.common.collect.Lists;
 import io.split.client.dtos.ConditionType;
+import io.split.client.dtos.FallbackTreatmentCalculatorImp;
 import io.split.client.dtos.MatcherCombiner;
 import io.split.client.dtos.Partition;
 import io.split.client.interceptors.FlagSetsFilter;
@@ -174,7 +175,8 @@ public class EvaluatorIntegrationTest {
         SplitCache splitCache = new InMemoryCacheImp(flagSetsFilter);
         SegmentCache segmentCache = new SegmentCacheInMemoryImpl();
         RuleBasedSegmentCache ruleBasedSegmentCache = new RuleBasedSegmentCacheInMemoryImp();
-        Evaluator evaluator = new EvaluatorImp(splitCache, segmentCache, ruleBasedSegmentCache, null);
+        FallbackTreatmentCalculatorImp fallbackTreatmentCalculatorImp = new FallbackTreatmentCalculatorImp(null);
+        Evaluator evaluator = new EvaluatorImp(splitCache, segmentCache, ruleBasedSegmentCache, fallbackTreatmentCalculatorImp);
 
         Partition partition = new Partition();
         partition.treatment = ON_TREATMENT;

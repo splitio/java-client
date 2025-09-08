@@ -3,9 +3,7 @@ package io.split.client;
 import com.google.gson.GsonBuilder;
 import io.split.client.api.Key;
 import io.split.client.api.SplitResult;
-import io.split.client.dtos.DecoratedImpression;
-import io.split.client.dtos.EvaluationOptions;
-import io.split.client.dtos.Event;
+import io.split.client.dtos.*;
 import io.split.client.events.EventsStorageProducer;
 import io.split.client.impressions.Impression;
 import io.split.client.impressions.ImpressionsManager;
@@ -14,7 +12,6 @@ import io.split.engine.SDKReadinessGates;
 import io.split.engine.evaluator.Evaluator;
 import io.split.engine.evaluator.EvaluatorImp;
 import io.split.engine.evaluator.Labels;
-import io.split.grammar.Treatments;
 import io.split.inputValidation.EventsValidator;
 import io.split.inputValidation.KeyValidator;
 import io.split.inputValidation.SplitNameValidator;
@@ -49,7 +46,7 @@ import static io.split.inputValidation.FlagSetsValidator.cleanup;
  * @author adil
  */
 public final class SplitClientImpl implements SplitClient {
-    public static final SplitResult SPLIT_RESULT_CONTROL = new SplitResult(Treatments.CONTROL, null);
+//    public static final SplitResult SPLIT_RESULT_CONTROL = new SplitResult(Treatments.CONTROL, null);
     private static final String CLIENT_DESTROY = "Client has already been destroyed - no calls possible";
     private static final String CATCHALL_EXCEPTION = "CatchAll Exception";
     private static final String MATCHING_KEY = "matchingKey";
@@ -66,6 +63,7 @@ public final class SplitClientImpl implements SplitClient {
     private final TelemetryEvaluationProducer _telemetryEvaluationProducer;
     private final TelemetryConfigProducer _telemetryConfigProducer;
     private final FlagSetsFilter _flagSetsFilter;
+    private final FallbackTreatmentCalculator _fallbackTreatmentCalculator;
 
     public SplitClientImpl(SplitFactory container,
                            SplitCacheConsumer splitCacheConsumer,
@@ -76,7 +74,8 @@ public final class SplitClientImpl implements SplitClient {
                            Evaluator evaluator,
                            TelemetryEvaluationProducer telemetryEvaluationProducer,
                            TelemetryConfigProducer telemetryConfigProducer,
-                           FlagSetsFilter flagSetsFilter) {
+                           FlagSetsFilter flagSetsFilter,
+                           FallbackTreatmentCalculator fallbackTreatmentCalculator) {
         _container = container;
         _splitCacheConsumer = checkNotNull(splitCacheConsumer);
         _impressionManager = checkNotNull(impressionManager);
@@ -87,6 +86,7 @@ public final class SplitClientImpl implements SplitClient {
         _telemetryEvaluationProducer = checkNotNull(telemetryEvaluationProducer);
         _telemetryConfigProducer = checkNotNull(telemetryConfigProducer);
         _flagSetsFilter = flagSetsFilter;
+        _fallbackTreatmentCalculator = fallbackTreatmentCalculator;
     }
 
     @Override
@@ -492,31 +492,31 @@ public final class SplitClientImpl implements SplitClient {
 
             if (_container.isDestroyed()) {
                 _log.error(CLIENT_DESTROY);
-                return SPLIT_RESULT_CONTROL;
+                return checkFallbackTreatment(featureFlag);
             }
 
             if (!KeyValidator.isValid(matchingKey, MATCHING_KEY, _config.maxStringLength(), methodEnum.getMethod())) {
-                return SPLIT_RESULT_CONTROL;
+                return checkFallbackTreatment(featureFlag);
             }
 
             if (!KeyValidator.bucketingKeyIsValid(bucketingKey, _config.maxStringLength(), methodEnum.getMethod())) {
-                return SPLIT_RESULT_CONTROL;
+                return checkFallbackTreatment(featureFlag);
             }
 
             Optional<String> splitNameResult = SplitNameValidator.isValid(featureFlag, methodEnum.getMethod());
             if (!splitNameResult.isPresent()) {
-                return SPLIT_RESULT_CONTROL;
+                return checkFallbackTreatment(featureFlag);
             }
             featureFlag = splitNameResult.get();
             long start = System.currentTimeMillis();
 
             EvaluatorImp.TreatmentLabelAndChangeNumber result = _evaluator.evaluateFeature(matchingKey, bucketingKey, featureFlag, attributes);
 
-            if (result.treatment.equals(Treatments.CONTROL) && result.label.equals(Labels.DEFINITION_NOT_FOUND) && _gates.isSDKReady()) {
+            if (result.label != null && result.label.contains(Labels.DEFINITION_NOT_FOUND) && _gates.isSDKReady()) {
                 _log.warn(String.format(
                         "%s: you passed \"%s\" that does not exist in this environment, " +
                                 "please double check what feature flags exist in the Split user interface.", methodEnum.getMethod(), featureFlag));
-                return SPLIT_RESULT_CONTROL;
+                return checkFallbackTreatment(featureFlag);
             }
 
             recordStats(
@@ -541,8 +541,17 @@ public final class SplitClientImpl implements SplitClient {
             } catch (Exception e1) {
                 // ignore
             }
-            return SPLIT_RESULT_CONTROL;
+            return checkFallbackTreatment(featureFlag);
         }
+    }
+
+    private SplitResult checkFallbackTreatment(String featureName) {
+        FallbackTreatment fallbackTreatment = _fallbackTreatmentCalculator.resolve(featureName, "");
+        String config = null;
+        if (fallbackTreatment.getConfig() != null) {
+            config = fallbackTreatment.getConfig().toString();
+        }
+        return new SplitResult(fallbackTreatment.getTreatment(), config);
     }
 
     private String validateProperties(Map<String, Object> properties) {
@@ -563,6 +572,7 @@ public final class SplitClientImpl implements SplitClient {
             _log.error(String.format("%s: featureFlagNames must be a non-empty array", methodEnum.getMethod()));
             return new HashMap<>();
         }
+
         try {
             checkSDKReady(methodEnum, featureFlagNames);
             Map<String, SplitResult> result = validateBeforeEvaluate(featureFlagNames, matchingKey, methodEnum, bucketingKey);
@@ -623,17 +633,17 @@ public final class SplitClientImpl implements SplitClient {
             return createMapControl(featureFlagNames);
         }
     }
+
     private Map<String, SplitResult> processEvaluatorResult(Map<String, EvaluatorImp.TreatmentLabelAndChangeNumber> evaluatorResult,
                                                             MethodEnum methodEnum, String matchingKey, String bucketingKey, Map<String,
                                                             Object> attributes, long initTime, String properties){
         List<DecoratedImpression> decoratedImpressions = new ArrayList<>();
         Map<String, SplitResult> result = new HashMap<>();
         evaluatorResult.keySet().forEach(t -> {
-            if (evaluatorResult.get(t).treatment.equals(Treatments.CONTROL) && evaluatorResult.get(t).label.
-                    equals(Labels.DEFINITION_NOT_FOUND) && _gates.isSDKReady()) {
+            if (evaluatorResult.get(t).label != null && evaluatorResult.get(t).label.contains(Labels.DEFINITION_NOT_FOUND) && _gates.isSDKReady()) {
                 _log.warn(String.format("%s: you passed \"%s\" that does not exist in this environment please double check " +
                         "what feature flags exist in the Split user interface.", methodEnum.getMethod(), t));
-                result.put(t, SPLIT_RESULT_CONTROL);
+                result.put(t, checkFallbackTreatment(t));
             } else {
                 result.put(t, new SplitResult(evaluatorResult.get(t).treatment, evaluatorResult.get(t).configurations));
                 decoratedImpressions.add(
@@ -735,7 +745,7 @@ public final class SplitClientImpl implements SplitClient {
 
     private Map<String, SplitResult> createMapControl(List<String> featureFlags) {
         Map<String, SplitResult> result = new HashMap<>();
-        featureFlags.forEach(s -> result.put(s, SPLIT_RESULT_CONTROL));
+        featureFlags.forEach(s -> result.put(s, checkFallbackTreatment(s)));
         return result;
     }
 }
