@@ -257,7 +257,7 @@ public class SplitFactoryImpl implements SplitFactory {
         _telemetrySyncTask = new TelemetrySyncTask(config.getTelemetryRefreshRate(), _telemetrySynchronizer,
                 config.getThreadFactory());
 
-        FallbackTreatmentCalculatorImp fallbackTreatmentCalculatorImp = new FallbackTreatmentCalculatorImp(null);
+        FallbackTreatmentCalculatorImp fallbackTreatmentCalculatorImp = new FallbackTreatmentCalculatorImp(config.fallbackTreatments());
         // Evaluator
         _evaluator = new EvaluatorImp(splitCache, segmentCache, ruleBasedSegmentCache, fallbackTreatmentCalculatorImp);
 
@@ -352,7 +352,7 @@ public class SplitFactoryImpl implements SplitFactory {
         _telemetrySynchronizer = new TelemetryConsumerSubmitter(customStorageWrapper, _sdkMetadata);
         UserCustomRuleBasedSegmentAdapterConsumer userCustomRuleBasedSegmentAdapterConsumer =
                 new UserCustomRuleBasedSegmentAdapterConsumer(customStorageWrapper);
-        FallbackTreatmentCalculatorImp fallbackTreatmentCalculatorImp = new FallbackTreatmentCalculatorImp(null);
+        FallbackTreatmentCalculatorImp fallbackTreatmentCalculatorImp = new FallbackTreatmentCalculatorImp(config.fallbackTreatments());
         _evaluator = new EvaluatorImp(userCustomSplitAdapterConsumer, userCustomSegmentAdapterConsumer,
                 userCustomRuleBasedSegmentAdapterConsumer, fallbackTreatmentCalculatorImp);
         _impressionsSender = PluggableImpressionSender.create(customStorageWrapper);
@@ -453,7 +453,7 @@ public class SplitFactoryImpl implements SplitFactory {
         SplitTasks splitTasks = SplitTasks.build(_splitSynchronizationTask, _segmentSynchronizationTaskImp,
                 _impressionsManager, null, null, null);
 
-        FallbackTreatmentCalculatorImp fallbackTreatmentCalculatorImp = new FallbackTreatmentCalculatorImp(null);
+        FallbackTreatmentCalculatorImp fallbackTreatmentCalculatorImp = new FallbackTreatmentCalculatorImp(config.fallbackTreatments());
         // Evaluator
         _evaluator = new EvaluatorImp(splitCache, segmentCache, ruleBasedSegmentCache, fallbackTreatmentCalculatorImp);
 
