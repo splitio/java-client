@@ -1,8 +1,12 @@
 package io.split.client;
 
+import io.split.client.dtos.FallbackTreatment;
+import io.split.client.dtos.FallbackTreatmentCalculatorImp;
+import io.split.client.dtos.FallbackTreatmentsConfiguration;
 import io.split.client.dtos.ProxyConfiguration;
 import io.split.client.impressions.ImpressionsManager;
 import io.split.client.utils.FileTypeEnum;
+import io.split.engine.evaluator.EvaluatorImp;
 import io.split.integrations.IntegrationsConfig;
 import io.split.service.SplitHttpClientImpl;
 import io.split.storages.enums.OperationMode;
@@ -56,11 +60,26 @@ public class SplitFactoryImplTest extends TestCase {
                 .authServiceURL(AUTH_SERVICE)
                 .setBlockUntilReadyTimeout(10000)
                 .telemetryURL(SplitClientConfig.TELEMETRY_ENDPOINT)
+                .fallbackTreatments(new FallbackTreatmentsConfiguration(new FallbackTreatment("on"), null))
                 .build();
         SplitFactoryImpl splitFactory = new SplitFactoryImpl(API_KEY, splitClientConfig);
 
         assertNotNull(splitFactory.client());
         assertNotNull(splitFactory.manager());
+
+        Field fallbackField = SplitClientImpl.class.getDeclaredField("_fallbackTreatmentCalculator");
+        fallbackField.setAccessible(true);
+        FallbackTreatmentCalculatorImp fallbackCalc = (FallbackTreatmentCalculatorImp) fallbackField.get(splitFactory.client());
+        assertNotNull(fallbackCalc);
+
+        Field evalField = SplitClientImpl.class.getDeclaredField("_evaluator");
+        evalField.setAccessible(true);
+        EvaluatorImp evaluatorImp = (EvaluatorImp) evalField.get(splitFactory.client());
+        assertNotNull(fallbackCalc);
+        fallbackField = EvaluatorImp.class.getDeclaredField("_fallbackTreatmentCalculator");
+        fallbackField.setAccessible(true);
+        fallbackCalc = (FallbackTreatmentCalculatorImp) fallbackField.get(evaluatorImp);
+        assertNotNull(fallbackCalc);
     }
 
     @Test
@@ -365,6 +384,20 @@ public class SplitFactoryImplTest extends TestCase {
         Thread.sleep(1500);
         Mockito.verify(userStorageWrapper, Mockito.times(1)).connect();
         Mockito.verify(telemetrySynchronizer, Mockito.times(1)).synchronizeConfig(Mockito.anyObject(), Mockito.anyLong(), Mockito.anyObject(), Mockito.anyObject());
+
+        Field fallbackField = SplitClientImpl.class.getDeclaredField("_fallbackTreatmentCalculator");
+        fallbackField.setAccessible(true);
+        FallbackTreatmentCalculatorImp fallbackCalc = (FallbackTreatmentCalculatorImp) fallbackField.get(splitFactory.client());
+        assertNotNull(fallbackCalc);
+
+        Field evalField = SplitClientImpl.class.getDeclaredField("_evaluator");
+        evalField.setAccessible(true);
+        EvaluatorImp evaluatorImp = (EvaluatorImp) evalField.get(splitFactory.client());
+        assertNotNull(fallbackCalc);
+        fallbackField = EvaluatorImp.class.getDeclaredField("_fallbackTreatmentCalculator");
+        fallbackField.setAccessible(true);
+        fallbackCalc = (FallbackTreatmentCalculatorImp) fallbackField.get(evaluatorImp);
+        assertNotNull(fallbackCalc);
     }
 
     @Test

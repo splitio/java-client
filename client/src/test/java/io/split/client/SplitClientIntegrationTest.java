@@ -4,6 +4,8 @@ import io.split.SSEMockServer;
 import io.split.SplitMockServer;
 import io.split.client.api.SplitView;
 import io.split.client.dtos.EvaluationOptions;
+import io.split.client.dtos.FallbackTreatment;
+import io.split.client.dtos.FallbackTreatmentsConfiguration;
 import io.split.client.impressions.ImpressionsManager;
 import io.split.client.utils.CustomDispatcher;
 import io.split.storages.enums.OperationMode;
@@ -1173,6 +1175,222 @@ public class SplitClientIntegrationTest {
 
         client.destroy();
         splitServer.shutdown();
+    }
+
+    @Test
+    public void FallbackTreatmentGlobalAndByFlagTest() throws Exception {
+        String splits = new String(Files.readAllBytes(Paths.get("src/test/resources/splits_imp_toggle.json")), StandardCharsets.UTF_8);
+        List<RecordedRequest> allRequests = new ArrayList<>();
+        Dispatcher dispatcher = new Dispatcher() {
+            @Override
+            public MockResponse dispatch(RecordedRequest request) {
+                allRequests.add(request);
+                switch (request.getPath()) {
+                    case "/api/splitChanges?s=1.3&since=-1&rbSince=-1":
+                        return new MockResponse().setResponseCode(200).setBody(splits);
+                    case "/api/splitChanges?s=1.3&since=1602796638344&rbSince=-1":
+                        return new MockResponse().setResponseCode(200).setBody("{\"ff\":{\"d\":[], \"s\":1602796638344, \"t\":1602796638344}, \"rbs\":{\"d\":[],\"s\":-1,\"t\":-1}}");
+                    case "/api/testImpressions/bulk":
+                        return new MockResponse().setResponseCode(200);
+                    case "/api/testImpressions/count":
+                        return new MockResponse().setResponseCode(200);
+                    case "/v1/keys/ss":
+                        return new MockResponse().setResponseCode(200);
+                    case "/v1/metrics/usage":
+                        return new MockResponse().setResponseCode(200);
+                    case "/v1/metrics/config":
+                        return new MockResponse().setResponseCode(200);
+                }
+                return new MockResponse().setResponseCode(404);
+            }
+        };
+
+        MockWebServer server = new MockWebServer();
+        server.setDispatcher(dispatcher);
+
+        server.start();
+        String serverURL = String.format("http://%s:%s", server.getHostName(), server.getPort());
+        FallbackTreatmentsConfiguration fallbackTreatmentsConfiguration = new FallbackTreatmentsConfiguration(new FallbackTreatment("on-fallback", "{\"prop1\", \"val1\"}"),
+                new HashMap<String, FallbackTreatment>() {{ put("feature", new FallbackTreatment("off-fallback", "{\"prop2\", \"val2\"}")); }});
+
+        SplitClientConfig config = SplitClientConfig.builder()
+                .setBlockUntilReadyTimeout(10000)
+                .endpoint(serverURL, serverURL)
+                .telemetryURL(serverURL + "/v1")
+                .authServiceURL(String.format("%s/api/auth/enabled", serverURL))
+                .streamingEnabled(false)
+                .featuresRefreshRate(5)
+                .impressionsMode(ImpressionsManager.Mode.DEBUG)
+                .fallbackTreatments(fallbackTreatmentsConfiguration)
+                .build();
+
+        SplitFactory factory = SplitFactoryBuilder.build("fake-api-token", config);
+        SplitClient client = factory.client();
+        client.blockUntilReady();
+
+        Assert.assertEquals("off", client.getTreatment("user1", "without_impression_toggle"));
+        Assert.assertEquals("off-fallback", client.getTreatmentWithConfig("user2", "feature").treatment());
+        Assert.assertEquals("{\"prop2\", \"val2\"}", client.getTreatmentWithConfig("user2", "feature").config());
+        Assert.assertEquals("on-fallback", client.getTreatmentWithConfig("user2", "feature2").treatment());
+        Assert.assertEquals("{\"prop1\", \"val1\"}", client.getTreatmentWithConfig("user2", "feature2").config());
+
+        client.destroy();
+        boolean check1 = false;
+        for (int i=0; i < allRequests.size(); i++ ) {
+            if (allRequests.get(i).getPath().equals("/api/testImpressions/bulk") ) {
+                String body = allRequests.get(i).getBody().readUtf8();
+                if (body.contains("user1")) {
+                    check1 = true;
+                    Assert.assertTrue(body.contains("without_impression_toggle"));
+                }
+            }
+        }
+        server.shutdown();
+        Assert.assertTrue(check1);
+    }
+
+    @Test
+    public void FallbackTreatmentGlobalTest() throws Exception {
+        String splits = new String(Files.readAllBytes(Paths.get("src/test/resources/splits_imp_toggle.json")), StandardCharsets.UTF_8);
+        List<RecordedRequest> allRequests = new ArrayList<>();
+        Dispatcher dispatcher = new Dispatcher() {
+            @Override
+            public MockResponse dispatch(RecordedRequest request) {
+                allRequests.add(request);
+                switch (request.getPath()) {
+                    case "/api/splitChanges?s=1.3&since=-1&rbSince=-1":
+                        return new MockResponse().setResponseCode(200).setBody(splits);
+                    case "/api/splitChanges?s=1.3&since=1602796638344&rbSince=-1":
+                        return new MockResponse().setResponseCode(200).setBody("{\"ff\":{\"d\":[], \"s\":1602796638344, \"t\":1602796638344}, \"rbs\":{\"d\":[],\"s\":-1,\"t\":-1}}");
+                    case "/api/testImpressions/bulk":
+                        return new MockResponse().setResponseCode(200);
+                    case "/api/testImpressions/count":
+                        return new MockResponse().setResponseCode(200);
+                    case "/v1/keys/ss":
+                        return new MockResponse().setResponseCode(200);
+                    case "/v1/metrics/usage":
+                        return new MockResponse().setResponseCode(200);
+                    case "/v1/metrics/config":
+                        return new MockResponse().setResponseCode(200);
+                }
+                return new MockResponse().setResponseCode(404);
+            }
+        };
+
+        MockWebServer server = new MockWebServer();
+        server.setDispatcher(dispatcher);
+
+        server.start();
+        String serverURL = String.format("http://%s:%s", server.getHostName(), server.getPort());
+        FallbackTreatmentsConfiguration fallbackTreatmentsConfiguration = new FallbackTreatmentsConfiguration(new FallbackTreatment("on-fallback", "{\"prop1\", \"val1\"}"),
+                null);
+
+        SplitClientConfig config = SplitClientConfig.builder()
+                .setBlockUntilReadyTimeout(10000)
+                .endpoint(serverURL, serverURL)
+                .telemetryURL(serverURL + "/v1")
+                .authServiceURL(String.format("%s/api/auth/enabled", serverURL))
+                .streamingEnabled(false)
+                .featuresRefreshRate(5)
+                .impressionsMode(ImpressionsManager.Mode.DEBUG)
+                .fallbackTreatments(fallbackTreatmentsConfiguration)
+                .build();
+
+        SplitFactory factory = SplitFactoryBuilder.build("fake-api-token", config);
+        SplitClient client = factory.client();
+        client.blockUntilReady();
+
+        Assert.assertEquals("off", client.getTreatment("user1", "without_impression_toggle"));
+        Assert.assertEquals("on-fallback", client.getTreatmentWithConfig("user2", "feature").treatment());
+        Assert.assertEquals("{\"prop1\", \"val1\"}", client.getTreatmentWithConfig("user2", "feature").config());
+        Assert.assertEquals("on-fallback", client.getTreatmentWithConfig("user2", "feature2").treatment());
+        Assert.assertEquals("{\"prop1\", \"val1\"}", client.getTreatmentWithConfig("user2", "feature2").config());
+
+        client.destroy();
+        boolean check1 = false;
+        for (int i=0; i < allRequests.size(); i++ ) {
+            if (allRequests.get(i).getPath().equals("/api/testImpressions/bulk") ) {
+                String body = allRequests.get(i).getBody().readUtf8();
+                if (body.contains("user1")) {
+                    check1 = true;
+                    Assert.assertTrue(body.contains("without_impression_toggle"));
+                }
+            }
+        }
+        server.shutdown();
+        Assert.assertTrue(check1);
+    }
+
+    @Test
+    public void FallbackTreatmentByFlagTest() throws Exception {
+        String splits = new String(Files.readAllBytes(Paths.get("src/test/resources/splits_imp_toggle.json")), StandardCharsets.UTF_8);
+        List<RecordedRequest> allRequests = new ArrayList<>();
+        Dispatcher dispatcher = new Dispatcher() {
+            @Override
+            public MockResponse dispatch(RecordedRequest request) {
+                allRequests.add(request);
+                switch (request.getPath()) {
+                    case "/api/splitChanges?s=1.3&since=-1&rbSince=-1":
+                        return new MockResponse().setResponseCode(200).setBody(splits);
+                    case "/api/splitChanges?s=1.3&since=1602796638344&rbSince=-1":
+                        return new MockResponse().setResponseCode(200).setBody("{\"ff\":{\"d\":[], \"s\":1602796638344, \"t\":1602796638344}, \"rbs\":{\"d\":[],\"s\":-1,\"t\":-1}}");
+                    case "/api/testImpressions/bulk":
+                        return new MockResponse().setResponseCode(200);
+                    case "/api/testImpressions/count":
+                        return new MockResponse().setResponseCode(200);
+                    case "/v1/keys/ss":
+                        return new MockResponse().setResponseCode(200);
+                    case "/v1/metrics/usage":
+                        return new MockResponse().setResponseCode(200);
+                    case "/v1/metrics/config":
+                        return new MockResponse().setResponseCode(200);
+                }
+                return new MockResponse().setResponseCode(404);
+            }
+        };
+
+        MockWebServer server = new MockWebServer();
+        server.setDispatcher(dispatcher);
+
+        server.start();
+        String serverURL = String.format("http://%s:%s", server.getHostName(), server.getPort());
+        FallbackTreatmentsConfiguration fallbackTreatmentsConfiguration = new FallbackTreatmentsConfiguration(null,
+                new HashMap<String, FallbackTreatment>() {{ put("feature", new FallbackTreatment("off-fallback", "{\"prop2\", \"val2\"}")); }});
+
+        SplitClientConfig config = SplitClientConfig.builder()
+                .setBlockUntilReadyTimeout(10000)
+                .endpoint(serverURL, serverURL)
+                .telemetryURL(serverURL + "/v1")
+                .authServiceURL(String.format("%s/api/auth/enabled", serverURL))
+                .streamingEnabled(false)
+                .featuresRefreshRate(5)
+                .impressionsMode(ImpressionsManager.Mode.DEBUG)
+                .fallbackTreatments(fallbackTreatmentsConfiguration)
+                .build();
+
+        SplitFactory factory = SplitFactoryBuilder.build("fake-api-token", config);
+        SplitClient client = factory.client();
+        client.blockUntilReady();
+
+        Assert.assertEquals("off", client.getTreatment("user1", "without_impression_toggle"));
+        Assert.assertEquals("off-fallback", client.getTreatmentWithConfig("user2", "feature").treatment());
+        Assert.assertEquals("{\"prop2\", \"val2\"}", client.getTreatmentWithConfig("user2", "feature").config());
+        Assert.assertEquals("control", client.getTreatmentWithConfig("user2", "feature2").treatment());
+        Assert.assertEquals(null, client.getTreatmentWithConfig("user2", "feature2").config());
+
+        client.destroy();
+        boolean check1 = false;
+        for (int i=0; i < allRequests.size(); i++ ) {
+            if (allRequests.get(i).getPath().equals("/api/testImpressions/bulk") ) {
+                String body = allRequests.get(i).getBody().readUtf8();
+                if (body.contains("user1")) {
+                    check1 = true;
+                    Assert.assertTrue(body.contains("without_impression_toggle"));
+                }
+            }
+        }
+        server.shutdown();
+        Assert.assertTrue(check1);
     }
 
     private SSEMockServer buildSSEMockServer(SSEMockServer.SseEventQueue eventQueue) {
