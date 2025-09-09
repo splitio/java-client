@@ -197,7 +197,7 @@ public class EvaluatorImp implements Evaluator {
 
     private String getFallbackConfig(FallbackTreatment fallbackTreatment) {
         if (fallbackTreatment.getConfig() != null) {
-            return fallbackTreatment.getConfig().toString();
+            return fallbackTreatment.getConfig();
         }
 
         return null;
@@ -206,7 +206,6 @@ public class EvaluatorImp implements Evaluator {
     private TreatmentLabelAndChangeNumber evaluateParsedSplit(String matchingKey, String bucketingKey, Map<String, Object> attributes,
                                                               ParsedSplit parsedSplit, String featureName) {
         try {
-
             if (parsedSplit == null) {
                 FallbackTreatment fallbackTreatment = _fallbackTreatmentCalculator.resolve(featureName, Labels.DEFINITION_NOT_FOUND);
                 return new TreatmentLabelAndChangeNumber(fallbackTreatment.getTreatment(),

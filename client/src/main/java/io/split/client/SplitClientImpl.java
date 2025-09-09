@@ -548,7 +548,7 @@ public final class SplitClientImpl implements SplitClient {
         FallbackTreatment fallbackTreatment = _fallbackTreatmentCalculator.resolve(featureName, "");
         String config = null;
         if (fallbackTreatment.getConfig() != null) {
-            config = fallbackTreatment.getConfig().toString();
+            config = fallbackTreatment.getConfig();
         }
         return new SplitResult(fallbackTreatment.getTreatment(), config);
     }

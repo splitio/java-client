@@ -2306,7 +2306,7 @@ public class SplitClientImplTest {
         features.put("flag", new HashSet<>(Arrays.asList("test1")));
         when(splitCacheConsumer.getNamesByFlagSets(anyList())).thenReturn(features);
 
-        Map<String, Object> fallbcakConfigGlobal = new HashMap<String, Object>() {{ put("prop1", "val1"); }};
+        String fallbcakConfigGlobal = "{\"prop1\", \"val1\"}";
         FallbackTreatmentsConfiguration fallbackTreatmentsConfiguration = new FallbackTreatmentsConfiguration(
                 new FallbackTreatment("on",  fallbcakConfigGlobal),
                 null);
@@ -2326,19 +2326,19 @@ public class SplitClientImplTest {
         );
         assertEquals("on", client.getTreatment("adil@relateiq.com", "test1"));
         assertEquals("on", client.getTreatmentWithConfig("adil@relateiq.com", "test1").treatment());
-        assertEquals(fallbcakConfigGlobal.toString(), client.getTreatmentWithConfig("adil@relateiq.com", "test1").config());
+        assertEquals(fallbcakConfigGlobal, client.getTreatmentWithConfig("adil@relateiq.com", "test1").config());
         assertEquals("on", client.getTreatments("adil@relateiq.com", Arrays.asList("test1")).get("test1"));
         assertEquals("on", client.getTreatmentsWithConfig("adil@relateiq.com", Arrays.asList("test1")).get("test1").treatment());
-        assertEquals(fallbcakConfigGlobal.toString(), client.getTreatmentsWithConfig("adil@relateiq.com", Arrays.asList("test1")).get("test1").config());
+        assertEquals(fallbcakConfigGlobal, client.getTreatmentsWithConfig("adil@relateiq.com", Arrays.asList("test1")).get("test1").config());
 
         assertEquals("on", client.getTreatmentsByFlagSet("adil@relateiq.com", "flag").get("test1"));
         assertEquals("on", client.getTreatmentsByFlagSets("adil@relateiq.com", Arrays.asList("flag")).get("test1"));
         assertEquals("on", client.getTreatmentsWithConfigByFlagSet("adil@relateiq.com", "flag").get("test1").treatment());
-        assertEquals(fallbcakConfigGlobal.toString(), client.getTreatmentsWithConfigByFlagSet("adil@relateiq.com", "flag").get("test1").config());
+        assertEquals(fallbcakConfigGlobal, client.getTreatmentsWithConfigByFlagSet("adil@relateiq.com", "flag").get("test1").config());
         assertEquals("on", client.getTreatmentsWithConfigByFlagSets("adil@relateiq.com", Arrays.asList("flag")).get("test1").treatment());
-        assertEquals(fallbcakConfigGlobal.toString(), client.getTreatmentsWithConfigByFlagSets("adil@relateiq.com", Arrays.asList("flag")).get("test1").config());
+        assertEquals(fallbcakConfigGlobal, client.getTreatmentsWithConfigByFlagSets("adil@relateiq.com", Arrays.asList("flag")).get("test1").config());
 
-        Map<String, Object> fallbcakConfigByFlag = new HashMap<String, Object>() {{ put("prop2", "val2"); }};
+        String fallbcakConfigByFlag = "{\"prop2\", \"val2\"}";
         fallbackTreatmentsConfiguration = new FallbackTreatmentsConfiguration(new FallbackTreatment("on", fallbcakConfigGlobal),
                 new HashMap<String, FallbackTreatment>() {{ put("feature", new FallbackTreatment("off", fallbcakConfigByFlag)); }});
 
@@ -2363,30 +2363,30 @@ public class SplitClientImplTest {
         assertEquals("on", client.getTreatment("adil@relateiq.com", "test"));
         assertEquals("off", client.getTreatment("adil@relateiq.com", "feature"));
         assertEquals("on", client.getTreatmentWithConfig("adil@relateiq.com", "test1").treatment());
-        assertEquals(fallbcakConfigGlobal.toString(), client.getTreatmentWithConfig("adil@relateiq.com", "test1").config());
+        assertEquals(fallbcakConfigGlobal, client.getTreatmentWithConfig("adil@relateiq.com", "test1").config());
         assertEquals("off", client.getTreatmentWithConfig("adil@relateiq.com", "feature").treatment());
-        assertEquals(fallbcakConfigByFlag.toString(), client.getTreatmentWithConfig("adil@relateiq.com", "feature").config());
+        assertEquals(fallbcakConfigByFlag, client.getTreatmentWithConfig("adil@relateiq.com", "feature").config());
         Map<String, String> result = client.getTreatments("adil@relateiq.com", Arrays.asList("feature", "test"));
         assertEquals("off", result.get("feature"));
         assertEquals("on", result.get("test"));
         Map<String, SplitResult> results = client.getTreatmentsWithConfig("adil@relateiq.com", Arrays.asList("feature", "test"));
         assertEquals("off", results.get("feature").treatment());
-        assertEquals(fallbcakConfigByFlag.toString(), results.get("feature").config());
+        assertEquals(fallbcakConfigByFlag, results.get("feature").config());
         assertEquals("on", results.get("test").treatment());
-        assertEquals(fallbcakConfigGlobal.toString(), results.get("test").config());
+        assertEquals(fallbcakConfigGlobal, results.get("test").config());
 
         assertEquals("on", client.getTreatmentsByFlagSet("adil@relateiq.com", "flag").get("test"));
         assertEquals("off", client.getTreatmentsByFlagSet("adil@relateiq.com", "flag").get("feature"));
         assertEquals("on", client.getTreatmentsByFlagSets("adil@relateiq.com", Arrays.asList("flag")).get("test"));
         assertEquals("off", client.getTreatmentsByFlagSets("adil@relateiq.com", Arrays.asList("flag")).get("feature"));
         assertEquals("on", client.getTreatmentsWithConfigByFlagSet("adil@relateiq.com", "flag").get("test").treatment());
-        assertEquals(fallbcakConfigGlobal.toString(), client.getTreatmentsWithConfigByFlagSet("adil@relateiq.com", "flag").get("test").config());
+        assertEquals(fallbcakConfigGlobal, client.getTreatmentsWithConfigByFlagSet("adil@relateiq.com", "flag").get("test").config());
         assertEquals("off", client.getTreatmentsWithConfigByFlagSet("adil@relateiq.com", "flag").get("feature").treatment());
-        assertEquals(fallbcakConfigByFlag.toString(), client.getTreatmentsWithConfigByFlagSet("adil@relateiq.com", "flag").get("feature").config());
+        assertEquals(fallbcakConfigByFlag, client.getTreatmentsWithConfigByFlagSet("adil@relateiq.com", "flag").get("feature").config());
         assertEquals("on", client.getTreatmentsWithConfigByFlagSets("adil@relateiq.com", Arrays.asList("flag")).get("test").treatment());
-        assertEquals(fallbcakConfigGlobal.toString(), client.getTreatmentsWithConfigByFlagSets("adil@relateiq.com", Arrays.asList("flag")).get("test").config());
+        assertEquals(fallbcakConfigGlobal, client.getTreatmentsWithConfigByFlagSets("adil@relateiq.com", Arrays.asList("flag")).get("test").config());
         assertEquals("off", client.getTreatmentsWithConfigByFlagSets("adil@relateiq.com", Arrays.asList("flag")).get("feature").treatment());
-        assertEquals(fallbcakConfigByFlag.toString(), client.getTreatmentsWithConfigByFlagSets("adil@relateiq.com", Arrays.asList("flag")).get("feature").config());
+        assertEquals(fallbcakConfigByFlag, client.getTreatmentsWithConfigByFlagSets("adil@relateiq.com", Arrays.asList("flag")).get("feature").config());
 
         fallbackTreatmentsConfiguration = new FallbackTreatmentsConfiguration(null,
                 new HashMap<String, FallbackTreatment>() {{ put("feature", new FallbackTreatment("off", fallbcakConfigByFlag)); }});
@@ -2409,13 +2409,13 @@ public class SplitClientImplTest {
         assertEquals(Treatments.CONTROL, client.getTreatmentWithConfig("adil@relateiq.com", "test1").treatment());
         assertEquals(null, client.getTreatmentWithConfig("adil@relateiq.com", "test1").config());
         assertEquals("off", client.getTreatmentWithConfig("adil@relateiq.com", "feature").treatment());
-        assertEquals(fallbcakConfigByFlag.toString(), client.getTreatmentWithConfig("adil@relateiq.com", "feature").config());
+        assertEquals(fallbcakConfigByFlag, client.getTreatmentWithConfig("adil@relateiq.com", "feature").config());
         result = client.getTreatments("adil@relateiq.com", Arrays.asList("feature", "test"));
         assertEquals("off", result.get("feature"));
         assertEquals(Treatments.CONTROL, result.get("test"));
         results = client.getTreatmentsWithConfig("adil@relateiq.com", Arrays.asList("feature", "test"));
         assertEquals("off", results.get("feature").treatment());
-        assertEquals(fallbcakConfigByFlag.toString(), results.get("feature").config());
+        assertEquals(fallbcakConfigByFlag, results.get("feature").config());
         assertEquals(Treatments.CONTROL, results.get("test").treatment());
         assertEquals(null, results.get("test").config());
 
@@ -2426,11 +2426,11 @@ public class SplitClientImplTest {
         assertEquals(Treatments.CONTROL, client.getTreatmentsWithConfigByFlagSet("adil@relateiq.com", "flag").get("test").treatment());
         assertEquals(null, client.getTreatmentsWithConfigByFlagSet("adil@relateiq.com", "flag").get("test").config());
         assertEquals("off", client.getTreatmentsWithConfigByFlagSet("adil@relateiq.com", "flag").get("feature").treatment());
-        assertEquals(fallbcakConfigByFlag.toString(), client.getTreatmentsWithConfigByFlagSet("adil@relateiq.com", "flag").get("feature").config());
+        assertEquals(fallbcakConfigByFlag, client.getTreatmentsWithConfigByFlagSet("adil@relateiq.com", "flag").get("feature").config());
         assertEquals(Treatments.CONTROL, client.getTreatmentsWithConfigByFlagSets("adil@relateiq.com", Arrays.asList("flag")).get("test").treatment());
         assertEquals(null, client.getTreatmentsWithConfigByFlagSets("adil@relateiq.com", Arrays.asList("flag")).get("test").config());
         assertEquals("off", client.getTreatmentsWithConfigByFlagSets("adil@relateiq.com", Arrays.asList("flag")).get("feature").treatment());
-        assertEquals(fallbcakConfigByFlag.toString(), client.getTreatmentsWithConfigByFlagSets("adil@relateiq.com", Arrays.asList("flag")).get("feature").config());
+        assertEquals(fallbcakConfigByFlag, client.getTreatmentsWithConfigByFlagSets("adil@relateiq.com", Arrays.asList("flag")).get("feature").config());
     }
 
     @Test
@@ -2456,7 +2456,7 @@ public class SplitClientImplTest {
         flagFeatures.put("flag", new HashSet<>(Arrays.asList("test1", "test2", "test3")));
         when(splitCacheConsumer.getNamesByFlagSets(anyList())).thenReturn(flagFeatures);
 
-        Map<String, Object> fallbcakConfigGlobal = new HashMap<String, Object>() {{ put("prop1", "val1"); }};
+        String fallbcakConfigGlobal = "{\"prop1\", \"val1\"}";
         FallbackTreatmentsConfiguration fallbackTreatmentsConfiguration = new FallbackTreatmentsConfiguration(
                 new FallbackTreatment("on",  fallbcakConfigGlobal),
                 null);
@@ -2477,7 +2477,7 @@ public class SplitClientImplTest {
         assertEquals("off", client.getTreatment("adil@relateiq.com", "test1"));
         assertEquals("on", client.getTreatment("adil@relateiq.com", "test2"));
         assertEquals("on", client.getTreatmentWithConfig("adil@relateiq.com", "test2").treatment());
-        assertEquals(fallbcakConfigGlobal.toString(), client.getTreatmentWithConfig("adil@relateiq.com", "test2").config());
+        assertEquals(fallbcakConfigGlobal, client.getTreatmentWithConfig("adil@relateiq.com", "test2").config());
 
         Map<String, String> result = client.getTreatments("adil@relateiq.com", Arrays.asList("test1", "test2"));
         assertEquals("off", result.get("test1"));
@@ -2486,7 +2486,7 @@ public class SplitClientImplTest {
         assertEquals("off", resultWithConfig.get("test1").treatment());
         assertEquals(null, resultWithConfig.get("test1").config());
         assertEquals("on", resultWithConfig.get("test2").treatment());
-        assertEquals(fallbcakConfigGlobal.toString(), resultWithConfig.get("test2").config());
+        assertEquals(fallbcakConfigGlobal, resultWithConfig.get("test2").config());
 
         result = client.getTreatmentsByFlagSet("adil@relateiq.com", "flag");
         assertEquals("off", result.get("test1"));
@@ -2498,14 +2498,14 @@ public class SplitClientImplTest {
         assertEquals("off", resultWithConfig.get("test1").treatment());
         assertEquals(null, resultWithConfig.get("test1").config());
         assertEquals("on", resultWithConfig.get("test2").treatment());
-        assertEquals(fallbcakConfigGlobal.toString(), resultWithConfig.get("test2").config());
+        assertEquals(fallbcakConfigGlobal, resultWithConfig.get("test2").config());
         resultWithConfig = client.getTreatmentsWithConfigByFlagSets("adil@relateiq.com", Arrays.asList("flag"));
         assertEquals("off", resultWithConfig.get("test1").treatment());
         assertEquals(null, resultWithConfig.get("test1").config());
         assertEquals("on", resultWithConfig.get("test2").treatment());
-        assertEquals(fallbcakConfigGlobal.toString(), resultWithConfig.get("test2").config());
+        assertEquals(fallbcakConfigGlobal, resultWithConfig.get("test2").config());
 
-        Map<String, Object> fallbcakConfigByFlag = new HashMap<String, Object>() {{ put("prop2", "val2"); }};
+        String fallbcakConfigByFlag = "{\"prop2\", \"val2\"}";
         fallbackTreatmentsConfiguration = new FallbackTreatmentsConfiguration(new FallbackTreatment("on", fallbcakConfigGlobal),
                 new HashMap<String, FallbackTreatment>() {{ put("test2", new FallbackTreatment("off-fallback", fallbcakConfigByFlag)); }});
 
@@ -2530,9 +2530,9 @@ public class SplitClientImplTest {
         assertEquals("off", client.getTreatmentWithConfig("adil@relateiq.com", "test1").treatment());
         assertEquals(null, client.getTreatmentWithConfig("adil@relateiq.com", "test1").config());
         assertEquals("off-fallback", client.getTreatmentWithConfig("adil@relateiq.com", "test2").treatment());
-        assertEquals(fallbcakConfigByFlag.toString(), client.getTreatmentWithConfig("adil@relateiq.com", "test2").config());
+        assertEquals(fallbcakConfigByFlag, client.getTreatmentWithConfig("adil@relateiq.com", "test2").config());
         assertEquals("on", client.getTreatmentWithConfig("adil@relateiq.com", "test3").treatment());
-        assertEquals(fallbcakConfigGlobal.toString(), client.getTreatmentWithConfig("adil@relateiq.com", "test3").config());
+        assertEquals(fallbcakConfigGlobal, client.getTreatmentWithConfig("adil@relateiq.com", "test3").config());
 
         result = client.getTreatments("adil@relateiq.com", Arrays.asList("test1", "test2", "test3"));
         assertEquals("off", result.get("test1"));
@@ -2543,9 +2543,9 @@ public class SplitClientImplTest {
         assertEquals("off", results.get("test1").treatment());
         assertEquals(null, results.get("test1").config());
         assertEquals("off-fallback", results.get("test2").treatment());
-        assertEquals(fallbcakConfigByFlag.toString(), results.get("test2").config());
+        assertEquals(fallbcakConfigByFlag, results.get("test2").config());
         assertEquals("on", results.get("test3").treatment());
-        assertEquals(fallbcakConfigGlobal.toString(), results.get("test3").config());
+        assertEquals(fallbcakConfigGlobal, results.get("test3").config());
 
         result = client.getTreatmentsByFlagSet("adil@relateiq.com", "flag");
         assertEquals("off", result.get("test1"));
@@ -2561,17 +2561,17 @@ public class SplitClientImplTest {
         assertEquals("off", results.get("test1").treatment());
         assertEquals(null, results.get("test1").config());
         assertEquals("off-fallback", results.get("test2").treatment());
-        assertEquals(fallbcakConfigByFlag.toString(), results.get("test2").config());
+        assertEquals(fallbcakConfigByFlag, results.get("test2").config());
         assertEquals("on", results.get("test3").treatment());
-        assertEquals(fallbcakConfigGlobal.toString(), results.get("test3").config());
+        assertEquals(fallbcakConfigGlobal, results.get("test3").config());
 
         results =  client.getTreatmentsWithConfigByFlagSets("adil@relateiq.com", Arrays.asList("flag"));
         assertEquals("off", results.get("test1").treatment());
         assertEquals(null, results.get("test1").config());
         assertEquals("off-fallback", results.get("test2").treatment());
-        assertEquals(fallbcakConfigByFlag.toString(), results.get("test2").config());
+        assertEquals(fallbcakConfigByFlag, results.get("test2").config());
         assertEquals("on", results.get("test3").treatment());
-        assertEquals(fallbcakConfigGlobal.toString(), results.get("test3").config());
+        assertEquals(fallbcakConfigGlobal, results.get("test3").config());
 
         fallbackTreatmentsConfiguration = new FallbackTreatmentsConfiguration(null,
                 new HashMap<String, FallbackTreatment>() {{ put("test2", new FallbackTreatment("off-fallback", fallbcakConfigByFlag)); }});
@@ -2596,7 +2596,7 @@ public class SplitClientImplTest {
         assertEquals("off", client.getTreatmentWithConfig("adil@relateiq.com", "test1").treatment());
         assertEquals(null, client.getTreatmentWithConfig("adil@relateiq.com", "test1").config());
         assertEquals("off-fallback", client.getTreatmentWithConfig("adil@relateiq.com", "test2").treatment());
-        assertEquals(fallbcakConfigByFlag.toString(), client.getTreatmentWithConfig("adil@relateiq.com", "test2").config());
+        assertEquals(fallbcakConfigByFlag, client.getTreatmentWithConfig("adil@relateiq.com", "test2").config());
         assertEquals(Treatments.CONTROL, client.getTreatmentWithConfig("adil@relateiq.com", "test3").treatment());
         assertEquals(null, client.getTreatmentWithConfig("adil@relateiq.com", "test3").config());
 
@@ -2609,7 +2609,7 @@ public class SplitClientImplTest {
         assertEquals("off", results.get("test1").treatment());
         assertEquals(null, results.get("test1").config());
         assertEquals("off-fallback", results.get("test2").treatment());
-        assertEquals(fallbcakConfigByFlag.toString(), results.get("test2").config());
+        assertEquals(fallbcakConfigByFlag, results.get("test2").config());
         assertEquals(Treatments.CONTROL, results.get("test3").treatment());
         assertEquals(null, results.get("test3").config());
 
@@ -2627,7 +2627,7 @@ public class SplitClientImplTest {
         assertEquals("off", results.get("test1").treatment());
         assertEquals(null, results.get("test1").config());
         assertEquals("off-fallback", results.get("test2").treatment());
-        assertEquals(fallbcakConfigByFlag.toString(), results.get("test2").config());
+        assertEquals(fallbcakConfigByFlag, results.get("test2").config());
         assertEquals(Treatments.CONTROL, results.get("test3").treatment());
         assertEquals(null, results.get("test3").config());
 
@@ -2635,7 +2635,7 @@ public class SplitClientImplTest {
         assertEquals("off", results.get("test1").treatment());
         assertEquals(null, results.get("test1").config());
         assertEquals("off-fallback", results.get("test2").treatment());
-        assertEquals(fallbcakConfigByFlag.toString(), results.get("test2").config());
+        assertEquals(fallbcakConfigByFlag, results.get("test2").config());
         assertEquals(Treatments.CONTROL, results.get("test3").treatment());
         assertEquals(null, results.get("test3").config());
     }
