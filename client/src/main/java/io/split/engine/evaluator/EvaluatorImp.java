@@ -213,7 +213,7 @@ public class EvaluatorImp implements Evaluator {
                         fallbackTreatment.getLabel(),
                         null,
                         getFallbackConfig(fallbackTreatment),
-                        true);
+                        false);
             }
             return getTreatment(matchingKey, bucketingKey, parsedSplit, attributes);
         } catch (ChangeNumberExceptionWrapper e) {
