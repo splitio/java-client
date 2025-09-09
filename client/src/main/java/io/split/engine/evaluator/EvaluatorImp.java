@@ -3,12 +3,10 @@ package io.split.engine.evaluator;
 import io.split.client.dtos.ConditionType;
 import io.split.client.dtos.FallbackTreatment;
 import io.split.client.dtos.FallbackTreatmentCalculator;
-import io.split.client.dtos.FallbackTreatmentsConfiguration;
 import io.split.client.exceptions.ChangeNumberExceptionWrapper;
 import io.split.engine.experiments.ParsedCondition;
 import io.split.engine.experiments.ParsedSplit;
 import io.split.engine.splitter.Splitter;
-import io.split.grammar.Treatments;
 import io.split.storages.RuleBasedSegmentCacheConsumer;
 import io.split.storages.SegmentCacheConsumer;
 import io.split.storages.SplitCacheConsumer;
@@ -63,7 +61,27 @@ public class EvaluatorImp implements Evaluator {
     public Map<String, EvaluatorImp.TreatmentLabelAndChangeNumber> evaluateFeaturesByFlagSets(String key, String bucketingKey,
                                                                                               List<String> flagSets, Map<String, Object> attributes) {
         List<String> flagSetsWithNames = getFeatureFlagNamesByFlagSets(flagSets);
-        return evaluateFeatures(key, bucketingKey, flagSetsWithNames, attributes);
+        try {
+            return evaluateFeatures(key, bucketingKey, flagSetsWithNames, attributes);
+        } catch (Exception e) {
+            _log.error("Evaluator Exception", e);
+            return createMapControl(flagSetsWithNames, io.split.engine.evaluator.Labels.EXCEPTION);
+        }
+    }
+
+    private Map<String, EvaluatorImp.TreatmentLabelAndChangeNumber> createMapControl(List<String> featureFlags, String label) {
+        Map<String, TreatmentLabelAndChangeNumber> result = new HashMap<>();
+        featureFlags.forEach(s -> result.put(s, checkFallbackTreatment(s, label)));
+        return result;
+    }
+
+    private EvaluatorImp.TreatmentLabelAndChangeNumber checkFallbackTreatment(String featureName, String label) {
+        FallbackTreatment fallbackTreatment = _fallbackTreatmentCalculator.resolve(featureName, label);
+        return new EvaluatorImp.TreatmentLabelAndChangeNumber(fallbackTreatment.getTreatment(),
+                fallbackTreatment.getLabel(),
+                null,
+                getFallbackConfig(fallbackTreatment),
+                false);
     }
 
     private List<String> getFeatureFlagNamesByFlagSets(List<String> flagSets) {
@@ -177,13 +195,24 @@ public class EvaluatorImp implements Evaluator {
         return parsedSplit.configurations() != null ? parsedSplit.configurations().get(returnedTreatment) : null;
     }
 
+    private String getFallbackConfig(FallbackTreatment fallbackTreatment) {
+        if (fallbackTreatment.getConfig() != null) {
+            return fallbackTreatment.getConfig();
+        }
+
+        return null;
+    }
+
     private TreatmentLabelAndChangeNumber evaluateParsedSplit(String matchingKey, String bucketingKey, Map<String, Object> attributes,
                                                               ParsedSplit parsedSplit, String featureName) {
         try {
-
             if (parsedSplit == null) {
                 FallbackTreatment fallbackTreatment = _fallbackTreatmentCalculator.resolve(featureName, Labels.DEFINITION_NOT_FOUND);
-                return new TreatmentLabelAndChangeNumber(fallbackTreatment.getTreatment(), fallbackTreatment.getLabel());
+                return new TreatmentLabelAndChangeNumber(fallbackTreatment.getTreatment(),
+                        fallbackTreatment.getLabel(),
+                        null,
+                        getFallbackConfig(fallbackTreatment),
+                        false);
             }
             return getTreatment(matchingKey, bucketingKey, parsedSplit, attributes);
         } catch (ChangeNumberExceptionWrapper e) {

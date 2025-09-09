@@ -48,7 +48,7 @@ public class EvaluatorTest {
         _splitCacheConsumer = Mockito.mock(SplitCacheConsumer.class);
         _segmentCacheConsumer = Mockito.mock(SegmentCacheConsumer.class);
         _ruleBasedSegmentCacheConsumer = Mockito.mock(RuleBasedSegmentCacheConsumer.class);
-        _evaluator = new EvaluatorImp(_splitCacheConsumer, _segmentCacheConsumer, _ruleBasedSegmentCacheConsumer, null);
+        _evaluator = new EvaluatorImp(_splitCacheConsumer, _segmentCacheConsumer, _ruleBasedSegmentCacheConsumer, new FallbackTreatmentCalculatorImp(null));
         _matcher = Mockito.mock(CombiningMatcher.class);
         _evaluationContext = Mockito.mock(EvaluationContext.class);
 
