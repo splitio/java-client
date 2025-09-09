@@ -65,7 +65,7 @@ public class EvaluatorImp implements Evaluator {
             return evaluateFeatures(key, bucketingKey, flagSetsWithNames, attributes);
         } catch (Exception e) {
             _log.error("Evaluator Exception", e);
-            return createMapControl(flagSetsWithNames, "exception");
+            return createMapControl(flagSetsWithNames, io.split.engine.evaluator.Labels.EXCEPTION);
         }
     }
 

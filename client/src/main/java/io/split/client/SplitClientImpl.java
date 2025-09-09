@@ -610,27 +610,22 @@ public final class SplitClientImpl implements SplitClient {
         if (cleanFlagSets.isEmpty()) {
             return new HashMap<>();
         }
-        List<String> featureFlagNames = new ArrayList<>();
-        try {
-            checkSDKReady(methodEnum);
-            Map<String, SplitResult> result = validateBeforeEvaluateByFlagSets(matchingKey, methodEnum,bucketingKey);
-            if(result != null) {
-                return result;
-            }
-            Map<String, EvaluatorImp.TreatmentLabelAndChangeNumber> evaluatorResult = _evaluator.evaluateFeaturesByFlagSets(matchingKey,
-                    bucketingKey, new ArrayList<>(cleanFlagSets), attributes);
-
-            return processEvaluatorResult(evaluatorResult, methodEnum, matchingKey, bucketingKey, attributes, initTime,
-                    validateProperties(evaluationOptions.getProperties()));
-        } catch (Exception e) {
-            try {
-                _telemetryEvaluationProducer.recordException(methodEnum);
-                _log.error(CATCHALL_EXCEPTION, e);
-            } catch (Exception e1) {
-                // ignore
-            }
-            return createMapControl(featureFlagNames);
+        checkSDKReady(methodEnum);
+        Map<String, SplitResult> result = validateBeforeEvaluateByFlagSets(matchingKey, methodEnum,bucketingKey);
+        if(result != null) {
+            return result;
         }
+        Map<String, EvaluatorImp.TreatmentLabelAndChangeNumber> evaluatorResult = _evaluator.evaluateFeaturesByFlagSets(matchingKey,
+                bucketingKey, new ArrayList<>(cleanFlagSets), attributes);
+
+        evaluatorResult.entrySet().forEach(flag -> {
+            if (flag.getValue().label != null &&
+                    flag.getValue().label.contains(io.split.engine.evaluator.Labels.EXCEPTION)) {
+                _telemetryEvaluationProducer.recordException(methodEnum);
+            }
+        });
+        return processEvaluatorResult(evaluatorResult, methodEnum, matchingKey, bucketingKey, attributes, initTime,
+                validateProperties(evaluationOptions.getProperties()));
     }
 
     private Map<String, SplitResult> processEvaluatorResult(Map<String, EvaluatorImp.TreatmentLabelAndChangeNumber> evaluatorResult,
@@ -638,18 +633,20 @@ public final class SplitClientImpl implements SplitClient {
                                                             Object> attributes, long initTime, String properties){
         List<DecoratedImpression> decoratedImpressions = new ArrayList<>();
         Map<String, SplitResult> result = new HashMap<>();
-        evaluatorResult.keySet().forEach(t -> {
-            if (evaluatorResult.get(t).label != null && evaluatorResult.get(t).label.contains(Labels.DEFINITION_NOT_FOUND) && _gates.isSDKReady()) {
+        evaluatorResult.keySet().forEach(flag -> {
+            if (evaluatorResult.get(flag).label != null &&
+                    evaluatorResult.get(flag).label.contains(Labels.DEFINITION_NOT_FOUND) &&
+                    _gates.isSDKReady()) {
                 _log.warn(String.format("%s: you passed \"%s\" that does not exist in this environment please double check " +
-                        "what feature flags exist in the Split user interface.", methodEnum.getMethod(), t));
-                result.put(t, checkFallbackTreatment(t));
+                        "what feature flags exist in the Split user interface.", methodEnum.getMethod(), flag));
+                result.put(flag, checkFallbackTreatment(flag));
             } else {
-                result.put(t, new SplitResult(evaluatorResult.get(t).treatment, evaluatorResult.get(t).configurations));
+                result.put(flag, new SplitResult(evaluatorResult.get(flag).treatment, evaluatorResult.get(flag).configurations));
                 decoratedImpressions.add(
                         new DecoratedImpression(
-                                new Impression(matchingKey, bucketingKey, t, evaluatorResult.get(t).treatment, System.currentTimeMillis(),
-                        evaluatorResult.get(t).label, evaluatorResult.get(t).changeNumber, attributes, properties),
-                                evaluatorResult.get(t).track));
+                                new Impression(matchingKey, bucketingKey, flag, evaluatorResult.get(flag).treatment, System.currentTimeMillis(),
+                        evaluatorResult.get(flag).label, evaluatorResult.get(flag).changeNumber, attributes, properties),
+                                evaluatorResult.get(flag).track));
             }
         });
         _telemetryEvaluationProducer.recordLatency(methodEnum, System.currentTimeMillis() - initTime);
