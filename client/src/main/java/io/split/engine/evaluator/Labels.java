@@ -8,4 +8,5 @@ public class Labels {
     public static final String EXCEPTION = "exception";
     public static final String UNSUPPORTED_MATCHER = "targeting rule type unsupported by sdk";
     public static final String PREREQUISITES_NOT_MET = "prerequisites not met";
+    public static final String NOT_READY = "not ready";
 }

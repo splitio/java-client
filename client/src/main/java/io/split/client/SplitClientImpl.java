@@ -510,12 +510,15 @@ public final class SplitClientImpl implements SplitClient {
             long start = System.currentTimeMillis();
 
             EvaluatorImp.TreatmentLabelAndChangeNumber result = _evaluator.evaluateFeature(matchingKey, bucketingKey, featureFlag, attributes);
-
-            if (result.label != null && result.label.contains(Labels.DEFINITION_NOT_FOUND) && _gates.isSDKReady()) {
-                _log.warn(String.format(
-                        "%s: you passed \"%s\" that does not exist in this environment, " +
-                                "please double check what feature flags exist in the Split user interface.", methodEnum.getMethod(), featureFlag));
-                return checkFallbackTreatment(featureFlag);
+            String label = result.label;
+            if (result.label != null && result.label.contains(Labels.DEFINITION_NOT_FOUND)) {
+                if (_gates.isSDKReady()) {
+                    _log.warn(String.format(
+                            "%s: you passed \"%s\" that does not exist in this environment, " +
+                            "please double check what feature flags exist in the Split user interface.", methodEnum.getMethod(), featureFlag));
+                    return checkFallbackTreatment(featureFlag);
+                }
+                label = result.label.replace(Labels.DEFINITION_NOT_FOUND, Labels.NOT_READY);
             }
 
             recordStats(
@@ -525,7 +528,7 @@ public final class SplitClientImpl implements SplitClient {
                     start,
                     result.treatment,
                     String.format("sdk.%s", methodEnum.getMethod()),
-                    _config.labelsEnabled() ? result.label : null,
+                    _config.labelsEnabled() ? label : null,
                     result.changeNumber,
                     attributes,
                     result.track,
@@ -634,20 +637,23 @@ public final class SplitClientImpl implements SplitClient {
         List<DecoratedImpression> decoratedImpressions = new ArrayList<>();
         Map<String, SplitResult> result = new HashMap<>();
         evaluatorResult.keySet().forEach(flag -> {
+            String label = evaluatorResult.get(flag).label;
             if (evaluatorResult.get(flag).label != null &&
-                    evaluatorResult.get(flag).label.contains(Labels.DEFINITION_NOT_FOUND) &&
-                    _gates.isSDKReady()) {
-                _log.warn(String.format("%s: you passed \"%s\" that does not exist in this environment please double check " +
-                        "what feature flags exist in the Split user interface.", methodEnum.getMethod(), flag));
-                result.put(flag, checkFallbackTreatment(flag));
-            } else {
-                result.put(flag, new SplitResult(evaluatorResult.get(flag).treatment, evaluatorResult.get(flag).configurations));
-                decoratedImpressions.add(
-                        new DecoratedImpression(
-                                new Impression(matchingKey, bucketingKey, flag, evaluatorResult.get(flag).treatment, System.currentTimeMillis(),
-                        evaluatorResult.get(flag).label, evaluatorResult.get(flag).changeNumber, attributes, properties),
-                                evaluatorResult.get(flag).track));
+                    evaluatorResult.get(flag).label.contains(Labels.DEFINITION_NOT_FOUND)) {
+                if (_gates.isSDKReady()) {
+                    _log.warn(String.format("%s: you passed \"%s\" that does not exist in this environment please double check " +
+                            "what feature flags exist in the Split user interface.", methodEnum.getMethod(), flag));
+                    result.put(flag, checkFallbackTreatment(flag));
+                    return;
+                }
+                label = evaluatorResult.get(flag).label.replace(Labels.DEFINITION_NOT_FOUND, Labels.NOT_READY);
             }
+            result.put(flag, new SplitResult(evaluatorResult.get(flag).treatment, evaluatorResult.get(flag).configurations));
+            decoratedImpressions.add(
+                    new DecoratedImpression(
+                            new Impression(matchingKey, bucketingKey, flag, evaluatorResult.get(flag).treatment, System.currentTimeMillis(),
+                    label, evaluatorResult.get(flag).changeNumber, attributes, properties),
+                            evaluatorResult.get(flag).track));
         });
         _telemetryEvaluationProducer.recordLatency(methodEnum, System.currentTimeMillis() - initTime);
         if (!decoratedImpressions.isEmpty()) {

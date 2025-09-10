@@ -1393,6 +1393,83 @@ public class SplitClientIntegrationTest {
         Assert.assertTrue(check1);
     }
 
+    @Test
+    public void FallbackTreatmentNotReadyTest() throws Exception {
+        String splits = new String(Files.readAllBytes(Paths.get("src/test/resources/splits_imp_toggle.json")), StandardCharsets.UTF_8);
+        List<RecordedRequest> allRequests = new ArrayList<>();
+        Dispatcher dispatcher = new Dispatcher() {
+            @Override
+            public MockResponse dispatch(RecordedRequest request) throws InterruptedException {
+                allRequests.add(request);
+                switch (request.getPath()) {
+                    case "/api/splitChanges?s=1.3&since=-1&rbSince=-1":
+                        Thread.sleep(1000);
+                        return new MockResponse().setResponseCode(200).setBody(splits);
+                    case "/api/splitChanges?s=1.3&since=1602796638344&rbSince=-1":
+                        return new MockResponse().setResponseCode(200).setBody("{\"ff\":{\"d\":[], \"s\":1602796638344, \"t\":1602796638344}, \"rbs\":{\"d\":[],\"s\":-1,\"t\":-1}}");
+                    case "/api/testImpressions/bulk":
+                        return new MockResponse().setResponseCode(200);
+                    case "/api/testImpressions/count":
+                        return new MockResponse().setResponseCode(200);
+                    case "/v1/keys/ss":
+                        return new MockResponse().setResponseCode(200);
+                    case "/v1/metrics/usage":
+                        return new MockResponse().setResponseCode(200);
+                    case "/v1/metrics/config":
+                        return new MockResponse().setResponseCode(200);
+                }
+                return new MockResponse().setResponseCode(404);
+            }
+        };
+
+        MockWebServer server = new MockWebServer();
+        server.setDispatcher(dispatcher);
+
+        server.start();
+        String serverURL = String.format("http://%s:%s", server.getHostName(), server.getPort());
+        FallbackTreatmentsConfiguration fallbackTreatmentsConfiguration = new FallbackTreatmentsConfiguration(new FallbackTreatment("on-fallback", "{\"prop1\", \"val1\"}"),
+                null);
+
+        SplitClientConfig config = SplitClientConfig.builder()
+                .setBlockUntilReadyTimeout(10000)
+                .endpoint(serverURL, serverURL)
+                .telemetryURL(serverURL + "/v1")
+                .authServiceURL(String.format("%s/api/auth/enabled", serverURL))
+                .streamingEnabled(false)
+                .featuresRefreshRate(5)
+                .impressionsMode(ImpressionsManager.Mode.DEBUG)
+                .fallbackTreatments(fallbackTreatmentsConfiguration)
+                .build();
+
+        SplitFactory factory = SplitFactoryBuilder.build("fake-api-token", config);
+        SplitClient client = factory.client();
+
+        Assert.assertEquals("on-fallback", client.getTreatment("user1", "without_impression_toggle"));
+        Assert.assertEquals("on-fallback", client.getTreatment("user2", "feature"));
+        client.blockUntilReady();
+
+        client.destroy();
+        boolean check1 = false, check2 = false;
+        for (int i=0; i < allRequests.size(); i++ ) {
+            if (allRequests.get(i).getPath().equals("/api/testImpressions/bulk") ) {
+                String body = allRequests.get(i).getBody().readUtf8();
+                if (body.contains("user2")) {
+                    check1 = true;
+                    Assert.assertTrue(body.contains("feature"));
+                    Assert.assertTrue(body.contains("fallback - not ready"));
+                }
+                if (body.contains("user1")) {
+                    check2 = true;
+                    Assert.assertTrue(body.contains("without_impression_toggle"));
+                    Assert.assertTrue(body.contains("fallback - not ready"));
+                }
+            }
+        }
+        server.shutdown();
+        Assert.assertTrue(check1);
+        Assert.assertTrue(check2);
+    }
+
     private SSEMockServer buildSSEMockServer(SSEMockServer.SseEventQueue eventQueue) {
         return new SSEMockServer(eventQueue, (token, version, channel) -> {
             if (!"1.1".equals(version)) {
