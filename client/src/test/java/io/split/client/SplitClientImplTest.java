@@ -99,8 +99,9 @@ public class SplitClientImplTest {
                 NoopEventsStorageImp.create(),
                 config,
                 gates,
-                new EvaluatorImp(splitCacheConsumer, segmentCacheConsumer, ruleBasedSegmentCacheConsumer), TELEMETRY_STORAGE, TELEMETRY_STORAGE,
-                flagSetsFilter
+                new EvaluatorImp(splitCacheConsumer, segmentCacheConsumer, ruleBasedSegmentCacheConsumer, null), TELEMETRY_STORAGE, TELEMETRY_STORAGE,
+                flagSetsFilter,
+                new FallbackTreatmentCalculatorImp(null)
         );
         assertEquals(Treatments.CONTROL, client.getTreatment(null, "test1"));
 
@@ -129,8 +130,9 @@ public class SplitClientImplTest {
                 NoopEventsStorageImp.create(),
                 config,
                 gates,
-                new EvaluatorImp(splitCacheConsumer, segmentCacheConsumer, ruleBasedSegmentCacheConsumer), TELEMETRY_STORAGE, TELEMETRY_STORAGE,
-                flagSetsFilter
+                new EvaluatorImp(splitCacheConsumer, segmentCacheConsumer, ruleBasedSegmentCacheConsumer, null), TELEMETRY_STORAGE, TELEMETRY_STORAGE,
+                flagSetsFilter,
+                new FallbackTreatmentCalculatorImp(null)
         );
         assertEquals(Treatments.CONTROL, client.getTreatment("adil@relateiq.com", null));
 
@@ -152,8 +154,9 @@ public class SplitClientImplTest {
                 NoopEventsStorageImp.create(),
                 config,
                 gates,
-                new EvaluatorImp(splitCacheConsumer, segmentCacheConsumer, ruleBasedSegmentCacheConsumer), TELEMETRY_STORAGE, TELEMETRY_STORAGE,
-                flagSetsFilter
+                new EvaluatorImp(splitCacheConsumer, segmentCacheConsumer, ruleBasedSegmentCacheConsumer, null), TELEMETRY_STORAGE, TELEMETRY_STORAGE,
+                flagSetsFilter,
+                new FallbackTreatmentCalculatorImp(null)
         );
         assertEquals(Treatments.CONTROL, client.getTreatment("adil@relateiq.com", "test1"));
 
@@ -184,8 +187,9 @@ public class SplitClientImplTest {
                 NoopEventsStorageImp.create(),
                 config,
                 gates,
-                new EvaluatorImp(splitCacheConsumer, segmentCacheConsumer, ruleBasedSegmentCacheConsumer), TELEMETRY_STORAGE, TELEMETRY_STORAGE,
-                flagSetsFilter
+                new EvaluatorImp(splitCacheConsumer, segmentCacheConsumer, ruleBasedSegmentCacheConsumer, null), TELEMETRY_STORAGE, TELEMETRY_STORAGE,
+                flagSetsFilter,
+                new FallbackTreatmentCalculatorImp(null)
         );
 
         int numKeys = 5;
@@ -222,8 +226,9 @@ public class SplitClientImplTest {
                 NoopEventsStorageImp.create(),
                 config,
                 gates,
-                new EvaluatorImp(splitCacheConsumer, segmentCacheConsumer, ruleBasedSegmentCacheConsumer), TELEMETRY_STORAGE, TELEMETRY_STORAGE,
-                flagSetsFilter
+                new EvaluatorImp(splitCacheConsumer, segmentCacheConsumer, ruleBasedSegmentCacheConsumer, null), TELEMETRY_STORAGE, TELEMETRY_STORAGE,
+                flagSetsFilter,
+                new FallbackTreatmentCalculatorImp(null)
         );
         String randomKey = RandomStringUtils.random(10);
         SplitResult result = client.getTreatmentWithConfig(randomKey, test);
@@ -258,8 +263,9 @@ public class SplitClientImplTest {
                 NoopEventsStorageImp.create(),
                 config,
                 gates,
-                new EvaluatorImp(splitCacheConsumer, segmentCacheConsumer, ruleBasedSegmentCacheConsumer), TELEMETRY_STORAGE, TELEMETRY_STORAGE,
-                flagSetsFilter
+                new EvaluatorImp(splitCacheConsumer, segmentCacheConsumer, ruleBasedSegmentCacheConsumer, null), TELEMETRY_STORAGE, TELEMETRY_STORAGE,
+                flagSetsFilter,
+                new FallbackTreatmentCalculatorImp(null)
         );
 
         int numKeys = 5;
@@ -295,8 +301,9 @@ public class SplitClientImplTest {
                 NoopEventsStorageImp.create(),
                 config,
                 gates,
-                new EvaluatorImp(splitCacheConsumer, segmentCacheConsumer, ruleBasedSegmentCacheConsumer), TELEMETRY_STORAGE, TELEMETRY_STORAGE,
-                flagSetsFilter
+                new EvaluatorImp(splitCacheConsumer, segmentCacheConsumer, ruleBasedSegmentCacheConsumer, null), TELEMETRY_STORAGE, TELEMETRY_STORAGE,
+                flagSetsFilter,
+                new FallbackTreatmentCalculatorImp(null)
         );
 
         assertEquals(Treatments.OFF, client.getTreatment("pato@codigo.com", test));
@@ -335,8 +342,9 @@ public class SplitClientImplTest {
                 NoopEventsStorageImp.create(),
                 config,
                 gates,
-                new EvaluatorImp(splitCacheConsumer, segmentCacheConsumer, ruleBasedSegmentCacheConsumer), TELEMETRY_STORAGE, TELEMETRY_STORAGE,
-                flagSetsFilter
+                new EvaluatorImp(splitCacheConsumer, segmentCacheConsumer, ruleBasedSegmentCacheConsumer, null), TELEMETRY_STORAGE, TELEMETRY_STORAGE,
+                flagSetsFilter,
+                new FallbackTreatmentCalculatorImp(null)
         );
 
         SplitResult result = client.getTreatmentWithConfig("pato@codigo.com", test);
@@ -371,8 +379,9 @@ public class SplitClientImplTest {
                 NoopEventsStorageImp.create(),
                 config,
                 gates,
-                new EvaluatorImp(splitCacheConsumer, segmentCacheConsumer, ruleBasedSegmentCacheConsumer), TELEMETRY_STORAGE, TELEMETRY_STORAGE,
-                flagSetsFilter
+                new EvaluatorImp(splitCacheConsumer, segmentCacheConsumer, ruleBasedSegmentCacheConsumer, null), TELEMETRY_STORAGE, TELEMETRY_STORAGE,
+                flagSetsFilter,
+                new FallbackTreatmentCalculatorImp(null)
         );
 
         assertEquals("on", client.getTreatment("adil@codigo.com", test));
@@ -405,8 +414,9 @@ public class SplitClientImplTest {
                 NoopEventsStorageImp.create(),
                 config,
                 gates,
-                new EvaluatorImp(splitCacheConsumer, segmentCacheConsumer, ruleBasedSegmentCacheConsumer), TELEMETRY_STORAGE, TELEMETRY_STORAGE,
-                flagSetsFilter
+                new EvaluatorImp(splitCacheConsumer, segmentCacheConsumer, ruleBasedSegmentCacheConsumer, null), TELEMETRY_STORAGE, TELEMETRY_STORAGE,
+                flagSetsFilter,
+                new FallbackTreatmentCalculatorImp(null)
         );
 
         assertEquals(Treatments.OFF, client.getTreatment("adil@codigo.com", test));
@@ -445,8 +455,9 @@ public class SplitClientImplTest {
                 NoopEventsStorageImp.create(),
                 config,
                 gates,
-                new EvaluatorImp(splitCacheConsumer, segmentCacheConsumer, ruleBasedSegmentCacheConsumer), TELEMETRY_STORAGE, TELEMETRY_STORAGE,
-                flagSetsFilter
+                new EvaluatorImp(splitCacheConsumer, segmentCacheConsumer, ruleBasedSegmentCacheConsumer, null), TELEMETRY_STORAGE, TELEMETRY_STORAGE,
+                flagSetsFilter,
+                new FallbackTreatmentCalculatorImp(null)
         );
 
         SplitResult result = client.getTreatmentWithConfig("adil@codigo.com", test);
@@ -483,8 +494,9 @@ public class SplitClientImplTest {
                 NoopEventsStorageImp.create(),
                 config,
                 gates,
-                new EvaluatorImp(splitCacheConsumer, segmentCacheConsumer, ruleBasedSegmentCacheConsumer), TELEMETRY_STORAGE, TELEMETRY_STORAGE,
-                flagSetsFilter
+                new EvaluatorImp(splitCacheConsumer, segmentCacheConsumer, ruleBasedSegmentCacheConsumer, null), TELEMETRY_STORAGE, TELEMETRY_STORAGE,
+                flagSetsFilter,
+                new FallbackTreatmentCalculatorImp(null)
         );
 
         assertEquals(Treatments.ON, client.getTreatment("key", parent));
@@ -510,7 +522,7 @@ public class SplitClientImplTest {
         RuleBasedSegmentCacheConsumer ruleBasedSegmentCacheConsumer = mock(RuleBasedSegmentCacheConsumer.class);
         when(splitCacheConsumer.get(parent)).thenReturn(parentSplit);
         when(splitCacheConsumer.get(dependent)).thenReturn(dependentSplit);
-
+        FallbackTreatmentCalculatorImp fallbackTreatmentCalculatorImp = new FallbackTreatmentCalculatorImp(null);
         SplitClientImpl client = new SplitClientImpl(
                 mock(SplitFactory.class),
                 splitCacheConsumer,
@@ -518,8 +530,9 @@ public class SplitClientImplTest {
                 NoopEventsStorageImp.create(),
                 config,
                 gates,
-                new EvaluatorImp(splitCacheConsumer, segmentCacheConsumer, ruleBasedSegmentCacheConsumer), TELEMETRY_STORAGE, TELEMETRY_STORAGE,
-                flagSetsFilter
+                new EvaluatorImp(splitCacheConsumer, segmentCacheConsumer, ruleBasedSegmentCacheConsumer, fallbackTreatmentCalculatorImp), TELEMETRY_STORAGE, TELEMETRY_STORAGE,
+                flagSetsFilter,
+                fallbackTreatmentCalculatorImp
         );
 
         assertEquals(Treatments.ON, client.getTreatment("key", parent));
@@ -539,6 +552,7 @@ public class SplitClientImplTest {
         SegmentCacheConsumer segmentCacheConsumer = mock(SegmentCacheConsumer.class);
         RuleBasedSegmentCacheConsumer ruleBasedSegmentCacheConsumer = mock(RuleBasedSegmentCacheConsumer.class);
         when(splitCacheConsumer.get(dependent)).thenReturn(dependentSplit);
+        FallbackTreatmentCalculatorImp fallbackTreatmentCalculatorImp = new FallbackTreatmentCalculatorImp(null);
 
         SplitClientImpl client = new SplitClientImpl(
                 mock(SplitFactory.class),
@@ -547,8 +561,9 @@ public class SplitClientImplTest {
                 NoopEventsStorageImp.create(),
                 config,
                 gates,
-                new EvaluatorImp(splitCacheConsumer, segmentCacheConsumer, ruleBasedSegmentCacheConsumer), TELEMETRY_STORAGE, TELEMETRY_STORAGE,
-                flagSetsFilter
+                new EvaluatorImp(splitCacheConsumer, segmentCacheConsumer, ruleBasedSegmentCacheConsumer, fallbackTreatmentCalculatorImp), TELEMETRY_STORAGE, TELEMETRY_STORAGE,
+                flagSetsFilter,
+                fallbackTreatmentCalculatorImp
         );
 
         assertEquals(Treatments.ON, client.getTreatment("key", dependent));
@@ -577,8 +592,9 @@ public class SplitClientImplTest {
                 NoopEventsStorageImp.create(),
                 config,
                 gates,
-                new EvaluatorImp(splitCacheConsumer, segmentCacheConsumer, ruleBasedSegmentCacheConsumer), TELEMETRY_STORAGE, TELEMETRY_STORAGE,
-                flagSetsFilter
+                new EvaluatorImp(splitCacheConsumer, segmentCacheConsumer, ruleBasedSegmentCacheConsumer, null), TELEMETRY_STORAGE, TELEMETRY_STORAGE,
+                flagSetsFilter,
+                new FallbackTreatmentCalculatorImp(null)
         );
 
         assertEquals("on", client.getTreatment("adil@codigo.com", test));
@@ -612,8 +628,9 @@ public class SplitClientImplTest {
                 NoopEventsStorageImp.create(),
                 config,
                 gates,
-                new EvaluatorImp(splitCacheConsumer, segmentCacheConsumer, ruleBasedSegmentCacheConsumer), TELEMETRY_STORAGE, TELEMETRY_STORAGE,
-                flagSetsFilter
+                new EvaluatorImp(splitCacheConsumer, segmentCacheConsumer, ruleBasedSegmentCacheConsumer, null), TELEMETRY_STORAGE, TELEMETRY_STORAGE,
+                flagSetsFilter,
+                new FallbackTreatmentCalculatorImp(null)
         );
 
         assertEquals("off", client.getTreatment("adil@codigo.com", test));
@@ -648,8 +665,9 @@ public class SplitClientImplTest {
                 NoopEventsStorageImp.create(),
                 config,
                 gates,
-                new EvaluatorImp(splitCacheConsumer, segmentCacheConsumer, ruleBasedSegmentCacheConsumer), TELEMETRY_STORAGE, TELEMETRY_STORAGE,
-                flagSetsFilter
+                new EvaluatorImp(splitCacheConsumer, segmentCacheConsumer, ruleBasedSegmentCacheConsumer, null), TELEMETRY_STORAGE, TELEMETRY_STORAGE,
+                flagSetsFilter,
+                new FallbackTreatmentCalculatorImp(null)
         );
 
         assertEquals("off", client.getTreatment("adil@codigo.com", test));
@@ -686,8 +704,9 @@ public class SplitClientImplTest {
                 NoopEventsStorageImp.create(),
                 config,
                 gates,
-                new EvaluatorImp(splitCacheConsumer ,segmentCacheConsumer, ruleBasedSegmentCacheConsumer), TELEMETRY_STORAGE, TELEMETRY_STORAGE,
-                flagSetsFilter
+                new EvaluatorImp(splitCacheConsumer ,segmentCacheConsumer, ruleBasedSegmentCacheConsumer, null), TELEMETRY_STORAGE, TELEMETRY_STORAGE,
+                flagSetsFilter,
+                new FallbackTreatmentCalculatorImp(null)
         );
 
         assertEquals("off", client.getTreatment("adil@codigo.com", test));
@@ -731,8 +750,9 @@ public class SplitClientImplTest {
                 NoopEventsStorageImp.create(),
                 config,
                 gates,
-                new EvaluatorImp(splitCacheConsumer, segmentCacheConsumer, ruleBasedSegmentCacheConsumer), TELEMETRY_STORAGE, TELEMETRY_STORAGE,
-                flagSetsFilter
+                new EvaluatorImp(splitCacheConsumer, segmentCacheConsumer, ruleBasedSegmentCacheConsumer, null), TELEMETRY_STORAGE, TELEMETRY_STORAGE,
+                flagSetsFilter,
+                new FallbackTreatmentCalculatorImp(null)
         );
 
         Map<String, Object> attributes = ImmutableMap.<String, Object>of("age", -20, "acv", "1000000");
@@ -834,8 +854,9 @@ public class SplitClientImplTest {
                 NoopEventsStorageImp.create(),
                 config,
                 gates,
-                new EvaluatorImp(splitCacheConsumer, segmentCacheConsumer, ruleBasedSegmentCacheConsumer), TELEMETRY_STORAGE, TELEMETRY_STORAGE,
-                flagSetsFilter
+                new EvaluatorImp(splitCacheConsumer, segmentCacheConsumer, ruleBasedSegmentCacheConsumer, null), TELEMETRY_STORAGE, TELEMETRY_STORAGE,
+                flagSetsFilter,
+                new FallbackTreatmentCalculatorImp(null)
         );
 
         assertEquals(expected_treatment_on_or_off, client.getTreatment(key, test));
@@ -888,8 +909,9 @@ public class SplitClientImplTest {
                 NoopEventsStorageImp.create(),
                 config,
                 gates,
-                new EvaluatorImp(splitCacheConsumer, segmentCacheConsumer, ruleBasedSegmentCacheConsumer), TELEMETRY_STORAGE, TELEMETRY_STORAGE,
-                flagSetsFilter
+                new EvaluatorImp(splitCacheConsumer, segmentCacheConsumer, ruleBasedSegmentCacheConsumer, null), TELEMETRY_STORAGE, TELEMETRY_STORAGE,
+                flagSetsFilter,
+                new FallbackTreatmentCalculatorImp(null)
         );
 
         assertEquals(Treatments.OFF, client.getTreatment("pato@split.io", test));
@@ -932,8 +954,9 @@ public class SplitClientImplTest {
                 NoopEventsStorageImp.create(),
                 config,
                 gates,
-                new EvaluatorImp(splitCacheConsumer, segmentCacheConsumer, ruleBasedSegmentCacheConsumer), TELEMETRY_STORAGE, TELEMETRY_STORAGE,
-                flagSetsFilter
+                new EvaluatorImp(splitCacheConsumer, segmentCacheConsumer, ruleBasedSegmentCacheConsumer, null), TELEMETRY_STORAGE, TELEMETRY_STORAGE,
+                flagSetsFilter,
+                new FallbackTreatmentCalculatorImp(null)
         );
 
         Key bad_key = new Key("adil", "aijaz");
@@ -975,8 +998,9 @@ public class SplitClientImplTest {
                 NoopEventsStorageImp.create(),
                 config,
                 gates,
-                new EvaluatorImp(splitCacheConsumer, segmentCacheConsumer, ruleBasedSegmentCacheConsumer), TELEMETRY_STORAGE, TELEMETRY_STORAGE,
-                flagSetsFilter
+                new EvaluatorImp(splitCacheConsumer, segmentCacheConsumer, ruleBasedSegmentCacheConsumer, null), TELEMETRY_STORAGE, TELEMETRY_STORAGE,
+                flagSetsFilter,
+                new FallbackTreatmentCalculatorImp(null)
         );
 
         Key bad_key = new Key("adil", "aijaz");
@@ -1016,8 +1040,9 @@ public class SplitClientImplTest {
                 NoopEventsStorageImp.create(),
                 config,
                 gates,
-                new EvaluatorImp(splitCacheConsumer, segmentCacheConsumer, ruleBasedSegmentCacheConsumer), TELEMETRY_STORAGE, TELEMETRY_STORAGE,
-                flagSetsFilter
+                new EvaluatorImp(splitCacheConsumer, segmentCacheConsumer, ruleBasedSegmentCacheConsumer, null), TELEMETRY_STORAGE, TELEMETRY_STORAGE,
+                flagSetsFilter,
+                new FallbackTreatmentCalculatorImp(null)
         );
 
         Key bad_key = new Key("adil", "aijaz");
@@ -1054,8 +1079,9 @@ public class SplitClientImplTest {
                 NoopEventsStorageImp.create(),
                 config,
                 gates,
-                new EvaluatorImp(splitCacheConsumer, segmentCacheConsumer, ruleBasedSegmentCacheConsumer), TELEMETRY_STORAGE, TELEMETRY_STORAGE,
-                flagSetsFilter
+                new EvaluatorImp(splitCacheConsumer, segmentCacheConsumer, ruleBasedSegmentCacheConsumer, null), TELEMETRY_STORAGE, TELEMETRY_STORAGE,
+                flagSetsFilter,
+                new FallbackTreatmentCalculatorImp(null)
         );
 
         Map<String, Object> attributes = ImmutableMap.<String, Object>of("age", -20, "acv", "1000000");
@@ -1097,8 +1123,9 @@ public class SplitClientImplTest {
                 NoopEventsStorageImp.create(),
                 config,
                 ready,
-                new EvaluatorImp(splitCacheConsumer, segmentCacheConsumer, ruleBasedSegmentCacheConsumer), TELEMETRY_STORAGE, TELEMETRY_STORAGE,
-                flagSetsFilter
+                new EvaluatorImp(splitCacheConsumer, segmentCacheConsumer, ruleBasedSegmentCacheConsumer, null), TELEMETRY_STORAGE, TELEMETRY_STORAGE,
+                flagSetsFilter,
+                new FallbackTreatmentCalculatorImp(null)
         );
 
         client.blockUntilReady();
@@ -1119,8 +1146,9 @@ public class SplitClientImplTest {
                 NoopEventsStorageImp.create(),
                 config,
                 ready,
-                new EvaluatorImp(splitCacheConsumer, segmentCacheConsumer, ruleBasedSegmentCacheConsumer), TELEMETRY_STORAGE, TELEMETRY_STORAGE,
-                flagSetsFilter
+                new EvaluatorImp(splitCacheConsumer, segmentCacheConsumer, ruleBasedSegmentCacheConsumer, null), TELEMETRY_STORAGE, TELEMETRY_STORAGE,
+                flagSetsFilter,
+                new FallbackTreatmentCalculatorImp(null)
         );
 
         client.blockUntilReady();
@@ -1140,8 +1168,9 @@ public class SplitClientImplTest {
                 NoopEventsStorageImp.create(),
                 config,
                 gates,
-                new EvaluatorImp(splitCacheConsumer, segmentCacheConsumer, ruleBasedSegmentCacheConsumer), TELEMETRY_STORAGE, TELEMETRY_STORAGE,
-                flagSetsFilter
+                new EvaluatorImp(splitCacheConsumer, segmentCacheConsumer, ruleBasedSegmentCacheConsumer, null), TELEMETRY_STORAGE, TELEMETRY_STORAGE,
+                flagSetsFilter,
+                new FallbackTreatmentCalculatorImp(null)
         );
 
         assertTrue(client.track("validKey", "valid_traffic_type", "valid_event"));
@@ -1166,8 +1195,9 @@ public class SplitClientImplTest {
                 NoopEventsStorageImp.create(),
                 config,
                 gates,
-                new EvaluatorImp(splitCacheConsumer, segmentCacheConsumer, ruleBasedSegmentCacheConsumer), TELEMETRY_STORAGE, TELEMETRY_STORAGE,
-                flagSetsFilter
+                new EvaluatorImp(splitCacheConsumer, segmentCacheConsumer, ruleBasedSegmentCacheConsumer, null), TELEMETRY_STORAGE, TELEMETRY_STORAGE,
+                flagSetsFilter,
+                new FallbackTreatmentCalculatorImp(null)
         );
         Assert.assertFalse(client.track("validKey", "valid_traffic_type", ""));
         Assert.assertFalse(client.track("validKey", "valid_traffic_type", null));
@@ -1191,8 +1221,9 @@ public class SplitClientImplTest {
                 NoopEventsStorageImp.create(),
                 config,
                 gates,
-                new EvaluatorImp(splitCacheConsumer, segmentCacheConsumer, ruleBasedSegmentCacheConsumer), TELEMETRY_STORAGE, TELEMETRY_STORAGE,
-                flagSetsFilter
+                new EvaluatorImp(splitCacheConsumer, segmentCacheConsumer, ruleBasedSegmentCacheConsumer, null), TELEMETRY_STORAGE, TELEMETRY_STORAGE,
+                flagSetsFilter,
+                new FallbackTreatmentCalculatorImp(null)
         );
 
         Assert.assertFalse(client.track("validKey", "", "valid"));
@@ -1213,8 +1244,9 @@ public class SplitClientImplTest {
                 NoopEventsStorageImp.create(),
                 config,
                 gates,
-                new EvaluatorImp(splitCacheConsumer, segmentCacheConsumer, ruleBasedSegmentCacheConsumer), TELEMETRY_STORAGE, TELEMETRY_STORAGE,
-                flagSetsFilter
+                new EvaluatorImp(splitCacheConsumer, segmentCacheConsumer, ruleBasedSegmentCacheConsumer, null), TELEMETRY_STORAGE, TELEMETRY_STORAGE,
+                flagSetsFilter,
+                new FallbackTreatmentCalculatorImp(null)
         );
 
         Assert.assertFalse(client.track("", "valid_traffic_type", "valid"));
@@ -1245,8 +1277,9 @@ public class SplitClientImplTest {
                 NoopEventsStorageImp.create(),
                 config,
                 gates,
-                new EvaluatorImp(splitCacheConsumer, segmentCacheConsumer, ruleBasedSegmentCacheConsumer), TELEMETRY_STORAGE, TELEMETRY_STORAGE,
-                flagSetsFilter
+                new EvaluatorImp(splitCacheConsumer, segmentCacheConsumer, ruleBasedSegmentCacheConsumer, null), TELEMETRY_STORAGE, TELEMETRY_STORAGE,
+                flagSetsFilter,
+                new FallbackTreatmentCalculatorImp(null)
         );
         Assert.assertNotEquals(Treatments.CONTROL, client.getTreatment("valid", "split"));
         assertEquals(Treatments.CONTROL, client.getTreatment("", "split"));
@@ -1296,8 +1329,9 @@ public class SplitClientImplTest {
                 eventClientMock,
                 config,
                 gates,
-                new EvaluatorImp(splitCacheConsumer, segmentCacheConsumer, ruleBasedSegmentCacheConsumer), TELEMETRY_STORAGE, TELEMETRY_STORAGE,
-                flagSetsFilter
+                new EvaluatorImp(splitCacheConsumer, segmentCacheConsumer, ruleBasedSegmentCacheConsumer, null), TELEMETRY_STORAGE, TELEMETRY_STORAGE,
+                flagSetsFilter,
+                new FallbackTreatmentCalculatorImp(null)
         );
 
         HashMap<String, Object> properties = new HashMap<>();
@@ -1420,8 +1454,9 @@ public class SplitClientImplTest {
                 NoopEventsStorageImp.create(),
                 config,
                 gates,
-                new EvaluatorImp(splitCacheConsumer, segmentCacheConsumer, ruleBasedSegmentCacheConsumer), TELEMETRY_STORAGE, TELEMETRY_STORAGE,
-                flagSetsFilter
+                new EvaluatorImp(splitCacheConsumer, segmentCacheConsumer, ruleBasedSegmentCacheConsumer, null), TELEMETRY_STORAGE, TELEMETRY_STORAGE,
+                flagSetsFilter,
+                new FallbackTreatmentCalculatorImp(null)
         );
 
         assertEquals(Treatments.ON, client.getTreatment("valid", "split"));
@@ -1461,8 +1496,9 @@ public class SplitClientImplTest {
                 NoopEventsStorageImp.create(),
                 config,
                 gates,
-                new EvaluatorImp(splitCacheConsumer, segmentCacheConsumer, ruleBasedSegmentCacheConsumer), TELEMETRY_STORAGE, TELEMETRY_STORAGE,
-                flagSetsFilter
+                new EvaluatorImp(splitCacheConsumer, segmentCacheConsumer, ruleBasedSegmentCacheConsumer, null), TELEMETRY_STORAGE, TELEMETRY_STORAGE,
+                flagSetsFilter,
+                new FallbackTreatmentCalculatorImp(null)
         );
 
         int numKeys = 5;
@@ -1512,8 +1548,9 @@ public class SplitClientImplTest {
                 NoopEventsStorageImp.create(),
                 config,
                 gates,
-                new EvaluatorImp(splitCacheConsumer, segmentCacheConsumer, ruleBasedSegmentCacheConsumer), TELEMETRY_STORAGE, TELEMETRY_STORAGE,
-                flagSetsFilter
+                new EvaluatorImp(splitCacheConsumer, segmentCacheConsumer, ruleBasedSegmentCacheConsumer, null), TELEMETRY_STORAGE, TELEMETRY_STORAGE,
+                flagSetsFilter,
+                new FallbackTreatmentCalculatorImp(null)
         );
 
         int numKeys = 5;
@@ -1561,8 +1598,9 @@ public class SplitClientImplTest {
                 NoopEventsStorageImp.create(),
                 config,
                 gates,
-                new EvaluatorImp(splitCacheConsumer, segmentCacheConsumer, ruleBasedSegmentCacheConsumer), TELEMETRY_STORAGE, TELEMETRY_STORAGE,
-                flagSetsFilter
+                new EvaluatorImp(splitCacheConsumer, segmentCacheConsumer, ruleBasedSegmentCacheConsumer, null), TELEMETRY_STORAGE, TELEMETRY_STORAGE,
+                flagSetsFilter,
+                new FallbackTreatmentCalculatorImp(null)
         );
 
         int numKeys = 5;
@@ -1599,8 +1637,9 @@ public class SplitClientImplTest {
                 NoopEventsStorageImp.create(),
                 config,
                 gates,
-                new EvaluatorImp(splitCacheConsumer, segmentCacheConsumer, ruleBasedSegmentCacheConsumer), TELEMETRY_STORAGE, TELEMETRY_STORAGE,
-                flagSetsFilter
+                new EvaluatorImp(splitCacheConsumer, segmentCacheConsumer, ruleBasedSegmentCacheConsumer, null), TELEMETRY_STORAGE, TELEMETRY_STORAGE,
+                flagSetsFilter,
+                new FallbackTreatmentCalculatorImp(null)
         );
 
         client.blockUntilReady();
@@ -1629,8 +1668,9 @@ public class SplitClientImplTest {
                 NoopEventsStorageImp.create(),
                 config,
                 gates,
-                new EvaluatorImp(splitCacheConsumer, segmentCacheConsumer, ruleBasedSegmentCacheConsumer), TELEMETRY_STORAGE, TELEMETRY_STORAGE,
-                flagSetsFilter
+                new EvaluatorImp(splitCacheConsumer, segmentCacheConsumer, ruleBasedSegmentCacheConsumer, null), TELEMETRY_STORAGE, TELEMETRY_STORAGE,
+                flagSetsFilter,
+                new FallbackTreatmentCalculatorImp(null)
         );
         assertEquals(Treatments.CONTROL, client.getTreatments(null, Collections.singletonList("test1")).get("test1"));
 
@@ -1660,8 +1700,9 @@ public class SplitClientImplTest {
                 NoopEventsStorageImp.create(),
                 config,
                 gates,
-                new EvaluatorImp(splitCacheConsumer, segmentCacheConsumer, ruleBasedSegmentCacheConsumer), TELEMETRY_STORAGE, TELEMETRY_STORAGE,
-                flagSetsFilter
+                new EvaluatorImp(splitCacheConsumer, segmentCacheConsumer, ruleBasedSegmentCacheConsumer, null), TELEMETRY_STORAGE, TELEMETRY_STORAGE,
+                flagSetsFilter,
+                new FallbackTreatmentCalculatorImp(null)
         );
         assertEquals(0, client.getTreatments("key", null).size());
 
@@ -1683,8 +1724,9 @@ public class SplitClientImplTest {
                 NoopEventsStorageImp.create(),
                 config,
                 gates,
-                new EvaluatorImp(splitCacheConsumer, segmentCacheConsumer, ruleBasedSegmentCacheConsumer), TELEMETRY_STORAGE, TELEMETRY_STORAGE,
-                flagSetsFilter
+                new EvaluatorImp(splitCacheConsumer, segmentCacheConsumer, ruleBasedSegmentCacheConsumer, null), TELEMETRY_STORAGE, TELEMETRY_STORAGE,
+                flagSetsFilter,
+                new FallbackTreatmentCalculatorImp(null)
         );
         Map<String, String> result = client.getTreatments("adil@relateiq.com", Arrays.asList("test1", "test2"));
         assertEquals(2, result.values().size());
@@ -1709,6 +1751,7 @@ public class SplitClientImplTest {
         RuleBasedSegmentCacheConsumer ruleBasedSegmentCacheConsumer = mock(RuleBasedSegmentCacheConsumer.class);
         when(splitCacheConsumer.fetchMany(anyList())).thenReturn(splits);
         when(gates.isSDKReady()).thenReturn(true);
+        FallbackTreatmentCalculatorImp fallbackTreatmentCalculatorImp = new FallbackTreatmentCalculatorImp(null);
 
         SplitClientImpl client = new SplitClientImpl(
                 mock(SplitFactory.class),
@@ -1717,8 +1760,9 @@ public class SplitClientImplTest {
                 NoopEventsStorageImp.create(),
                 config,
                 gates,
-                new EvaluatorImp(splitCacheConsumer, segmentCacheConsumer, ruleBasedSegmentCacheConsumer), TELEMETRY_STORAGE, TELEMETRY_STORAGE,
-                flagSetsFilter
+                new EvaluatorImp(splitCacheConsumer, segmentCacheConsumer, ruleBasedSegmentCacheConsumer, fallbackTreatmentCalculatorImp), TELEMETRY_STORAGE, TELEMETRY_STORAGE,
+                flagSetsFilter,
+                fallbackTreatmentCalculatorImp
         );
         Map<String, String> result = client.getTreatments("randomKey", Arrays.asList(test, "test2"));
         assertEquals("on", result.get(test));
@@ -1748,8 +1792,9 @@ public class SplitClientImplTest {
                 NoopEventsStorageImp.create(),
                 config,
                 gates,
-                new EvaluatorImp(splitCacheConsumer, segmentCacheConsumer, ruleBasedSegmentCacheConsumer), TELEMETRY_STORAGE, TELEMETRY_STORAGE,
-                flagSetsFilter
+                new EvaluatorImp(splitCacheConsumer, segmentCacheConsumer, ruleBasedSegmentCacheConsumer, null), TELEMETRY_STORAGE, TELEMETRY_STORAGE,
+                flagSetsFilter,
+                new FallbackTreatmentCalculatorImp(null)
         );
         Map<String, String> result = client.getTreatments("key", new ArrayList<>());
         assertNotNull(result);
@@ -1773,8 +1818,9 @@ public class SplitClientImplTest {
                 NoopEventsStorageImp.create(),
                 config,
                 gates,
-                new EvaluatorImp(splitCacheConsumer, segmentCacheConsumer, ruleBasedSegmentCacheConsumer), TELEMETRY_STORAGE, TELEMETRY_STORAGE,
-                flagSetsFilter
+                new EvaluatorImp(splitCacheConsumer, segmentCacheConsumer, ruleBasedSegmentCacheConsumer, null), TELEMETRY_STORAGE, TELEMETRY_STORAGE,
+                flagSetsFilter,
+                new FallbackTreatmentCalculatorImp(null)
         );
         Map<String, String> result = client.getTreatments("adil@relateiq.com", Arrays.asList("test1"));
         assertEquals(1, result.size());
@@ -1811,8 +1857,9 @@ public class SplitClientImplTest {
                 NoopEventsStorageImp.create(),
                 config,
                 gates,
-                new EvaluatorImp(splitCacheConsumer, segmentCacheConsumer, ruleBasedSegmentCacheConsumer), TELEMETRY_STORAGE, TELEMETRY_STORAGE,
-                flagSetsFilter
+                new EvaluatorImp(splitCacheConsumer, segmentCacheConsumer, ruleBasedSegmentCacheConsumer, null), TELEMETRY_STORAGE, TELEMETRY_STORAGE,
+                flagSetsFilter,
+                new FallbackTreatmentCalculatorImp(null)
         );
         Map<String, String> result = client.getTreatments("anyKey", Arrays.asList(test, test2));
         assertNotNull(result);
@@ -1841,6 +1888,7 @@ public class SplitClientImplTest {
         RuleBasedSegmentCacheConsumer ruleBasedSegmentCacheConsumer = mock(RuleBasedSegmentCacheConsumer.class);
         when(splitCacheConsumer.fetchMany(anyList())).thenReturn(parsedSplits);
         when(gates.isSDKReady()).thenReturn(true);
+        FallbackTreatmentCalculatorImp fallbackTreatmentCalculatorImp = new FallbackTreatmentCalculatorImp(null);
 
         SplitClientImpl client = new SplitClientImpl(
                 mock(SplitFactory.class),
@@ -1849,8 +1897,9 @@ public class SplitClientImplTest {
                 NoopEventsStorageImp.create(),
                 config,
                 gates,
-                new EvaluatorImp(splitCacheConsumer, segmentCacheConsumer, ruleBasedSegmentCacheConsumer), TELEMETRY_STORAGE, TELEMETRY_STORAGE,
-                flagSetsFilter
+                new EvaluatorImp(splitCacheConsumer, segmentCacheConsumer, ruleBasedSegmentCacheConsumer, fallbackTreatmentCalculatorImp), TELEMETRY_STORAGE, TELEMETRY_STORAGE,
+                flagSetsFilter,
+                fallbackTreatmentCalculatorImp
         );
 
         Map<String, String> result = client.getTreatments("anyKey", Arrays.asList(test, test2));
@@ -1886,6 +1935,7 @@ public class SplitClientImplTest {
         SegmentCacheConsumer segmentCacheConsumer = mock(SegmentCacheConsumer.class);
         RuleBasedSegmentCacheConsumer ruleBasedSegmentCacheConsumer = mock(RuleBasedSegmentCacheConsumer.class);
         when(splitCacheConsumer.fetchMany(anyList())).thenReturn(parsedSplits);
+        FallbackTreatmentCalculatorImp fallbackTreatmentCalculatorImp = new FallbackTreatmentCalculatorImp(null);
 
         SplitClientImpl client = new SplitClientImpl(
                 mock(SplitFactory.class),
@@ -1894,8 +1944,9 @@ public class SplitClientImplTest {
                 NoopEventsStorageImp.create(),
                 config,
                 gates,
-                new EvaluatorImp(splitCacheConsumer, segmentCacheConsumer, ruleBasedSegmentCacheConsumer), TELEMETRY_STORAGE, TELEMETRY_STORAGE,
-                flagSetsFilter
+                new EvaluatorImp(splitCacheConsumer, segmentCacheConsumer, ruleBasedSegmentCacheConsumer, fallbackTreatmentCalculatorImp), TELEMETRY_STORAGE, TELEMETRY_STORAGE,
+                flagSetsFilter,
+                fallbackTreatmentCalculatorImp
         );
         Map<String, Object> attributes = new HashMap<>();
         Map<String, SplitResult> result = client.getTreatmentsWithConfig("randomKey", Arrays.asList(test, test2, "", null), attributes);
@@ -1937,8 +1988,9 @@ public class SplitClientImplTest {
                 NoopEventsStorageImp.create(),
                 config,
                 gates,
-                new EvaluatorImp(splitCacheConsumer, segmentCacheConsumer, ruleBasedSegmentCacheConsumer), TELEMETRY_STORAGE, TELEMETRY_STORAGE,
-                flagSetsFilter
+                new EvaluatorImp(splitCacheConsumer, segmentCacheConsumer, ruleBasedSegmentCacheConsumer, null), TELEMETRY_STORAGE, TELEMETRY_STORAGE,
+                flagSetsFilter,
+                new FallbackTreatmentCalculatorImp(null)
         );
 
         int numKeys = 5;
@@ -1978,8 +2030,9 @@ public class SplitClientImplTest {
                 NoopEventsStorageImp.create(),
                 config,
                 gates,
-                new EvaluatorImp(splitCacheConsumer, segmentCacheConsumer, ruleBasedSegmentCacheConsumer), TELEMETRY_STORAGE, TELEMETRY_STORAGE,
-                flagSetsFilter
+                new EvaluatorImp(splitCacheConsumer, segmentCacheConsumer, ruleBasedSegmentCacheConsumer, null), TELEMETRY_STORAGE, TELEMETRY_STORAGE,
+                flagSetsFilter,
+                new FallbackTreatmentCalculatorImp(null)
         );
         assertTrue(client.getTreatmentsByFlagSet(RandomStringUtils.random(10), "", new HashMap<>()).isEmpty());
     }
@@ -2022,8 +2075,9 @@ public class SplitClientImplTest {
                 NoopEventsStorageImp.create(),
                 config,
                 gates,
-                new EvaluatorImp(splitCacheConsumer, segmentCacheConsumer, ruleBasedSegmentCacheConsumer), TELEMETRY_STORAGE, TELEMETRY_STORAGE,
-                flagSetsFilter
+                new EvaluatorImp(splitCacheConsumer, segmentCacheConsumer, ruleBasedSegmentCacheConsumer, null), TELEMETRY_STORAGE, TELEMETRY_STORAGE,
+                flagSetsFilter,
+                new FallbackTreatmentCalculatorImp(null)
         );
         int numKeys = 5;
         Map<String, String> getTreatmentResult;
@@ -2070,6 +2124,7 @@ public class SplitClientImplTest {
         when(splitCacheConsumer.getNamesByFlagSets(sets)).thenReturn(flagsBySets);
 
         SDKReadinessGates gates = mock(SDKReadinessGates.class);
+        FallbackTreatmentCalculatorImp fallbackTreatmentCalculatorImp = new FallbackTreatmentCalculatorImp(null);
 
         SplitClientImpl client = new SplitClientImpl(
                 mock(SplitFactory.class),
@@ -2078,8 +2133,9 @@ public class SplitClientImplTest {
                 NoopEventsStorageImp.create(),
                 config,
                 gates,
-                new EvaluatorImp(splitCacheConsumer, segmentCacheConsumer, ruleBasedSegmentCacheConsumer), TELEMETRY_STORAGE, TELEMETRY_STORAGE,
-                flagSetsFilter
+                new EvaluatorImp(splitCacheConsumer, segmentCacheConsumer, ruleBasedSegmentCacheConsumer, fallbackTreatmentCalculatorImp), TELEMETRY_STORAGE, TELEMETRY_STORAGE,
+                flagSetsFilter,
+                fallbackTreatmentCalculatorImp
         );
         Map<String, Object> attributes = new HashMap<>();
         Map<String, SplitResult> result = client.getTreatmentsWithConfigByFlagSet("randomKey", "set1", attributes);
@@ -2127,6 +2183,7 @@ public class SplitClientImplTest {
         when(splitCacheConsumer.getNamesByFlagSets(sets)).thenReturn(flagsBySets);
 
         SDKReadinessGates gates = mock(SDKReadinessGates.class);
+        FallbackTreatmentCalculatorImp fallbackTreatmentCalculatorImp = new FallbackTreatmentCalculatorImp(null);
 
         SplitClientImpl client = new SplitClientImpl(
                 mock(SplitFactory.class),
@@ -2135,8 +2192,9 @@ public class SplitClientImplTest {
                 NoopEventsStorageImp.create(),
                 config,
                 gates,
-                new EvaluatorImp(splitCacheConsumer, segmentCacheConsumer, ruleBasedSegmentCacheConsumer), TELEMETRY_STORAGE, TELEMETRY_STORAGE,
-                flagSetsFilter
+                new EvaluatorImp(splitCacheConsumer, segmentCacheConsumer, ruleBasedSegmentCacheConsumer, fallbackTreatmentCalculatorImp), TELEMETRY_STORAGE, TELEMETRY_STORAGE,
+                flagSetsFilter,
+                fallbackTreatmentCalculatorImp
         );
         Map<String, Object> attributes = new HashMap<>();
         Map<String, SplitResult> result = client.getTreatmentsWithConfigByFlagSets("randomKey", new ArrayList<>(Arrays.asList("set1")), attributes);
@@ -2181,8 +2239,10 @@ public class SplitClientImplTest {
                 NoopEventsStorageImp.create(),
                 config,
                 gates,
-                new EvaluatorImp(splitCacheConsumer, segmentCacheConsumer, ruleBasedSegmentCacheConsumer), TELEMETRY_STORAGE, TELEMETRY_STORAGE,
-                new FlagSetsFilterImpl(new HashSet<>())
+                new EvaluatorImp(splitCacheConsumer, segmentCacheConsumer, ruleBasedSegmentCacheConsumer, null), TELEMETRY_STORAGE, TELEMETRY_STORAGE,
+                new FlagSetsFilterImpl(new HashSet<>()),
+                new FallbackTreatmentCalculatorImp(null)
+
         );
         Map<String, Object> attributes = ImmutableMap.<String, Object>of("age", -20, "acv", "1000000");
         EvaluationOptions properties = new EvaluationOptions(new HashMap<String, Object>()
@@ -2232,5 +2292,351 @@ public class SplitClientImplTest {
             assertEquals("bilal" + i + "@codigo.com", impression.impression().key());
             assertEquals("{\"prop2\":\"val2\",\"prop1\":\"val1\"}", impression.impression().properties());
         }
+    }
+
+    @Test
+    public void fallbackTreatmentWithExceptionsResult() {
+        SDKReadinessGates gates = mock(SDKReadinessGates.class);
+        SplitCacheConsumer splitCacheConsumer = mock(SplitCacheConsumer.class);
+        SegmentCacheConsumer segmentCacheConsumer = mock(SegmentCacheConsumer.class);
+        RuleBasedSegmentCacheConsumer ruleBasedSegmentCacheConsumer = mock(RuleBasedSegmentCacheConsumer.class);
+        when(splitCacheConsumer.get(anyString())).thenThrow(RuntimeException.class);
+        when(splitCacheConsumer.fetchMany(anyList())).thenThrow(RuntimeException.class);
+        HashMap<String, HashSet<String>> features = new HashMap<>();
+        features.put("flag", new HashSet<>(Arrays.asList("test1")));
+        when(splitCacheConsumer.getNamesByFlagSets(anyList())).thenReturn(features);
+
+        String fallbcakConfigGlobal = "{\"prop1\", \"val1\"}";
+        FallbackTreatmentsConfiguration fallbackTreatmentsConfiguration = new FallbackTreatmentsConfiguration(
+                new FallbackTreatment("on",  fallbcakConfigGlobal),
+                null);
+        FallbackTreatmentCalculator fallbackTreatmentCalculator = new FallbackTreatmentCalculatorImp(fallbackTreatmentsConfiguration);
+
+        SplitClientImpl client = new SplitClientImpl(
+                mock(SplitFactory.class),
+                splitCacheConsumer,
+                new ImpressionsManager.NoOpImpressionsManager(),
+                NoopEventsStorageImp.create(),
+                config,
+                gates,
+                new EvaluatorImp(splitCacheConsumer, segmentCacheConsumer, ruleBasedSegmentCacheConsumer, fallbackTreatmentCalculator),
+                TELEMETRY_STORAGE, TELEMETRY_STORAGE,
+                new FlagSetsFilterImpl(new HashSet<>()),
+                fallbackTreatmentCalculator
+        );
+        assertEquals("on", client.getTreatment("adil@relateiq.com", "test1"));
+        assertEquals("on", client.getTreatmentWithConfig("adil@relateiq.com", "test1").treatment());
+        assertEquals(fallbcakConfigGlobal, client.getTreatmentWithConfig("adil@relateiq.com", "test1").config());
+        assertEquals("on", client.getTreatments("adil@relateiq.com", Arrays.asList("test1")).get("test1"));
+        assertEquals("on", client.getTreatmentsWithConfig("adil@relateiq.com", Arrays.asList("test1")).get("test1").treatment());
+        assertEquals(fallbcakConfigGlobal, client.getTreatmentsWithConfig("adil@relateiq.com", Arrays.asList("test1")).get("test1").config());
+
+        assertEquals("on", client.getTreatmentsByFlagSet("adil@relateiq.com", "flag").get("test1"));
+        assertEquals("on", client.getTreatmentsByFlagSets("adil@relateiq.com", Arrays.asList("flag")).get("test1"));
+        assertEquals("on", client.getTreatmentsWithConfigByFlagSet("adil@relateiq.com", "flag").get("test1").treatment());
+        assertEquals(fallbcakConfigGlobal, client.getTreatmentsWithConfigByFlagSet("adil@relateiq.com", "flag").get("test1").config());
+        assertEquals("on", client.getTreatmentsWithConfigByFlagSets("adil@relateiq.com", Arrays.asList("flag")).get("test1").treatment());
+        assertEquals(fallbcakConfigGlobal, client.getTreatmentsWithConfigByFlagSets("adil@relateiq.com", Arrays.asList("flag")).get("test1").config());
+
+        String fallbcakConfigByFlag = "{\"prop2\", \"val2\"}";
+        fallbackTreatmentsConfiguration = new FallbackTreatmentsConfiguration(new FallbackTreatment("on", fallbcakConfigGlobal),
+                new HashMap<String, FallbackTreatment>() {{ put("feature", new FallbackTreatment("off", fallbcakConfigByFlag)); }});
+
+        features = new HashMap<>();
+        features.put("flag", new HashSet<>(Arrays.asList("test", "feature")));
+        when(splitCacheConsumer.getNamesByFlagSets(anyList())).thenReturn(features);
+
+        fallbackTreatmentCalculator = new FallbackTreatmentCalculatorImp(fallbackTreatmentsConfiguration);
+
+        client = new SplitClientImpl(
+                mock(SplitFactory.class),
+                splitCacheConsumer,
+                new ImpressionsManager.NoOpImpressionsManager(),
+                NoopEventsStorageImp.create(),
+                config,
+                gates,
+                new EvaluatorImp(splitCacheConsumer, segmentCacheConsumer, ruleBasedSegmentCacheConsumer, fallbackTreatmentCalculator),
+                TELEMETRY_STORAGE, TELEMETRY_STORAGE,
+                new FlagSetsFilterImpl(new HashSet<>()),
+                fallbackTreatmentCalculator
+        );
+        assertEquals("on", client.getTreatment("adil@relateiq.com", "test"));
+        assertEquals("off", client.getTreatment("adil@relateiq.com", "feature"));
+        assertEquals("on", client.getTreatmentWithConfig("adil@relateiq.com", "test1").treatment());
+        assertEquals(fallbcakConfigGlobal, client.getTreatmentWithConfig("adil@relateiq.com", "test1").config());
+        assertEquals("off", client.getTreatmentWithConfig("adil@relateiq.com", "feature").treatment());
+        assertEquals(fallbcakConfigByFlag, client.getTreatmentWithConfig("adil@relateiq.com", "feature").config());
+        Map<String, String> result = client.getTreatments("adil@relateiq.com", Arrays.asList("feature", "test"));
+        assertEquals("off", result.get("feature"));
+        assertEquals("on", result.get("test"));
+        Map<String, SplitResult> results = client.getTreatmentsWithConfig("adil@relateiq.com", Arrays.asList("feature", "test"));
+        assertEquals("off", results.get("feature").treatment());
+        assertEquals(fallbcakConfigByFlag, results.get("feature").config());
+        assertEquals("on", results.get("test").treatment());
+        assertEquals(fallbcakConfigGlobal, results.get("test").config());
+
+        assertEquals("on", client.getTreatmentsByFlagSet("adil@relateiq.com", "flag").get("test"));
+        assertEquals("off", client.getTreatmentsByFlagSet("adil@relateiq.com", "flag").get("feature"));
+        assertEquals("on", client.getTreatmentsByFlagSets("adil@relateiq.com", Arrays.asList("flag")).get("test"));
+        assertEquals("off", client.getTreatmentsByFlagSets("adil@relateiq.com", Arrays.asList("flag")).get("feature"));
+        assertEquals("on", client.getTreatmentsWithConfigByFlagSet("adil@relateiq.com", "flag").get("test").treatment());
+        assertEquals(fallbcakConfigGlobal, client.getTreatmentsWithConfigByFlagSet("adil@relateiq.com", "flag").get("test").config());
+        assertEquals("off", client.getTreatmentsWithConfigByFlagSet("adil@relateiq.com", "flag").get("feature").treatment());
+        assertEquals(fallbcakConfigByFlag, client.getTreatmentsWithConfigByFlagSet("adil@relateiq.com", "flag").get("feature").config());
+        assertEquals("on", client.getTreatmentsWithConfigByFlagSets("adil@relateiq.com", Arrays.asList("flag")).get("test").treatment());
+        assertEquals(fallbcakConfigGlobal, client.getTreatmentsWithConfigByFlagSets("adil@relateiq.com", Arrays.asList("flag")).get("test").config());
+        assertEquals("off", client.getTreatmentsWithConfigByFlagSets("adil@relateiq.com", Arrays.asList("flag")).get("feature").treatment());
+        assertEquals(fallbcakConfigByFlag, client.getTreatmentsWithConfigByFlagSets("adil@relateiq.com", Arrays.asList("flag")).get("feature").config());
+
+        fallbackTreatmentsConfiguration = new FallbackTreatmentsConfiguration(null,
+                new HashMap<String, FallbackTreatment>() {{ put("feature", new FallbackTreatment("off", fallbcakConfigByFlag)); }});
+
+        fallbackTreatmentCalculator = new FallbackTreatmentCalculatorImp(fallbackTreatmentsConfiguration);
+
+        client = new SplitClientImpl(
+                mock(SplitFactory.class),
+                splitCacheConsumer,
+                new ImpressionsManager.NoOpImpressionsManager(),
+                NoopEventsStorageImp.create(),
+                config,
+                gates,
+                new EvaluatorImp(splitCacheConsumer, segmentCacheConsumer, ruleBasedSegmentCacheConsumer, fallbackTreatmentCalculator), TELEMETRY_STORAGE, TELEMETRY_STORAGE,
+                new FlagSetsFilterImpl(new HashSet<>()),
+                fallbackTreatmentCalculator
+        );
+        assertEquals(Treatments.CONTROL, client.getTreatment("adil@relateiq.com", "test"));
+        assertEquals("off", client.getTreatment("adil@relateiq.com", "feature"));
+        assertEquals(Treatments.CONTROL, client.getTreatmentWithConfig("adil@relateiq.com", "test1").treatment());
+        assertEquals(null, client.getTreatmentWithConfig("adil@relateiq.com", "test1").config());
+        assertEquals("off", client.getTreatmentWithConfig("adil@relateiq.com", "feature").treatment());
+        assertEquals(fallbcakConfigByFlag, client.getTreatmentWithConfig("adil@relateiq.com", "feature").config());
+        result = client.getTreatments("adil@relateiq.com", Arrays.asList("feature", "test"));
+        assertEquals("off", result.get("feature"));
+        assertEquals(Treatments.CONTROL, result.get("test"));
+        results = client.getTreatmentsWithConfig("adil@relateiq.com", Arrays.asList("feature", "test"));
+        assertEquals("off", results.get("feature").treatment());
+        assertEquals(fallbcakConfigByFlag, results.get("feature").config());
+        assertEquals(Treatments.CONTROL, results.get("test").treatment());
+        assertEquals(null, results.get("test").config());
+
+        assertEquals(Treatments.CONTROL, client.getTreatmentsByFlagSet("adil@relateiq.com", "flag").get("test"));
+        assertEquals("off", client.getTreatmentsByFlagSet("adil@relateiq.com", "flag").get("feature"));
+        assertEquals(Treatments.CONTROL, client.getTreatmentsByFlagSets("adil@relateiq.com", Arrays.asList("flag")).get("test"));
+        assertEquals("off", client.getTreatmentsByFlagSets("adil@relateiq.com", Arrays.asList("flag")).get("feature"));
+        assertEquals(Treatments.CONTROL, client.getTreatmentsWithConfigByFlagSet("adil@relateiq.com", "flag").get("test").treatment());
+        assertEquals(null, client.getTreatmentsWithConfigByFlagSet("adil@relateiq.com", "flag").get("test").config());
+        assertEquals("off", client.getTreatmentsWithConfigByFlagSet("adil@relateiq.com", "flag").get("feature").treatment());
+        assertEquals(fallbcakConfigByFlag, client.getTreatmentsWithConfigByFlagSet("adil@relateiq.com", "flag").get("feature").config());
+        assertEquals(Treatments.CONTROL, client.getTreatmentsWithConfigByFlagSets("adil@relateiq.com", Arrays.asList("flag")).get("test").treatment());
+        assertEquals(null, client.getTreatmentsWithConfigByFlagSets("adil@relateiq.com", Arrays.asList("flag")).get("test").config());
+        assertEquals("off", client.getTreatmentsWithConfigByFlagSets("adil@relateiq.com", Arrays.asList("flag")).get("feature").treatment());
+        assertEquals(fallbcakConfigByFlag, client.getTreatmentsWithConfigByFlagSets("adil@relateiq.com", Arrays.asList("flag")).get("feature").config());
+    }
+
+    @Test
+    public void fallbackTreatmentWithSplitNotFoundResult() {
+        SDKReadinessGates gates = mock(SDKReadinessGates.class);
+        SplitCacheConsumer splitCacheConsumer = mock(SplitCacheConsumer.class);
+        SegmentCacheConsumer segmentCacheConsumer = mock(SegmentCacheConsumer.class);
+        RuleBasedSegmentCacheConsumer ruleBasedSegmentCacheConsumer = mock(RuleBasedSegmentCacheConsumer.class);
+        ParsedCondition rollOutToEveryone = ParsedCondition.createParsedConditionForTests(CombiningMatcher.of(new WhitelistMatcher(Lists.newArrayList("adil@codigo.com"))), Lists.newArrayList(partition("on", 100)));
+        List<ParsedCondition> conditions = Lists.newArrayList(rollOutToEveryone);
+        ParsedSplit parsedSplit = ParsedSplit.createParsedSplitForTests("test", 123, false, Treatments.OFF, conditions,
+                null, 1, 1, new HashSet<>(), false, new PrerequisitesMatcher(null));
+
+        when(splitCacheConsumer.get("test1")).thenReturn(parsedSplit);
+        when(splitCacheConsumer.get("test2")).thenReturn(null);
+        when(splitCacheConsumer.get("test3")).thenReturn(null);
+        HashMap<String, ParsedSplit> features = new HashMap<>();
+        features.put("test1", parsedSplit);
+        features.put("test2", null);
+        features.put("test3", null);
+        when(splitCacheConsumer.fetchMany(anyList())).thenReturn(features);
+        HashMap<String, HashSet<String>> flagFeatures = new HashMap<>();
+        flagFeatures.put("flag", new HashSet<>(Arrays.asList("test1", "test2", "test3")));
+        when(splitCacheConsumer.getNamesByFlagSets(anyList())).thenReturn(flagFeatures);
+
+        String fallbcakConfigGlobal = "{\"prop1\", \"val1\"}";
+        FallbackTreatmentsConfiguration fallbackTreatmentsConfiguration = new FallbackTreatmentsConfiguration(
+                new FallbackTreatment("on",  fallbcakConfigGlobal),
+                null);
+        FallbackTreatmentCalculator fallbackTreatmentCalculator = new FallbackTreatmentCalculatorImp(fallbackTreatmentsConfiguration);
+
+        SplitClientImpl client = new SplitClientImpl(
+                mock(SplitFactory.class),
+                splitCacheConsumer,
+                new ImpressionsManager.NoOpImpressionsManager(),
+                NoopEventsStorageImp.create(),
+                config,
+                gates,
+                new EvaluatorImp(splitCacheConsumer, segmentCacheConsumer, ruleBasedSegmentCacheConsumer, fallbackTreatmentCalculator),
+                TELEMETRY_STORAGE, TELEMETRY_STORAGE,
+                new FlagSetsFilterImpl(new HashSet<>()),
+                fallbackTreatmentCalculator
+        );
+        assertEquals("off", client.getTreatment("adil@relateiq.com", "test1"));
+        assertEquals("on", client.getTreatment("adil@relateiq.com", "test2"));
+        assertEquals("on", client.getTreatmentWithConfig("adil@relateiq.com", "test2").treatment());
+        assertEquals(fallbcakConfigGlobal, client.getTreatmentWithConfig("adil@relateiq.com", "test2").config());
+
+        Map<String, String> result = client.getTreatments("adil@relateiq.com", Arrays.asList("test1", "test2"));
+        assertEquals("off", result.get("test1"));
+        assertEquals("on", result.get("test2"));
+        Map<String, SplitResult> resultWithConfig = client.getTreatmentsWithConfig("adil@relateiq.com", Arrays.asList("test1", "test2"));
+        assertEquals("off", resultWithConfig.get("test1").treatment());
+        assertEquals(null, resultWithConfig.get("test1").config());
+        assertEquals("on", resultWithConfig.get("test2").treatment());
+        assertEquals(fallbcakConfigGlobal, resultWithConfig.get("test2").config());
+
+        result = client.getTreatmentsByFlagSet("adil@relateiq.com", "flag");
+        assertEquals("off", result.get("test1"));
+        assertEquals("on", result.get("test2"));
+        result =  client.getTreatmentsByFlagSets("adil@relateiq.com", Arrays.asList("flag"));
+        assertEquals("off", result.get("test1"));
+        assertEquals("on", result.get("test2"));
+        resultWithConfig = client.getTreatmentsWithConfigByFlagSet("adil@relateiq.com", "flag");
+        assertEquals("off", resultWithConfig.get("test1").treatment());
+        assertEquals(null, resultWithConfig.get("test1").config());
+        assertEquals("on", resultWithConfig.get("test2").treatment());
+        assertEquals(fallbcakConfigGlobal, resultWithConfig.get("test2").config());
+        resultWithConfig = client.getTreatmentsWithConfigByFlagSets("adil@relateiq.com", Arrays.asList("flag"));
+        assertEquals("off", resultWithConfig.get("test1").treatment());
+        assertEquals(null, resultWithConfig.get("test1").config());
+        assertEquals("on", resultWithConfig.get("test2").treatment());
+        assertEquals(fallbcakConfigGlobal, resultWithConfig.get("test2").config());
+
+        String fallbcakConfigByFlag = "{\"prop2\", \"val2\"}";
+        fallbackTreatmentsConfiguration = new FallbackTreatmentsConfiguration(new FallbackTreatment("on", fallbcakConfigGlobal),
+                new HashMap<String, FallbackTreatment>() {{ put("test2", new FallbackTreatment("off-fallback", fallbcakConfigByFlag)); }});
+
+        fallbackTreatmentCalculator = new FallbackTreatmentCalculatorImp(fallbackTreatmentsConfiguration);
+
+        client = new SplitClientImpl(
+                mock(SplitFactory.class),
+                splitCacheConsumer,
+                new ImpressionsManager.NoOpImpressionsManager(),
+                NoopEventsStorageImp.create(),
+                config,
+                gates,
+                new EvaluatorImp(splitCacheConsumer, segmentCacheConsumer, ruleBasedSegmentCacheConsumer, fallbackTreatmentCalculator),
+                TELEMETRY_STORAGE, TELEMETRY_STORAGE,
+                new FlagSetsFilterImpl(new HashSet<>()),
+                fallbackTreatmentCalculator
+        );
+        assertEquals("off", client.getTreatment("adil@relateiq.com", "test1"));
+        assertEquals("off-fallback", client.getTreatment("adil@relateiq.com", "test2"));
+        assertEquals("on", client.getTreatment("adil@relateiq.com", "test3"));
+
+        assertEquals("off", client.getTreatmentWithConfig("adil@relateiq.com", "test1").treatment());
+        assertEquals(null, client.getTreatmentWithConfig("adil@relateiq.com", "test1").config());
+        assertEquals("off-fallback", client.getTreatmentWithConfig("adil@relateiq.com", "test2").treatment());
+        assertEquals(fallbcakConfigByFlag, client.getTreatmentWithConfig("adil@relateiq.com", "test2").config());
+        assertEquals("on", client.getTreatmentWithConfig("adil@relateiq.com", "test3").treatment());
+        assertEquals(fallbcakConfigGlobal, client.getTreatmentWithConfig("adil@relateiq.com", "test3").config());
+
+        result = client.getTreatments("adil@relateiq.com", Arrays.asList("test1", "test2", "test3"));
+        assertEquals("off", result.get("test1"));
+        assertEquals("off-fallback", result.get("test2"));
+        assertEquals("on", result.get("test3"));
+
+        Map<String, SplitResult> results = client.getTreatmentsWithConfig("adil@relateiq.com", Arrays.asList("test1", "test2", "test3"));
+        assertEquals("off", results.get("test1").treatment());
+        assertEquals(null, results.get("test1").config());
+        assertEquals("off-fallback", results.get("test2").treatment());
+        assertEquals(fallbcakConfigByFlag, results.get("test2").config());
+        assertEquals("on", results.get("test3").treatment());
+        assertEquals(fallbcakConfigGlobal, results.get("test3").config());
+
+        result = client.getTreatmentsByFlagSet("adil@relateiq.com", "flag");
+        assertEquals("off", result.get("test1"));
+        assertEquals("off-fallback", result.get("test2"));
+        assertEquals("on", result.get("test3"));
+
+        result =  client.getTreatmentsByFlagSets("adil@relateiq.com", Arrays.asList("flag"));
+        assertEquals("off", result.get("test1"));
+        assertEquals("off-fallback", result.get("test2"));
+        assertEquals("on", result.get("test3"));
+
+        results =  client.getTreatmentsWithConfigByFlagSet("adil@relateiq.com", "flag");
+        assertEquals("off", results.get("test1").treatment());
+        assertEquals(null, results.get("test1").config());
+        assertEquals("off-fallback", results.get("test2").treatment());
+        assertEquals(fallbcakConfigByFlag, results.get("test2").config());
+        assertEquals("on", results.get("test3").treatment());
+        assertEquals(fallbcakConfigGlobal, results.get("test3").config());
+
+        results =  client.getTreatmentsWithConfigByFlagSets("adil@relateiq.com", Arrays.asList("flag"));
+        assertEquals("off", results.get("test1").treatment());
+        assertEquals(null, results.get("test1").config());
+        assertEquals("off-fallback", results.get("test2").treatment());
+        assertEquals(fallbcakConfigByFlag, results.get("test2").config());
+        assertEquals("on", results.get("test3").treatment());
+        assertEquals(fallbcakConfigGlobal, results.get("test3").config());
+
+        fallbackTreatmentsConfiguration = new FallbackTreatmentsConfiguration(null,
+                new HashMap<String, FallbackTreatment>() {{ put("test2", new FallbackTreatment("off-fallback", fallbcakConfigByFlag)); }});
+
+        fallbackTreatmentCalculator = new FallbackTreatmentCalculatorImp(fallbackTreatmentsConfiguration);
+
+        client = new SplitClientImpl(
+                mock(SplitFactory.class),
+                splitCacheConsumer,
+                new ImpressionsManager.NoOpImpressionsManager(),
+                NoopEventsStorageImp.create(),
+                config,
+                gates,
+                new EvaluatorImp(splitCacheConsumer, segmentCacheConsumer, ruleBasedSegmentCacheConsumer, fallbackTreatmentCalculator), TELEMETRY_STORAGE, TELEMETRY_STORAGE,
+                new FlagSetsFilterImpl(new HashSet<>()),
+                fallbackTreatmentCalculator
+        );
+        assertEquals("off", client.getTreatment("adil@relateiq.com", "test1"));
+        assertEquals("off-fallback", client.getTreatment("adil@relateiq.com", "test2"));
+        assertEquals(Treatments.CONTROL, client.getTreatment("adil@relateiq.com", "test3"));
+
+        assertEquals("off", client.getTreatmentWithConfig("adil@relateiq.com", "test1").treatment());
+        assertEquals(null, client.getTreatmentWithConfig("adil@relateiq.com", "test1").config());
+        assertEquals("off-fallback", client.getTreatmentWithConfig("adil@relateiq.com", "test2").treatment());
+        assertEquals(fallbcakConfigByFlag, client.getTreatmentWithConfig("adil@relateiq.com", "test2").config());
+        assertEquals(Treatments.CONTROL, client.getTreatmentWithConfig("adil@relateiq.com", "test3").treatment());
+        assertEquals(null, client.getTreatmentWithConfig("adil@relateiq.com", "test3").config());
+
+        result = client.getTreatments("adil@relateiq.com", Arrays.asList("test1", "test2", "test3"));
+        assertEquals("off", result.get("test1"));
+        assertEquals("off-fallback", result.get("test2"));
+        assertEquals(Treatments.CONTROL, result.get("test3"));
+
+        results = client.getTreatmentsWithConfig("adil@relateiq.com", Arrays.asList("test1", "test2", "test3"));
+        assertEquals("off", results.get("test1").treatment());
+        assertEquals(null, results.get("test1").config());
+        assertEquals("off-fallback", results.get("test2").treatment());
+        assertEquals(fallbcakConfigByFlag, results.get("test2").config());
+        assertEquals(Treatments.CONTROL, results.get("test3").treatment());
+        assertEquals(null, results.get("test3").config());
+
+        result = client.getTreatmentsByFlagSet("adil@relateiq.com", "flag");
+        assertEquals("off", result.get("test1"));
+        assertEquals("off-fallback", result.get("test2"));
+        assertEquals(Treatments.CONTROL, result.get("test3"));
+
+        result =  client.getTreatmentsByFlagSets("adil@relateiq.com", Arrays.asList("flag"));
+        assertEquals("off", result.get("test1"));
+        assertEquals("off-fallback", result.get("test2"));
+        assertEquals(Treatments.CONTROL, result.get("test3"));
+
+        results =  client.getTreatmentsWithConfigByFlagSet("adil@relateiq.com", "flag");
+        assertEquals("off", results.get("test1").treatment());
+        assertEquals(null, results.get("test1").config());
+        assertEquals("off-fallback", results.get("test2").treatment());
+        assertEquals(fallbcakConfigByFlag, results.get("test2").config());
+        assertEquals(Treatments.CONTROL, results.get("test3").treatment());
+        assertEquals(null, results.get("test3").config());
+
+        results =  client.getTreatmentsWithConfigByFlagSets("adil@relateiq.com", Arrays.asList("flag"));
+        assertEquals("off", results.get("test1").treatment());
+        assertEquals(null, results.get("test1").config());
+        assertEquals("off-fallback", results.get("test2").treatment());
+        assertEquals(fallbcakConfigByFlag, results.get("test2").config());
+        assertEquals(Treatments.CONTROL, results.get("test3").treatment());
+        assertEquals(null, results.get("test3").config());
     }
 }

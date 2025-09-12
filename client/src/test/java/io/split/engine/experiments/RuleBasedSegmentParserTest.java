@@ -63,7 +63,7 @@ public class RuleBasedSegmentParserTest {
         List<Condition> conditions = Lists.newArrayList(c);
 
         RuleBasedSegmentParser parser = new RuleBasedSegmentParser();
-        RuleBasedSegment ruleBasedSegment = makeRuleBasedSegment("first.name", conditions, 1);
+        RuleBasedSegment ruleBasedSegment = makeRuleBasedSegment("first-name", conditions, 1);
         ParsedRuleBasedSegment actual = parser.parse(ruleBasedSegment);
 
         AttributeMatcher employeesMatcherLogic = AttributeMatcher.vanilla(new UserDefinedSegmentMatcher(EMPLOYEES));
@@ -72,7 +72,7 @@ public class RuleBasedSegmentParserTest {
         ParsedCondition parsedCondition = ParsedCondition.createParsedConditionForTests(combiningMatcher, null);
         List<ParsedCondition> listOfMatcherAndSplits = Lists.newArrayList(parsedCondition);
 
-        ParsedRuleBasedSegment expected = ParsedRuleBasedSegment.createParsedRuleBasedSegmentForTests ("first.name",   listOfMatcherAndSplits, "user", 1,
+        ParsedRuleBasedSegment expected = ParsedRuleBasedSegment.createParsedRuleBasedSegmentForTests ("first-name",   listOfMatcherAndSplits, "user", 1,
                 new ArrayList<>(), new ArrayList<>());
 
         Assert.assertEquals(actual, expected);
@@ -103,14 +103,14 @@ public class RuleBasedSegmentParserTest {
         List<Condition> conditions = Lists.newArrayList(c1, c2);
 
         RuleBasedSegmentParser parser = new RuleBasedSegmentParser();
-        RuleBasedSegment ruleBasedSegment = makeRuleBasedSegment("first.name", conditions, 1);
+        RuleBasedSegment ruleBasedSegment = makeRuleBasedSegment("first-name", conditions, 1);
         ParsedRuleBasedSegment actual = parser.parse(ruleBasedSegment);
 
         ParsedCondition parsedCondition1 = ParsedCondition.createParsedConditionForTests(CombiningMatcher.of(new UserDefinedSegmentMatcher(EMPLOYEES)), fullyRollout);
         ParsedCondition parsedCondition2 = ParsedCondition.createParsedConditionForTests(CombiningMatcher.of(new UserDefinedSegmentMatcher(EMPLOYEES)), turnOff);
         List<ParsedCondition> listOfParsedConditions = Lists.newArrayList(parsedCondition1, parsedCondition2);
 
-        ParsedRuleBasedSegment expected = ParsedRuleBasedSegment.createParsedRuleBasedSegmentForTests ("first.name",   listOfParsedConditions, "user", 1,
+        ParsedRuleBasedSegment expected = ParsedRuleBasedSegment.createParsedRuleBasedSegmentForTests ("first-name",   listOfParsedConditions, "user", 1,
                 new ArrayList<>(), new ArrayList<>());
 
         Assert.assertEquals(actual, expected);
@@ -135,7 +135,7 @@ public class RuleBasedSegmentParserTest {
         }
 
         RuleBasedSegmentParser parser = new RuleBasedSegmentParser();
-        RuleBasedSegment ruleBasedSegment = makeRuleBasedSegment("first.name", conditions, 1);
+        RuleBasedSegment ruleBasedSegment = makeRuleBasedSegment("first-name", conditions, 1);
 
         Assert.assertNotNull(parser.parse(ruleBasedSegment));
     }
@@ -163,7 +163,7 @@ public class RuleBasedSegmentParserTest {
         List<Condition> conditions = Lists.newArrayList(c);
 
         RuleBasedSegmentParser parser = new RuleBasedSegmentParser();
-        RuleBasedSegment ruleBasedSegment = makeRuleBasedSegment("first.name", conditions, 1);
+        RuleBasedSegment ruleBasedSegment = makeRuleBasedSegment("first-name", conditions, 1);
         ParsedRuleBasedSegment actual = parser.parse(ruleBasedSegment);
 
         AttributeMatcher employeesMatcherLogic = new AttributeMatcher("name", new UserDefinedSegmentMatcher(EMPLOYEES), false);
@@ -172,7 +172,7 @@ public class RuleBasedSegmentParserTest {
         ParsedCondition parsedCondition = ParsedCondition.createParsedConditionForTests(combiningMatcher, null);
         List<ParsedCondition> listOfMatcherAndSplits = Lists.newArrayList(parsedCondition);
 
-        ParsedRuleBasedSegment expected = ParsedRuleBasedSegment.createParsedRuleBasedSegmentForTests ("first.name",   listOfMatcherAndSplits, "user", 1,
+        ParsedRuleBasedSegment expected = ParsedRuleBasedSegment.createParsedRuleBasedSegmentForTests ("first-name",   listOfMatcherAndSplits, "user", 1,
                 new ArrayList<>(), new ArrayList<>());
 
         Assert.assertEquals(actual, expected);
@@ -191,7 +191,7 @@ public class RuleBasedSegmentParserTest {
         List<Condition> conditions = Lists.newArrayList(c);
 
         RuleBasedSegmentParser parser = new RuleBasedSegmentParser();
-        RuleBasedSegment ruleBasedSegment = makeRuleBasedSegment("first.name", conditions, 1);
+        RuleBasedSegment ruleBasedSegment = makeRuleBasedSegment("first-name", conditions, 1);
         ParsedRuleBasedSegment actual = parser.parse(ruleBasedSegment);
 
         AttributeMatcher ageLessThan10Logic = new AttributeMatcher("age", new LessThanOrEqualToMatcher(10, DataType.NUMBER), false);
@@ -199,7 +199,7 @@ public class RuleBasedSegmentParserTest {
         ParsedCondition parsedCondition = ParsedCondition.createParsedConditionForTests(combiningMatcher, null);
         List<ParsedCondition> listOfMatcherAndSplits = Lists.newArrayList(parsedCondition);
 
-        ParsedRuleBasedSegment expected = ParsedRuleBasedSegment.createParsedRuleBasedSegmentForTests ("first.name",   listOfMatcherAndSplits, "user", 1,
+        ParsedRuleBasedSegment expected = ParsedRuleBasedSegment.createParsedRuleBasedSegmentForTests ("first-name",   listOfMatcherAndSplits, "user", 1,
                 new ArrayList<>(), new ArrayList<>());
 
         Assert.assertEquals(actual, expected);
@@ -217,7 +217,7 @@ public class RuleBasedSegmentParserTest {
         List<Condition> conditions = Lists.newArrayList(c);
 
         RuleBasedSegmentParser parser = new RuleBasedSegmentParser();
-        RuleBasedSegment ruleBasedSegment = makeRuleBasedSegment("first.name", conditions, 1);
+        RuleBasedSegment ruleBasedSegment = makeRuleBasedSegment("first-name", conditions, 1);
         ParsedRuleBasedSegment actual = parser.parse(ruleBasedSegment);
 
         AttributeMatcher equalToMatcher = new AttributeMatcher("age", new EqualToMatcher(10, DataType.NUMBER), true);
@@ -225,7 +225,7 @@ public class RuleBasedSegmentParserTest {
         ParsedCondition parsedCondition = ParsedCondition.createParsedConditionForTests(combiningMatcher, null);
         List<ParsedCondition> listOfMatcherAndSplits = Lists.newArrayList(parsedCondition);
 
-        ParsedRuleBasedSegment expected = ParsedRuleBasedSegment.createParsedRuleBasedSegmentForTests ("first.name",   listOfMatcherAndSplits, "user", 1,
+        ParsedRuleBasedSegment expected = ParsedRuleBasedSegment.createParsedRuleBasedSegmentForTests ("first-name",   listOfMatcherAndSplits, "user", 1,
                 new ArrayList<>(), new ArrayList<>());
 
         Assert.assertEquals(actual, expected);
@@ -243,7 +243,7 @@ public class RuleBasedSegmentParserTest {
         List<Condition> conditions = Lists.newArrayList(c);
 
         RuleBasedSegmentParser parser = new RuleBasedSegmentParser();
-        RuleBasedSegment ruleBasedSegment = makeRuleBasedSegment("first.name", conditions, 1);
+        RuleBasedSegment ruleBasedSegment = makeRuleBasedSegment("first-name", conditions, 1);
         ParsedRuleBasedSegment actual = parser.parse(ruleBasedSegment);
 
         AttributeMatcher ageEqualTo10Logic = new AttributeMatcher("age", new EqualToMatcher(-10, DataType.NUMBER), false);
@@ -251,7 +251,7 @@ public class RuleBasedSegmentParserTest {
         ParsedCondition parsedCondition = ParsedCondition.createParsedConditionForTests(combiningMatcher, null);
         List<ParsedCondition> listOfMatcherAndSplits = Lists.newArrayList(parsedCondition);
 
-        ParsedRuleBasedSegment expected = ParsedRuleBasedSegment.createParsedRuleBasedSegmentForTests ("first.name",   listOfMatcherAndSplits, "user", 1,
+        ParsedRuleBasedSegment expected = ParsedRuleBasedSegment.createParsedRuleBasedSegmentForTests ("first-name",   listOfMatcherAndSplits, "user", 1,
                 new ArrayList<>(), new ArrayList<>());
 
         Assert.assertEquals(actual, expected);
@@ -275,7 +275,7 @@ public class RuleBasedSegmentParserTest {
         List<Condition> conditions = Lists.newArrayList(c);
 
         RuleBasedSegmentParser parser = new RuleBasedSegmentParser();
-        RuleBasedSegment ruleBasedSegment = makeRuleBasedSegment("first.name", conditions, 1);
+        RuleBasedSegment ruleBasedSegment = makeRuleBasedSegment("first-name", conditions, 1);
         ParsedRuleBasedSegment actual = parser.parse(ruleBasedSegment);
 
         AttributeMatcher ageBetween10And11Logic = new AttributeMatcher("age", new BetweenMatcher(10, 12, DataType.NUMBER), false);
@@ -283,7 +283,7 @@ public class RuleBasedSegmentParserTest {
         ParsedCondition parsedCondition = ParsedCondition.createParsedConditionForTests(combiningMatcher, null);
         List<ParsedCondition> listOfMatcherAndSplits = Lists.newArrayList(parsedCondition);
 
-        ParsedRuleBasedSegment expected = ParsedRuleBasedSegment.createParsedRuleBasedSegmentForTests ("first.name",   listOfMatcherAndSplits, "user", 1,
+        ParsedRuleBasedSegment expected = ParsedRuleBasedSegment.createParsedRuleBasedSegmentForTests ("first-name",   listOfMatcherAndSplits, "user", 1,
                 new ArrayList<>(), new ArrayList<>());
 
         Assert.assertEquals(actual, expected);
@@ -530,7 +530,7 @@ public class RuleBasedSegmentParserTest {
         List<Condition> conditions = Lists.newArrayList(c);
 
         RuleBasedSegmentParser parser = new RuleBasedSegmentParser();
-        RuleBasedSegment ruleBasedSegment = makeRuleBasedSegment("first.name", conditions, 1);
+        RuleBasedSegment ruleBasedSegment = makeRuleBasedSegment("first-name", conditions, 1);
         ParsedRuleBasedSegment actual = parser.parse(ruleBasedSegment);
 
         AttributeMatcher attrMatcher = new AttributeMatcher("products", m, false);
@@ -538,7 +538,7 @@ public class RuleBasedSegmentParserTest {
         ParsedCondition parsedCondition = ParsedCondition.createParsedConditionForTests(combiningMatcher, null);
         List<ParsedCondition> listOfMatcherAndSplits = Lists.newArrayList(parsedCondition);
 
-        ParsedRuleBasedSegment expected = ParsedRuleBasedSegment.createParsedRuleBasedSegmentForTests ("first.name",   listOfMatcherAndSplits, "user", 1,
+        ParsedRuleBasedSegment expected = ParsedRuleBasedSegment.createParsedRuleBasedSegmentForTests ("first-name",   listOfMatcherAndSplits, "user", 1,
                 new ArrayList<>(), new ArrayList<>());
 
         Assert.assertEquals(actual, expected);
