@@ -51,7 +51,7 @@ public class FallbackTreatmentValidator {
         Map<String, FallbackTreatment> result = new HashMap<>();
         for (Map.Entry<String, FallbackTreatment> entry : byFlagTreatment.entrySet()) {
             Optional<String> featureName = isValid(entry.getKey(), method);
-            if (featureName.equals(Optional.empty())) {
+            if (featureName.equals(Optional.empty()) || !featureName.isPresent()) {
                 continue;
             }
 
