@@ -5,7 +5,7 @@ import io.split.grammar.Treatments;
 public class FallbackTreatmentCalculatorImp implements FallbackTreatmentCalculator
 {
     private final FallbackTreatmentsConfiguration _fallbackTreatmentsConfiguration;
-    private final String labelPrefix = "fallback - ";
+    private final static String labelPrefix = "fallback - ";
 
     public FallbackTreatmentCalculatorImp(FallbackTreatmentsConfiguration fallbackTreatmentsConfiguration) {
         _fallbackTreatmentsConfiguration = fallbackTreatmentsConfiguration;

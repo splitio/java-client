@@ -28,6 +28,7 @@ public class EvaluatorImp implements Evaluator {
     private final EvaluationContext _evaluationContext;
     private final SplitCacheConsumer _splitCacheConsumer;
     private final FallbackTreatmentCalculator _fallbackTreatmentCalculator;
+    private final String _evaluatorException = "Evaluator Exception";
 
     public EvaluatorImp(SplitCacheConsumer splitCacheConsumer, SegmentCacheConsumer segmentCache,
                         RuleBasedSegmentCacheConsumer ruleBasedSegmentCacheConsumer,
@@ -64,7 +65,7 @@ public class EvaluatorImp implements Evaluator {
         try {
             return evaluateFeatures(key, bucketingKey, flagSetsWithNames, attributes);
         } catch (Exception e) {
-            _log.error("Evaluator Exception", e);
+            _log.error(_evaluatorException, e);
             return createMapControl(flagSetsWithNames, io.split.engine.evaluator.Labels.EXCEPTION);
         }
     }
@@ -216,11 +217,11 @@ public class EvaluatorImp implements Evaluator {
             }
             return getTreatment(matchingKey, bucketingKey, parsedSplit, attributes);
         } catch (ChangeNumberExceptionWrapper e) {
-            _log.error("Evaluator Exception", e.wrappedException());
+            _log.error(_evaluatorException, e.wrappedException());
             FallbackTreatment fallbackTreatment = _fallbackTreatmentCalculator.resolve(featureName, Labels.EXCEPTION);
             return new TreatmentLabelAndChangeNumber(fallbackTreatment.getTreatment(), fallbackTreatment.getLabel(), e.changeNumber());
         } catch (Exception e) {
-            _log.error("Evaluator Exception", e);
+            _log.error(_evaluatorException, e);
             FallbackTreatment fallbackTreatment = _fallbackTreatmentCalculator.resolve(featureName, Labels.EXCEPTION);
             return new TreatmentLabelAndChangeNumber(fallbackTreatment.getTreatment(), fallbackTreatment.getLabel());
         }

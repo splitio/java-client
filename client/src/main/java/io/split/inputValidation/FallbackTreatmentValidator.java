@@ -50,18 +50,16 @@ public class FallbackTreatmentValidator {
     public static Map<String, FallbackTreatment> isValidByFlagTreatment(Map<String, FallbackTreatment> byFlagTreatment, String method) {
         Map<String, FallbackTreatment> result = new HashMap<>();
         for (Map.Entry<String, FallbackTreatment> entry : byFlagTreatment.entrySet()) {
-            Optional<String> feature_name = isValid(entry.getKey(), "Validator");
-            if (feature_name.equals(Optional.empty())) {
+            Optional<String> featureName = isValid(entry.getKey(), method);
+            if (featureName.equals(Optional.empty())) {
                 continue;
             }
 
             FallbackTreatment fallbackTreatment = entry.getValue();
-            String treatment = isValidTreatment(fallbackTreatment.getTreatment(), "Validator");
-            if (treatment == null) {
-                continue;
+            String treatment = isValidTreatment(fallbackTreatment.getTreatment(), method);
+            if (treatment != null) {
+                result.put(featureName.get(), new FallbackTreatment(treatment, fallbackTreatment.getConfig()));
             }
-
-            result.put(feature_name.get(), new FallbackTreatment(treatment, fallbackTreatment.getConfig()));
         }
 
         return result;
