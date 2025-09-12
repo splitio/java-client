@@ -1,13 +1,13 @@
 package io.split.client;
 
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
-import io.split.client.dtos.BasicCredentialsProvider;
-import io.split.client.dtos.BearerCredentialsProvider;
+import io.split.client.dtos.RequestContext;
+import io.split.client.dtos.FallbackTreatmentsConfiguration;
+import io.split.client.dtos.FallbackTreatment;
 import io.split.client.dtos.ProxyConfiguration;
 import io.split.client.impressions.Impression;
 import io.split.client.impressions.ImpressionListener;
 import io.split.client.impressions.ImpressionsManager;
-import io.split.client.dtos.RequestContext;
 import io.split.integrations.IntegrationsConfig;
 import org.junit.Assert;
 import org.junit.Test;
@@ -17,6 +17,7 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -361,5 +362,26 @@ public class SplitClientConfigTest {
                         .mtls(new FileInputStream("src/test/resources/keyStore.p12"), null)
                         .build())
                 .build();
+    }
+
+    @Test
+    public void fallbackTreatmentCheckRegex() {
+        SplitClientConfig config = SplitClientConfig.builder()
+                .fallbackTreatments(new FallbackTreatmentsConfiguration(new FallbackTreatment("12#2"), null))
+                .build();
+        Assert.assertEquals(null, config.fallbackTreatments().getGlobalFallbackTreatment().getTreatment());
+
+        config = SplitClientConfig.builder()
+                .fallbackTreatments(new FallbackTreatmentsConfiguration(null, new HashMap<String, FallbackTreatment>() {{ put("flag", new FallbackTreatment("12#2")); }} ))
+                .build();
+        Assert.assertEquals(0, config.fallbackTreatments().getByFlagFallbackTreatment().size());
+
+        config = SplitClientConfig.builder()
+                .fallbackTreatments(new FallbackTreatmentsConfiguration(
+                        new FallbackTreatment("on"),
+                        new HashMap<String, FallbackTreatment>() {{ put("flag", new FallbackTreatment("off")); }} ))
+                .build();
+        Assert.assertEquals("on", config.fallbackTreatments().getGlobalFallbackTreatment().getTreatment());
+        Assert.assertEquals("off", config.fallbackTreatments().getByFlagFallbackTreatment().get("flag").getTreatment());
     }
 }
