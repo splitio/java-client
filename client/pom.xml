@@ -5,9 +5,9 @@
     <parent>
         <groupId>io.split.client</groupId>
         <artifactId>java-client-parent</artifactId>
-        <version>4.18.0</version>
+        <version>4.18.1-rc1</version>
     </parent>
-    <version>4.18.0</version>
+    <version>4.18.1-rc1</version>
     <artifactId>java-client</artifactId>
     <packaging>jar</packaging>
     <name>Java Client</name>
@@ -171,7 +171,7 @@
         <dependency>
             <groupId>org.apache.httpcomponents.client5</groupId>
             <artifactId>httpclient5</artifactId>
-            <version>5.4.4</version>
+            <version>5.5</version>
         </dependency>
         <dependency>
             <groupId>com.google.code.gson</groupId>
