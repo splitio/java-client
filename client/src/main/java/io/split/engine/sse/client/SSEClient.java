@@ -115,6 +115,7 @@ public class SSEClient {
     }
 
     public void close() {
+        _log.debug("closing SSE client");
         try {
             lock.lock();
             _forcedStop.set(true);
@@ -128,6 +129,8 @@ public class SSEClient {
                     }
                 }
             }
+        } catch (Exception e) {
+            _log.debug("Exception in closing SSE client: " + e.getMessage());
         } finally {
             lock.unlock();
         }
@@ -184,6 +187,7 @@ public class SSEClient {
                 }
             }
         } catch (Exception e) { // Any other error non related to the connection disables streaming altogether
+            _log.debug(String.format("SSE connection exception: %s", e.getMessage()));
             _telemetryRuntimeProducer
                     .recordStreamingEvents(new StreamingEvent(StreamEventsEnum.SSE_CONNECTION_ERROR.getType(),
                             StreamEventsEnum.SseConnectionErrorValues.NON_REQUESTED_CONNECTION_ERROR.getValue(),
@@ -191,9 +195,11 @@ public class SSEClient {
             _log.warn(e.getMessage(), e);
             _statusCallback.apply(StatusMessage.NONRETRYABLE_ERROR);
         } finally {
+            _log.debug(String.format("Attempt to close SSE connection"));
             try {
                 _ongoingResponse.get().close();
             } catch (IOException e) {
+                _log.debug(String.format("SSE connection closing exception: %s", e.getMessage()));
                 _log.debug(e.getMessage());
             }
 

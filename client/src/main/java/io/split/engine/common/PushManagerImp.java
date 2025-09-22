@@ -52,6 +52,7 @@ public class PushManagerImp implements PushManager {
     private final ScheduledExecutorService _scheduledExecutorService;
     private AtomicLong _expirationTime;
     private final TelemetryRuntimeProducer _telemetryRuntimeProducer;
+    private final int _streamingTokenRefreshRate;
 
     @VisibleForTesting
     /* package private */ PushManagerImp(AuthApiClient authApiClient,
@@ -60,7 +61,8 @@ public class PushManagerImp implements PushManager {
                                          Worker<SegmentQueueDto> segmentWorker,
                                          PushStatusTracker pushStatusTracker,
                                          TelemetryRuntimeProducer telemetryRuntimeProducer,
-                                         ThreadFactory threadFactory) {
+                                         ThreadFactory threadFactory,
+                                         int streamingTokenRefreshRate) {
 
         _authApiClient = checkNotNull(authApiClient);
         _eventSourceClient = checkNotNull(eventSourceClient);
@@ -70,6 +72,7 @@ public class PushManagerImp implements PushManager {
         _expirationTime = new AtomicLong();
         _scheduledExecutorService = buildSingleThreadScheduledExecutor(threadFactory, "Split-SSERefreshToken-%d");
         _telemetryRuntimeProducer = checkNotNull(telemetryRuntimeProducer);
+        _streamingTokenRefreshRate = streamingTokenRefreshRate;
     }
 
     public static PushManagerImp build(Synchronizer synchronizer,
@@ -83,7 +86,8 @@ public class PushManagerImp implements PushManager {
                                        SplitCacheProducer splitCacheProducer,
                                        FlagSetsFilter flagSetsFilter,
                                        RuleBasedSegmentCache ruleBasedSegmentCache,
-                                       RuleBasedSegmentParser ruleBasedSegmentParser) {
+                                       RuleBasedSegmentParser ruleBasedSegmentParser,
+                                       int streamingTokenRefreshRate) {
         FeatureFlagsWorker featureFlagsWorker = new FeatureFlagWorkerImp(synchronizer, splitParser, ruleBasedSegmentParser, splitCacheProducer,
                 ruleBasedSegmentCache, telemetryRuntimeProducer, flagSetsFilter);
         Worker<SegmentQueueDto> segmentWorker = new SegmentsWorkerImp(synchronizer);
@@ -96,7 +100,8 @@ public class PushManagerImp implements PushManager {
                 segmentWorker,
                 pushStatusTracker,
                 telemetryRuntimeProducer,
-                threadFactory);
+                threadFactory,
+                streamingTokenRefreshRate);
     }
 
     @Override
@@ -106,7 +111,7 @@ public class PushManagerImp implements PushManager {
             AuthenticationResponse response = _authApiClient.Authenticate();
             _log.debug(String.format("Auth service response pushEnabled: %s", response.isPushEnabled()));
             if (response.isPushEnabled() && startSse(response.getToken(), response.getChannels())) {
-                _expirationTime.set(response.getExpiration());
+                _expirationTime.set(_streamingTokenRefreshRate);
                 _telemetryRuntimeProducer.recordStreamingEvents(new StreamingEvent(StreamEventsEnum.TOKEN_REFRESH.getType(),
                         response.getExpiration(), System.currentTimeMillis()));
                 return;
@@ -114,10 +119,14 @@ public class PushManagerImp implements PushManager {
 
             cleanUpResources();
             if (response.isRetry()) {
+                _log.debug(String.format("Handling retry error response"));
                 _pushStatusTracker.handleSseStatus(SSEClient.StatusMessage.RETRYABLE_ERROR);
             } else {
+                _log.debug(String.format("Auth service response is disabled: %s", response.getToken()));
                 _pushStatusTracker.forcePushDisable();
             }
+        } catch (Exception e) {
+            _log.debug("Exception in PushManager start: " + e.getMessage());
         } finally {
             lock.unlock();
         }
@@ -156,14 +165,22 @@ public class PushManagerImp implements PushManager {
 
     @Override
     public void startWorkers() {
-        _featureFlagsWorker.start();
-        _segmentWorker.start();
+        try {
+            _featureFlagsWorker.start();
+            _segmentWorker.start();
+        } catch (Exception e) {
+            _log.debug("Exception in starting workers: " + e.getMessage());
+        }
     }
 
     @Override
     public void stopWorkers() {
-        _featureFlagsWorker.stop();
-        _segmentWorker.stop();
+        try {
+            _featureFlagsWorker.stop();
+            _segmentWorker.stop();
+        } catch (Exception e) {
+            _log.debug("Exception in stopping workers: " + e.getMessage());
+        }
     }
 
     private void cleanUpResources() {
