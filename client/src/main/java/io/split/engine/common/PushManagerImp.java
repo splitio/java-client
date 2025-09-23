@@ -191,15 +191,15 @@ public class PushManagerImp implements PushManager {
     }
 
     private void cleanUpResources() {
-        _log.debug("Starting cleanUpResources - #1")
+        _log.debug("Starting cleanUpResources - #1");
         _eventSourceClient.stop();
-        _log.debug("cleanUpResources - #2")
+        _log.debug("cleanUpResources - #2");
         stopWorkers();
         if (_nextTokenRefreshTask != null) {
             _log.debug("Cancel nextTokenRefreshTask");
             _nextTokenRefreshTask.cancel(false);
-            _log.debug("Finished cleanUpResources - #3 - Finished cancel nextTokenRefreshTask")
+            _log.debug("Finished cleanUpResources - #3 - Finished cancel nextTokenRefreshTask");
         }
-        _log.debug("Finished cleanUpResources - #4")
+        _log.debug("Finished cleanUpResources - #4");
     }
 }
