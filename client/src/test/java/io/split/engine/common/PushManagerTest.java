@@ -40,8 +40,7 @@ public class PushManagerTest {
                 _segmentsWorkerImp,
                 _pushStatusTracker,
                 _telemetryStorage,
-                null,
-                180);
+                null);
     }
 
     @Test

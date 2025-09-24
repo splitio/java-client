@@ -112,8 +112,6 @@ public class SplitClientConfig {
     private final CustomHeaderDecorator _customHeaderDecorator;
     private final CustomHttpModule _alternativeHTTPModule;
 
-    private final int _streamingTokenRefreshRate;
-
     public static Builder builder() {
         return new Builder();
     }
@@ -172,8 +170,7 @@ public class SplitClientConfig {
                               int invalidSets,
                               CustomHeaderDecorator customHeaderDecorator,
                               CustomHttpModule alternativeHTTPModule,
-                              FallbackTreatmentsConfiguration fallbackTreatments,
-                              int streamingTokenRefreshRate) {
+                              FallbackTreatmentsConfiguration fallbackTreatments) {
         _endpoint = endpoint;
         _eventsEndpoint = eventsEndpoint;
         _featuresRefreshRate = pollForFeatureChangesEveryNSeconds;
@@ -229,7 +226,6 @@ public class SplitClientConfig {
         _customHeaderDecorator = customHeaderDecorator;
         _alternativeHTTPModule = alternativeHTTPModule;
         _fallbackTreatments = fallbackTreatments;
-        _streamingTokenRefreshRate = streamingTokenRefreshRate;
 
         Properties props = new Properties();
         try {
@@ -450,8 +446,6 @@ public class SplitClientConfig {
 
     public FallbackTreatmentsConfiguration fallbackTreatments() { return _fallbackTreatments; }
 
-    public int streamingTokenRefreshRate() { return _streamingTokenRefreshRate; }
-
     public static final class Builder {
         private String _endpoint = SDK_ENDPOINT;
         private boolean _endpointSet = false;
@@ -511,7 +505,6 @@ public class SplitClientConfig {
         private CustomHeaderDecorator _customHeaderDecorator = null;
         private CustomHttpModule _alternativeHTTPModule = null;
         private FallbackTreatmentsConfiguration _fallbackTreatments;
-        private int _streamingTokenRefreshRate = 180;
 
         public Builder() {
         }
@@ -1062,11 +1055,6 @@ public class SplitClientConfig {
             return this;
         }
 
-        public Builder streamingTokenRefreshRate(int streamingTokenRefreshRate) {
-            _streamingTokenRefreshRate = streamingTokenRefreshRate;
-            return this;
-        }
-
         private void verifyRates() {
             if (_featuresRefreshRate < 5 ) {
                 throw new IllegalArgumentException("featuresRefreshRate must be >= 5: " + _featuresRefreshRate);
@@ -1086,10 +1074,6 @@ public class SplitClientConfig {
 
             if(_telemetryRefreshRate < 60) {
                 throw new IllegalStateException("_telemetryRefreshRate must be >= 60");
-            }
-
-            if (_streamingTokenRefreshRate < 60) {
-                throw new IllegalStateException("_streamingTokenRefreshRate must be >= 60");
             }
         }
 
@@ -1291,8 +1275,7 @@ public class SplitClientConfig {
                     _invalidSetsCount,
                     _customHeaderDecorator,
                     _alternativeHTTPModule,
-                    _fallbackTreatments,
-                    _streamingTokenRefreshRate);
+                    _fallbackTreatments);
         }
     }
 }

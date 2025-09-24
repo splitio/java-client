@@ -22,7 +22,6 @@ public abstract class Worker<T> implements Runnable {
 
     public void start() {
         if (_running.compareAndSet(false, true)) {
-            _log.debug(String.format("%s Worker starting ...", _workerName));
             _queue.clear();
             _thread = new Thread( this);
             _thread.setName(String.format("%s-worker", _workerName));
@@ -36,7 +35,6 @@ public abstract class Worker<T> implements Runnable {
 
     public  void stop() {
         if (_running.compareAndSet(true, false)) {
-            _log.debug(String.format("%s stopping Worker", _workerName));
             _thread.interrupt();
             _log.debug(String.format("%s Worked stopped.", _workerName));
         } else {

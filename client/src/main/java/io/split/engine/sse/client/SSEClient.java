@@ -9,6 +9,7 @@ import io.split.telemetry.storage.TelemetryRuntimeProducer;
 import org.apache.hc.client5.http.classic.methods.HttpGet;
 import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
 import org.apache.hc.client5.http.impl.classic.CloseableHttpResponse;
+import org.apache.hc.core5.io.CloseMode;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -121,12 +122,8 @@ public class SSEClient {
             _forcedStop.set(true);
             if (_state.compareAndSet(ConnectionState.OPEN, ConnectionState.CLOSED)) {
                 if (_ongoingResponse.get() != null) {
-                    try {
-                        _ongoingRequest.get().abort();
-                        _ongoingResponse.get().close();
-                    } catch (IOException e) {
-                        _log.debug(String.format("SSEClient close forced: %s", e.getMessage()));
-                    }
+                    _ongoingRequest.get().abort();
+                    _ongoingResponse.get().close(CloseMode.IMMEDIATE);
                 }
             }
         } catch (Exception e) {
@@ -195,14 +192,7 @@ public class SSEClient {
             _log.warn(e.getMessage(), e);
             _statusCallback.apply(StatusMessage.NONRETRYABLE_ERROR);
         } finally {
-            _log.debug(String.format("Attempt to close SSE connection"));
-            try {
-                _ongoingResponse.get().close();
-            } catch (IOException e) {
-                _log.debug(String.format("SSE connection closing exception: %s", e.getMessage()));
-                _log.debug(e.getMessage());
-            }
-
+            _ongoingResponse.get().close(CloseMode.IMMEDIATE);
             _state.set(ConnectionState.CLOSED);
             _log.debug("SSEClient finished.");
             _forcedStop.set(false);

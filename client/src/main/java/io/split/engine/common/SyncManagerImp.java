@@ -116,8 +116,7 @@ public class SyncManagerImp implements SyncManager {
                                                         splitCacheProducer,
                                                         flagSetsFilter,
                                                         ruleBasedSegmentCache,
-                                                        ruleBasedSegmentParser,
-                                                        config.streamingTokenRefreshRate());
+                                                        ruleBasedSegmentParser);
 
         return new SyncManagerImp(splitTasks,
                                   config.streamingEnabled(),
