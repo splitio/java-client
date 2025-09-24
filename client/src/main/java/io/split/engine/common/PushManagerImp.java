@@ -129,6 +129,7 @@ public class PushManagerImp implements PushManager {
     public void stop() {
         try {
             lock.lock();
+            _log.debug("Stopping PushManagerImp");
             cleanUpResources();
         } catch (Exception e) {
             _log.debug("Exception in stopping push manager: " + e.getMessage());
@@ -141,6 +142,7 @@ public class PushManagerImp implements PushManager {
     public void scheduleConnectionReset() {
         _log.debug(String.format("scheduleNextTokenRefresh in %s SECONDS", _expirationTime));
         _nextTokenRefreshTask = _scheduledExecutorService.schedule(() -> {
+            _log.debug("Starting scheduleNextTokenRefresh ...");
             stop();
             start();
         }, _expirationTime.get(), TimeUnit.SECONDS);
@@ -180,6 +182,7 @@ public class PushManagerImp implements PushManager {
         _eventSourceClient.stop();
         stopWorkers();
         if (_nextTokenRefreshTask != null) {
+            _log.debug("Cancel nextTokenRefreshTask");
             _nextTokenRefreshTask.cancel(false);
         }
     }
