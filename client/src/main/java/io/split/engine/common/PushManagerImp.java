@@ -106,7 +106,6 @@ public class PushManagerImp implements PushManager {
             AuthenticationResponse response = _authApiClient.Authenticate();
             _log.debug(String.format("Auth service response pushEnabled: %s", response.isPushEnabled()));
             if (response.isPushEnabled() && startSse(response.getToken(), response.getChannels())) {
-                _log.debug("#2 - PushManagerImp connected");
                 _expirationTime.set(response.getExpiration());
                 _telemetryRuntimeProducer.recordStreamingEvents(new StreamingEvent(StreamEventsEnum.TOKEN_REFRESH.getType(),
                         response.getExpiration(), System.currentTimeMillis()));
@@ -115,10 +114,8 @@ public class PushManagerImp implements PushManager {
 
             cleanUpResources();
             if (response.isRetry()) {
-                _log.debug(String.format("Handling retry error response"));
                 _pushStatusTracker.handleSseStatus(SSEClient.StatusMessage.RETRYABLE_ERROR);
             } else {
-                _log.debug(String.format("Auth service response is disabled: %s", response.getToken()));
                 _pushStatusTracker.forcePushDisable();
             }
         } catch (Exception e) {
