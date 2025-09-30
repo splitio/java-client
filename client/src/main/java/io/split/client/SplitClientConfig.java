@@ -1071,6 +1071,7 @@ public class SplitClientConfig {
             if (_metricsRefreshRate < 30) {
                 throw new IllegalArgumentException("metricsRefreshRate must be >= 30: " + _metricsRefreshRate);
             }
+
             if(_telemetryRefreshRate < 60) {
                 throw new IllegalStateException("_telemetryRefreshRate must be >= 60");
             }

@@ -118,6 +118,8 @@ public class PushManagerImp implements PushManager {
             } else {
                 _pushStatusTracker.forcePushDisable();
             }
+        } catch (Exception e) {
+            _log.debug("Exception in PushManager start: " + e.getMessage());
         } finally {
             lock.unlock();
         }
@@ -129,6 +131,8 @@ public class PushManagerImp implements PushManager {
             lock.lock();
             _log.debug("Stopping PushManagerImp");
             cleanUpResources();
+        } catch (Exception e) {
+            _log.debug("Exception in stopping push manager: " + e.getMessage());
         } finally {
             lock.unlock();
         }
@@ -156,14 +160,22 @@ public class PushManagerImp implements PushManager {
 
     @Override
     public void startWorkers() {
-        _featureFlagsWorker.start();
-        _segmentWorker.start();
+        try {
+            _featureFlagsWorker.start();
+            _segmentWorker.start();
+        } catch (Exception e) {
+            _log.debug("Exception in starting workers: " + e.getMessage());
+        }
     }
 
     @Override
     public void stopWorkers() {
-        _featureFlagsWorker.stop();
-        _segmentWorker.stop();
+        try {
+            _featureFlagsWorker.stop();
+            _segmentWorker.stop();
+        } catch (Exception e) {
+            _log.debug("Exception in stopping workers: " + e.getMessage());
+        }
     }
 
     private void cleanUpResources() {

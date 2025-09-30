@@ -9,6 +9,7 @@ import io.split.telemetry.storage.TelemetryRuntimeProducer;
 import org.apache.hc.client5.http.classic.methods.HttpGet;
 import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
 import org.apache.hc.client5.http.impl.classic.CloseableHttpResponse;
+import org.apache.hc.core5.io.CloseMode;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -115,19 +116,18 @@ public class SSEClient {
     }
 
     public void close() {
+        _log.debug("closing SSE client");
         try {
             lock.lock();
             _forcedStop.set(true);
             if (_state.compareAndSet(ConnectionState.OPEN, ConnectionState.CLOSED)) {
                 if (_ongoingResponse.get() != null) {
-                    try {
-                        _ongoingRequest.get().abort();
-                        _ongoingResponse.get().close();
-                    } catch (IOException e) {
-                        _log.debug(String.format("SSEClient close forced: %s", e.getMessage()));
-                    }
+                    _ongoingRequest.get().abort();
+                    _ongoingResponse.get().close(CloseMode.IMMEDIATE);
                 }
             }
+        } catch (Exception e) {
+            _log.debug("Exception in closing SSE client: " + e.getMessage());
         } finally {
             lock.unlock();
         }
@@ -184,6 +184,7 @@ public class SSEClient {
                 }
             }
         } catch (Exception e) { // Any other error non related to the connection disables streaming altogether
+            _log.debug(String.format("SSE connection exception: %s", e.getMessage()));
             _telemetryRuntimeProducer
                     .recordStreamingEvents(new StreamingEvent(StreamEventsEnum.SSE_CONNECTION_ERROR.getType(),
                             StreamEventsEnum.SseConnectionErrorValues.NON_REQUESTED_CONNECTION_ERROR.getValue(),
@@ -191,12 +192,7 @@ public class SSEClient {
             _log.warn(e.getMessage(), e);
             _statusCallback.apply(StatusMessage.NONRETRYABLE_ERROR);
         } finally {
-            try {
-                _ongoingResponse.get().close();
-            } catch (IOException e) {
-                _log.debug(e.getMessage());
-            }
-
+            _ongoingResponse.get().close(CloseMode.IMMEDIATE);
             _state.set(ConnectionState.CLOSED);
             _log.debug("SSEClient finished.");
             _forcedStop.set(false);
