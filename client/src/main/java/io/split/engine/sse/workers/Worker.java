@@ -22,11 +22,11 @@ public abstract class Worker<T> implements Runnable {
 
     public void start() {
         if (_running.compareAndSet(false, true)) {
-            _log.debug(String.format("%s Worker starting ...", _workerName));
             _queue.clear();
             _thread = new Thread( this);
             _thread.setName(String.format("%s-worker", _workerName));
             _thread.start();
+            _log.debug(String.format("%s Worker started ...", _workerName));
         } else {
             _log.debug(String.format("%s Worker already running.", _workerName));
             return;
