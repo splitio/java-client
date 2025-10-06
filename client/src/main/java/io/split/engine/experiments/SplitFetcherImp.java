@@ -100,7 +100,7 @@ public class SplitFetcherImp implements SplitFetcher {
             Thread.currentThread().interrupt();
             return new FetchResult(false, true, new HashSet<>());
         } catch (Exception e) {
-            _log.error("RefreshableSplitFetcher failed: " + e.getMessage());
+            _log.error("SplitFetcherImp failed: " + e.getMessage());
             if (_log.isDebugEnabled()) {
                 _log.debug("Reason:", e);
             }
