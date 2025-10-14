@@ -228,7 +228,7 @@ public class EvaluatorTest {
     @Test
     public void evaluateFallbackTreatmentWorks() {
         Mockito.when(_splitCacheConsumer.get(SPLIT_NAME)).thenReturn(null);
-        FallbackTreatmentsConfiguration fallbackTreatmentsConfiguration = new FallbackTreatmentsConfiguration(new FallbackTreatment("on"), null);
+        FallbackTreatmentsConfiguration fallbackTreatmentsConfiguration = new FallbackTreatmentsConfiguration(new FallbackTreatment("on"));
         FallbackTreatmentCalculator fallbackTreatmentCalculator = new FallbackTreatmentCalculatorImp(fallbackTreatmentsConfiguration);
         _evaluator = new EvaluatorImp(_splitCacheConsumer, _segmentCacheConsumer, _ruleBasedSegmentCacheConsumer, fallbackTreatmentCalculator);
 
@@ -245,7 +245,7 @@ public class EvaluatorTest {
         // using byflag only
         Mockito.when(_splitCacheConsumer.get(SPLIT_NAME)).thenReturn(null);
         Mockito.when(_splitCacheConsumer.get("another_name")).thenReturn(null);
-        fallbackTreatmentsConfiguration = new FallbackTreatmentsConfiguration(null, new HashMap<String, FallbackTreatment>() {{ put(SPLIT_NAME, new FallbackTreatment("off")); }} );
+        fallbackTreatmentsConfiguration = new FallbackTreatmentsConfiguration(new HashMap<String, FallbackTreatment>() {{ put(SPLIT_NAME, new FallbackTreatment("off")); }} );
         fallbackTreatmentCalculator = new FallbackTreatmentCalculatorImp(fallbackTreatmentsConfiguration);
         _evaluator = new EvaluatorImp(_splitCacheConsumer, _segmentCacheConsumer, _ruleBasedSegmentCacheConsumer, fallbackTreatmentCalculator);
 

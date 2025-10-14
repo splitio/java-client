@@ -1,5 +1,7 @@
 package io.split.client;
 
+import io.split.client.dtos.FallbackTreatment;
+import io.split.client.dtos.FallbackTreatmentsConfiguration;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -12,10 +14,14 @@ public class JsonLocalhostSplitFactoryTest {
 
     @Test
     public void works() throws IOException, URISyntaxException, InterruptedException, TimeoutException {
+        FallbackTreatmentsConfiguration fallbackTreatmentsConfiguration = new FallbackTreatmentsConfiguration(new FallbackTreatment("on-global"),
+                new HashMap<String, FallbackTreatment>() {{ put("feature", new FallbackTreatment("off-local", "{\"prop2\", \"val2\"}")); }});
+
         SplitClientConfig config = SplitClientConfig.builder()
                 .splitFile("src/test/resources/splits_localhost.json")
                 .segmentDirectory("src/test/resources")
                 .setBlockUntilReadyTimeout(10000)
+                .fallbackTreatments(fallbackTreatmentsConfiguration)
                 .build();
         SplitFactory splitFactory = SplitFactoryBuilder.build("localhost", config);
         SplitClient client = splitFactory.client();
@@ -30,6 +36,9 @@ public class JsonLocalhostSplitFactoryTest {
         Assert.assertEquals("off", client.getTreatment("bilal", "test_split"));
         Assert.assertEquals("on", client.getTreatment("bilal", "push_test"));
         Assert.assertEquals("on_whitelist", client.getTreatment("admin", "push_test"));
+        Assert.assertEquals("off-local", client.getTreatment("bilal", "feature"));
+        Assert.assertEquals("on-global", client.getTreatment("bilal", "feature2"));
+
         client.destroy();
     }
 
