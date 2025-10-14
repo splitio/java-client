@@ -2308,8 +2308,7 @@ public class SplitClientImplTest {
 
         String fallbcakConfigGlobal = "{\"prop1\", \"val1\"}";
         FallbackTreatmentsConfiguration fallbackTreatmentsConfiguration = new FallbackTreatmentsConfiguration(
-                new FallbackTreatment("on",  fallbcakConfigGlobal),
-                null);
+                new FallbackTreatment("on",  fallbcakConfigGlobal));
         FallbackTreatmentCalculator fallbackTreatmentCalculator = new FallbackTreatmentCalculatorImp(fallbackTreatmentsConfiguration);
 
         SplitClientImpl client = new SplitClientImpl(
@@ -2388,7 +2387,7 @@ public class SplitClientImplTest {
         assertEquals("off", client.getTreatmentsWithConfigByFlagSets("adil@relateiq.com", Arrays.asList("flag")).get("feature").treatment());
         assertEquals(fallbcakConfigByFlag, client.getTreatmentsWithConfigByFlagSets("adil@relateiq.com", Arrays.asList("flag")).get("feature").config());
 
-        fallbackTreatmentsConfiguration = new FallbackTreatmentsConfiguration(null,
+        fallbackTreatmentsConfiguration = new FallbackTreatmentsConfiguration(
                 new HashMap<String, FallbackTreatment>() {{ put("feature", new FallbackTreatment("off", fallbcakConfigByFlag)); }});
 
         fallbackTreatmentCalculator = new FallbackTreatmentCalculatorImp(fallbackTreatmentsConfiguration);
@@ -2458,8 +2457,7 @@ public class SplitClientImplTest {
 
         String fallbcakConfigGlobal = "{\"prop1\", \"val1\"}";
         FallbackTreatmentsConfiguration fallbackTreatmentsConfiguration = new FallbackTreatmentsConfiguration(
-                new FallbackTreatment("on",  fallbcakConfigGlobal),
-                null);
+                new FallbackTreatment("on",  fallbcakConfigGlobal));
         FallbackTreatmentCalculator fallbackTreatmentCalculator = new FallbackTreatmentCalculatorImp(fallbackTreatmentsConfiguration);
 
         SplitClientImpl client = new SplitClientImpl(
@@ -2573,7 +2571,7 @@ public class SplitClientImplTest {
         assertEquals("on", results.get("test3").treatment());
         assertEquals(fallbcakConfigGlobal, results.get("test3").config());
 
-        fallbackTreatmentsConfiguration = new FallbackTreatmentsConfiguration(null,
+        fallbackTreatmentsConfiguration = new FallbackTreatmentsConfiguration(
                 new HashMap<String, FallbackTreatment>() {{ put("test2", new FallbackTreatment("off-fallback", fallbcakConfigByFlag)); }});
 
         fallbackTreatmentCalculator = new FallbackTreatmentCalculatorImp(fallbackTreatmentsConfiguration);
