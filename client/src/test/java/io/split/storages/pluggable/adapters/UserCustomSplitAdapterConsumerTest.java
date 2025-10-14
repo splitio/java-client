@@ -121,6 +121,34 @@ public class UserCustomSplitAdapterConsumerTest {
     }
 
     @Test
+    public void testGetSplitNames() {
+        Split split = getSplit(SPLIT_NAME);
+        Split split2 = getSplit(SPLIT_NAME+"2");
+        List<Split> listResultExpected = Stream.of(split, split2).collect(Collectors.toList());
+        Set<String> keysResult = Stream.of(SPLIT_NAME, SPLIT_NAME+"2").collect(Collectors.toSet());
+        Mockito.when(_userStorageWrapper.getKeysByPrefix(Mockito.anyObject())).
+                thenReturn(keysResult);
+        List<String> splitsResult = _userCustomSplitAdapterConsumer.splitNames();
+        Assert.assertNotNull(splitsResult);
+        Assert.assertEquals(listResultExpected.size(), splitsResult.size());
+        Assert.assertEquals(SPLIT_NAME, splitsResult.get(1));
+        Assert.assertEquals(SPLIT_NAME+"2", splitsResult.get(0));
+        Mockito.verify(_userStorageWrapper, Mockito.times(1)).getKeysByPrefix(Mockito.anyString());
+
+        // default prefix
+        listResultExpected = Stream.of(split, split2).collect(Collectors.toList());
+        keysResult = Stream.of("SPLITIO.split." + SPLIT_NAME, "SPLITIO.split." + SPLIT_NAME+"2").collect(Collectors.toSet());
+        Mockito.when(_userStorageWrapper.getKeysByPrefix(Mockito.anyObject())).
+                thenReturn(keysResult);
+
+        splitsResult = _userCustomSplitAdapterConsumer.splitNames();
+        Assert.assertNotNull(splitsResult);
+        Assert.assertEquals(listResultExpected.size(), splitsResult.size());
+        Assert.assertEquals(SPLIT_NAME, splitsResult.get(1));
+        Assert.assertEquals(SPLIT_NAME+"2", splitsResult.get(0));
+    }
+
+    @Test
     public void testGetAllWithWrapperFailing() {
         Mockito.when(_userStorageWrapper.get(PrefixAdapter.buildGetAllSplit())).
                 thenReturn(null);

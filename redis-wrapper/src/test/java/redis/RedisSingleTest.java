@@ -105,6 +105,30 @@ public class RedisSingleTest {
     }
 
     @Test
+    public void testGetKeysByPrefixWithoutCustomPrefix() throws Exception {
+        Map<String, String> map = new HashMap<>();
+        map.put("SPLITIO.item-1", "1");
+        map.put("SPLITIO.item-2", "2");
+        map.put("SPLITIO.item-3", "3");
+        map.put("SPLITIO.i-4", "4");
+        RedisSingle storageWrapper = new RedisSingle(new JedisPool(), "");
+        try {
+            for (Map.Entry<String, String> entry : map.entrySet()) {
+                storageWrapper.set(entry.getKey(), entry.getValue());
+            }
+
+            Set<String> result = storageWrapper.getKeysByPrefix("SPLITIO.item*");
+
+            Assert.assertEquals(3, result.size());
+            Assert.assertTrue(result.contains("SPLITIO.item-1"));
+            Assert.assertTrue(result.contains("SPLITIO.item-2"));
+            Assert.assertTrue(result.contains("SPLITIO.item-3"));
+        } finally {
+            storageWrapper.delete(new ArrayList<>(map.keySet()));
+        }
+    }
+
+    @Test
     public void testIncrementAndDecrement() throws Exception {
         Map<String, String> map = new HashMap<>();
         map.put("item-1", "2");
