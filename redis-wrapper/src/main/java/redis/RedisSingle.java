@@ -95,7 +95,9 @@ class RedisSingle implements CustomStorageWrapper, HasPipelineSupport {
     public Set<String> getKeysByPrefix(String prefix) throws Exception {
         try (Jedis jedis = this.jedisPool.getResource()) {
             Set<String> keysWithPrefix = jedis.keys(_commonRedis.buildKeyWithPrefix(prefix));
-            keysWithPrefix = keysWithPrefix.stream().map(key -> key.replace(_commonRedis.getPrefix() + ".", "")).collect(Collectors.toSet());
+            if (!_commonRedis.getPrefix().isEmpty()) {
+                keysWithPrefix = keysWithPrefix.stream().map(key -> key.replace(_commonRedis.getPrefix() + ".", "")).collect(Collectors.toSet());
+            }
             return keysWithPrefix;
         } catch (Exception ex) {
             throw new RedisException(ex.getMessage());
