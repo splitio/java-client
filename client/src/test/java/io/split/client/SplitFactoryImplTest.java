@@ -60,7 +60,7 @@ public class SplitFactoryImplTest extends TestCase {
                 .authServiceURL(AUTH_SERVICE)
                 .setBlockUntilReadyTimeout(10000)
                 .telemetryURL(SplitClientConfig.TELEMETRY_ENDPOINT)
-                .fallbackTreatments(new FallbackTreatmentsConfiguration(new FallbackTreatment("on"), null))
+                .fallbackTreatments(new FallbackTreatmentsConfiguration(new FallbackTreatment("on")))
                 .build();
         SplitFactoryImpl splitFactory = new SplitFactoryImpl(API_KEY, splitClientConfig);
 

@@ -1282,8 +1282,7 @@ public class SplitClientIntegrationTest {
 
         server.start();
         String serverURL = String.format("http://%s:%s", server.getHostName(), server.getPort());
-        FallbackTreatmentsConfiguration fallbackTreatmentsConfiguration = new FallbackTreatmentsConfiguration(new FallbackTreatment("on-fallback", "{\"prop1\", \"val1\"}"),
-                null);
+        FallbackTreatmentsConfiguration fallbackTreatmentsConfiguration = new FallbackTreatmentsConfiguration(new FallbackTreatment("on-fallback", "{\"prop1\", \"val1\"}"));
 
         SplitClientConfig config = SplitClientConfig.builder()
                 .setBlockUntilReadyTimeout(10000)
@@ -1354,7 +1353,7 @@ public class SplitClientIntegrationTest {
 
         server.start();
         String serverURL = String.format("http://%s:%s", server.getHostName(), server.getPort());
-        FallbackTreatmentsConfiguration fallbackTreatmentsConfiguration = new FallbackTreatmentsConfiguration(null,
+        FallbackTreatmentsConfiguration fallbackTreatmentsConfiguration = new FallbackTreatmentsConfiguration(
                 new HashMap<String, FallbackTreatment>() {{ put("feature", new FallbackTreatment("off-fallback", "{\"prop2\", \"val2\"}")); }});
 
         SplitClientConfig config = SplitClientConfig.builder()
@@ -1427,8 +1426,7 @@ public class SplitClientIntegrationTest {
 
         server.start();
         String serverURL = String.format("http://%s:%s", server.getHostName(), server.getPort());
-        FallbackTreatmentsConfiguration fallbackTreatmentsConfiguration = new FallbackTreatmentsConfiguration(new FallbackTreatment("on-fallback", "{\"prop1\", \"val1\"}"),
-                null);
+        FallbackTreatmentsConfiguration fallbackTreatmentsConfiguration = new FallbackTreatmentsConfiguration("on-fallback");
 
         SplitClientConfig config = SplitClientConfig.builder()
                 .setBlockUntilReadyTimeout(10000)

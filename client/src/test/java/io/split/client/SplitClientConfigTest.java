@@ -367,18 +367,18 @@ public class SplitClientConfigTest {
     @Test
     public void fallbackTreatmentCheckRegex() {
         SplitClientConfig config = SplitClientConfig.builder()
-                .fallbackTreatments(new FallbackTreatmentsConfiguration(new FallbackTreatment("12#2"), null))
+                .fallbackTreatments(new FallbackTreatmentsConfiguration(new FallbackTreatment("12#2")))
                 .build();
         Assert.assertEquals(null, config.fallbackTreatments().getGlobalFallbackTreatment().getTreatment());
 
         config = SplitClientConfig.builder()
-                .fallbackTreatments(new FallbackTreatmentsConfiguration(null, new HashMap<String, FallbackTreatment>() {{ put("flag", new FallbackTreatment("12#2")); }} ))
+                .fallbackTreatments(new FallbackTreatmentsConfiguration(new HashMap<String, FallbackTreatment>() {{ put("flag", new FallbackTreatment("12#2")); }} ))
                 .build();
         Assert.assertEquals(0, config.fallbackTreatments().getByFlagFallbackTreatment().size());
 
         config = SplitClientConfig.builder()
                 .fallbackTreatments(new FallbackTreatmentsConfiguration(
-                        new FallbackTreatment("on"),
+                        "on",
                         new HashMap<String, FallbackTreatment>() {{ put("flag", new FallbackTreatment("off")); }} ))
                 .build();
         Assert.assertEquals("on", config.fallbackTreatments().getGlobalFallbackTreatment().getTreatment());
