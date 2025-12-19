@@ -70,11 +70,13 @@
                                     <include>org.apache.httpcomponents.*</include>
                                     <include>org.apache.hc.*</include>
                                     <include>com.google.code.gson:gson</include>
-                                    <include>com.google.guava:guava</include>
+                                    <!-- REMOVED for GraalVM native-image support: Guava remains as transitive dependency -->
+                                    <!-- <include>com.google.guava:guava</include> -->
                                     <include>org.yaml:snakeyaml:*</include>
 
                                     <!-- Transitive dependency of guava -->
-                                    <include>org.checkerframework:*</include>
+                                    <!-- REMOVED for GraalVM native-image support: transitive dependency of guava -->
+                                    <!-- <include>org.checkerframework:*</include> -->
 
                                     <!-- Transitive dependency of httpclient5. Package name is org.apache.commons -->
                                     <include>commons-codec:*</include>
@@ -89,18 +91,24 @@
                                     <pattern>org.apache</pattern>
                                     <shadedPattern>split.org.apache</shadedPattern>
                                 </relocation>
+                                <!-- REMOVED for GraalVM native-image support: transitive dependency of guava -->
+                                <!--
                                 <relocation>
                                     <pattern>org.checkerframework</pattern>
                                     <shadedPattern>split.org.checkerframework</shadedPattern>
                                 </relocation>
+                                -->
                                 <relocation>
                                     <pattern>org.yaml.snakeyaml</pattern>
                                     <shadedPattern>split.org.yaml.snakeyaml</shadedPattern>
                                 </relocation>
+                                <!-- REMOVED for GraalVM native-image support: standard Guava has native-image config -->
+                                <!--
                                 <relocation>
                                     <pattern>com.google</pattern>
                                     <shadedPattern>split.com.google</shadedPattern>
                                 </relocation>
+                                -->
                             </relocations>
                             <filters>
                                 <filter>
