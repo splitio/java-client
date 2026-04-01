@@ -1,5 +1,7 @@
 package io.split.engine.matchers;
 
+import io.split.rules.matchers.*;
+
 import org.junit.Test;
 
 import java.io.*;

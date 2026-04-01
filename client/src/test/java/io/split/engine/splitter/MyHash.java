@@ -1,7 +1,7 @@
 package io.split.engine.splitter;
 
 import com.google.common.hash.Hashing;
-import io.split.client.utils.MurmurHash3;
+import io.split.rules.bucketing.MurmurHash3;
 
 import java.nio.charset.Charset;
 

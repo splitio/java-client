@@ -2,7 +2,7 @@ package io.split.engine.splitter;
 
 import com.google.common.base.Charsets;
 import com.google.common.hash.Hashing;
-import io.split.client.utils.MurmurHash3;
+import io.split.rules.bucketing.MurmurHash3;
 import org.junit.Assert;
 import org.junit.Ignore;
 import org.junit.Test;

@@ -1,7 +1,8 @@
 package io.split.engine.matchers;
 
-import io.split.client.dtos.Prerequisites;
-import io.split.client.utils.Json;
+import io.split.rules.matchers.*;
+
+import io.split.rules.model.Prerequisite;
 import io.split.engine.evaluator.EvaluationContext;
 import io.split.engine.evaluator.Evaluator;
 import io.split.engine.evaluator.EvaluatorImp;
@@ -23,7 +24,7 @@ public class PrerequisitesMatcherTest {
     public void works() {
         Evaluator evaluator = Mockito.mock(Evaluator.class);
         EvaluationContext evaluationContext = new EvaluationContext(evaluator, Mockito.mock(SegmentCache.class), Mockito.mock(RuleBasedSegmentCache.class));
-        List<Prerequisites> prerequisites = Arrays.asList(Json.fromJson("{\"n\": \"split1\", \"ts\": [\"on\"]}", Prerequisites.class), Json.fromJson("{\"n\": \"split2\", \"ts\": [\"off\"]}", Prerequisites.class));
+        List<Prerequisite> prerequisites = Arrays.asList(new Prerequisite("split1", Arrays.asList("on")), new Prerequisite("split2", Arrays.asList("off")));
         PrerequisitesMatcher matcher = new PrerequisitesMatcher(prerequisites);
         Assert.assertEquals("prerequisites: split1 [on], split2 [off]", matcher.toString());
         PrerequisitesMatcher matcher2 = new PrerequisitesMatcher(prerequisites);
@@ -43,7 +44,7 @@ public class PrerequisitesMatcherTest {
         Evaluator evaluator = Mockito.mock(Evaluator.class);
         EvaluationContext evaluationContext = new EvaluationContext(evaluator, Mockito.mock(SegmentCache.class), Mockito.mock(RuleBasedSegmentCache.class));
 
-        List<Prerequisites> prerequisites = Arrays.asList(Json.fromJson("{\"n\": \"split1\", \"ts\": [\"on\"]}", Prerequisites.class), Json.fromJson("{\"n\": \"split2\", \"ts\": [\"off\"]}", Prerequisites.class));
+        List<Prerequisite> prerequisites = Arrays.asList(new Prerequisite("split1", Arrays.asList("on")), new Prerequisite("split2", Arrays.asList("off")));
         PrerequisitesMatcher matcher = new PrerequisitesMatcher(prerequisites);
         Mockito.when(evaluator.evaluateFeature("user", "user", "split1", null)).thenReturn(new EvaluatorImp.TreatmentLabelAndChangeNumber("on", ""));
         Assert.assertFalse(matcher.match(null, null, null, evaluationContext));

@@ -4,9 +4,9 @@ import org.junit.Test;
 
 import java.util.Calendar;
 
-import static io.split.engine.matchers.Transformers.asDate;
-import static io.split.engine.matchers.Transformers.asDateHourMinute;
-import static io.split.engine.matchers.Transformers.asLong;
+import static io.split.rules.matchers.Transformers.asDate;
+import static io.split.rules.matchers.Transformers.asDateHourMinute;
+import static io.split.rules.matchers.Transformers.asLong;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.nullValue;

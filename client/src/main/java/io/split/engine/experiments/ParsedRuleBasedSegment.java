@@ -1,9 +1,8 @@
 package io.split.engine.experiments;
 
-import com.google.common.collect.ImmutableList;
 import io.split.client.dtos.ExcludedSegments;
-import io.split.engine.matchers.AttributeMatcher;
-import io.split.engine.matchers.UserDefinedSegmentMatcher;
+import io.split.rules.matchers.AttributeMatcher;
+import io.split.rules.matchers.UserDefinedSegmentMatcher;
 
 import java.util.List;
 import java.util.Set;
@@ -12,7 +11,7 @@ import java.util.stream.Collectors;
 public class ParsedRuleBasedSegment {
 
     private final String _ruleBasedSegment;
-    private final ImmutableList<ParsedCondition> _parsedCondition;
+    private final List<ParsedCondition> _parsedCondition;
     private final String _trafficTypeName;
     private final long _changeNumber;
     private final List<String> _excludedKeys;
@@ -45,7 +44,7 @@ public class ParsedRuleBasedSegment {
             List<ExcludedSegments> excludedSegments
     ) {
         _ruleBasedSegment = ruleBasedSegment;
-        _parsedCondition = ImmutableList.copyOf(matcherAndSplits);
+        _parsedCondition = java.util.Collections.unmodifiableList(new java.util.ArrayList<>(matcherAndSplits));
         _trafficTypeName = trafficTypeName;
         _changeNumber = changeNumber;
         _excludedKeys = excludedKeys;

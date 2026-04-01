@@ -1,5 +1,6 @@
 package io.split.engine.matchers;
 
+import io.split.rules.matchers.UserDefinedSegmentMatcher;
 import com.google.common.collect.Sets;
 import io.split.engine.evaluator.EvaluationContext;
 import io.split.engine.evaluator.Evaluator;

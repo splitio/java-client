@@ -1,7 +1,7 @@
 package io.split.engine.splitter;
 
 import io.split.client.dtos.Partition;
-import io.split.client.utils.MurmurHash3;
+import io.split.rules.bucketing.MurmurHash3;
 import io.split.grammar.Treatments;
 
 import java.util.List;

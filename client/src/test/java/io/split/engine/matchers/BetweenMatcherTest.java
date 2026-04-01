@@ -1,6 +1,8 @@
 package io.split.engine.matchers;
 
-import io.split.client.dtos.DataType;
+import io.split.rules.matchers.*;
+
+import io.split.rules.model.DataType;
 import org.junit.Assert;
 import org.junit.Test;
 

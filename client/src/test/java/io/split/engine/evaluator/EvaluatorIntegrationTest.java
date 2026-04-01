@@ -10,12 +10,12 @@ import io.split.client.interceptors.FlagSetsFilterImpl;
 import io.split.engine.experiments.ParsedCondition;
 import io.split.engine.experiments.ParsedRuleBasedSegment;
 import io.split.engine.experiments.ParsedSplit;
-import io.split.engine.matchers.AttributeMatcher;
-import io.split.engine.matchers.CombiningMatcher;
-import io.split.engine.matchers.PrerequisitesMatcher;
-import io.split.engine.matchers.RuleBasedSegmentMatcher;
-import io.split.engine.matchers.strings.EndsWithAnyOfMatcher;
-import io.split.engine.matchers.strings.WhitelistMatcher;
+import io.split.rules.matchers.AttributeMatcher;
+import io.split.rules.matchers.CombiningMatcher;
+import io.split.rules.matchers.PrerequisitesMatcher;
+import io.split.rules.matchers.RuleBasedSegmentMatcher;
+import io.split.rules.matchers.strings.EndsWithAnyOfMatcher;
+import io.split.rules.matchers.WhitelistMatcher;
 import io.split.storages.RuleBasedSegmentCache;
 import io.split.storages.SegmentCache;
 import io.split.storages.SplitCache;
@@ -192,9 +192,9 @@ public class EvaluatorIntegrationTest {
         AttributeMatcher endsWithMatcher = AttributeMatcher.vanilla(new EndsWithAnyOfMatcher(Lists.newArrayList("@test.io", "@mail.io")));
         AttributeMatcher ruleBasedSegmentMatcher = AttributeMatcher.vanilla(new RuleBasedSegmentMatcher("sample_rule_based_segment"));
 
-        CombiningMatcher whitelistCombiningMatcher = new CombiningMatcher(MatcherCombiner.AND, Lists.newArrayList(whiteListMatcher));
-        CombiningMatcher endsWithCombiningMatcher = new CombiningMatcher(MatcherCombiner.AND, Lists.newArrayList(endsWithMatcher));
-        CombiningMatcher ruleBasedSegmentCombinerMatcher = new CombiningMatcher(MatcherCombiner.AND, Lists.newArrayList(ruleBasedSegmentMatcher));
+        CombiningMatcher whitelistCombiningMatcher = new CombiningMatcher(CombiningMatcher.Combiner.AND, Lists.newArrayList(whiteListMatcher));
+        CombiningMatcher endsWithCombiningMatcher = new CombiningMatcher(CombiningMatcher.Combiner.AND, Lists.newArrayList(endsWithMatcher));
+        CombiningMatcher ruleBasedSegmentCombinerMatcher = new CombiningMatcher(CombiningMatcher.Combiner.AND, Lists.newArrayList(ruleBasedSegmentMatcher));
 
         ParsedCondition whitelistCondition = new ParsedCondition(ConditionType.WHITELIST, whitelistCombiningMatcher, partitions, TEST_LABEL_VALUE_WHITELIST);
         ParsedCondition rollOutCondition = new ParsedCondition(ConditionType.ROLLOUT, endsWithCombiningMatcher, partitions, TEST_LABEL_VALUE_ROLL_OUT);

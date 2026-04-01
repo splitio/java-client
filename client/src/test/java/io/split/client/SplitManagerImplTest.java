@@ -12,9 +12,9 @@ import io.split.engine.SDKReadinessGates;
 import io.split.engine.experiments.ParsedCondition;
 import io.split.engine.experiments.ParsedSplit;
 import io.split.engine.experiments.SplitParser;
-import io.split.engine.matchers.AllKeysMatcher;
-import io.split.engine.matchers.CombiningMatcher;
-import io.split.engine.matchers.PrerequisitesMatcher;
+import io.split.rules.matchers.AllKeysMatcher;
+import io.split.rules.matchers.CombiningMatcher;
+import io.split.rules.matchers.PrerequisitesMatcher;
 import io.split.grammar.Treatments;
 import io.split.storages.SplitCacheConsumer;
 import io.split.telemetry.storage.InMemoryTelemetryStorage;
@@ -71,8 +71,9 @@ public class SplitManagerImplTest {
         Prerequisites prereq = new Prerequisites();
         prereq.featureFlagName = "feature1";
         prereq.treatments = Lists.newArrayList("on");
+        io.split.rules.model.Prerequisite prerequisite = new io.split.rules.model.Prerequisite(prereq.featureFlagName, prereq.treatments);
         ParsedSplit response = ParsedSplit.createParsedSplitForTests("FeatureName", 123, true, "off", Lists.newArrayList(getTestCondition("off")), "traffic", 456L, 1, new HashSet<>(), false,
-                new PrerequisitesMatcher(Lists.newArrayList(prereq)));
+                new PrerequisitesMatcher(Lists.newArrayList(prerequisite)));
         when(splitCacheConsumer.get(existent)).thenReturn(response);
 
         SplitManagerImpl splitManager = new SplitManagerImpl(splitCacheConsumer,

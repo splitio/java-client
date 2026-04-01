@@ -2,10 +2,11 @@ package io.split.engine.evaluator;
 
 import io.split.client.dtos.*;
 import io.split.client.utils.Json;
+import io.split.rules.model.Prerequisite;
 import io.split.engine.experiments.ParsedCondition;
 import io.split.engine.experiments.ParsedSplit;
-import io.split.engine.matchers.CombiningMatcher;
-import io.split.engine.matchers.PrerequisitesMatcher;
+import io.split.rules.matchers.CombiningMatcher;
+import io.split.rules.matchers.PrerequisitesMatcher;
 import io.split.storages.RuleBasedSegmentCacheConsumer;
 import io.split.storages.SegmentCacheConsumer;
 import io.split.storages.SplitCacheConsumer;
@@ -196,7 +197,7 @@ public class EvaluatorTest {
         _partitions.add(partition);
         ParsedCondition condition = new ParsedCondition(ConditionType.WHITELIST, _matcher, _partitions, "test whitelist label");
         _conditions.add(condition);
-        List<Prerequisites> prerequisites = Arrays.asList(Json.fromJson("{\"n\": \"split1\", \"ts\": [\"" + TREATMENT_VALUE + "\"]}", Prerequisites.class));
+        List<Prerequisite> prerequisites = Arrays.asList(new Prerequisite("split1", Arrays.asList(TREATMENT_VALUE)));
 
         ParsedSplit split = new ParsedSplit(SPLIT_NAME, 0, false, DEFAULT_TREATMENT_VALUE, _conditions, TRAFFIC_TYPE_VALUE, CHANGE_NUMBER, 60, 18, 2, _configurations, new HashSet<>(), true, new PrerequisitesMatcher(prerequisites));
         ParsedSplit split1 = new ParsedSplit("split1", 0, false, DEFAULT_TREATMENT_VALUE, _conditions, TRAFFIC_TYPE_VALUE, CHANGE_NUMBER, 60, 18, 2, _configurations, new HashSet<>(), true, new PrerequisitesMatcher(null));

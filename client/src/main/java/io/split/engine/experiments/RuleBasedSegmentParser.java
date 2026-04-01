@@ -1,9 +1,8 @@
 package io.split.engine.experiments;
 
-import com.google.common.collect.Lists;
 import io.split.client.dtos.Condition;
 import io.split.client.dtos.RuleBasedSegment;
-import io.split.engine.matchers.CombiningMatcher;
+import io.split.rules.matchers.CombiningMatcher;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -30,7 +29,7 @@ public final class RuleBasedSegmentParser {
     }
 
     private ParsedRuleBasedSegment parseWithoutExceptionHandling(RuleBasedSegment ruleBasedSegment) {
-        List<ParsedCondition> parsedConditionList = Lists.newArrayList();
+        List<ParsedCondition> parsedConditionList = new java.util.ArrayList<>();
         for (Condition condition : ruleBasedSegment.conditions) {
             if (checkUnsupportedMatcherExist(condition.matcherGroup.matchers)) {
                 _log.error("Unsupported matcher type found for rule based segment: " + ruleBasedSegment.name +

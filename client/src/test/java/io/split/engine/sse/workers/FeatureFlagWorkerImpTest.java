@@ -13,8 +13,8 @@ import io.split.engine.experiments.ParsedCondition;
 import io.split.engine.experiments.ParsedRuleBasedSegment;
 import io.split.engine.experiments.RuleBasedSegmentParser;
 import io.split.engine.experiments.SplitParser;
-import io.split.engine.matchers.AttributeMatcher;
-import io.split.engine.matchers.CombiningMatcher;
+import io.split.rules.matchers.AttributeMatcher;
+import io.split.rules.matchers.CombiningMatcher;
 import io.split.engine.sse.dtos.CommonChangeNotification;
 import io.split.engine.sse.dtos.RawMessageNotification;
 import io.split.engine.sse.dtos.GenericNotificationData;
@@ -103,9 +103,9 @@ public class FeatureFlagWorkerImpTest {
 
     @Test
     public void testUpdateRuleBasedSegmentsWithCorrectFF() {
-        io.split.engine.matchers.Matcher matcher = (matchValue, bucketingKey, attributes, evaluationContext) -> false;
+        io.split.rules.matchers.Matcher matcher = (matchValue, bucketingKey, attributes, evaluationContext) -> false;
         ParsedCondition parsedCondition = new ParsedCondition(ConditionType.ROLLOUT,
-                new CombiningMatcher(MatcherCombiner.AND, Arrays.asList(new AttributeMatcher("email", matcher, false))),
+                new CombiningMatcher(CombiningMatcher.Combiner.AND, Arrays.asList(new AttributeMatcher("email", matcher, false))),
                 null,
                 "my label");
         ParsedRuleBasedSegment parsedRBS = new ParsedRuleBasedSegment("sample_rule_based_segment",

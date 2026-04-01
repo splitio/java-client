@@ -1,12 +1,13 @@
 package io.split.engine.evaluator;
 
-import io.split.client.dtos.ConditionType;
 import io.split.client.dtos.FallbackTreatment;
 import io.split.client.dtos.FallbackTreatmentCalculator;
 import io.split.client.exceptions.ChangeNumberExceptionWrapper;
-import io.split.engine.experiments.ParsedCondition;
 import io.split.engine.experiments.ParsedSplit;
-import io.split.engine.splitter.Splitter;
+import io.split.rules.engine.EvaluationResult;
+import io.split.rules.engine.TargetingEngine;
+import io.split.rules.engine.TargetingEngineImpl;
+import io.split.rules.exceptions.VersionedExceptionWrapper;
 import io.split.storages.RuleBasedSegmentCacheConsumer;
 import io.split.storages.SegmentCacheConsumer;
 import io.split.storages.SplitCacheConsumer;
@@ -19,7 +20,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 
-import static com.google.common.base.Preconditions.checkNotNull;
+import java.util.Objects;
 
 public class EvaluatorImp implements Evaluator {
     private static final Logger _log = LoggerFactory.getLogger(EvaluatorImp.class);
@@ -28,15 +29,17 @@ public class EvaluatorImp implements Evaluator {
     private final EvaluationContext _evaluationContext;
     private final SplitCacheConsumer _splitCacheConsumer;
     private final FallbackTreatmentCalculator _fallbackTreatmentCalculator;
+    private final TargetingEngine _targetingEngine;
     private final String _evaluatorException = "Evaluator Exception";
 
     public EvaluatorImp(SplitCacheConsumer splitCacheConsumer, SegmentCacheConsumer segmentCache,
                         RuleBasedSegmentCacheConsumer ruleBasedSegmentCacheConsumer,
                         FallbackTreatmentCalculator fallbackTreatmentCalculator) {
-        _splitCacheConsumer = checkNotNull(splitCacheConsumer);
-        _segmentCacheConsumer = checkNotNull(segmentCache);
+        _splitCacheConsumer = Objects.requireNonNull(splitCacheConsumer);
+        _segmentCacheConsumer = Objects.requireNonNull(segmentCache);
         _evaluationContext = new EvaluationContext(this, _segmentCacheConsumer, ruleBasedSegmentCacheConsumer);
         _fallbackTreatmentCalculator = fallbackTreatmentCalculator;
+        _targetingEngine = new TargetingEngineImpl();
     }
 
     @Override
@@ -102,98 +105,21 @@ public class EvaluatorImp implements Evaluator {
 
     /**
      * @param matchingKey  MUST NOT be null
-     * @param bucketingKey
+     * @param bucketingKey may be null
      * @param parsedSplit  MUST NOT be null
-     * @param attributes   MUST NOT be null
+     * @param attributes   may be null
      * @return
      * @throws ChangeNumberExceptionWrapper
      */
-    private TreatmentLabelAndChangeNumber getTreatment(String matchingKey, String bucketingKey, ParsedSplit parsedSplit, Map<String,
-            Object> attributes) throws ChangeNumberExceptionWrapper {
+    private TreatmentLabelAndChangeNumber getTreatment(String matchingKey, String bucketingKey, ParsedSplit parsedSplit,
+                                                       Map<String, Object> attributes) throws ChangeNumberExceptionWrapper {
         try {
-            String config = getConfig(parsedSplit, parsedSplit.defaultTreatment());
-            if (parsedSplit.killed()) {
-                return new TreatmentLabelAndChangeNumber(
-                        parsedSplit.defaultTreatment(),
-                        Labels.KILLED,
-                        parsedSplit.changeNumber(),
-                        config,
-                        parsedSplit.impressionsDisabled());
-            }
-
-            String bk = getBucketingKey(bucketingKey, matchingKey);
-
-            if (!parsedSplit.prerequisitesMatcher().match(matchingKey, bk, attributes, _evaluationContext)) {
-                return new TreatmentLabelAndChangeNumber(
-                        parsedSplit.defaultTreatment(),
-                        Labels.PREREQUISITES_NOT_MET,
-                        parsedSplit.changeNumber(),
-                        config,
-                        parsedSplit.impressionsDisabled());
-            }
-
-            /*
-             * There are three parts to a single Feature flag: 1) Whitelists 2) Traffic Allocation
-             * 3) Rollout. The flag inRollout is there to understand when we move into the Rollout
-             * section. This is because we need to make sure that the Traffic Allocation
-             * computation happens after the whitelist but before the rollout.
-             */
-            boolean inRollout = false;
-
-            for (ParsedCondition parsedCondition : parsedSplit.parsedConditions()) {
-
-                if (checkRollout(inRollout, parsedCondition)) {
-
-                    if (parsedSplit.trafficAllocation() < 100) {
-                        // if the traffic allocation is 100%, no need to do anything special.
-                        int bucket = Splitter.getBucket(bk, parsedSplit.trafficAllocationSeed(), parsedSplit.algo());
-
-                        if (bucket > parsedSplit.trafficAllocation()) {
-                            // out of split
-                            config = getConfig(parsedSplit, parsedSplit.defaultTreatment());
-                            return new TreatmentLabelAndChangeNumber(parsedSplit.defaultTreatment(), Labels.NOT_IN_SPLIT,
-                                    parsedSplit.changeNumber(), config, parsedSplit.impressionsDisabled());
-                        }
-
-                    }
-                    inRollout = true;
-                }
-
-                if (parsedCondition.matcher().match(matchingKey, bucketingKey, attributes, _evaluationContext)) {
-                    String treatment = Splitter.getTreatment(bk, parsedSplit.seed(), parsedCondition.partitions(), parsedSplit.algo());
-                    config = getConfig(parsedSplit, treatment);
-                    return new TreatmentLabelAndChangeNumber(
-                            treatment,
-                            parsedCondition.label(),
-                            parsedSplit.changeNumber(),
-                            config,
-                            parsedSplit.impressionsDisabled());
-                }
-            }
-
-            config = getConfig(parsedSplit, parsedSplit.defaultTreatment());
-
-            return new TreatmentLabelAndChangeNumber(
-                    parsedSplit.defaultTreatment(),
-                    Labels.DEFAULT_RULE,
-                    parsedSplit.changeNumber(),
-                    config,
-                    parsedSplit.impressionsDisabled());
-        } catch (Exception e) {
-            throw new ChangeNumberExceptionWrapper(e, parsedSplit.changeNumber());
+            EvaluationResult r = _targetingEngine.evaluate(matchingKey, bucketingKey,
+                    parsedSplit.targetingRule(), attributes, _evaluationContext);
+            return new TreatmentLabelAndChangeNumber(r.treatment, r.label, r.version, r.config, r.impressionsDisabled);
+        } catch (VersionedExceptionWrapper e) {
+            throw new ChangeNumberExceptionWrapper(e.wrappedException(), e.version());
         }
-    }
-
-    private boolean checkRollout(boolean inRollout, ParsedCondition parsedCondition) {
-        return (!inRollout && parsedCondition.conditionType() == ConditionType.ROLLOUT);
-    }
-
-    private String getBucketingKey(String bucketingKey, String matchingKey) {
-        return (bucketingKey == null) ? matchingKey : bucketingKey;
-    }
-
-    private String getConfig(ParsedSplit parsedSplit, String returnedTreatment) {
-        return parsedSplit.configurations() != null ? parsedSplit.configurations().get(returnedTreatment) : null;
     }
 
     private String getFallbackConfig(FallbackTreatment fallbackTreatment) {
