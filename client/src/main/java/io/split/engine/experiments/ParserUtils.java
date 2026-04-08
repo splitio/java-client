@@ -1,6 +1,7 @@
 package io.split.engine.experiments;
 
 import io.split.client.dtos.DataType;
+import io.split.client.dtos.MatcherCombiner;
 import io.split.client.dtos.MatcherType;
 import io.split.client.dtos.Partition;
 import io.split.client.dtos.MatcherGroup;
@@ -81,12 +82,16 @@ public final class ParserUtils {
             toCombine.add(toMatcher(matcher));
         }
 
-        return new CombiningMatcher(CombiningMatcher.Combiner.AND, toCombine);
+        return new CombiningMatcher(toCombiner(matcherGroup.combiner), toCombine);
     }
 
 
     private static io.split.rules.model.DataType toRulesDataType(io.split.client.dtos.DataType dt) {
         return io.split.rules.model.DataType.valueOf(dt.name());
+    }
+
+    private static CombiningMatcher.Combiner toCombiner(MatcherCombiner combiner) {
+        return CombiningMatcher.Combiner.valueOf(combiner.name());
     }
 
     public static AttributeMatcher toMatcher(Matcher matcher) {
