@@ -36,6 +36,8 @@ import io.split.rules.matchers.strings.RegularExpressionMatcher;
 import java.util.ArrayList;
 import java.util.List;
 
+import static com.google.common.base.Preconditions.checkNotNull;
+
 public final class ParserUtils {
 
     private ParserUtils() {
@@ -94,37 +96,47 @@ public final class ParserUtils {
                 delegate = new AllKeysMatcher();
                 break;
             case IN_SEGMENT:
+                checkNotNull(matcher.userDefinedSegmentMatcherData);
                 String segmentName = matcher.userDefinedSegmentMatcherData.segmentName;
                 delegate = new UserDefinedSegmentMatcher(segmentName);
                 break;
             case WHITELIST:
+                checkNotNull(matcher.whitelistMatcherData);
                 delegate = new WhitelistMatcher(matcher.whitelistMatcherData.whitelist);
                 break;
             case EQUAL_TO:
+                checkNotNull(matcher.unaryNumericMatcherData);
                 delegate = new EqualToMatcher(matcher.unaryNumericMatcherData.value, toRulesDataType(matcher.unaryNumericMatcherData.dataType));
                 break;
             case GREATER_THAN_OR_EQUAL_TO:
+                checkNotNull(matcher.unaryNumericMatcherData);
                 delegate = new GreaterThanOrEqualToMatcher(
                         matcher.unaryNumericMatcherData.value, toRulesDataType(matcher.unaryNumericMatcherData.dataType));
                 break;
             case LESS_THAN_OR_EQUAL_TO:
+                checkNotNull(matcher.unaryNumericMatcherData);
                 delegate = new LessThanOrEqualToMatcher(
                         matcher.unaryNumericMatcherData.value, toRulesDataType(matcher.unaryNumericMatcherData.dataType));
                 break;
             case BETWEEN:
+                checkNotNull(matcher.betweenMatcherData);
                 delegate = new BetweenMatcher(matcher.betweenMatcherData.start,
                         matcher.betweenMatcherData.end, toRulesDataType(matcher.betweenMatcherData.dataType));
                 break;
             case EQUAL_TO_SET:
+                checkNotNull(matcher.whitelistMatcherData);
                 delegate = new EqualToSetMatcher(matcher.whitelistMatcherData.whitelist);
                 break;
             case PART_OF_SET:
+                checkNotNull(matcher.whitelistMatcherData);
                 delegate = new PartOfSetMatcher(matcher.whitelistMatcherData.whitelist);
                 break;
             case CONTAINS_ALL_OF_SET:
+                checkNotNull(matcher.whitelistMatcherData);
                 delegate = new ContainsAllOfSetMatcher(matcher.whitelistMatcherData.whitelist);
                 break;
             case CONTAINS_ANY_OF_SET:
+                checkNotNull(matcher.whitelistMatcherData);
                 delegate = new ContainsAnyOfSetMatcher(matcher.whitelistMatcherData.whitelist);
                 break;
             case STARTS_WITH:
