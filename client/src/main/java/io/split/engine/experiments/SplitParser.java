@@ -86,7 +86,7 @@ public final class SplitParser {
                 split.trafficAllocationSeed,
                 split.algo,
                 split.configurations,
-                split.sets == null ? new java.util.HashSet<>() : split.sets,
+                split.sets == null ? new HashSet<>() : split.sets,
                 split.impressionsDisabled,
                 prerequisites);
 

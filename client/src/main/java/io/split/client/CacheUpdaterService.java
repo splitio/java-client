@@ -12,6 +12,7 @@ import io.split.grammar.Treatments;
 import io.split.storages.SplitCacheProducer;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -77,9 +78,9 @@ public final  class CacheUpdaterService {
     private ParsedCondition createWhitelistCondition(String splitKey, Partition partition) {
         ParsedCondition parsedCondition = new ParsedCondition(ConditionType.WHITELIST,
                 new CombiningMatcher(CombiningMatcher.Combiner.AND,
-                        new java.util.ArrayList<>(java.util.Arrays.asList(
-                                new AttributeMatcher(null, new WhitelistMatcher(java.util.Arrays.asList(splitKey)), false)))),
-                new java.util.ArrayList<>(java.util.Arrays.asList(partition)), splitKey);
+                        new ArrayList<>(Arrays.asList(
+                                new AttributeMatcher(null, new WhitelistMatcher(Arrays.asList(splitKey)), false)))),
+                new ArrayList<>(Arrays.asList(partition)), splitKey);
         return parsedCondition;
     }
 
@@ -89,8 +90,8 @@ public final  class CacheUpdaterService {
         rolloutPartition.size = 0;
         ParsedCondition parsedCondition = new ParsedCondition(ConditionType.ROLLOUT,
                 new CombiningMatcher(CombiningMatcher.Combiner.AND,
-                        new java.util.ArrayList<>(java.util.Arrays.asList(new AttributeMatcher(null, new AllKeysMatcher(), false)))),
-                new java.util.ArrayList<>(java.util.Arrays.asList(partition, rolloutPartition)), "LOCAL");
+                        new ArrayList<>(Arrays.asList(new AttributeMatcher(null, new AllKeysMatcher(), false)))),
+                new ArrayList<>(Arrays.asList(partition, rolloutPartition)), "LOCAL");
 
         return parsedCondition;
     }

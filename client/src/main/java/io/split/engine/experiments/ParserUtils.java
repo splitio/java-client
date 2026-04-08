@@ -83,8 +83,8 @@ public final class ParserUtils {
     }
 
 
-    private static io.split.rules.model.DataType toRulesDataType(DataType dt) {
-        return io.split.rules.model.DataType.valueOf(dt.name());
+    private static DataType toRulesDataType(io.split.client.dtos.DataType dt) {
+        return DataType.valueOf(dt.name());
     }
 
     public static AttributeMatcher toMatcher(Matcher matcher) {

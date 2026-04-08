@@ -302,7 +302,7 @@ public class ParsedSplit {
                         : Collections.unmodifiableList(prerequisitesMatcher.getPrerequisites());
         return new TargetingRule(feature, seed, killed, defaultTreatment, conditions, trafficTypeName,
                 changeNumber, trafficAllocation, trafficAllocationSeed, algo, configurations,
-                flagSets == null ? new java.util.HashSet<>() : flagSets, impressionsDisabled, prereqs);
+                flagSets == null ? new HashSet<>() : flagSets, impressionsDisabled, prereqs);
     }
 
     private static io.split.rules.model.Condition toTargetingCondition(ParsedCondition c) {
