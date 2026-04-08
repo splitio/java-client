@@ -68,7 +68,7 @@ public class ParsedSplit {
                 flagSets,
                 impressionsDisabled,
                 prerequisitesMatcher,
-                buildTargetingRule(feature, seed, killed, defaultTreatment, matcherAndSplits, trafficTypeName,
+                TargetingRuleFactory.buildTargetingRule(feature, seed, killed, defaultTreatment, matcherAndSplits, trafficTypeName,
                         changeNumber, 100, seed, algo, null, flagSets, impressionsDisabled, prerequisitesMatcher)
         );
     }
@@ -102,7 +102,7 @@ public class ParsedSplit {
                 flagSets,
                 impressionsDisabled,
                 prerequisitesMatcher,
-                buildTargetingRule(feature, seed, killed, defaultTreatment, matcherAndSplits, trafficTypeName,
+                TargetingRuleFactory.buildTargetingRule(feature, seed, killed, defaultTreatment, matcherAndSplits, trafficTypeName,
                         changeNumber, 100, seed, algo, configurations, flagSets, impressionsDisabled, prerequisitesMatcher)
         );
     }
@@ -126,7 +126,7 @@ public class ParsedSplit {
         this(feature, seed, killed, defaultTreatment, matcherAndSplits, trafficTypeName, changeNumber,
                 trafficAllocation, trafficAllocationSeed, algo, configurations, flagSets,
                 impressionsDisabled, prerequisitesMatcher,
-                buildTargetingRule(feature, seed, killed, defaultTreatment, matcherAndSplits, trafficTypeName,
+                TargetingRuleFactory.buildTargetingRule(feature, seed, killed, defaultTreatment, matcherAndSplits, trafficTypeName,
                         changeNumber, trafficAllocation, trafficAllocationSeed, algo, configurations,
                         flagSets, impressionsDisabled, prerequisitesMatcher));
     }
@@ -282,39 +282,6 @@ public class ParsedSplit {
 
         return bldr.toString();
 
-    }
-
-    private static TargetingRule buildTargetingRule(
-            String feature, int seed, boolean killed, String defaultTreatment,
-            List<ParsedCondition> matcherAndSplits, String trafficTypeName, long changeNumber,
-            int trafficAllocation, int trafficAllocationSeed, int algo,
-            Map<String, String> configurations, HashSet<String> flagSets,
-            boolean impressionsDisabled, PrerequisitesMatcher prerequisitesMatcher) {
-        List<io.split.rules.model.Condition> conditions = matcherAndSplits == null
-                ? Collections.<io.split.rules.model.Condition>emptyList()
-                : matcherAndSplits.stream()
-                        .map(ParsedSplit::toTargetingCondition)
-                        .collect(Collectors.toList());
-        List<io.split.rules.model.Prerequisite> prereqs = prerequisitesMatcher == null
-                ? Collections.<io.split.rules.model.Prerequisite>emptyList()
-                : prerequisitesMatcher.getPrerequisites() == null
-                        ? Collections.<io.split.rules.model.Prerequisite>emptyList()
-                        : Collections.unmodifiableList(prerequisitesMatcher.getPrerequisites());
-        return new TargetingRule(feature, seed, killed, defaultTreatment, conditions, trafficTypeName,
-                changeNumber, trafficAllocation, trafficAllocationSeed, algo, configurations,
-                flagSets == null ? new HashSet<>() : flagSets, impressionsDisabled, prereqs);
-    }
-
-    private static io.split.rules.model.Condition toTargetingCondition(ParsedCondition c) {
-        List<io.split.rules.model.Partition> partitions = c.partitions() == null
-                ? Collections.<io.split.rules.model.Partition>emptyList()
-                : c.partitions().stream()
-                        .map(p -> new io.split.rules.model.Partition(p.treatment, p.size))
-                        .collect(Collectors.toList());
-        io.split.rules.model.ConditionType condType = c.conditionType() == ConditionType.ROLLOUT
-                ? io.split.rules.model.ConditionType.ROLLOUT
-                : io.split.rules.model.ConditionType.WHITELIST;
-        return new io.split.rules.model.Condition(condType, c.matcher(), partitions, c.label());
     }
 
     public Set<String> getSegmentsNames() {
