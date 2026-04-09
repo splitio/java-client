@@ -1,0 +1,173 @@
+storage-commons/src/main/java/io/split/engine/experiments/RuleBasedSegmentParser.java
+  human 1-54
+storage-commons/src/main/java/io/split/client/dtos/RuleBasedSegment.java
+  human 1-37
+pom.xml
+  human 69
+storage-commons/src/main/java/io/split/engine/experiments/ParsedRuleBasedSegment.java
+  human 1-135
+client/pom.xml
+  human 180-184
+storage-commons/src/main/java/io/split/storages/RuleBasedSegmentCacheProducer.java
+  human 1-13
+storage-commons/src/main/java/io/split/storages/RuleBasedSegmentCacheConsumer.java
+  human 1-16
+storage-commons/src/main/java/io/split/storages/memory/RuleBasedSegmentCacheInMemoryImp.java
+  human 1-109
+storage-commons/pom.xml
+  human 1-41
+storage-commons/src/main/java/io/split/storages/RuleBasedSegmentCache.java
+  human 1-4
+---
+{
+  "attestations": [
+    {
+      "entries": [
+        {
+          "accepted_lines": 54,
+          "added_lines": 54,
+          "deleted_lines": 0,
+          "hash": "human",
+          "lines": "1-54",
+          "overridden_lines": 0
+        }
+      ],
+      "file": "storage-commons/src/main/java/io/split/engine/experiments/RuleBasedSegmentParser.java"
+    },
+    {
+      "entries": [
+        {
+          "accepted_lines": 37,
+          "added_lines": 37,
+          "deleted_lines": 0,
+          "hash": "human",
+          "lines": "1-37",
+          "overridden_lines": 0
+        }
+      ],
+      "file": "storage-commons/src/main/java/io/split/client/dtos/RuleBasedSegment.java"
+    },
+    {
+      "entries": [
+        {
+          "accepted_lines": 1,
+          "added_lines": 1,
+          "deleted_lines": 0,
+          "hash": "human",
+          "lines": "69",
+          "overridden_lines": 0
+        }
+      ],
+      "file": "pom.xml"
+    },
+    {
+      "entries": [
+        {
+          "accepted_lines": 135,
+          "added_lines": 135,
+          "deleted_lines": 0,
+          "hash": "human",
+          "lines": "1-135",
+          "overridden_lines": 0
+        }
+      ],
+      "file": "storage-commons/src/main/java/io/split/engine/experiments/ParsedRuleBasedSegment.java"
+    },
+    {
+      "entries": [
+        {
+          "accepted_lines": 5,
+          "added_lines": 5,
+          "deleted_lines": 0,
+          "hash": "human",
+          "lines": "180-184",
+          "overridden_lines": 0
+        }
+      ],
+      "file": "client/pom.xml"
+    },
+    {
+      "entries": [
+        {
+          "accepted_lines": 13,
+          "added_lines": 13,
+          "deleted_lines": 0,
+          "hash": "human",
+          "lines": "1-13",
+          "overridden_lines": 0
+        }
+      ],
+      "file": "storage-commons/src/main/java/io/split/storages/RuleBasedSegmentCacheProducer.java"
+    },
+    {
+      "entries": [
+        {
+          "accepted_lines": 16,
+          "added_lines": 16,
+          "deleted_lines": 0,
+          "hash": "human",
+          "lines": "1-16",
+          "overridden_lines": 0
+        }
+      ],
+      "file": "storage-commons/src/main/java/io/split/storages/RuleBasedSegmentCacheConsumer.java"
+    },
+    {
+      "entries": [
+        {
+          "accepted_lines": 109,
+          "added_lines": 109,
+          "deleted_lines": 0,
+          "hash": "human",
+          "lines": "1-109",
+          "overridden_lines": 0
+        }
+      ],
+      "file": "storage-commons/src/main/java/io/split/storages/memory/RuleBasedSegmentCacheInMemoryImp.java"
+    },
+    {
+      "entries": [
+        {
+          "accepted_lines": 41,
+          "added_lines": 41,
+          "deleted_lines": 0,
+          "hash": "human",
+          "lines": "1-41",
+          "overridden_lines": 0
+        }
+      ],
+      "file": "storage-commons/pom.xml"
+    },
+    {
+      "entries": [
+        {
+          "accepted_lines": 4,
+          "added_lines": 4,
+          "deleted_lines": 0,
+          "hash": "human",
+          "lines": "1-4",
+          "overridden_lines": 0
+        }
+      ],
+      "file": "storage-commons/src/main/java/io/split/storages/RuleBasedSegmentCache.java"
+    }
+  ],
+  "base_commit_sha": "08c94f895993c4d59581107bb41a5475d3c8893a",
+  "branch": "HEAD",
+  "commit_sha": "92e00179a8f29123a0c4c01f38e0a962937c2470",
+  "commit_time": "2026-04-09T16:40:57-03:00",
+  "git_ai_version": "1.2.6",
+  "prompts": {
+    "human": {
+      "accepted_lines": 415,
+      "agent_id": null,
+      "human_author": "Gaston Thea <gaston.thea@harness.io>",
+      "messages": [],
+      "overriden_lines": 0,
+      "total_additions": 415,
+      "total_deletions": 0
+    }
+  },
+  "repo": "git@github.com:splitio/java-client.git",
+  "schema_version": "authorship/3.0.0"
+}
