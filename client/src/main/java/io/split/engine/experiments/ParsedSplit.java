@@ -68,8 +68,9 @@ public class ParsedSplit {
                 flagSets,
                 impressionsDisabled,
                 prerequisitesMatcher,
-                TargetingRuleFactory.buildTargetingRule(feature, seed, killed, defaultTreatment, matcherAndSplits, trafficTypeName,
-                        changeNumber, 100, seed, algo, null, flagSets, impressionsDisabled, prerequisitesMatcher)
+                TargetingRuleFactory.buildTargetingRule(seed, killed, defaultTreatment, matcherAndSplits,
+                        100, seed, algo,
+                        prerequisitesMatcher == null ? Collections.emptyList() : prerequisitesMatcher.getPrerequisites())
         );
     }
 
@@ -102,8 +103,9 @@ public class ParsedSplit {
                 flagSets,
                 impressionsDisabled,
                 prerequisitesMatcher,
-                TargetingRuleFactory.buildTargetingRule(feature, seed, killed, defaultTreatment, matcherAndSplits, trafficTypeName,
-                        changeNumber, 100, seed, algo, configurations, flagSets, impressionsDisabled, prerequisitesMatcher)
+                TargetingRuleFactory.buildTargetingRule(seed, killed, defaultTreatment, matcherAndSplits,
+                        100, seed, algo,
+                        prerequisitesMatcher == null ? Collections.emptyList() : prerequisitesMatcher.getPrerequisites())
         );
     }
 
@@ -126,9 +128,9 @@ public class ParsedSplit {
         this(feature, seed, killed, defaultTreatment, matcherAndSplits, trafficTypeName, changeNumber,
                 trafficAllocation, trafficAllocationSeed, algo, configurations, flagSets,
                 impressionsDisabled, prerequisitesMatcher,
-                TargetingRuleFactory.buildTargetingRule(feature, seed, killed, defaultTreatment, matcherAndSplits, trafficTypeName,
-                        changeNumber, trafficAllocation, trafficAllocationSeed, algo, configurations,
-                        flagSets, impressionsDisabled, prerequisitesMatcher));
+                TargetingRuleFactory.buildTargetingRule(seed, killed, defaultTreatment, matcherAndSplits,
+                        trafficAllocation, trafficAllocationSeed, algo,
+                        prerequisitesMatcher == null ? Collections.emptyList() : prerequisitesMatcher.getPrerequisites()));
     }
 
     public ParsedSplit(

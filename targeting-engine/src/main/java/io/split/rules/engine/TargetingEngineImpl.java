@@ -15,12 +15,9 @@ public final class TargetingEngineImpl implements TargetingEngine {
                                      TargetingRule rule, Map<String, Object> attributes,
                                      EvaluationContext context) throws VersionedExceptionWrapper {
         try {
-            String config = getConfig(rule, rule.defaultTreatment());
-
             // 1. Killed rule → return default treatment
             if (rule.killed()) {
-                return new EvaluationResult(rule.defaultTreatment(), EvaluationLabels.KILLED,
-                        rule.changeNumber(), config, rule.impressionsDisabled());
+                return new EvaluationResult(rule.defaultTreatment(), EvaluationLabels.KILLED);
             }
 
             // 2. Bucketing key resolution
@@ -28,8 +25,7 @@ public final class TargetingEngineImpl implements TargetingEngine {
 
             // 3. Prerequisites check
             if (!rule.prerequisitesMatcher().match(matchingKey, bk, attributes, context)) {
-                return new EvaluationResult(rule.defaultTreatment(), EvaluationLabels.PREREQUISITES_NOT_MET,
-                        rule.changeNumber(), config, rule.impressionsDisabled());
+                return new EvaluationResult(rule.defaultTreatment(), EvaluationLabels.PREREQUISITES_NOT_MET);
             }
 
             // 4. Iterate conditions
@@ -41,9 +37,7 @@ public final class TargetingEngineImpl implements TargetingEngine {
                     if (rule.trafficAllocation() < 100) {
                         int bucket = Bucketer.getBucket(bk, rule.trafficAllocationSeed(), rule.algo());
                         if (bucket > rule.trafficAllocation()) {
-                            config = getConfig(rule, rule.defaultTreatment());
-                            return new EvaluationResult(rule.defaultTreatment(), EvaluationLabels.NOT_IN_SPLIT,
-                                    rule.changeNumber(), config, rule.impressionsDisabled());
+                            return new EvaluationResult(rule.defaultTreatment(), EvaluationLabels.NOT_IN_SPLIT);
                         }
                     }
                     inRollout = true;
@@ -52,23 +46,15 @@ public final class TargetingEngineImpl implements TargetingEngine {
                 // 4b. Condition match → select treatment
                 if (condition.matcher().match(matchingKey, bucketingKey, attributes, context)) {
                     String treatment = Bucketer.getTreatment(bk, rule.seed(), condition.partitions(), rule.algo());
-                    config = getConfig(rule, treatment);
-                    return new EvaluationResult(treatment, condition.label(),
-                            rule.changeNumber(), config, rule.impressionsDisabled());
+                    return new EvaluationResult(treatment, condition.label());
                 }
             }
 
             // 5. No condition matched → default rule
-            config = getConfig(rule, rule.defaultTreatment());
-            return new EvaluationResult(rule.defaultTreatment(), EvaluationLabels.DEFAULT_RULE,
-                    rule.changeNumber(), config, rule.impressionsDisabled());
+            return new EvaluationResult(rule.defaultTreatment(), EvaluationLabels.DEFAULT_RULE);
 
         } catch (Exception e) {
-            throw new VersionedExceptionWrapper(e, rule.changeNumber());
+            throw new VersionedExceptionWrapper(e);
         }
-    }
-
-    private String getConfig(TargetingRule rule, String treatment) {
-        return rule.configurations() != null ? rule.configurations().get(treatment) : null;
     }
 }

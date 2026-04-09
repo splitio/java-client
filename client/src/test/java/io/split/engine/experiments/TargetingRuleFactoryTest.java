@@ -8,52 +8,27 @@ import io.split.rules.matchers.CombiningMatcher;
 import io.split.rules.model.Condition;
 import io.split.rules.model.TargetingRule;
 
-import org.junit.Before;
 import org.junit.Test;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
 
 import static org.junit.Assert.*;
 
 public class TargetingRuleFactoryTest {
 
-    private Map<String, String> _configurations;
-    private HashSet<String> _flagSets;
-
-    @Before
-    public void setUp() {
-        _configurations = new HashMap<>();
-        _configurations.put("on", "{\"color\": \"blue\"}");
-        _flagSets = new HashSet<>(Arrays.asList("set1", "set2"));
-    }
-
     @Test
     public void testBuildTargetingRule_withNullConditions_returnsEmptyList() {
         TargetingRule rule = TargetingRuleFactory.buildTargetingRule(
-                "feature1",
-                12345,
-                false,
-                "control",
+                12345, false, "control",
                 null,
-                "user_type",
-                999L,
-                100,
-                456,
-                1,
-                _configurations,
-                _flagSets,
-                false,
+                100, 456, 1,
                 null
         );
 
         assertNotNull(rule);
-        assertEquals("feature1", rule.name());
         assertTrue(rule.conditions().isEmpty());
     }
 
@@ -74,24 +49,13 @@ public class TargetingRuleFactoryTest {
         );
 
         TargetingRule rule = TargetingRuleFactory.buildTargetingRule(
-                "feature1",
-                12345,
-                false,
-                "control",
+                12345, false, "control",
                 Arrays.asList(parsedCondition),
-                "user_type",
-                999L,
-                100,
-                456,
-                1,
-                _configurations,
-                _flagSets,
-                false,
+                100, 456, 1,
                 null
         );
 
         assertNotNull(rule);
-        assertEquals("feature1", rule.name());
         assertEquals(1, rule.conditions().size());
 
         Condition condition = rule.conditions().get(0);
@@ -107,71 +71,14 @@ public class TargetingRuleFactoryTest {
     @Test
     public void testBuildTargetingRule_withNullPrerequisites_returnsEmptyPrerequisiteList() {
         TargetingRule rule = TargetingRuleFactory.buildTargetingRule(
-                "feature1",
-                12345,
-                false,
-                "control",
-                new ArrayList<>(),
-                "user_type",
-                999L,
-                100,
-                456,
-                1,
-                _configurations,
-                _flagSets,
-                false,
+                12345, false, "control",
+                new ArrayList<ParsedCondition>(),
+                100, 456, 1,
                 null
         );
 
         assertNotNull(rule);
         assertTrue(rule.prerequisites().isEmpty());
-    }
-
-    @Test
-    public void testBuildTargetingRule_withNullFlagSets_createsEmptySet() {
-        TargetingRule rule = TargetingRuleFactory.buildTargetingRule(
-                "feature1",
-                12345,
-                false,
-                "control",
-                new ArrayList<>(),
-                "user_type",
-                999L,
-                100,
-                456,
-                1,
-                _configurations,
-                null,
-                false,
-                null
-        );
-
-        assertNotNull(rule);
-        assertNotNull(rule.flagSets());
-        assertTrue(rule.flagSets().isEmpty());
-    }
-
-    @Test
-    public void testBuildTargetingRule_withFlagSets_preservesSet() {
-        TargetingRule rule = TargetingRuleFactory.buildTargetingRule(
-                "feature1",
-                12345,
-                false,
-                "control",
-                new ArrayList<>(),
-                "user_type",
-                999L,
-                100,
-                456,
-                1,
-                _configurations,
-                _flagSets,
-                false,
-                null
-        );
-
-        assertNotNull(rule);
-        assertEquals(_flagSets, rule.flagSets());
     }
 
     @Test
@@ -191,10 +98,10 @@ public class TargetingRuleFactoryTest {
         );
 
         TargetingRule rule = TargetingRuleFactory.buildTargetingRule(
-                "feature1", 12345, false, "control",
+                12345, false, "control",
                 Arrays.asList(rolloutCondition),
-                "user_type", 999L, 100, 456, 1,
-                _configurations, _flagSets, false, null
+                100, 456, 1,
+                null
         );
 
         Condition condition = rule.conditions().get(0);
@@ -218,10 +125,10 @@ public class TargetingRuleFactoryTest {
         );
 
         TargetingRule rule = TargetingRuleFactory.buildTargetingRule(
-                "feature1", 12345, false, "control",
+                12345, false, "control",
                 Arrays.asList(whitelistCondition),
-                "user_type", 999L, 100, 456, 1,
-                _configurations, _flagSets, false, null
+                100, 456, 1,
+                null
         );
 
         Condition condition = rule.conditions().get(0);
@@ -249,10 +156,10 @@ public class TargetingRuleFactoryTest {
         );
 
         TargetingRule rule = TargetingRuleFactory.buildTargetingRule(
-                "feature1", 12345, false, "control",
+                12345, false, "control",
                 Arrays.asList(parsedCondition),
-                "user_type", 999L, 100, 456, 1,
-                _configurations, _flagSets, false, null
+                100, 456, 1,
+                null
         );
 
         Condition condition = rule.conditions().get(0);
@@ -276,10 +183,10 @@ public class TargetingRuleFactoryTest {
         );
 
         TargetingRule rule = TargetingRuleFactory.buildTargetingRule(
-                "feature1", 12345, false, "control",
+                12345, false, "control",
                 Arrays.asList(parsedCondition),
-                "user_type", 999L, 100, 456, 1,
-                _configurations, _flagSets, false, null
+                100, 456, 1,
+                null
         );
 
         Condition condition = rule.conditions().get(0);
@@ -287,34 +194,37 @@ public class TargetingRuleFactoryTest {
     }
 
     @Test
-    public void testBuildTargetingRule_preservesAllNonMappedFields() {
+    public void testBuildTargetingRule_preservesEvaluationFields() {
         TargetingRule rule = TargetingRuleFactory.buildTargetingRule(
-                "my_feature",
-                98765,
-                true,
-                "killed",
-                new ArrayList<>(),
-                "account",
-                555L,
-                75,
-                321,
-                2,
-                _configurations,
-                _flagSets,
-                true,
+                98765, true, "killed",
+                new ArrayList<ParsedCondition>(),
+                75, 321, 2,
                 null
         );
 
-        assertEquals("my_feature", rule.name());
         assertEquals(98765, rule.seed());
         assertTrue(rule.killed());
         assertEquals("killed", rule.defaultTreatment());
-        assertEquals("account", rule.trafficTypeName());
-        assertEquals(555L, rule.changeNumber());
         assertEquals(75, rule.trafficAllocation());
         assertEquals(321, rule.trafficAllocationSeed());
         assertEquals(2, rule.algo());
-        assertEquals(_configurations, rule.configurations());
-        assertTrue(rule.impressionsDisabled());
+        assertTrue(rule.prerequisites().isEmpty());
+    }
+
+    @Test
+    public void testBuildTargetingRule_withPrerequisites_preservesList() {
+        List<io.split.rules.model.Prerequisite> prereqs = Collections.singletonList(
+                new io.split.rules.model.Prerequisite("flag1", Collections.singletonList("on"))
+        );
+
+        TargetingRule rule = TargetingRuleFactory.buildTargetingRule(
+                12345, false, "control",
+                new ArrayList<ParsedCondition>(),
+                100, 456, 1,
+                prereqs
+        );
+
+        assertEquals(1, rule.prerequisites().size());
+        assertEquals("flag1", rule.prerequisites().get(0).featureFlagName());
     }
 }

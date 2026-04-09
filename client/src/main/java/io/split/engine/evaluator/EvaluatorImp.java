@@ -116,9 +116,12 @@ public class EvaluatorImp implements Evaluator {
         try {
             EvaluationResult r = _targetingEngine.evaluate(matchingKey, bucketingKey,
                     parsedSplit.targetingRule(), attributes, _evaluationContext);
-            return new TreatmentLabelAndChangeNumber(r.treatment, r.label, r.version, r.config, r.impressionsDisabled);
+            String config = parsedSplit.configurations() != null
+                    ? parsedSplit.configurations().get(r.treatment) : null;
+            return new TreatmentLabelAndChangeNumber(r.treatment, r.label,
+                    parsedSplit.changeNumber(), config, parsedSplit.impressionsDisabled());
         } catch (VersionedExceptionWrapper e) {
-            throw new ChangeNumberExceptionWrapper(e.wrappedException(), e.version());
+            throw new ChangeNumberExceptionWrapper(e.wrappedException(), parsedSplit.changeNumber());
         }
     }
 

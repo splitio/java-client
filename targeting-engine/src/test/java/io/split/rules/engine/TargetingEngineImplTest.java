@@ -11,15 +11,10 @@ import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mockito;
 
-import java.util.Arrays;
 import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
 
 public class TargetingEngineImplTest {
 
@@ -35,10 +30,8 @@ public class TargetingEngineImplTest {
     private TargetingRule buildRule(boolean killed, List<Condition> conditions, List<Prerequisite> prerequisites,
                                     int trafficAllocation) {
         return new TargetingRule(
-                "test_flag", 12345, killed, "off",
-                conditions, "user", 1L,
-                trafficAllocation, 12345, 2,
-                null, new HashSet<>(), false,
+                12345, killed, "off",
+                conditions, trafficAllocation, 12345, 2,
                 prerequisites
         );
     }
@@ -67,7 +60,6 @@ public class TargetingEngineImplTest {
         EvaluationResult result = _engine.evaluate("user1", null, rule, null, _context);
         assertEquals("off", result.treatment);
         assertEquals(EvaluationLabels.KILLED, result.label);
-        assertEquals(Long.valueOf(1L), result.version);
     }
 
     @Test
@@ -132,30 +124,5 @@ public class TargetingEngineImplTest {
         TargetingRule rule = buildRule(false, Collections.singletonList(rolloutCondition("on")), null, 100);
         EvaluationResult result = _engine.evaluate("user1", "bucket_user", rule, null, _context);
         assertEquals("on", result.treatment);
-    }
-
-    @Test
-    public void configReturnedForTreatment() throws Exception {
-        Map<String, String> configs = new HashMap<>();
-        configs.put("on", "{\"color\":\"red\"}");
-        TargetingRule rule = new TargetingRule(
-                "test_flag", 12345, false, "off",
-                Collections.singletonList(rolloutCondition("on")), "user", 1L,
-                100, 12345, 2, configs, new HashSet<>(), false, null
-        );
-        EvaluationResult result = _engine.evaluate("user1", null, rule, null, _context);
-        assertEquals("on", result.treatment);
-        assertEquals("{\"color\":\"red\"}", result.config);
-    }
-
-    @Test
-    public void impressionsDisabledPreserved() throws Exception {
-        TargetingRule rule = new TargetingRule(
-                "test_flag", 12345, false, "off",
-                Collections.singletonList(rolloutCondition("on")), "user", 1L,
-                100, 12345, 2, null, new HashSet<>(), true, null
-        );
-        EvaluationResult result = _engine.evaluate("user1", null, rule, null, _context);
-        assertEquals(true, result.impressionsDisabled);
     }
 }
