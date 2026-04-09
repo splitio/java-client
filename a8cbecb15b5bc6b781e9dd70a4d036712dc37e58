@@ -1,0 +1,38 @@
+client/src/main/java/io/split/storages/memory/RuleBasedSegmentCacheInMemoryImp.java
+  human 13,32
+---
+{
+  "attestations": [
+    {
+      "entries": [
+        {
+          "accepted_lines": 2,
+          "added_lines": 2,
+          "deleted_lines": 0,
+          "hash": "human",
+          "lines": "13,32",
+          "overridden_lines": 0
+        }
+      ],
+      "file": "client/src/main/java/io/split/storages/memory/RuleBasedSegmentCacheInMemoryImp.java"
+    }
+  ],
+  "base_commit_sha": "d6223bfe5479422e655f5ec4de497f14fecb2cdc",
+  "branch": "HEAD",
+  "commit_sha": "a8cbecb15b5bc6b781e9dd70a4d036712dc37e58",
+  "commit_time": "2026-04-09T16:40:10-03:00",
+  "git_ai_version": "1.2.6",
+  "prompts": {
+    "human": {
+      "accepted_lines": 2,
+      "agent_id": null,
+      "human_author": "Gaston Thea <gaston.thea@harness.io>",
+      "messages": [],
+      "overriden_lines": 0,
+      "total_additions": 2,
+      "total_deletions": 0
+    }
+  },
+  "repo": "git@github.com:splitio/java-client.git",
+  "schema_version": "authorship/3.0.0"
+}
