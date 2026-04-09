@@ -1,0 +1,18 @@
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.2.6",
+  "base_commit_sha": "56e251bc1db82e211c0899701d76a31904a99ec9",
+  "commit_sha": "",
+  "prompts": {
+    "human": {
+      "agent_id": null,
+      "human_author": "Gaston Thea <gaston.thea@harness.io>",
+      "messages": [],
+      "total_additions": 415,
+      "total_deletions": 0,
+      "accepted_lines": 0,
+      "overriden_lines": 0
+    }
+  }
+}
