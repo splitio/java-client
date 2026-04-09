@@ -1,0 +1,12 @@
+---
+{
+  "attestations": [],
+  "base_commit_sha": "d1ad9357b75e3d72feb7d9f2240a6bcdf2271355",
+  "branch": "HEAD",
+  "commit_sha": "1de98a0209a72548ed954c46e4b833ec4872d54b",
+  "commit_time": "2026-04-09T16:17:38-03:00",
+  "git_ai_version": "1.2.6",
+  "prompts": {},
+  "repo": "git@github.com:splitio/java-client.git",
+  "schema_version": "authorship/3.0.0"
+}
