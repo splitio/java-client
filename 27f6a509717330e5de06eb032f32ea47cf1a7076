@@ -1,0 +1,338 @@
+segment-commons/src/main/java/io/split/engine/segments/SegmentChangeFetcher.java
+  human 1-31
+segment-commons/src/main/java/io/split/engine/segments/SegmentFetcherImp.java
+  human 1-125
+segment-commons/src/main/java/io/split/engine/segments/TelemetryListener.java
+  human 1-5
+client/pom.xml
+  human 185-189
+segment-commons/src/main/java/io/split/storages/SegmentCacheCommons.java
+  human 1-11
+segment-commons/src/main/java/io/split/storages/SegmentCacheProducer.java
+  human 1-20
+segment-commons/src/main/java/io/split/engine/common/FetchOptions.java
+  human 1-97
+segment-commons/pom.xml
+  human 1-44
+segment-commons/src/main/java/io/split/client/dtos/SegmentChange.java
+  human 1-12
+segment-commons/src/main/java/io/split/engine/segments/ExecutorFactory.java
+  human 1-8
+segment-commons/src/main/java/io/split/engine/segments/SegmentImp.java
+  human 1-49
+segment-commons/src/main/java/io/split/storages/SegmentCache.java
+  human 1-8
+segment-commons/src/main/java/io/split/engine/segments/SegmentSynchronizationTaskImp.java
+  human 1-209
+segment-commons/src/main/java/io/split/storages/SegmentCacheConsumer.java
+  human 1-27
+segment-commons/src/main/java/io/split/storages/memory/SegmentCacheInMemoryImpl.java
+  human 1-68
+segment-commons/src/main/java/io/split/engine/segments/SegmentSynchronizationTask.java
+  human 1-40
+pom.xml
+  human 70
+segment-commons/src/main/java/io/split/engine/segments/SegmentFetcher.java
+  human 1-15
+segment-commons/src/main/java/io/split/storages/DefinitionsCacheConsumer.java
+  human 1-7
+segment-commons/src/test/java/io/split/engine/segments/SegmentFetcherImpTest.java
+  human 1-176
+segment-commons/src/main/java/io/split/engine/experiments/SyncTask.java
+  human 1-9
+---
+{
+  "attestations": [
+    {
+      "entries": [
+        {
+          "accepted_lines": 31,
+          "added_lines": 31,
+          "deleted_lines": 0,
+          "hash": "human",
+          "lines": "1-31",
+          "overridden_lines": 0
+        }
+      ],
+      "file": "segment-commons/src/main/java/io/split/engine/segments/SegmentChangeFetcher.java"
+    },
+    {
+      "entries": [
+        {
+          "accepted_lines": 125,
+          "added_lines": 125,
+          "deleted_lines": 0,
+          "hash": "human",
+          "lines": "1-125",
+          "overridden_lines": 0
+        }
+      ],
+      "file": "segment-commons/src/main/java/io/split/engine/segments/SegmentFetcherImp.java"
+    },
+    {
+      "entries": [
+        {
+          "accepted_lines": 5,
+          "added_lines": 5,
+          "deleted_lines": 0,
+          "hash": "human",
+          "lines": "1-5",
+          "overridden_lines": 0
+        }
+      ],
+      "file": "segment-commons/src/main/java/io/split/engine/segments/TelemetryListener.java"
+    },
+    {
+      "entries": [
+        {
+          "accepted_lines": 5,
+          "added_lines": 5,
+          "deleted_lines": 0,
+          "hash": "human",
+          "lines": "185-189",
+          "overridden_lines": 0
+        }
+      ],
+      "file": "client/pom.xml"
+    },
+    {
+      "entries": [
+        {
+          "accepted_lines": 11,
+          "added_lines": 11,
+          "deleted_lines": 0,
+          "hash": "human",
+          "lines": "1-11",
+          "overridden_lines": 0
+        }
+      ],
+      "file": "segment-commons/src/main/java/io/split/storages/SegmentCacheCommons.java"
+    },
+    {
+      "entries": [
+        {
+          "accepted_lines": 20,
+          "added_lines": 20,
+          "deleted_lines": 0,
+          "hash": "human",
+          "lines": "1-20",
+          "overridden_lines": 0
+        }
+      ],
+      "file": "segment-commons/src/main/java/io/split/storages/SegmentCacheProducer.java"
+    },
+    {
+      "entries": [
+        {
+          "accepted_lines": 97,
+          "added_lines": 97,
+          "deleted_lines": 0,
+          "hash": "human",
+          "lines": "1-97",
+          "overridden_lines": 0
+        }
+      ],
+      "file": "segment-commons/src/main/java/io/split/engine/common/FetchOptions.java"
+    },
+    {
+      "entries": [
+        {
+          "accepted_lines": 44,
+          "added_lines": 44,
+          "deleted_lines": 0,
+          "hash": "human",
+          "lines": "1-44",
+          "overridden_lines": 0
+        }
+      ],
+      "file": "segment-commons/pom.xml"
+    },
+    {
+      "entries": [
+        {
+          "accepted_lines": 12,
+          "added_lines": 12,
+          "deleted_lines": 0,
+          "hash": "human",
+          "lines": "1-12",
+          "overridden_lines": 0
+        }
+      ],
+      "file": "segment-commons/src/main/java/io/split/client/dtos/SegmentChange.java"
+    },
+    {
+      "entries": [
+        {
+          "accepted_lines": 8,
+          "added_lines": 8,
+          "deleted_lines": 0,
+          "hash": "human",
+          "lines": "1-8",
+          "overridden_lines": 0
+        }
+      ],
+      "file": "segment-commons/src/main/java/io/split/engine/segments/ExecutorFactory.java"
+    },
+    {
+      "entries": [
+        {
+          "accepted_lines": 49,
+          "added_lines": 49,
+          "deleted_lines": 0,
+          "hash": "human",
+          "lines": "1-49",
+          "overridden_lines": 0
+        }
+      ],
+      "file": "segment-commons/src/main/java/io/split/engine/segments/SegmentImp.java"
+    },
+    {
+      "entries": [
+        {
+          "accepted_lines": 8,
+          "added_lines": 8,
+          "deleted_lines": 0,
+          "hash": "human",
+          "lines": "1-8",
+          "overridden_lines": 0
+        }
+      ],
+      "file": "segment-commons/src/main/java/io/split/storages/SegmentCache.java"
+    },
+    {
+      "entries": [
+        {
+          "accepted_lines": 209,
+          "added_lines": 209,
+          "deleted_lines": 0,
+          "hash": "human",
+          "lines": "1-209",
+          "overridden_lines": 0
+        }
+      ],
+      "file": "segment-commons/src/main/java/io/split/engine/segments/SegmentSynchronizationTaskImp.java"
+    },
+    {
+      "entries": [
+        {
+          "accepted_lines": 27,
+          "added_lines": 27,
+          "deleted_lines": 0,
+          "hash": "human",
+          "lines": "1-27",
+          "overridden_lines": 0
+        }
+      ],
+      "file": "segment-commons/src/main/java/io/split/storages/SegmentCacheConsumer.java"
+    },
+    {
+      "entries": [
+        {
+          "accepted_lines": 68,
+          "added_lines": 68,
+          "deleted_lines": 0,
+          "hash": "human",
+          "lines": "1-68",
+          "overridden_lines": 0
+        }
+      ],
+      "file": "segment-commons/src/main/java/io/split/storages/memory/SegmentCacheInMemoryImpl.java"
+    },
+    {
+      "entries": [
+        {
+          "accepted_lines": 40,
+          "added_lines": 40,
+          "deleted_lines": 0,
+          "hash": "human",
+          "lines": "1-40",
+          "overridden_lines": 0
+        }
+      ],
+      "file": "segment-commons/src/main/java/io/split/engine/segments/SegmentSynchronizationTask.java"
+    },
+    {
+      "entries": [
+        {
+          "accepted_lines": 1,
+          "added_lines": 1,
+          "deleted_lines": 0,
+          "hash": "human",
+          "lines": "70",
+          "overridden_lines": 0
+        }
+      ],
+      "file": "pom.xml"
+    },
+    {
+      "entries": [
+        {
+          "accepted_lines": 15,
+          "added_lines": 15,
+          "deleted_lines": 0,
+          "hash": "human",
+          "lines": "1-15",
+          "overridden_lines": 0
+        }
+      ],
+      "file": "segment-commons/src/main/java/io/split/engine/segments/SegmentFetcher.java"
+    },
+    {
+      "entries": [
+        {
+          "accepted_lines": 7,
+          "added_lines": 7,
+          "deleted_lines": 0,
+          "hash": "human",
+          "lines": "1-7",
+          "overridden_lines": 0
+        }
+      ],
+      "file": "segment-commons/src/main/java/io/split/storages/DefinitionsCacheConsumer.java"
+    },
+    {
+      "entries": [
+        {
+          "accepted_lines": 176,
+          "added_lines": 176,
+          "deleted_lines": 0,
+          "hash": "human",
+          "lines": "1-176",
+          "overridden_lines": 0
+        }
+      ],
+      "file": "segment-commons/src/test/java/io/split/engine/segments/SegmentFetcherImpTest.java"
+    },
+    {
+      "entries": [
+        {
+          "accepted_lines": 9,
+          "added_lines": 9,
+          "deleted_lines": 0,
+          "hash": "human",
+          "lines": "1-9",
+          "overridden_lines": 0
+        }
+      ],
+      "file": "segment-commons/src/main/java/io/split/engine/experiments/SyncTask.java"
+    }
+  ],
+  "base_commit_sha": "1de98a0209a72548ed954c46e4b833ec4872d54b",
+  "branch": "HEAD",
+  "commit_sha": "27f6a509717330e5de06eb032f32ea47cf1a7076",
+  "commit_time": "2026-04-09T16:17:45-03:00",
+  "git_ai_version": "1.2.6",
+  "prompts": {
+    "human": {
+      "accepted_lines": 967,
+      "agent_id": null,
+      "human_author": "Gaston Thea <gaston.thea@harness.io>",
+      "messages": [],
+      "overriden_lines": 0,
+      "total_additions": 967,
+      "total_deletions": 0
+    }
+  },
+  "repo": "git@github.com:splitio/java-client.git",
+  "schema_version": "authorship/3.0.0"
+}
