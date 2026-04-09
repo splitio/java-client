@@ -1,0 +1,38 @@
+client/src/main/java/io/split/client/dtos/ExcludedSegments.java
+  human 4-5
+---
+{
+  "attestations": [
+    {
+      "entries": [
+        {
+          "accepted_lines": 2,
+          "added_lines": 2,
+          "deleted_lines": 0,
+          "hash": "human",
+          "lines": "4-5",
+          "overridden_lines": 0
+        }
+      ],
+      "file": "client/src/main/java/io/split/client/dtos/ExcludedSegments.java"
+    }
+  ],
+  "base_commit_sha": "c12432ad2dd98cfad0827906da1993e14ae8b8bb",
+  "branch": "HEAD",
+  "commit_sha": "e1e4f0aedd71f5b8b9ce1f45a4634f612bc82d15",
+  "commit_time": "2026-04-09T16:07:41-03:00",
+  "git_ai_version": "1.2.6",
+  "prompts": {
+    "human": {
+      "accepted_lines": 2,
+      "agent_id": null,
+      "human_author": "Gaston Thea <gaston.thea@harness.io>",
+      "messages": [],
+      "overriden_lines": 0,
+      "total_additions": 2,
+      "total_deletions": 0
+    }
+  },
+  "repo": "git@github.com:splitio/java-client.git",
+  "schema_version": "authorship/3.0.0"
+}
