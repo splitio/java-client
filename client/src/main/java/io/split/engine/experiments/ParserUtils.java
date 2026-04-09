@@ -145,49 +145,63 @@ public final class ParserUtils {
                 delegate = new ContainsAnyOfSetMatcher(matcher.whitelistMatcherData.whitelist);
                 break;
             case STARTS_WITH:
+                checkNotNull(matcher.whitelistMatcherData);
                 delegate = new StartsWithAnyOfMatcher(matcher.whitelistMatcherData.whitelist);
                 break;
             case ENDS_WITH:
+                checkNotNull(matcher.whitelistMatcherData);
                 delegate = new EndsWithAnyOfMatcher(matcher.whitelistMatcherData.whitelist);
                 break;
             case CONTAINS_STRING:
+                checkNotNull(matcher.whitelistMatcherData);
                 delegate = new ContainsAnyOfMatcher(matcher.whitelistMatcherData.whitelist);
                 break;
             case MATCHES_STRING:
+                checkNotNull(matcher.stringMatcherData);
                 delegate = new RegularExpressionMatcher(matcher.stringMatcherData);
                 break;
             case IN_SPLIT_TREATMENT:
-                if (matcher.dependencyMatcherData == null) throw new NullPointerException(
-                        "MatcherType is " + matcher.matcherType + ". matcher.dependencyMatcherData() MUST NOT BE null");
+                checkNotNull(matcher.dependencyMatcherData,
+                        "MatcherType is " + matcher.matcherType
+                                + ". matcher.dependencyMatcherData() MUST NOT BE null");
                 delegate = new DependencyMatcher(matcher.dependencyMatcherData.split, matcher.dependencyMatcherData.treatments);
                 break;
             case EQUAL_TO_BOOLEAN:
-                if (matcher.booleanMatcherData == null) throw new NullPointerException(
-                        "MatcherType is " + matcher.matcherType + ". matcher.booleanMatcherData() MUST NOT BE null");
+                checkNotNull(matcher.booleanMatcherData,
+                        "MatcherType is " + matcher.matcherType
+                                + ". matcher.booleanMatcherData() MUST NOT BE null");
                 delegate = new BooleanMatcher(matcher.booleanMatcherData);
                 break;
             case EQUAL_TO_SEMVER:
+                checkNotNull(matcher.stringMatcherData, "stringMatcherData is required for EQUAL_TO_SEMVER matcher type");
                 delegate = new EqualToSemverMatcher(matcher.stringMatcherData);
                 break;
             case GREATER_THAN_OR_EQUAL_TO_SEMVER:
+                checkNotNull(matcher.stringMatcherData, "stringMatcherData is required for GREATER_THAN_OR_EQUAL_TO_SEMVER matcher type");
                 delegate = new GreaterThanOrEqualToSemverMatcher(matcher.stringMatcherData);
                 break;
             case LESS_THAN_OR_EQUAL_TO_SEMVER:
+                checkNotNull(matcher.stringMatcherData, "stringMatcherData is required for LESS_THAN_OR_EQUAL_SEMVER matcher type");
                 delegate = new LessThanOrEqualToSemverMatcher(matcher.stringMatcherData);
                 break;
             case IN_LIST_SEMVER:
+                checkNotNull(matcher.whitelistMatcherData, "whitelistMatcherData is required for IN_LIST_SEMVER matcher type");
                 delegate = new InListSemverMatcher(matcher.whitelistMatcherData.whitelist);
                 break;
             case BETWEEN_SEMVER:
+                checkNotNull(matcher.betweenStringMatcherData, "betweenStringMatcherData is required for BETWEEN_SEMVER matcher type");
                 delegate = new BetweenSemverMatcher(matcher.betweenStringMatcherData.start, matcher.betweenStringMatcherData.end);
                 break;
             case IN_RULE_BASED_SEGMENT:
+                checkNotNull(matcher.userDefinedSegmentMatcherData);
                 String ruleBasedSegmentName = matcher.userDefinedSegmentMatcherData.segmentName;
                 delegate = new RuleBasedSegmentMatcher(ruleBasedSegmentName);
                 break;
             default:
                 throw new IllegalArgumentException("Unknown matcher type: " + matcher.matcherType);
         }
+
+        checkNotNull(delegate, "We were not able to create a matcher for: " + matcher.matcherType);
 
         String attribute = null;
         if (matcher.keySelector != null && matcher.keySelector.attribute != null) {
