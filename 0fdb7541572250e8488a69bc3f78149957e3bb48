@@ -1,0 +1,60 @@
+parsing-commons/src/main/java/io/split/engine/experiments/ParserUtils.java
+  8708ddbc-41d6-47c9-bcb7-9d209ee25aeb 4,39,84,92-93,103,108,112,116,121,126,131,135,139,143,147,151,155,159,163-165,169-171,175,179,183,187,191,195,203,215
+  human 94-95,204
+---
+{
+  "attestations": [
+    {
+      "entries": [
+        {
+          "accepted_lines": 33,
+          "added_lines": 37,
+          "deleted_lines": 6,
+          "hash": "8708ddbc-41d6-47c9-bcb7-9d209ee25aeb",
+          "lines": "4,39,84,92-93,103,108,112,116,121,126,131,135,139,143,147,151,155,159,163-165,169-171,175,179,183,187,191,195,203,215",
+          "overridden_lines": 0
+        },
+        {
+          "accepted_lines": 3,
+          "added_lines": 3,
+          "deleted_lines": 0,
+          "hash": "human",
+          "lines": "94-95,204",
+          "overridden_lines": 0
+        }
+      ],
+      "file": "parsing-commons/src/main/java/io/split/engine/experiments/ParserUtils.java"
+    }
+  ],
+  "base_commit_sha": "7ac5ee462ec43dc99effd2be29d676bae4d2fd95",
+  "branch": "continued-modularization_1-2",
+  "commit_sha": "0fdb7541572250e8488a69bc3f78149957e3bb48",
+  "commit_time": "2026-04-09T16:38:59-03:00",
+  "git_ai_version": "1.2.6",
+  "prompts": {
+    "8708ddbc-41d6-47c9-bcb7-9d209ee25aeb": {
+      "accepted_lines": 33,
+      "agent_id": {
+        "id": "8708ddbc-41d6-47c9-bcb7-9d209ee25aeb",
+        "model": "claude-sonnet-4-6",
+        "tool": "claude"
+      },
+      "human_author": "Gaston Thea <gaston.thea@harness.io>",
+      "messages": [],
+      "overriden_lines": 0,
+      "total_additions": 37,
+      "total_deletions": 6
+    },
+    "human": {
+      "accepted_lines": 3,
+      "agent_id": null,
+      "human_author": "Gaston Thea <gaston.thea@harness.io>",
+      "messages": [],
+      "overriden_lines": 0,
+      "total_additions": 3,
+      "total_deletions": 0
+    }
+  },
+  "repo": "git@github.com:splitio/java-client.git",
+  "schema_version": "authorship/3.0.0"
+}
