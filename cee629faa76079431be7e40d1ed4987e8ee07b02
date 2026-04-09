@@ -1,0 +1,203 @@
+client/src/test/java/io/split/engine/segments/SegmentFetcherImpTest.java
+  human 7,34,54,89,114,121,128
+client/src/test/java/io/split/engine/common/SynchronizerTest.java
+  human 8,11,86-87,89-90
+client/src/main/java/io/split/client/SplitFactoryImpl.java
+  human 60,63,90,135,434-437,442,444,708-711,716,718
+client/src/test/java/io/split/engine/segments/SegmentSynchronizationTaskImpTest.java
+  human 12,31,47-49,66,105,111,131,135,163,176
+client/src/main/java/io/split/storages/DefinitionsCacheConsumer.java
+  human 1-7
+client/src/main/java/io/split/engine/segments/SegmentFetcherImp.java
+  human 11,19,24-28,97
+client/src/main/java/io/split/engine/segments/TelemetryListener.java
+  human 1-5
+client/src/test/java/io/split/engine/common/LocalhostSynchronizerTest.java
+  human 10,13,29-30,52,79
+client/src/main/java/io/split/storages/SplitCacheCommons.java
+  human 3
+client/src/main/java/io/split/engine/segments/SegmentSynchronizationTaskImp.java
+  human 4,14,16,35,38-39,45-47,49,51-53,55,58-61,79,197,204
+client/src/test/java/io/split/engine/experiments/SplitFetcherTest.java
+  human 15,19,57-58,166,191,293
+client/src/main/java/io/split/engine/segments/ExecutorFactory.java
+  human 1-8
+---
+{
+  "attestations": [
+    {
+      "entries": [
+        {
+          "accepted_lines": 7,
+          "added_lines": 7,
+          "deleted_lines": 0,
+          "hash": "human",
+          "lines": "7,34,54,89,114,121,128",
+          "overridden_lines": 0
+        }
+      ],
+      "file": "client/src/test/java/io/split/engine/segments/SegmentFetcherImpTest.java"
+    },
+    {
+      "entries": [
+        {
+          "accepted_lines": 6,
+          "added_lines": 6,
+          "deleted_lines": 0,
+          "hash": "human",
+          "lines": "8,11,86-87,89-90",
+          "overridden_lines": 0
+        }
+      ],
+      "file": "client/src/test/java/io/split/engine/common/SynchronizerTest.java"
+    },
+    {
+      "entries": [
+        {
+          "accepted_lines": 16,
+          "added_lines": 16,
+          "deleted_lines": 0,
+          "hash": "human",
+          "lines": "60,63,90,135,434-437,442,444,708-711,716,718",
+          "overridden_lines": 0
+        }
+      ],
+      "file": "client/src/main/java/io/split/client/SplitFactoryImpl.java"
+    },
+    {
+      "entries": [
+        {
+          "accepted_lines": 12,
+          "added_lines": 12,
+          "deleted_lines": 0,
+          "hash": "human",
+          "lines": "12,31,47-49,66,105,111,131,135,163,176",
+          "overridden_lines": 0
+        }
+      ],
+      "file": "client/src/test/java/io/split/engine/segments/SegmentSynchronizationTaskImpTest.java"
+    },
+    {
+      "entries": [
+        {
+          "accepted_lines": 7,
+          "added_lines": 7,
+          "deleted_lines": 0,
+          "hash": "human",
+          "lines": "1-7",
+          "overridden_lines": 0
+        }
+      ],
+      "file": "client/src/main/java/io/split/storages/DefinitionsCacheConsumer.java"
+    },
+    {
+      "entries": [
+        {
+          "accepted_lines": 8,
+          "added_lines": 8,
+          "deleted_lines": 0,
+          "hash": "human",
+          "lines": "11,19,24-28,97",
+          "overridden_lines": 0
+        }
+      ],
+      "file": "client/src/main/java/io/split/engine/segments/SegmentFetcherImp.java"
+    },
+    {
+      "entries": [
+        {
+          "accepted_lines": 5,
+          "added_lines": 5,
+          "deleted_lines": 0,
+          "hash": "human",
+          "lines": "1-5",
+          "overridden_lines": 0
+        }
+      ],
+      "file": "client/src/main/java/io/split/engine/segments/TelemetryListener.java"
+    },
+    {
+      "entries": [
+        {
+          "accepted_lines": 6,
+          "added_lines": 6,
+          "deleted_lines": 0,
+          "hash": "human",
+          "lines": "10,13,29-30,52,79",
+          "overridden_lines": 0
+        }
+      ],
+      "file": "client/src/test/java/io/split/engine/common/LocalhostSynchronizerTest.java"
+    },
+    {
+      "entries": [
+        {
+          "accepted_lines": 1,
+          "added_lines": 1,
+          "deleted_lines": 0,
+          "hash": "human",
+          "lines": "3",
+          "overridden_lines": 0
+        }
+      ],
+      "file": "client/src/main/java/io/split/storages/SplitCacheCommons.java"
+    },
+    {
+      "entries": [
+        {
+          "accepted_lines": 21,
+          "added_lines": 21,
+          "deleted_lines": 0,
+          "hash": "human",
+          "lines": "4,14,16,35,38-39,45-47,49,51-53,55,58-61,79,197,204",
+          "overridden_lines": 0
+        }
+      ],
+      "file": "client/src/main/java/io/split/engine/segments/SegmentSynchronizationTaskImp.java"
+    },
+    {
+      "entries": [
+        {
+          "accepted_lines": 7,
+          "added_lines": 7,
+          "deleted_lines": 0,
+          "hash": "human",
+          "lines": "15,19,57-58,166,191,293",
+          "overridden_lines": 0
+        }
+      ],
+      "file": "client/src/test/java/io/split/engine/experiments/SplitFetcherTest.java"
+    },
+    {
+      "entries": [
+        {
+          "accepted_lines": 8,
+          "added_lines": 8,
+          "deleted_lines": 0,
+          "hash": "human",
+          "lines": "1-8",
+          "overridden_lines": 0
+        }
+      ],
+      "file": "client/src/main/java/io/split/engine/segments/ExecutorFactory.java"
+    }
+  ],
+  "base_commit_sha": "4c5414fe32175cdf52a8f5119f4701a622e64f78",
+  "branch": "HEAD",
+  "commit_sha": "cee629faa76079431be7e40d1ed4987e8ee07b02",
+  "commit_time": "2026-04-09T16:43:50-03:00",
+  "git_ai_version": "1.2.6",
+  "prompts": {
+    "human": {
+      "accepted_lines": 104,
+      "agent_id": null,
+      "human_author": "Gaston Thea <gaston.thea@harness.io>",
+      "messages": [],
+      "overriden_lines": 0,
+      "total_additions": 104,
+      "total_deletions": 0
+    }
+  },
+  "repo": "git@github.com:splitio/java-client.git",
+  "schema_version": "authorship/3.0.0"
+}
