@@ -1,67 +1,54 @@
-okhttp-modules/AGENTS.md
-  human 1-42
 client/src/main/java/io/split/engine/AGENTS.md
   human 1-64
-pluggable-storage/AGENTS.md
-  human 1-38
-client/src/main/java/io/split/engine/CLAUDE.md
-  human 1
-AGENTS.md
-  human 1-120
-docs/cross-sdk-reuse-analysis.md
-  human 1-200
 .vscode/settings.json
   human 1-3
 client/CLAUDE.md
   human 1
-client/src/main/java/io/split/client/impressions/CLAUDE.md
+pluggable-storage/CLAUDE.md
   human 1
+targeting-engine/README.md
+  human 1-129
 client/src/main/java/io/split/storages/AGENTS.md
   human 1-72
-CLAUDE.md
+client/src/main/java/io/split/telemetry/CLAUDE.md
+  human 1
+okhttp-modules/AGENTS.md
+  human 1-42
+redis-wrapper/AGENTS.md
+  human 1-48
+client/src/main/java/io/split/client/impressions/AGENTS.md
+  human 1-56
+client/src/main/java/io/split/client/impressions/CLAUDE.md
+  human 1
+client/src/main/java/io/split/telemetry/AGENTS.md
+  human 1-53
+docs/superpowers/plans/2026-04-08-targeting-rule-factory.md
+  human 1-568
+AGENTS.md
+  human 1-120
+client/src/main/java/io/split/engine/CLAUDE.md
+  human 1
+docs/cross-sdk-reuse-analysis.md
+  human 1-200
+client/AGENTS.md
+  human 1-74
+testing/src/main/java/io/split/client/App.java
+  human 1-81
+okhttp-modules/CLAUDE.md
+  human 1
+pluggable-storage/AGENTS.md
+  human 1-38
+docs/modularization-plan.md
+  human 1-170
+redis-wrapper/CLAUDE.md
   human 1
 client/src/main/java/io/split/storages/CLAUDE.md
   human 1
-client/src/main/java/io/split/client/impressions/AGENTS.md
-  human 1-56
-targeting-engine/README.md
-  human 1-129
-client/src/main/java/io/split/telemetry/AGENTS.md
-  human 1-53
-testing/src/main/java/io/split/client/App.java
-  human 1-81
-client/src/main/java/io/split/telemetry/CLAUDE.md
-  human 1
-docs/modularization-plan.md
-  human 1-170
-client/AGENTS.md
-  human 1-74
-pluggable-storage/CLAUDE.md
-  human 1
-redis-wrapper/AGENTS.md
-  human 1-48
-redis-wrapper/CLAUDE.md
-  human 1
-docs/superpowers/plans/2026-04-08-targeting-rule-factory.md
-  human 1-568
-okhttp-modules/CLAUDE.md
+CLAUDE.md
   human 1
 ---
 {
   "attestations": [
-    {
-      "entries": [
-        {
-          "accepted_lines": 42,
-          "added_lines": 42,
-          "deleted_lines": 0,
-          "hash": "human",
-          "lines": "1-42",
-          "overridden_lines": 0
-        }
-      ],
-      "file": "okhttp-modules/AGENTS.md"
-    },
     {
       "entries": [
         {
@@ -74,58 +61,6 @@ okhttp-modules/CLAUDE.md
         }
       ],
       "file": "client/src/main/java/io/split/engine/AGENTS.md"
-    },
-    {
-      "entries": [
-        {
-          "accepted_lines": 38,
-          "added_lines": 38,
-          "deleted_lines": 0,
-          "hash": "human",
-          "lines": "1-38",
-          "overridden_lines": 0
-        }
-      ],
-      "file": "pluggable-storage/AGENTS.md"
-    },
-    {
-      "entries": [
-        {
-          "accepted_lines": 1,
-          "added_lines": 1,
-          "deleted_lines": 0,
-          "hash": "human",
-          "lines": "1",
-          "overridden_lines": 0
-        }
-      ],
-      "file": "client/src/main/java/io/split/engine/CLAUDE.md"
-    },
-    {
-      "entries": [
-        {
-          "accepted_lines": 120,
-          "added_lines": 120,
-          "deleted_lines": 0,
-          "hash": "human",
-          "lines": "1-120",
-          "overridden_lines": 0
-        }
-      ],
-      "file": "AGENTS.md"
-    },
-    {
-      "entries": [
-        {
-          "accepted_lines": 200,
-          "added_lines": 200,
-          "deleted_lines": 0,
-          "hash": "human",
-          "lines": "1-200",
-          "overridden_lines": 0
-        }
-      ],
-      "file": "docs/cross-sdk-reuse-analysis.md"
     },
     {
       "entries": [
@@ -164,7 +99,20 @@ okhttp-modules/CLAUDE.md
           "overridden_lines": 0
         }
       ],
-      "file": "client/src/main/java/io/split/client/impressions/CLAUDE.md"
+      "file": "pluggable-storage/CLAUDE.md"
+    },
+    {
+      "entries": [
+        {
+          "accepted_lines": 129,
+          "added_lines": 129,
+          "deleted_lines": 0,
+          "hash": "human",
+          "lines": "1-129",
+          "overridden_lines": 0
+        }
+      ],
+      "file": "targeting-engine/README.md"
     },
     {
       "entries": [
@@ -190,20 +138,33 @@ okhttp-modules/CLAUDE.md
           "overridden_lines": 0
         }
       ],
-      "file": "CLAUDE.md"
+      "file": "client/src/main/java/io/split/telemetry/CLAUDE.md"
     },
     {
       "entries": [
         {
-          "accepted_lines": 1,
-          "added_lines": 1,
+          "accepted_lines": 42,
+          "added_lines": 42,
           "deleted_lines": 0,
           "hash": "human",
-          "lines": "1",
+          "lines": "1-42",
           "overridden_lines": 0
         }
       ],
-      "file": "client/src/main/java/io/split/storages/CLAUDE.md"
+      "file": "okhttp-modules/AGENTS.md"
+    },
+    {
+      "entries": [
+        {
+          "accepted_lines": 48,
+          "added_lines": 48,
+          "deleted_lines": 0,
+          "hash": "human",
+          "lines": "1-48",
+          "overridden_lines": 0
+        }
+      ],
+      "file": "redis-wrapper/AGENTS.md"
     },
     {
       "entries": [
@@ -221,15 +182,15 @@ okhttp-modules/CLAUDE.md
     {
       "entries": [
         {
-          "accepted_lines": 129,
-          "added_lines": 129,
+          "accepted_lines": 1,
+          "added_lines": 1,
           "deleted_lines": 0,
           "hash": "human",
-          "lines": "1-129",
+          "lines": "1",
           "overridden_lines": 0
         }
       ],
-      "file": "targeting-engine/README.md"
+      "file": "client/src/main/java/io/split/client/impressions/CLAUDE.md"
     },
     {
       "entries": [
@@ -243,6 +204,71 @@ okhttp-modules/CLAUDE.md
         }
       ],
       "file": "client/src/main/java/io/split/telemetry/AGENTS.md"
+    },
+    {
+      "entries": [
+        {
+          "accepted_lines": 568,
+          "added_lines": 568,
+          "deleted_lines": 0,
+          "hash": "human",
+          "lines": "1-568",
+          "overridden_lines": 0
+        }
+      ],
+      "file": "docs/superpowers/plans/2026-04-08-targeting-rule-factory.md"
+    },
+    {
+      "entries": [
+        {
+          "accepted_lines": 120,
+          "added_lines": 120,
+          "deleted_lines": 0,
+          "hash": "human",
+          "lines": "1-120",
+          "overridden_lines": 0
+        }
+      ],
+      "file": "AGENTS.md"
+    },
+    {
+      "entries": [
+        {
+          "accepted_lines": 1,
+          "added_lines": 1,
+          "deleted_lines": 0,
+          "hash": "human",
+          "lines": "1",
+          "overridden_lines": 0
+        }
+      ],
+      "file": "client/src/main/java/io/split/engine/CLAUDE.md"
+    },
+    {
+      "entries": [
+        {
+          "accepted_lines": 200,
+          "added_lines": 200,
+          "deleted_lines": 0,
+          "hash": "human",
+          "lines": "1-200",
+          "overridden_lines": 0
+        }
+      ],
+      "file": "docs/cross-sdk-reuse-analysis.md"
+    },
+    {
+      "entries": [
+        {
+          "accepted_lines": 74,
+          "added_lines": 74,
+          "deleted_lines": 0,
+          "hash": "human",
+          "lines": "1-74",
+          "overridden_lines": 0
+        }
+      ],
+      "file": "client/AGENTS.md"
     },
     {
       "entries": [
@@ -268,7 +294,20 @@ okhttp-modules/CLAUDE.md
           "overridden_lines": 0
         }
       ],
-      "file": "client/src/main/java/io/split/telemetry/CLAUDE.md"
+      "file": "okhttp-modules/CLAUDE.md"
+    },
+    {
+      "entries": [
+        {
+          "accepted_lines": 38,
+          "added_lines": 38,
+          "deleted_lines": 0,
+          "hash": "human",
+          "lines": "1-38",
+          "overridden_lines": 0
+        }
+      ],
+      "file": "pluggable-storage/AGENTS.md"
     },
     {
       "entries": [
@@ -286,45 +325,6 @@ okhttp-modules/CLAUDE.md
     {
       "entries": [
         {
-          "accepted_lines": 74,
-          "added_lines": 74,
-          "deleted_lines": 0,
-          "hash": "human",
-          "lines": "1-74",
-          "overridden_lines": 0
-        }
-      ],
-      "file": "client/AGENTS.md"
-    },
-    {
-      "entries": [
-        {
-          "accepted_lines": 1,
-          "added_lines": 1,
-          "deleted_lines": 0,
-          "hash": "human",
-          "lines": "1",
-          "overridden_lines": 0
-        }
-      ],
-      "file": "pluggable-storage/CLAUDE.md"
-    },
-    {
-      "entries": [
-        {
-          "accepted_lines": 48,
-          "added_lines": 48,
-          "deleted_lines": 0,
-          "hash": "human",
-          "lines": "1-48",
-          "overridden_lines": 0
-        }
-      ],
-      "file": "redis-wrapper/AGENTS.md"
-    },
-    {
-      "entries": [
-        {
           "accepted_lines": 1,
           "added_lines": 1,
           "deleted_lines": 0,
@@ -338,15 +338,15 @@ okhttp-modules/CLAUDE.md
     {
       "entries": [
         {
-          "accepted_lines": 568,
-          "added_lines": 568,
+          "accepted_lines": 1,
+          "added_lines": 1,
           "deleted_lines": 0,
           "hash": "human",
-          "lines": "1-568",
+          "lines": "1",
           "overridden_lines": 0
         }
       ],
-      "file": "docs/superpowers/plans/2026-04-08-targeting-rule-factory.md"
+      "file": "client/src/main/java/io/split/storages/CLAUDE.md"
     },
     {
       "entries": [
@@ -359,25 +359,22 @@ okhttp-modules/CLAUDE.md
           "overridden_lines": 0
         }
       ],
-      "file": "okhttp-modules/CLAUDE.md"
+      "file": "CLAUDE.md"
     }
   ],
-  "base_commit_sha": "8f8289de919eec5ec3e183166b23fe97b2bc6e24",
-  "branch": "continued-modularization_3-3",
+  "base_commit_sha": "818b50175ad6241e6f05a0577f6e16c7afed96e9",
   "commit_sha": "818b50175ad6241e6f05a0577f6e16c7afed96e9",
-  "commit_time": "2026-04-17T13:38:31-03:00",
   "git_ai_version": "1.2.6",
   "prompts": {
     "human": {
       "accepted_lines": 1727,
       "agent_id": null,
-      "human_author": "Gaston Thea <gaston.thea@harness.io>",
+      "human_author": null,
       "messages": [],
       "overriden_lines": 0,
       "total_additions": 1727,
       "total_deletions": 0
     }
   },
-  "repo": "git@github.com:splitio/java-client.git",
   "schema_version": "authorship/3.0.0"
 }
