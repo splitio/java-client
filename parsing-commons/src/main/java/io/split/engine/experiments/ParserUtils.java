@@ -36,8 +36,7 @@ import io.split.rules.matchers.strings.RegularExpressionMatcher;
 
 import java.util.ArrayList;
 import java.util.List;
-
-import static com.google.common.base.Preconditions.checkNotNull;
+import java.util.Objects;
 
 public final class ParserUtils {
 
@@ -86,7 +85,7 @@ public final class ParserUtils {
     }
 
 
-    private static io.split.rules.model.DataType toRulesDataType(io.split.client.dtos.DataType dt) {
+    private static io.split.rules.model.DataType toRulesDataType(DataType dt) {
         return io.split.rules.model.DataType.valueOf(dt.name());
     }
 
@@ -101,99 +100,99 @@ public final class ParserUtils {
                 delegate = new AllKeysMatcher();
                 break;
             case IN_SEGMENT:
-                checkNotNull(matcher.userDefinedSegmentMatcherData);
+                Objects.requireNonNull(matcher.userDefinedSegmentMatcherData);
                 String segmentName = matcher.userDefinedSegmentMatcherData.segmentName;
                 delegate = new UserDefinedSegmentMatcher(segmentName);
                 break;
             case WHITELIST:
-                checkNotNull(matcher.whitelistMatcherData);
+                Objects.requireNonNull(matcher.whitelistMatcherData);
                 delegate = new WhitelistMatcher(matcher.whitelistMatcherData.whitelist);
                 break;
             case EQUAL_TO:
-                checkNotNull(matcher.unaryNumericMatcherData);
+                Objects.requireNonNull(matcher.unaryNumericMatcherData);
                 delegate = new EqualToMatcher(matcher.unaryNumericMatcherData.value, toRulesDataType(matcher.unaryNumericMatcherData.dataType));
                 break;
             case GREATER_THAN_OR_EQUAL_TO:
-                checkNotNull(matcher.unaryNumericMatcherData);
+                Objects.requireNonNull(matcher.unaryNumericMatcherData);
                 delegate = new GreaterThanOrEqualToMatcher(
                         matcher.unaryNumericMatcherData.value, toRulesDataType(matcher.unaryNumericMatcherData.dataType));
                 break;
             case LESS_THAN_OR_EQUAL_TO:
-                checkNotNull(matcher.unaryNumericMatcherData);
+                Objects.requireNonNull(matcher.unaryNumericMatcherData);
                 delegate = new LessThanOrEqualToMatcher(
                         matcher.unaryNumericMatcherData.value, toRulesDataType(matcher.unaryNumericMatcherData.dataType));
                 break;
             case BETWEEN:
-                checkNotNull(matcher.betweenMatcherData);
+                Objects.requireNonNull(matcher.betweenMatcherData);
                 delegate = new BetweenMatcher(matcher.betweenMatcherData.start,
                         matcher.betweenMatcherData.end, toRulesDataType(matcher.betweenMatcherData.dataType));
                 break;
             case EQUAL_TO_SET:
-                checkNotNull(matcher.whitelistMatcherData);
+                Objects.requireNonNull(matcher.whitelistMatcherData);
                 delegate = new EqualToSetMatcher(matcher.whitelistMatcherData.whitelist);
                 break;
             case PART_OF_SET:
-                checkNotNull(matcher.whitelistMatcherData);
+                Objects.requireNonNull(matcher.whitelistMatcherData);
                 delegate = new PartOfSetMatcher(matcher.whitelistMatcherData.whitelist);
                 break;
             case CONTAINS_ALL_OF_SET:
-                checkNotNull(matcher.whitelistMatcherData);
+                Objects.requireNonNull(matcher.whitelistMatcherData);
                 delegate = new ContainsAllOfSetMatcher(matcher.whitelistMatcherData.whitelist);
                 break;
             case CONTAINS_ANY_OF_SET:
-                checkNotNull(matcher.whitelistMatcherData);
+                Objects.requireNonNull(matcher.whitelistMatcherData);
                 delegate = new ContainsAnyOfSetMatcher(matcher.whitelistMatcherData.whitelist);
                 break;
             case STARTS_WITH:
-                checkNotNull(matcher.whitelistMatcherData);
+                Objects.requireNonNull(matcher.whitelistMatcherData);
                 delegate = new StartsWithAnyOfMatcher(matcher.whitelistMatcherData.whitelist);
                 break;
             case ENDS_WITH:
-                checkNotNull(matcher.whitelistMatcherData);
+                Objects.requireNonNull(matcher.whitelistMatcherData);
                 delegate = new EndsWithAnyOfMatcher(matcher.whitelistMatcherData.whitelist);
                 break;
             case CONTAINS_STRING:
-                checkNotNull(matcher.whitelistMatcherData);
+                Objects.requireNonNull(matcher.whitelistMatcherData);
                 delegate = new ContainsAnyOfMatcher(matcher.whitelistMatcherData.whitelist);
                 break;
             case MATCHES_STRING:
-                checkNotNull(matcher.stringMatcherData);
+                Objects.requireNonNull(matcher.stringMatcherData);
                 delegate = new RegularExpressionMatcher(matcher.stringMatcherData);
                 break;
             case IN_SPLIT_TREATMENT:
-                checkNotNull(matcher.dependencyMatcherData,
+                Objects.requireNonNull(matcher.dependencyMatcherData,
                         "MatcherType is " + matcher.matcherType
                                 + ". matcher.dependencyMatcherData() MUST NOT BE null");
                 delegate = new DependencyMatcher(matcher.dependencyMatcherData.split, matcher.dependencyMatcherData.treatments);
                 break;
             case EQUAL_TO_BOOLEAN:
-                checkNotNull(matcher.booleanMatcherData,
+                Objects.requireNonNull(matcher.booleanMatcherData,
                         "MatcherType is " + matcher.matcherType
                                 + ". matcher.booleanMatcherData() MUST NOT BE null");
                 delegate = new BooleanMatcher(matcher.booleanMatcherData);
                 break;
             case EQUAL_TO_SEMVER:
-                checkNotNull(matcher.stringMatcherData, "stringMatcherData is required for EQUAL_TO_SEMVER matcher type");
+                Objects.requireNonNull(matcher.stringMatcherData, "stringMatcherData is required for EQUAL_TO_SEMVER matcher type");
                 delegate = new EqualToSemverMatcher(matcher.stringMatcherData);
                 break;
             case GREATER_THAN_OR_EQUAL_TO_SEMVER:
-                checkNotNull(matcher.stringMatcherData, "stringMatcherData is required for GREATER_THAN_OR_EQUAL_TO_SEMVER matcher type");
+                Objects.requireNonNull(matcher.stringMatcherData, "stringMatcherData is required for GREATER_THAN_OR_EQUAL_TO_SEMVER matcher type");
                 delegate = new GreaterThanOrEqualToSemverMatcher(matcher.stringMatcherData);
                 break;
             case LESS_THAN_OR_EQUAL_TO_SEMVER:
-                checkNotNull(matcher.stringMatcherData, "stringMatcherData is required for LESS_THAN_OR_EQUAL_SEMVER matcher type");
+                Objects.requireNonNull(matcher.stringMatcherData, "stringMatcherData is required for LESS_THAN_OR_EQUAL_SEMVER matcher type");
                 delegate = new LessThanOrEqualToSemverMatcher(matcher.stringMatcherData);
                 break;
             case IN_LIST_SEMVER:
-                checkNotNull(matcher.whitelistMatcherData, "whitelistMatcherData is required for IN_LIST_SEMVER matcher type");
+                Objects.requireNonNull(matcher.whitelistMatcherData, "whitelistMatcherData is required for IN_LIST_SEMVER matcher type");
                 delegate = new InListSemverMatcher(matcher.whitelistMatcherData.whitelist);
                 break;
             case BETWEEN_SEMVER:
-                checkNotNull(matcher.betweenStringMatcherData, "betweenStringMatcherData is required for BETWEEN_SEMVER matcher type");
+                Objects.requireNonNull(matcher.betweenStringMatcherData, "betweenStringMatcherData is required for BETWEEN_SEMVER matcher type");
                 delegate = new BetweenSemverMatcher(matcher.betweenStringMatcherData.start, matcher.betweenStringMatcherData.end);
                 break;
             case IN_RULE_BASED_SEGMENT:
-                checkNotNull(matcher.userDefinedSegmentMatcherData);
+                Objects.requireNonNull(matcher.userDefinedSegmentMatcherData);
                 String ruleBasedSegmentName = matcher.userDefinedSegmentMatcherData.segmentName;
                 delegate = new RuleBasedSegmentMatcher(ruleBasedSegmentName);
                 break;
@@ -201,7 +200,7 @@ public final class ParserUtils {
                 throw new IllegalArgumentException("Unknown matcher type: " + matcher.matcherType);
         }
 
-        checkNotNull(delegate, "We were not able to create a matcher for: " + matcher.matcherType);
+        Objects.requireNonNull(delegate, "We were not able to create a matcher for: " + matcher.matcherType);
 
         String attribute = null;
         if (matcher.keySelector != null && matcher.keySelector.attribute != null) {

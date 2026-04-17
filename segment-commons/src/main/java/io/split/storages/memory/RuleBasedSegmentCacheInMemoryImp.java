@@ -1,6 +1,5 @@
 package io.split.storages.memory;
 
-import com.google.common.collect.Maps;
 import io.split.engine.experiments.ParsedRuleBasedSegment;
 import io.split.storages.RuleBasedSegmentCache;
 
@@ -11,6 +10,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Set;
 import java.util.ArrayList;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.stream.Collectors;
@@ -29,7 +29,7 @@ public class RuleBasedSegmentCacheInMemoryImp implements RuleBasedSegmentCache {
     }
 
     public RuleBasedSegmentCacheInMemoryImp(long startingChangeNumber) {
-        _concurrentMap = Maps.newConcurrentMap();
+        _concurrentMap = new ConcurrentHashMap<>();
         _changeNumber = new AtomicLong(startingChangeNumber);
     }
 

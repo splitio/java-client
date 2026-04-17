@@ -1,7 +1,5 @@
 package io.split.engine.segments;
 
-import com.google.common.collect.Maps;
-import io.split.Spec;
 import io.split.client.LocalhostSegmentChangeFetcher;
 import io.split.client.JsonLocalhostSplitChangeFetcher;
 import io.split.client.interceptors.FlagSetsFilter;
@@ -11,12 +9,10 @@ import io.split.client.utils.StaticContentInputStreamProvider;
 import io.split.engine.common.FetchOptions;
 import io.split.engine.experiments.*;
 import io.split.storages.*;
+import io.split.telemetry.storage.TelemetryRuntimeProducer;
 import io.split.storages.memory.InMemoryCacheImp;
 import io.split.storages.memory.RuleBasedSegmentCacheInMemoryImp;
 import io.split.storages.memory.SegmentCacheInMemoryImpl;
-import io.split.telemetry.storage.InMemoryTelemetryStorage;
-import io.split.telemetry.storage.NoopTelemetryStorage;
-import io.split.telemetry.storage.TelemetryStorage;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Ignore;
@@ -32,6 +28,7 @@ import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 import java.util.HashSet;
 import java.util.List;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -47,8 +44,9 @@ import static org.junit.Assert.assertEquals;
  */
 public class SegmentSynchronizationTaskImpTest {
     private static final Logger _log = LoggerFactory.getLogger(SegmentSynchronizationTaskImpTest.class);
-    private static final TelemetryStorage TELEMETRY_STORAGE = Mockito.mock(InMemoryTelemetryStorage.class);
-    private static final TelemetryStorage TELEMETRY_STORAGE_NOOP = Mockito.mock(NoopTelemetryStorage.class);
+    private static final TelemetryListener TELEMETRY_STORAGE = t -> {};
+    private static final TelemetryListener TELEMETRY_STORAGE_NOOP = t -> {};
+    private static final ExecutorFactory EXECUTOR_FACTORY = (tf, name, n) -> java.util.concurrent.Executors.newScheduledThreadPool(n);
 
     private AtomicReference<SegmentFetcher> fetcher1 = null;
     private AtomicReference<SegmentFetcher> fetcher2 = null;
@@ -65,7 +63,7 @@ public class SegmentSynchronizationTaskImpTest {
 
         SegmentChangeFetcher segmentChangeFetcher = Mockito.mock(SegmentChangeFetcher.class);
         final SegmentSynchronizationTaskImp fetchers = new SegmentSynchronizationTaskImp(segmentChangeFetcher, 1L, 1, segmentCacheProducer,
-                TELEMETRY_STORAGE, Mockito.mock(SplitCacheConsumer.class), null, Mockito.mock(RuleBasedSegmentCache.class));
+                TELEMETRY_STORAGE, Mockito.mock(SplitCacheConsumer.class), EXECUTOR_FACTORY, null, Mockito.mock(RuleBasedSegmentCache.class));
 
 
         // create two tasks that will separately call segment and make sure
@@ -104,13 +102,13 @@ public class SegmentSynchronizationTaskImpTest {
     @Test
     public void testFetchAllAsynchronousAndGetFalse() throws NoSuchFieldException, IllegalAccessException {
         SegmentCacheProducer segmentCacheProducer = Mockito.mock(SegmentCacheProducer.class);
-        ConcurrentMap<String, SegmentFetcher> _segmentFetchers = Maps.newConcurrentMap();
+        ConcurrentMap<String, SegmentFetcher> _segmentFetchers = new ConcurrentHashMap<>();
 
         SegmentChangeFetcher segmentChangeFetcher = Mockito.mock(SegmentChangeFetcher.class);
         SegmentFetcherImp segmentFetcher = Mockito.mock(SegmentFetcherImp.class);
         _segmentFetchers.put("SF", segmentFetcher);
         final SegmentSynchronizationTaskImp fetchers = new SegmentSynchronizationTaskImp(segmentChangeFetcher, 1L, 1,
-                segmentCacheProducer, TELEMETRY_STORAGE, Mockito.mock(SplitCacheConsumer.class), null, Mockito.mock(RuleBasedSegmentCache.class));
+                segmentCacheProducer, TELEMETRY_STORAGE, Mockito.mock(SplitCacheConsumer.class), EXECUTOR_FACTORY, null, Mockito.mock(RuleBasedSegmentCache.class));
         Mockito.when(segmentFetcher.runWhitCacheHeader()).thenReturn(false);
         Mockito.when(segmentFetcher.fetch(Mockito.anyObject())).thenReturn(false);
 
@@ -130,11 +128,11 @@ public class SegmentSynchronizationTaskImpTest {
     public void testFetchAllAsynchronousAndGetTrue() throws NoSuchFieldException, IllegalAccessException {
         SegmentCacheProducer segmentCacheProducer = Mockito.mock(SegmentCacheProducer.class);
 
-        ConcurrentMap<String, SegmentFetcher> _segmentFetchers = Maps.newConcurrentMap();
+        ConcurrentMap<String, SegmentFetcher> _segmentFetchers = new ConcurrentHashMap<>();
         SegmentChangeFetcher segmentChangeFetcher = Mockito.mock(SegmentChangeFetcher.class);
         SegmentFetcherImp segmentFetcher = Mockito.mock(SegmentFetcherImp.class);
         final SegmentSynchronizationTaskImp fetchers = new SegmentSynchronizationTaskImp(segmentChangeFetcher, 1L, 1, segmentCacheProducer,
-                TELEMETRY_STORAGE, Mockito.mock(SplitCacheConsumer.class),  null, Mockito.mock(RuleBasedSegmentCache.class));
+                TELEMETRY_STORAGE, Mockito.mock(SplitCacheConsumer.class), EXECUTOR_FACTORY, null, Mockito.mock(RuleBasedSegmentCache.class));
 
         // Before executing, we'll update the map of segmentFecthers via reflection.
         Field segmentFetchersForced = SegmentSynchronizationTaskImp.class.getDeclaredField("_segmentFetchers");
@@ -162,7 +160,7 @@ public class SegmentSynchronizationTaskImpTest {
         RuleBasedSegmentCache ruleBasedSegmentCache = new RuleBasedSegmentCacheInMemoryImp();
         RuleBasedSegmentParser ruleBasedSegmentParser = new RuleBasedSegmentParser();
 
-        SplitFetcher splitFetcher = new SplitFetcherImp(splitChangeFetcher, splitParser, splitCacheProducer, TELEMETRY_STORAGE_NOOP, flagSetsFilter,
+        SplitFetcher splitFetcher = new SplitFetcherImp(splitChangeFetcher, splitParser, splitCacheProducer, Mockito.mock(TelemetryRuntimeProducer.class), flagSetsFilter,
             ruleBasedSegmentParser, ruleBasedSegmentCache);
 
         SplitSynchronizationTask splitSynchronizationTask = new SplitSynchronizationTask(splitFetcher, splitCacheProducer, 1000, null);
@@ -175,7 +173,7 @@ public class SegmentSynchronizationTaskImpTest {
         SegmentCacheProducer segmentCacheProducer = new SegmentCacheInMemoryImpl();
 
         SegmentSynchronizationTaskImp segmentSynchronizationTaskImp = new SegmentSynchronizationTaskImp(segmentChangeFetcher, 1000, 1, segmentCacheProducer,
-                TELEMETRY_STORAGE_NOOP, splitCacheProducer, null, ruleBasedSegmentCache);
+                TELEMETRY_STORAGE_NOOP, splitCacheProducer, EXECUTOR_FACTORY, null, ruleBasedSegmentCache);
 
         segmentSynchronizationTaskImp.start();
 

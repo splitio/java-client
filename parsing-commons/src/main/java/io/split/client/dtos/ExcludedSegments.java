@@ -1,8 +1,8 @@
 package io.split.client.dtos;
 
 public class ExcludedSegments {
-    static final String STANDARD_TYPE = "standard";
-    static final String RULE_BASED_TYPE = "rule-based";
+    public static final String STANDARD_TYPE = "standard";
+    public static final String RULE_BASED_TYPE = "rule-based";
 
     public ExcludedSegments() {}
     public ExcludedSegments(String type, String name) {

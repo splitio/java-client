@@ -65,6 +65,8 @@
     </properties>
     <modules>
         <module>targeting-engine</module>
+        <module>parsing-commons</module>
+        <module>segment-commons</module>
         <module>pluggable-storage</module>
         <module>redis-wrapper</module>
         <module>testing</module>

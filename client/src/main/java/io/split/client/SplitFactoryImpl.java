@@ -57,8 +57,10 @@ import io.split.engine.experiments.SplitFetcherImp;
 import io.split.engine.experiments.SplitParser;
 import io.split.engine.experiments.SplitSynchronizationTask;
 import io.split.engine.experiments.RuleBasedSegmentParser;
+import io.split.engine.segments.ExecutorFactory;
 import io.split.engine.segments.SegmentChangeFetcher;
 import io.split.engine.segments.SegmentSynchronizationTaskImp;
+import io.split.engine.segments.TelemetryListener;
 import io.split.integrations.IntegrationsConfig;
 import io.split.service.SplitHttpClientImpl;
 import io.split.service.SplitHttpClient;
@@ -85,6 +87,7 @@ import io.split.storages.pluggable.adapters.UserCustomTelemetryAdapterProducer;
 import io.split.storages.pluggable.adapters.UserCustomRuleBasedSegmentAdapterConsumer;
 import io.split.storages.pluggable.domain.UserStorageWrapper;
 import io.split.storages.pluggable.synchronizer.TelemetryConsumerSubmitter;
+import io.split.telemetry.domain.enums.LastSynchronizationRecordsEnum;
 import io.split.telemetry.storage.InMemoryTelemetryStorage;
 import io.split.telemetry.storage.NoopTelemetryStorage;
 import io.split.telemetry.storage.TelemetryStorage;
@@ -129,6 +132,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.ArrayList;
 
+import io.split.client.utils.SplitExecutorFactory;
 import static io.split.client.utils.SplitExecutorFactory.buildExecutorService;
 
 public class SplitFactoryImpl implements SplitFactory {
@@ -427,12 +431,17 @@ public class SplitFactoryImpl implements SplitFactory {
             segmentChangeFetcher = new LocalhostSegmentChangeFetcher(config.segmentDirectory());
         }
 
+        TelemetryListener segmentTelemetryListener =
+                t -> _telemetryStorageProducer.recordSuccessfulSync(LastSynchronizationRecordsEnum.SEGMENTS, t);
+        ExecutorFactory segmentExecutorFactory =
+                (tf, name, n) -> SplitExecutorFactory.buildScheduledExecutorService(tf, name, n);
         _segmentSynchronizationTaskImp = new SegmentSynchronizationTaskImp(segmentChangeFetcher,
                 config.segmentsRefreshRate(),
                 config.numThreadsForSegmentFetch(),
                 segmentCache,
-                _telemetryStorageProducer,
+                segmentTelemetryListener,
                 _splitCache,
+                segmentExecutorFactory,
                 config.getThreadFactory(),
                 ruleBasedSegmentCache);
 
@@ -696,12 +705,17 @@ public class SplitFactoryImpl implements SplitFactory {
         SegmentChangeFetcher segmentChangeFetcher = HttpSegmentChangeFetcher.create(_splitHttpClient, _rootTarget,
                 _telemetryStorageProducer);
 
+        TelemetryListener segTelemetryListener =
+                t -> _telemetryStorageProducer.recordSuccessfulSync(LastSynchronizationRecordsEnum.SEGMENTS, t);
+        ExecutorFactory segExecutorFactory =
+                (tf, name, n) -> SplitExecutorFactory.buildScheduledExecutorService(tf, name, n);
         return new SegmentSynchronizationTaskImp(segmentChangeFetcher,
                 config.segmentsRefreshRate(),
                 config.numThreadsForSegmentFetch(),
                 segmentCacheProducer,
-                _telemetryStorageProducer,
+                segTelemetryListener,
                 splitCacheConsumer,
+                segExecutorFactory,
                 config.getThreadFactory(),
                 ruleBasedSegmentCache);
     }

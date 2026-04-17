@@ -1,12 +1,9 @@
 package io.split.engine.segments;
 
-import com.google.common.collect.Maps;
-import io.split.client.utils.SplitExecutorFactory;
 import io.split.engine.common.FetchOptions;
+import io.split.storages.SegmentsProvider;
 import io.split.storages.RuleBasedSegmentCacheConsumer;
 import io.split.storages.SegmentCacheProducer;
-import io.split.storages.SplitCacheConsumer;
-import io.split.telemetry.storage.TelemetryRuntimeProducer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -14,7 +11,9 @@ import java.io.Closeable;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
@@ -26,9 +25,6 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.stream.Collectors;
 
-import static com.google.common.base.Preconditions.checkArgument;
-import static com.google.common.base.Preconditions.checkNotNull;
-
 public class SegmentSynchronizationTaskImp implements SegmentSynchronizationTask, Closeable {
     private static final Logger _log = LoggerFactory.getLogger(SegmentSynchronizationTaskImp.class);
 
@@ -36,30 +32,33 @@ public class SegmentSynchronizationTaskImp implements SegmentSynchronizationTask
     private final AtomicLong _refreshEveryNSeconds;
     private final AtomicBoolean _running;
     private final Object _lock = new Object();
-    private final ConcurrentMap<String, SegmentFetcher> _segmentFetchers = Maps.newConcurrentMap();
+    private final ConcurrentMap<String, SegmentFetcher> _segmentFetchers = new ConcurrentHashMap<>();
     private final SegmentCacheProducer _segmentCacheProducer;
     private final ScheduledExecutorService _scheduledExecutorService;
-    private final TelemetryRuntimeProducer _telemetryRuntimeProducer;
-    private final SplitCacheConsumer _splitCacheConsumer;
+    private final TelemetryListener _telemetryListener;
+    private final SegmentsProvider _segmentsProvider;
     private final RuleBasedSegmentCacheConsumer _ruleBasedSegmentCacheConsumer;
 
     private ScheduledFuture<?> _scheduledFuture;
 
     public SegmentSynchronizationTaskImp(SegmentChangeFetcher segmentChangeFetcher, long refreshEveryNSeconds, int numThreads,
-                                         SegmentCacheProducer segmentCacheProducer, TelemetryRuntimeProducer telemetryRuntimeProducer,
-                                         SplitCacheConsumer splitCacheConsumer, ThreadFactory threadFactory,
+                                         SegmentCacheProducer segmentCacheProducer, TelemetryListener telemetryListener,
+                                         SegmentsProvider segmentsProvider, ExecutorFactory executorFactory,
+                                         ThreadFactory threadFactory,
                                          RuleBasedSegmentCacheConsumer ruleBasedSegmentCacheConsumer) {
-        _segmentChangeFetcher = checkNotNull(segmentChangeFetcher);
+        _segmentChangeFetcher = Objects.requireNonNull(segmentChangeFetcher);
 
-        checkArgument(refreshEveryNSeconds >= 0L);
+        if (refreshEveryNSeconds < 0L) {
+            throw new IllegalArgumentException("refreshEveryNSeconds must be non-negative");
+        }
         _refreshEveryNSeconds = new AtomicLong(refreshEveryNSeconds);
-        _scheduledExecutorService = SplitExecutorFactory.buildScheduledExecutorService(threadFactory, "split-segmentFetcher-" + "%d", numThreads);
+        _scheduledExecutorService = executorFactory.build(threadFactory, "split-segmentFetcher-%d", numThreads);
         _running = new AtomicBoolean(false);
 
-        _segmentCacheProducer = checkNotNull(segmentCacheProducer);
-        _telemetryRuntimeProducer = checkNotNull(telemetryRuntimeProducer);
-        _splitCacheConsumer = checkNotNull(splitCacheConsumer);
-        _ruleBasedSegmentCacheConsumer = checkNotNull(ruleBasedSegmentCacheConsumer);
+        _segmentCacheProducer = Objects.requireNonNull(segmentCacheProducer);
+        _telemetryListener = Objects.requireNonNull(telemetryListener);
+        _segmentsProvider = Objects.requireNonNull(segmentsProvider);
+        _ruleBasedSegmentCacheConsumer = Objects.requireNonNull(ruleBasedSegmentCacheConsumer);
     }
 
     public void initializeSegment(String segmentName) {
@@ -77,7 +76,7 @@ public class SegmentSynchronizationTaskImp implements SegmentSynchronizationTask
                 return;
             }
 
-            SegmentFetcher newSegment = new SegmentFetcherImp(segmentName, _segmentChangeFetcher, _segmentCacheProducer, _telemetryRuntimeProducer);
+            SegmentFetcher newSegment = new SegmentFetcherImp(segmentName, _segmentChangeFetcher, _segmentCacheProducer, _telemetryListener);
 
             if (_running.get()) {
                 _scheduledExecutorService.submit(() -> newSegment.fetch(new FetchOptions.Builder().build()));
@@ -195,14 +194,14 @@ public class SegmentSynchronizationTaskImp implements SegmentSynchronizationTask
                 return;
             }
 
-            segment = new SegmentFetcherImp(segmentName, _segmentChangeFetcher, _segmentCacheProducer, _telemetryRuntimeProducer);
+            segment = new SegmentFetcherImp(segmentName, _segmentChangeFetcher, _segmentCacheProducer, _telemetryListener);
 
             _segmentFetchers.putIfAbsent(segmentName, segment);
         }
     }
 
     private Set<String> getSegmentNames() {
-        Set<String> names = new HashSet<>(_splitCacheConsumer.getSegments());
+        Set<String> names = new HashSet<>(_segmentsProvider.getSegments());
         names.addAll(_ruleBasedSegmentCacheConsumer.getSegments());
 
         return names;
