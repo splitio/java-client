@@ -1,51 +1,51 @@
-client/src/main/java/io/split/client/impressions/CLAUDE.md
+client/CLAUDE.md
   human 1
 client/src/main/java/io/split/storages/AGENTS.md
   human 1-72
-AGENTS.md
-  human 1-120
-client/src/main/java/io/split/telemetry/CLAUDE.md
-  human 1
-pluggable-storage/CLAUDE.md
-  human 1
-client/src/main/java/io/split/storages/CLAUDE.md
-  human 1
-docs/cross-sdk-reuse-analysis.md
-  human 1-200
+client/src/main/java/io/split/client/impressions/AGENTS.md
+  human 1-56
+pluggable-storage/AGENTS.md
+  human 1-38
 okhttp-modules/AGENTS.md
   human 1-42
-docs/modularization-plan.md
-  human 1-170
-client/CLAUDE.md
+client/src/main/java/io/split/engine/AGENTS.md
+  human 1-64
+testing/src/main/java/io/split/client/App.java
+  human 1-81
+targeting-engine/README.md
+  human 1-129
+client/src/main/java/io/split/storages/CLAUDE.md
   human 1
 okhttp-modules/CLAUDE.md
   human 1
-pluggable-storage/AGENTS.md
-  human 1-38
-testing/src/main/java/io/split/client/App.java
-  human 1-81
-client/src/main/java/io/split/telemetry/AGENTS.md
-  human 1-53
-client/AGENTS.md
-  human 1-74
-CLAUDE.md
-  human 1
-client/src/main/java/io/split/client/impressions/AGENTS.md
-  human 1-56
-redis-wrapper/CLAUDE.md
-  human 1
-redis-wrapper/AGENTS.md
-  human 1-48
-client/src/main/java/io/split/engine/AGENTS.md
-  human 1-64
-targeting-engine/README.md
-  human 1-129
 client/src/main/java/io/split/engine/CLAUDE.md
   human 1
 .vscode/settings.json
   human 1-3
+client/src/main/java/io/split/client/impressions/CLAUDE.md
+  human 1
+pluggable-storage/CLAUDE.md
+  human 1
+redis-wrapper/CLAUDE.md
+  human 1
+redis-wrapper/AGENTS.md
+  human 1-48
+client/src/main/java/io/split/telemetry/CLAUDE.md
+  human 1
+docs/modularization-plan.md
+  human 1-170
 docs/superpowers/plans/2026-04-08-targeting-rule-factory.md
   human 1-568
+client/AGENTS.md
+  human 1-74
+CLAUDE.md
+  human 1
+AGENTS.md
+  human 1-120
+docs/cross-sdk-reuse-analysis.md
+  human 1-200
+client/src/main/java/io/split/telemetry/AGENTS.md
+  human 1-53
 ---
 {
   "attestations": [
@@ -60,7 +60,7 @@ docs/superpowers/plans/2026-04-08-targeting-rule-factory.md
           "overridden_lines": 0
         }
       ],
-      "file": "client/src/main/java/io/split/client/impressions/CLAUDE.md"
+      "file": "client/CLAUDE.md"
     },
     {
       "entries": [
@@ -78,119 +78,15 @@ docs/superpowers/plans/2026-04-08-targeting-rule-factory.md
     {
       "entries": [
         {
-          "accepted_lines": 120,
-          "added_lines": 120,
+          "accepted_lines": 56,
+          "added_lines": 56,
           "deleted_lines": 0,
           "hash": "human",
-          "lines": "1-120",
+          "lines": "1-56",
           "overridden_lines": 0
         }
       ],
-      "file": "AGENTS.md"
-    },
-    {
-      "entries": [
-        {
-          "accepted_lines": 1,
-          "added_lines": 1,
-          "deleted_lines": 0,
-          "hash": "human",
-          "lines": "1",
-          "overridden_lines": 0
-        }
-      ],
-      "file": "client/src/main/java/io/split/telemetry/CLAUDE.md"
-    },
-    {
-      "entries": [
-        {
-          "accepted_lines": 1,
-          "added_lines": 1,
-          "deleted_lines": 0,
-          "hash": "human",
-          "lines": "1",
-          "overridden_lines": 0
-        }
-      ],
-      "file": "pluggable-storage/CLAUDE.md"
-    },
-    {
-      "entries": [
-        {
-          "accepted_lines": 1,
-          "added_lines": 1,
-          "deleted_lines": 0,
-          "hash": "human",
-          "lines": "1",
-          "overridden_lines": 0
-        }
-      ],
-      "file": "client/src/main/java/io/split/storages/CLAUDE.md"
-    },
-    {
-      "entries": [
-        {
-          "accepted_lines": 200,
-          "added_lines": 200,
-          "deleted_lines": 0,
-          "hash": "human",
-          "lines": "1-200",
-          "overridden_lines": 0
-        }
-      ],
-      "file": "docs/cross-sdk-reuse-analysis.md"
-    },
-    {
-      "entries": [
-        {
-          "accepted_lines": 42,
-          "added_lines": 42,
-          "deleted_lines": 0,
-          "hash": "human",
-          "lines": "1-42",
-          "overridden_lines": 0
-        }
-      ],
-      "file": "okhttp-modules/AGENTS.md"
-    },
-    {
-      "entries": [
-        {
-          "accepted_lines": 170,
-          "added_lines": 170,
-          "deleted_lines": 0,
-          "hash": "human",
-          "lines": "1-170",
-          "overridden_lines": 0
-        }
-      ],
-      "file": "docs/modularization-plan.md"
-    },
-    {
-      "entries": [
-        {
-          "accepted_lines": 1,
-          "added_lines": 1,
-          "deleted_lines": 0,
-          "hash": "human",
-          "lines": "1",
-          "overridden_lines": 0
-        }
-      ],
-      "file": "client/CLAUDE.md"
-    },
-    {
-      "entries": [
-        {
-          "accepted_lines": 1,
-          "added_lines": 1,
-          "deleted_lines": 0,
-          "hash": "human",
-          "lines": "1",
-          "overridden_lines": 0
-        }
-      ],
-      "file": "okhttp-modules/CLAUDE.md"
+      "file": "client/src/main/java/io/split/client/impressions/AGENTS.md"
     },
     {
       "entries": [
@@ -208,93 +104,15 @@ docs/superpowers/plans/2026-04-08-targeting-rule-factory.md
     {
       "entries": [
         {
-          "accepted_lines": 81,
-          "added_lines": 81,
+          "accepted_lines": 42,
+          "added_lines": 42,
           "deleted_lines": 0,
           "hash": "human",
-          "lines": "1-81",
+          "lines": "1-42",
           "overridden_lines": 0
         }
       ],
-      "file": "testing/src/main/java/io/split/client/App.java"
-    },
-    {
-      "entries": [
-        {
-          "accepted_lines": 53,
-          "added_lines": 53,
-          "deleted_lines": 0,
-          "hash": "human",
-          "lines": "1-53",
-          "overridden_lines": 0
-        }
-      ],
-      "file": "client/src/main/java/io/split/telemetry/AGENTS.md"
-    },
-    {
-      "entries": [
-        {
-          "accepted_lines": 74,
-          "added_lines": 74,
-          "deleted_lines": 0,
-          "hash": "human",
-          "lines": "1-74",
-          "overridden_lines": 0
-        }
-      ],
-      "file": "client/AGENTS.md"
-    },
-    {
-      "entries": [
-        {
-          "accepted_lines": 1,
-          "added_lines": 1,
-          "deleted_lines": 0,
-          "hash": "human",
-          "lines": "1",
-          "overridden_lines": 0
-        }
-      ],
-      "file": "CLAUDE.md"
-    },
-    {
-      "entries": [
-        {
-          "accepted_lines": 56,
-          "added_lines": 56,
-          "deleted_lines": 0,
-          "hash": "human",
-          "lines": "1-56",
-          "overridden_lines": 0
-        }
-      ],
-      "file": "client/src/main/java/io/split/client/impressions/AGENTS.md"
-    },
-    {
-      "entries": [
-        {
-          "accepted_lines": 1,
-          "added_lines": 1,
-          "deleted_lines": 0,
-          "hash": "human",
-          "lines": "1",
-          "overridden_lines": 0
-        }
-      ],
-      "file": "redis-wrapper/CLAUDE.md"
-    },
-    {
-      "entries": [
-        {
-          "accepted_lines": 48,
-          "added_lines": 48,
-          "deleted_lines": 0,
-          "hash": "human",
-          "lines": "1-48",
-          "overridden_lines": 0
-        }
-      ],
-      "file": "redis-wrapper/AGENTS.md"
+      "file": "okhttp-modules/AGENTS.md"
     },
     {
       "entries": [
@@ -312,6 +130,19 @@ docs/superpowers/plans/2026-04-08-targeting-rule-factory.md
     {
       "entries": [
         {
+          "accepted_lines": 81,
+          "added_lines": 81,
+          "deleted_lines": 0,
+          "hash": "human",
+          "lines": "1-81",
+          "overridden_lines": 0
+        }
+      ],
+      "file": "testing/src/main/java/io/split/client/App.java"
+    },
+    {
+      "entries": [
+        {
           "accepted_lines": 129,
           "added_lines": 129,
           "deleted_lines": 0,
@@ -321,6 +152,32 @@ docs/superpowers/plans/2026-04-08-targeting-rule-factory.md
         }
       ],
       "file": "targeting-engine/README.md"
+    },
+    {
+      "entries": [
+        {
+          "accepted_lines": 1,
+          "added_lines": 1,
+          "deleted_lines": 0,
+          "hash": "human",
+          "lines": "1",
+          "overridden_lines": 0
+        }
+      ],
+      "file": "client/src/main/java/io/split/storages/CLAUDE.md"
+    },
+    {
+      "entries": [
+        {
+          "accepted_lines": 1,
+          "added_lines": 1,
+          "deleted_lines": 0,
+          "hash": "human",
+          "lines": "1",
+          "overridden_lines": 0
+        }
+      ],
+      "file": "okhttp-modules/CLAUDE.md"
     },
     {
       "entries": [
@@ -351,6 +208,84 @@ docs/superpowers/plans/2026-04-08-targeting-rule-factory.md
     {
       "entries": [
         {
+          "accepted_lines": 1,
+          "added_lines": 1,
+          "deleted_lines": 0,
+          "hash": "human",
+          "lines": "1",
+          "overridden_lines": 0
+        }
+      ],
+      "file": "client/src/main/java/io/split/client/impressions/CLAUDE.md"
+    },
+    {
+      "entries": [
+        {
+          "accepted_lines": 1,
+          "added_lines": 1,
+          "deleted_lines": 0,
+          "hash": "human",
+          "lines": "1",
+          "overridden_lines": 0
+        }
+      ],
+      "file": "pluggable-storage/CLAUDE.md"
+    },
+    {
+      "entries": [
+        {
+          "accepted_lines": 1,
+          "added_lines": 1,
+          "deleted_lines": 0,
+          "hash": "human",
+          "lines": "1",
+          "overridden_lines": 0
+        }
+      ],
+      "file": "redis-wrapper/CLAUDE.md"
+    },
+    {
+      "entries": [
+        {
+          "accepted_lines": 48,
+          "added_lines": 48,
+          "deleted_lines": 0,
+          "hash": "human",
+          "lines": "1-48",
+          "overridden_lines": 0
+        }
+      ],
+      "file": "redis-wrapper/AGENTS.md"
+    },
+    {
+      "entries": [
+        {
+          "accepted_lines": 1,
+          "added_lines": 1,
+          "deleted_lines": 0,
+          "hash": "human",
+          "lines": "1",
+          "overridden_lines": 0
+        }
+      ],
+      "file": "client/src/main/java/io/split/telemetry/CLAUDE.md"
+    },
+    {
+      "entries": [
+        {
+          "accepted_lines": 170,
+          "added_lines": 170,
+          "deleted_lines": 0,
+          "hash": "human",
+          "lines": "1-170",
+          "overridden_lines": 0
+        }
+      ],
+      "file": "docs/modularization-plan.md"
+    },
+    {
+      "entries": [
+        {
           "accepted_lines": 568,
           "added_lines": 568,
           "deleted_lines": 0,
@@ -360,24 +295,86 @@ docs/superpowers/plans/2026-04-08-targeting-rule-factory.md
         }
       ],
       "file": "docs/superpowers/plans/2026-04-08-targeting-rule-factory.md"
+    },
+    {
+      "entries": [
+        {
+          "accepted_lines": 74,
+          "added_lines": 74,
+          "deleted_lines": 0,
+          "hash": "human",
+          "lines": "1-74",
+          "overridden_lines": 0
+        }
+      ],
+      "file": "client/AGENTS.md"
+    },
+    {
+      "entries": [
+        {
+          "accepted_lines": 1,
+          "added_lines": 1,
+          "deleted_lines": 0,
+          "hash": "human",
+          "lines": "1",
+          "overridden_lines": 0
+        }
+      ],
+      "file": "CLAUDE.md"
+    },
+    {
+      "entries": [
+        {
+          "accepted_lines": 120,
+          "added_lines": 120,
+          "deleted_lines": 0,
+          "hash": "human",
+          "lines": "1-120",
+          "overridden_lines": 0
+        }
+      ],
+      "file": "AGENTS.md"
+    },
+    {
+      "entries": [
+        {
+          "accepted_lines": 200,
+          "added_lines": 200,
+          "deleted_lines": 0,
+          "hash": "human",
+          "lines": "1-200",
+          "overridden_lines": 0
+        }
+      ],
+      "file": "docs/cross-sdk-reuse-analysis.md"
+    },
+    {
+      "entries": [
+        {
+          "accepted_lines": 53,
+          "added_lines": 53,
+          "deleted_lines": 0,
+          "hash": "human",
+          "lines": "1-53",
+          "overridden_lines": 0
+        }
+      ],
+      "file": "client/src/main/java/io/split/telemetry/AGENTS.md"
     }
   ],
-  "base_commit_sha": "cee629faa76079431be7e40d1ed4987e8ee07b02",
-  "branch": "continued-modularization_3-1",
+  "base_commit_sha": "6142a6ce066aed47bf8e2e1db9336a8fad14f29b",
   "commit_sha": "6142a6ce066aed47bf8e2e1db9336a8fad14f29b",
-  "commit_time": "2026-04-17T13:38:10-03:00",
   "git_ai_version": "1.2.6",
   "prompts": {
     "human": {
       "accepted_lines": 1727,
       "agent_id": null,
-      "human_author": "Gaston Thea <gaston.thea@harness.io>",
+      "human_author": null,
       "messages": [],
       "overriden_lines": 0,
       "total_additions": 1727,
       "total_deletions": 0
     }
   },
-  "repo": "git@github.com:splitio/java-client.git",
   "schema_version": "authorship/3.0.0"
 }
