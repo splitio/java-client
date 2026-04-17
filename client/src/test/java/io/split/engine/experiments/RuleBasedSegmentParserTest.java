@@ -1,20 +1,28 @@
 package io.split.engine.experiments;
 
 import com.google.common.collect.Lists;
-import io.split.client.dtos.*;
+import io.split.client.dtos.Condition;
+import io.split.client.dtos.ConditionType;
+import io.split.client.dtos.SegmentChange;
+import io.split.client.dtos.RuleBasedSegment;
+import io.split.rules.model.TargetingRule;
 import io.split.client.dtos.Matcher;
+import io.split.client.dtos.MatcherType;
+import io.split.client.dtos.Partition;
+import io.split.client.dtos.DataType;
+import io.split.client.dtos.SplitChange;
 import io.split.client.utils.Json;
 import io.split.client.utils.RuleBasedSegmentsToUpdate;
 import io.split.engine.ConditionsTestUtil;
 import io.split.engine.evaluator.Labels;
-import io.split.engine.matchers.*;
-import io.split.engine.matchers.collections.ContainsAllOfSetMatcher;
-import io.split.engine.matchers.collections.ContainsAnyOfSetMatcher;
-import io.split.engine.matchers.collections.EqualToSetMatcher;
-import io.split.engine.matchers.collections.PartOfSetMatcher;
-import io.split.engine.matchers.strings.ContainsAnyOfMatcher;
-import io.split.engine.matchers.strings.EndsWithAnyOfMatcher;
-import io.split.engine.matchers.strings.StartsWithAnyOfMatcher;
+import io.split.rules.matchers.*;
+import io.split.rules.matchers.collections.ContainsAllOfSetMatcher;
+import io.split.rules.matchers.collections.ContainsAnyOfSetMatcher;
+import io.split.rules.matchers.collections.EqualToSetMatcher;
+import io.split.rules.matchers.collections.PartOfSetMatcher;
+import io.split.rules.matchers.strings.ContainsAnyOfMatcher;
+import io.split.rules.matchers.strings.EndsWithAnyOfMatcher;
+import io.split.rules.matchers.strings.StartsWithAnyOfMatcher;
 import io.split.engine.segments.SegmentChangeFetcher;
 import io.split.grammar.Treatments;
 import io.split.storages.SegmentCache;
@@ -68,7 +76,7 @@ public class RuleBasedSegmentParserTest {
 
         AttributeMatcher employeesMatcherLogic = AttributeMatcher.vanilla(new UserDefinedSegmentMatcher(EMPLOYEES));
         AttributeMatcher notSalesPeopleMatcherLogic = new AttributeMatcher(null, new UserDefinedSegmentMatcher(SALES_PEOPLE), true);
-        CombiningMatcher combiningMatcher = new CombiningMatcher(MatcherCombiner.AND, Lists.newArrayList(employeesMatcherLogic, notSalesPeopleMatcherLogic));
+        CombiningMatcher combiningMatcher = new CombiningMatcher(CombiningMatcher.Combiner.AND, Lists.newArrayList(employeesMatcherLogic, notSalesPeopleMatcherLogic));
         ParsedCondition parsedCondition = ParsedCondition.createParsedConditionForTests(combiningMatcher, null);
         List<ParsedCondition> listOfMatcherAndSplits = Lists.newArrayList(parsedCondition);
 
@@ -167,8 +175,8 @@ public class RuleBasedSegmentParserTest {
         ParsedRuleBasedSegment actual = parser.parse(ruleBasedSegment);
 
         AttributeMatcher employeesMatcherLogic = new AttributeMatcher("name", new UserDefinedSegmentMatcher(EMPLOYEES), false);
-        AttributeMatcher creationDateNotOlderThanAPointLogic = new AttributeMatcher("creation_date", new GreaterThanOrEqualToMatcher(1457386741L, DataType.DATETIME), true);
-        CombiningMatcher combiningMatcher = new CombiningMatcher(MatcherCombiner.AND, Lists.newArrayList(employeesMatcherLogic, creationDateNotOlderThanAPointLogic));
+        AttributeMatcher creationDateNotOlderThanAPointLogic = new AttributeMatcher("creation_date", new GreaterThanOrEqualToMatcher(1457386741L, io.split.rules.model.DataType.DATETIME), true);
+        CombiningMatcher combiningMatcher = new CombiningMatcher(CombiningMatcher.Combiner.AND, Lists.newArrayList(employeesMatcherLogic, creationDateNotOlderThanAPointLogic));
         ParsedCondition parsedCondition = ParsedCondition.createParsedConditionForTests(combiningMatcher, null);
         List<ParsedCondition> listOfMatcherAndSplits = Lists.newArrayList(parsedCondition);
 
@@ -185,7 +193,7 @@ public class RuleBasedSegmentParserTest {
         SegmentChange segmentChangeSalesPeople = getSegmentChange(-1L, -1L, SALES_PEOPLE);
         Mockito.when(segmentChangeFetcher.fetch(Mockito.anyString(), Mockito.anyLong(), Mockito.any())).thenReturn(segmentChangeEmployee).thenReturn(segmentChangeSalesPeople);
 
-        Matcher ageLessThan10 = ConditionsTestUtil.numericMatcher("user", "age", MatcherType.LESS_THAN_OR_EQUAL_TO, DataType.NUMBER, 10L, false);
+        Matcher ageLessThan10 = ConditionsTestUtil.numericMatcher("user", "age", MatcherType.LESS_THAN_OR_EQUAL_TO, io.split.client.dtos.DataType.NUMBER, 10L, false);
         Condition c = ConditionsTestUtil.and(ageLessThan10, null);
 
         List<Condition> conditions = Lists.newArrayList(c);
@@ -194,8 +202,8 @@ public class RuleBasedSegmentParserTest {
         RuleBasedSegment ruleBasedSegment = makeRuleBasedSegment("first-name", conditions, 1);
         ParsedRuleBasedSegment actual = parser.parse(ruleBasedSegment);
 
-        AttributeMatcher ageLessThan10Logic = new AttributeMatcher("age", new LessThanOrEqualToMatcher(10, DataType.NUMBER), false);
-        CombiningMatcher combiningMatcher = new CombiningMatcher(MatcherCombiner.AND, Lists.newArrayList(ageLessThan10Logic));
+        AttributeMatcher ageLessThan10Logic = new AttributeMatcher("age", new LessThanOrEqualToMatcher(10, io.split.rules.model.DataType.NUMBER), false);
+        CombiningMatcher combiningMatcher = new CombiningMatcher(CombiningMatcher.Combiner.AND, Lists.newArrayList(ageLessThan10Logic));
         ParsedCondition parsedCondition = ParsedCondition.createParsedConditionForTests(combiningMatcher, null);
         List<ParsedCondition> listOfMatcherAndSplits = Lists.newArrayList(parsedCondition);
 
@@ -212,7 +220,7 @@ public class RuleBasedSegmentParserTest {
         SegmentChange segmentChangeSalesPeople = getSegmentChange(-1L, -1L, SALES_PEOPLE);
         Mockito.when(segmentChangeFetcher.fetch(Mockito.anyString(), Mockito.anyLong(), Mockito.any())).thenReturn(segmentChangeEmployee).thenReturn(segmentChangeSalesPeople);
 
-        Matcher ageLessThan10 = ConditionsTestUtil.numericMatcher("user", "age", MatcherType.EQUAL_TO, DataType.NUMBER, 10L, true);
+        Matcher ageLessThan10 = ConditionsTestUtil.numericMatcher("user", "age", MatcherType.EQUAL_TO, io.split.client.dtos.DataType.NUMBER, 10L, true);
         Condition c = ConditionsTestUtil.and(ageLessThan10, null);
         List<Condition> conditions = Lists.newArrayList(c);
 
@@ -220,8 +228,8 @@ public class RuleBasedSegmentParserTest {
         RuleBasedSegment ruleBasedSegment = makeRuleBasedSegment("first-name", conditions, 1);
         ParsedRuleBasedSegment actual = parser.parse(ruleBasedSegment);
 
-        AttributeMatcher equalToMatcher = new AttributeMatcher("age", new EqualToMatcher(10, DataType.NUMBER), true);
-        CombiningMatcher combiningMatcher = new CombiningMatcher(MatcherCombiner.AND, Lists.newArrayList(equalToMatcher));
+        AttributeMatcher equalToMatcher = new AttributeMatcher("age", new EqualToMatcher(10, io.split.rules.model.DataType.NUMBER), true);
+        CombiningMatcher combiningMatcher = new CombiningMatcher(CombiningMatcher.Combiner.AND, Lists.newArrayList(equalToMatcher));
         ParsedCondition parsedCondition = ParsedCondition.createParsedConditionForTests(combiningMatcher, null);
         List<ParsedCondition> listOfMatcherAndSplits = Lists.newArrayList(parsedCondition);
 
@@ -238,7 +246,7 @@ public class RuleBasedSegmentParserTest {
         SegmentChange segmentChangeSalesPeople = getSegmentChange(-1L, -1L, SALES_PEOPLE);
         Mockito.when(segmentChangeFetcher.fetch(Mockito.anyString(), Mockito.anyLong(), Mockito.any())).thenReturn(segmentChangeEmployee).thenReturn(segmentChangeSalesPeople);
 
-        Matcher equalToNegative10 = ConditionsTestUtil.numericMatcher("user", "age", MatcherType.EQUAL_TO, DataType.NUMBER, -10L, false);
+        Matcher equalToNegative10 = ConditionsTestUtil.numericMatcher("user", "age", MatcherType.EQUAL_TO, io.split.client.dtos.DataType.NUMBER, -10L, false);
         Condition c = ConditionsTestUtil.and(equalToNegative10, null);
         List<Condition> conditions = Lists.newArrayList(c);
 
@@ -246,8 +254,8 @@ public class RuleBasedSegmentParserTest {
         RuleBasedSegment ruleBasedSegment = makeRuleBasedSegment("first-name", conditions, 1);
         ParsedRuleBasedSegment actual = parser.parse(ruleBasedSegment);
 
-        AttributeMatcher ageEqualTo10Logic = new AttributeMatcher("age", new EqualToMatcher(-10, DataType.NUMBER), false);
-        CombiningMatcher combiningMatcher = new CombiningMatcher(MatcherCombiner.AND, Lists.newArrayList(ageEqualTo10Logic));
+        AttributeMatcher ageEqualTo10Logic = new AttributeMatcher("age", new EqualToMatcher(-10, io.split.rules.model.DataType.NUMBER), false);
+        CombiningMatcher combiningMatcher = new CombiningMatcher(CombiningMatcher.Combiner.AND, Lists.newArrayList(ageEqualTo10Logic));
         ParsedCondition parsedCondition = ParsedCondition.createParsedConditionForTests(combiningMatcher, null);
         List<ParsedCondition> listOfMatcherAndSplits = Lists.newArrayList(parsedCondition);
 
@@ -278,8 +286,8 @@ public class RuleBasedSegmentParserTest {
         RuleBasedSegment ruleBasedSegment = makeRuleBasedSegment("first-name", conditions, 1);
         ParsedRuleBasedSegment actual = parser.parse(ruleBasedSegment);
 
-        AttributeMatcher ageBetween10And11Logic = new AttributeMatcher("age", new BetweenMatcher(10, 12, DataType.NUMBER), false);
-        CombiningMatcher combiningMatcher = new CombiningMatcher(MatcherCombiner.AND, Lists.newArrayList(ageBetween10And11Logic));
+        AttributeMatcher ageBetween10And11Logic = new AttributeMatcher("age", new BetweenMatcher(10, 12, io.split.rules.model.DataType.NUMBER), false);
+        CombiningMatcher combiningMatcher = new CombiningMatcher(CombiningMatcher.Combiner.AND, Lists.newArrayList(ageBetween10And11Logic));
         ParsedCondition parsedCondition = ParsedCondition.createParsedConditionForTests(combiningMatcher, null);
         List<ParsedCondition> listOfMatcherAndSplits = Lists.newArrayList(parsedCondition);
 
@@ -520,7 +528,7 @@ public class RuleBasedSegmentParserTest {
         assertTrue(false);
     }
 
-    public void setMatcherTest(Condition c, io.split.engine.matchers.Matcher m) {
+    public void setMatcherTest(Condition c, io.split.rules.matchers.Matcher m) {
         SegmentChangeFetcher segmentChangeFetcher = Mockito.mock(SegmentChangeFetcher.class);
         SegmentChange segmentChangeEmployee = getSegmentChange(-1L, -1L, EMPLOYEES);
         SegmentChange segmentChangeSalesPeople = getSegmentChange(-1L, -1L, SALES_PEOPLE);
@@ -534,7 +542,7 @@ public class RuleBasedSegmentParserTest {
         ParsedRuleBasedSegment actual = parser.parse(ruleBasedSegment);
 
         AttributeMatcher attrMatcher = new AttributeMatcher("products", m, false);
-        CombiningMatcher combiningMatcher = new CombiningMatcher(MatcherCombiner.AND, Lists.newArrayList(attrMatcher));
+        CombiningMatcher combiningMatcher = new CombiningMatcher(CombiningMatcher.Combiner.AND, Lists.newArrayList(attrMatcher));
         ParsedCondition parsedCondition = ParsedCondition.createParsedConditionForTests(combiningMatcher, null);
         List<ParsedCondition> listOfMatcherAndSplits = Lists.newArrayList(parsedCondition);
 

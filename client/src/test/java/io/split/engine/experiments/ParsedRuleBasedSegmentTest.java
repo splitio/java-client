@@ -8,9 +8,9 @@ import io.split.client.dtos.MatcherCombiner;
 import io.split.client.dtos.SplitChange;
 import io.split.client.utils.Json;
 import io.split.client.utils.RuleBasedSegmentsToUpdate;
-import io.split.engine.matchers.AttributeMatcher;
-import io.split.engine.matchers.CombiningMatcher;
-import io.split.engine.matchers.UserDefinedSegmentMatcher;
+import io.split.rules.matchers.AttributeMatcher;
+import io.split.rules.matchers.CombiningMatcher;
+import io.split.rules.matchers.UserDefinedSegmentMatcher;
 
 import org.junit.Assert;
 import org.junit.Test;
@@ -29,7 +29,7 @@ public class ParsedRuleBasedSegmentTest {
         excludedSegments.add(new ExcludedSegments("standard","segment2"));
 
         AttributeMatcher segmentMatcher = AttributeMatcher.vanilla(new UserDefinedSegmentMatcher("employees"));
-        CombiningMatcher segmentCombiningMatcher = new CombiningMatcher(MatcherCombiner.AND, Lists.newArrayList(segmentMatcher));
+        CombiningMatcher segmentCombiningMatcher = new CombiningMatcher(CombiningMatcher.Combiner.AND, Lists.newArrayList(segmentMatcher));
         ParsedRuleBasedSegment parsedRuleBasedSegment = new ParsedRuleBasedSegment("another_rule_based_segment",
                 Lists.newArrayList(new ParsedCondition(ConditionType.WHITELIST, segmentCombiningMatcher, null, "label")), "user",
                 123, Lists.newArrayList("mauro@test.io", "gaston@test.io"), excludedSegments);

@@ -1,5 +1,7 @@
 package io.split.engine.matchers;
 
+import io.split.rules.matchers.*;
+
 import com.google.common.collect.Lists;
 import io.split.client.dtos.ConditionType;
 import io.split.client.dtos.MatcherCombiner;
@@ -11,7 +13,7 @@ import io.split.engine.evaluator.Evaluator;
 import io.split.engine.experiments.ParsedCondition;
 import io.split.engine.experiments.ParsedRuleBasedSegment;
 import io.split.engine.experiments.RuleBasedSegmentParser;
-import io.split.engine.matchers.strings.WhitelistMatcher;
+import io.split.rules.matchers.WhitelistMatcher;
 import io.split.storages.RuleBasedSegmentCache;
 import io.split.storages.SegmentCache;
 import io.split.storages.memory.RuleBasedSegmentCacheInMemoryImp;
@@ -39,10 +41,10 @@ public class RuleBasedSegmentMatcherTest {
         RuleBasedSegmentCache ruleBasedSegmentCache = new RuleBasedSegmentCacheInMemoryImp();
         EvaluationContext evaluationContext = new EvaluationContext(evaluator, segmentCache, ruleBasedSegmentCache);
         AttributeMatcher whiteListMatcher = AttributeMatcher.vanilla(new WhitelistMatcher(Lists.newArrayList("test_1", "admin")));
-        CombiningMatcher whitelistCombiningMatcher = new CombiningMatcher(MatcherCombiner.AND, Lists.newArrayList(whiteListMatcher));
+        CombiningMatcher whitelistCombiningMatcher = new CombiningMatcher(CombiningMatcher.Combiner.AND, Lists.newArrayList(whiteListMatcher));
 
         AttributeMatcher ruleBasedSegmentMatcher = AttributeMatcher.vanilla(new RuleBasedSegmentMatcher("sample_rule_based_segment"));
-        CombiningMatcher ruleBasedSegmentCombinerMatcher = new CombiningMatcher(MatcherCombiner.AND, Lists.newArrayList(ruleBasedSegmentMatcher));
+        CombiningMatcher ruleBasedSegmentCombinerMatcher = new CombiningMatcher(CombiningMatcher.Combiner.AND, Lists.newArrayList(ruleBasedSegmentMatcher));
         ParsedCondition ruleBasedSegmentCondition = new ParsedCondition(ConditionType.ROLLOUT, ruleBasedSegmentCombinerMatcher, null, "test rbs rule");
         ParsedRuleBasedSegment parsedRuleBasedSegment = new ParsedRuleBasedSegment("sample_rule_based_segment",
                 Lists.newArrayList(new ParsedCondition(ConditionType.WHITELIST, whitelistCombiningMatcher, null, "whitelist label")),"user",

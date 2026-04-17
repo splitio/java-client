@@ -2,7 +2,7 @@ package io.split.engine.experiments;
 
 import io.split.client.dtos.ConditionType;
 import io.split.client.dtos.Partition;
-import io.split.engine.matchers.CombiningMatcher;
+import io.split.rules.matchers.CombiningMatcher;
 
 import java.util.List;
 

@@ -1,9 +1,11 @@
 package io.split.engine.matchers;
 
+import io.split.rules.matchers.*;
+
 import com.google.common.collect.Lists;
 import io.split.engine.evaluator.EvaluationContext;
 import io.split.engine.evaluator.Evaluator;
-import io.split.engine.matchers.strings.WhitelistMatcher;
+import io.split.rules.matchers.WhitelistMatcher;
 import io.split.storages.RuleBasedSegmentCache;
 import io.split.storages.SegmentCache;
 import io.split.storages.memory.RuleBasedSegmentCacheInMemoryImp;

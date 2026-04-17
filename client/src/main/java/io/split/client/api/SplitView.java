@@ -11,6 +11,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 
 /**
@@ -51,7 +52,13 @@ public class SplitView {
         splitView.configs = parsedSplit.configurations() == null? Collections.<String, String>emptyMap() : parsedSplit.configurations() ;
         splitView.impressionsDisabled = parsedSplit.impressionsDisabled();
         splitView.prerequisites = parsedSplit.prerequisitesMatcher() != null ?
-                parsedSplit.prerequisitesMatcher().getPrerequisites(): new ArrayList<>();
+                parsedSplit.prerequisitesMatcher().getPrerequisites().stream()
+                        .map(p -> {
+                            Prerequisites prereq = new Prerequisites();
+                            prereq.featureFlagName = p.featureFlagName();
+                            prereq.treatments = p.treatments();
+                            return prereq;
+                        }).collect(Collectors.toList()) : new ArrayList<>();
 
         return splitView;
     }

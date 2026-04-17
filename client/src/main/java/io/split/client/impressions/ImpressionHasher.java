@@ -1,6 +1,6 @@
 package io.split.client.impressions;
 
-import io.split.client.utils.MurmurHash3;
+import io.split.rules.bucketing.MurmurHash3;
 
 public class ImpressionHasher {
 

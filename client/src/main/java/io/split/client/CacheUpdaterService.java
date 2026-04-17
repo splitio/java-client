@@ -1,19 +1,18 @@
 package io.split.client;
 
-import com.google.common.collect.Lists;
 import io.split.client.dtos.ConditionType;
-import io.split.client.dtos.MatcherCombiner;
 import io.split.client.dtos.Partition;
 import io.split.engine.experiments.ParsedCondition;
 import io.split.engine.experiments.ParsedSplit;
-import io.split.engine.matchers.AllKeysMatcher;
-import io.split.engine.matchers.AttributeMatcher;
-import io.split.engine.matchers.CombiningMatcher;
-import io.split.engine.matchers.strings.WhitelistMatcher;
+import io.split.rules.matchers.AllKeysMatcher;
+import io.split.rules.matchers.AttributeMatcher;
+import io.split.rules.matchers.CombiningMatcher;
+import io.split.rules.matchers.WhitelistMatcher;
 import io.split.grammar.Treatments;
 import io.split.storages.SplitCacheProducer;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -22,7 +21,7 @@ import java.util.Comparator;
 import java.util.HashMap;
 import java.util.stream.Collectors;
 
-import static com.google.common.base.Preconditions.checkNotNull;
+import java.util.Objects;
 
 public final  class CacheUpdaterService {
 
@@ -30,7 +29,7 @@ public final  class CacheUpdaterService {
     private SplitCacheProducer _splitCacheProducer;
 
     public CacheUpdaterService(SplitCacheProducer splitCacheProducer) {
-        _splitCacheProducer = checkNotNull(splitCacheProducer);
+        _splitCacheProducer = Objects.requireNonNull(splitCacheProducer);
     }
 
     public void updateCache(Map<SplitAndKey, LocalhostSplit> map) {
@@ -78,9 +77,10 @@ public final  class CacheUpdaterService {
 
     private ParsedCondition createWhitelistCondition(String splitKey, Partition partition) {
         ParsedCondition parsedCondition = new ParsedCondition(ConditionType.WHITELIST,
-                new CombiningMatcher(MatcherCombiner.AND,
-                        Lists.newArrayList(new AttributeMatcher(null, new WhitelistMatcher(Lists.newArrayList(splitKey)), false))),
-                Lists.newArrayList(partition), splitKey);
+                new CombiningMatcher(CombiningMatcher.Combiner.AND,
+                        new ArrayList<>(Arrays.asList(
+                                new AttributeMatcher(null, new WhitelistMatcher(Arrays.asList(splitKey)), false)))),
+                new ArrayList<>(Arrays.asList(partition)), splitKey);
         return parsedCondition;
     }
 
@@ -89,9 +89,9 @@ public final  class CacheUpdaterService {
         rolloutPartition.treatment = "-";
         rolloutPartition.size = 0;
         ParsedCondition parsedCondition = new ParsedCondition(ConditionType.ROLLOUT,
-                new CombiningMatcher(MatcherCombiner.AND,
-                        Lists.newArrayList(new AttributeMatcher(null,  new AllKeysMatcher(), false))),
-                Lists.newArrayList(partition, rolloutPartition), "LOCAL");
+                new CombiningMatcher(CombiningMatcher.Combiner.AND,
+                        new ArrayList<>(Arrays.asList(new AttributeMatcher(null, new AllKeysMatcher(), false)))),
+                new ArrayList<>(Arrays.asList(partition, rolloutPartition)), "LOCAL");
 
         return parsedCondition;
     }

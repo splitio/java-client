@@ -1,5 +1,6 @@
 package io.split.engine.matchers.strings;
 
+import io.split.rules.matchers.WhitelistMatcher;
 import com.google.common.collect.Lists;
 import org.junit.Test;
 

@@ -1,5 +1,7 @@
 package io.split.engine.matchers;
 
+import io.split.rules.matchers.*;
+
 import com.google.common.collect.Lists;
 import org.junit.Test;
 

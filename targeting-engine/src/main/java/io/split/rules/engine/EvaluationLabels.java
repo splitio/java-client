@@ -1,0 +1,14 @@
+package io.split.rules.engine;
+
+public final class EvaluationLabels {
+    public static final String NOT_IN_SPLIT = "not in split";
+    public static final String DEFAULT_RULE = "default rule";
+    public static final String KILLED = "killed";
+    public static final String DEFINITION_NOT_FOUND = "definition not found";
+    public static final String EXCEPTION = "exception";
+    public static final String UNSUPPORTED_MATCHER = "targeting rule type unsupported by sdk";
+    public static final String PREREQUISITES_NOT_MET = "prerequisites not met";
+    public static final String NOT_READY = "not ready";
+
+    private EvaluationLabels() {}
+}

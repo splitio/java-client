@@ -1,41 +1,42 @@
 package io.split.engine.experiments;
 
-import com.google.common.collect.Lists;
+import io.split.client.dtos.DataType;
+import io.split.client.dtos.MatcherCombiner;
 import io.split.client.dtos.MatcherType;
 import io.split.client.dtos.Partition;
 import io.split.client.dtos.MatcherGroup;
 import io.split.client.dtos.ConditionType;
 import io.split.client.dtos.Matcher;
 import io.split.engine.evaluator.Labels;
-import io.split.engine.matchers.CombiningMatcher;
-import io.split.engine.matchers.AllKeysMatcher;
-import io.split.engine.matchers.AttributeMatcher;
-import io.split.engine.matchers.UserDefinedSegmentMatcher;
-import io.split.engine.matchers.EqualToMatcher;
-import io.split.engine.matchers.GreaterThanOrEqualToMatcher;
-import io.split.engine.matchers.LessThanOrEqualToMatcher;
-import io.split.engine.matchers.BetweenMatcher;
-import io.split.engine.matchers.DependencyMatcher;
-import io.split.engine.matchers.BooleanMatcher;
-import io.split.engine.matchers.EqualToSemverMatcher;
-import io.split.engine.matchers.GreaterThanOrEqualToSemverMatcher;
-import io.split.engine.matchers.LessThanOrEqualToSemverMatcher;
-import io.split.engine.matchers.InListSemverMatcher;
-import io.split.engine.matchers.BetweenSemverMatcher;
-import io.split.engine.matchers.RuleBasedSegmentMatcher;
-import io.split.engine.matchers.collections.ContainsAllOfSetMatcher;
-import io.split.engine.matchers.collections.ContainsAnyOfSetMatcher;
-import io.split.engine.matchers.collections.EqualToSetMatcher;
-import io.split.engine.matchers.collections.PartOfSetMatcher;
-import io.split.engine.matchers.strings.WhitelistMatcher;
-import io.split.engine.matchers.strings.StartsWithAnyOfMatcher;
-import io.split.engine.matchers.strings.EndsWithAnyOfMatcher;
-import io.split.engine.matchers.strings.ContainsAnyOfMatcher;
-import io.split.engine.matchers.strings.RegularExpressionMatcher;
+import io.split.rules.matchers.CombiningMatcher;
+import io.split.rules.matchers.AllKeysMatcher;
+import io.split.rules.matchers.AttributeMatcher;
+import io.split.rules.matchers.UserDefinedSegmentMatcher;
+import io.split.rules.matchers.EqualToMatcher;
+import io.split.rules.matchers.GreaterThanOrEqualToMatcher;
+import io.split.rules.matchers.LessThanOrEqualToMatcher;
+import io.split.rules.matchers.BetweenMatcher;
+import io.split.rules.matchers.DependencyMatcher;
+import io.split.rules.matchers.BooleanMatcher;
+import io.split.rules.matchers.EqualToSemverMatcher;
+import io.split.rules.matchers.GreaterThanOrEqualToSemverMatcher;
+import io.split.rules.matchers.LessThanOrEqualToSemverMatcher;
+import io.split.rules.matchers.InListSemverMatcher;
+import io.split.rules.matchers.BetweenSemverMatcher;
+import io.split.rules.matchers.RuleBasedSegmentMatcher;
+import io.split.rules.matchers.collections.ContainsAllOfSetMatcher;
+import io.split.rules.matchers.collections.ContainsAnyOfSetMatcher;
+import io.split.rules.matchers.collections.EqualToSetMatcher;
+import io.split.rules.matchers.collections.PartOfSetMatcher;
+import io.split.rules.matchers.WhitelistMatcher;
+import io.split.rules.matchers.strings.StartsWithAnyOfMatcher;
+import io.split.rules.matchers.strings.EndsWithAnyOfMatcher;
+import io.split.rules.matchers.strings.ContainsAnyOfMatcher;
+import io.split.rules.matchers.strings.RegularExpressionMatcher;
 
+import java.util.ArrayList;
 import java.util.List;
 
-import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
 
 public final class ParserUtils {
@@ -59,7 +60,7 @@ public final class ParserUtils {
     }
 
     public static ParsedCondition getTemplateCondition() {
-        List<Partition> templatePartitions = Lists.newArrayList();
+        List<Partition> templatePartitions = new ArrayList<>();
         Partition partition = new Partition();
         partition.treatment = "control";
         partition.size = 100;
@@ -73,20 +74,28 @@ public final class ParserUtils {
 
     public static CombiningMatcher toMatcher(MatcherGroup matcherGroup) {
         List<Matcher> matchers = matcherGroup.matchers;
-        checkArgument(!matchers.isEmpty());
+        if (matchers.isEmpty()) throw new IllegalArgumentException();
 
-        List<AttributeMatcher> toCombine = Lists.newArrayList();
+        List<AttributeMatcher> toCombine = new ArrayList<>();
 
         for (Matcher matcher : matchers) {
             toCombine.add(toMatcher(matcher));
         }
 
-        return new CombiningMatcher(matcherGroup.combiner, toCombine);
+        return new CombiningMatcher(toCombiner(matcherGroup.combiner), toCombine);
     }
 
 
+    private static io.split.rules.model.DataType toRulesDataType(io.split.client.dtos.DataType dt) {
+        return io.split.rules.model.DataType.valueOf(dt.name());
+    }
+
+    private static CombiningMatcher.Combiner toCombiner(MatcherCombiner combiner) {
+        return CombiningMatcher.Combiner.valueOf(combiner.name());
+    }
+
     public static AttributeMatcher toMatcher(Matcher matcher) {
-        io.split.engine.matchers.Matcher delegate = null;
+        io.split.rules.matchers.Matcher delegate = null;
         switch (matcher.matcherType) {
             case ALL_KEYS:
                 delegate = new AllKeysMatcher();
@@ -102,19 +111,22 @@ public final class ParserUtils {
                 break;
             case EQUAL_TO:
                 checkNotNull(matcher.unaryNumericMatcherData);
-                delegate = new EqualToMatcher(matcher.unaryNumericMatcherData.value, matcher.unaryNumericMatcherData.dataType);
+                delegate = new EqualToMatcher(matcher.unaryNumericMatcherData.value, toRulesDataType(matcher.unaryNumericMatcherData.dataType));
                 break;
             case GREATER_THAN_OR_EQUAL_TO:
                 checkNotNull(matcher.unaryNumericMatcherData);
-                delegate = new GreaterThanOrEqualToMatcher(matcher.unaryNumericMatcherData.value, matcher.unaryNumericMatcherData.dataType);
+                delegate = new GreaterThanOrEqualToMatcher(
+                        matcher.unaryNumericMatcherData.value, toRulesDataType(matcher.unaryNumericMatcherData.dataType));
                 break;
             case LESS_THAN_OR_EQUAL_TO:
                 checkNotNull(matcher.unaryNumericMatcherData);
-                delegate = new LessThanOrEqualToMatcher(matcher.unaryNumericMatcherData.value, matcher.unaryNumericMatcherData.dataType);
+                delegate = new LessThanOrEqualToMatcher(
+                        matcher.unaryNumericMatcherData.value, toRulesDataType(matcher.unaryNumericMatcherData.dataType));
                 break;
             case BETWEEN:
                 checkNotNull(matcher.betweenMatcherData);
-                delegate = new BetweenMatcher(matcher.betweenMatcherData.start, matcher.betweenMatcherData.end, matcher.betweenMatcherData.dataType);
+                delegate = new BetweenMatcher(matcher.betweenMatcherData.start,
+                        matcher.betweenMatcherData.end, toRulesDataType(matcher.betweenMatcherData.dataType));
                 break;
             case EQUAL_TO_SET:
                 checkNotNull(matcher.whitelistMatcherData);

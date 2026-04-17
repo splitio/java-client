@@ -1,5 +1,6 @@
 package io.split.engine.matchers.collections;
 
+import io.split.rules.matchers.collections.ContainsAllOfSetMatcher;
 import org.junit.Assert;
 import org.junit.Test;
 

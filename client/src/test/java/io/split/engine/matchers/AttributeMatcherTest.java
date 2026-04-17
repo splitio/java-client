@@ -1,10 +1,12 @@
 package io.split.engine.matchers;
 
+import io.split.rules.matchers.*;
+
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
-import io.split.client.dtos.DataType;
-import io.split.engine.matchers.strings.WhitelistMatcher;
+import io.split.rules.model.DataType;
+import io.split.rules.matchers.WhitelistMatcher;
 import org.junit.Assert;
 import org.junit.Test;
 

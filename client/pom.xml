@@ -169,6 +169,11 @@
     <dependencies>
         <dependency>
             <groupId>io.split.client</groupId>
+            <artifactId>targeting-engine</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>io.split.client</groupId>
             <artifactId>pluggable-storage</artifactId>
             <version>2.1.0</version>
             <scope>compile</scope>

@@ -1,8 +1,10 @@
 package io.split.engine.matchers;
 
+import io.split.rules.matchers.*;
+
 import com.google.common.collect.Lists;
 import io.split.client.dtos.MatcherCombiner;
-import io.split.engine.matchers.strings.WhitelistMatcher;
+import io.split.rules.matchers.WhitelistMatcher;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -20,7 +22,7 @@ public class CombiningMatcherTest {
         AttributeMatcher matcher1 = AttributeMatcher.vanilla(new AllKeysMatcher());
         AttributeMatcher matcher2 = AttributeMatcher.vanilla(new WhitelistMatcher(Lists.newArrayList("a", "b")));
 
-        CombiningMatcher combiner = new CombiningMatcher(MatcherCombiner.AND, Lists.newArrayList(matcher1, matcher2));
+        CombiningMatcher combiner = new CombiningMatcher(CombiningMatcher.Combiner.AND, Lists.newArrayList(matcher1, matcher2));
 
         Assert.assertTrue(combiner.match("a", null, null, null));
         Assert.assertTrue(combiner.match("b", null, Collections.<String, Object>emptyMap(), null));

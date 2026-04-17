@@ -1,5 +1,7 @@
 package io.split.engine.matchers.strings;
 
+import io.split.rules.matchers.strings.*;
+
 import org.junit.Test;
 
 import java.util.ArrayList;

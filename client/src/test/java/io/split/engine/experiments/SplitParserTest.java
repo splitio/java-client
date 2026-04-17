@@ -11,26 +11,26 @@ import io.split.client.dtos.SegmentChange;
 import io.split.client.dtos.Split;
 import io.split.client.dtos.SplitChange;
 import io.split.client.dtos.Status;
-import io.split.engine.matchers.PrerequisitesMatcher;
-import io.split.engine.matchers.AttributeMatcher;
-import io.split.engine.matchers.BetweenMatcher;
-import io.split.engine.matchers.CombiningMatcher;
-import io.split.engine.matchers.EqualToMatcher;
-import io.split.engine.matchers.GreaterThanOrEqualToMatcher;
-import io.split.engine.matchers.LessThanOrEqualToMatcher;
-import io.split.engine.matchers.UserDefinedSegmentMatcher;
+import io.split.rules.matchers.PrerequisitesMatcher;
+import io.split.rules.matchers.AttributeMatcher;
+import io.split.rules.matchers.BetweenMatcher;
+import io.split.rules.matchers.CombiningMatcher;
+import io.split.rules.matchers.EqualToMatcher;
+import io.split.rules.matchers.GreaterThanOrEqualToMatcher;
+import io.split.rules.matchers.LessThanOrEqualToMatcher;
+import io.split.rules.matchers.UserDefinedSegmentMatcher;
 import io.split.storages.SegmentCache;
 import io.split.storages.memory.SegmentCacheInMemoryImpl;
 import io.split.client.utils.Json;
 import io.split.engine.evaluator.Labels;
 import io.split.engine.ConditionsTestUtil;
-import io.split.engine.matchers.collections.ContainsAllOfSetMatcher;
-import io.split.engine.matchers.collections.ContainsAnyOfSetMatcher;
-import io.split.engine.matchers.collections.EqualToSetMatcher;
-import io.split.engine.matchers.collections.PartOfSetMatcher;
-import io.split.engine.matchers.strings.ContainsAnyOfMatcher;
-import io.split.engine.matchers.strings.EndsWithAnyOfMatcher;
-import io.split.engine.matchers.strings.StartsWithAnyOfMatcher;
+import io.split.rules.matchers.collections.ContainsAllOfSetMatcher;
+import io.split.rules.matchers.collections.ContainsAnyOfSetMatcher;
+import io.split.rules.matchers.collections.EqualToSetMatcher;
+import io.split.rules.matchers.collections.PartOfSetMatcher;
+import io.split.rules.matchers.strings.ContainsAnyOfMatcher;
+import io.split.rules.matchers.strings.EndsWithAnyOfMatcher;
+import io.split.rules.matchers.strings.StartsWithAnyOfMatcher;
 import io.split.engine.segments.SegmentChangeFetcher;
 import io.split.grammar.Treatments;
 import org.junit.Assert;
@@ -91,7 +91,7 @@ public class SplitParserTest {
 
         AttributeMatcher employeesMatcherLogic = AttributeMatcher.vanilla(new UserDefinedSegmentMatcher(EMPLOYEES));
         AttributeMatcher notSalesPeopleMatcherLogic = new AttributeMatcher(null, new UserDefinedSegmentMatcher(SALES_PEOPLE), true);
-        CombiningMatcher combiningMatcher = new CombiningMatcher(MatcherCombiner.AND, Lists.newArrayList(employeesMatcherLogic, notSalesPeopleMatcherLogic));
+        CombiningMatcher combiningMatcher = new CombiningMatcher(CombiningMatcher.Combiner.AND, Lists.newArrayList(employeesMatcherLogic, notSalesPeopleMatcherLogic));
         ParsedCondition parsedCondition = ParsedCondition.createParsedConditionForTests(combiningMatcher, partitions);
         List<ParsedCondition> listOfMatcherAndSplits = Lists.newArrayList(parsedCondition);
 
@@ -134,7 +134,7 @@ public class SplitParserTest {
 
         AttributeMatcher employeesMatcherLogic = AttributeMatcher.vanilla(new UserDefinedSegmentMatcher(EMPLOYEES));
         AttributeMatcher notSalesPeopleMatcherLogic = new AttributeMatcher(null, new UserDefinedSegmentMatcher(SALES_PEOPLE), true);
-        CombiningMatcher combiningMatcher = new CombiningMatcher(MatcherCombiner.AND, Lists.newArrayList(employeesMatcherLogic, notSalesPeopleMatcherLogic));
+        CombiningMatcher combiningMatcher = new CombiningMatcher(CombiningMatcher.Combiner.AND, Lists.newArrayList(employeesMatcherLogic, notSalesPeopleMatcherLogic));
         ParsedCondition parsedCondition = ParsedCondition.createParsedConditionForTests(combiningMatcher, partitions);
         List<ParsedCondition> listOfMatcherAndSplits = Lists.newArrayList(parsedCondition);
 
@@ -256,8 +256,8 @@ public class SplitParserTest {
         ParsedSplit actual = parser.parse(split);
 
         AttributeMatcher employeesMatcherLogic = new AttributeMatcher("name", new UserDefinedSegmentMatcher(EMPLOYEES), false);
-        AttributeMatcher creationDateNotOlderThanAPointLogic = new AttributeMatcher("creation_date", new GreaterThanOrEqualToMatcher(1457386741L, DataType.DATETIME), true);
-        CombiningMatcher combiningMatcher = new CombiningMatcher(MatcherCombiner.AND, Lists.newArrayList(employeesMatcherLogic, creationDateNotOlderThanAPointLogic));
+        AttributeMatcher creationDateNotOlderThanAPointLogic = new AttributeMatcher("creation_date", new GreaterThanOrEqualToMatcher(1457386741L, io.split.rules.model.DataType.DATETIME), true);
+        CombiningMatcher combiningMatcher = new CombiningMatcher(CombiningMatcher.Combiner.AND, Lists.newArrayList(employeesMatcherLogic, creationDateNotOlderThanAPointLogic));
         ParsedCondition parsedCondition = ParsedCondition.createParsedConditionForTests(combiningMatcher, partitions);
         List<ParsedCondition> listOfMatcherAndSplits = Lists.newArrayList(parsedCondition);
 
@@ -276,7 +276,7 @@ public class SplitParserTest {
 
         SplitParser parser = new SplitParser();
 
-        Matcher ageLessThan10 = ConditionsTestUtil.numericMatcher("user", "age", MatcherType.LESS_THAN_OR_EQUAL_TO, DataType.NUMBER, 10L, false);
+        Matcher ageLessThan10 = ConditionsTestUtil.numericMatcher("user", "age", MatcherType.LESS_THAN_OR_EQUAL_TO, io.split.client.dtos.DataType.NUMBER, 10L, false);
 
         List<Partition> partitions = Lists.newArrayList(ConditionsTestUtil.partition("on", 100));
 
@@ -289,8 +289,8 @@ public class SplitParserTest {
 
         ParsedSplit actual = parser.parse(split);
 
-        AttributeMatcher ageLessThan10Logic = new AttributeMatcher("age", new LessThanOrEqualToMatcher(10, DataType.NUMBER), false);
-        CombiningMatcher combiningMatcher = new CombiningMatcher(MatcherCombiner.AND, Lists.newArrayList(ageLessThan10Logic));
+        AttributeMatcher ageLessThan10Logic = new AttributeMatcher("age", new LessThanOrEqualToMatcher(10, io.split.rules.model.DataType.NUMBER), false);
+        CombiningMatcher combiningMatcher = new CombiningMatcher(CombiningMatcher.Combiner.AND, Lists.newArrayList(ageLessThan10Logic));
         ParsedCondition parsedCondition = ParsedCondition.createParsedConditionForTests(combiningMatcher, partitions);
         List<ParsedCondition> listOfMatcherAndSplits = Lists.newArrayList(parsedCondition);
 
@@ -309,7 +309,7 @@ public class SplitParserTest {
 
         SplitParser parser = new SplitParser();
 
-        Matcher ageLessThan10 = ConditionsTestUtil.numericMatcher("user", "age", MatcherType.EQUAL_TO, DataType.NUMBER, 10L, true);
+        Matcher ageLessThan10 = ConditionsTestUtil.numericMatcher("user", "age", MatcherType.EQUAL_TO, io.split.client.dtos.DataType.NUMBER, 10L, true);
 
         List<Partition> partitions = Lists.newArrayList(ConditionsTestUtil.partition("on", 100));
 
@@ -321,8 +321,8 @@ public class SplitParserTest {
 
         ParsedSplit actual = parser.parse(split);
 
-        AttributeMatcher equalToMatcher = new AttributeMatcher("age", new EqualToMatcher(10, DataType.NUMBER), true);
-        CombiningMatcher combiningMatcher = new CombiningMatcher(MatcherCombiner.AND, Lists.newArrayList(equalToMatcher));
+        AttributeMatcher equalToMatcher = new AttributeMatcher("age", new EqualToMatcher(10, io.split.rules.model.DataType.NUMBER), true);
+        CombiningMatcher combiningMatcher = new CombiningMatcher(CombiningMatcher.Combiner.AND, Lists.newArrayList(equalToMatcher));
         ParsedCondition parsedCondition = ParsedCondition.createParsedConditionForTests(combiningMatcher, partitions);
         List<ParsedCondition> listOfMatcherAndSplits = Lists.newArrayList(parsedCondition);
 
@@ -340,7 +340,7 @@ public class SplitParserTest {
 
         SplitParser parser = new SplitParser();
 
-        Matcher equalToNegative10 = ConditionsTestUtil.numericMatcher("user", "age", MatcherType.EQUAL_TO, DataType.NUMBER, -10L, false);
+        Matcher equalToNegative10 = ConditionsTestUtil.numericMatcher("user", "age", MatcherType.EQUAL_TO, io.split.client.dtos.DataType.NUMBER, -10L, false);
 
         List<Partition> partitions = Lists.newArrayList(ConditionsTestUtil.partition("on", 100));
 
@@ -352,8 +352,8 @@ public class SplitParserTest {
 
         ParsedSplit actual = parser.parse(split);
 
-        AttributeMatcher ageEqualTo10Logic = new AttributeMatcher("age", new EqualToMatcher(-10, DataType.NUMBER), false);
-        CombiningMatcher combiningMatcher = new CombiningMatcher(MatcherCombiner.AND, Lists.newArrayList(ageEqualTo10Logic));
+        AttributeMatcher ageEqualTo10Logic = new AttributeMatcher("age", new EqualToMatcher(-10, io.split.rules.model.DataType.NUMBER), false);
+        CombiningMatcher combiningMatcher = new CombiningMatcher(CombiningMatcher.Combiner.AND, Lists.newArrayList(ageEqualTo10Logic));
         ParsedCondition parsedCondition = ParsedCondition.createParsedConditionForTests(combiningMatcher, partitions);
         List<ParsedCondition> listOfMatcherAndSplits = Lists.newArrayList(parsedCondition);
 
@@ -388,8 +388,8 @@ public class SplitParserTest {
 
         ParsedSplit actual = parser.parse(split);
 
-        AttributeMatcher ageBetween10And11Logic = new AttributeMatcher("age", new BetweenMatcher(10, 12, DataType.NUMBER), false);
-        CombiningMatcher combiningMatcher = new CombiningMatcher(MatcherCombiner.AND, Lists.newArrayList(ageBetween10And11Logic));
+        AttributeMatcher ageBetween10And11Logic = new AttributeMatcher("age", new BetweenMatcher(10, 12, io.split.rules.model.DataType.NUMBER), false);
+        CombiningMatcher combiningMatcher = new CombiningMatcher(CombiningMatcher.Combiner.AND, Lists.newArrayList(ageBetween10And11Logic));
         ParsedCondition parsedCondition = ParsedCondition.createParsedConditionForTests(combiningMatcher, partitions);
         List<ParsedCondition> listOfMatcherAndSplits = Lists.newArrayList(parsedCondition);
 
@@ -684,7 +684,7 @@ public class SplitParserTest {
         assertTrue(check3);
     }
 
-    public void setMatcherTest(Condition c, io.split.engine.matchers.Matcher m) {
+    public void setMatcherTest(Condition c, io.split.rules.matchers.Matcher m) {
 
         SegmentChangeFetcher segmentChangeFetcher = Mockito.mock(SegmentChangeFetcher.class);
         SegmentChange segmentChangeEmployee = getSegmentChange(-1L, -1L, EMPLOYEES);
@@ -705,7 +705,7 @@ public class SplitParserTest {
         ParsedSplit actual = parser.parse(split);
 
         AttributeMatcher attrMatcher = new AttributeMatcher("products", m, false);
-        CombiningMatcher combiningMatcher = new CombiningMatcher(MatcherCombiner.AND, Lists.newArrayList(attrMatcher));
+        CombiningMatcher combiningMatcher = new CombiningMatcher(CombiningMatcher.Combiner.AND, Lists.newArrayList(attrMatcher));
         ParsedCondition parsedCondition = ParsedCondition.createParsedConditionForTests(combiningMatcher, partitions);
         List<ParsedCondition> listOfMatcherAndSplits = Lists.newArrayList(parsedCondition);
 

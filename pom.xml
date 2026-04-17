@@ -64,6 +64,7 @@
         <maven.compiler.target>1.8</maven.compiler.target>
     </properties>
     <modules>
+        <module>targeting-engine</module>
         <module>pluggable-storage</module>
         <module>redis-wrapper</module>
         <module>testing</module>

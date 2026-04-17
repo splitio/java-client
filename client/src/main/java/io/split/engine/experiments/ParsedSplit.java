@@ -1,10 +1,12 @@
 package io.split.engine.experiments;
 
-import com.google.common.collect.ImmutableList;
-import io.split.engine.matchers.AttributeMatcher;
-import io.split.engine.matchers.PrerequisitesMatcher;
-import io.split.engine.matchers.RuleBasedSegmentMatcher;
-import io.split.engine.matchers.UserDefinedSegmentMatcher;
+import java.util.ArrayList;
+import java.util.Collections;
+import io.split.client.dtos.ConditionType;
+import io.split.client.dtos.Partition;
+import io.split.rules.matchers.AttributeMatcher;
+import io.split.rules.matchers.PrerequisitesMatcher;
+import io.split.rules.model.TargetingRule;
 
 import java.util.HashSet;
 import java.util.List;
@@ -26,7 +28,7 @@ public class ParsedSplit {
     private final int _seed;
     private final boolean _killed;
     private final String _defaultTreatment;
-    private final ImmutableList<ParsedCondition> _parsedCondition;
+    private final List<ParsedCondition> _parsedCondition;
     private final String _trafficTypeName;
     private final long _changeNumber;
     private final int _trafficAllocation;
@@ -36,6 +38,7 @@ public class ParsedSplit {
     private final HashSet<String> _flagSets;
     private final boolean _impressionsDisabled;
     private PrerequisitesMatcher _prerequisitesMatcher;
+    private final TargetingRule _targetingRule;
 
     public static ParsedSplit createParsedSplitForTests(
             String feature,
@@ -64,7 +67,10 @@ public class ParsedSplit {
                 null,
                 flagSets,
                 impressionsDisabled,
-                prerequisitesMatcher
+                prerequisitesMatcher,
+                TargetingRuleFactory.buildTargetingRule(seed, killed, defaultTreatment, matcherAndSplits,
+                        100, seed, algo,
+                        prerequisitesMatcher == null ? Collections.emptyList() : prerequisitesMatcher.getPrerequisites())
         );
     }
 
@@ -96,7 +102,10 @@ public class ParsedSplit {
                 configurations,
                 flagSets,
                 impressionsDisabled,
-                prerequisitesMatcher
+                prerequisitesMatcher,
+                TargetingRuleFactory.buildTargetingRule(seed, killed, defaultTreatment, matcherAndSplits,
+                        100, seed, algo,
+                        prerequisitesMatcher == null ? Collections.emptyList() : prerequisitesMatcher.getPrerequisites())
         );
     }
 
@@ -116,11 +125,36 @@ public class ParsedSplit {
             boolean impressionsDisabled,
             PrerequisitesMatcher prerequisitesMatcher
     ) {
+        this(feature, seed, killed, defaultTreatment, matcherAndSplits, trafficTypeName, changeNumber,
+                trafficAllocation, trafficAllocationSeed, algo, configurations, flagSets,
+                impressionsDisabled, prerequisitesMatcher,
+                TargetingRuleFactory.buildTargetingRule(seed, killed, defaultTreatment, matcherAndSplits,
+                        trafficAllocation, trafficAllocationSeed, algo,
+                        prerequisitesMatcher == null ? Collections.emptyList() : prerequisitesMatcher.getPrerequisites()));
+    }
+
+    public ParsedSplit(
+            String feature,
+            int seed,
+            boolean killed,
+            String defaultTreatment,
+            List<ParsedCondition> matcherAndSplits,
+            String trafficTypeName,
+            long changeNumber,
+            int trafficAllocation,
+            int trafficAllocationSeed,
+            int algo,
+            Map<String, String> configurations,
+            HashSet<String> flagSets,
+            boolean impressionsDisabled,
+            PrerequisitesMatcher prerequisitesMatcher,
+            TargetingRule targetingRule
+    ) {
         _split = feature;
         _seed = seed;
         _killed = killed;
         _defaultTreatment = defaultTreatment;
-        _parsedCondition = ImmutableList.copyOf(matcherAndSplits);
+        _parsedCondition = Collections.unmodifiableList(new ArrayList<>(matcherAndSplits));
         _trafficTypeName = trafficTypeName;
         _changeNumber = changeNumber;
         _algo = algo;
@@ -133,6 +167,7 @@ public class ParsedSplit {
         _flagSets = flagSets;
         _impressionsDisabled = impressionsDisabled;
         _prerequisitesMatcher = prerequisitesMatcher;
+        _targetingRule = targetingRule;
     }
 
     public String feature() {
@@ -180,6 +215,7 @@ public class ParsedSplit {
         return _impressionsDisabled;
     }
     public PrerequisitesMatcher prerequisitesMatcher() { return _prerequisitesMatcher; }
+    public TargetingRule targetingRule() { return _targetingRule; }
 
     @Override
     public int hashCode() {
@@ -253,34 +289,16 @@ public class ParsedSplit {
     public Set<String> getSegmentsNames() {
         return parsedConditions().stream()
                 .flatMap(parsedCondition -> parsedCondition.matcher().attributeMatchers().stream())
-                .filter(ParsedSplit::isSegmentMatcher)
-                .map(ParsedSplit::asSegmentMatcherForEach)
-                .map(UserDefinedSegmentMatcher::getSegmentName)
+                .filter(AttributeMatcher::isUserDefinedSegmentMatcher)
+                .map(am -> am.asUserDefinedSegmentMatcher().getSegmentName())
                 .collect(Collectors.toSet());
     }
 
     public Set<String> getRuleBasedSegmentsNames() {
         return parsedConditions().stream()
                 .flatMap(parsedCondition -> parsedCondition.matcher().attributeMatchers().stream())
-                .filter(ParsedSplit::isRuleBasedSegmentMatcher)
-                .map(ParsedSplit::asRuleBasedSegmentMatcherForEach)
-                .map(RuleBasedSegmentMatcher::getSegmentName)
+                .filter(AttributeMatcher::isRuleBasedSegmentMatcher)
+                .map(am -> am.asRuleBasedSegmentMatcher().getSegmentName())
                 .collect(Collectors.toSet());
-    }
-
-    private static boolean isSegmentMatcher(AttributeMatcher attributeMatcher) {
-        return ((AttributeMatcher.NegatableMatcher) attributeMatcher.matcher()).delegate() instanceof UserDefinedSegmentMatcher;
-    }
-
-    private static UserDefinedSegmentMatcher asSegmentMatcherForEach(AttributeMatcher attributeMatcher) {
-        return (UserDefinedSegmentMatcher) ((AttributeMatcher.NegatableMatcher) attributeMatcher.matcher()).delegate();
-    }
-
-    private static boolean isRuleBasedSegmentMatcher(AttributeMatcher attributeMatcher) {
-        return ((AttributeMatcher.NegatableMatcher) attributeMatcher.matcher()).delegate() instanceof RuleBasedSegmentMatcher;
-    }
-
-    private static RuleBasedSegmentMatcher asRuleBasedSegmentMatcherForEach(AttributeMatcher attributeMatcher) {
-        return (RuleBasedSegmentMatcher) ((AttributeMatcher.NegatableMatcher) attributeMatcher.matcher()).delegate();
     }
 }
