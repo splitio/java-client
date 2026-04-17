@@ -7,8 +7,10 @@ import io.split.client.interceptors.FlagSetsFilterImpl;
 import io.split.client.utils.FileInputStreamProvider;
 import io.split.client.utils.InputStreamProvider;
 import io.split.engine.experiments.*;
+import io.split.engine.segments.ExecutorFactory;
 import io.split.engine.segments.SegmentChangeFetcher;
 import io.split.engine.segments.SegmentSynchronizationTaskImp;
+import io.split.engine.segments.TelemetryListener;
 import io.split.storages.*;
 import io.split.storages.memory.InMemoryCacheImp;
 import io.split.storages.memory.RuleBasedSegmentCacheInMemoryImp;
@@ -24,6 +26,8 @@ import java.util.HashSet;
 public class LocalhostSynchronizerTest {
 
     private static final TelemetryStorage TELEMETRY_STORAGE_NOOP = Mockito.mock(NoopTelemetryStorage.class);
+    private static final TelemetryListener TELEMETRY_LISTENER = t -> {};
+    private static final ExecutorFactory EXECUTOR_FACTORY = (tf, name, n) -> java.util.concurrent.Executors.newScheduledThreadPool(n);
     private static final FlagSetsFilter FLAG_SETS_FILTER = new FlagSetsFilterImpl(new HashSet<>());
 
     @Test
@@ -45,7 +49,7 @@ public class LocalhostSynchronizerTest {
         SegmentCacheProducer segmentCacheProducer = new SegmentCacheInMemoryImpl();
 
         SegmentSynchronizationTaskImp segmentSynchronizationTaskImp = new SegmentSynchronizationTaskImp(segmentChangeFetcher, 1000, 1, segmentCacheProducer,
-                TELEMETRY_STORAGE_NOOP, splitCacheProducer, null, ruleBasedSegmentCache);
+                TELEMETRY_LISTENER, splitCacheProducer, EXECUTOR_FACTORY, null, ruleBasedSegmentCache);
         SplitTasks splitTasks = SplitTasks.build(splitSynchronizationTask, segmentSynchronizationTaskImp, null, null, null, null);
 
         LocalhostSynchronizer localhostSynchronizer = new LocalhostSynchronizer(splitTasks, splitFetcher, false);
@@ -72,7 +76,7 @@ public class LocalhostSynchronizerTest {
         SegmentCacheProducer segmentCacheProducer = new SegmentCacheInMemoryImpl();
 
         SegmentSynchronizationTaskImp segmentSynchronizationTaskImp = new SegmentSynchronizationTaskImp(segmentChangeFetcher, 1000, 1, segmentCacheProducer,
-                TELEMETRY_STORAGE_NOOP, splitCacheProducer, null, ruleBasedSegmentCache);
+                TELEMETRY_LISTENER, splitCacheProducer, EXECUTOR_FACTORY, null, ruleBasedSegmentCache);
 
         SplitTasks splitTasks = SplitTasks.build(splitSynchronizationTask, segmentSynchronizationTaskImp, null, null, null, null);
         LocalhostSynchronizer localhostSynchronizer = new LocalhostSynchronizer(splitTasks, splitFetcher, true);

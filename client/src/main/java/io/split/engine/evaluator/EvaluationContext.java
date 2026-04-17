@@ -38,7 +38,7 @@ public class EvaluationContext implements io.split.rules.engine.EvaluationContex
     @Override
     public EvaluationResult evaluate(String matchingKey, String bucketingKey, String ruleName, Map<String, Object> attributes) {
         EvaluatorImp.TreatmentLabelAndChangeNumber r = _evaluator.evaluateFeature(matchingKey, bucketingKey, ruleName, attributes);
-        return new EvaluationResult(r.treatment, r.label, r.changeNumber, r.configurations, r.track);
+        return new EvaluationResult(r.treatment, r.label);
     }
 
     @Override

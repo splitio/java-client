@@ -87,8 +87,7 @@ public class FetchOptions {
 
     @Override
     public int hashCode() {
-        return com.google.common.base.Objects.hashCode(_cacheControlHeaders,
-                _targetCN, _flagSetsFilter);
+        return java.util.Objects.hash(_cacheControlHeaders, _targetCN, _flagSetsFilter);
     }
 
     private final boolean _cacheControlHeaders;

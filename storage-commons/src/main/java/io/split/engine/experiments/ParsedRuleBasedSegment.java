@@ -4,6 +4,8 @@ import io.split.client.dtos.ExcludedSegments;
 import io.split.rules.matchers.AttributeMatcher;
 import io.split.rules.matchers.UserDefinedSegmentMatcher;
 
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -44,7 +46,7 @@ public class ParsedRuleBasedSegment {
             List<ExcludedSegments> excludedSegments
     ) {
         _ruleBasedSegment = ruleBasedSegment;
-        _parsedCondition = java.util.Collections.unmodifiableList(new java.util.ArrayList<>(matcherAndSplits));
+        _parsedCondition = Collections.unmodifiableList(new ArrayList<>(matcherAndSplits));
         _trafficTypeName = trafficTypeName;
         _changeNumber = changeNumber;
         _excludedKeys = excludedKeys;

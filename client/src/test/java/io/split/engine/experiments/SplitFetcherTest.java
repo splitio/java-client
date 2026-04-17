@@ -12,9 +12,11 @@ import io.split.engine.ConditionsTestUtil;
 import io.split.engine.common.FetchOptions;
 import io.split.rules.matchers.AllKeysMatcher;
 import io.split.rules.matchers.CombiningMatcher;
+import io.split.engine.segments.ExecutorFactory;
 import io.split.engine.segments.SegmentChangeFetcher;
 import io.split.engine.segments.SegmentSynchronizationTask;
 import io.split.engine.segments.SegmentSynchronizationTaskImp;
+import io.split.engine.segments.TelemetryListener;
 import io.split.grammar.Treatments;
 import io.split.telemetry.storage.InMemoryTelemetryStorage;
 import io.split.telemetry.storage.TelemetryRuntimeProducer;
@@ -52,6 +54,8 @@ import static org.mockito.Mockito.when;
 public class SplitFetcherTest {
     private static final Logger _log = LoggerFactory.getLogger(SplitFetcherTest.class);
     private static final TelemetryStorage TELEMETRY_STORAGE = Mockito.mock(InMemoryTelemetryStorage.class);
+    private static final TelemetryListener TELEMETRY_LISTENER = t -> {};
+    private static final ExecutorFactory EXECUTOR_FACTORY = (tf, name, n) -> java.util.concurrent.Executors.newScheduledThreadPool(n);
     private static final FlagSetsFilter FLAG_SETS_FILTER = new FlagSetsFilterImpl(new HashSet<>());
 
     @Test
@@ -159,7 +163,7 @@ public class SplitFetcherTest {
         RuleBasedSegmentParser ruleBasedSegmentParser = new RuleBasedSegmentParser();
 
         SegmentChangeFetcher segmentChangeFetcher = mock(SegmentChangeFetcher.class);
-        SegmentSynchronizationTask segmentSynchronizationTask = new SegmentSynchronizationTaskImp(segmentChangeFetcher, 1,10, segmentCache, TELEMETRY_STORAGE, cache, null, ruleBasedSegmentCache);
+        SegmentSynchronizationTask segmentSynchronizationTask = new SegmentSynchronizationTaskImp(segmentChangeFetcher, 1, 10, segmentCache, TELEMETRY_LISTENER, cache, EXECUTOR_FACTORY, null, ruleBasedSegmentCache);
         segmentSynchronizationTask.start();
         SplitFetcherImp fetcher = new SplitFetcherImp(splitChangeFetcher, new SplitParser(), cache, TELEMETRY_STORAGE, FLAG_SETS_FILTER,
                 ruleBasedSegmentParser, ruleBasedSegmentCache);
@@ -184,7 +188,7 @@ public class SplitFetcherTest {
         RuleBasedSegmentParser ruleBasedSegmentParser = new RuleBasedSegmentParser();
 
         SegmentChangeFetcher segmentChangeFetcher = mock(SegmentChangeFetcher.class);
-        SegmentSynchronizationTask segmentSynchronizationTask = new SegmentSynchronizationTaskImp(segmentChangeFetcher, 1,10, segmentCache, TELEMETRY_STORAGE, cache, null, ruleBasedSegmentCache);
+        SegmentSynchronizationTask segmentSynchronizationTask = new SegmentSynchronizationTaskImp(segmentChangeFetcher, 1, 10, segmentCache, TELEMETRY_LISTENER, cache, EXECUTOR_FACTORY, null, ruleBasedSegmentCache);
         segmentSynchronizationTask.start();
         SplitFetcherImp fetcher = new SplitFetcherImp(splitChangeFetcher, new SplitParser(), cache, TELEMETRY_STORAGE, FLAG_SETS_FILTER,
             ruleBasedSegmentParser, ruleBasedSegmentCache);
@@ -286,7 +290,7 @@ public class SplitFetcherTest {
         SegmentChangeFetcher segmentChangeFetcher = mock(SegmentChangeFetcher.class);
         SegmentChange segmentChange = getSegmentChange(0L, 0L, segmentName);
         when(segmentChangeFetcher.fetch(anyString(), anyLong(), any())).thenReturn(segmentChange);
-        SegmentSynchronizationTask segmentSynchronizationTask = new SegmentSynchronizationTaskImp(segmentChangeFetcher, 1,10, segmentCache, Mockito.mock(TelemetryStorage.class), cache, null, ruleBasedSegmentCache);
+        SegmentSynchronizationTask segmentSynchronizationTask = new SegmentSynchronizationTaskImp(segmentChangeFetcher, 1, 10, segmentCache, TELEMETRY_LISTENER, cache, EXECUTOR_FACTORY, null, ruleBasedSegmentCache);
         segmentSynchronizationTask.start();
         SplitFetcherImp fetcher = new SplitFetcherImp(experimentChangeFetcher, new SplitParser(), cache,  TELEMETRY_STORAGE, FLAG_SETS_FILTER,
             ruleBasedSegmentParser, ruleBasedSegmentCache);

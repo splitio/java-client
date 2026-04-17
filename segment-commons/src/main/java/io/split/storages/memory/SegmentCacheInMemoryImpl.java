@@ -1,13 +1,12 @@
 package io.split.storages.memory;
 
-import com.google.common.annotations.VisibleForTesting;
-import com.google.common.collect.Maps;
 import io.split.engine.segments.SegmentImp;
 import io.split.storages.SegmentCache;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.List;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
 /**
@@ -17,7 +16,7 @@ import java.util.concurrent.ConcurrentMap;
 public class SegmentCacheInMemoryImpl implements SegmentCache {
     private static final Logger _log = LoggerFactory.getLogger(SegmentCacheInMemoryImpl.class);
     private static final long DEFAULT_CHANGE_NUMBER = -1l;
-    private final ConcurrentMap<String, SegmentImp> _segments = Maps.newConcurrentMap();
+    private final ConcurrentMap<String, SegmentImp> _segments = new ConcurrentHashMap<>();
 
     @Override
     public void updateSegment(String segmentName, List<String> toAdd, List<String> toRemove, long changeNumber) {
@@ -53,7 +52,6 @@ public class SegmentCacheInMemoryImpl implements SegmentCache {
         return segmentImp.getChangeNumber();
     }
 
-    @VisibleForTesting
     void clear() {
         _segments.clear();
     }

@@ -2,7 +2,6 @@ package io.split.engine.experiments;
 
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
@@ -75,19 +74,13 @@ public final class SplitParser {
                         .collect(Collectors.toList());
 
         TargetingRule targetingRule = new TargetingRule(
-                split.name,
                 split.seed,
                 split.killed,
                 split.defaultTreatment,
                 targetingConditionList,
-                split.trafficTypeName,
-                split.changeNumber,
                 split.trafficAllocation,
                 split.trafficAllocationSeed,
                 split.algo,
-                split.configurations,
-                split.sets == null ? new java.util.HashSet<>() : split.sets,
-                split.impressionsDisabled,
                 prerequisites);
 
         return new ParsedSplit(

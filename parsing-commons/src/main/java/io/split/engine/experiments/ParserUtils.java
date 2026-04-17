@@ -1,6 +1,7 @@
 package io.split.engine.experiments;
 
 import io.split.client.dtos.DataType;
+import io.split.client.dtos.MatcherCombiner;
 import io.split.client.dtos.MatcherType;
 import io.split.client.dtos.Partition;
 import io.split.client.dtos.MatcherGroup;
@@ -35,6 +36,7 @@ import io.split.rules.matchers.strings.RegularExpressionMatcher;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 public final class ParserUtils {
 
@@ -79,12 +81,16 @@ public final class ParserUtils {
             toCombine.add(toMatcher(matcher));
         }
 
-        return new CombiningMatcher(CombiningMatcher.Combiner.AND, toCombine);
+        return new CombiningMatcher(toCombiner(matcherGroup.combiner), toCombine);
     }
 
 
     private static io.split.rules.model.DataType toRulesDataType(DataType dt) {
         return io.split.rules.model.DataType.valueOf(dt.name());
+    }
+
+    private static CombiningMatcher.Combiner toCombiner(MatcherCombiner combiner) {
+        return CombiningMatcher.Combiner.valueOf(combiner.name());
     }
 
     public static AttributeMatcher toMatcher(Matcher matcher) {
@@ -94,83 +100,107 @@ public final class ParserUtils {
                 delegate = new AllKeysMatcher();
                 break;
             case IN_SEGMENT:
+                Objects.requireNonNull(matcher.userDefinedSegmentMatcherData);
                 String segmentName = matcher.userDefinedSegmentMatcherData.segmentName;
                 delegate = new UserDefinedSegmentMatcher(segmentName);
                 break;
             case WHITELIST:
+                Objects.requireNonNull(matcher.whitelistMatcherData);
                 delegate = new WhitelistMatcher(matcher.whitelistMatcherData.whitelist);
                 break;
             case EQUAL_TO:
+                Objects.requireNonNull(matcher.unaryNumericMatcherData);
                 delegate = new EqualToMatcher(matcher.unaryNumericMatcherData.value, toRulesDataType(matcher.unaryNumericMatcherData.dataType));
                 break;
             case GREATER_THAN_OR_EQUAL_TO:
+                Objects.requireNonNull(matcher.unaryNumericMatcherData);
                 delegate = new GreaterThanOrEqualToMatcher(
                         matcher.unaryNumericMatcherData.value, toRulesDataType(matcher.unaryNumericMatcherData.dataType));
                 break;
             case LESS_THAN_OR_EQUAL_TO:
+                Objects.requireNonNull(matcher.unaryNumericMatcherData);
                 delegate = new LessThanOrEqualToMatcher(
                         matcher.unaryNumericMatcherData.value, toRulesDataType(matcher.unaryNumericMatcherData.dataType));
                 break;
             case BETWEEN:
+                Objects.requireNonNull(matcher.betweenMatcherData);
                 delegate = new BetweenMatcher(matcher.betweenMatcherData.start,
                         matcher.betweenMatcherData.end, toRulesDataType(matcher.betweenMatcherData.dataType));
                 break;
             case EQUAL_TO_SET:
+                Objects.requireNonNull(matcher.whitelistMatcherData);
                 delegate = new EqualToSetMatcher(matcher.whitelistMatcherData.whitelist);
                 break;
             case PART_OF_SET:
+                Objects.requireNonNull(matcher.whitelistMatcherData);
                 delegate = new PartOfSetMatcher(matcher.whitelistMatcherData.whitelist);
                 break;
             case CONTAINS_ALL_OF_SET:
+                Objects.requireNonNull(matcher.whitelistMatcherData);
                 delegate = new ContainsAllOfSetMatcher(matcher.whitelistMatcherData.whitelist);
                 break;
             case CONTAINS_ANY_OF_SET:
+                Objects.requireNonNull(matcher.whitelistMatcherData);
                 delegate = new ContainsAnyOfSetMatcher(matcher.whitelistMatcherData.whitelist);
                 break;
             case STARTS_WITH:
+                Objects.requireNonNull(matcher.whitelistMatcherData);
                 delegate = new StartsWithAnyOfMatcher(matcher.whitelistMatcherData.whitelist);
                 break;
             case ENDS_WITH:
+                Objects.requireNonNull(matcher.whitelistMatcherData);
                 delegate = new EndsWithAnyOfMatcher(matcher.whitelistMatcherData.whitelist);
                 break;
             case CONTAINS_STRING:
+                Objects.requireNonNull(matcher.whitelistMatcherData);
                 delegate = new ContainsAnyOfMatcher(matcher.whitelistMatcherData.whitelist);
                 break;
             case MATCHES_STRING:
+                Objects.requireNonNull(matcher.stringMatcherData);
                 delegate = new RegularExpressionMatcher(matcher.stringMatcherData);
                 break;
             case IN_SPLIT_TREATMENT:
-                if (matcher.dependencyMatcherData == null) throw new NullPointerException(
-                        "MatcherType is " + matcher.matcherType + ". matcher.dependencyMatcherData() MUST NOT BE null");
+                Objects.requireNonNull(matcher.dependencyMatcherData,
+                        "MatcherType is " + matcher.matcherType
+                                + ". matcher.dependencyMatcherData() MUST NOT BE null");
                 delegate = new DependencyMatcher(matcher.dependencyMatcherData.split, matcher.dependencyMatcherData.treatments);
                 break;
             case EQUAL_TO_BOOLEAN:
-                if (matcher.booleanMatcherData == null) throw new NullPointerException(
-                        "MatcherType is " + matcher.matcherType + ". matcher.booleanMatcherData() MUST NOT BE null");
+                Objects.requireNonNull(matcher.booleanMatcherData,
+                        "MatcherType is " + matcher.matcherType
+                                + ". matcher.booleanMatcherData() MUST NOT BE null");
                 delegate = new BooleanMatcher(matcher.booleanMatcherData);
                 break;
             case EQUAL_TO_SEMVER:
+                Objects.requireNonNull(matcher.stringMatcherData, "stringMatcherData is required for EQUAL_TO_SEMVER matcher type");
                 delegate = new EqualToSemverMatcher(matcher.stringMatcherData);
                 break;
             case GREATER_THAN_OR_EQUAL_TO_SEMVER:
+                Objects.requireNonNull(matcher.stringMatcherData, "stringMatcherData is required for GREATER_THAN_OR_EQUAL_TO_SEMVER matcher type");
                 delegate = new GreaterThanOrEqualToSemverMatcher(matcher.stringMatcherData);
                 break;
             case LESS_THAN_OR_EQUAL_TO_SEMVER:
+                Objects.requireNonNull(matcher.stringMatcherData, "stringMatcherData is required for LESS_THAN_OR_EQUAL_SEMVER matcher type");
                 delegate = new LessThanOrEqualToSemverMatcher(matcher.stringMatcherData);
                 break;
             case IN_LIST_SEMVER:
+                Objects.requireNonNull(matcher.whitelistMatcherData, "whitelistMatcherData is required for IN_LIST_SEMVER matcher type");
                 delegate = new InListSemverMatcher(matcher.whitelistMatcherData.whitelist);
                 break;
             case BETWEEN_SEMVER:
+                Objects.requireNonNull(matcher.betweenStringMatcherData, "betweenStringMatcherData is required for BETWEEN_SEMVER matcher type");
                 delegate = new BetweenSemverMatcher(matcher.betweenStringMatcherData.start, matcher.betweenStringMatcherData.end);
                 break;
             case IN_RULE_BASED_SEGMENT:
+                Objects.requireNonNull(matcher.userDefinedSegmentMatcherData);
                 String ruleBasedSegmentName = matcher.userDefinedSegmentMatcherData.segmentName;
                 delegate = new RuleBasedSegmentMatcher(ruleBasedSegmentName);
                 break;
             default:
                 throw new IllegalArgumentException("Unknown matcher type: " + matcher.matcherType);
         }
+
+        Objects.requireNonNull(delegate, "We were not able to create a matcher for: " + matcher.matcherType);
 
         String attribute = null;
         if (matcher.keySelector != null && matcher.keySelector.attribute != null) {

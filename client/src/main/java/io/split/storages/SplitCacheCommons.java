@@ -1,8 +1,5 @@
 package io.split.storages;
 
-import java.util.Set;
-
-public interface SplitCacheCommons {
+public interface SplitCacheCommons extends SegmentsProvider {
     long getChangeNumber();
-    Set<String> getSegments();
 }

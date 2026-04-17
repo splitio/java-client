@@ -2,16 +2,13 @@ package io.split.engine.segments;
 
 import io.split.client.dtos.SegmentChange;
 import io.split.storages.SegmentCacheProducer;
-import io.split.telemetry.domain.enums.LastSynchronizationRecordsEnum;
-import io.split.telemetry.storage.TelemetryRuntimeProducer;
 import io.split.engine.common.FetchOptions;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.List;
-
-import static com.google.common.base.Preconditions.checkNotNull;
+import java.util.Objects;
 
 public class SegmentFetcherImp implements SegmentFetcher {
     private static final Logger _log = LoggerFactory.getLogger(SegmentFetcherImp.class);
@@ -19,16 +16,16 @@ public class SegmentFetcherImp implements SegmentFetcher {
     private final String _segmentName;
     private final SegmentChangeFetcher _segmentChangeFetcher;
     private final SegmentCacheProducer _segmentCacheProducer;
-    private final TelemetryRuntimeProducer _telemetryRuntimeProducer;
+    private final TelemetryListener _telemetryListener;
 
     private final Object _lock = new Object();
 
     public SegmentFetcherImp(String segmentName, SegmentChangeFetcher segmentChangeFetcher, SegmentCacheProducer segmentCacheProducer,
-                             TelemetryRuntimeProducer telemetryRuntimeProducer) {
-        _segmentName = checkNotNull(segmentName);
-        _segmentChangeFetcher = checkNotNull(segmentChangeFetcher);
-        _segmentCacheProducer = checkNotNull(segmentCacheProducer);
-        _telemetryRuntimeProducer = checkNotNull(telemetryRuntimeProducer);
+                             TelemetryListener telemetryListener) {
+        _segmentName = Objects.requireNonNull(segmentName);
+        _segmentChangeFetcher = Objects.requireNonNull(segmentChangeFetcher);
+        _segmentCacheProducer = Objects.requireNonNull(segmentCacheProducer);
+        _telemetryListener = Objects.requireNonNull(telemetryListener);
 
         _segmentCacheProducer.updateSegment(segmentName, new ArrayList<>(), new ArrayList<>(), -1L);
     }
@@ -97,7 +94,7 @@ public class SegmentFetcherImp implements SegmentFetcher {
                 _log.info(_segmentName + " removed keys: " + summarize(change.removed));
             }
 
-            _telemetryRuntimeProducer.recordSuccessfulSync(LastSynchronizationRecordsEnum.SEGMENTS, System.currentTimeMillis());
+            _telemetryListener.recordSuccessfulSync(System.currentTimeMillis());
         }
     }
 

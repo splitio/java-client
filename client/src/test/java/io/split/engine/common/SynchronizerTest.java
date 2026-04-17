@@ -5,8 +5,10 @@ import io.split.client.impressions.ImpressionsManager;
 import io.split.client.impressions.UniqueKeysTracker;
 import io.split.client.interceptors.FlagSetsFilter;
 import io.split.client.interceptors.FlagSetsFilterImpl;
+import io.split.engine.segments.ExecutorFactory;
 import io.split.engine.segments.SegmentChangeFetcher;
 import io.split.engine.segments.SegmentSynchronizationTaskImp;
+import io.split.engine.segments.TelemetryListener;
 import io.split.storages.*;
 import io.split.storages.memory.InMemoryCacheImp;
 import io.split.engine.experiments.FetchResult;
@@ -81,9 +83,11 @@ public class SynchronizerTest {
 
     @Test
     public void testSyncAllSegments() throws InterruptedException, NoSuchFieldException, IllegalAccessException {
+        ExecutorFactory executorFactory = (tf, name, n) -> java.util.concurrent.Executors.newScheduledThreadPool(n);
+        TelemetryListener telemetryListener = t -> {};
         SegmentSynchronizationTask segmentSynchronizationTask = new SegmentSynchronizationTaskImp(Mockito.mock(SegmentChangeFetcher.class),
-                20L, 1, _segmentCacheProducer, Mockito.mock(TelemetryRuntimeProducer.class),
-                Mockito.mock(SplitCacheConsumer.class), null, Mockito.mock(RuleBasedSegmentCache.class));
+                20L, 1, _segmentCacheProducer, telemetryListener,
+                Mockito.mock(SplitCacheConsumer.class), executorFactory, null, Mockito.mock(RuleBasedSegmentCache.class));
         Field synchronizerSegmentFetcher = SynchronizerImp.class.getDeclaredField("_segmentSynchronizationTaskImp");
         synchronizerSegmentFetcher.setAccessible(true);
         Field modifiersField = Field.class.getDeclaredField("modifiers");
