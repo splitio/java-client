@@ -1,0 +1,38 @@
+testing/src/main/java/io/split/client/App.java
+  human 78
+---
+{
+  "attestations": [
+    {
+      "entries": [
+        {
+          "accepted_lines": 0,
+          "added_lines": 0,
+          "deleted_lines": 1,
+          "hash": "human",
+          "lines": "78",
+          "overridden_lines": 0
+        }
+      ],
+      "file": "testing/src/main/java/io/split/client/App.java"
+    }
+  ],
+  "base_commit_sha": "67cb73e0ba5af1d681099361a50ec6b40b4bd2cc",
+  "branch": "continued-modularization",
+  "commit_sha": "3576c76626232404b38355008da0e883399c16e7",
+  "commit_time": "2026-04-17T14:13:45-03:00",
+  "git_ai_version": "1.2.6",
+  "prompts": {
+    "human": {
+      "accepted_lines": 0,
+      "agent_id": null,
+      "human_author": "Gaston Thea <gaston.thea@harness.io>",
+      "messages": [],
+      "overriden_lines": 0,
+      "total_additions": 0,
+      "total_deletions": 1
+    }
+  },
+  "repo": "git@github.com:splitio/java-client.git",
+  "schema_version": "authorship/3.0.0"
+}
