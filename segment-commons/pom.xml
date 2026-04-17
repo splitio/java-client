@@ -18,7 +18,7 @@
     <dependencies>
         <dependency>
             <groupId>io.split.client</groupId>
-            <artifactId>storage-commons</artifactId>
+            <artifactId>parsing-commons</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>

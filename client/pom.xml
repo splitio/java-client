@@ -179,11 +179,6 @@
         </dependency>
         <dependency>
             <groupId>io.split.client</groupId>
-            <artifactId>storage-commons</artifactId>
-            <version>${project.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>io.split.client</groupId>
             <artifactId>segment-commons</artifactId>
             <version>${project.version}</version>
         </dependency>
