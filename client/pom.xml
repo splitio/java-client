@@ -169,6 +169,11 @@
     <dependencies>
         <dependency>
             <groupId>io.split.client</groupId>
+            <artifactId>tracker</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>io.split.client</groupId>
             <artifactId>targeting-engine</artifactId>
             <version>${project.version}</version>
         </dependency>

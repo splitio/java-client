@@ -9,6 +9,8 @@ import io.split.client.events.EventsStorage;
 import io.split.client.events.EventsTask;
 import io.split.client.events.InMemoryEventsStorage;
 import io.split.client.events.NoopEventsStorageImp;
+import io.split.client.events.EventQueueStats;
+import io.split.client.events.TelemetryEventQueueStats;
 import io.split.client.impressions.AsynchronousImpressionListener;
 import io.split.client.impressions.HttpImpressionsSender;
 import io.split.client.impressions.ImpressionCounter;
@@ -254,7 +256,8 @@ public class SplitFactoryImpl implements SplitFactory {
         _impressionsManager = buildImpressionsManager(config, impressionsStorage, impressionsStorage);
 
         // EventClient
-        EventsStorage eventsStorage = new InMemoryEventsStorage(config.eventsQueueSize(), _telemetryStorageProducer);
+        EventQueueStats eventsQueueStats = new TelemetryEventQueueStats(_telemetryStorageProducer);
+        EventsStorage eventsStorage = new InMemoryEventsStorage(config.eventsQueueSize(), eventsQueueStats);
         EventsSender eventsSender = EventsSender.create(_splitHttpClient, _eventsRootTarget, _telemetryStorageProducer);
         _eventsTask = EventsTask.create(config.eventSendIntervalInMillis(), eventsStorage, eventsSender,
                 config.getThreadFactory());

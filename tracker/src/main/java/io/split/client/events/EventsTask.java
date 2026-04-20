@@ -1,19 +1,16 @@
 package io.split.client.events;
 
-import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import io.split.client.dtos.Event;
-import io.split.client.utils.SplitExecutorFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.Executors;
+import java.util.Objects;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
-
-import static com.google.common.base.Preconditions.checkNotNull;
 
 /**
  * Responsible for sending events added via .track() to Split collection services
@@ -21,34 +18,27 @@ import static com.google.common.base.Preconditions.checkNotNull;
 public class EventsTask{
 
     private final EventsStorageConsumer _eventsStorageConsumer;
-    private final EventsSender _eventsSender;
+    private final EventSender _eventsSender;
     private final long _sendIntervalMillis;
 
     private final ScheduledExecutorService _senderScheduledExecutorService;
     private static final Logger _log = LoggerFactory.getLogger(EventsTask.class);
 
-    public static EventsTask create(long sendIntervalMillis, EventsStorageConsumer eventsStorageConsumer, EventsSender eventsSender,
-                                    ThreadFactory threadFactory) throws URISyntaxException {
+    public static EventsTask create(long sendIntervalMillis, EventsStorageConsumer eventsStorageConsumer, EventSender eventsSender,
+                                    ThreadFactory threadFactory) {
         return new EventsTask(eventsStorageConsumer,
                 sendIntervalMillis,
                 eventsSender,
                 threadFactory);
     }
 
-    EventsTask(EventsStorageConsumer eventsStorageConsumer,
-               long sendIntervalMillis, EventsSender eventsSender, ThreadFactory threadFactory) {
+    public EventsTask(EventsStorageConsumer eventsStorageConsumer,
+               long sendIntervalMillis, EventSender eventsSender, ThreadFactory threadFactory) {
 
-        _eventsStorageConsumer = checkNotNull(eventsStorageConsumer);
+        _eventsStorageConsumer = Objects.requireNonNull(eventsStorageConsumer);
         _sendIntervalMillis = sendIntervalMillis;
-        _eventsSender = checkNotNull(eventsSender);
-        _senderScheduledExecutorService = SplitExecutorFactory.buildSingleThreadScheduledExecutor(threadFactory, "Sender-events-%d");
-    }
-
-    ThreadFactory eventClientThreadFactory(final String name) {
-        return new ThreadFactoryBuilder()
-                .setDaemon(true)
-                .setNameFormat(name)
-                .build();
+        _eventsSender = Objects.requireNonNull(eventsSender);
+        _senderScheduledExecutorService = Executors.newSingleThreadScheduledExecutor(threadFactory);
     }
 
     public void start(){
@@ -85,6 +75,6 @@ public class EventsTask{
         if (eventsToSend.isEmpty()){
             return;
         }
-        _eventsSender.sendEvents(eventsToSend);
+        _eventsSender.send(eventsToSend);
     }
 }

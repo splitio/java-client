@@ -71,6 +71,7 @@
         <module>redis-wrapper</module>
         <module>testing</module>
         <module>okhttp-modules</module>
+        <module>tracker</module>
         <module>client</module>
     </modules>
     <build>
