@@ -1,0 +1,60 @@
+targeting-engine/README.md
+  6f5b3d9d-3e37-4004-a18e-4ea87e3778de 3,15-16,26,28-29,51,64-66,68-71,76-77,90-91,98,101,103,105-106,109-110,112,114
+  human 1-2,4-14,17-25,27,30-50,52-63,67,72-75,78-89,92-97,99-100,102,104,107-108,111,113,115-129
+---
+{
+  "attestations": [
+    {
+      "entries": [
+        {
+          "accepted_lines": 27,
+          "added_lines": 27,
+          "deleted_lines": 0,
+          "hash": "6f5b3d9d-3e37-4004-a18e-4ea87e3778de",
+          "lines": "3,15-16,26,28-29,51,64-66,68-71,76-77,90-91,98,101,103,105-106,109-110,112,114",
+          "overridden_lines": 0
+        },
+        {
+          "accepted_lines": 102,
+          "added_lines": 102,
+          "deleted_lines": 0,
+          "hash": "human",
+          "lines": "1-2,4-14,17-25,27,30-50,52-63,67,72-75,78-89,92-97,99-100,102,104,107-108,111,113,115-129",
+          "overridden_lines": 0
+        }
+      ],
+      "file": "targeting-engine/README.md"
+    }
+  ],
+  "base_commit_sha": "c12432ad2dd98cfad0827906da1993e14ae8b8bb",
+  "branch": "target-rule-module",
+  "commit_sha": "f13d8af89a3b26df3d5ac131e61dc98f0f2b344a",
+  "commit_time": "2026-04-17T12:26:36-03:00",
+  "git_ai_version": "1.2.6",
+  "prompts": {
+    "6f5b3d9d-3e37-4004-a18e-4ea87e3778de": {
+      "accepted_lines": 27,
+      "agent_id": {
+        "id": "6f5b3d9d-3e37-4004-a18e-4ea87e3778de",
+        "model": "claude-sonnet-4-6",
+        "tool": "claude"
+      },
+      "human_author": "Gaston Thea <gaston.thea@harness.io>",
+      "messages": [],
+      "overriden_lines": 0,
+      "total_additions": 27,
+      "total_deletions": 0
+    },
+    "human": {
+      "accepted_lines": 102,
+      "agent_id": null,
+      "human_author": "Gaston Thea <gaston.thea@harness.io>",
+      "messages": [],
+      "overriden_lines": 0,
+      "total_additions": 102,
+      "total_deletions": 0
+    }
+  },
+  "repo": "git@github.com:splitio/java-client.git",
+  "schema_version": "authorship/3.0.0"
+}

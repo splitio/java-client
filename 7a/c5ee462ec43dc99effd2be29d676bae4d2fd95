@@ -1,0 +1,383 @@
+parsing-commons/src/main/java/io/split/client/dtos/MatcherGroup.java
+  human 1-8
+parsing-commons/src/main/java/io/split/client/dtos/Status.java
+  human 1-6
+parsing-commons/src/main/java/io/split/client/dtos/ConditionType.java
+  human 1-9
+parsing-commons/src/main/java/io/split/client/dtos/KeySelector.java
+  human 1-7
+client/pom.xml
+  human 175-179
+parsing-commons/src/main/java/io/split/client/dtos/MatcherCombiner.java
+  human 1-8
+parsing-commons/src/main/java/io/split/client/dtos/WhitelistMatcherData.java
+  human 1-7
+parsing-commons/src/main/java/io/split/client/dtos/UserDefinedSegmentMatcherData.java
+  human 1-5
+parsing-commons/src/main/java/io/split/engine/evaluator/Labels.java
+  human 1-12
+parsing-commons/src/main/java/io/split/client/dtos/MatcherType.java
+  human 1-44
+parsing-commons/src/main/java/io/split/client/dtos/ExcludedSegments.java
+  human 1-27
+parsing-commons/src/main/java/io/split/client/dtos/Excluded.java
+  human 1-8
+parsing-commons/src/main/java/io/split/client/dtos/DependencyMatcherData.java
+  human 1-8
+parsing-commons/src/main/java/io/split/client/dtos/Condition.java
+  human 1-16
+parsing-commons/src/main/java/io/split/client/dtos/Partition.java
+  human 1-6
+parsing-commons/src/main/java/io/split/client/dtos/Matcher.java
+  human 1-20
+parsing-commons/src/main/java/io/split/client/dtos/DataType.java
+  human 1-10
+parsing-commons/src/main/java/io/split/client/dtos/UnaryNumericMatcherData.java
+  human 1-6
+parsing-commons/pom.xml
+  human 1-36
+parsing-commons/src/main/java/io/split/client/dtos/BetweenStringMatcherData.java
+  human 1-11
+parsing-commons/src/main/java/io/split/client/dtos/BetweenMatcherData.java
+  human 1-12
+parsing-commons/src/main/java/io/split/engine/experiments/ParsedCondition.java
+  human 1-120
+parsing-commons/src/main/java/io/split/engine/experiments/ParserUtils.java
+  human 1-185
+pom.xml
+  human 68
+---
+{
+  "attestations": [
+    {
+      "entries": [
+        {
+          "accepted_lines": 8,
+          "added_lines": 8,
+          "deleted_lines": 0,
+          "hash": "human",
+          "lines": "1-8",
+          "overridden_lines": 0
+        }
+      ],
+      "file": "parsing-commons/src/main/java/io/split/client/dtos/MatcherGroup.java"
+    },
+    {
+      "entries": [
+        {
+          "accepted_lines": 6,
+          "added_lines": 6,
+          "deleted_lines": 0,
+          "hash": "human",
+          "lines": "1-6",
+          "overridden_lines": 0
+        }
+      ],
+      "file": "parsing-commons/src/main/java/io/split/client/dtos/Status.java"
+    },
+    {
+      "entries": [
+        {
+          "accepted_lines": 9,
+          "added_lines": 9,
+          "deleted_lines": 0,
+          "hash": "human",
+          "lines": "1-9",
+          "overridden_lines": 0
+        }
+      ],
+      "file": "parsing-commons/src/main/java/io/split/client/dtos/ConditionType.java"
+    },
+    {
+      "entries": [
+        {
+          "accepted_lines": 7,
+          "added_lines": 7,
+          "deleted_lines": 0,
+          "hash": "human",
+          "lines": "1-7",
+          "overridden_lines": 0
+        }
+      ],
+      "file": "parsing-commons/src/main/java/io/split/client/dtos/KeySelector.java"
+    },
+    {
+      "entries": [
+        {
+          "accepted_lines": 5,
+          "added_lines": 5,
+          "deleted_lines": 0,
+          "hash": "human",
+          "lines": "175-179",
+          "overridden_lines": 0
+        }
+      ],
+      "file": "client/pom.xml"
+    },
+    {
+      "entries": [
+        {
+          "accepted_lines": 8,
+          "added_lines": 8,
+          "deleted_lines": 0,
+          "hash": "human",
+          "lines": "1-8",
+          "overridden_lines": 0
+        }
+      ],
+      "file": "parsing-commons/src/main/java/io/split/client/dtos/MatcherCombiner.java"
+    },
+    {
+      "entries": [
+        {
+          "accepted_lines": 7,
+          "added_lines": 7,
+          "deleted_lines": 0,
+          "hash": "human",
+          "lines": "1-7",
+          "overridden_lines": 0
+        }
+      ],
+      "file": "parsing-commons/src/main/java/io/split/client/dtos/WhitelistMatcherData.java"
+    },
+    {
+      "entries": [
+        {
+          "accepted_lines": 5,
+          "added_lines": 5,
+          "deleted_lines": 0,
+          "hash": "human",
+          "lines": "1-5",
+          "overridden_lines": 0
+        }
+      ],
+      "file": "parsing-commons/src/main/java/io/split/client/dtos/UserDefinedSegmentMatcherData.java"
+    },
+    {
+      "entries": [
+        {
+          "accepted_lines": 12,
+          "added_lines": 12,
+          "deleted_lines": 0,
+          "hash": "human",
+          "lines": "1-12",
+          "overridden_lines": 0
+        }
+      ],
+      "file": "parsing-commons/src/main/java/io/split/engine/evaluator/Labels.java"
+    },
+    {
+      "entries": [
+        {
+          "accepted_lines": 44,
+          "added_lines": 44,
+          "deleted_lines": 0,
+          "hash": "human",
+          "lines": "1-44",
+          "overridden_lines": 0
+        }
+      ],
+      "file": "parsing-commons/src/main/java/io/split/client/dtos/MatcherType.java"
+    },
+    {
+      "entries": [
+        {
+          "accepted_lines": 27,
+          "added_lines": 27,
+          "deleted_lines": 0,
+          "hash": "human",
+          "lines": "1-27",
+          "overridden_lines": 0
+        }
+      ],
+      "file": "parsing-commons/src/main/java/io/split/client/dtos/ExcludedSegments.java"
+    },
+    {
+      "entries": [
+        {
+          "accepted_lines": 8,
+          "added_lines": 8,
+          "deleted_lines": 0,
+          "hash": "human",
+          "lines": "1-8",
+          "overridden_lines": 0
+        }
+      ],
+      "file": "parsing-commons/src/main/java/io/split/client/dtos/Excluded.java"
+    },
+    {
+      "entries": [
+        {
+          "accepted_lines": 8,
+          "added_lines": 8,
+          "deleted_lines": 0,
+          "hash": "human",
+          "lines": "1-8",
+          "overridden_lines": 0
+        }
+      ],
+      "file": "parsing-commons/src/main/java/io/split/client/dtos/DependencyMatcherData.java"
+    },
+    {
+      "entries": [
+        {
+          "accepted_lines": 16,
+          "added_lines": 16,
+          "deleted_lines": 0,
+          "hash": "human",
+          "lines": "1-16",
+          "overridden_lines": 0
+        }
+      ],
+      "file": "parsing-commons/src/main/java/io/split/client/dtos/Condition.java"
+    },
+    {
+      "entries": [
+        {
+          "accepted_lines": 6,
+          "added_lines": 6,
+          "deleted_lines": 0,
+          "hash": "human",
+          "lines": "1-6",
+          "overridden_lines": 0
+        }
+      ],
+      "file": "parsing-commons/src/main/java/io/split/client/dtos/Partition.java"
+    },
+    {
+      "entries": [
+        {
+          "accepted_lines": 20,
+          "added_lines": 20,
+          "deleted_lines": 0,
+          "hash": "human",
+          "lines": "1-20",
+          "overridden_lines": 0
+        }
+      ],
+      "file": "parsing-commons/src/main/java/io/split/client/dtos/Matcher.java"
+    },
+    {
+      "entries": [
+        {
+          "accepted_lines": 10,
+          "added_lines": 10,
+          "deleted_lines": 0,
+          "hash": "human",
+          "lines": "1-10",
+          "overridden_lines": 0
+        }
+      ],
+      "file": "parsing-commons/src/main/java/io/split/client/dtos/DataType.java"
+    },
+    {
+      "entries": [
+        {
+          "accepted_lines": 6,
+          "added_lines": 6,
+          "deleted_lines": 0,
+          "hash": "human",
+          "lines": "1-6",
+          "overridden_lines": 0
+        }
+      ],
+      "file": "parsing-commons/src/main/java/io/split/client/dtos/UnaryNumericMatcherData.java"
+    },
+    {
+      "entries": [
+        {
+          "accepted_lines": 36,
+          "added_lines": 36,
+          "deleted_lines": 0,
+          "hash": "human",
+          "lines": "1-36",
+          "overridden_lines": 0
+        }
+      ],
+      "file": "parsing-commons/pom.xml"
+    },
+    {
+      "entries": [
+        {
+          "accepted_lines": 11,
+          "added_lines": 11,
+          "deleted_lines": 0,
+          "hash": "human",
+          "lines": "1-11",
+          "overridden_lines": 0
+        }
+      ],
+      "file": "parsing-commons/src/main/java/io/split/client/dtos/BetweenStringMatcherData.java"
+    },
+    {
+      "entries": [
+        {
+          "accepted_lines": 12,
+          "added_lines": 12,
+          "deleted_lines": 0,
+          "hash": "human",
+          "lines": "1-12",
+          "overridden_lines": 0
+        }
+      ],
+      "file": "parsing-commons/src/main/java/io/split/client/dtos/BetweenMatcherData.java"
+    },
+    {
+      "entries": [
+        {
+          "accepted_lines": 120,
+          "added_lines": 120,
+          "deleted_lines": 0,
+          "hash": "human",
+          "lines": "1-120",
+          "overridden_lines": 0
+        }
+      ],
+      "file": "parsing-commons/src/main/java/io/split/engine/experiments/ParsedCondition.java"
+    },
+    {
+      "entries": [
+        {
+          "accepted_lines": 185,
+          "added_lines": 185,
+          "deleted_lines": 0,
+          "hash": "human",
+          "lines": "1-185",
+          "overridden_lines": 0
+        }
+      ],
+      "file": "parsing-commons/src/main/java/io/split/engine/experiments/ParserUtils.java"
+    },
+    {
+      "entries": [
+        {
+          "accepted_lines": 1,
+          "added_lines": 1,
+          "deleted_lines": 0,
+          "hash": "human",
+          "lines": "68",
+          "overridden_lines": 0
+        }
+      ],
+      "file": "pom.xml"
+    }
+  ],
+  "base_commit_sha": "e1e4f0aedd71f5b8b9ce1f45a4634f612bc82d15",
+  "branch": "HEAD",
+  "commit_sha": "7ac5ee462ec43dc99effd2be29d676bae4d2fd95",
+  "commit_time": "2026-04-09T16:10:01-03:00",
+  "git_ai_version": "1.2.6",
+  "prompts": {
+    "human": {
+      "accepted_lines": 577,
+      "agent_id": null,
+      "human_author": "Gaston Thea <gaston.thea@harness.io>",
+      "messages": [],
+      "overriden_lines": 0,
+      "total_additions": 577,
+      "total_deletions": 0
+    }
+  },
+  "repo": "git@github.com:splitio/java-client.git",
+  "schema_version": "authorship/3.0.0"
+}

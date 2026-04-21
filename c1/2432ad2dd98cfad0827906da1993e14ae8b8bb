@@ -1,0 +1,162 @@
+targeting-engine/src/main/java/io/split/rules/exceptions/VersionedExceptionWrapper.java
+  724b08af-bcdd-4f98-b354-b4a62fbb2489 6
+targeting-engine/src/main/java/io/split/rules/engine/TargetingEngineImpl.java
+  724b08af-bcdd-4f98-b354-b4a62fbb2489 20,28,40,49,54,57
+client/src/test/java/io/split/engine/experiments/TargetingRuleFactoryTest.java
+  724b08af-bcdd-4f98-b354-b4a62fbb2489 25,27,52,54,74-76,101,103-104,128,130-131,159,161-162,186,188-189,197,199-201,211-228
+targeting-engine/src/test/java/io/split/rules/engine/TargetingEngineImplTest.java
+  724b08af-bcdd-4f98-b354-b4a62fbb2489 33-34
+targeting-engine/src/main/java/io/split/rules/model/TargetingRule.java
+  724b08af-bcdd-4f98-b354-b4a62fbb2489 10-12,25-28
+client/src/main/java/io/split/engine/experiments/ParsedSplit.java
+  724b08af-bcdd-4f98-b354-b4a62fbb2489 71-73,106-108,131-133
+client/src/main/java/io/split/engine/evaluator/EvaluationContext.java
+  724b08af-bcdd-4f98-b354-b4a62fbb2489 41
+client/src/main/java/io/split/engine/experiments/TargetingRuleFactory.java
+  724b08af-bcdd-4f98-b354-b4a62fbb2489 20-21,23,31-32
+client/src/main/java/io/split/engine/evaluator/EvaluatorImp.java
+  724b08af-bcdd-4f98-b354-b4a62fbb2489 119-122,124
+---
+{
+  "attestations": [
+    {
+      "entries": [
+        {
+          "accepted_lines": 1,
+          "added_lines": 1,
+          "deleted_lines": 3,
+          "hash": "724b08af-bcdd-4f98-b354-b4a62fbb2489",
+          "lines": "6",
+          "overridden_lines": 0
+        }
+      ],
+      "file": "targeting-engine/src/main/java/io/split/rules/exceptions/VersionedExceptionWrapper.java"
+    },
+    {
+      "entries": [
+        {
+          "accepted_lines": 6,
+          "added_lines": 6,
+          "deleted_lines": 19,
+          "hash": "724b08af-bcdd-4f98-b354-b4a62fbb2489",
+          "lines": "20,28,40,49,54,57",
+          "overridden_lines": 0
+        }
+      ],
+      "file": "targeting-engine/src/main/java/io/split/rules/engine/TargetingEngineImpl.java"
+    },
+    {
+      "entries": [
+        {
+          "accepted_lines": 41,
+          "added_lines": 41,
+          "deleted_lines": 130,
+          "hash": "724b08af-bcdd-4f98-b354-b4a62fbb2489",
+          "lines": "25,27,52,54,74-76,101,103-104,128,130-131,159,161-162,186,188-189,197,199-201,211-228",
+          "overridden_lines": 0
+        }
+      ],
+      "file": "client/src/test/java/io/split/engine/experiments/TargetingRuleFactoryTest.java"
+    },
+    {
+      "entries": [
+        {
+          "accepted_lines": 2,
+          "added_lines": 2,
+          "deleted_lines": 6,
+          "hash": "724b08af-bcdd-4f98-b354-b4a62fbb2489",
+          "lines": "33-34",
+          "overridden_lines": 0
+        }
+      ],
+      "file": "targeting-engine/src/test/java/io/split/rules/engine/TargetingEngineImplTest.java"
+    },
+    {
+      "entries": [
+        {
+          "accepted_lines": 7,
+          "added_lines": 7,
+          "deleted_lines": 22,
+          "hash": "724b08af-bcdd-4f98-b354-b4a62fbb2489",
+          "lines": "10-12,25-28",
+          "overridden_lines": 0
+        }
+      ],
+      "file": "targeting-engine/src/main/java/io/split/rules/model/TargetingRule.java"
+    },
+    {
+      "entries": [
+        {
+          "accepted_lines": 9,
+          "added_lines": 9,
+          "deleted_lines": 28,
+          "hash": "724b08af-bcdd-4f98-b354-b4a62fbb2489",
+          "lines": "71-73,106-108,131-133",
+          "overridden_lines": 0
+        }
+      ],
+      "file": "client/src/main/java/io/split/engine/experiments/ParsedSplit.java"
+    },
+    {
+      "entries": [
+        {
+          "accepted_lines": 1,
+          "added_lines": 1,
+          "deleted_lines": 3,
+          "hash": "724b08af-bcdd-4f98-b354-b4a62fbb2489",
+          "lines": "41",
+          "overridden_lines": 0
+        }
+      ],
+      "file": "client/src/main/java/io/split/engine/evaluator/EvaluationContext.java"
+    },
+    {
+      "entries": [
+        {
+          "accepted_lines": 5,
+          "added_lines": 5,
+          "deleted_lines": 15,
+          "hash": "724b08af-bcdd-4f98-b354-b4a62fbb2489",
+          "lines": "20-21,23,31-32",
+          "overridden_lines": 0
+        }
+      ],
+      "file": "client/src/main/java/io/split/engine/experiments/TargetingRuleFactory.java"
+    },
+    {
+      "entries": [
+        {
+          "accepted_lines": 5,
+          "added_lines": 5,
+          "deleted_lines": 20,
+          "hash": "724b08af-bcdd-4f98-b354-b4a62fbb2489",
+          "lines": "119-122,124",
+          "overridden_lines": 0
+        }
+      ],
+      "file": "client/src/main/java/io/split/engine/evaluator/EvaluatorImp.java"
+    }
+  ],
+  "base_commit_sha": "872a9ba5df05638a67c8f46140e7f9c8de70fb2e",
+  "branch": "target-rule-module",
+  "commit_sha": "c12432ad2dd98cfad0827906da1993e14ae8b8bb",
+  "commit_time": "2026-04-09T14:54:23-03:00",
+  "git_ai_version": "1.2.6",
+  "prompts": {
+    "724b08af-bcdd-4f98-b354-b4a62fbb2489": {
+      "accepted_lines": 77,
+      "agent_id": {
+        "id": "724b08af-bcdd-4f98-b354-b4a62fbb2489",
+        "model": "claude-sonnet-4-6",
+        "tool": "claude"
+      },
+      "human_author": "Gaston Thea <gaston.thea@harness.io>",
+      "messages": [],
+      "overriden_lines": 0,
+      "total_additions": 77,
+      "total_deletions": 246
+    }
+  },
+  "repo": "git@github.com:splitio/java-client.git",
+  "schema_version": "authorship/3.0.0"
+}

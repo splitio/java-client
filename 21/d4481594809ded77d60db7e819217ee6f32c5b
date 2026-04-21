@@ -1,0 +1,90 @@
+segment-commons/src/main/java/io/split/storages/SegmentsProvider.java
+  8708ddbc-41d6-47c9-bcb7-9d209ee25aeb 5
+  human 1-4,6-7
+client/src/main/java/io/split/storages/SplitCacheCommons.java
+  8708ddbc-41d6-47c9-bcb7-9d209ee25aeb 3
+segment-commons/src/main/java/io/split/engine/segments/SegmentSynchronizationTaskImp.java
+  8708ddbc-41d6-47c9-bcb7-9d209ee25aeb 4,39,46,60,204
+---
+{
+  "attestations": [
+    {
+      "entries": [
+        {
+          "accepted_lines": 1,
+          "added_lines": 1,
+          "deleted_lines": 0,
+          "hash": "8708ddbc-41d6-47c9-bcb7-9d209ee25aeb",
+          "lines": "5",
+          "overridden_lines": 0
+        },
+        {
+          "accepted_lines": 6,
+          "added_lines": 6,
+          "deleted_lines": 0,
+          "hash": "human",
+          "lines": "1-4,6-7",
+          "overridden_lines": 0
+        }
+      ],
+      "file": "segment-commons/src/main/java/io/split/storages/SegmentsProvider.java"
+    },
+    {
+      "entries": [
+        {
+          "accepted_lines": 1,
+          "added_lines": 1,
+          "deleted_lines": 0,
+          "hash": "8708ddbc-41d6-47c9-bcb7-9d209ee25aeb",
+          "lines": "3",
+          "overridden_lines": 0
+        }
+      ],
+      "file": "client/src/main/java/io/split/storages/SplitCacheCommons.java"
+    },
+    {
+      "entries": [
+        {
+          "accepted_lines": 5,
+          "added_lines": 5,
+          "deleted_lines": 0,
+          "hash": "8708ddbc-41d6-47c9-bcb7-9d209ee25aeb",
+          "lines": "4,39,46,60,204",
+          "overridden_lines": 0
+        }
+      ],
+      "file": "segment-commons/src/main/java/io/split/engine/segments/SegmentSynchronizationTaskImp.java"
+    }
+  ],
+  "base_commit_sha": "1a1d6e68aa39d078ea297fa3be3026d1332f7e29",
+  "branch": "continued-modularization_3-2",
+  "commit_sha": "21d4481594809ded77d60db7e819217ee6f32c5b",
+  "commit_time": "2026-04-09T20:58:44-03:00",
+  "git_ai_version": "1.2.6",
+  "prompts": {
+    "8708ddbc-41d6-47c9-bcb7-9d209ee25aeb": {
+      "accepted_lines": 7,
+      "agent_id": {
+        "id": "8708ddbc-41d6-47c9-bcb7-9d209ee25aeb",
+        "model": "claude-sonnet-4-6",
+        "tool": "claude"
+      },
+      "human_author": "Gaston Thea <gaston.thea@harness.io>",
+      "messages": [],
+      "overriden_lines": 0,
+      "total_additions": 7,
+      "total_deletions": 0
+    },
+    "human": {
+      "accepted_lines": 6,
+      "agent_id": null,
+      "human_author": "Gaston Thea <gaston.thea@harness.io>",
+      "messages": [],
+      "overriden_lines": 0,
+      "total_additions": 6,
+      "total_deletions": 0
+    }
+  },
+  "repo": "git@github.com:splitio/java-client.git",
+  "schema_version": "authorship/3.0.0"
+}
