@@ -1,0 +1,57 @@
+segment-commons/pom.xml
+  c83b3557-2c02-4d13-aaa4-273b7340163d 40-52
+parsing-commons/pom.xml
+  c83b3557-2c02-4d13-aaa4-273b7340163d 32-44
+---
+{
+  "attestations": [
+    {
+      "entries": [
+        {
+          "accepted_lines": 13,
+          "added_lines": 13,
+          "deleted_lines": 1,
+          "hash": "c83b3557-2c02-4d13-aaa4-273b7340163d",
+          "lines": "40-52",
+          "overridden_lines": 0
+        }
+      ],
+      "file": "segment-commons/pom.xml"
+    },
+    {
+      "entries": [
+        {
+          "accepted_lines": 13,
+          "added_lines": 13,
+          "deleted_lines": 1,
+          "hash": "c83b3557-2c02-4d13-aaa4-273b7340163d",
+          "lines": "32-44",
+          "overridden_lines": 0
+        }
+      ],
+      "file": "parsing-commons/pom.xml"
+    }
+  ],
+  "base_commit_sha": "53f4f3d96707e4a59c46d5ba6edfb8a8b42f8231",
+  "branch": "feat/tracker_1",
+  "commit_sha": "3c9b6f435dd9a2f2ff77f85a194670d779ea8c60",
+  "commit_time": "2026-04-21T16:59:58-03:00",
+  "git_ai_version": "1.2.6",
+  "prompts": {
+    "c83b3557-2c02-4d13-aaa4-273b7340163d": {
+      "accepted_lines": 26,
+      "agent_id": {
+        "id": "c83b3557-2c02-4d13-aaa4-273b7340163d",
+        "model": "claude-haiku-4-5-20251001",
+        "tool": "claude"
+      },
+      "human_author": "Gaston Thea <gaston.thea@harness.io>",
+      "messages": [],
+      "overriden_lines": 0,
+      "total_additions": 26,
+      "total_deletions": 2
+    }
+  },
+  "repo": "https://github.com/splitio/java-client.git",
+  "schema_version": "authorship/3.0.0"
+}
