@@ -1,0 +1,53 @@
+segment-commons/pom.xml
+  human 43-54
+parsing-commons/pom.xml
+  human 35-46
+---
+{
+  "attestations": [
+    {
+      "entries": [
+        {
+          "accepted_lines": 0,
+          "added_lines": 0,
+          "deleted_lines": 12,
+          "hash": "human",
+          "lines": "43-54",
+          "overridden_lines": 0
+        }
+      ],
+      "file": "segment-commons/pom.xml"
+    },
+    {
+      "entries": [
+        {
+          "accepted_lines": 0,
+          "added_lines": 0,
+          "deleted_lines": 12,
+          "hash": "human",
+          "lines": "35-46",
+          "overridden_lines": 0
+        }
+      ],
+      "file": "parsing-commons/pom.xml"
+    }
+  ],
+  "base_commit_sha": "9eb8a4385dae9a103c6c24a831db25bd68874753",
+  "branch": "feat/tracker_1",
+  "commit_sha": "53f4f3d96707e4a59c46d5ba6edfb8a8b42f8231",
+  "commit_time": "2026-04-21T16:55:13-03:00",
+  "git_ai_version": "1.2.6",
+  "prompts": {
+    "human": {
+      "accepted_lines": 0,
+      "agent_id": null,
+      "human_author": "Gaston Thea <gaston.thea@harness.io>",
+      "messages": [],
+      "overriden_lines": 0,
+      "total_additions": 0,
+      "total_deletions": 24
+    }
+  },
+  "repo": "https://github.com/splitio/java-client.git",
+  "schema_version": "authorship/3.0.0"
+}
