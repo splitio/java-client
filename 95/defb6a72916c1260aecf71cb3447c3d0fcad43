@@ -1,0 +1,72 @@
+client/pom.xml
+  c41c8880-cfa0-4088-8df3-c00b3f5c9fb9 242
+okhttp-modules/pom.xml
+  c41c8880-cfa0-4088-8df3-c00b3f5c9fb9 69
+tracker/pom.xml
+  c41c8880-cfa0-4088-8df3-c00b3f5c9fb9 38
+---
+{
+  "attestations": [
+    {
+      "entries": [
+        {
+          "accepted_lines": 1,
+          "added_lines": 1,
+          "deleted_lines": 1,
+          "hash": "c41c8880-cfa0-4088-8df3-c00b3f5c9fb9",
+          "lines": "242",
+          "overridden_lines": 0
+        }
+      ],
+      "file": "client/pom.xml"
+    },
+    {
+      "entries": [
+        {
+          "accepted_lines": 1,
+          "added_lines": 1,
+          "deleted_lines": 1,
+          "hash": "c41c8880-cfa0-4088-8df3-c00b3f5c9fb9",
+          "lines": "69",
+          "overridden_lines": 0
+        }
+      ],
+      "file": "okhttp-modules/pom.xml"
+    },
+    {
+      "entries": [
+        {
+          "accepted_lines": 1,
+          "added_lines": 1,
+          "deleted_lines": 1,
+          "hash": "c41c8880-cfa0-4088-8df3-c00b3f5c9fb9",
+          "lines": "38",
+          "overridden_lines": 0
+        }
+      ],
+      "file": "tracker/pom.xml"
+    }
+  ],
+  "base_commit_sha": "df243bebf55e9f0e579350b1b7a2b0004bcf31a7",
+  "branch": "feat/tracker_1",
+  "commit_sha": "95defb6a72916c1260aecf71cb3447c3d0fcad43",
+  "commit_time": "2026-04-21T13:09:11-03:00",
+  "git_ai_version": "1.2.6",
+  "prompts": {
+    "c41c8880-cfa0-4088-8df3-c00b3f5c9fb9": {
+      "accepted_lines": 3,
+      "agent_id": {
+        "id": "c41c8880-cfa0-4088-8df3-c00b3f5c9fb9",
+        "model": "claude-opus-4-7",
+        "tool": "claude"
+      },
+      "human_author": "Gaston Thea <gaston.thea@harness.io>",
+      "messages": [],
+      "overriden_lines": 0,
+      "total_additions": 3,
+      "total_deletions": 3
+    }
+  },
+  "repo": "https://github.com/splitio/java-client.git",
+  "schema_version": "authorship/3.0.0"
+}
