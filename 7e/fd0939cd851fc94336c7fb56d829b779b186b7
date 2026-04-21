@@ -1,0 +1,42 @@
+tracker/src/test/java/io/split/client/events/EventsTaskTest.java
+  c83b3557-2c02-4d13-aaa4-273b7340163d 73-75
+---
+{
+  "attestations": [
+    {
+      "entries": [
+        {
+          "accepted_lines": 3,
+          "added_lines": 3,
+          "deleted_lines": 0,
+          "hash": "c83b3557-2c02-4d13-aaa4-273b7340163d",
+          "lines": "73-75",
+          "overridden_lines": 0
+        }
+      ],
+      "file": "tracker/src/test/java/io/split/client/events/EventsTaskTest.java"
+    }
+  ],
+  "base_commit_sha": "0b19b54547152abcb0ccb7a1e4decc2b377b120e",
+  "branch": "feat/tracker_1",
+  "commit_sha": "7efd0939cd851fc94336c7fb56d829b779b186b7",
+  "commit_time": "2026-04-21T18:41:33-03:00",
+  "git_ai_version": "1.2.6",
+  "prompts": {
+    "c83b3557-2c02-4d13-aaa4-273b7340163d": {
+      "accepted_lines": 3,
+      "agent_id": {
+        "id": "c83b3557-2c02-4d13-aaa4-273b7340163d",
+        "model": "claude-haiku-4-5-20251001",
+        "tool": "claude"
+      },
+      "human_author": "Gaston Thea <gaston.thea@harness.io>",
+      "messages": [],
+      "overriden_lines": 0,
+      "total_additions": 3,
+      "total_deletions": 0
+    }
+  },
+  "repo": "https://github.com/splitio/java-client.git",
+  "schema_version": "authorship/3.0.0"
+}
