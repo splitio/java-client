@@ -1,0 +1,87 @@
+tracker/src/test/java/io/split/client/events/EventsTaskTest.java
+  fa537b6d-6fd6-4396-aae9-3894f1cff7b9 38
+targeting-engine/pom.xml
+  fa537b6d-6fd6-4396-aae9-3894f1cff7b9 27
+tracker/src/test/java/io/split/client/events/InMemoryEventsStorageTest.java
+  fa537b6d-6fd6-4396-aae9-3894f1cff7b9 34
+pom.xml
+  fa537b6d-6fd6-4396-aae9-3894f1cff7b9 91
+---
+{
+  "attestations": [
+    {
+      "entries": [
+        {
+          "accepted_lines": 1,
+          "added_lines": 1,
+          "deleted_lines": 0,
+          "hash": "fa537b6d-6fd6-4396-aae9-3894f1cff7b9",
+          "lines": "38",
+          "overridden_lines": 0
+        }
+      ],
+      "file": "tracker/src/test/java/io/split/client/events/EventsTaskTest.java"
+    },
+    {
+      "entries": [
+        {
+          "accepted_lines": 1,
+          "added_lines": 1,
+          "deleted_lines": 0,
+          "hash": "fa537b6d-6fd6-4396-aae9-3894f1cff7b9",
+          "lines": "27",
+          "overridden_lines": 0
+        }
+      ],
+      "file": "targeting-engine/pom.xml"
+    },
+    {
+      "entries": [
+        {
+          "accepted_lines": 1,
+          "added_lines": 1,
+          "deleted_lines": 0,
+          "hash": "fa537b6d-6fd6-4396-aae9-3894f1cff7b9",
+          "lines": "34",
+          "overridden_lines": 0
+        }
+      ],
+      "file": "tracker/src/test/java/io/split/client/events/InMemoryEventsStorageTest.java"
+    },
+    {
+      "entries": [
+        {
+          "accepted_lines": 1,
+          "added_lines": 1,
+          "deleted_lines": 3,
+          "hash": "fa537b6d-6fd6-4396-aae9-3894f1cff7b9",
+          "lines": "91",
+          "overridden_lines": 0
+        }
+      ],
+      "file": "pom.xml"
+    }
+  ],
+  "base_commit_sha": "913fb2f1cd64e68665934686c28b0584a2d38e64",
+  "branch": "feat/tracker_1",
+  "commit_sha": "a5e16ecab7bfff0f58736d2702d69930c8c774cb",
+  "commit_time": "2026-04-21T16:22:06-03:00",
+  "git_ai_version": "1.2.6",
+  "prompts": {
+    "fa537b6d-6fd6-4396-aae9-3894f1cff7b9": {
+      "accepted_lines": 4,
+      "agent_id": {
+        "id": "fa537b6d-6fd6-4396-aae9-3894f1cff7b9",
+        "model": "claude-haiku-4-5-20251001",
+        "tool": "claude"
+      },
+      "human_author": "Gaston Thea <gaston.thea@harness.io>",
+      "messages": [],
+      "overriden_lines": 0,
+      "total_additions": 4,
+      "total_deletions": 3
+    }
+  },
+  "repo": "https://github.com/splitio/java-client.git",
+  "schema_version": "authorship/3.0.0"
+}
