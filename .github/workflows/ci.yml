@@ -53,11 +53,11 @@ jobs:
         run: cp .ci.settings.xml ${HOME}/.m2/settings.xml
 
       - name: Test
-        if: matrix.jdk == '8' && github.event_name == 'pull_request' && github.ref != 'refs/heads/master' && github.ref != 'refs/heads/development'
+        if: github.event_name == 'pull_request' || github.event_name == 'push'
         run: mvn --batch-mode clean install
 
       - name: Linter
-        if: matrix.jdk == '8' && github.event_name == 'pull_request' && github.ref != 'refs/heads/master' && github.ref != 'refs/heads/development'
+        if: matrix.jdk == '8' && (github.event_name == 'pull_request' || github.event_name == 'push')
         run: mvn checkstyle::check
 
 #      - name: Deploy
