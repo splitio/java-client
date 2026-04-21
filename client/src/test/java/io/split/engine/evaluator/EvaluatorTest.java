@@ -17,6 +17,7 @@ import org.mockito.Mockito;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -50,7 +51,7 @@ public class EvaluatorTest {
         _segmentCacheConsumer = Mockito.mock(SegmentCacheConsumer.class);
         _ruleBasedSegmentCacheConsumer = Mockito.mock(RuleBasedSegmentCacheConsumer.class);
         _evaluator = new EvaluatorImp(_splitCacheConsumer, _segmentCacheConsumer, _ruleBasedSegmentCacheConsumer, new FallbackTreatmentCalculatorImp(null));
-        _matcher = Mockito.mock(CombiningMatcher.class);
+        _matcher = CombiningMatcher.of(new io.split.rules.matchers.AllKeysMatcher());
         _evaluationContext = Mockito.mock(EvaluationContext.class);
 
         _configurations = new HashMap<>();
