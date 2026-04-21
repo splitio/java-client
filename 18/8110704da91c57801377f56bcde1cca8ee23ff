@@ -1,0 +1,42 @@
+client/src/test/java/io/split/engine/evaluator/EvaluatorTest.java
+  c83b3557-2c02-4d13-aaa4-273b7340163d 20,54
+---
+{
+  "attestations": [
+    {
+      "entries": [
+        {
+          "accepted_lines": 2,
+          "added_lines": 5,
+          "deleted_lines": 1,
+          "hash": "c83b3557-2c02-4d13-aaa4-273b7340163d",
+          "lines": "20,54",
+          "overridden_lines": 0
+        }
+      ],
+      "file": "client/src/test/java/io/split/engine/evaluator/EvaluatorTest.java"
+    }
+  ],
+  "base_commit_sha": "3c9b6f435dd9a2f2ff77f85a194670d779ea8c60",
+  "branch": "feat/tracker_1",
+  "commit_sha": "188110704da91c57801377f56bcde1cca8ee23ff",
+  "commit_time": "2026-04-21T17:12:31-03:00",
+  "git_ai_version": "1.2.6",
+  "prompts": {
+    "c83b3557-2c02-4d13-aaa4-273b7340163d": {
+      "accepted_lines": 2,
+      "agent_id": {
+        "id": "c83b3557-2c02-4d13-aaa4-273b7340163d",
+        "model": "claude-haiku-4-5-20251001",
+        "tool": "claude"
+      },
+      "human_author": "Gaston Thea <gaston.thea@harness.io>",
+      "messages": [],
+      "overriden_lines": 0,
+      "total_additions": 5,
+      "total_deletions": 1
+    }
+  },
+  "repo": "https://github.com/splitio/java-client.git",
+  "schema_version": "authorship/3.0.0"
+}
