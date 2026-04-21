@@ -1,0 +1,42 @@
+.github/workflows/ci.yml
+  4466fe43-9eac-430f-9e06-bb156dfd7edf 56,60
+---
+{
+  "attestations": [
+    {
+      "entries": [
+        {
+          "accepted_lines": 2,
+          "added_lines": 2,
+          "deleted_lines": 2,
+          "hash": "4466fe43-9eac-430f-9e06-bb156dfd7edf",
+          "lines": "56,60",
+          "overridden_lines": 0
+        }
+      ],
+      "file": ".github/workflows/ci.yml"
+    }
+  ],
+  "base_commit_sha": "cf8cca79b6abd158827e7af78833831f5ed9bc27",
+  "branch": "feat/tracker_2",
+  "commit_sha": "f26d200321be6a383ae9b6dae562085fc5cd91fd",
+  "commit_time": "2026-04-21T11:35:22-03:00",
+  "git_ai_version": "1.2.6",
+  "prompts": {
+    "4466fe43-9eac-430f-9e06-bb156dfd7edf": {
+      "accepted_lines": 2,
+      "agent_id": {
+        "id": "4466fe43-9eac-430f-9e06-bb156dfd7edf",
+        "model": "claude-sonnet-4-6",
+        "tool": "claude"
+      },
+      "human_author": "Gaston Thea <gaston.thea@harness.io>",
+      "messages": [],
+      "overriden_lines": 0,
+      "total_additions": 2,
+      "total_deletions": 2
+    }
+  },
+  "repo": "git@github.com:splitio/java-client.git",
+  "schema_version": "authorship/3.0.0"
+}
