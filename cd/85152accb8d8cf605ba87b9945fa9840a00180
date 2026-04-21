@@ -1,0 +1,57 @@
+tracker/src/test/java/io/split/client/events/EventsTaskTest.java
+  c41c8880-cfa0-4088-8df3-c00b3f5c9fb9 38
+tracker/src/test/java/io/split/client/events/InMemoryEventsStorageTest.java
+  c41c8880-cfa0-4088-8df3-c00b3f5c9fb9 34
+---
+{
+  "attestations": [
+    {
+      "entries": [
+        {
+          "accepted_lines": 1,
+          "added_lines": 1,
+          "deleted_lines": 1,
+          "hash": "c41c8880-cfa0-4088-8df3-c00b3f5c9fb9",
+          "lines": "38",
+          "overridden_lines": 0
+        }
+      ],
+      "file": "tracker/src/test/java/io/split/client/events/EventsTaskTest.java"
+    },
+    {
+      "entries": [
+        {
+          "accepted_lines": 1,
+          "added_lines": 1,
+          "deleted_lines": 1,
+          "hash": "c41c8880-cfa0-4088-8df3-c00b3f5c9fb9",
+          "lines": "34",
+          "overridden_lines": 0
+        }
+      ],
+      "file": "tracker/src/test/java/io/split/client/events/InMemoryEventsStorageTest.java"
+    }
+  ],
+  "base_commit_sha": "a78cc507a9703ff90adcfcefdc20013c1c810dfd",
+  "branch": "feat/tracker_1",
+  "commit_sha": "cd85152accb8d8cf605ba87b9945fa9840a00180",
+  "commit_time": "2026-04-21T14:37:44-03:00",
+  "git_ai_version": "1.2.6",
+  "prompts": {
+    "c41c8880-cfa0-4088-8df3-c00b3f5c9fb9": {
+      "accepted_lines": 2,
+      "agent_id": {
+        "id": "c41c8880-cfa0-4088-8df3-c00b3f5c9fb9",
+        "model": "claude-opus-4-7",
+        "tool": "claude"
+      },
+      "human_author": "Gaston Thea <gaston.thea@harness.io>",
+      "messages": [],
+      "overriden_lines": 0,
+      "total_additions": 2,
+      "total_deletions": 2
+    }
+  },
+  "repo": "https://github.com/splitio/java-client.git",
+  "schema_version": "authorship/3.0.0"
+}
