@@ -38,7 +38,9 @@ public class EventsTask{
         _eventsStorageConsumer = Objects.requireNonNull(eventsStorageConsumer);
         _sendIntervalMillis = sendIntervalMillis;
         _eventsSender = Objects.requireNonNull(eventsSender);
-        _senderScheduledExecutorService = Executors.newSingleThreadScheduledExecutor(threadFactory);
+        _senderScheduledExecutorService = threadFactory != null
+                ? Executors.newSingleThreadScheduledExecutor(threadFactory)
+                : Executors.newSingleThreadScheduledExecutor();
     }
 
     public void start(){
