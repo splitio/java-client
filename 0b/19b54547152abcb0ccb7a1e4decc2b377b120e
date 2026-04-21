@@ -1,0 +1,42 @@
+client/src/test/java/io/split/client/SplitManagerImplTest.java
+  c83b3557-2c02-4d13-aaa4-273b7340163d 91-93
+---
+{
+  "attestations": [
+    {
+      "entries": [
+        {
+          "accepted_lines": 3,
+          "added_lines": 3,
+          "deleted_lines": 1,
+          "hash": "c83b3557-2c02-4d13-aaa4-273b7340163d",
+          "lines": "91-93",
+          "overridden_lines": 0
+        }
+      ],
+      "file": "client/src/test/java/io/split/client/SplitManagerImplTest.java"
+    }
+  ],
+  "base_commit_sha": "4b5dde9012041efca473ae3c9cdb0feb1a6e56bf",
+  "branch": "feat/tracker_1",
+  "commit_sha": "0b19b54547152abcb0ccb7a1e4decc2b377b120e",
+  "commit_time": "2026-04-21T18:33:09-03:00",
+  "git_ai_version": "1.2.6",
+  "prompts": {
+    "c83b3557-2c02-4d13-aaa4-273b7340163d": {
+      "accepted_lines": 3,
+      "agent_id": {
+        "id": "c83b3557-2c02-4d13-aaa4-273b7340163d",
+        "model": "claude-haiku-4-5-20251001",
+        "tool": "claude"
+      },
+      "human_author": "Gaston Thea <gaston.thea@harness.io>",
+      "messages": [],
+      "overriden_lines": 0,
+      "total_additions": 3,
+      "total_deletions": 1
+    }
+  },
+  "repo": "https://github.com/splitio/java-client.git",
+  "schema_version": "authorship/3.0.0"
+}
