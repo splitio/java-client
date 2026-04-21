@@ -1,0 +1,38 @@
+.github/workflows/ci.yml
+  human 11
+---
+{
+  "attestations": [
+    {
+      "entries": [
+        {
+          "accepted_lines": 1,
+          "added_lines": 1,
+          "deleted_lines": 0,
+          "hash": "human",
+          "lines": "11",
+          "overridden_lines": 0
+        }
+      ],
+      "file": ".github/workflows/ci.yml"
+    }
+  ],
+  "base_commit_sha": "f7881791380762f95a0626c4d9d1058196f8d7a2",
+  "branch": "feat/tracker_1",
+  "commit_sha": "913fb2f1cd64e68665934686c28b0584a2d38e64",
+  "commit_time": "2026-04-21T16:13:03-03:00",
+  "git_ai_version": "1.2.6",
+  "prompts": {
+    "human": {
+      "accepted_lines": 1,
+      "agent_id": null,
+      "human_author": "Gaston Thea <gaston.thea@harness.io>",
+      "messages": [],
+      "overriden_lines": 0,
+      "total_additions": 1,
+      "total_deletions": 0
+    }
+  },
+  "repo": "https://github.com/splitio/java-client.git",
+  "schema_version": "authorship/3.0.0"
+}
