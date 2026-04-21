@@ -1,0 +1,38 @@
+client/src/test/java/io/split/engine/evaluator/EvaluatorTest.java
+  human 129,150,208,215
+---
+{
+  "attestations": [
+    {
+      "entries": [
+        {
+          "accepted_lines": 0,
+          "added_lines": 0,
+          "deleted_lines": 4,
+          "hash": "human",
+          "lines": "129,150,208,215",
+          "overridden_lines": 0
+        }
+      ],
+      "file": "client/src/test/java/io/split/engine/evaluator/EvaluatorTest.java"
+    }
+  ],
+  "base_commit_sha": "eceef452adbed340a256314b3bb25031c0237977",
+  "branch": "feat/tracker_1",
+  "commit_sha": "07f96dca9c577e87d5400b8497e82dfcfc6f4bb2",
+  "commit_time": "2026-04-21T17:52:56-03:00",
+  "git_ai_version": "1.2.6",
+  "prompts": {
+    "human": {
+      "accepted_lines": 0,
+      "agent_id": null,
+      "human_author": "Gaston Thea <gaston.thea@harness.io>",
+      "messages": [],
+      "overriden_lines": 0,
+      "total_additions": 0,
+      "total_deletions": 4
+    }
+  },
+  "repo": "https://github.com/splitio/java-client.git",
+  "schema_version": "authorship/3.0.0"
+}
