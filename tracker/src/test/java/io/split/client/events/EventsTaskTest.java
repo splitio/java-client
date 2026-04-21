@@ -35,7 +35,7 @@ public class EventsTaskTest {
     public void sendEventsDoesNothingWhenQueueEmpty() {
         when(_storage.popAll()).thenReturn(Collections.<WrappedEvent>emptyList());
         _task.sendEvents();
-        verifyNoInteractions(_sender);
+        verifyZeroInteractions(_sender);
     }
 
     @Test

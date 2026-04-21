@@ -31,7 +31,7 @@ public class InMemoryEventsStorageTest {
     @Test
     public void trackNullEventReturnsFalse() {
         assertFalse(_storage.track(null, 0));
-        verifyNoInteractions(_stats);
+        verifyZeroInteractions(_stats);
     }
 
     @Test
