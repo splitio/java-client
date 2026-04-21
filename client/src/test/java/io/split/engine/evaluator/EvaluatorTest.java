@@ -105,7 +105,6 @@ public class EvaluatorTest {
         ParsedSplit split = new ParsedSplit(SPLIT_NAME, 0, false, DEFAULT_TREATMENT_VALUE, _conditions, TRAFFIC_TYPE_VALUE, CHANGE_NUMBER, 10, 12, 2, _configurations, new HashSet<>(), true, new PrerequisitesMatcher(null));
 
         Mockito.when(_splitCacheConsumer.get(SPLIT_NAME)).thenReturn(split);
-        Mockito.when(condition.matcher().match(MATCHING_KEY, BUCKETING_KEY, null, _evaluationContext)).thenReturn(true);
 
         EvaluatorImp.TreatmentLabelAndChangeNumber result = _evaluator.evaluateFeature(MATCHING_KEY, BUCKETING_KEY, SPLIT_NAME, null);
 
@@ -126,7 +125,6 @@ public class EvaluatorTest {
         ParsedSplit split = new ParsedSplit(SPLIT_NAME, 0, false, DEFAULT_TREATMENT_VALUE, _conditions, TRAFFIC_TYPE_VALUE, CHANGE_NUMBER, 60, 18, 2, _configurations, new HashSet<>(), true, new PrerequisitesMatcher(null));
 
         Mockito.when(_splitCacheConsumer.get(SPLIT_NAME)).thenReturn(split);
-        Mockito.when(condition.matcher().match(Mockito.anyString(), Mockito.anyString(), Mockito.any(), Mockito.any())).thenReturn(true);
 
         EvaluatorImp.TreatmentLabelAndChangeNumber result = _evaluator.evaluateFeature(MATCHING_KEY, BUCKETING_KEY, SPLIT_NAME, null);
 
@@ -147,7 +145,6 @@ public class EvaluatorTest {
         ParsedSplit split = new ParsedSplit(SPLIT_NAME, 0, false, DEFAULT_TREATMENT_VALUE, _conditions, TRAFFIC_TYPE_VALUE, CHANGE_NUMBER, 60, 18, 2, _configurations, new HashSet<>(), true, new PrerequisitesMatcher(null));
 
         Mockito.when(_splitCacheConsumer.get(SPLIT_NAME)).thenReturn(split);
-        Mockito.when(condition.matcher().match(Mockito.anyString(), Mockito.anyString(), Mockito.any(), Mockito.any())).thenReturn(true);
 
         EvaluatorImp.TreatmentLabelAndChangeNumber result = _evaluator.evaluateFeature(MATCHING_KEY, BUCKETING_KEY, SPLIT_NAME, null);
 
@@ -205,14 +202,12 @@ public class EvaluatorTest {
 
         Mockito.when(_splitCacheConsumer.get(SPLIT_NAME)).thenReturn(split);
         Mockito.when(_splitCacheConsumer.get("split1")).thenReturn(split1);
-        Mockito.when(condition.matcher().match(Mockito.anyString(), Mockito.anyString(), Mockito.any(), Mockito.any())).thenReturn(true);
 
         EvaluatorImp.TreatmentLabelAndChangeNumber result = _evaluator.evaluateFeature(MATCHING_KEY, BUCKETING_KEY, SPLIT_NAME, null);
         assertEquals(TREATMENT_VALUE, result.treatment);
         assertEquals("test whitelist label", result.label);
         assertEquals(CHANGE_NUMBER, result.changeNumber);
 
-        Mockito.when(condition.matcher().match(Mockito.anyString(), Mockito.anyString(), Mockito.any(), Mockito.any())).thenReturn(false);
         result = _evaluator.evaluateFeature(MATCHING_KEY, BUCKETING_KEY, SPLIT_NAME, null);
         assertEquals(DEFAULT_TREATMENT_VALUE, result.treatment);
         assertEquals(Labels.PREREQUISITES_NOT_MET, result.label);
