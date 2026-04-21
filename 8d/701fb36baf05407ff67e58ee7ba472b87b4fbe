@@ -1,0 +1,42 @@
+tracker/src/main/java/io/split/client/events/EventsTask.java
+  c83b3557-2c02-4d13-aaa4-273b7340163d 41-43
+---
+{
+  "attestations": [
+    {
+      "entries": [
+        {
+          "accepted_lines": 3,
+          "added_lines": 3,
+          "deleted_lines": 1,
+          "hash": "c83b3557-2c02-4d13-aaa4-273b7340163d",
+          "lines": "41-43",
+          "overridden_lines": 0
+        }
+      ],
+      "file": "tracker/src/main/java/io/split/client/events/EventsTask.java"
+    }
+  ],
+  "base_commit_sha": "188110704da91c57801377f56bcde1cca8ee23ff",
+  "branch": "feat/tracker_1",
+  "commit_sha": "8d701fb36baf05407ff67e58ee7ba472b87b4fbe",
+  "commit_time": "2026-04-21T17:17:03-03:00",
+  "git_ai_version": "1.2.6",
+  "prompts": {
+    "c83b3557-2c02-4d13-aaa4-273b7340163d": {
+      "accepted_lines": 3,
+      "agent_id": {
+        "id": "c83b3557-2c02-4d13-aaa4-273b7340163d",
+        "model": "claude-haiku-4-5-20251001",
+        "tool": "claude"
+      },
+      "human_author": "Gaston Thea <gaston.thea@harness.io>",
+      "messages": [],
+      "overriden_lines": 0,
+      "total_additions": 3,
+      "total_deletions": 1
+    }
+  },
+  "repo": "https://github.com/splitio/java-client.git",
+  "schema_version": "authorship/3.0.0"
+}
