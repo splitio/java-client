@@ -70,6 +70,9 @@ public class EventsTaskTest {
         when(_storage.isFull()).thenReturn(true);
         when(_storage.popAll()).thenReturn(Collections.<WrappedEvent>emptyList());
         _task.sendEvents();
+        verify(_storage).isFull();
+        verify(_storage).popAll();
+        verifyZeroInteractions(_sender);
     }
 
     private static Event makeEvent(String type) {
