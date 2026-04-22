@@ -1,0 +1,72 @@
+tracker/src/test/java/io/split/client/dtos/EventTest.java
+  22192683-0960-4630-b40d-857b5c44e152 1-234
+tracker/src/main/java/io/split/client/events/NoopEventQueueStats.java
+  22192683-0960-4630-b40d-857b5c44e152 7-13
+client/src/test/java/io/split/client/events/TelemetryEventQueueStatsTest.java
+  22192683-0960-4630-b40d-857b5c44e152 1-32
+---
+{
+  "attestations": [
+    {
+      "entries": [
+        {
+          "accepted_lines": 234,
+          "added_lines": 235,
+          "deleted_lines": 1,
+          "hash": "22192683-0960-4630-b40d-857b5c44e152",
+          "lines": "1-234",
+          "overridden_lines": 0
+        }
+      ],
+      "file": "tracker/src/test/java/io/split/client/dtos/EventTest.java"
+    },
+    {
+      "entries": [
+        {
+          "accepted_lines": 7,
+          "added_lines": 7,
+          "deleted_lines": 0,
+          "hash": "22192683-0960-4630-b40d-857b5c44e152",
+          "lines": "7-13",
+          "overridden_lines": 0
+        }
+      ],
+      "file": "tracker/src/main/java/io/split/client/events/NoopEventQueueStats.java"
+    },
+    {
+      "entries": [
+        {
+          "accepted_lines": 32,
+          "added_lines": 32,
+          "deleted_lines": 1,
+          "hash": "22192683-0960-4630-b40d-857b5c44e152",
+          "lines": "1-32",
+          "overridden_lines": 0
+        }
+      ],
+      "file": "client/src/test/java/io/split/client/events/TelemetryEventQueueStatsTest.java"
+    }
+  ],
+  "base_commit_sha": "7efd0939cd851fc94336c7fb56d829b779b186b7",
+  "branch": "feat/tracker_1",
+  "commit_sha": "257fe7f340724375421bd3d3d4cc7ccf035175c3",
+  "commit_time": "2026-04-22T19:18:52-03:00",
+  "git_ai_version": "1.2.6",
+  "prompts": {
+    "22192683-0960-4630-b40d-857b5c44e152": {
+      "accepted_lines": 273,
+      "agent_id": {
+        "id": "22192683-0960-4630-b40d-857b5c44e152",
+        "model": "claude-haiku-4-5-20251001",
+        "tool": "claude"
+      },
+      "human_author": "Gaston Thea <gaston.thea@harness.io>",
+      "messages": [],
+      "overriden_lines": 0,
+      "total_additions": 274,
+      "total_deletions": 2
+    }
+  },
+  "repo": "git@github.com:splitio/java-client.git",
+  "schema_version": "authorship/3.0.0"
+}
