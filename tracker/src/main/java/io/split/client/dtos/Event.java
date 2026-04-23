@@ -1,9 +1,9 @@
 package io.split.client.dtos;
 
-import com.google.common.base.Objects;
 import com.google.gson.annotations.SerializedName;
 
 import java.util.Map;
+import java.util.Objects;
 
 public class Event {
 
@@ -36,13 +36,13 @@ public class Event {
         Event event = (Event) o;
         return Double.compare(event.value, value) == 0 &&
                 timestamp == event.timestamp &&
-                Objects.equal(eventTypeId, event.eventTypeId) &&
-                Objects.equal(trafficTypeName, event.trafficTypeName) &&
-                Objects.equal(key, event.key);
+                Objects.equals(eventTypeId, event.eventTypeId) &&
+                Objects.equals(trafficTypeName, event.trafficTypeName) &&
+                Objects.equals(key, event.key);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hashCode(eventTypeId, trafficTypeName, key, value, timestamp);
+        return Objects.hash(eventTypeId, trafficTypeName, key, value, timestamp);
     }
 }

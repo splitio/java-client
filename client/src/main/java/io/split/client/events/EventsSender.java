@@ -14,7 +14,7 @@ import java.util.List;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
-public class EventsSender {
+public class EventsSender implements io.split.client.events.EventSender {
 
     private static final String BULK_ENDPOINT_PATH = "api/events/bulk";
     private final URI _bulkEndpoint;
@@ -34,8 +34,13 @@ public class EventsSender {
         _httpPostImp = new HttpPostImp(_client, telemetryRuntimeProducer);
     }
 
-    public void sendEvents(List<Event> _data) {
+    @Override
+    public void send(List<Event> _data) {
         _httpPostImp.post(_bulkEndpoint, _data, "Events ", HttpParamsWrapper.EVENTS);
+    }
+
+    public void sendEvents(List<Event> _data) {
+        send(_data);
     }
 
     @VisibleForTesting

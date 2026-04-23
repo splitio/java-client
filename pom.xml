@@ -71,6 +71,7 @@
         <module>redis-wrapper</module>
         <module>testing</module>
         <module>okhttp-modules</module>
+        <module>tracker</module>
         <module>client</module>
     </modules>
     <build>
@@ -87,6 +88,7 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-source-plugin</artifactId>
+                <version>3.4.0</version>
                 <executions>
                     <execution>
                         <id>attach-sources</id>

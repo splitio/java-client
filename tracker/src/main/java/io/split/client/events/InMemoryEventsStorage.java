@@ -1,30 +1,26 @@
 package io.split.client.events;
 
-import com.google.common.annotations.VisibleForTesting;
 import io.split.client.dtos.Event;
-import io.split.telemetry.domain.enums.EventsDataRecordsEnum;
-import io.split.telemetry.storage.TelemetryRuntimeProducer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
-
-import static com.google.common.base.Preconditions.checkNotNull;
 
 public class InMemoryEventsStorage implements EventsStorage{
 
     private static final Logger _log = LoggerFactory.getLogger(InMemoryEventsStorage.class);
     private final BlockingQueue<WrappedEvent> _eventQueue;
     private final int _maxQueueSize;
-    private final TelemetryRuntimeProducer _telemetryRuntimeProducer;
+    private final EventQueueStats _stats;
 
-    public InMemoryEventsStorage(int maxQueueSize, TelemetryRuntimeProducer telemetryRuntimeProducer) {
+    public InMemoryEventsStorage(int maxQueueSize, EventQueueStats stats) {
         _eventQueue = new LinkedBlockingQueue<>(maxQueueSize);
         _maxQueueSize = maxQueueSize;
-        _telemetryRuntimeProducer = checkNotNull(telemetryRuntimeProducer);
+        _stats = Objects.requireNonNull(stats, "stats must not be null");
     }
 
     @Override
@@ -56,23 +52,22 @@ public class InMemoryEventsStorage implements EventsStorage{
                 return false;
             }
             if(_eventQueue.offer(new WrappedEvent(event, eventSize))) {
-                _telemetryRuntimeProducer.recordEventStats(EventsDataRecordsEnum.EVENTS_QUEUED, 1);
+                _stats.onQueued(1);
             }
             else {
                 _log.warn("Event queue is full, dropping event.");
-                _telemetryRuntimeProducer.recordEventStats(EventsDataRecordsEnum.EVENTS_DROPPED, 1);
+                _stats.onDropped(1);
                 return false;
             }
 
         } catch (ClassCastException | NullPointerException | IllegalArgumentException e) {
-            _telemetryRuntimeProducer.recordEventStats(EventsDataRecordsEnum.EVENTS_DROPPED, 1);
+            _stats.onDropped(1);
             _log.warn("Interruption when adding event withed while adding message %s.", event);
             return false;
         }
         return true;
     }
 
-    @VisibleForTesting
     int queueSize() {
         return _maxQueueSize - _eventQueue.remainingCapacity();
     }

@@ -108,7 +108,7 @@ public class SemverTest {
     }
     @Test
     public void testLeadingZeros() {
-        assertTrue(Semver.build("1.01.2").version().equals("1\\.1\\.2"));
-        assertTrue(Semver.build("1.01.2-rc.01").version().equals("1\\.1\\.2-rc\\.1"));
+        assertTrue(Semver.build("1.01.2").version().equals("1.1.2"));
+        assertTrue(Semver.build("1.01.2-rc.01").version().equals("1.1.2-rc.1"));
     }
 }

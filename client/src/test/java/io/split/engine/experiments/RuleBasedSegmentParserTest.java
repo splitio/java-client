@@ -431,7 +431,7 @@ public class RuleBasedSegmentParserTest {
                     assertTrue(parsedCondition.label().equals("equal to semver"));
                     for (AttributeMatcher matcher : parsedCondition.matcher().attributeMatchers()) {
                         // Check the matcher is ALL_KEYS
-                        assertTrue(matcher.matcher().toString().equals(" == semver 1\\.22\\.9"));
+                        assertTrue(matcher.matcher().toString().equals(" == semver 1.22.9"));
                         return;
                     }
                 }
@@ -453,7 +453,7 @@ public class RuleBasedSegmentParserTest {
                     assertTrue(parsedCondition.label().equals("greater than or equal to semver"));
                     for (AttributeMatcher matcher : parsedCondition.matcher().attributeMatchers()) {
                         // Check the matcher is ALL_KEYS
-                        assertTrue(matcher.matcher().toString().equals(" >= semver 1\\.22\\.9"));
+                        assertTrue(matcher.matcher().toString().equals(" >= semver 1.22.9"));
                         return;
                     }
                 }
@@ -475,7 +475,7 @@ public class RuleBasedSegmentParserTest {
                     assertTrue(parsedCondition.label().equals("less than or equal to semver"));
                     for (AttributeMatcher matcher : parsedCondition.matcher().attributeMatchers()) {
                         // Check the matcher is ALL_KEYS
-                        assertTrue(matcher.matcher().toString().equals(" <= semver 1\\.22\\.9"));
+                        assertTrue(matcher.matcher().toString().equals(" <= semver 1.22.9"));
                         return;
                     }
                 }
@@ -497,7 +497,7 @@ public class RuleBasedSegmentParserTest {
                     assertTrue(parsedCondition.label().equals("between semver"));
                     for (AttributeMatcher matcher : parsedCondition.matcher().attributeMatchers()) {
                         // Check the matcher is ALL_KEYS
-                        assertTrue(matcher.matcher().toString().equals(" between semver 1\\.22\\.9 and 2\\.1\\.0"));
+                        assertTrue(matcher.matcher().toString().equals(" between semver 1.22.9 and 2.1.0"));
                         return;
                     }
                 }
