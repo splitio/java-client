@@ -1,0 +1,90 @@
+impressions/src/main/java/io/split/client/impressions/UniqueKeysTrackerImp.java
+  52375eb8-af89-45b8-bbad-1698b6636202 18,25,32,35,41,46,49-54,71,110-111,120,141,152,162-169,193-194
+  human 1-17,19-24,26-31,33-34,36-40,42-45,47-48,55-70,72-109,112-119,121-140,142-151,153-161,170-192,195-215
+impressions/src/test/java/io/split/client/impressions/UniqueKeysTrackerImpTest.java
+  52375eb8-af89-45b8-bbad-1698b6636202 1-176
+impressions/src/main/java/io/split/client/impressions/UniqueKeysSender.java
+  52375eb8-af89-45b8-bbad-1698b6636202 1-7
+---
+{
+  "attestations": [
+    {
+      "entries": [
+        {
+          "accepted_lines": 28,
+          "added_lines": 28,
+          "deleted_lines": 0,
+          "hash": "52375eb8-af89-45b8-bbad-1698b6636202",
+          "lines": "18,25,32,35,41,46,49-54,71,110-111,120,141,152,162-169,193-194",
+          "overridden_lines": 0
+        },
+        {
+          "accepted_lines": 187,
+          "added_lines": 187,
+          "deleted_lines": 0,
+          "hash": "human",
+          "lines": "1-17,19-24,26-31,33-34,36-40,42-45,47-48,55-70,72-109,112-119,121-140,142-151,153-161,170-192,195-215",
+          "overridden_lines": 0
+        }
+      ],
+      "file": "impressions/src/main/java/io/split/client/impressions/UniqueKeysTrackerImp.java"
+    },
+    {
+      "entries": [
+        {
+          "accepted_lines": 176,
+          "added_lines": 176,
+          "deleted_lines": 0,
+          "hash": "52375eb8-af89-45b8-bbad-1698b6636202",
+          "lines": "1-176",
+          "overridden_lines": 0
+        }
+      ],
+      "file": "impressions/src/test/java/io/split/client/impressions/UniqueKeysTrackerImpTest.java"
+    },
+    {
+      "entries": [
+        {
+          "accepted_lines": 7,
+          "added_lines": 7,
+          "deleted_lines": 0,
+          "hash": "52375eb8-af89-45b8-bbad-1698b6636202",
+          "lines": "1-7",
+          "overridden_lines": 0
+        }
+      ],
+      "file": "impressions/src/main/java/io/split/client/impressions/UniqueKeysSender.java"
+    }
+  ],
+  "base_commit_sha": "2061b952fd9cef2fa0f07de1e7eb388fbced1b96",
+  "branch": "FME-15373-impressions_4",
+  "commit_sha": "585508fc052d5a48417f55c2d3381b5c8c7d4541",
+  "commit_time": "2026-04-28T14:09:23-03:00",
+  "git_ai_version": "1.2.6",
+  "prompts": {
+    "52375eb8-af89-45b8-bbad-1698b6636202": {
+      "accepted_lines": 211,
+      "agent_id": {
+        "id": "52375eb8-af89-45b8-bbad-1698b6636202",
+        "model": "claude-opus-4-7",
+        "tool": "claude"
+      },
+      "human_author": "Gaston Thea <gaston.thea@harness.io>",
+      "messages": [],
+      "overriden_lines": 0,
+      "total_additions": 211,
+      "total_deletions": 0
+    },
+    "human": {
+      "accepted_lines": 187,
+      "agent_id": null,
+      "human_author": "Gaston Thea <gaston.thea@harness.io>",
+      "messages": [],
+      "overriden_lines": 0,
+      "total_additions": 187,
+      "total_deletions": 0
+    }
+  },
+  "repo": "git@github.com:splitio/java-client.git",
+  "schema_version": "authorship/3.0.0"
+}
