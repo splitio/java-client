@@ -1,0 +1,153 @@
+impressions/src/main/java/io/split/client/impressions/strategy/ProcessImpressionOptimized.java
+  52375eb8-af89-45b8-bbad-1698b6636202 4,7-8,14,18,21-24,33,45,47
+  human 1-3,5-6,9-13,15-17,19-20,25-32,34-44,46,48-56
+impressions/src/test/java/io/split/client/impressions/ImpressionsManagerImplTest.java
+  52375eb8-af89-45b8-bbad-1698b6636202 796-797,861-862
+  human 1-795,798-860,863-1057
+impressions/src/main/java/io/split/client/impressions/ImpressionsTelemetryRecorder.java
+  52375eb8-af89-45b8-bbad-1698b6636202 1-6
+impressions/src/main/java/io/split/client/impressions/ImpressionsManagerImpl.java
+  52375eb8-af89-45b8-bbad-1698b6636202 15,17,29-30,37,42-51,55-64,68-83,87-90,95-96,98-101,104-107,110-111,136,138,141-142,144,146,148,156,162,178,188,197
+  human 1-14,16,18-28,31-36,38-41,52-54,65-67,84-86,91-94,97,102-103,108-109,112-135,137,139-140,143,145,147,149-155,157-161,163-177,179-187,189-196
+impressions/src/main/java/io/split/client/impressions/ImpressionsManagerConfig.java
+  52375eb8-af89-45b8-bbad-1698b6636202 1-39
+impressions/src/main/java/io/split/client/impressions/NoopImpressionsTelemetryRecorder.java
+  52375eb8-af89-45b8-bbad-1698b6636202 1-9
+---
+{
+  "attestations": [
+    {
+      "entries": [
+        {
+          "accepted_lines": 12,
+          "added_lines": 12,
+          "deleted_lines": 0,
+          "hash": "52375eb8-af89-45b8-bbad-1698b6636202",
+          "lines": "4,7-8,14,18,21-24,33,45,47",
+          "overridden_lines": 0
+        },
+        {
+          "accepted_lines": 44,
+          "added_lines": 44,
+          "deleted_lines": 0,
+          "hash": "human",
+          "lines": "1-3,5-6,9-13,15-17,19-20,25-32,34-44,46,48-56",
+          "overridden_lines": 0
+        }
+      ],
+      "file": "impressions/src/main/java/io/split/client/impressions/strategy/ProcessImpressionOptimized.java"
+    },
+    {
+      "entries": [
+        {
+          "accepted_lines": 4,
+          "added_lines": 4,
+          "deleted_lines": 0,
+          "hash": "52375eb8-af89-45b8-bbad-1698b6636202",
+          "lines": "796-797,861-862",
+          "overridden_lines": 0
+        },
+        {
+          "accepted_lines": 1053,
+          "added_lines": 1053,
+          "deleted_lines": 0,
+          "hash": "human",
+          "lines": "1-795,798-860,863-1057",
+          "overridden_lines": 0
+        }
+      ],
+      "file": "impressions/src/test/java/io/split/client/impressions/ImpressionsManagerImplTest.java"
+    },
+    {
+      "entries": [
+        {
+          "accepted_lines": 6,
+          "added_lines": 6,
+          "deleted_lines": 0,
+          "hash": "52375eb8-af89-45b8-bbad-1698b6636202",
+          "lines": "1-6",
+          "overridden_lines": 0
+        }
+      ],
+      "file": "impressions/src/main/java/io/split/client/impressions/ImpressionsTelemetryRecorder.java"
+    },
+    {
+      "entries": [
+        {
+          "accepted_lines": 69,
+          "added_lines": 69,
+          "deleted_lines": 0,
+          "hash": "52375eb8-af89-45b8-bbad-1698b6636202",
+          "lines": "15,17,29-30,37,42-51,55-64,68-83,87-90,95-96,98-101,104-107,110-111,136,138,141-142,144,146,148,156,162,178,188,197",
+          "overridden_lines": 0
+        },
+        {
+          "accepted_lines": 128,
+          "added_lines": 128,
+          "deleted_lines": 0,
+          "hash": "human",
+          "lines": "1-14,16,18-28,31-36,38-41,52-54,65-67,84-86,91-94,97,102-103,108-109,112-135,137,139-140,143,145,147,149-155,157-161,163-177,179-187,189-196",
+          "overridden_lines": 0
+        }
+      ],
+      "file": "impressions/src/main/java/io/split/client/impressions/ImpressionsManagerImpl.java"
+    },
+    {
+      "entries": [
+        {
+          "accepted_lines": 39,
+          "added_lines": 39,
+          "deleted_lines": 0,
+          "hash": "52375eb8-af89-45b8-bbad-1698b6636202",
+          "lines": "1-39",
+          "overridden_lines": 0
+        }
+      ],
+      "file": "impressions/src/main/java/io/split/client/impressions/ImpressionsManagerConfig.java"
+    },
+    {
+      "entries": [
+        {
+          "accepted_lines": 9,
+          "added_lines": 9,
+          "deleted_lines": 0,
+          "hash": "52375eb8-af89-45b8-bbad-1698b6636202",
+          "lines": "1-9",
+          "overridden_lines": 0
+        }
+      ],
+      "file": "impressions/src/main/java/io/split/client/impressions/NoopImpressionsTelemetryRecorder.java"
+    }
+  ],
+  "base_commit_sha": "585508fc052d5a48417f55c2d3381b5c8c7d4541",
+  "branch": "FME-15373-impressions_5",
+  "commit_sha": "411c85878862a808f65f2a0503d1fda0fec1e510",
+  "commit_time": "2026-04-28T14:34:31-03:00",
+  "git_ai_version": "1.2.6",
+  "prompts": {
+    "52375eb8-af89-45b8-bbad-1698b6636202": {
+      "accepted_lines": 139,
+      "agent_id": {
+        "id": "52375eb8-af89-45b8-bbad-1698b6636202",
+        "model": "claude-opus-4-7",
+        "tool": "claude"
+      },
+      "human_author": "Gaston Thea <gaston.thea@harness.io>",
+      "messages": [],
+      "overriden_lines": 0,
+      "total_additions": 139,
+      "total_deletions": 0
+    },
+    "human": {
+      "accepted_lines": 1225,
+      "agent_id": null,
+      "human_author": "Gaston Thea <gaston.thea@harness.io>",
+      "messages": [],
+      "overriden_lines": 0,
+      "total_additions": 1225,
+      "total_deletions": 0
+    }
+  },
+  "repo": "git@github.com:splitio/java-client.git",
+  "schema_version": "authorship/3.0.0"
+}
