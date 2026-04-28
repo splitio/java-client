@@ -1,0 +1,648 @@
+impressions/src/test/java/io/split/client/impressions/ImpressionObserverTest.java
+  52375eb8-af89-45b8-bbad-1698b6636202 26
+  human 1-25,27-142
+impressions/pom.xml
+  52375eb8-af89-45b8-bbad-1698b6636202 41-45
+  human 40
+impressions/src/main/java/io/split/client/impressions/ImpressionCounter.java
+  52375eb8-af89-45b8-bbad-1698b6636202 15
+  human 1-14,16-67
+impressions/src/main/java/io/split/client/impressions/filters/Filter.java
+  human 1-8
+impressions/src/main/java/io/split/client/impressions/strategy/ProcessImpressionStrategy.java
+  human 1-11
+impressions/src/test/java/io/split/client/impressions/BloomFilterImpTest.java
+  human 1-42
+impressions/src/main/java/io/split/client/impressions/filters/BloomFilterImp.java
+  human 1-34
+impressions/src/main/java/io/split/client/impressions/ImpressionHasher.java
+  human 1-29
+impressions/src/test/java/io/split/client/dtos/TestImpressionsTest.java
+  human 1-33
+impressions/src/test/java/io/split/client/impressions/FilterAdapterImplTest.java
+  human 1-48
+impressions/src/test/java/io/split/client/impressions/ImpressionCounterTest.java
+  human 1-188
+impressions/src/main/java/io/split/client/impressions/ImpressionsStorageProducer.java
+  human 1-9
+impressions/src/test/java/io/split/client/dtos/ImpressionCountTest.java
+  human 1-36
+impressions/src/main/java/io/split/client/dtos/DecoratedImpression.java
+  human 1-18
+impressions/src/test/java/io/split/client/impressions/ImpressionTestUtils.java
+  human 1-17
+impressions/src/main/java/io/split/client/impressions/UniqueKeysTracker.java
+  human 1-8
+impressions/src/main/java/io/split/client/impressions/ImpressionObserver.java
+  human 1-37
+impressions/src/main/java/io/split/client/dtos/TestImpressions.java
+  human 1-31
+impressions/src/main/java/io/split/client/impressions/ImpressionsStorageConsumer.java
+  human 1-11
+impressions/src/main/java/io/split/client/impressions/strategy/ProcessImpressionNone.java
+  human 1-33
+impressions/src/main/java/io/split/client/impressions/ImpressionsStorage.java
+  human 1-4
+impressions/src/main/java/io/split/rules/bucketing/MurmurHash3.java
+  human 1-302
+impressions/src/test/java/io/split/client/dtos/KeyImpressionTest.java
+  human 1-76
+impressions/src/test/java/io/split/client/impressions/ImpressionHasherTest.java
+  human 1-134
+impressions/src/main/java/io/split/client/dtos/ImpressionCount.java
+  human 1-77
+impressions/src/test/java/io/split/client/dtos/UniqueKeysTest.java
+  human 1-42
+impressions/src/test/java/io/split/client/impressions/InMemoryImpressionsStorageTest.java
+  human 1-32
+impressions/src/main/java/io/split/client/impressions/ImpressionsResult.java
+  human 1-22
+impressions/src/main/java/io/split/client/impressions/strategy/ProcessImpressionDebug.java
+  human 1-30
+impressions/src/main/java/io/split/client/impressions/ImpressionUtils.java
+  human 1-10
+impressions/src/main/java/io/split/client/dtos/UniqueKeys.java
+  human 1-34
+impressions/src/main/java/io/split/client/impressions/ImpressionListener.java
+  human 1-46
+impressions/src/main/java/io/split/client/impressions/Impression.java
+  human 1-76
+impressions/src/main/java/io/split/client/dtos/KeyImpression.java
+  human 1-89
+impressions/src/main/java/io/split/client/impressions/filters/FilterAdapter.java
+  human 1-8
+impressions/src/main/java/io/split/client/impressions/ImpressionsSender.java
+  human 1-15
+impressions/src/main/java/io/split/client/impressions/filters/FilterAdapterImpl.java
+  human 1-25
+impressions/src/main/java/io/split/client/impressions/InMemoryImpressionsStorage.java
+  human 1-59
+impressions/src/main/java/io/split/client/impressions/ImpressionsManager.java
+  human 1-34
+---
+{
+  "attestations": [
+    {
+      "entries": [
+        {
+          "accepted_lines": 1,
+          "added_lines": 1,
+          "deleted_lines": 0,
+          "hash": "52375eb8-af89-45b8-bbad-1698b6636202",
+          "lines": "26",
+          "overridden_lines": 0
+        },
+        {
+          "accepted_lines": 141,
+          "added_lines": 141,
+          "deleted_lines": 0,
+          "hash": "human",
+          "lines": "1-25,27-142",
+          "overridden_lines": 0
+        }
+      ],
+      "file": "impressions/src/test/java/io/split/client/impressions/ImpressionObserverTest.java"
+    },
+    {
+      "entries": [
+        {
+          "accepted_lines": 5,
+          "added_lines": 6,
+          "deleted_lines": 0,
+          "hash": "52375eb8-af89-45b8-bbad-1698b6636202",
+          "lines": "41-45",
+          "overridden_lines": 0
+        },
+        {
+          "accepted_lines": 1,
+          "added_lines": 1,
+          "deleted_lines": 0,
+          "hash": "human",
+          "lines": "40",
+          "overridden_lines": 0
+        }
+      ],
+      "file": "impressions/pom.xml"
+    },
+    {
+      "entries": [
+        {
+          "accepted_lines": 1,
+          "added_lines": 1,
+          "deleted_lines": 0,
+          "hash": "52375eb8-af89-45b8-bbad-1698b6636202",
+          "lines": "15",
+          "overridden_lines": 0
+        },
+        {
+          "accepted_lines": 66,
+          "added_lines": 66,
+          "deleted_lines": 0,
+          "hash": "human",
+          "lines": "1-14,16-67",
+          "overridden_lines": 0
+        }
+      ],
+      "file": "impressions/src/main/java/io/split/client/impressions/ImpressionCounter.java"
+    },
+    {
+      "entries": [
+        {
+          "accepted_lines": 8,
+          "added_lines": 8,
+          "deleted_lines": 0,
+          "hash": "human",
+          "lines": "1-8",
+          "overridden_lines": 0
+        }
+      ],
+      "file": "impressions/src/main/java/io/split/client/impressions/filters/Filter.java"
+    },
+    {
+      "entries": [
+        {
+          "accepted_lines": 11,
+          "added_lines": 11,
+          "deleted_lines": 0,
+          "hash": "human",
+          "lines": "1-11",
+          "overridden_lines": 0
+        }
+      ],
+      "file": "impressions/src/main/java/io/split/client/impressions/strategy/ProcessImpressionStrategy.java"
+    },
+    {
+      "entries": [
+        {
+          "accepted_lines": 42,
+          "added_lines": 42,
+          "deleted_lines": 0,
+          "hash": "human",
+          "lines": "1-42",
+          "overridden_lines": 0
+        }
+      ],
+      "file": "impressions/src/test/java/io/split/client/impressions/BloomFilterImpTest.java"
+    },
+    {
+      "entries": [
+        {
+          "accepted_lines": 34,
+          "added_lines": 34,
+          "deleted_lines": 0,
+          "hash": "human",
+          "lines": "1-34",
+          "overridden_lines": 0
+        }
+      ],
+      "file": "impressions/src/main/java/io/split/client/impressions/filters/BloomFilterImp.java"
+    },
+    {
+      "entries": [
+        {
+          "accepted_lines": 29,
+          "added_lines": 29,
+          "deleted_lines": 0,
+          "hash": "human",
+          "lines": "1-29",
+          "overridden_lines": 0
+        }
+      ],
+      "file": "impressions/src/main/java/io/split/client/impressions/ImpressionHasher.java"
+    },
+    {
+      "entries": [
+        {
+          "accepted_lines": 33,
+          "added_lines": 33,
+          "deleted_lines": 0,
+          "hash": "human",
+          "lines": "1-33",
+          "overridden_lines": 0
+        }
+      ],
+      "file": "impressions/src/test/java/io/split/client/dtos/TestImpressionsTest.java"
+    },
+    {
+      "entries": [
+        {
+          "accepted_lines": 48,
+          "added_lines": 48,
+          "deleted_lines": 0,
+          "hash": "human",
+          "lines": "1-48",
+          "overridden_lines": 0
+        }
+      ],
+      "file": "impressions/src/test/java/io/split/client/impressions/FilterAdapterImplTest.java"
+    },
+    {
+      "entries": [
+        {
+          "accepted_lines": 188,
+          "added_lines": 188,
+          "deleted_lines": 0,
+          "hash": "human",
+          "lines": "1-188",
+          "overridden_lines": 0
+        }
+      ],
+      "file": "impressions/src/test/java/io/split/client/impressions/ImpressionCounterTest.java"
+    },
+    {
+      "entries": [
+        {
+          "accepted_lines": 9,
+          "added_lines": 9,
+          "deleted_lines": 0,
+          "hash": "human",
+          "lines": "1-9",
+          "overridden_lines": 0
+        }
+      ],
+      "file": "impressions/src/main/java/io/split/client/impressions/ImpressionsStorageProducer.java"
+    },
+    {
+      "entries": [
+        {
+          "accepted_lines": 36,
+          "added_lines": 36,
+          "deleted_lines": 0,
+          "hash": "human",
+          "lines": "1-36",
+          "overridden_lines": 0
+        }
+      ],
+      "file": "impressions/src/test/java/io/split/client/dtos/ImpressionCountTest.java"
+    },
+    {
+      "entries": [
+        {
+          "accepted_lines": 18,
+          "added_lines": 18,
+          "deleted_lines": 0,
+          "hash": "human",
+          "lines": "1-18",
+          "overridden_lines": 0
+        }
+      ],
+      "file": "impressions/src/main/java/io/split/client/dtos/DecoratedImpression.java"
+    },
+    {
+      "entries": [
+        {
+          "accepted_lines": 17,
+          "added_lines": 17,
+          "deleted_lines": 0,
+          "hash": "human",
+          "lines": "1-17",
+          "overridden_lines": 0
+        }
+      ],
+      "file": "impressions/src/test/java/io/split/client/impressions/ImpressionTestUtils.java"
+    },
+    {
+      "entries": [
+        {
+          "accepted_lines": 8,
+          "added_lines": 8,
+          "deleted_lines": 0,
+          "hash": "human",
+          "lines": "1-8",
+          "overridden_lines": 0
+        }
+      ],
+      "file": "impressions/src/main/java/io/split/client/impressions/UniqueKeysTracker.java"
+    },
+    {
+      "entries": [
+        {
+          "accepted_lines": 37,
+          "added_lines": 37,
+          "deleted_lines": 0,
+          "hash": "human",
+          "lines": "1-37",
+          "overridden_lines": 0
+        }
+      ],
+      "file": "impressions/src/main/java/io/split/client/impressions/ImpressionObserver.java"
+    },
+    {
+      "entries": [
+        {
+          "accepted_lines": 31,
+          "added_lines": 31,
+          "deleted_lines": 0,
+          "hash": "human",
+          "lines": "1-31",
+          "overridden_lines": 0
+        }
+      ],
+      "file": "impressions/src/main/java/io/split/client/dtos/TestImpressions.java"
+    },
+    {
+      "entries": [
+        {
+          "accepted_lines": 11,
+          "added_lines": 11,
+          "deleted_lines": 0,
+          "hash": "human",
+          "lines": "1-11",
+          "overridden_lines": 0
+        }
+      ],
+      "file": "impressions/src/main/java/io/split/client/impressions/ImpressionsStorageConsumer.java"
+    },
+    {
+      "entries": [
+        {
+          "accepted_lines": 33,
+          "added_lines": 33,
+          "deleted_lines": 0,
+          "hash": "human",
+          "lines": "1-33",
+          "overridden_lines": 0
+        }
+      ],
+      "file": "impressions/src/main/java/io/split/client/impressions/strategy/ProcessImpressionNone.java"
+    },
+    {
+      "entries": [
+        {
+          "accepted_lines": 4,
+          "added_lines": 4,
+          "deleted_lines": 0,
+          "hash": "human",
+          "lines": "1-4",
+          "overridden_lines": 0
+        }
+      ],
+      "file": "impressions/src/main/java/io/split/client/impressions/ImpressionsStorage.java"
+    },
+    {
+      "entries": [
+        {
+          "accepted_lines": 302,
+          "added_lines": 302,
+          "deleted_lines": 0,
+          "hash": "human",
+          "lines": "1-302",
+          "overridden_lines": 0
+        }
+      ],
+      "file": "impressions/src/main/java/io/split/rules/bucketing/MurmurHash3.java"
+    },
+    {
+      "entries": [
+        {
+          "accepted_lines": 76,
+          "added_lines": 76,
+          "deleted_lines": 0,
+          "hash": "human",
+          "lines": "1-76",
+          "overridden_lines": 0
+        }
+      ],
+      "file": "impressions/src/test/java/io/split/client/dtos/KeyImpressionTest.java"
+    },
+    {
+      "entries": [
+        {
+          "accepted_lines": 134,
+          "added_lines": 134,
+          "deleted_lines": 0,
+          "hash": "human",
+          "lines": "1-134",
+          "overridden_lines": 0
+        }
+      ],
+      "file": "impressions/src/test/java/io/split/client/impressions/ImpressionHasherTest.java"
+    },
+    {
+      "entries": [
+        {
+          "accepted_lines": 77,
+          "added_lines": 77,
+          "deleted_lines": 0,
+          "hash": "human",
+          "lines": "1-77",
+          "overridden_lines": 0
+        }
+      ],
+      "file": "impressions/src/main/java/io/split/client/dtos/ImpressionCount.java"
+    },
+    {
+      "entries": [
+        {
+          "accepted_lines": 42,
+          "added_lines": 42,
+          "deleted_lines": 0,
+          "hash": "human",
+          "lines": "1-42",
+          "overridden_lines": 0
+        }
+      ],
+      "file": "impressions/src/test/java/io/split/client/dtos/UniqueKeysTest.java"
+    },
+    {
+      "entries": [
+        {
+          "accepted_lines": 32,
+          "added_lines": 32,
+          "deleted_lines": 0,
+          "hash": "human",
+          "lines": "1-32",
+          "overridden_lines": 0
+        }
+      ],
+      "file": "impressions/src/test/java/io/split/client/impressions/InMemoryImpressionsStorageTest.java"
+    },
+    {
+      "entries": [
+        {
+          "accepted_lines": 22,
+          "added_lines": 22,
+          "deleted_lines": 0,
+          "hash": "human",
+          "lines": "1-22",
+          "overridden_lines": 0
+        }
+      ],
+      "file": "impressions/src/main/java/io/split/client/impressions/ImpressionsResult.java"
+    },
+    {
+      "entries": [
+        {
+          "accepted_lines": 30,
+          "added_lines": 30,
+          "deleted_lines": 0,
+          "hash": "human",
+          "lines": "1-30",
+          "overridden_lines": 0
+        }
+      ],
+      "file": "impressions/src/main/java/io/split/client/impressions/strategy/ProcessImpressionDebug.java"
+    },
+    {
+      "entries": [
+        {
+          "accepted_lines": 10,
+          "added_lines": 10,
+          "deleted_lines": 0,
+          "hash": "human",
+          "lines": "1-10",
+          "overridden_lines": 0
+        }
+      ],
+      "file": "impressions/src/main/java/io/split/client/impressions/ImpressionUtils.java"
+    },
+    {
+      "entries": [
+        {
+          "accepted_lines": 34,
+          "added_lines": 34,
+          "deleted_lines": 0,
+          "hash": "human",
+          "lines": "1-34",
+          "overridden_lines": 0
+        }
+      ],
+      "file": "impressions/src/main/java/io/split/client/dtos/UniqueKeys.java"
+    },
+    {
+      "entries": [
+        {
+          "accepted_lines": 46,
+          "added_lines": 46,
+          "deleted_lines": 0,
+          "hash": "human",
+          "lines": "1-46",
+          "overridden_lines": 0
+        }
+      ],
+      "file": "impressions/src/main/java/io/split/client/impressions/ImpressionListener.java"
+    },
+    {
+      "entries": [
+        {
+          "accepted_lines": 76,
+          "added_lines": 76,
+          "deleted_lines": 0,
+          "hash": "human",
+          "lines": "1-76",
+          "overridden_lines": 0
+        }
+      ],
+      "file": "impressions/src/main/java/io/split/client/impressions/Impression.java"
+    },
+    {
+      "entries": [
+        {
+          "accepted_lines": 89,
+          "added_lines": 89,
+          "deleted_lines": 0,
+          "hash": "human",
+          "lines": "1-89",
+          "overridden_lines": 0
+        }
+      ],
+      "file": "impressions/src/main/java/io/split/client/dtos/KeyImpression.java"
+    },
+    {
+      "entries": [
+        {
+          "accepted_lines": 8,
+          "added_lines": 8,
+          "deleted_lines": 0,
+          "hash": "human",
+          "lines": "1-8",
+          "overridden_lines": 0
+        }
+      ],
+      "file": "impressions/src/main/java/io/split/client/impressions/filters/FilterAdapter.java"
+    },
+    {
+      "entries": [
+        {
+          "accepted_lines": 15,
+          "added_lines": 15,
+          "deleted_lines": 0,
+          "hash": "human",
+          "lines": "1-15",
+          "overridden_lines": 0
+        }
+      ],
+      "file": "impressions/src/main/java/io/split/client/impressions/ImpressionsSender.java"
+    },
+    {
+      "entries": [
+        {
+          "accepted_lines": 25,
+          "added_lines": 25,
+          "deleted_lines": 0,
+          "hash": "human",
+          "lines": "1-25",
+          "overridden_lines": 0
+        }
+      ],
+      "file": "impressions/src/main/java/io/split/client/impressions/filters/FilterAdapterImpl.java"
+    },
+    {
+      "entries": [
+        {
+          "accepted_lines": 59,
+          "added_lines": 59,
+          "deleted_lines": 0,
+          "hash": "human",
+          "lines": "1-59",
+          "overridden_lines": 0
+        }
+      ],
+      "file": "impressions/src/main/java/io/split/client/impressions/InMemoryImpressionsStorage.java"
+    },
+    {
+      "entries": [
+        {
+          "accepted_lines": 34,
+          "added_lines": 34,
+          "deleted_lines": 0,
+          "hash": "human",
+          "lines": "1-34",
+          "overridden_lines": 0
+        }
+      ],
+      "file": "impressions/src/main/java/io/split/client/impressions/ImpressionsManager.java"
+    }
+  ],
+  "base_commit_sha": "3b213714c9cb0140da3bc7a1fb7af31b1c869512",
+  "branch": "FME-15373-impressions_2",
+  "commit_sha": "01c1841572204fd9880d04c3c7ce8b629708c755",
+  "commit_time": "2026-04-28T13:31:05-03:00",
+  "git_ai_version": "1.2.6",
+  "prompts": {
+    "52375eb8-af89-45b8-bbad-1698b6636202": {
+      "accepted_lines": 7,
+      "agent_id": {
+        "id": "52375eb8-af89-45b8-bbad-1698b6636202",
+        "model": "claude-opus-4-7",
+        "tool": "claude"
+      },
+      "human_author": "Gaston Thea <gaston.thea@harness.io>",
+      "messages": [],
+      "overriden_lines": 0,
+      "total_additions": 8,
+      "total_deletions": 0
+    },
+    "human": {
+      "accepted_lines": 1916,
+      "agent_id": null,
+      "human_author": "Gaston Thea <gaston.thea@harness.io>",
+      "messages": [],
+      "overriden_lines": 0,
+      "total_additions": 1916,
+      "total_deletions": 0
+    }
+  },
+  "repo": "git@github.com:splitio/java-client.git",
+  "schema_version": "authorship/3.0.0"
+}
