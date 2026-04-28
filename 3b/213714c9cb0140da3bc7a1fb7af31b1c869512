@@ -1,0 +1,57 @@
+impressions/pom.xml
+  52375eb8-af89-45b8-bbad-1698b6636202 1-59
+pom.xml
+  52375eb8-af89-45b8-bbad-1698b6636202 75
+---
+{
+  "attestations": [
+    {
+      "entries": [
+        {
+          "accepted_lines": 59,
+          "added_lines": 59,
+          "deleted_lines": 0,
+          "hash": "52375eb8-af89-45b8-bbad-1698b6636202",
+          "lines": "1-59",
+          "overridden_lines": 0
+        }
+      ],
+      "file": "impressions/pom.xml"
+    },
+    {
+      "entries": [
+        {
+          "accepted_lines": 1,
+          "added_lines": 1,
+          "deleted_lines": 0,
+          "hash": "52375eb8-af89-45b8-bbad-1698b6636202",
+          "lines": "75",
+          "overridden_lines": 0
+        }
+      ],
+      "file": "pom.xml"
+    }
+  ],
+  "base_commit_sha": "32cfb5ecc9fab4afc9c508f37630a7f1d5235b53",
+  "branch": "FME-15373-impressions_1",
+  "commit_sha": "3b213714c9cb0140da3bc7a1fb7af31b1c869512",
+  "commit_time": "2026-04-28T13:23:16-03:00",
+  "git_ai_version": "1.2.6",
+  "prompts": {
+    "52375eb8-af89-45b8-bbad-1698b6636202": {
+      "accepted_lines": 60,
+      "agent_id": {
+        "id": "52375eb8-af89-45b8-bbad-1698b6636202",
+        "model": "claude-opus-4-7",
+        "tool": "claude"
+      },
+      "human_author": "Gaston Thea <gaston.thea@harness.io>",
+      "messages": [],
+      "overriden_lines": 0,
+      "total_additions": 60,
+      "total_deletions": 0
+    }
+  },
+  "repo": "git@github.com:splitio/java-client.git",
+  "schema_version": "authorship/3.0.0"
+}
