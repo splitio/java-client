@@ -5,8 +5,6 @@ import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import static com.google.common.base.Preconditions.checkNotNull;
-
 public class ImpressionCounter {
 
     public static class Key {
@@ -14,7 +12,7 @@ public class ImpressionCounter {
         private final long _timeFrame;
 
         public Key(String featureFlagName, long timeframe) {
-            _featureName = checkNotNull(featureFlagName);
+            _featureName = Objects.requireNonNull(featureFlagName);
             _timeFrame = timeframe;
         }
 

@@ -72,6 +72,7 @@
         <module>testing</module>
         <module>okhttp-modules</module>
         <module>tracker</module>
+        <module>impressions</module>
         <module>client</module>
     </modules>
     <build>

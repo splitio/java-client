@@ -17,8 +17,12 @@ import io.split.client.impressions.ImpressionCounter;
 import io.split.client.impressions.ImpressionListener;
 import io.split.client.impressions.ImpressionObserver;
 import io.split.client.impressions.ImpressionsManager;
+import io.split.client.impressions.ImpressionsManagerConfig;
 import io.split.client.impressions.ImpressionsManagerImpl;
+import io.split.client.impressions.ImpressionsTelemetryRecorder;
 import io.split.client.impressions.ImpressionsSender;
+import io.split.client.impressions.TelemetryRuntimeImpressionsRecorder;
+import io.split.client.impressions.TelemetryUniqueKeysSender;
 import io.split.client.impressions.ImpressionsStorage;
 import io.split.client.impressions.ImpressionsStorageConsumer;
 import io.split.client.impressions.ImpressionsStorageProducer;
@@ -752,11 +756,12 @@ public class SplitFactoryImpl implements SplitFactory {
                 : null;
         ProcessImpressionNone processImpressionNone = new ProcessImpressionNone(listener != null, _uniqueKeysTracker, counter);
 
+        ImpressionsTelemetryRecorder telemetryRecorder = new TelemetryRuntimeImpressionsRecorder(_telemetryStorageProducer);
         switch (config.impressionsMode()) {
             case OPTIMIZED:
                 ImpressionObserver impressionObserver = new ImpressionObserver(config.getLastSeenCacheSize());
                 processImpressionStrategy = new ProcessImpressionOptimized(listener != null, impressionObserver,
-                        counter, _telemetryStorageProducer);
+                        counter, telemetryRecorder);
                 break;
             case DEBUG:
                 impressionObserver = new ImpressionObserver(config.getLastSeenCacheSize());
@@ -766,7 +771,13 @@ public class SplitFactoryImpl implements SplitFactory {
                 processImpressionStrategy = processImpressionNone;
                 break;
         }
-        return ImpressionsManagerImpl.instance(config, _telemetryStorageProducer, impressionsStorageConsumer,
+        ImpressionsManagerConfig impressionsManagerConfig = ImpressionsManagerConfig.builder()
+                .mode(config.impressionsMode())
+                .impressionsRefreshRateSeconds(config.impressionsRefreshRate())
+                .threadFactory(config.getThreadFactory())
+                .debugEnabled(config.debugEnabled())
+                .build();
+        return ImpressionsManagerImpl.instance(impressionsManagerConfig, telemetryRecorder, impressionsStorageConsumer,
                 impressionsStorageProducer,
                 _impressionsSender, processImpressionNone, processImpressionStrategy, counter, listener);
     }
@@ -809,7 +820,7 @@ public class SplitFactoryImpl implements SplitFactory {
         int uniqueKeysRefreshRate = config.operationMode().equals(OperationMode.STANDALONE)
                 ? config.uniqueKeysRefreshRateInMemory()
                 : config.uniqueKeysRefreshRateRedis();
-        return new UniqueKeysTrackerImp(_telemetrySynchronizer, uniqueKeysRefreshRate,
+        return new UniqueKeysTrackerImp(new TelemetryUniqueKeysSender(_telemetrySynchronizer), uniqueKeysRefreshRate,
                 config.filterUniqueKeysRefreshRate(),
                 config.getThreadFactory());
     }

@@ -23,7 +23,7 @@ import static org.junit.Assert.assertThat;
 
 public class ImpressionObserverTest {
 
-    private static final Logger _log = LoggerFactory.getLogger(ImpressionsManagerImpl.class);
+    private static final Logger _log = LoggerFactory.getLogger(ImpressionObserverTest.class);
 
     // We allow the cache implementation to have a 0.01% drift in size when elements change, given that it's internal
     // structure/references might vary, and the ObjectSizeCalculator is not 100% accurate

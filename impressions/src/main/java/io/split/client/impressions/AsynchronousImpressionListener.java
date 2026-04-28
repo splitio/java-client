@@ -1,6 +1,5 @@
 package io.split.client.impressions;
 
-import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -9,6 +8,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * A wrapper around an ImpressionListener provided by the customer. The purpose
@@ -25,10 +25,12 @@ public class AsynchronousImpressionListener implements ImpressionListener {
     private final ExecutorService _executor;
 
     public static AsynchronousImpressionListener build(ImpressionListener delegate, int capacity) {
-        ThreadFactory threadFactory = new ThreadFactoryBuilder()
-                .setDaemon(true)
-                .setNameFormat("impression-listener-wrapper-%d")
-                .build();
+        AtomicInteger counter = new AtomicInteger(0);
+        ThreadFactory threadFactory = r -> {
+            Thread t = new Thread(r, "impression-listener-wrapper-" + counter.getAndIncrement());
+            t.setDaemon(true);
+            return t;
+        };
 
         ExecutorService executor = new ThreadPoolExecutor(2, 2, 0L, TimeUnit.MILLISECONDS, new ArrayBlockingQueue<Runnable>(capacity), threadFactory);
 
