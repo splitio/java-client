@@ -1,0 +1,38 @@
+client/src/main/java/io/split/client/SplitClientConfig.java
+  human 489
+---
+{
+  "attestations": [
+    {
+      "entries": [
+        {
+          "accepted_lines": 1,
+          "added_lines": 1,
+          "deleted_lines": 0,
+          "hash": "human",
+          "lines": "489",
+          "overridden_lines": 0
+        }
+      ],
+      "file": "client/src/main/java/io/split/client/SplitClientConfig.java"
+    }
+  ],
+  "base_commit_sha": "de36fbcb93b271f19f922049e26c51ce1e0ea9f0",
+  "branch": "fix-telemetry-default-rate",
+  "commit_sha": "004a4e041aa05b1b73d77cb2c780bc842303c112",
+  "commit_time": "2026-05-11T16:34:41-03:00",
+  "commit_type": "direct_commit",
+  "git_ai_version": "1.4.4",
+  "prompts": {
+    "human": {
+      "accepted_lines": 1,
+      "agent_id": null,
+      "human_author": "Emiliano Sanchez <emiliano.sanchez@split.io>",
+      "overriden_lines": 0,
+      "total_additions": 1,
+      "total_deletions": 0
+    }
+  },
+  "repo": "https://github.com/splitio/java-client.git",
+  "schema_version": "authorship/3.0.0"
+}
