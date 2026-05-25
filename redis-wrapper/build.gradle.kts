@@ -17,7 +17,7 @@ dependencies {
 
 tasks.shadowJar {
     mergeServiceFiles()
-    relocate("redis.clients.jedis", "redis.clients.jedis") // passthrough relocation
+    // jedis is intentionally NOT relocated — consumers depend on redis.clients.jedis types directly
     exclude(
         "META-INF/license/**",
         "META-INF/*",

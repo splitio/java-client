@@ -47,6 +47,7 @@ tasks.shadowJar {
 
     // Include only specific artifacts in the shadow jar
     dependencies {
+        include(dependency(project(":pluggable-storage")))
         include(dependency("com.google.guava:guava"))
         include(dependency("com.google.code.gson:gson"))
         include(dependency("org.yaml:snakeyaml"))
