@@ -47,7 +47,7 @@ pipeline:
                         redis-cli ping 2>/dev/null | grep -q PONG && { echo "Redis is up"; break; }
                         echo "Waiting for Redis... ($i/30)"; sleep 1
                       done
-                      cp .ci.settings.xml ${HOME}/.m2/settings.xml
+                      mkdir -p ${HOME}/.m2 && cp .ci.settings.xml ${HOME}/.m2/settings.xml
                       mvn --batch-mode clean install
                   when:
                     stageStatus: Success
@@ -91,7 +91,7 @@ pipeline:
                         redis-cli ping 2>/dev/null | grep -q PONG && { echo "Redis is up"; break; }
                         echo "Waiting for Redis... ($i/30)"; sleep 1
                       done
-                      cp .ci.settings.xml ${HOME}/.m2/settings.xml
+                      mkdir -p ${HOME}/.m2 && cp .ci.settings.xml ${HOME}/.m2/settings.xml
                       if [ -n "$PR_NUMBER" ] && [ "$PR_NUMBER" != "null" ]; then
                         mvn --batch-mode clean verify org.sonarsource.scanner.maven:sonar-maven-plugin:sonar \
                           -Dsonar.host.url="$SONAR_HOST_URL" \
