@@ -52,7 +52,7 @@ pipeline:
                   when:
                     stageStatus: Success
                     condition: <+codebase.build.type> == "PR"
-              # JDK 8: checkstyle (PR only, runs after build succeeds)
+              # JDK 8: checkstyle (PR only)
               - step:
                   type: Run
                   name: checkstyle jdk8
