@@ -1,0 +1,109 @@
+pipeline:
+  name: java-client-ci
+  identifier: java_client_ci
+  projectIdentifier: Harness_Split
+  orgIdentifier: PROD
+  tags: {}
+  properties:
+    ci:
+      codebase:
+        connectorRef: fmegithubrunnersci
+        repoName: java-client
+        build: <+input>
+        depth: 0
+  stages:
+    - stage:
+        name: test
+        identifier: test
+        type: CI
+        spec:
+          cloneCodebase: true
+          caching:
+            enabled: true
+            override: true
+          platform:
+            os: Linux
+            arch: Amd64
+          runtime:
+            type: Cloud
+            spec: {}
+          execution:
+            steps:
+              # JDK 8: build + test + checkstyle (PR only)
+              - step:
+                  type: Run
+                  name: test jdk8
+                  identifier: test_jdk8
+                  spec:
+                    connectorRef: dockerhub
+                    image: maven:3.9-eclipse-temurin-8
+                    shell: Bash
+                    envVariables:
+                      MAVEN_OPTS: "-XX:InitialHeapSize=2G -XX:MaxHeapSize=2G -XX:+PrintCommandLineFlags -XX:ThreadStackSize=65536 -XX:-TieredCompilation -Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=warn"
+                    command: |-
+                      apt-get update -qq && apt-get install -y --no-install-recommends redis-server
+                      redis-server --daemonize yes
+                      for i in $(seq 1 30); do
+                        redis-cli ping 2>/dev/null | grep -q PONG && { echo "Redis is up"; break; }
+                        echo "Waiting for Redis... ($i/30)"; sleep 1
+                      done
+                      mkdir -p ${HOME}/.m2 && cp .ci.settings.xml ${HOME}/.m2/settings.xml
+                      mvn --batch-mode clean install
+                  when:
+                    stageStatus: Success
+                    condition: <+codebase.build.type> == "PR"
+              # JDK 8: checkstyle (PR only)
+              - step:
+                  type: Run
+                  name: checkstyle jdk8
+                  identifier: checkstyle_jdk8
+                  spec:
+                    connectorRef: dockerhub
+                    image: maven:3.9-eclipse-temurin-8
+                    shell: Bash
+                    envVariables:
+                      MAVEN_OPTS: "-XX:InitialHeapSize=2G -XX:MaxHeapSize=2G -XX:+PrintCommandLineFlags -XX:ThreadStackSize=65536 -XX:-TieredCompilation -Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=warn"
+                    command: mvn --batch-mode checkstyle:check
+                  when:
+                    stageStatus: Success
+                    condition: <+codebase.build.type> == "PR"
+              # JDK 11: Sonar (PR and push to master/development)
+              - step:
+                  type: Run
+                  name: sonar analysis
+                  identifier: sonar_analysis
+                  spec:
+                    connectorRef: dockerhub
+                    image: maven:3.9-eclipse-temurin-11
+                    shell: Bash
+                    envVariables:
+                      MAVEN_OPTS: "-XX:InitialHeapSize=2G -XX:MaxHeapSize=2G -XX:+PrintCommandLineFlags -XX:ThreadStackSize=65536 -XX:-TieredCompilation -Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=warn"
+                      SONAR_HOST_URL: https://sonar.harness.io
+                      SONAR_TOKEN: <+secrets.getValue("sonarqube-token")>
+                      PR_NUMBER: <+trigger.prNumber>
+                      PR_BRANCH: <+trigger.sourceBranch>
+                      PR_BASE_BRANCH: <+trigger.targetBranch>
+                      BRANCH_NAME: <+trigger.branch>
+                    command: |-
+                      apt-get update -qq && apt-get install -y --no-install-recommends redis-server
+                      redis-server --daemonize yes
+                      for i in $(seq 1 30); do
+                        redis-cli ping 2>/dev/null | grep -q PONG && { echo "Redis is up"; break; }
+                        echo "Waiting for Redis... ($i/30)"; sleep 1
+                      done
+                      mkdir -p ${HOME}/.m2 && cp .ci.settings.xml ${HOME}/.m2/settings.xml
+                      if [ -n "$PR_NUMBER" ] && [ "$PR_NUMBER" != "null" ]; then
+                        mvn --batch-mode clean verify org.sonarsource.scanner.maven:sonar-maven-plugin:sonar \
+                          -Dsonar.host.url="$SONAR_HOST_URL" \
+                          -Dsonar.token="$SONAR_TOKEN" \
+                          -Dsonar.pullrequest.key="$PR_NUMBER" \
+                          -Dsonar.pullrequest.branch="$PR_BRANCH" \
+                          -Dsonar.pullrequest.base="$PR_BASE_BRANCH"
+                      else
+                        mvn --batch-mode clean verify org.sonarsource.scanner.maven:sonar-maven-plugin:sonar \
+                          -Dsonar.host.url="$SONAR_HOST_URL" \
+                          -Dsonar.token="$SONAR_TOKEN" \
+                          -Dsonar.branch.name="$BRANCH_NAME"
+                      fi
+                  when:
+                    stageStatus: Success

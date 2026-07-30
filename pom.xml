@@ -127,7 +127,7 @@
                     </execution>
                 </executions>
                 <configuration>
-                    <configLocation>.github/linter/google-java-style.xml</configLocation>
+                    <configLocation>.harness/linter/google-java-style.xml</configLocation>
                     <violationSeverity>warning</violationSeverity>
                     <failOnViolation>true</failOnViolation>
                 </configuration>

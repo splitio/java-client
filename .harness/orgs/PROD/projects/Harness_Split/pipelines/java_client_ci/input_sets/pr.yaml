@@ -1,0 +1,14 @@
+inputSet:
+  name: pr
+  identifier: pr
+  orgIdentifier: PROD
+  projectIdentifier: Harness_Split
+  pipeline:
+    identifier: java_client_ci
+    properties:
+      ci:
+        codebase:
+          build:
+            type: PR
+            spec:
+              number: <+trigger.prNumber>
