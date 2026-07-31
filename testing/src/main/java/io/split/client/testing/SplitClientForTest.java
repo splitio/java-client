@@ -21,19 +21,8 @@ public class SplitClientForTest implements SplitClient {
         _tests = new HashMap<>();
     }
 
-    public Map<String, String> tests() {
-        return _tests
-            .entrySet()
-            .stream()
-            .collect(toMap(
-                entry -> entry.getKey().split(),
-                entry -> entry.getValue().treatment(),
-                (existing, replacement) -> existing
-            ));
-    }
-
-    public Map<SplitAndKey, SplitResult> testMappings() {
-        return Collections.unmodifiableMap(_tests);
+    public Map<SplitAndKey, SplitResult> tests() {
+        return _tests;
     }
 
     public void clearTreatments() {
