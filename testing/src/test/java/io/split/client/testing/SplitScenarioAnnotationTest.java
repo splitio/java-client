@@ -1,6 +1,5 @@
 package io.split.client.testing;
 
-import com.google.common.collect.ImmutableMap;
 import io.split.client.api.Key;
 import io.split.client.api.SplitResult;
 import io.split.client.dtos.EvaluationOptions;
@@ -15,6 +14,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Objects;
 
@@ -97,11 +97,11 @@ public class SplitScenarioAnnotationTest extends SplitAnnotationTestParent {
         Assert.assertEquals(new SplitResult(ON_TREATMENT, null), splitClient.getTreatmentWithConfig(ARBITRARY_KEY, DEFAULT_CLIENT_FEATURE, new HashMap<>(), new EvaluationOptions(new HashMap<>())));
         Assert.assertEquals(new SplitResult(ON_TREATMENT, null), splitClient.getTreatmentWithConfig(ARBITRARY_KEY, DEFAULT_CLIENT_FEATURE, new EvaluationOptions(new HashMap<>())));
         Assert.assertEquals(new SplitResult(ON_TREATMENT, null), splitClient.getTreatmentWithConfig(new Key(ARBITRARY_KEY, ARBITRARY_KEY), DEFAULT_CLIENT_FEATURE, new HashMap<>(), new EvaluationOptions(new HashMap<>())));
-        Assert.assertEquals(ImmutableMap.of(DEFAULT_CLIENT_FEATURE, ON_TREATMENT), splitClient.getTreatments(ARBITRARY_KEY, Arrays.asList(DEFAULT_CLIENT_FEATURE), new EvaluationOptions(new HashMap<>())));
-        Assert.assertEquals(ImmutableMap.of(DEFAULT_CLIENT_FEATURE, ON_TREATMENT), splitClient.getTreatments(ARBITRARY_KEY, Arrays.asList(DEFAULT_CLIENT_FEATURE),  new HashMap<>(), new EvaluationOptions(new HashMap<>())));
-        Assert.assertEquals(ImmutableMap.of(DEFAULT_CLIENT_FEATURE, new SplitResult(ON_TREATMENT, null)), splitClient.getTreatmentsWithConfig(ARBITRARY_KEY, Arrays.asList(DEFAULT_CLIENT_FEATURE), new EvaluationOptions(new HashMap<>())));
+        Assert.assertEquals(Collections.singletonMap(DEFAULT_CLIENT_FEATURE, ON_TREATMENT), splitClient.getTreatments(ARBITRARY_KEY, Arrays.asList(DEFAULT_CLIENT_FEATURE), new EvaluationOptions(new HashMap<>())));
+        Assert.assertEquals(Collections.singletonMap(DEFAULT_CLIENT_FEATURE, ON_TREATMENT), splitClient.getTreatments(ARBITRARY_KEY, Arrays.asList(DEFAULT_CLIENT_FEATURE),  new HashMap<>(), new EvaluationOptions(new HashMap<>())));
+        Assert.assertEquals(Collections.singletonMap(DEFAULT_CLIENT_FEATURE, new SplitResult(ON_TREATMENT, null)), splitClient.getTreatmentsWithConfig(ARBITRARY_KEY, Arrays.asList(DEFAULT_CLIENT_FEATURE), new EvaluationOptions(new HashMap<>())));
         Assert.assertEquals(new SplitResult(ON_TREATMENT, null), splitClient.getTreatmentsWithConfig(ARBITRARY_KEY, Arrays.asList(DEFAULT_CLIENT_FEATURE),  new HashMap<>(), new EvaluationOptions(new HashMap<>())).get(DEFAULT_CLIENT_FEATURE));
-        Assert.assertEquals(ImmutableMap.of(DEFAULT_CLIENT_FEATURE, new SplitResult(ON_TREATMENT, null)), splitClient.getTreatmentsWithConfig(new Key(ARBITRARY_KEY, ARBITRARY_KEY), Arrays.asList(DEFAULT_CLIENT_FEATURE),  new HashMap<>(), new EvaluationOptions(new HashMap<>())));
+        Assert.assertEquals(Collections.singletonMap(DEFAULT_CLIENT_FEATURE, new SplitResult(ON_TREATMENT, null)), splitClient.getTreatmentsWithConfig(new Key(ARBITRARY_KEY, ARBITRARY_KEY), Arrays.asList(DEFAULT_CLIENT_FEATURE),  new HashMap<>(), new EvaluationOptions(new HashMap<>())));
 
         Assert.assertEquals(new HashMap<>(), splitClient.getTreatmentsByFlagSet(ARBITRARY_KEY, "flagset",  new HashMap<>(), new EvaluationOptions(new HashMap<>())));
         Assert.assertEquals(new HashMap<>(), splitClient.getTreatmentsByFlagSet(ARBITRARY_KEY, "flagset", new EvaluationOptions(new HashMap<>())));
