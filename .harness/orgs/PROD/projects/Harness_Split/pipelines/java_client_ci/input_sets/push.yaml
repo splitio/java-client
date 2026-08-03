@@ -1,0 +1,14 @@
+inputSet:
+  name: push
+  identifier: push
+  orgIdentifier: PROD
+  projectIdentifier: Harness_Split
+  pipeline:
+    identifier: java_client_ci
+    properties:
+      ci:
+        codebase:
+          build:
+            type: branch
+            spec:
+              branch: <+trigger.branch>
