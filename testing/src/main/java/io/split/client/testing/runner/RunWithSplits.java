@@ -26,7 +26,7 @@ public class RunWithSplits extends Statement {
         SplitClientForTest splitClient = findFirstSplitClient(target, target.getClass());
 
         // Preserve the Split state between Test runs
-        Map<SplitAndKey, SplitResult> priorTests = new HashMap<>(splitClient.testMappings());
+        Map<SplitAndKey, SplitResult> priorTests = new HashMap<>(splitClient.tests());
 
         // Apply the Active Scenario for this
         if (scenario != null) {
