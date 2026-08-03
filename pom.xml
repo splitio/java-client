@@ -66,9 +66,9 @@
     <modules>
         <module>pluggable-storage</module>
         <module>redis-wrapper</module>
+        <module>testing</module>
         <module>okhttp-modules</module>
         <module>client</module>
-        <module>testing</module>
     </modules>
     <build>
         <plugins>
