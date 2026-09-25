@@ -1,13 +1,13 @@
 pipeline:
   name: java-client-ci
   identifier: java_client_ci
+  description: CI pipeline for java-client that builds, tests, runs Sonar analysis, and generates an SBOM for the Harness Code repository.
   projectIdentifier: Harness_Split
   orgIdentifier: PROD
   tags: {}
   properties:
     ci:
       codebase:
-        connectorRef: fmegithubrunnersci
         repoName: java-client
         build: <+input>
         depth: 0
@@ -105,5 +105,26 @@ pipeline:
                           -Dsonar.token="$SONAR_TOKEN" \
                           -Dsonar.branch.name="$BRANCH_NAME"
                       fi
+                  when:
+                    stageStatus: Success
+              # SCS/SSCA: generate SBOM for the Harness Code repository
+              - step:
+                  type: SscaOrchestration
+                  name: scs repo scan
+                  identifier: scs_repo_scan
+                  spec:
+                    mode: generation
+                    tool:
+                      type: Syft
+                      spec:
+                        format: spdx-json
+                    source:
+                      type: repository
+                      spec:
+                        url: <+codebase.gitUrl>
+                        path: /harness
+                        variant_type: branch
+                        variant: <+codebase.branch>
+                        cloned_codebase: "true"
                   when:
                     stageStatus: Success
