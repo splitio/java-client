@@ -36,7 +36,6 @@ pipeline:
                   identifier: clone_java_client
                   spec:
                     repoName: java-client
-                    cloneDirectory: /harness
                     build:
                       type: branch
                       spec:
