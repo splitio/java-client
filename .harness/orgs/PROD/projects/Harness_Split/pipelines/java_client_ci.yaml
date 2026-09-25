@@ -30,6 +30,27 @@ pipeline:
             spec: {}
           execution:
             steps:
+              # SCS/SSCA: generate SBOM for the GitHub repository
+              - step:
+                  type: SscaOrchestration
+                  name: scs repo scan
+                  identifier: scs_repo_scan
+                  spec:
+                    mode: generation
+                    tool:
+                      type: Syft
+                      spec:
+                        format: spdx-json
+                    source:
+                      type: repository
+                      spec:
+                        url: https://github.com/splitio/java-client
+                        path: /harness
+                        variant_type: branch
+                        variant: <+codebase.branch>
+                        cloned_codebase: "true"
+                  when:
+                    stageStatus: Success
               # JDK 8: build + test + checkstyle (PR only)
               - step:
                   type: Run
@@ -106,26 +127,5 @@ pipeline:
                           -Dsonar.token="$SONAR_TOKEN" \
                           -Dsonar.branch.name="$BRANCH_NAME"
                       fi
-                  when:
-                    stageStatus: Success
-              # SCS/SSCA: generate SBOM for the GitHub repository
-              - step:
-                  type: SscaOrchestration
-                  name: scs repo scan
-                  identifier: scs_repo_scan
-                  spec:
-                    mode: generation
-                    tool:
-                      type: Syft
-                      spec:
-                        format: spdx-json
-                    source:
-                      type: repository
-                      spec:
-                        url: https://github.com/splitio/java-client
-                        path: /harness
-                        variant_type: branch
-                        variant: <+codebase.branch>
-                        cloned_codebase: "true"
                   when:
                     stageStatus: Success
