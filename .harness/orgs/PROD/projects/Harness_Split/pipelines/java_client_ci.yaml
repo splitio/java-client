@@ -1,13 +1,14 @@
 pipeline:
   name: java-client-ci
   identifier: java_client_ci
-  description: CI pipeline for java-client that builds, tests, runs Sonar analysis, and generates an SBOM for the Harness Code repository.
+  description: CI pipeline for java-client that builds, tests, runs Sonar analysis, and generates an SBOM for the GitHub repository.
   projectIdentifier: Harness_Split
   orgIdentifier: PROD
   tags: {}
   properties:
     ci:
       codebase:
+        connectorRef: fmegithubrunnersci
         repoName: java-client
         build: <+input>
         depth: 0
@@ -17,7 +18,7 @@ pipeline:
         identifier: test
         type: CI
         spec:
-          cloneCodebase: false
+          cloneCodebase: true
           caching:
             enabled: true
             override: true
@@ -29,17 +30,6 @@ pipeline:
             spec: {}
           execution:
             steps:
-              # Explicit native clone of the Harness Code repository
-              - step:
-                  type: GitClone
-                  name: clone java-client
-                  identifier: clone_java_client
-                  spec:
-                    repoName: java-client
-                    build:
-                      type: branch
-                      spec:
-                        branch: <+codebase.branch>
               # JDK 8: build + test + checkstyle (PR only)
               - step:
                   type: Run
@@ -118,7 +108,7 @@ pipeline:
                       fi
                   when:
                     stageStatus: Success
-              # SCS/SSCA: generate SBOM for the Harness Code repository
+              # SCS/SSCA: generate SBOM for the GitHub repository
               - step:
                   type: SscaOrchestration
                   name: scs repo scan
@@ -132,7 +122,7 @@ pipeline:
                     source:
                       type: repository
                       spec:
-                        url: https://git0.harness.io/l7B_kbSEQD2wjrM7PShm5w/PROD/Harness_Split/java-client.git
+                        url: https://github.com/splitio/java-client
                         path: /harness
                         variant_type: branch
                         variant: <+codebase.branch>
