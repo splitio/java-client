@@ -121,7 +121,7 @@ pipeline:
                     source:
                       type: repository
                       spec:
-                        url: <+codebase.gitUrl>
+                        url: https://github.com/splitio/java-client
                         path: /harness
                         variant_type: branch
                         variant: <+codebase.branch>
