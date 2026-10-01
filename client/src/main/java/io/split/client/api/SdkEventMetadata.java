@@ -14,16 +14,16 @@ import java.util.Set;
  */
 public final class SdkEventMetadata {
 
-    private final SdkEventType _type;
-    private final Set<String> _names;
-    private final boolean _initialCacheLoad;
-    private final Long _lastUpdateTimestamp;
+    private final SdkEventType type;
+    private final Set<String> names;
+    private final boolean initialCacheLoad;
+    private final Long lastUpdateTimestamp;
 
     private SdkEventMetadata(SdkEventType type, Set<String> names, boolean initialCacheLoad, Long lastUpdateTimestamp) {
-        _type = type;
-        _names = Collections.unmodifiableSet(names);
-        _initialCacheLoad = initialCacheLoad;
-        _lastUpdateTimestamp = lastUpdateTimestamp;
+        this.type = type;
+        this.names = Collections.unmodifiableSet(names);
+        this.initialCacheLoad = initialCacheLoad;
+        this.lastUpdateTimestamp = lastUpdateTimestamp;
     }
 
     /**
@@ -50,21 +50,21 @@ public final class SdkEventMetadata {
 
     /** @return the update type, or {@code null} for SDK_READY metadata */
     public SdkEventType getType() {
-        return _type;
+        return type;
     }
 
     /** @return the affected flag names; never null, unmodifiable */
     public Set<String> getNames() {
-        return _names;
+        return names;
     }
 
     public boolean isInitialCacheLoad() {
-        return _initialCacheLoad;
+        return initialCacheLoad;
     }
 
     /** @return milliseconds since epoch of the last update, or {@code null} if not applicable */
     public Long getLastUpdateTimestamp() {
-        return _lastUpdateTimestamp;
+        return lastUpdateTimestamp;
     }
 
     @Override
@@ -76,20 +76,20 @@ public final class SdkEventMetadata {
             return false;
         }
         SdkEventMetadata that = (SdkEventMetadata) o;
-        return _initialCacheLoad == that._initialCacheLoad
-                && _type == that._type
-                && _names.equals(that._names)
-                && Objects.equals(_lastUpdateTimestamp, that._lastUpdateTimestamp);
+        return initialCacheLoad == that.initialCacheLoad
+                && type == that.type
+                && names.equals(that.names)
+                && Objects.equals(lastUpdateTimestamp, that.lastUpdateTimestamp);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(_type, _names, _initialCacheLoad, _lastUpdateTimestamp);
+        return Objects.hash(type, names, initialCacheLoad, lastUpdateTimestamp);
     }
 
     @Override
     public String toString() {
-        return "SdkEventMetadata{type=" + _type + ", names=" + _names + ", initialCacheLoad=" + _initialCacheLoad
-                + ", lastUpdateTimestamp=" + _lastUpdateTimestamp + "}";
+        return "SdkEventMetadata{type=" + type + ", names=" + names + ", initialCacheLoad=" + initialCacheLoad
+                + ", lastUpdateTimestamp=" + lastUpdateTimestamp + "}";
     }
 }
