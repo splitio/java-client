@@ -8,7 +8,13 @@ import io.split.engine.common.FetchOptions;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import io.split.client.api.SdkEventMetadata;
+import io.split.client.api.SdkEventType;
+import io.split.client.lifecycle.SdkEventsNotifier;
+import io.split.client.lifecycle.SdkInternalEvent;
+
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import static com.google.common.base.Preconditions.checkNotNull;
@@ -21,10 +27,18 @@ public class SegmentFetcherImp implements SegmentFetcher {
     private final SegmentCacheProducer _segmentCacheProducer;
     private final TelemetryRuntimeProducer _telemetryRuntimeProducer;
 
+    private final SdkEventsNotifier _notifier;
+
     private final Object _lock = new Object();
 
     public SegmentFetcherImp(String segmentName, SegmentChangeFetcher segmentChangeFetcher, SegmentCacheProducer segmentCacheProducer,
                              TelemetryRuntimeProducer telemetryRuntimeProducer) {
+        this(segmentName, segmentChangeFetcher, segmentCacheProducer, telemetryRuntimeProducer, SdkEventsNotifier.NOOP);
+    }
+
+    public SegmentFetcherImp(String segmentName, SegmentChangeFetcher segmentChangeFetcher, SegmentCacheProducer segmentCacheProducer,
+                             TelemetryRuntimeProducer telemetryRuntimeProducer, SdkEventsNotifier notifier) {
+        _notifier = checkNotNull(notifier);
         _segmentName = checkNotNull(segmentName);
         _segmentChangeFetcher = checkNotNull(segmentChangeFetcher);
         _segmentCacheProducer = checkNotNull(segmentCacheProducer);
@@ -98,6 +112,9 @@ public class SegmentFetcherImp implements SegmentFetcher {
             }
 
             _telemetryRuntimeProducer.recordSuccessfulSync(LastSynchronizationRecordsEnum.SEGMENTS, System.currentTimeMillis());
+
+            _notifier.notify(SdkInternalEvent.SEGMENTS_UPDATED,
+                    SdkEventMetadata.update(SdkEventType.SEGMENTS_UPDATE, Collections.<String>emptySet()));
         }
     }
 

@@ -1,6 +1,7 @@
 package io.split.engine.segments;
 
 import com.google.common.collect.Maps;
+import io.split.client.lifecycle.SdkEventsNotifier;
 import io.split.client.utils.SplitExecutorFactory;
 import io.split.engine.common.FetchOptions;
 import io.split.storages.RuleBasedSegmentCacheConsumer;
@@ -43,12 +44,23 @@ public class SegmentSynchronizationTaskImp implements SegmentSynchronizationTask
     private final SplitCacheConsumer _splitCacheConsumer;
     private final RuleBasedSegmentCacheConsumer _ruleBasedSegmentCacheConsumer;
 
+    private final SdkEventsNotifier _notifier;
+
     private ScheduledFuture<?> _scheduledFuture;
 
     public SegmentSynchronizationTaskImp(SegmentChangeFetcher segmentChangeFetcher, long refreshEveryNSeconds, int numThreads,
                                          SegmentCacheProducer segmentCacheProducer, TelemetryRuntimeProducer telemetryRuntimeProducer,
                                          SplitCacheConsumer splitCacheConsumer, ThreadFactory threadFactory,
                                          RuleBasedSegmentCacheConsumer ruleBasedSegmentCacheConsumer) {
+        this(segmentChangeFetcher, refreshEveryNSeconds, numThreads, segmentCacheProducer, telemetryRuntimeProducer,
+                splitCacheConsumer, threadFactory, ruleBasedSegmentCacheConsumer, SdkEventsNotifier.NOOP);
+    }
+
+    public SegmentSynchronizationTaskImp(SegmentChangeFetcher segmentChangeFetcher, long refreshEveryNSeconds, int numThreads,
+                                         SegmentCacheProducer segmentCacheProducer, TelemetryRuntimeProducer telemetryRuntimeProducer,
+                                         SplitCacheConsumer splitCacheConsumer, ThreadFactory threadFactory,
+                                         RuleBasedSegmentCacheConsumer ruleBasedSegmentCacheConsumer, SdkEventsNotifier notifier) {
+        _notifier = checkNotNull(notifier);
         _segmentChangeFetcher = checkNotNull(segmentChangeFetcher);
 
         checkArgument(refreshEveryNSeconds >= 0L);
@@ -77,7 +89,8 @@ public class SegmentSynchronizationTaskImp implements SegmentSynchronizationTask
                 return;
             }
 
-            SegmentFetcher newSegment = new SegmentFetcherImp(segmentName, _segmentChangeFetcher, _segmentCacheProducer, _telemetryRuntimeProducer);
+            SegmentFetcher newSegment = new SegmentFetcherImp(segmentName, _segmentChangeFetcher, _segmentCacheProducer,
+                    _telemetryRuntimeProducer, _notifier);
 
             if (_running.get()) {
                 _scheduledExecutorService.submit(() -> newSegment.fetch(new FetchOptions.Builder().build()));
@@ -195,7 +208,7 @@ public class SegmentSynchronizationTaskImp implements SegmentSynchronizationTask
                 return;
             }
 
-            segment = new SegmentFetcherImp(segmentName, _segmentChangeFetcher, _segmentCacheProducer, _telemetryRuntimeProducer);
+            segment = new SegmentFetcherImp(segmentName, _segmentChangeFetcher, _segmentCacheProducer, _telemetryRuntimeProducer, _notifier);
 
             _segmentFetchers.putIfAbsent(segmentName, segment);
         }

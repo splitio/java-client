@@ -13,6 +13,12 @@ import io.split.engine.common.FetchOptions;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import io.split.client.api.SdkEventMetadata;
+import io.split.client.api.SdkEventType;
+import io.split.client.lifecycle.SdkEventsNotifier;
+import io.split.client.lifecycle.SdkInternalEvent;
+
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -38,6 +44,7 @@ public class SplitFetcherImp implements SplitFetcher {
     private final FlagSetsFilter _flagSetsFilter;
     private final RuleBasedSegmentCacheProducer _ruleBasedSegmentCacheProducer;
     private final RuleBasedSegmentParser _parserRBS;
+    private final SdkEventsNotifier _notifier;
 
     /**
      * Contains all the traffic types that are currently being used by the splits and also the count
@@ -52,6 +59,15 @@ public class SplitFetcherImp implements SplitFetcher {
     public SplitFetcherImp(SplitChangeFetcher splitChangeFetcher, SplitParser parser, SplitCacheProducer splitCacheProducer,
                            TelemetryRuntimeProducer telemetryRuntimeProducer, FlagSetsFilter flagSetsFilter,
                            RuleBasedSegmentParser parserRBS, RuleBasedSegmentCacheProducer ruleBasedSegmentCacheProducer) {
+        this(splitChangeFetcher, parser, splitCacheProducer, telemetryRuntimeProducer, flagSetsFilter, parserRBS,
+                ruleBasedSegmentCacheProducer, SdkEventsNotifier.NOOP);
+    }
+
+    public SplitFetcherImp(SplitChangeFetcher splitChangeFetcher, SplitParser parser, SplitCacheProducer splitCacheProducer,
+                           TelemetryRuntimeProducer telemetryRuntimeProducer, FlagSetsFilter flagSetsFilter,
+                           RuleBasedSegmentParser parserRBS, RuleBasedSegmentCacheProducer ruleBasedSegmentCacheProducer,
+                           SdkEventsNotifier notifier) {
+        _notifier = checkNotNull(notifier);
         _splitChangeFetcher = checkNotNull(splitChangeFetcher);
         _parser = checkNotNull(parser);
         _parserRBS = checkNotNull(parserRBS);
@@ -162,6 +178,17 @@ public class SplitFetcherImp implements SplitFetcher {
             _ruleBasedSegmentCacheProducer.update(ruleBasedSegmentsToUpdate.getToAdd(),
                     ruleBasedSegmentsToUpdate.getToRemove(), change.ruleBasedSegments.t);
             _telemetryRuntimeProducer.recordSuccessfulSync(LastSynchronizationRecordsEnum.SPLITS, System.currentTimeMillis());
+
+            Set<String> flagNames = new HashSet<>(featureFlagsToUpdate.getToRemove());
+            featureFlagsToUpdate.getToAdd().forEach(p -> flagNames.add(p.feature()));
+            boolean rbsChanged = !ruleBasedSegmentsToUpdate.getToAdd().isEmpty()
+                    || !ruleBasedSegmentsToUpdate.getToRemove().isEmpty();
+            if (!flagNames.isEmpty()) {
+                _notifier.notify(SdkInternalEvent.FLAGS_UPDATED, SdkEventMetadata.update(SdkEventType.FLAGS_UPDATE, flagNames));
+            } else if (rbsChanged) {
+                _notifier.notify(SdkInternalEvent.RULE_BASED_SEGMENTS_UPDATED,
+                        SdkEventMetadata.update(SdkEventType.SEGMENTS_UPDATE, Collections.<String>emptySet()));
+            }
         }
 
         return segments;
