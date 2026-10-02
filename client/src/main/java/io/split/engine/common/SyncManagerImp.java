@@ -3,6 +3,7 @@ package io.split.engine.common;
 import com.google.common.annotations.VisibleForTesting;
 import io.split.client.ApiKeyCounter;
 import io.split.client.SplitClientConfig;
+import io.split.client.lifecycle.SdkEventsNotifier;
 import io.split.client.interceptors.FlagSetsFilter;
 import io.split.engine.SDKReadinessGates;
 import io.split.engine.experiments.RuleBasedSegmentParser;
@@ -93,7 +94,8 @@ public class SyncManagerImp implements SyncManager {
                                        SplitParser splitParser,
                                        RuleBasedSegmentParser ruleBasedSegmentParser,
                                        FlagSetsFilter flagSetsFilter,
-                                       RuleBasedSegmentCache ruleBasedSegmentCache) {
+                                       RuleBasedSegmentCache ruleBasedSegmentCache,
+                                       SdkEventsNotifier notifier) {
         LinkedBlockingQueue<PushManager.Status> pushMessages = new LinkedBlockingQueue<>();
         Synchronizer synchronizer = new SynchronizerImp(splitTasks,
                                         splitFetcher,
@@ -103,7 +105,8 @@ public class SyncManagerImp implements SyncManager {
                                         config.streamingRetryDelay(),
                                         config.streamingFetchMaxRetries(),
                                         config.failedAttemptsBeforeLogging(),
-                                        config.getSetsFilter());
+                                        config.getSetsFilter(),
+                                        notifier);
 
         PushManager pushManager = PushManagerImp.build(synchronizer,
                                                         config.streamingServiceURL(),
