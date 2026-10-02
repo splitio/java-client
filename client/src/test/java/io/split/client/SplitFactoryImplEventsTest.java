@@ -26,7 +26,7 @@ public class SplitFactoryImplEventsTest {
     }
 
     private static SplitFactoryImpl localhostFactory() throws Exception {
-        return new SplitFactoryImpl(SplitClientConfig.builder().setBlockUntilReadyTimeout(10000).build());
+        return new SplitFactoryImpl("localhost", SplitClientConfig.builder().setBlockUntilReadyTimeout(10000).build());
     }
 
     @Test
