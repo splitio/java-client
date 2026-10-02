@@ -6,6 +6,7 @@ import io.split.client.api.SplitResult;
 import io.split.client.dtos.*;
 import io.split.client.events.EventsStorageProducer;
 import io.split.client.impressions.Impression;
+import io.split.client.lifecycle.SdkEventsManager;
 import io.split.client.impressions.ImpressionsManager;
 import io.split.client.interceptors.FlagSetsFilter;
 import io.split.engine.SDKReadinessGates;
@@ -53,6 +54,7 @@ public final class SplitClientImpl implements SplitClient {
     private static final Logger _log = LoggerFactory.getLogger(SplitClientImpl.class);
 
     private final SplitFactory _container;
+    private final SdkEventsManager _eventsManager;
     private final SplitCacheConsumer _splitCacheConsumer;
     private final ImpressionsManager _impressionManager;
     private final SplitClientConfig _config;
@@ -75,7 +77,25 @@ public final class SplitClientImpl implements SplitClient {
                            TelemetryConfigProducer telemetryConfigProducer,
                            FlagSetsFilter flagSetsFilter,
                            FallbackTreatmentCalculator fallbackTreatmentCalculator) {
+        this(container, splitCacheConsumer, impressionManager, eventsStorageProducer, config, gates, evaluator,
+                telemetryEvaluationProducer, telemetryConfigProducer, flagSetsFilter, fallbackTreatmentCalculator, null);
+    }
+
+
+    public SplitClientImpl(SplitFactory container,
+                           SplitCacheConsumer splitCacheConsumer,
+                           ImpressionsManager impressionManager,
+                           EventsStorageProducer eventsStorageProducer,
+                           SplitClientConfig config,
+                           SDKReadinessGates gates,
+                           Evaluator evaluator,
+                           TelemetryEvaluationProducer telemetryEvaluationProducer,
+                           TelemetryConfigProducer telemetryConfigProducer,
+                           FlagSetsFilter flagSetsFilter,
+                           FallbackTreatmentCalculator fallbackTreatmentCalculator,
+                           SdkEventsManager eventsManager) {
         _container = container;
+        _eventsManager = eventsManager;
         _splitCacheConsumer = checkNotNull(splitCacheConsumer);
         _impressionManager = checkNotNull(impressionManager);
         _eventsStorageProducer = eventsStorageProducer;
