@@ -3,7 +3,9 @@ package io.split.engine.common;
 import com.google.common.annotations.VisibleForTesting;
 import io.split.client.ApiKeyCounter;
 import io.split.client.SplitClientConfig;
+import io.split.client.api.SdkEventMetadata;
 import io.split.client.lifecycle.SdkEventsNotifier;
+import io.split.client.lifecycle.SdkInternalEvent;
 import io.split.client.interceptors.FlagSetsFilter;
 import io.split.engine.SDKReadinessGates;
 import io.split.engine.experiments.RuleBasedSegmentParser;
@@ -52,6 +54,7 @@ public class SyncManagerImp implements SyncManager {
     private final SplitSynchronizationTask _splitSynchronizationTask;
     private static final long STARTING_SYNC_ALL_BACKOFF_MAX_WAIT_MS = 10000; // 10 seconds max wait
     private  final SplitAPI _splitAPI;
+    private final SdkEventsNotifier _notifier;
 
     @VisibleForTesting
     /* package private */ SyncManagerImp(SplitTasks splitTasks,
@@ -64,6 +67,22 @@ public class SyncManagerImp implements SyncManager {
                                          TelemetrySynchronizer telemetrySynchronizer,
                                          SplitClientConfig config,
                                          SplitAPI splitAPI) {
+        this(splitTasks, streamingEnabledConfig, synchronizer, pushManager, pushMessages, gates, telemetryRuntimeProducer,
+                telemetrySynchronizer, config, splitAPI, SdkEventsNotifier.NOOP);
+    }
+
+    /* package private */ SyncManagerImp(SplitTasks splitTasks,
+                                         boolean streamingEnabledConfig,
+                                         Synchronizer synchronizer,
+                                         PushManager pushManager,
+                                         LinkedBlockingQueue<PushManager.Status> pushMessages,
+                                         SDKReadinessGates gates,
+                                         TelemetryRuntimeProducer telemetryRuntimeProducer,
+                                         TelemetrySynchronizer telemetrySynchronizer,
+                                         SplitClientConfig config,
+                                         SplitAPI splitAPI,
+                                         SdkEventsNotifier notifier) {
+        _notifier = checkNotNull(notifier);
         _streamingEnabledConfig = new AtomicBoolean(streamingEnabledConfig);
         _synchronizer = checkNotNull(synchronizer);
         _pushManager = checkNotNull(pushManager);
@@ -130,7 +149,8 @@ public class SyncManagerImp implements SyncManager {
                                   telemetryRuntimeProducer,
                                   telemetrySynchronizer, 
                                   config,
-                                  splitAPI);
+                                  splitAPI,
+                                  notifier);
     }
 
     @Override
@@ -153,6 +173,7 @@ public class SyncManagerImp implements SyncManager {
                 _log.debug("SyncAll Ready");
             }
             _gates.sdkInternalReady();
+            _notifier.notify(SdkInternalEvent.SDK_READY, SdkEventMetadata.ready(true, null));
             if (_streamingEnabledConfig.get()) {
                 startStreamingMode();
             } else {

@@ -40,8 +40,10 @@ import io.split.client.utils.InputStreamProvider;
 import io.split.client.utils.SDKMetadata;
 import io.split.client.utils.StaticContentInputStreamProvider;
 import io.split.engine.SDKReadinessGates;
+import io.split.client.api.SdkEventMetadata;
 import io.split.client.lifecycle.SdkEventsManager;
 import io.split.client.lifecycle.SdkEventsNotifier;
+import io.split.client.lifecycle.SdkInternalEvent;
 import io.split.engine.common.ConsumerSyncManager;
 import io.split.engine.common.ConsumerSynchronizer;
 import io.split.engine.common.LocalhostSyncManager;
@@ -284,7 +286,7 @@ public class SplitFactoryImpl implements SplitFactory {
         );
 
         // SplitManager
-        _manager = new SplitManagerImpl(splitCache, config, _gates, _telemetryStorageProducer);
+        _manager = new SplitManagerImpl(splitCache, config, _gates, _telemetryStorageProducer, notifier);
 
         // SyncManager
         SplitTasks splitTasks = SplitTasks.build(_splitSynchronizationTask, _segmentSynchronizationTaskImp,
@@ -404,7 +406,8 @@ public class SplitFactoryImpl implements SplitFactory {
         _syncManager = new ConsumerSyncManager(synchronizer);
         _syncManager.start();
 
-        _manager = new SplitManagerImpl(userCustomSplitAdapterConsumer, config, _gates, _telemetryStorageProducer);
+        _manager = new SplitManagerImpl(userCustomSplitAdapterConsumer, config, _gates, _telemetryStorageProducer,
+                _eventsManager::notifyInternalEvent);
         manageSdkReady(config);
     }
 
@@ -497,9 +500,9 @@ public class SplitFactoryImpl implements SplitFactory {
                 config.localhostRefreshEnabled());
 
         // SplitManager
-        _manager = new SplitManagerImpl(splitCache, config, _gates, _telemetryStorageProducer);
+        _manager = new SplitManagerImpl(splitCache, config, _gates, _telemetryStorageProducer, notifier);
         // SyncManager
-        _syncManager = new LocalhostSyncManager(synchronizer, _gates);
+        _syncManager = new LocalhostSyncManager(synchronizer, _gates, notifier);
         _syncManager.start();
 
         // DestroyOnShutDown
@@ -806,6 +809,7 @@ public class SplitFactoryImpl implements SplitFactory {
                 }
             }
             _gates.sdkInternalReady();
+            _eventsManager.notifyInternalEvent(SdkInternalEvent.SDK_READY, SdkEventMetadata.ready(false, null));
             _telemetrySynchronizer.synchronizeConfig(config, System.currentTimeMillis(),
                     ApiKeyCounter.getApiKeyCounterInstance().getFactoryInstances(), new ArrayList<>());
         });

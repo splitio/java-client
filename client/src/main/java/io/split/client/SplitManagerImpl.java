@@ -2,6 +2,8 @@ package io.split.client;
 
 import com.google.common.base.Preconditions;
 import io.split.client.api.SplitView;
+import io.split.client.lifecycle.SdkEventsNotifier;
+import io.split.client.lifecycle.SdkInternalEvent;
 import io.split.engine.SDKReadinessGates;
 import io.split.engine.experiments.ParsedSplit;
 import io.split.inputValidation.SplitNameValidator;
@@ -26,6 +28,7 @@ public class SplitManagerImpl implements SplitManager {
 
     private final SplitCacheConsumer _splitCacheConsumer;
     private final SplitClientConfig _config;
+    private final SdkEventsNotifier _notifier;
     private final SDKReadinessGates _gates;
     private final TelemetryConfigProducer _telemetryConfigProducer;
 
@@ -34,6 +37,15 @@ public class SplitManagerImpl implements SplitManager {
                             SplitClientConfig config,
                             SDKReadinessGates gates,
                             TelemetryConfigProducer telemetryConfigProducer) {
+        this(splitCacheConsumer, config, gates, telemetryConfigProducer, SdkEventsNotifier.NOOP);
+    }
+
+    public SplitManagerImpl(SplitCacheConsumer splitCacheConsumer,
+                            SplitClientConfig config,
+                            SDKReadinessGates gates,
+                            TelemetryConfigProducer telemetryConfigProducer,
+                            SdkEventsNotifier notifier) {
+        _notifier = Preconditions.checkNotNull(notifier);
         _config = Preconditions.checkNotNull(config);
         _splitCacheConsumer = Preconditions.checkNotNull(splitCacheConsumer);
         _gates = Preconditions.checkNotNull(gates);
@@ -96,6 +108,7 @@ public class SplitManagerImpl implements SplitManager {
         }
         if (!_gates.waitUntilInternalReady(_config.blockUntilReady())) {
             _telemetryConfigProducer.recordBURTimeout();
+            _notifier.notify(SdkInternalEvent.SDK_READY_TIMEOUT_REACHED, null);
             throw new TimeoutException("SDK was not ready in " + _config.blockUntilReady()+ " milliseconds");
         }
     }

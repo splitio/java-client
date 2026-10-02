@@ -35,6 +35,10 @@ import static com.google.common.base.Preconditions.checkNotNull;
  * own internal processing thread: commons calls our {@code EventDelivery} synchronously from the caller's thread
  * when replaying to a late subscriber, and serializes all internal-event processing for every event on one
  * background thread. Handing delivery off to our own executor keeps a slow listener from blocking either.
+ *
+ * <p>This layer is purely additive to readiness. {@code SDKReadinessGates} stays the authoritative source for
+ * {@code isSDKReady()}, deliberately not {@link #eventAlreadyTriggered(SdkEvent)}: the commons implementation waits on
+ * its internal process queue with no timeout, which must never happen on the evaluation path.
  */
 public final class SdkEventsManager {
 
@@ -162,6 +166,10 @@ public final class SdkEventsManager {
         List<SdkEventListener> snapshot;
         synchronized (registrationLock) {
             if (destroyed) {
+                return;
+            }
+            // Readiness won the race: a timeout that was notified after SDK_READY was dispatched is dropped.
+            if (event == SdkEvent.SDK_READY_TIMED_OUT && delivered.contains(SdkEvent.SDK_READY)) {
                 return;
             }
             snapshot = new ArrayList<>(listeners.get(event));
