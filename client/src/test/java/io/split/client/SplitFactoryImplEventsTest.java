@@ -67,6 +67,43 @@ public class SplitFactoryImplEventsTest {
     }
 
     @Test
+    public void localhostFactoryDeliversSdkReadyExactlyOnce() throws Exception {
+        SplitFactoryImpl factory = new SplitFactoryImpl(SplitClientConfig.builder()
+                .splitFile("src/test/resources/splits_localhost.json")
+                .setBlockUntilReadyTimeout(10000)
+                .build());
+        try {
+            AtomicInteger calls = new AtomicInteger();
+            eventsManagerOf(factory).on(SdkEvent.SDK_READY, metadata -> calls.incrementAndGet());
+            org.awaitility.Awaitility.await().atMost(5, java.util.concurrent.TimeUnit.SECONDS).until(() -> calls.get() == 1);
+            Thread.sleep(300);
+            org.junit.Assert.assertEquals(1, calls.get());
+        } finally {
+            factory.destroy();
+        }
+    }
+
+    @Test
+    public void consumerFactoryDeliversSdkReadyExactlyOnce() throws Exception {
+        CustomStorageWrapper wrapper = mock(CustomStorageWrapper.class);
+        org.mockito.Mockito.when(wrapper.connect()).thenReturn(true);
+        SplitClientConfig config = SplitClientConfig.builder()
+                .operationMode(OperationMode.CONSUMER)
+                .customStorageWrapper(wrapper)
+                .build();
+        SplitFactoryImpl factory = new SplitFactoryImpl("token", config, wrapper);
+        try {
+            AtomicInteger calls = new AtomicInteger();
+            eventsManagerOf(factory).on(SdkEvent.SDK_READY, metadata -> calls.incrementAndGet());
+            org.awaitility.Awaitility.await().atMost(5, java.util.concurrent.TimeUnit.SECONDS).until(() -> calls.get() == 1);
+            Thread.sleep(300);
+            org.junit.Assert.assertEquals(1, calls.get());
+        } finally {
+            factory.destroy();
+        }
+    }
+
+    @Test
     public void consumerFactoryBuildsAManagerAndDestroysIt() throws Exception {
         CustomStorageWrapper wrapper = mock(CustomStorageWrapper.class);
         SplitClientConfig config = SplitClientConfig.builder()

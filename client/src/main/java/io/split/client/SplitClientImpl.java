@@ -7,6 +7,7 @@ import io.split.client.dtos.*;
 import io.split.client.events.EventsStorageProducer;
 import io.split.client.impressions.Impression;
 import io.split.client.lifecycle.SdkEventsManager;
+import io.split.client.lifecycle.SdkInternalEvent;
 import io.split.client.impressions.ImpressionsManager;
 import io.split.client.interceptors.FlagSetsFilter;
 import io.split.engine.SDKReadinessGates;
@@ -457,6 +458,9 @@ public final class SplitClientImpl implements SplitClient {
             throw new IllegalArgumentException("setBlockUntilReadyTimeout must be positive but in config was: " + _config.blockUntilReady());
         }
         if (!_gates.waitUntilInternalReady(_config.blockUntilReady())) {
+            if (_eventsManager != null) {
+                _eventsManager.notifyInternalEvent(SdkInternalEvent.SDK_READY_TIMEOUT_REACHED, null);
+            }
             throw new TimeoutException("SDK was not ready in " + _config.blockUntilReady() + " milliseconds");
         }
         _log.debug(String.format("Split SDK ready in %d ms", (System.currentTimeMillis() - startTime)));
