@@ -2,6 +2,8 @@ package io.split.client;
 
 import com.google.gson.GsonBuilder;
 import io.split.client.api.Key;
+import io.split.client.api.SdkEvent;
+import io.split.client.api.SdkEventListener;
 import io.split.client.api.SplitResult;
 import io.split.client.dtos.*;
 import io.split.client.events.EventsStorageProducer;
@@ -469,6 +471,41 @@ public final class SplitClientImpl implements SplitClient {
     @Override
     public void destroy() {
         _container.destroy();
+    }
+
+    @Override
+    public void on(SdkEvent event, Runnable callback) {
+        if (callback == null) {
+            _log.warn("on: callback must not be null, the registration was ignored");
+            return;
+        }
+        on(event, metadata -> callback.run());
+    }
+
+    @Override
+    public void on(SdkEvent event, SdkEventListener listener) {
+        if (event == null) {
+            _log.warn("on: event must not be null, the registration was ignored");
+            return;
+        }
+        if (listener == null) {
+            _log.warn("on: listener must not be null, the registration was ignored");
+            return;
+        }
+        if (_eventsManager != null) {
+            _eventsManager.on(event, listener);
+        }
+    }
+
+    @Override
+    public void off(SdkEvent event) {
+        if (event == null) {
+            _log.warn("off: event must not be null, the call was ignored");
+            return;
+        }
+        if (_eventsManager != null) {
+            _eventsManager.off(event);
+        }
     }
 
     private boolean track(Event event) {
