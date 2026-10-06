@@ -110,10 +110,10 @@ public class OkHttpClientImplTest {
         assertThat(headers[1].getValues().get(0), is(equalTo("HTTP/1.1 s_proxy_rio1")));
         assertThat(splitHttpResponse.statusCode(), is(equalTo(200)));
         Assert.assertNotNull(change);
-        Assert.assertEquals(1, change.splits.size());
-        Assert.assertNotNull(change.splits.get(0));
+        Assert.assertEquals(1, change.featureFlags.d.size());
+        Assert.assertNotNull(change.featureFlags.d.get(0));
 
-        Split split = change.splits.get(0);
+        Split split = change.featureFlags.d.get(0);
         Map<String, String> configs = split.configurations;
         Assert.assertEquals(2, configs.size());
         Assert.assertEquals("{\"test\": \"blue\",\"grüne Straße\": 13}", configs.get("on"));
@@ -300,13 +300,13 @@ public class OkHttpClientImplTest {
         PowerMockito.doCallRealMethod().when(okHttpClientImpl).getResponseHeaders(any());
         // Send impressions
         List<TestImpressions> toSend = Arrays.asList(new TestImpressions("t1", Arrays.asList(
-                KeyImpression.fromImpression(new Impression("k1", null, "t1", "on", 123L, "r1", 456L, null)),
-                KeyImpression.fromImpression(new Impression("k2", null, "t1", "on", 123L, "r1", 456L, null)),
-                KeyImpression.fromImpression(new Impression("k3", null, "t1", "on", 123L, "r1", 456L, null)))),
+                KeyImpression.fromImpression(new Impression("k1", null, "t1", "on", 123L, "r1", 456L, null, null)),
+                KeyImpression.fromImpression(new Impression("k2", null, "t1", "on", 123L, "r1", 456L, null, null)),
+                KeyImpression.fromImpression(new Impression("k3", null, "t1", "on", 123L, "r1", 456L, null, null)))),
                 new TestImpressions("t2", Arrays.asList(
-                        KeyImpression.fromImpression(new Impression("k1", null, "t2", "on", 123L, "r1", 456L, null)),
-                        KeyImpression.fromImpression(new Impression("k2", null, "t2", "on", 123L, "r1", 456L, null)),
-                        KeyImpression.fromImpression(new Impression("k3", null, "t2", "on", 123L, "r1", 456L, null)))));
+                        KeyImpression.fromImpression(new Impression("k1", null, "t2", "on", 123L, "r1", 456L, null, null)),
+                        KeyImpression.fromImpression(new Impression("k2", null, "t2", "on", 123L, "r1", 456L, null, null)),
+                        KeyImpression.fromImpression(new Impression("k3", null, "t2", "on", 123L, "r1", 456L, null, null)))));
         String data = Json.toJson(toSend);
         PowerMockito.doCallRealMethod().when(okHttpClientImpl).post(rootTarget, data,
                 additionalHeaders);
