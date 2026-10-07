@@ -10,8 +10,16 @@ plugins {
 def sdkVersion = new XmlSlurper().parse(file('../pom.xml')).version.text()
 assert sdkVersion : 'could not read the version from ../pom.xml'
 
+// The local Maven repo, shared explicitly with the `mvn` calls below. In CI, HOME (where the events install lands)
+// differs from the JVM's user.home, so mavenLocal() alone would look in a different repo than Maven installed to.
+def localRepo = System.getProperty('maven.repo.local') ?: "${System.getenv('HOME') ?: System.getProperty('user.home')}/.m2/repository"
+
 repositories {
-    mavenLocal()
+    maven {
+        url = uri(localRepo)
+        // Only what this build installs; Maven keeps poms without jars for everything else it resolved.
+        content { includeGroup 'io.split.client' }
+    }
     mavenCentral()
 }
 
@@ -55,8 +63,8 @@ tasks.register('installJavaClient', Exec) {
     workingDir = file('..')
     // Build from clean, then install again without `clean`: an incremental build is where the plain module jar used to
     // be reused after shading, turning the non-shaded artifact into the fat jar (see forceCreation in client/pom.xml).
-    def mvn = 'mvn --batch-mode -q install -DskipTests -Dcheckstyle.skip=true'
-    commandLine 'sh', '-c', "mvn --batch-mode -q clean install -DskipTests -Dcheckstyle.skip=true && ${mvn}"
+    def mvn = "mvn --batch-mode -q install -DskipTests -Dcheckstyle.skip=true -Dmaven.repo.local=${localRepo}"
+    commandLine 'sh', '-c', "${mvn.replace(' install', ' clean install')} && ${mvn}"
     inputs.files(fileTree('../client/src/main'), file('../client/pom.xml'), file('../pom.xml'))
     outputs.upToDateWhen { false }
 }
