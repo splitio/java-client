@@ -1,5 +1,5 @@
 4.19.0 (Oct 7, 2026)
-- Added the ability to listen to different events triggered by the SDK. Read more in our docs.
+   - Added the ability to listen to different events triggered by the SDK. Read more in our docs.
    - SDK_UPDATE notify when a flag or user segment has changed
    - SDK_READY notify when the SDK is ready to evaluate
 
