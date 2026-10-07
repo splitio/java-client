@@ -72,6 +72,30 @@ pipeline:
                   when:
                     stageStatus: Success
                     condition: <+codebase.build.type> == "PR"
+              # JDK 17: e2e. Consumes the installed non-shaded artifact like a downstream app does (e2e/build.gradle
+              # runs `mvn install` first, so this step builds the SDK itself; steps do not share a local repo).
+              - step:
+                  type: Run
+                  name: e2e non-shaded jdk17
+                  identifier: e2e_non_shaded_jdk17
+                  spec:
+                    connectorRef: dockerhub
+                    image: maven:3.9-eclipse-temurin-17
+                    shell: Bash
+                    envVariables:
+                      MAVEN_OPTS: "-XX:InitialHeapSize=2G -XX:MaxHeapSize=2G -Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=warn"
+                    command: |-
+                      mkdir -p ${HOME}/.m2 && cp .ci.settings.xml ${HOME}/.m2/settings.xml
+                      mvn --batch-mode -f jvm-commons/pom.xml -pl events -am install -DskipTests
+                      cd e2e && ./gradlew test --console=plain
+                    reports:
+                      type: JUnit
+                      spec:
+                        paths:
+                          - "e2e/build/test-results/test/*.xml"
+                  when:
+                    stageStatus: Success
+                    condition: <+codebase.build.type> == "PR"
               # JDK 8: checkstyle (PR only)
               - step:
                   type: Run
