@@ -92,7 +92,7 @@ pipeline:
                       type: JUnit
                       spec:
                         paths:
-                          - "e2e/build/test-results/test/*.xml"
+                          - "e2e/build/test-results/*/*.xml"
                   when:
                     stageStatus: Success
                     condition: <+codebase.build.type> == "PR"
