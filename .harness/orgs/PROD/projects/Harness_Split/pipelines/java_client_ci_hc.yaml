@@ -86,8 +86,11 @@ pipeline:
                       MAVEN_OPTS: "-XX:InitialHeapSize=2G -XX:MaxHeapSize=2G -Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=warn"
                     command: |-
                       mkdir -p ${HOME}/.m2 && cp .ci.settings.xml ${HOME}/.m2/settings.xml
-                      mvn --batch-mode -f jvm-commons/pom.xml -pl events -am install -DskipTests
-                      cd e2e && ./gradlew test --console=plain
+                      # One explicit local repo for Maven and Gradle: in this container Maven's default repo (/harness/.m2)
+                      # and the JVM's user.home (/root) disagree, so each tool would otherwise use a different one.
+                      M2_REPO="${HOME}/.m2/repository"
+                      mvn --batch-mode -f jvm-commons/pom.xml -pl events -am install -DskipTests -Dmaven.repo.local="${M2_REPO}"
+                      cd e2e && ./gradlew test --console=plain -Dmaven.repo.local="${M2_REPO}"
                     reports:
                       type: JUnit
                       spec:
