@@ -111,6 +111,7 @@ public final class SdkEventsManager {
         if (isDestroyed()) {
             return;
         }
+        LOG.debug("Internal event {} notified, metadata: {}", event, metadata);
         commonsManager.notifyInternalEvent(event, metadata);
     }
 
@@ -177,6 +178,7 @@ public final class SdkEventsManager {
                 delivered.add(event);
             }
         }
+        LOG.debug("Emitting {} to {} listener(s), metadata: {}", event, snapshot.size(), metadata);
         for (SdkEventListener listener : snapshot) {
             safeInvoke(listener, event, metadata);
         }

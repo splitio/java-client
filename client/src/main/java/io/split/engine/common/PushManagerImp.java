@@ -2,6 +2,7 @@ package io.split.engine.common;
 
 import com.google.common.annotations.VisibleForTesting;
 import io.split.client.interceptors.FlagSetsFilter;
+import io.split.client.lifecycle.SdkEventsNotifier;
 import io.split.engine.experiments.RuleBasedSegmentParser;
 import io.split.engine.experiments.SplitParser;
 import io.split.engine.sse.AuthApiClient;
@@ -84,8 +85,26 @@ public class PushManagerImp implements PushManager {
                                        FlagSetsFilter flagSetsFilter,
                                        RuleBasedSegmentCache ruleBasedSegmentCache,
                                        RuleBasedSegmentParser ruleBasedSegmentParser) {
+        return build(synchronizer, streamingUrl, authUrl, splitAPI, statusMessages, telemetryRuntimeProducer, threadFactory,
+                splitParser, splitCacheProducer, flagSetsFilter, ruleBasedSegmentCache, ruleBasedSegmentParser,
+                SdkEventsNotifier.NOOP);
+    }
+
+    public static PushManagerImp build(Synchronizer synchronizer,
+                                       String streamingUrl,
+                                       String authUrl,
+                                       SplitAPI splitAPI,
+                                       LinkedBlockingQueue<PushManager.Status> statusMessages,
+                                       TelemetryRuntimeProducer telemetryRuntimeProducer,
+                                       ThreadFactory threadFactory,
+                                       SplitParser splitParser,
+                                       SplitCacheProducer splitCacheProducer,
+                                       FlagSetsFilter flagSetsFilter,
+                                       RuleBasedSegmentCache ruleBasedSegmentCache,
+                                       RuleBasedSegmentParser ruleBasedSegmentParser,
+                                       SdkEventsNotifier notifier) {
         FeatureFlagsWorker featureFlagsWorker = new FeatureFlagWorkerImp(synchronizer, splitParser, ruleBasedSegmentParser, splitCacheProducer,
-                ruleBasedSegmentCache, telemetryRuntimeProducer, flagSetsFilter);
+                ruleBasedSegmentCache, telemetryRuntimeProducer, flagSetsFilter, notifier);
         Worker<SegmentQueueDto> segmentWorker = new SegmentsWorkerImp(synchronizer);
         PushStatusTracker pushStatusTracker = new PushStatusTrackerImp(statusMessages, telemetryRuntimeProducer);
 
