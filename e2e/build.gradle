@@ -1,0 +1,54 @@
+// Consumes the non-shaded java-client exactly like testing-java does: from mavenLocal,
+// with the `non-shaded` classifier. It builds and installs java-client first, so the test
+// always runs against the current source. Nothing here provides io.harness:events: a real
+// consumer only gets what the published pom declares, so the artifact must bundle it.
+plugins {
+    id 'java'
+}
+
+def sdkVersion = '4.19.0-rc2'
+
+repositories {
+    mavenLocal()
+    mavenCentral()
+}
+
+dependencies {
+    testImplementation("io.split.client:java-client:${sdkVersion}:non-shaded") {
+        exclude group: 'org.eclipse.jetty'
+        exclude group: 'javax.servlet', module: 'servlet-api'
+        // mavenLocal may hold io.harness:events from a local jvm-commons build; never let it mask a missing bundle.
+        exclude group: 'io.harness'
+    }
+    // Required by the non-shaded java-client (same as testing-java, which declares guava and httpclient5 itself).
+    testImplementation 'com.google.guava:guava:33.4.8-jre'
+    testImplementation 'org.apache.httpcomponents.client5:httpclient5:5.5'
+    testImplementation 'org.slf4j:slf4j-simple:1.7.36'
+    testImplementation 'junit:junit:4.13.1'
+}
+
+java {
+    sourceCompatibility = JavaVersion.VERSION_1_8
+    targetCompatibility = JavaVersion.VERSION_1_8
+}
+
+// Install the SDK modules into ~/.m2 before the tests resolve them.
+tasks.register('installJavaClient', Exec) {
+    workingDir = file('..')
+    commandLine 'mvn', '--batch-mode', '-q', 'install', '-DskipTests', '-Dcheckstyle.skip=true'
+    inputs.files(fileTree('../client/src/main'), file('../client/pom.xml'), file('../pom.xml'))
+    outputs.upToDateWhen { false }
+}
+
+// compileTestJava resolves the artifact, so the install has to come before it, not just before `test`.
+tasks.named('compileTestJava') {
+    dependsOn 'installJavaClient'
+}
+
+tasks.named('test') {
+    testLogging {
+        events 'passed', 'failed'
+        exceptionFormat 'full'
+        showStandardStreams = true
+    }
+}

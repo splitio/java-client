@@ -5,10 +5,10 @@
     <parent>
         <groupId>io.split.client</groupId>
         <artifactId>java-client-parent</artifactId>
-        <version>4.19.0-rc</version>
+        <version>4.19.0-rc2</version>
     </parent>
 
-    <version>4.19.0-rc</version>
+    <version>4.19.0-rc2</version>
     <artifactId>java-client</artifactId>
     <packaging>jar</packaging>
     <name>Java Client</name>
