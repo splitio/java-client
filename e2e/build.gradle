@@ -1,5 +1,5 @@
-// Consumes the non-shaded java-client exactly like testing-java does: from mavenLocal,
-// with the `non-shaded` classifier. It builds and installs java-client first, so the test
+// Mimics a real consumer of java-client: resolves it from mavenLocal, once with the
+// `non-shaded` classifier and once as the fat jar. It builds and installs java-client first, so the test
 // always runs against the current source. Nothing here provides io.harness:events: a real
 // consumer only gets what the published pom declares, so the artifact must bundle it.
 plugins {
@@ -22,7 +22,7 @@ dependencies {
         // mavenLocal may hold io.harness:events from a local jvm-commons build; never let it mask a missing bundle.
         exclude group: 'io.harness'
     }
-    // Required by the non-shaded java-client (same as testing-java, which declares guava and httpclient5 itself).
+    // Required by the non-shaded java-client (a real non-shaded consumer declares these itself).
     testImplementation 'com.google.guava:guava:33.4.8-jre'
     testImplementation 'org.apache.httpcomponents.client5:httpclient5:5.5'
     // Only the localhost YAML file this test reads needs it; the real SDK path does not.
