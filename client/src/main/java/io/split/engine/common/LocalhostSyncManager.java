@@ -1,5 +1,8 @@
 package io.split.engine.common;
 
+import io.split.client.api.SdkEventMetadata;
+import io.split.client.lifecycle.SdkEventsNotifier;
+import io.split.client.lifecycle.SdkInternalEvent;
 import io.split.engine.SDKReadinessGates;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -14,9 +17,17 @@ public class LocalhostSyncManager implements SyncManager {
     private final Synchronizer _localhostSynchronizer;
     private final SDKReadinessGates _gates;
 
+    private final SdkEventsNotifier _notifier;
+
     public LocalhostSyncManager(Synchronizer localhostSynchronizer, SDKReadinessGates sdkReadinessGates){
+        this(localhostSynchronizer, sdkReadinessGates, SdkEventsNotifier.NOOP);
+    }
+
+    public LocalhostSyncManager(Synchronizer localhostSynchronizer, SDKReadinessGates sdkReadinessGates,
+                                SdkEventsNotifier notifier) {
         _localhostSynchronizer = checkNotNull(localhostSynchronizer);
         _gates = sdkReadinessGates;
+        _notifier = checkNotNull(notifier);
     }
 
     @Override
@@ -26,6 +37,7 @@ public class LocalhostSyncManager implements SyncManager {
             return;
         }
         _gates.sdkInternalReady();
+        _notifier.notify(SdkInternalEvent.SDK_READY, SdkEventMetadata.ready(true, null));
         _localhostSynchronizer.startPeriodicFetching();
     }
 

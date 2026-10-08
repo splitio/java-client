@@ -3,6 +3,8 @@ package io.split.client.testing;
 import io.split.client.SplitAndKey;
 import io.split.client.SplitClient;
 import io.split.client.api.Key;
+import io.split.client.api.SdkEvent;
+import io.split.client.api.SdkEventListener;
 import io.split.client.api.SplitResult;
 import io.split.client.dtos.EvaluationOptions;
 import io.split.grammar.Treatments;
@@ -318,6 +320,21 @@ public class SplitClientForTest implements SplitClient {
     @Override
     public void destroy() {
 
+    }
+
+    @Override
+    public void on(SdkEvent event, Runnable callback) {
+        // events are not produced by the test client
+    }
+
+    @Override
+    public void on(SdkEvent event, SdkEventListener listener) {
+        // events are not produced by the test client
+    }
+
+    @Override
+    public void off(SdkEvent event) {
+        // events are not produced by the test client
     }
 
     @Override

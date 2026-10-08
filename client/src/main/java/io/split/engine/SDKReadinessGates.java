@@ -8,6 +8,12 @@ import java.util.concurrent.TimeUnit;
 
 /**
  * Created by adilaijaz on 4/27/16.
+ *
+ * <p>Authoritative source for {@code isSDKReady()} and {@code blockUntilReady()}.
+ *
+ * <p>The SDK events layer ({@code SdkEventsManager}) is additive and is notified alongside {@link #sdkInternalReady()}
+ * by its callers; it is deliberately not consulted here. {@code eventAlreadyTriggered} in the commons library blocks
+ * on an internal queue with no timeout, which would add a cross-thread wait to the evaluation path.
  */
 public class SDKReadinessGates {
     private static final Logger _log = LoggerFactory.getLogger(SDKReadinessGates.class);

@@ -1,0 +1,3 @@
+[submodule "jvm-commons"]
+	path = jvm-commons
+	url = git@github.com:splitio/jvm-commons.git

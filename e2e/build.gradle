@@ -1,0 +1,99 @@
+// Mimics a real consumer of java-client: resolves it from mavenLocal, once with the
+// `non-shaded` classifier and once as the fat jar. It builds and installs java-client first, so the test
+// always runs against the current source. Nothing here provides io.harness:events: a real
+// consumer only gets what the published pom declares, so the artifact must bundle it.
+plugins {
+    id 'java'
+}
+
+// Single source of truth: the parent pom's own version.
+def sdkVersion = new XmlSlurper().parse(file('../pom.xml')).version.text()
+assert sdkVersion : 'could not read the version from ../pom.xml'
+
+// The local Maven repo, shared explicitly with the `mvn` calls below. In CI, HOME (where the events install lands)
+// differs from the JVM's user.home, so mavenLocal() alone would look in a different repo than Maven installed to.
+def localRepo = System.getProperty('maven.repo.local') ?: "${System.getenv('HOME') ?: System.getProperty('user.home')}/.m2/repository"
+
+repositories {
+    maven {
+        url = uri(localRepo)
+        // Only what this build installs; Maven keeps poms without jars for everything else it resolved.
+        content { includeGroup 'io.split.client' }
+    }
+    mavenCentral()
+}
+
+dependencies {
+    testImplementation("io.split.client:java-client:${sdkVersion}:non-shaded") {
+        exclude group: 'org.eclipse.jetty'
+        exclude group: 'javax.servlet', module: 'servlet-api'
+        // mavenLocal may hold io.harness:events from a local jvm-commons build; never let it mask a missing bundle.
+        exclude group: 'io.harness'
+    }
+    // Required by the non-shaded java-client (a real non-shaded consumer declares these itself).
+    testImplementation 'com.google.guava:guava:33.4.8-jre'
+    testImplementation 'org.apache.httpcomponents.client5:httpclient5:5.5'
+    // Only the localhost YAML file this test reads needs it; the real SDK path does not.
+    testImplementation 'org.yaml:snakeyaml:2.0'
+    testImplementation 'com.google.code.gson:gson:2.13.1'
+    testImplementation 'org.slf4j:slf4j-simple:1.7.36'
+    testImplementation 'junit:junit:4.13.1'
+}
+
+// The default (fully shaded) artifact has its own source set: the same coordinates resolve with and without the
+// `non-shaded` classifier, which one configuration cannot do.
+sourceSets {
+    fatJar // src/fatJar/{java,resources}
+}
+
+dependencies {
+    // Deliberately nothing but the SDK: the fat jar must carry guava, httpclient5 and snakeyaml itself.
+    fatJarImplementation "io.split.client:java-client:${sdkVersion}"
+    fatJarImplementation 'org.slf4j:slf4j-simple:1.7.36'
+    fatJarImplementation 'junit:junit:4.13.1'
+}
+
+java {
+    sourceCompatibility = JavaVersion.VERSION_1_8
+    targetCompatibility = JavaVersion.VERSION_1_8
+}
+
+// Install the SDK modules into ~/.m2 before the tests resolve them.
+tasks.register('installJavaClient', Exec) {
+    workingDir = file('..')
+    // Build from clean, then install again without `clean`: an incremental build is where the plain module jar used to
+    // be reused after shading, turning the non-shaded artifact into the fat jar (see forceCreation in client/pom.xml).
+    def mvn = "mvn --batch-mode -q install -DskipTests -Dcheckstyle.skip=true -Dmaven.repo.local=${localRepo}"
+    commandLine 'sh', '-c', "${mvn.replace(' install', ' clean install')} && ${mvn}"
+    inputs.files(fileTree('../client/src/main'), file('../client/pom.xml'), file('../pom.xml'))
+    outputs.upToDateWhen { false }
+}
+
+// compileTestJava resolves the artifact, so the install has to come before it, not just before `test`.
+tasks.named('compileTestJava') {
+    dependsOn 'installJavaClient'
+}
+tasks.named('compileFatJarJava') {
+    dependsOn 'installJavaClient'
+}
+
+tasks.register('fatJarTest', Test) {
+    description = 'Runs the e2e tests against the default (fully shaded) java-client artifact.'
+    group = 'verification'
+    testClassesDirs = sourceSets.fatJar.output.classesDirs
+    classpath = sourceSets.fatJar.runtimeClasspath
+    testLogging {
+        events 'passed', 'failed'
+        exceptionFormat 'full'
+    }
+}
+
+tasks.named('test') {
+    // `./gradlew test` covers both artifacts; the finalizer runs even when this task fails.
+    finalizedBy 'fatJarTest'
+    testLogging {
+        events 'passed', 'failed'
+        exceptionFormat 'full'
+        showStandardStreams = true
+    }
+}
