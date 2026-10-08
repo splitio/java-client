@@ -1,6 +1,10 @@
 package io.split.engine.common;
 
+import io.split.client.api.SdkEventMetadata;
+import io.split.client.api.SdkEventType;
 import io.split.client.events.EventsTask;
+import io.split.client.lifecycle.SdkEventsNotifier;
+import io.split.client.lifecycle.SdkInternalEvent;
 import io.split.client.impressions.ImpressionsManager;
 import io.split.client.impressions.UniqueKeysTracker;
 import io.split.engine.experiments.FetchResult;
@@ -16,6 +20,7 @@ import io.split.telemetry.synchronizer.TelemetrySyncTask;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -45,6 +50,7 @@ public class SynchronizerImp implements Synchronizer {
     private final int _onDemandFetchMaxRetries;
     private final int _failedAttemptsBeforeLogging;
     private final String _sets;
+    private final SdkEventsNotifier _notifier;
 
     public SynchronizerImp(SplitTasks splitTasks,
                            SplitFetcher splitFetcher,
@@ -55,6 +61,21 @@ public class SynchronizerImp implements Synchronizer {
                            int onDemandFetchMaxRetries,
                            int failedAttemptsBeforeLogging,
                            HashSet<String> sets) {
+        this(splitTasks, splitFetcher, splitCacheProducer, segmentCacheProducer, ruleBasedSegmentCacheProducer,
+                onDemandFetchRetryDelayMs, onDemandFetchMaxRetries, failedAttemptsBeforeLogging, sets, SdkEventsNotifier.NOOP);
+    }
+
+    public SynchronizerImp(SplitTasks splitTasks,
+                           SplitFetcher splitFetcher,
+                           SplitCacheProducer splitCacheProducer,
+                           SegmentCacheProducer segmentCacheProducer,
+                           RuleBasedSegmentCacheProducer ruleBasedSegmentCacheProducer,
+                           int onDemandFetchRetryDelayMs,
+                           int onDemandFetchMaxRetries,
+                           int failedAttemptsBeforeLogging,
+                           HashSet<String> sets,
+                           SdkEventsNotifier notifier) {
+        _notifier = checkNotNull(notifier);
         _splitSynchronizationTask = checkNotNull(splitTasks.getSplitSynchronizationTask());
         _splitFetcher = checkNotNull(splitFetcher);
         _segmentSynchronizationTaskImp = checkNotNull(splitTasks.getSegmentSynchronizationTask());
@@ -188,6 +209,8 @@ public class SynchronizerImp implements Synchronizer {
         if (splitKillNotification.getChangeNumber() > _splitCacheProducer.getChangeNumber()) {
             _splitCacheProducer.kill(splitKillNotification.getSplitName(), splitKillNotification.getDefaultTreatment(),
                     splitKillNotification.getChangeNumber());
+            _notifier.notify(SdkInternalEvent.FLAG_KILLED_NOTIFICATION,
+                    SdkEventMetadata.update(SdkEventType.FLAGS_UPDATE, Collections.singleton(splitKillNotification.getSplitName())));
             refreshSplits(splitKillNotification.getChangeNumber(), 0L);
         }
     }

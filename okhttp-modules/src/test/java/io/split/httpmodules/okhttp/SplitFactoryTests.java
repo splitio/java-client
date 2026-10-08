@@ -6,6 +6,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.stubbing.Answer;
 import org.powermock.api.mockito.PowerMockito;
+import org.powermock.core.classloader.annotations.PowerMockIgnore;
 import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.junit4.PowerMockRunner;
 
@@ -22,6 +23,8 @@ import static org.powermock.api.mockito.PowerMockito.whenNew;
 
 @RunWith(PowerMockRunner.class)
 @PrepareForTest(OkHttpModule.class)
+// jdk.net loads a JDK native library, which cannot be loaded again from PowerMock's classloader.
+@PowerMockIgnore("jdk.net.*")
 public class SplitFactoryTests {
     @Test
     public void testFactoryCreatingClient() throws Exception {

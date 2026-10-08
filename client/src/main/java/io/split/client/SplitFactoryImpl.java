@@ -40,6 +40,10 @@ import io.split.client.utils.InputStreamProvider;
 import io.split.client.utils.SDKMetadata;
 import io.split.client.utils.StaticContentInputStreamProvider;
 import io.split.engine.SDKReadinessGates;
+import io.split.client.api.SdkEventMetadata;
+import io.split.client.lifecycle.SdkEventsManager;
+import io.split.client.lifecycle.SdkEventsNotifier;
+import io.split.client.lifecycle.SdkInternalEvent;
 import io.split.engine.common.ConsumerSyncManager;
 import io.split.engine.common.ConsumerSynchronizer;
 import io.split.engine.common.LocalhostSyncManager;
@@ -167,6 +171,7 @@ public class SplitFactoryImpl implements SplitFactory {
     private final SplitSynchronizationTask _splitSynchronizationTask;
     private final EventsTask _eventsTask;
     private final SyncManager _syncManager;
+    private final SdkEventsManager _eventsManager;
     private SplitHttpClient _splitHttpClient;
     private final UserStorageWrapper _userStorageWrapper;
     private final ImpressionsSender _impressionsSender;
@@ -223,14 +228,18 @@ public class SplitFactoryImpl implements SplitFactory {
                 telemetryStorage,
                 splitCache, _segmentCache, telemetryStorage, _startTime);
 
+        // Events manager: must exist (dispatchers registered) before any sync task can start, so SDK_READY can't be lost.
+        _eventsManager = SdkEventsManager.create(config.getThreadFactory());
+        SdkEventsNotifier notifier = _eventsManager::notifyInternalEvent;
+
         // Segments
-        _segmentSynchronizationTaskImp = buildSegments(config, segmentCache, splitCache, ruleBasedSegmentCache);
+        _segmentSynchronizationTaskImp = buildSegments(config, segmentCache, splitCache, ruleBasedSegmentCache, notifier);
 
         SplitParser splitParser = new SplitParser();
         RuleBasedSegmentParser ruleBasedSegmentParser = new RuleBasedSegmentParser();
         // SplitFetcher
         _splitFetcher = buildSplitFetcher(splitCache, splitParser, flagSetsFilter,
-                ruleBasedSegmentParser, ruleBasedSegmentCache, config.isSdkEndpointOverridden());
+                ruleBasedSegmentParser, ruleBasedSegmentCache, config.isSdkEndpointOverridden(), notifier);
 
         // SplitSynchronizationTask
         _splitSynchronizationTask = new SplitSynchronizationTask(_splitFetcher,
@@ -272,11 +281,12 @@ public class SplitFactoryImpl implements SplitFactory {
                 _telemetryStorageProducer, // TelemetryEvaluation instance
                 _telemetryStorageProducer, // TelemetryConfiguration instance
                 flagSetsFilter,
-                fallbackTreatmentCalculatorImp
+                fallbackTreatmentCalculatorImp,
+                _eventsManager
         );
 
         // SplitManager
-        _manager = new SplitManagerImpl(splitCache, config, _gates, _telemetryStorageProducer);
+        _manager = new SplitManagerImpl(splitCache, config, _gates, _telemetryStorageProducer, notifier);
 
         // SyncManager
         SplitTasks splitTasks = SplitTasks.build(_splitSynchronizationTask, _segmentSynchronizationTaskImp,
@@ -286,7 +296,7 @@ public class SplitFactoryImpl implements SplitFactory {
 
         _syncManager = SyncManagerImp.build(splitTasks, _splitFetcher, splitCache, splitAPI,
                 segmentCache, _gates, _telemetryStorageProducer, _telemetrySynchronizer, config, splitParser,
-                ruleBasedSegmentParser, flagSetsFilter, ruleBasedSegmentCache);
+                ruleBasedSegmentParser, flagSetsFilter, ruleBasedSegmentCache, notifier);
         _syncManager.start();
 
         // DestroyOnShutDown
@@ -349,6 +359,10 @@ public class SplitFactoryImpl implements SplitFactory {
         // SDKReadinessGates
         _gates = new SDKReadinessGates();
 
+        // Events manager. Consumer mode has no sync engine, so nothing is wired to notify it: SDK_UPDATE is not
+        // supported here (spec p.3) and only SDK_READY is produced (FME-5).
+        _eventsManager = SdkEventsManager.create(config.getThreadFactory());
+
         _telemetrySynchronizer = new TelemetryConsumerSubmitter(customStorageWrapper, _sdkMetadata);
         UserCustomRuleBasedSegmentAdapterConsumer userCustomRuleBasedSegmentAdapterConsumer =
                 new UserCustomRuleBasedSegmentAdapterConsumer(customStorageWrapper);
@@ -384,14 +398,16 @@ public class SplitFactoryImpl implements SplitFactory {
                 _telemetryStorageProducer, // TelemetryEvaluation instance
                 _telemetryStorageProducer, // TelemetryConfiguration instance
                 flagSetsFilter,
-                fallbackTreatmentCalculatorImp
+                fallbackTreatmentCalculatorImp,
+                _eventsManager
         );
 
         // SyncManager
         _syncManager = new ConsumerSyncManager(synchronizer);
         _syncManager.start();
 
-        _manager = new SplitManagerImpl(userCustomSplitAdapterConsumer, config, _gates, _telemetryStorageProducer);
+        _manager = new SplitManagerImpl(userCustomSplitAdapterConsumer, config, _gates, _telemetryStorageProducer,
+                _eventsManager::notifyInternalEvent);
         manageSdkReady(config);
     }
 
@@ -420,6 +436,10 @@ public class SplitFactoryImpl implements SplitFactory {
         _gates = new SDKReadinessGates();
         _segmentCache = segmentCache;
 
+        // Events manager: constructed before any sync task starts.
+        _eventsManager = SdkEventsManager.create(config.getThreadFactory());
+        SdkEventsNotifier notifier = _eventsManager::notifyInternalEvent;
+
         // SegmentFetcher
 
         SegmentChangeFetcher segmentChangeFetcher = new LocalhostSegmentFetcherNoop();
@@ -434,7 +454,8 @@ public class SplitFactoryImpl implements SplitFactory {
                 _telemetryStorageProducer,
                 _splitCache,
                 config.getThreadFactory(),
-                ruleBasedSegmentCache);
+                ruleBasedSegmentCache,
+                notifier);
 
         // SplitFetcher
         SplitChangeFetcher splitChangeFetcher = createSplitChangeFetcher(config);
@@ -442,7 +463,7 @@ public class SplitFactoryImpl implements SplitFactory {
         RuleBasedSegmentParser ruleBasedSegmentParser = new RuleBasedSegmentParser();
 
         _splitFetcher = new SplitFetcherImp(splitChangeFetcher, splitParser, splitCache, _telemetryStorageProducer,
-                flagSetsFilter, ruleBasedSegmentParser, ruleBasedSegmentCache);
+                flagSetsFilter, ruleBasedSegmentParser, ruleBasedSegmentCache, notifier);
 
         // SplitSynchronizationTask
         _splitSynchronizationTask = new SplitSynchronizationTask(_splitFetcher, splitCache,
@@ -470,7 +491,8 @@ public class SplitFactoryImpl implements SplitFactory {
                 _telemetryStorageProducer, // TelemetryEvaluation instance
                 _telemetryStorageProducer, // TelemetryConfiguration instance
                 flagSetsFilter,
-                fallbackTreatmentCalculatorImp
+                fallbackTreatmentCalculatorImp,
+                _eventsManager
         );
 
         // Synchronizer
@@ -478,9 +500,9 @@ public class SplitFactoryImpl implements SplitFactory {
                 config.localhostRefreshEnabled());
 
         // SplitManager
-        _manager = new SplitManagerImpl(splitCache, config, _gates, _telemetryStorageProducer);
+        _manager = new SplitManagerImpl(splitCache, config, _gates, _telemetryStorageProducer, notifier);
         // SyncManager
-        _syncManager = new LocalhostSyncManager(synchronizer, _gates);
+        _syncManager = new LocalhostSyncManager(synchronizer, _gates, notifier);
         _syncManager.start();
 
         // DestroyOnShutDown
@@ -511,6 +533,7 @@ public class SplitFactoryImpl implements SplitFactory {
         }
         try {
             _log.info("Shutdown called for split");
+            _eventsManager.destroy();
             _syncManager.shutdown();
             _log.info("Successful shutdown of syncManager");
             if (OperationMode.STANDALONE.equals(_operationMode)) {
@@ -692,7 +715,8 @@ public class SplitFactoryImpl implements SplitFactory {
 
     private SegmentSynchronizationTaskImp buildSegments(SplitClientConfig config,
             SegmentCacheProducer segmentCacheProducer,
-            SplitCacheConsumer splitCacheConsumer, RuleBasedSegmentCacheConsumer ruleBasedSegmentCache) throws URISyntaxException {
+            SplitCacheConsumer splitCacheConsumer, RuleBasedSegmentCacheConsumer ruleBasedSegmentCache,
+            SdkEventsNotifier notifier) throws URISyntaxException {
         SegmentChangeFetcher segmentChangeFetcher = HttpSegmentChangeFetcher.create(_splitHttpClient, _rootTarget,
                 _telemetryStorageProducer);
 
@@ -703,16 +727,18 @@ public class SplitFactoryImpl implements SplitFactory {
                 _telemetryStorageProducer,
                 splitCacheConsumer,
                 config.getThreadFactory(),
-                ruleBasedSegmentCache);
+                ruleBasedSegmentCache,
+                notifier);
     }
 
     private SplitFetcher buildSplitFetcher(SplitCacheProducer splitCacheProducer, SplitParser splitParser,
             FlagSetsFilter flagSetsFilter, RuleBasedSegmentParser ruleBasedSegmentParser,
-           RuleBasedSegmentCacheProducer ruleBasedSegmentCache, boolean isRootURIOverriden) throws URISyntaxException {
+           RuleBasedSegmentCacheProducer ruleBasedSegmentCache, boolean isRootURIOverriden,
+           SdkEventsNotifier notifier) throws URISyntaxException {
         SplitChangeFetcher splitChangeFetcher = HttpSplitChangeFetcher.create(_splitHttpClient, _rootTarget,
                 _telemetryStorageProducer, isRootURIOverriden);
         return new SplitFetcherImp(splitChangeFetcher, splitParser, splitCacheProducer, _telemetryStorageProducer,
-                flagSetsFilter, ruleBasedSegmentParser, ruleBasedSegmentCache);
+                flagSetsFilter, ruleBasedSegmentParser, ruleBasedSegmentCache, notifier);
     }
 
     private ImpressionsManagerImpl buildImpressionsManager(SplitClientConfig config,
@@ -783,6 +809,7 @@ public class SplitFactoryImpl implements SplitFactory {
                 }
             }
             _gates.sdkInternalReady();
+            _eventsManager.notifyInternalEvent(SdkInternalEvent.SDK_READY, SdkEventMetadata.ready(false, null));
             _telemetrySynchronizer.synchronizeConfig(config, System.currentTimeMillis(),
                     ApiKeyCounter.getApiKeyCounterInstance().getFactoryInstances(), new ArrayList<>());
         });

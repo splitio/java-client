@@ -2,10 +2,14 @@ package io.split.client;
 
 import com.google.gson.GsonBuilder;
 import io.split.client.api.Key;
+import io.split.client.api.SdkEvent;
+import io.split.client.api.SdkEventListener;
 import io.split.client.api.SplitResult;
 import io.split.client.dtos.*;
 import io.split.client.events.EventsStorageProducer;
 import io.split.client.impressions.Impression;
+import io.split.client.lifecycle.SdkEventsManager;
+import io.split.client.lifecycle.SdkInternalEvent;
 import io.split.client.impressions.ImpressionsManager;
 import io.split.client.interceptors.FlagSetsFilter;
 import io.split.engine.SDKReadinessGates;
@@ -53,6 +57,7 @@ public final class SplitClientImpl implements SplitClient {
     private static final Logger _log = LoggerFactory.getLogger(SplitClientImpl.class);
 
     private final SplitFactory _container;
+    private final SdkEventsManager _eventsManager;
     private final SplitCacheConsumer _splitCacheConsumer;
     private final ImpressionsManager _impressionManager;
     private final SplitClientConfig _config;
@@ -75,7 +80,25 @@ public final class SplitClientImpl implements SplitClient {
                            TelemetryConfigProducer telemetryConfigProducer,
                            FlagSetsFilter flagSetsFilter,
                            FallbackTreatmentCalculator fallbackTreatmentCalculator) {
+        this(container, splitCacheConsumer, impressionManager, eventsStorageProducer, config, gates, evaluator,
+                telemetryEvaluationProducer, telemetryConfigProducer, flagSetsFilter, fallbackTreatmentCalculator, null);
+    }
+
+
+    public SplitClientImpl(SplitFactory container,
+                           SplitCacheConsumer splitCacheConsumer,
+                           ImpressionsManager impressionManager,
+                           EventsStorageProducer eventsStorageProducer,
+                           SplitClientConfig config,
+                           SDKReadinessGates gates,
+                           Evaluator evaluator,
+                           TelemetryEvaluationProducer telemetryEvaluationProducer,
+                           TelemetryConfigProducer telemetryConfigProducer,
+                           FlagSetsFilter flagSetsFilter,
+                           FallbackTreatmentCalculator fallbackTreatmentCalculator,
+                           SdkEventsManager eventsManager) {
         _container = container;
+        _eventsManager = eventsManager;
         _splitCacheConsumer = checkNotNull(splitCacheConsumer);
         _impressionManager = checkNotNull(impressionManager);
         _eventsStorageProducer = eventsStorageProducer;
@@ -437,6 +460,9 @@ public final class SplitClientImpl implements SplitClient {
             throw new IllegalArgumentException("setBlockUntilReadyTimeout must be positive but in config was: " + _config.blockUntilReady());
         }
         if (!_gates.waitUntilInternalReady(_config.blockUntilReady())) {
+            if (_eventsManager != null) {
+                _eventsManager.notifyInternalEvent(SdkInternalEvent.SDK_READY_TIMEOUT_REACHED, null);
+            }
             throw new TimeoutException("SDK was not ready in " + _config.blockUntilReady() + " milliseconds");
         }
         _log.debug(String.format("Split SDK ready in %d ms", (System.currentTimeMillis() - startTime)));
@@ -445,6 +471,41 @@ public final class SplitClientImpl implements SplitClient {
     @Override
     public void destroy() {
         _container.destroy();
+    }
+
+    @Override
+    public void on(SdkEvent event, Runnable callback) {
+        if (callback == null) {
+            _log.warn("on: callback must not be null, the registration was ignored");
+            return;
+        }
+        on(event, metadata -> callback.run());
+    }
+
+    @Override
+    public void on(SdkEvent event, SdkEventListener listener) {
+        if (event == null) {
+            _log.warn("on: event must not be null, the registration was ignored");
+            return;
+        }
+        if (listener == null) {
+            _log.warn("on: listener must not be null, the registration was ignored");
+            return;
+        }
+        if (_eventsManager != null) {
+            _eventsManager.on(event, listener);
+        }
+    }
+
+    @Override
+    public void off(SdkEvent event) {
+        if (event == null) {
+            _log.warn("off: event must not be null, the call was ignored");
+            return;
+        }
+        if (_eventsManager != null) {
+            _eventsManager.off(event);
+        }
     }
 
     private boolean track(Event event) {

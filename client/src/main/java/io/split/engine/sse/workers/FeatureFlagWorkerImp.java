@@ -3,6 +3,10 @@ package io.split.engine.sse.workers;
 import io.split.client.dtos.RuleBasedSegment;
 import io.split.client.dtos.Split;
 import io.split.client.interceptors.FlagSetsFilter;
+import io.split.client.lifecycle.SdkEventsNotifier;
+import io.split.client.lifecycle.SdkInternalEvent;
+import io.split.client.api.SdkEventMetadata;
+import io.split.client.api.SdkEventType;
 import io.split.client.utils.FeatureFlagsToUpdate;
 import io.split.client.utils.RuleBasedSegmentsToUpdate;
 import io.split.engine.common.Synchronizer;
@@ -19,6 +23,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.Set;
 
 import static com.google.common.base.Preconditions.checkNotNull;
@@ -34,12 +39,23 @@ public class FeatureFlagWorkerImp extends Worker<IncomingNotification> implement
     private final RuleBasedSegmentCache _ruleBasedSegmentCache;
     private final TelemetryRuntimeProducer _telemetryRuntimeProducer;
     private final FlagSetsFilter _flagSetsFilter;
+    private final SdkEventsNotifier _notifier;
 
     public FeatureFlagWorkerImp(Synchronizer synchronizer, SplitParser splitParser, RuleBasedSegmentParser ruleBasedSegmentParser,
                                 SplitCacheProducer splitCacheProducer,
                                 RuleBasedSegmentCache ruleBasedSegmentCache,
                                 TelemetryRuntimeProducer telemetryRuntimeProducer, FlagSetsFilter flagSetsFilter) {
+        this(synchronizer, splitParser, ruleBasedSegmentParser, splitCacheProducer, ruleBasedSegmentCache,
+                telemetryRuntimeProducer, flagSetsFilter, SdkEventsNotifier.NOOP);
+    }
+
+    public FeatureFlagWorkerImp(Synchronizer synchronizer, SplitParser splitParser, RuleBasedSegmentParser ruleBasedSegmentParser,
+                                SplitCacheProducer splitCacheProducer,
+                                RuleBasedSegmentCache ruleBasedSegmentCache,
+                                TelemetryRuntimeProducer telemetryRuntimeProducer, FlagSetsFilter flagSetsFilter,
+                                SdkEventsNotifier notifier) {
         super("Feature flags");
+        _notifier = checkNotNull(notifier);
         _synchronizer = checkNotNull(synchronizer);
         _splitParser = splitParser;
         _ruleBasedSegmentParser = ruleBasedSegmentParser;
@@ -90,6 +106,10 @@ public class FeatureFlagWorkerImp extends Worker<IncomingNotification> implement
                         Collections.singletonList(ruleBasedSegment));
                 _ruleBasedSegmentCache.update(ruleBasedSegmentsToUpdate.getToAdd(), ruleBasedSegmentsToUpdate.getToRemove(),
                         ruleBasedSegmentChangeNotification.getChangeNumber());
+                if (!ruleBasedSegmentsToUpdate.getToAdd().isEmpty() || !ruleBasedSegmentsToUpdate.getToRemove().isEmpty()) {
+                    _notifier.notify(SdkInternalEvent.RULE_BASED_SEGMENTS_UPDATED,
+                            SdkEventMetadata.update(SdkEventType.SEGMENTS_UPDATE, Collections.emptySet()));
+                }
                 Set<String> segments  = ruleBasedSegmentsToUpdate.getSegments();
                 for (String segmentName: segments) {
                     _synchronizer.forceRefreshSegment(segmentName);
@@ -115,6 +135,11 @@ public class FeatureFlagWorkerImp extends Worker<IncomingNotification> implement
                         _flagSetsFilter);
                 _splitCacheProducer.update(featureFlagsToUpdate.getToAdd(), featureFlagsToUpdate.getToRemove(),
                         featureFlagChangeNotification.getChangeNumber());
+                Set<String> flagNames = new HashSet<>(featureFlagsToUpdate.getToRemove());
+                featureFlagsToUpdate.getToAdd().forEach(f -> flagNames.add(f.feature()));
+                if (!flagNames.isEmpty()) {
+                    _notifier.notify(SdkInternalEvent.FLAGS_UPDATED, SdkEventMetadata.update(SdkEventType.FLAGS_UPDATE, flagNames));
+                }
                 Set<String> segments  = featureFlagsToUpdate.getSegments();
                 for (String segmentName: segments) {
                     _synchronizer.forceRefreshSegment(segmentName);
