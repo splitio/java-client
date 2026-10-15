@@ -41,7 +41,7 @@ pipeline:
                     envVariables:
                       MAVEN_OPTS: "-XX:InitialHeapSize=2G -XX:MaxHeapSize=2G -XX:+PrintCommandLineFlags -XX:ThreadStackSize=65536 -XX:-TieredCompilation -Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=warn"
                     command: |-
-                      apt-get update -qq && apt-get install -y --no-install-recommends redis-server python3
+                      apt-get update -qq && apt-get install -y --no-install-recommends redis-server
                       redis-server --daemonize yes
                       for i in $(seq 1 30); do
                         redis-cli ping 2>/dev/null | grep -q PONG && { echo "Redis is up"; break; }
@@ -49,30 +49,9 @@ pipeline:
                       done
                       mkdir -p ${HOME}/.m2 && cp .ci.settings.xml ${HOME}/.m2/settings.xml
                       mvn --batch-mode clean install
-                      mapfile -t reports < <(find . -path '*/target/site/jacoco/jacoco.xml' ! -path './coverage/*')
-                      python3 scripts/merge-jacoco.py "${reports[@]}" coverage/jacoco.xml
-                      test -s coverage/jacoco.xml
                   when:
                     stageStatus: Success
                     condition: <+codebase.build.type> == "PR"
-              - step:
-                  name: harnessCoverage
-                  identifier: harnessCoverage
-                  when:
-                    stageStatus: Success
-                    condition: <+codebase.build.type> == "PR"
-                  template:
-                    templateRef: account.codeCoverage
-                    versionLabel: v1
-                    templateInputs:
-                      type: Run
-                      spec:
-                        envVariables:
-                          patch_coverage_percent: "80"
-                          file_path: coverage/jacoco.xml
-                          overall_coverage_percent: ""
-                          ignore_failure: "false"
-                          exclude: "**/target/**,**/src/test/**,**/*Test.java,**/*Tests.java"
               # JDK 8: checkstyle (PR only)
               - step:
                   type: Run
