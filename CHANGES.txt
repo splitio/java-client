@@ -1,5 +1,5 @@
 4.19.1 (Oct 28, 2026)
-- Restored the coverage merge script used by the CI pipeline. No SDK behaviour change.
+- Fixed SSE forced-stop handling. Stopping an SSE connection that is not open no longer sets the forced-stop flag, connection errors are recorded with the correct telemetry type, and a forced stop reports FORCED_STOP to the status callback.
 
 4.19.0 (Oct 8, 2026)
    - Added the ability to listen to different events triggered by the SDK. Read more in our docs.
