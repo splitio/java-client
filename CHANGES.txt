@@ -1,3 +1,6 @@
+4.19.1 (Oct 28, 2026)
+- Restored the coverage merge script used by the CI pipeline. No SDK behaviour change.
+
 4.19.0 (Oct 8, 2026)
    - Added the ability to listen to different events triggered by the SDK. Read more in our docs.
    - SDK_UPDATE notify when a flag or user segment has changed
