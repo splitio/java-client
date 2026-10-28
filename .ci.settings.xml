@@ -13,6 +13,12 @@
             <username>${env.ARTIFACTORY_USER}</username>
             <password>${env.ARTIFACTORY_TOKEN}</password>
         </server>
+        <server>
+            <!-- CodeArtifact (fme domain), used by -Pcodeartifact deploys. The token comes from the environment only. -->
+            <id>codeartifact</id>
+            <username>aws</username>
+            <password>${env.CODEARTIFACT_AUTH_TOKEN}</password>
+        </server>
     </servers>
     <pluginGroups>
         <pluginGroup>org.sonarsource.scanner.maven</pluginGroup>
