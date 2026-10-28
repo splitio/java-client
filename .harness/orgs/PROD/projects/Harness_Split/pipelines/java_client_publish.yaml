@@ -1,0 +1,99 @@
+pipeline:
+  name: java-client-publish
+  identifier: java_client_publish
+  projectIdentifier: Harness_Split
+  orgIdentifier: PROD
+  tags: {}
+  description: >-
+    On-demand publish of java-client (all modules) to the FME CodeArtifact repository. Pick the branch to publish at run time.
+    Versions are immutable in CodeArtifact: publishing a version that already exists fails, so bump the -rcN suffix first.
+  properties:
+    ci:
+      codebase:
+        repoName: java-client
+        build: <+input>
+        depth: 0
+  stages:
+    - stage:
+        name: aws
+        identifier: aws
+        description: Fetch CodeArtifact token (AWS auth via delegate / IRSA on this cluster)
+        type: CI
+        spec:
+          cloneCodebase: false
+          caching:
+            enabled: false
+          execution:
+            steps:
+              - step:
+                  type: Run
+                  name: login to aws codeartifact
+                  identifier: login_to_aws_codeartifact
+                  spec:
+                    connectorRef: dockerhub
+                    image: amazon/aws-cli:2.31.5
+                    shell: Sh
+                    command: |
+                      set -eu
+                      export CODEARTIFACT_AUTH_TOKEN="$(aws codeartifact get-authorization-token \
+                        --domain fme \
+                        --domain-owner 079419646996 \
+                        --region us-east-1 \
+                        --query authorizationToken \
+                        --output text)"
+                      test -n "$CODEARTIFACT_AUTH_TOKEN"
+                    outputVariables:
+                      - name: CODEARTIFACT_AUTH_TOKEN
+          infrastructure:
+            type: KubernetesDirect
+            spec:
+              connectorRef: use1stage1cd
+              namespace: harness-delegate
+              serviceAccountName: use1-stage-1-harness-delegate-cd
+              automountServiceAccountToken: false
+              nodeSelector: {}
+              os: Linux
+    - stage:
+        name: publish
+        identifier: publish
+        description: Build and deploy every module with the codeartifact profile
+        type: CI
+        spec:
+          cloneCodebase: true
+          caching:
+            enabled: false
+          platform:
+            os: Linux
+            arch: Amd64
+          runtime:
+            type: Cloud
+            spec: {}
+          execution:
+            steps:
+              # jvm-commons submodule: CI pulls it from the Harness Code mirror
+              - step:
+                  type: Run
+                  name: init submodules
+                  identifier: init_submodules
+                  spec:
+                    connectorRef: dockerhub
+                    image: maven:3.9-eclipse-temurin-17
+                    shell: Bash
+                    command: |-
+                      git config submodule.jvm-commons.url https://git0.harness.io/l7B_kbSEQD2wjrM7PShm5w/PROD/Harness_Split/jvm-commons.git
+                      git submodule update --init --recursive
+              - step:
+                  type: Run
+                  name: deploy to codeartifact
+                  identifier: deploy_to_codeartifact
+                  spec:
+                    connectorRef: dockerhub
+                    image: maven:3.9-eclipse-temurin-17
+                    shell: Bash
+                    envVariables:
+                      CODEARTIFACT_AUTH_TOKEN: <+pipeline.stages.aws.spec.execution.steps.login_to_aws_codeartifact.output.outputVariables.CODEARTIFACT_AUTH_TOKEN>
+                    command: |-
+                      # The token is read from the environment by .ci.settings.xml. Nothing here echoes it.
+                      mkdir -p ${HOME}/.m2 && cp .ci.settings.xml ${HOME}/.m2/settings.xml
+                      mvn --batch-mode -f jvm-commons/pom.xml -pl events -am install -DskipTests
+                      mvn --batch-mode -Pcodeartifact clean deploy -DskipTests
