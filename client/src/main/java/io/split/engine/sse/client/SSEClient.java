@@ -119,8 +119,8 @@ public class SSEClient {
         _log.debug("closing SSE client");
         try {
             lock.lock();
-            _forcedStop.set(true);
             if (_state.compareAndSet(ConnectionState.OPEN, ConnectionState.CLOSED)) {
+                _forcedStop.set(true);
                 if (_ongoingResponse.get() != null) {
                     _ongoingRequest.get().abort();
                     _ongoingResponse.get().close(CloseMode.IMMEDIATE);
@@ -171,7 +171,7 @@ public class SSEClient {
                         _log.debug(String.format("SSE connection ended abruptly: %s. Retying", exc.getMessage()));
                         _telemetryRuntimeProducer.recordStreamingEvents(
                                 new StreamingEvent(StreamEventsEnum.SSE_CONNECTION_ERROR.getType(),
-                                        StreamEventsEnum.SseConnectionErrorValues.REQUESTED_CONNECTION_ERROR.getValue(),
+                                        StreamEventsEnum.SseConnectionErrorValues.NON_REQUESTED_CONNECTION_ERROR.getValue(),
                                         System.currentTimeMillis()));
                         _statusCallback.apply(StatusMessage.RETRYABLE_ERROR);
                         return;
@@ -179,8 +179,10 @@ public class SSEClient {
 
                     _telemetryRuntimeProducer
                             .recordStreamingEvents(new StreamingEvent(StreamEventsEnum.SSE_CONNECTION_ERROR.getType(),
-                                    StreamEventsEnum.SseConnectionErrorValues.NON_REQUESTED_CONNECTION_ERROR.getValue(),
+                                    StreamEventsEnum.SseConnectionErrorValues.REQUESTED_CONNECTION_ERROR.getValue(),
                                     System.currentTimeMillis()));
+                    _statusCallback.apply(StatusMessage.FORCED_STOP);
+                    return;
                 }
             }
         } catch (Exception e) { // Any other error non related to the connection disables streaming altogether
