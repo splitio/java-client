@@ -14,10 +14,10 @@
             <password>${env.ARTIFACTORY_TOKEN}</password>
         </server>
         <server>
-            <!-- CodeArtifact (fme domain), used by -Pcodeartifact deploys. The token comes from the environment only. -->
-            <id>codeartifact</id>
-            <username>aws</username>
-            <password>${env.CODEARTIFACT_AUTH_TOKEN}</password>
+            <!-- Harness Maven (fme-mvn), used by -Pharness-maven deploys. Credentials come from the environment only. -->
+            <id>harness-maven</id>
+            <username>${env.HARNESS_MAVEN_USERNAME}</username>
+            <password>${env.HARNESS_MAVEN_PASSWORD}</password>
         </server>
     </servers>
     <pluginGroups>

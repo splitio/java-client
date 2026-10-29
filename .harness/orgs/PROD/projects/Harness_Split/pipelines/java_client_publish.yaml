@@ -5,8 +5,8 @@ pipeline:
   orgIdentifier: PROD
   tags: {}
   description: >-
-    On-demand publish of java-client (all modules) to the FME CodeArtifact repository. Pick the branch to publish at run time.
-    Versions are immutable in CodeArtifact: publishing a version that already exists fails, so bump the -rcN suffix first.
+    On-demand publish of java-client (all modules) to the Harness Maven registry (fme-mvn). Pick the branch to publish at run time.
+    Versions are immutable: publishing a version that already exists fails, so bump the -rcN suffix first.
   properties:
     ci:
       codebase:
@@ -15,48 +15,9 @@ pipeline:
         depth: 0
   stages:
     - stage:
-        name: aws
-        identifier: aws
-        description: Fetch CodeArtifact token (AWS auth via delegate / IRSA on this cluster)
-        type: CI
-        spec:
-          cloneCodebase: false
-          caching:
-            enabled: false
-          execution:
-            steps:
-              - step:
-                  type: Run
-                  name: login to aws codeartifact
-                  identifier: login_to_aws_codeartifact
-                  spec:
-                    connectorRef: dockerhub
-                    image: amazon/aws-cli:2.31.5
-                    shell: Sh
-                    command: |
-                      set -eu
-                      export CODEARTIFACT_AUTH_TOKEN="$(aws codeartifact get-authorization-token \
-                        --domain fme \
-                        --domain-owner 079419646996 \
-                        --region us-east-1 \
-                        --query authorizationToken \
-                        --output text)"
-                      test -n "$CODEARTIFACT_AUTH_TOKEN"
-                    outputVariables:
-                      - name: CODEARTIFACT_AUTH_TOKEN
-          infrastructure:
-            type: KubernetesDirect
-            spec:
-              connectorRef: use1stage1cd
-              namespace: harness-delegate
-              serviceAccountName: use1-stage-1-harness-delegate-cd
-              automountServiceAccountToken: false
-              nodeSelector: {}
-              os: Linux
-    - stage:
         name: publish
         identifier: publish
-        description: Build and deploy every module with the codeartifact profile
+        description: Build and deploy every module with the harness-maven profile
         type: CI
         spec:
           cloneCodebase: true
@@ -84,16 +45,17 @@ pipeline:
                       git submodule update --init --recursive
               - step:
                   type: Run
-                  name: deploy to codeartifact
-                  identifier: deploy_to_codeartifact
+                  name: deploy to harness maven
+                  identifier: deploy_to_harness_maven
                   spec:
                     connectorRef: dockerhub
                     image: maven:3.9-eclipse-temurin-17
                     shell: Bash
                     envVariables:
-                      CODEARTIFACT_AUTH_TOKEN: <+pipeline.stages.aws.spec.execution.steps.login_to_aws_codeartifact.output.outputVariables.CODEARTIFACT_AUTH_TOKEN>
+                      HARNESS_MAVEN_USERNAME: fme-mvn@service.harness.io
+                      HARNESS_MAVEN_PASSWORD: <+secrets.getValue("fme-mvn-publish")>
                     command: |-
-                      # The token is read from the environment by .ci.settings.xml. Nothing here echoes it.
+                      # The credentials are read from the environment by .ci.settings.xml. Nothing here echoes them.
                       mkdir -p ${HOME}/.m2 && cp .ci.settings.xml ${HOME}/.m2/settings.xml
                       mvn --batch-mode -f jvm-commons/pom.xml -pl events -am install -DskipTests
-                      mvn --batch-mode -Pcodeartifact clean deploy -DskipTests
+                      mvn --batch-mode -Pharness-maven clean deploy -DskipTests

@@ -135,13 +135,13 @@
         </plugins>
     </build>
     <profiles>
-        <!-- On-demand publish to the FME CodeArtifact repository (pipeline java_client_publish). Opt-in with -Pcodeartifact. -->
+        <!-- On-demand publish to Harness Maven (fme-mvn), same target as mvn_publish_bom. Opt-in with -Pharness-maven. -->
         <profile>
-            <id>codeartifact</id>
+            <id>harness-maven</id>
             <distributionManagement>
                 <repository>
-                    <id>codeartifact</id>
-                    <url>https://fme-079419646996.d.codeartifact.us-east-1.amazonaws.com/maven/maven-fme/</url>
+                    <id>harness-maven</id>
+                    <url>https://harness0.harness.io/pkg/l7B_kbSEQD2wjrM7PShm5w/fme-mvn/maven</url>
                 </repository>
             </distributionManagement>
         </profile>
