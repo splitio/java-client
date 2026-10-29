@@ -4,7 +4,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>io.split.client</groupId>
     <artifactId>java-client-parent</artifactId>
-    <version>4.19.0</version>
+    <version>4.19.1</version>
     <dependencyManagement>
         <dependencies>
             <dependency>
@@ -135,6 +135,17 @@
         </plugins>
     </build>
     <profiles>
+        <!-- On-demand publish to Harness Maven (fme-mvn), same target as mvn_publish_bom. Opt-in with -Pharness-maven. -->
+        <profile>
+            <id>harness-maven</id>
+            <distributionManagement>
+                <repository>
+                    <id>harness-maven</id>
+                    <url>https://harness0.harness.io/pkg/l7B_kbSEQD2wjrM7PShm5w/fme-mvn/maven</url>
+                </repository>
+            </distributionManagement>
+        </profile>
+
         <profile>
             <id>test</id>
             <build>

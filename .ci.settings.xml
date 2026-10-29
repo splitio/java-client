@@ -13,6 +13,12 @@
             <username>${env.ARTIFACTORY_USER}</username>
             <password>${env.ARTIFACTORY_TOKEN}</password>
         </server>
+        <server>
+            <!-- Harness Maven (fme-mvn), used by -Pharness-maven deploys. Credentials come from the environment only. -->
+            <id>harness-maven</id>
+            <username>${env.HARNESS_MAVEN_USERNAME}</username>
+            <password>${env.HARNESS_MAVEN_PASSWORD}</password>
+        </server>
     </servers>
     <pluginGroups>
         <pluginGroup>org.sonarsource.scanner.maven</pluginGroup>
