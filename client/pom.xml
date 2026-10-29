@@ -5,9 +5,9 @@
     <parent>
         <groupId>io.split.client</groupId>
         <artifactId>java-client-parent</artifactId>
-        <version>4.19.0</version>
+        <version>4.19.1-rc2</version>
     </parent>
-    <version>4.19.0</version>
+    <version>4.19.1-rc2</version>
     <artifactId>java-client</artifactId>
     <packaging>jar</packaging>
     <name>Java Client</name>
@@ -125,7 +125,7 @@
                                     <include>org.yaml:snakeyaml:*</include>
 
                                     <!-- Transitive dependency of guava -->
-                                    <include>org.checkerframework:*</include>
+                                    <include>org.jspecify:*</include>
 
                                     <!-- Transitive dependency of httpclient5. Package name is org.apache.commons -->
                                     <include>commons-codec:*</include>
@@ -145,8 +145,8 @@
                                     <shadedPattern>split.org.apache</shadedPattern>
                                 </relocation>
                                 <relocation>
-                                    <pattern>org.checkerframework</pattern>
-                                    <shadedPattern>split.org.checkerframework</shadedPattern>
+                                    <pattern>org.jspecify</pattern>
+                                    <shadedPattern>split.org.jspecify</shadedPattern>
                                 </relocation>
                                 <relocation>
                                     <pattern>org.yaml.snakeyaml</pattern>
@@ -217,7 +217,7 @@
         <dependency>
             <groupId>com.google.guava</groupId>
             <artifactId>guava</artifactId>
-            <version>32.0.1-jre</version>
+            <version>33.4.8-jre</version>
         </dependency>
         <dependency>
             <groupId>org.slf4j</groupId>

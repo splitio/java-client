@@ -18,8 +18,8 @@ import java.util.jar.JarFile;
 public class FatJarShapeE2ETest {
 
     private static final String[] RELOCATED = {"split/com/google/", "split/org/apache/", "split/org/yaml/",
-            "split/org/checkerframework/", "split/io/harness/events/"};
-    private static final String[] MUST_NOT_LEAK = {"com/google/", "org/apache/", "org/yaml/", "org/checkerframework/",
+            "split/org/jspecify/", "split/io/harness/events/"};
+    private static final String[] MUST_NOT_LEAK = {"com/google/", "org/apache/", "org/yaml/", "org/jspecify/",
             "io/harness/"};
 
     @Test
