@@ -19,7 +19,7 @@ import java.util.jar.JarFile;
 public class NonShadedJarShapeE2ETest {
 
     private static final String[] BUNDLED_LIBRARIES = {"split/com/google/", "split/org/apache/", "split/org/yaml/",
-            "split/org/checkerframework/"};
+            "split/org/jspecify/"};
 
     @Test
     public void bundlesOnlyTheRelocatedEventsLibrary() throws Exception {

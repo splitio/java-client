@@ -1,8 +1,8 @@
 package io.split.client.impressions.filters;
 
-import com.google.common.base.Charsets;
 import com.google.common.hash.BloomFilter;
 import com.google.common.hash.Funnels;
+import java.nio.charset.StandardCharsets;
 
 public class BloomFilterImp implements Filter {
 
@@ -13,7 +13,7 @@ public class BloomFilterImp implements Filter {
     public BloomFilterImp(int size, double errorMargin) {
         this.size = size;
         this.errorMargin = errorMargin;
-        this.bloomFilter = BloomFilter.create(Funnels.stringFunnel(Charsets.UTF_8), size, errorMargin);
+        this.bloomFilter = BloomFilter.create(Funnels.stringFunnel(StandardCharsets.UTF_8), size, errorMargin);
     }
 
     @Override
@@ -28,7 +28,7 @@ public class BloomFilterImp implements Filter {
 
     @Override
     public void clear() {
-        bloomFilter = BloomFilter.create(Funnels.stringFunnel(Charsets.UTF_16), size, errorMargin);
+        bloomFilter = BloomFilter.create(Funnels.stringFunnel(StandardCharsets.UTF_16), size, errorMargin);
 
     }
 }

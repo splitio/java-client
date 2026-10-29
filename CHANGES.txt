@@ -1,5 +1,6 @@
-4.19.1 (Oct 28, 2026)
+4.19.1 (Oct 29, 2026)
 - Fixed SSE forced-stop handling. Stopping an SSE connection that is not open no longer sets the forced-stop flag, connection errors are recorded with the correct telemetry type, and a forced stop reports FORCED_STOP to the status callback.
+- Updated Guava to 33.4.8-jre. Avoid usage of sun.misc.Unsafe to prevent errors in future JDK releases.
 
 4.19.0 (Oct 8, 2026)
    - Added the ability to listen to different events triggered by the SDK. Read more in our docs.

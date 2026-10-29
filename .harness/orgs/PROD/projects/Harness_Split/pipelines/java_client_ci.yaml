@@ -67,6 +67,34 @@ pipeline:
                   when:
                     stageStatus: Success
                     condition: <+codebase.build.type> == "PR"
+              # JDK 26: fail if sun.misc.Unsafe is used (Guava Striped64)
+              - step:
+                  type: Run
+                  name: unsafe check jdk26
+                  identifier: unsafe_check_jdk26
+                  spec:
+                    connectorRef: dockerhub
+                    image: maven:3.9-eclipse-temurin-26
+                    shell: Bash
+                    envVariables:
+                      MAVEN_OPTS: "-XX:InitialHeapSize=2G -XX:MaxHeapSize=2G -XX:+PrintCommandLineFlags -XX:ThreadStackSize=65536 -XX:-TieredCompilation -Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=warn"
+                    command: |-
+                      set -eo pipefail
+                      apt-get update -qq && apt-get install -y --no-install-recommends redis-server
+                      redis-server --daemonize yes
+                      for i in $(seq 1 30); do
+                        redis-cli ping 2>/dev/null | grep -q PONG && { echo "Redis is up"; break; }
+                        echo "Waiting for Redis... ($i/30)"; sleep 1
+                      done
+                      mkdir -p ${HOME}/.m2 && cp .ci.settings.xml ${HOME}/.m2/settings.xml
+                      mvn --batch-mode -pl client -am test -Dtest=BloomFilterImpTest,ImpressionObserverTest -Dsurefire.failIfNoSpecifiedTests=false 2>&1 | tee /tmp/unsafe-check.log
+                      if grep -q "sun.misc.Unsafe" /tmp/unsafe-check.log; then
+                        echo "sun.misc.Unsafe usage detected (see warnings above)"
+                        exit 1
+                      fi
+                  when:
+                    stageStatus: Success
+                    condition: <+codebase.build.type> == "PR"
               # JDK 11: Sonar (PR and push to master/development)
               - step:
                   type: Run

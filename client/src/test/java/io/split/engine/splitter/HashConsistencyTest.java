@@ -1,8 +1,8 @@
 package io.split.engine.splitter;
 
-import com.google.common.base.Charsets;
 import com.google.common.hash.Hashing;
 import io.split.client.utils.MurmurHash3;
+import java.nio.charset.StandardCharsets;
 import org.junit.Assert;
 import org.junit.Ignore;
 import org.junit.Test;
@@ -118,7 +118,7 @@ public class HashConsistencyTest {
             long expected_hash = Long.parseLong(parts[2]);
             int expected_bucket = Integer.parseInt(parts[3]);
 
-            int hash = Hashing.murmur3_32(seed).hashBytes(key.getBytes(Charsets.UTF_8)).asInt();
+            int hash = Hashing.murmur3_32(seed).hashBytes(key.getBytes(StandardCharsets.UTF_8)).asInt();
 
             int bucket = Splitter.bucket(hash);
 
