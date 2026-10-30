@@ -10,11 +10,28 @@ plugins {
 def sdkVersion = new XmlSlurper().parse(file('../pom.xml')).version.text()
 assert sdkVersion : 'could not read the version from ../pom.xml'
 
+// The released java-client-testing that consumers use, checked against this SDK by ReleasedTestingCompatE2ETest.
+// Bump it when a new testing release supersedes this one; -Pcompat.testing.version=X overrides it for a local check.
+def compatTestingVersion = project.findProperty('compat.testing.version') ?: '5.0.1'
+
 // The local Maven repo, shared explicitly with the `mvn` calls below. In CI, HOME (where the events install lands)
 // differs from the JVM's user.home, so mavenLocal() alone would look in a different repo than Maven installed to.
 def localRepo = System.getProperty('maven.repo.local') ?: "${System.getenv('HOME') ?: System.getProperty('user.home')}/.m2/repository"
 
 repositories {
+    // The released java-client-testing comes from Maven Central only. mavenLocal can hold a local build of the same
+    // version (from this tree), which would hide a break in the published jar. An explicit -Pcompat.testing.version
+    // is a local check of an unpublished build, so it lifts the restriction and resolves from mavenLocal.
+    if (!project.hasProperty('compat.testing.version')) {
+        exclusiveContent {
+            forRepository {
+                mavenCentral()
+            }
+            filter {
+                includeModule 'io.split.client', 'java-client-testing'
+            }
+        }
+    }
     maven {
         url = uri(localRepo)
         // Only what this build installs; Maven keeps poms without jars for everything else it resolved.
@@ -38,6 +55,10 @@ dependencies {
     testImplementation 'com.google.code.gson:gson:2.13.1'
     testImplementation 'org.slf4j:slf4j-simple:1.7.36'
     testImplementation 'junit:junit:4.13.1'
+    // Its own java-client dependency is excluded: the SDK built from this tree is the only one on the classpath.
+    testImplementation("io.split.client:java-client-testing:${compatTestingVersion}") {
+        exclude group: 'io.split.client', module: 'java-client'
+    }
 }
 
 // The default (fully shaded) artifact has its own source set: the same coordinates resolve with and without the
@@ -91,6 +112,8 @@ tasks.register('fatJarTest', Test) {
 tasks.named('test') {
     // `./gradlew test` covers both artifacts; the finalizer runs even when this task fails.
     finalizedBy 'fatJarTest'
+    systemProperty 'compat.testing.version', compatTestingVersion
+    systemProperty 'compat.sdk.version', sdkVersion
     testLogging {
         events 'passed', 'failed'
         exceptionFormat 'full'
